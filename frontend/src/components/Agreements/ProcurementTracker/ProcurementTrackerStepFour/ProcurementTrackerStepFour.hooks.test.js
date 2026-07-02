@@ -69,7 +69,7 @@ describe("useProcurementTrackerStepFour", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step4DateCompleted).toBe("");
-            expect(result.current.step4Notes).toBe("");
+            expect(result.current.step4Notes).toBe("Vendor selected after evaluation"); // Notes initialize from existing stepData.notes
         });
 
         it("returns all setter functions", () => {

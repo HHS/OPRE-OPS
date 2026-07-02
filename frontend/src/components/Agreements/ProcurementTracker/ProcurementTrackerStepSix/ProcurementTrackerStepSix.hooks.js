@@ -21,8 +21,11 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
-    const [stepSixNotes, setStepSixNotes] = React.useState("");
+    const [stepSixNotes, setStepSixNotes] = React.useState(stepSixData?.notes ?? "");
     const [showModal, setShowModal] = React.useState(false);
+    React.useEffect(() => {
+        setStepSixNotes(stepSixData?.notes ?? "");
+    }, [stepSixData?.notes]);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -48,6 +51,27 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const handleSaveNotes = async (stepId) => {
+        try {
+            await patchStepSix({
+                stepId,
+                data: { notes: stepSixNotes.trim() }
+            }).unwrap();
+            setAlert({
+                type: "success",
+                heading: "Notes Saved",
+                message: "Your notes have been saved."
+            });
+        } catch (error) {
+            console.error("Failed to save notes", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error saving the notes. Please try again."
+            });
+        }
+    };
 
     /**
      * Handles the submission of the target completion date for step six, updating the procurement tracker step with the new date.
@@ -140,6 +164,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     };
 
     return {
+        handleSaveNotes,
         isAwardCheckboxChecked,
         setIsAwardCheckboxChecked,
         selectedUser,

@@ -163,7 +163,7 @@ const ProcurementTrackerStepOne = ({
                                 maxDate={getLocalISODate()}
                             />
                         </div>
-                        <div style={{ display: "table" }}>
+                        <div className="display-table">
                             <TextArea
                                 name="notes"
                                 label="Notes (optional)"

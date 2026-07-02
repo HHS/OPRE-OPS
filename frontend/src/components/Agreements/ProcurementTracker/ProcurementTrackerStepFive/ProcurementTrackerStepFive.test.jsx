@@ -140,6 +140,7 @@ describe("ProcurementTrackerStepFive", () => {
     const mockRunValidate = vi.fn();
     const mockHandleTargetCompletionDateSubmit = vi.fn();
     const mockHandleStepFiveComplete = vi.fn();
+    const mockHandleSaveNotes = vi.fn();
     const mockSetShowModal = vi.fn();
     const mockHandleSetCompletedStepNumber = vi.fn();
     const mockValidatorRes = {
@@ -168,6 +169,7 @@ describe("ProcurementTrackerStepFive", () => {
         MemoizedDatePicker: DatePicker,
         handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit,
         handleStepFiveComplete: mockHandleStepFiveComplete,
+        handleSaveNotes: mockHandleSaveNotes,
         showModal: false,
         setShowModal: mockSetShowModal,
         modalProps: {
@@ -1161,7 +1163,7 @@ describe("ProcurementTrackerStepFive", () => {
             expect(mockSetStep5Notes).toHaveBeenCalledWith("Test notes");
         });
 
-        it("notes is disabled when checkbox is not checked", () => {
+        it("notes remains editable regardless of checkbox state", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
@@ -1175,7 +1177,7 @@ describe("ProcurementTrackerStepFive", () => {
             );
 
             const textarea = within(screen.getByTestId("text-area")).getByRole("textbox");
-            expect(textarea).toBeDisabled();
+            expect(textarea).not.toBeDisabled();
         });
 
         it("notes is enabled when checkbox is checked", () => {
@@ -1624,6 +1626,114 @@ describe("ProcurementTrackerStepFive", () => {
             );
 
             expect(screen.getByText("User is required")).toBeInTheDocument();
+        });
+    });
+
+    describe("Notes Editing & Save Notes button", () => {
+        it("renders the Save Notes button", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            expect(saveNotesButton).toBeInTheDocument();
+            expect(saveNotesButton).toHaveAttribute("data-cy", "save-notes-button");
+        });
+
+        it("renders existing notes from step5Notes in the TextArea", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                isPreAwardComplete: true,
+                step5Notes: "Previously saved notes"
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            const textarea = within(screen.getByTestId("text-area")).getByRole("textbox");
+            expect(textarea).toHaveValue("Previously saved notes");
+            expect(textarea).not.toBeDisabled();
+        });
+
+        it("edits existing notes by calling setStep5Notes when the user types", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                isPreAwardComplete: true,
+                step5Notes: "Previously saved notes"
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            const textarea = within(screen.getByTestId("text-area")).getByRole("textbox");
+            fireEvent.change(textarea, { target: { value: "Edited notes" } });
+
+            expect(mockSetStep5Notes).toHaveBeenCalledWith("Edited notes");
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with stepFiveData.id", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(5);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+        });
+
+        it("clicking Save Notes does not call handleStepFiveComplete", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleStepFiveComplete).not.toHaveBeenCalled();
         });
     });
 

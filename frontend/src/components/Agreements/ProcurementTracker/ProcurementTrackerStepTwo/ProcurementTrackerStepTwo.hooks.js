@@ -21,8 +21,11 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const [selectedUser, setSelectedUser] = React.useState({});
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
-    const [step2Notes, setStep2Notes] = React.useState("");
+    const [step2Notes, setStep2Notes] = React.useState(stepTwoData?.notes ?? "");
     const [revisedTargetDate, setRevisedTargetDate] = React.useState("");
+    React.useEffect(() => {
+        setStep2Notes(stepTwoData?.notes ?? "");
+    }, [stepTwoData?.notes]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -68,6 +71,27 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const handleSaveNotes = async (stepId) => {
+        try {
+            await patchStepTwo({
+                stepId,
+                data: { notes: step2Notes.trim() }
+            }).unwrap();
+            setAlert({
+                type: "success",
+                heading: "Notes Saved",
+                message: "Your notes have been saved."
+            });
+        } catch (error) {
+            console.error("Failed to save notes", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error saving the notes. Please try again."
+            });
+        }
+    };
 
     /**
      * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
@@ -186,6 +210,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
 
     return {
         cancelStepTwo,
+        handleSaveNotes,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,

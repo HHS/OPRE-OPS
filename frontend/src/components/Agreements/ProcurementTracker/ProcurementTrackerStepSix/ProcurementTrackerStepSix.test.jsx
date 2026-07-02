@@ -143,6 +143,7 @@ describe("ProcurementTrackerStepSix", () => {
     const mockHandleStepSixComplete = vi.fn();
     const mockCancelModalStepSix = vi.fn();
     const mockHandleTargetCompletionDateSubmit = vi.fn();
+    const mockHandleSaveNotes = vi.fn();
 
     const defaultHookReturn = {
         isAwardCheckboxChecked: false,
@@ -210,6 +211,7 @@ describe("ProcurementTrackerStepSix", () => {
         setShowModal: vi.fn(),
         modalProps: {},
         cancelModalStepSix: mockCancelModalStepSix,
+        handleSaveNotes: mockHandleSaveNotes,
         handleStepSixComplete: mockHandleStepSixComplete
     };
 
@@ -521,7 +523,7 @@ describe("ProcurementTrackerStepSix", () => {
         it("renders save button for target completion date", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             expect(saveButton).toBeInTheDocument();
             expect(saveButton).toHaveAttribute("data-cy", "save-target-completion-date-step-6");
         });
@@ -530,7 +532,7 @@ describe("ProcurementTrackerStepSix", () => {
             const props = { ...defaultProps, isDisabled: true };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             expect(saveButton).toBeDisabled();
         });
 
@@ -542,7 +544,7 @@ describe("ProcurementTrackerStepSix", () => {
 
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             expect(saveButton).toBeDisabled();
         });
 
@@ -558,7 +560,7 @@ describe("ProcurementTrackerStepSix", () => {
 
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             expect(saveButton).toBeDisabled();
         });
 
@@ -570,7 +572,7 @@ describe("ProcurementTrackerStepSix", () => {
 
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             fireEvent.click(saveButton);
 
             expect(mockHandleTargetCompletionDateSubmit).toHaveBeenCalledWith(6);
@@ -579,7 +581,7 @@ describe("ProcurementTrackerStepSix", () => {
         it("save button has unstyled button class", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             expect(saveButton).toHaveClass("usa-button--unstyled");
         });
     });
@@ -657,7 +659,7 @@ describe("ProcurementTrackerStepSix", () => {
     });
 
     describe("Notes Field - Disabled State Bug Fix", () => {
-        it("Notes field is disabled when checkbox is unchecked", () => {
+        it("Notes field remains editable regardless of checkbox state", () => {
             useProcurementTrackerStepSix.mockReturnValue({
                 ...defaultHookReturn,
                 isAwardCheckboxChecked: false
@@ -666,7 +668,7 @@ describe("ProcurementTrackerStepSix", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
             const notesField = screen.getByLabelText(/Notes \(optional\)/i);
-            expect(notesField).toBeDisabled();
+            expect(notesField).not.toBeDisabled();
         });
 
         it("Notes field is enabled when checkbox is checked", () => {
@@ -844,6 +846,64 @@ describe("ProcurementTrackerStepSix", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
             expect(screen.queryByTestId("confirmation-modal")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Notes Editing & Save Notes button", () => {
+        it("renders the Save Notes button", () => {
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            expect(saveNotesButton).toBeInTheDocument();
+            expect(saveNotesButton).toHaveAttribute("data-cy", "save-notes-button");
+        });
+
+        it("renders existing notes from stepSixNotes in the TextArea", () => {
+            useProcurementTrackerStepSix.mockReturnValue({
+                ...defaultHookReturn,
+                isAwardCheckboxChecked: true,
+                stepSixNotes: "Previously saved notes"
+            });
+
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            const notesField = screen.getByLabelText(/Notes \(optional\)/i);
+            expect(notesField).toHaveValue("Previously saved notes");
+            expect(notesField).not.toBeDisabled();
+        });
+
+        it("edits existing notes by calling setStepSixNotes when the user types", () => {
+            useProcurementTrackerStepSix.mockReturnValue({
+                ...defaultHookReturn,
+                isAwardCheckboxChecked: true,
+                stepSixNotes: "Previously saved notes"
+            });
+
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            const notesField = screen.getByLabelText(/Notes \(optional\)/i);
+            fireEvent.change(notesField, { target: { value: "Edited notes" } });
+
+            expect(mockSetStepSixNotes).toHaveBeenCalledWith("Edited notes");
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with stepSixData.id", () => {
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(6);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+        });
+
+        it("clicking Save Notes does not call handleStepSixComplete", () => {
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleStepSixComplete).not.toHaveBeenCalled();
         });
     });
 

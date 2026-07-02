@@ -20,8 +20,11 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
     const [solicitationPeriodEndDate, setSolicitationPeriodEndDate] = React.useState("");
-    const [step3Notes, setStep3Notes] = React.useState("");
+    const [step3Notes, setStep3Notes] = React.useState(stepThreeData?.notes ?? "");
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
+    React.useEffect(() => {
+        setStep3Notes(stepThreeData?.notes ?? "");
+    }, [stepThreeData?.notes]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [patchStepThree] = useUpdateProcurementTrackerStepMutation();
@@ -58,6 +61,27 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     };
 
     let validatorRes = suite.get();
+
+    const handleSaveNotes = async (stepId) => {
+        try {
+            await patchStepThree({
+                stepId,
+                data: { notes: step3Notes.trim() }
+            }).unwrap();
+            setAlert({
+                type: "success",
+                heading: "Notes Saved",
+                message: "Your notes have been saved."
+            });
+        } catch (error) {
+            console.error("Failed to save notes", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error saving the notes. Please try again."
+            });
+        }
+    };
 
     const cancelStep3 = () => {
         setIsSolicitationClosed(false);
@@ -170,6 +194,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setShowModal,
         modalProps,
         cancelModalStep3,
+        handleSaveNotes,
         handleSolicitationDatesSubmit,
         handleStep3Complete
     };

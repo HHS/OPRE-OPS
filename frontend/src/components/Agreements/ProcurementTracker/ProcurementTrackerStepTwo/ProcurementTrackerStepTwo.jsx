@@ -5,7 +5,7 @@ import SimpleAlert from "../../../UI/Alert/SimpleAlert";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
-import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
@@ -65,6 +65,7 @@ const ProcurementTrackerStepTwo = ({
         setShowModal,
         modalProps,
         cancelModalStep2,
+        handleSaveNotes,
         handleStepTwoComplete,
         step2DraftSolicitationDateLabel,
         isPastDue,
@@ -283,15 +284,34 @@ const ProcurementTrackerStepTwo = ({
                                 isDisabled={isPackageFinalizedFieldsDisabled}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step2Notes}
-                            onChange={(_, value) => setStep2Notes(value)}
-                            isDisabled={isPackageFinalizedFieldsDisabled}
-                        />
+                        <div className="display-table">
+                            <TextArea
+                                name="notes"
+                                label="Notes (optional)"
+                                className="margin-top-2"
+                                maxLength={750}
+                                value={step2Notes}
+                                onChange={(_, value) => setStep2Notes(value)}
+                                textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
+                                isDisabled={isDisabled}
+                            />
+                            <div className="display-flex flex-justify-end">
+                                <button
+                                    type="button"
+                                    className="usa-button usa-button--unstyled"
+                                    data-cy="save-notes-button"
+                                    onClick={() => handleSaveNotes(stepTwoData?.id)}
+                                    disabled={isDisabled}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faCheck}
+                                        size="2x"
+                                        className={"text-primary height-2 width-2 cursor-pointer"}
+                                    />
+                                    Save Notes
+                                </button>
+                            </div>
+                        </div>
                         <p
                             className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
                         >

@@ -67,7 +67,7 @@ describe("useProcurementTrackerStepFive", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step5DateCompleted).toBe("");
-            expect(result.current.step5Notes).toBe("");
+            expect(result.current.step5Notes).toBe("Pre-award approval received"); // Notes initialize from existing stepData.notes
         });
 
         it("returns all setter functions", () => {

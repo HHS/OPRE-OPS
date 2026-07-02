@@ -127,6 +127,7 @@ describe("ProcurementTrackerStepFour", () => {
     const mockRunValidate = vi.fn();
     const mockCancelModalStep4 = vi.fn();
     const mockSetShowModal = vi.fn();
+    const mockHandleSaveNotes = vi.fn();
 
     const defaultHookReturn = {
         isEvaluationComplete: false,
@@ -159,7 +160,8 @@ describe("ProcurementTrackerStepFour", () => {
             secondaryButtonText: "",
             handleConfirm: vi.fn()
         },
-        cancelModalStep4: mockCancelModalStep4
+        cancelModalStep4: mockCancelModalStep4,
+        handleSaveNotes: mockHandleSaveNotes
     };
 
     const defaultProps = {
@@ -282,7 +284,7 @@ describe("ProcurementTrackerStepFour", () => {
 
             render(<ProcurementTrackerStepFour {...defaultProps} />);
 
-            const saveButton = screen.getByRole("button", { name: /Save/i });
+            const saveButton = screen.getByRole("button", { name: /^Save$/i });
             fireEvent.click(saveButton);
 
             expect(mockHandleTargetCompletionDateSubmit).toHaveBeenCalledWith(1);
@@ -498,6 +500,77 @@ describe("ProcurementTrackerStepFour", () => {
 
             const checkbox = screen.getByRole("checkbox");
             expect(checkbox).toBeDisabled();
+        });
+    });
+
+    describe("Notes Editing & Save Notes button", () => {
+        it("renders the Save Notes button", () => {
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            expect(saveNotesButton).toBeInTheDocument();
+            expect(saveNotesButton).toHaveAttribute("data-cy", "save-notes-button");
+        });
+
+        it("TextArea is enabled regardless of checkbox state", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                isEvaluationComplete: false
+            });
+
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).not.toBeDisabled();
+        });
+
+        it("renders existing notes from step4Notes in the TextArea", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4Notes: "Previously saved notes"
+            });
+
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toHaveValue("Previously saved notes");
+            expect(textarea).not.toBeDisabled();
+        });
+
+        it("edits existing notes by calling setStep4Notes when the user types", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4Notes: "Previously saved notes"
+            });
+
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            fireEvent.change(textarea, { target: { value: "Edited notes" } });
+
+            expect(mockSetStep4Notes).toHaveBeenCalledWith("Edited notes");
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with stepFourData.id", () => {
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(1);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+        });
+
+        it("clicking Save Notes does not call handleStepFourComplete", () => {
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleStepFourComplete).not.toHaveBeenCalled();
         });
     });
 

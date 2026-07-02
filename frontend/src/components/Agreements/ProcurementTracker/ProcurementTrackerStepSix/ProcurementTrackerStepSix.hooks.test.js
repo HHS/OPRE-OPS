@@ -67,7 +67,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.stepSixDateCompleted).toBe("");
-            expect(result.current.stepSixNotes).toBe("");
+            expect(result.current.stepSixNotes).toBe("Award received and uploaded"); // Notes initialize from existing stepData.notes
         });
 
         it("returns all setter functions", () => {
