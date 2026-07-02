@@ -74,6 +74,10 @@ class AgreementItemAPI(BaseItemAPI):
 
 Scopes are defined in `ops/auth/authorization_providers.py`.
 
+### API Documentation (OpenAPI)
+
+`backend/openapi.yml` documents the API and must stay in sync with the Flask routes in `ops/urls.py`. **After adding, changing, or removing any endpoint (route, resource method, or request/response schema), run the `/sync-openapi` skill** to update the spec — it is NOT auto-invoked (model invocation is disabled), so it must be run explicitly. Validate with `./backend/validate_openapi.sh`.
+
 ### MessageBus (Domain Events)
 
 The app uses a synchronous MessageBus for domain event side effects (history records, notifications, etc.). It is **not** async — subscribers run within the same request transaction.
@@ -156,6 +160,7 @@ agreement.fee_percentage = 0.05
 - `ops/resources/base_views.py`: Base classes for API resources
 - `ops/auth/decorators.py`: Authorization decorators
 - `ops/auth/authorization_providers.py`: Permission definitions
+- `openapi.yml` (in `backend/`): OpenAPI spec — keep in sync via the `/sync-openapi` skill
 - `models/base.py`: Base model with audit fields and event listeners
 - `models/__init__.py`: Database initialization and model imports
 - `tests/conftest.py`: Pytest fixtures and test configuration
