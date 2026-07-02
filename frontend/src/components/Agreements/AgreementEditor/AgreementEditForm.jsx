@@ -594,7 +594,6 @@ const AgreementEditForm = ({
             </div>
             <div className="margin-top-3 width-card-lg">
                 <TeamMemberComboBox
-                    messages={res.getErrors("team-members")}
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
