@@ -182,51 +182,56 @@ describe("BLIReviewRow", () => {
     });
 
     describe("errorStatuses prop", () => {
-        // CLIN column error class is gated on rowInReviewMode directly (no `selected` guard),
-        // making it the cleanest target for testing errorStatuses gating.
-        const bliWithMissingClin = (status) => ({
+        // Target the CAN cell — it uses showCellErrors which is the new gate this prop controls.
+        const bliWithMissingCan = (status) => ({
             ...defaultBudgetLine,
             status,
-            clin_id: null,
-            clin: null
+            can: null,
+            can_id: null,
+            selected: false // explicitly unselected, simulating the pre-award page
         });
 
-        it("applies error styling to a PLANNED row when its status is in errorStatuses", () => {
+        it("applies CAN error styling to a PLANNED row when errorStatuses includes PLANNED", () => {
             renderComponent({
                 isReviewMode: true,
-                showCLINColumn: true,
                 errorStatuses: ["PLANNED", "IN_EXECUTION"],
-                budgetLine: bliWithMissingClin("PLANNED")
+                budgetLine: bliWithMissingCan("PLANNED")
             });
 
-            const tbdCells = screen.getAllByText("TBD");
-            const errorCell = tbdCells.find((cell) => cell.classList.contains("table-item-error"));
-            expect(errorCell).toBeDefined();
+            // CAN cell shows NO_DATA ("--") with table-item-error class
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeDefined();
         });
 
-        it("suppresses error styling on a DRAFT row when errorStatuses excludes DRAFT", () => {
+        it("suppresses CAN error styling on a DRAFT row when errorStatuses excludes DRAFT", () => {
             renderComponent({
                 isReviewMode: true,
-                showCLINColumn: true,
                 errorStatuses: ["PLANNED", "IN_EXECUTION"],
-                budgetLine: bliWithMissingClin("DRAFT")
+                budgetLine: bliWithMissingCan("DRAFT")
             });
 
-            // DRAFT shows "N/A" not "TBD", and should have no error class
-            const naCell = screen.getByText("N/A");
-            expect(naCell.classList.contains("table-item-error")).toBe(false);
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
         });
 
-        it("applies error styling to all statuses when errorStatuses is omitted", () => {
+        it("does NOT apply CAN error styling when errorStatuses is omitted and row is unselected (ReviewAgreement regression guard)", () => {
             renderComponent({
                 isReviewMode: true,
-                showCLINColumn: true,
-                budgetLine: bliWithMissingClin("PLANNED")
+                // no errorStatuses — ReviewAgreement page behavior
+                budgetLine: bliWithMissingCan("PLANNED")
             });
 
-            const tbdCells = screen.getAllByText("TBD");
-            const errorCell = tbdCells.find((cell) => cell.classList.contains("table-item-error"));
-            expect(errorCell).toBeDefined();
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
         });
     });
 

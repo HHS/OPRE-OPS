@@ -156,11 +156,18 @@ const BLIReviewRow = ({
     };
 
     const TableRowData = (() => {
+        // When errorStatuses is provided (e.g. pre-award page), inline errors follow rowInReviewMode
+        // directly — the caller has already scoped which statuses trigger errors and there are no
+        // checkboxes, so selection is meaningless. Without errorStatuses (ReviewAgreement page),
+        // preserve the original behavior: errors only show when the row is selected.
+        const statusScopedErrors = Array.isArray(errorStatuses);
+        const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine.selected;
+
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)}`;
-        const dateNeededClasses = budgetLine.selected ? dateErrorClasses : "";
+        const dateNeededClasses = showCellErrors ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
 
@@ -183,11 +190,11 @@ const BLIReviewRow = ({
 
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;
-        const canNumberClasses = budgetLine.selected ? canNumberErrorClasses : "";
+        const canNumberClasses = showCellErrors ? canNumberErrorClasses : "";
 
         const amount = budgetLine?.amount ?? 0;
         const amountErrorClasses = `${addErrorClassIfNotFound(amount, rowInReviewMode)}`;
-        const amountClasses = budgetLine.selected ? amountErrorClasses : "";
+        const amountClasses = showCellErrors ? amountErrorClasses : "";
 
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
