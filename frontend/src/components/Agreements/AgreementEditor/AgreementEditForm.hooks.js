@@ -343,10 +343,6 @@ const useAgreementEditForm = (
             type: "ADD_TEAM_MEMBER",
             payload: teamMember
         });
-        if (isReviewMode) {
-            const newTeamMembers = [...(selectedTeamMembers ?? []), teamMember];
-            runValidate("team-members", newTeamMembers, { team_members: newTeamMembers });
-        }
     };
 
     const removeTeamMember = (teamMember) => {
@@ -354,10 +350,6 @@ const useAgreementEditForm = (
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember
         });
-        if (isReviewMode) {
-            const newTeamMembers = (selectedTeamMembers ?? []).filter((member) => member.id !== teamMember.id);
-            runValidate("team-members", newTeamMembers, { team_members: newTeamMembers });
-        }
     };
 
     const setResearchMethodology = (researchMethodologies) => {

@@ -35,7 +35,6 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("reason");
         expect(result.getErrors()).toHaveProperty("project-officer");
         expect(result.getErrors()).toHaveProperty("contract-type");
-        expect(result.getErrors()).toHaveProperty("team-members");
         expect(result.getErrors()).toHaveProperty("budget-line-items");
     });
 
@@ -90,13 +89,13 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("contract-type");
     });
 
-    it("fails if team_members is empty", () => {
+    it("passes if team_members is empty (team members are not required for approval)", () => {
         const data = { ...validData, team_members: [] };
         suite.reset();
         suite.run(data);
         const result = suite.get();
-        expect(result.isValid()).toBe(false);
-        expect(result.getErrors()).toHaveProperty("team-members");
+        expect(result.isValid()).toBe(true);
+        expect(result.getErrors()).not.toHaveProperty("team-members");
     });
 
     it("fails if budget_line_items is empty", () => {
