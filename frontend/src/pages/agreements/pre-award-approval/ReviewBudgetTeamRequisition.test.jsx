@@ -476,7 +476,7 @@ describe("ReviewBudgetTeamRequisition", () => {
                 ...defaultHookReturn,
                 showModal: true,
                 modalProps: {
-                    heading: "Are you sure you want to cancel this task? Your input will be not be saved.",
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
                     description: "",
                     actionButtonText: "Yes, Cancel Task",
                     secondaryButtonText: "Continue Editing",
@@ -489,7 +489,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             expect(screen.getByTestId("modal")).toBeInTheDocument();
             expect(
-                screen.getByText("Are you sure you want to cancel this task? Your input will be not be saved.")
+                screen.getByText("Are you sure you want to cancel this task? Your input will not be saved.")
             ).toBeInTheDocument();
         });
 
