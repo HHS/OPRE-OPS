@@ -22,17 +22,17 @@ CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT = "clin_number_agreement_id_key"
 def is_unique_violation(error: IntegrityError, constraint_name: str) -> bool:
     """Return True if ``error`` was raised by the named unique constraint.
 
-    Prefer the structured ``constraint_name`` from the underlying psycopg diagnostics.
-    Only fall back to a substring check on the error message when the driver doesn't expose
-    diag (e.g. SQLite in unit tests, or wrapped errors). When diag IS available, it is
-    authoritative — a diag mismatch means it's a different constraint, no substring fallback.
+    Prefer the structured ``constraint_name`` from the underlying psycopg diagnostics when it
+    is a real string. Only fall back to a substring check on the error message when the driver
+    doesn't expose diag (e.g. SQLite in unit tests, wrapped errors, or mocks). When a real
+    string diag IS available, it is authoritative — a diag mismatch means a different constraint.
     """
     diag = getattr(getattr(error, "orig", None), "diag", None)
     actual_constraint = getattr(diag, "constraint_name", None) if diag is not None else None
-    if actual_constraint is not None:
-        # Diag is available — trust it exclusively
+    if isinstance(actual_constraint, str):
+        # Diag is available and is a real string — trust it exclusively
         return actual_constraint == constraint_name
-    # Diag unavailable (e.g. SQLite, wrapped error) — fall back to substring check
+    # Diag unavailable or not a string (e.g. SQLite, wrapped error, mock) — fall back to substring check
     return constraint_name in str(error)
 
 
