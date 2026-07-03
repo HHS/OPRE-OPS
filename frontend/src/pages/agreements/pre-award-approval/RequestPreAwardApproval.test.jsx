@@ -390,7 +390,11 @@ describe("RequestPreAwardApproval", () => {
 
             render(<RequestPreAwardApproval />);
 
-            const submitButton = screen.getByRole("button", { name: "Send to Approval" });
+            // Two elements match role="button" + name "Send to Approval" when the tooltip wrapper is rendered:
+            // the focusable wrapper div (role="button") and the inner disabled <button>.
+            // We want the native <button> element which carries the disabled attribute.
+            const submitButtons = screen.getAllByRole("button", { name: "Send to Approval" });
+            const submitButton = submitButtons.find((el) => el.tagName === "BUTTON");
             expect(submitButton).toBeDisabled();
         });
 

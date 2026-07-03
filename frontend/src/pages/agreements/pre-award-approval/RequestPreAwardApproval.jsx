@@ -348,14 +348,23 @@ export const RequestPreAwardApproval = () => {
                         label="In order to send this agreement to approval, click edit to update the required information."
                         position="top"
                     >
-                        <button
-                            type="button"
-                            className="usa-button"
-                            data-cy="send-to-approval-btn"
-                            disabled={true}
+                        {/* Wrap in a focusable div so the tooltip fires on hover/focus even though the inner button is disabled */}
+                        <div
+                            tabIndex={0}
+                            role="button"
+                            aria-disabled="true"
+                            style={{ display: "inline-block", cursor: "not-allowed" }}
                         >
-                            {isSubmitting ? "Submitting..." : "Send to Approval"}
-                        </button>
+                            <button
+                                type="button"
+                                className="usa-button"
+                                data-cy="send-to-approval-btn"
+                                disabled={true}
+                                style={{ pointerEvents: "none" }}
+                            >
+                                {isSubmitting ? "Submitting..." : "Send to Approval"}
+                            </button>
+                        </div>
                     </Tooltip>
                 ) : (
                     <button
