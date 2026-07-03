@@ -144,8 +144,7 @@ export const codesToDisplayText = {
         cor: "COR",
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
-        "contract-type": "Contract Type",
-        "team-members": "Team Members"
+        "contract-type": "Contract Type"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
