@@ -6,8 +6,11 @@ import constants from "../../../constants.js";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import { setIsActive } from "../../UI/Alert/alertSlice.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal.jsx";
 import { USER_STATUS } from "./UserInfo.constants.js";
 import { useNavigate } from "react-router-dom";
+
+const READ_ONLY_ROLE = "READ_ONLY";
 
 // Move statusData outside component to prevent re-creation
 const STATUS_DATA = [
@@ -33,6 +36,7 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
+    const [showModal, setShowModal] = React.useState(false);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -104,20 +108,59 @@ const UserInfo = ({ user, isEditable }) => {
             dispatch(setIsActive(true));
         }
     }, [updateUserResult, dispatch, setAlert]);
+    // Detect unsaved edits by comparing the staged selections against the persisted user.
+    const persistedRoleNames = (user.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
+    const selectedRoleNames = selectedRoles.map((role) => role.name);
+    const rolesChanged =
+        persistedRoleNames.length !== selectedRoleNames.length ||
+        !persistedRoleNames.every((name) => selectedRoleNames.includes(name));
+    const divisionChanged = (selectedDivision?.id ?? null) !== (user.division ?? null);
+    const statusChanged = (selectedStatus?.name ?? null) !== (user.status ?? null);
+    const isDirty = divisionChanged || statusChanged || rolesChanged;
+
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
-        updateUser({ id: user.id, data: { division: division ? division.id : null } });
     };
 
     const handleRolesChange = (roles) => {
-        setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => role.name);
-        updateUser({ id: user.id, data: { roles: roleNames || [] } });
+        setSelectedRoles(roles ?? []);
     };
 
     const handleStatusChange = (status) => {
         setSelectedStatus(status);
-        updateUser({ id: user.id, data: { status: status ? status.name : "LOCKED" } });
+    };
+
+    const saveUser = (roleNames) => {
+        updateUser({
+            id: user.id,
+            data: {
+                division: selectedDivision?.id ?? null,
+                roles: roleNames,
+                status: selectedStatus?.name ?? "LOCKED"
+            }
+        });
+    };
+
+    // Selecting Read Only requires confirmation because it strips all other roles.
+    // Any other change saves directly.
+    const handleSave = () => {
+        if (selectedRoleNames.includes(READ_ONLY_ROLE)) {
+            setShowModal(true);
+            return;
+        }
+        saveUser(selectedRoleNames);
+    };
+
+    const handleConfirmReadOnly = () => {
+        setSelectedRoles(roles?.filter((role) => role.name === READ_ONLY_ROLE) ?? []);
+        saveUser([READ_ONLY_ROLE]);
+    };
+
+    // Discard unsaved edits by resetting each field to the persisted user value.
+    const handleCancel = () => {
+        setSelectedDivision(divisions?.find((division) => division.id === user.division) ?? {});
+        setSelectedStatus(STATUS_DATA.find((status) => status.name === user.status) ?? {});
+        setSelectedRoles(roles?.filter((role) => persistedRoleNames.includes(role.name)) ?? []);
     };
 
     if (isLoadingDivisions || isLoadingRoles) {
@@ -134,6 +177,15 @@ const UserInfo = ({ user, isEditable }) => {
 
     return (
         <div className="usa-card">
+            {showModal && (
+                <ConfirmationModal
+                    heading="Are you sure you want to change this role to Read Only? The existing role(s) associated with this user will be removed by making this change."
+                    setShowModal={setShowModal}
+                    actionButtonText="Change Role"
+                    secondaryButtonText="Cancel"
+                    handleConfirm={handleConfirmReadOnly}
+                />
+            )}
             <div className="usa-card__container">
                 <div className="usa-card__header">
                     <h1 className="usa-card__heading">{user.display_name ?? user.full_name}</h1>
@@ -210,6 +262,29 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                     </div>
+                    {isEditable && (
+                        <div className="grid-row flex-justify-end margin-top-8">
+                            <button
+                                type="button"
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                disabled={!isDirty}
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                id="save-changes"
+                                type="button"
+                                className="usa-button"
+                                disabled={!isDirty}
+                                data-cy="save-btn"
+                                onClick={handleSave}
+                            >
+                                Save changes
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
