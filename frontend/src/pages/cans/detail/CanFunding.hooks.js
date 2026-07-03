@@ -13,7 +13,6 @@ import { NO_DATA } from "../../../constants.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
-import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./CanFundingSuite.js";
 
@@ -103,9 +102,7 @@ export default function useCanFunding(
     isExpired
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
-    const isReadOnly = useIsUserReadOnly();
-    const showButton =
-        !isReadOnly && isBudgetTeamMember && !isExpired && fiscalYear === Number(currentFiscalYear) && !isEditMode;
+    const showButton = isBudgetTeamMember && !isExpired && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [showModal, setShowModal] = React.useState(false);
     const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
