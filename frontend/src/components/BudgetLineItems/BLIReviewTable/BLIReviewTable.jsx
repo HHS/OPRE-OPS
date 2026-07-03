@@ -24,7 +24,7 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {Function} [props.onAddCLINClick] - Callback when "+ CLIN" is clicked with budgetLine.id
  * @param {Boolean} [props.showCLINColumn] - Whether to show the CLIN column (Award page only)
  * @param {Object} [props.clinAssignments] - Map of budgetLineId to CLIN number assignments
- * @param {string[]} [props.errorStatuses] - Restrict inline error styling in review mode to BLIs whose status is in this list. Omit to apply to all rows.
+ * @param {string[]} [props.errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({

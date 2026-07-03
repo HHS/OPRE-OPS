@@ -126,9 +126,10 @@ const buildStore = () =>
         }
     });
 
-const renderPage = (initialEntry = "/agreements/review/42/edit") =>
-    render(
-        <Provider store={buildStore()}>
+const renderPage = (initialEntry = "/agreements/review/42/edit") => {
+    const store = buildStore();
+    const utils = render(
+        <Provider store={store}>
             <MemoryRouter initialEntries={[initialEntry]}>
                 <Routes>
                     <Route
@@ -139,6 +140,8 @@ const renderPage = (initialEntry = "/agreements/review/42/edit") =>
             </MemoryRouter>
         </Provider>
     );
+    return { ...utils, store };
+};
 
 describe("EditAgreementAndBudgetLines", () => {
     beforeEach(() => {
@@ -197,14 +200,13 @@ describe("EditAgreementAndBudgetLines", () => {
     });
 
     it("uses returnTo as the success alert redirect after saving", async () => {
-        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
+        const { store } = renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
         fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
         await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
-        // The alert is dispatched into the store; use React Testing Library to poll for
-        // side effects by re-querying the button state as a proxy for save-completion.
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
         });
+        expect(store.getState().alert.redirectUrl).toBe("/agreements/42/pre-award-approval");
     });
 
     it("fires a single edit-bundle mutation combining both child slices", async () => {

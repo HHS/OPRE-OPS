@@ -393,6 +393,26 @@ describe("RequestPreAwardApproval", () => {
             const submitButton = screen.getByRole("button", { name: "Send to Approval" });
             expect(submitButton).toBeDisabled();
         });
+
+        it("does not show tooltip wrapper when step 4 is incomplete, even if hasBLIError is true", () => {
+            // When Step 4 is not complete, the Step 4 warning takes precedence.
+            // The button should be a plain disabled button (not tooltip-wrapped).
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isStep4Completed: false,
+                hasBLIError: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            const submitButton = screen.getByRole("button", { name: "Send to Approval" });
+            // Still disabled, but via the normal disabled prop + title (not Tooltip wrapper)
+            expect(submitButton).toBeDisabled();
+            expect(submitButton).toHaveAttribute(
+                "title",
+                "Step 4 (Evaluation) must be completed before requesting pre-award approval"
+            );
+        });
     });
 
     describe("Edit button", () => {

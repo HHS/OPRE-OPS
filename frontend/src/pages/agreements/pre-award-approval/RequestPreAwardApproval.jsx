@@ -343,7 +343,7 @@ export const RequestPreAwardApproval = () => {
                 >
                     Edit
                 </button>
-                {isAgreementInvalid || hasBLIError ? (
+                {isStep4Completed && (isAgreementInvalid || hasBLIError) ? (
                     <Tooltip
                         label="In order to send this agreement to approval, click edit to update the required information."
                         position="top"

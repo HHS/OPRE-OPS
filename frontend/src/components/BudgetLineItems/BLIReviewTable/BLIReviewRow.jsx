@@ -34,7 +34,7 @@ import React, { memo } from "react";
  * @property {Function} [onAddCLINClick] - Callback when "+ CLIN" button is clicked with budgetLine.id
  * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
  * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
- * @property {string[]} [errorStatuses] - Restrict inline error styling to BLIs whose status is in this list.
+ * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  */
 
 /**
