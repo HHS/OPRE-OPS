@@ -666,7 +666,7 @@ def test_agreement_history_bli_deletion(loaded_db, app_ctx):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
     assert new_agreement_history_item.history_title == "Budget Line Deleted"
-    assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
+    assert new_agreement_history_item.history_message == "Steve Tekell deleted the BL 16044."
 
 
 def test_agreement_history_draft_bli_change(loaded_db, app_ctx):

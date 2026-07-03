@@ -132,9 +132,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
                         if updated_by_system_user
-                        else f"{event_user.full_name} deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,

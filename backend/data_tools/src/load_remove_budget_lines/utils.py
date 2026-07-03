@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -5,7 +6,7 @@ from typing import List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import BudgetLineItem, OpsEvent, OpsEventStatus, OpsEventType, User
+from models import BudgetLineItem, OpsEvent, OpsEventStatus, OpsEventType, User, agreement_history_trigger_func
 
 
 @dataclass
@@ -101,7 +102,17 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     )
 
     session.add(ops_event)
-    session.commit()
+    session.flush()  # Populate ops_event.id and created_on before the history trigger reads them
+
+    # Fire the agreement-history trigger so the deletion is recorded in AgreementHistory.
+    # DRY_RUN drives both the trigger's commit and our rollback/commit (single source of truth).
+    dry_run = bool(os.getenv("DRY_RUN"))
+    agreement_history_trigger_func(ops_event, session, sys_user, dry_run=dry_run)
+    if dry_run:
+        logger.info("Dry run enabled. Rolling back transaction.")
+        session.rollback()
+    else:
+        session.commit()
 
 
 def create_all_models(data: List[BudgetLineItemData], sys_user: User, session: Session) -> None:

@@ -371,10 +371,12 @@ def test_existing_agreement_handling(db_for_aas):
 
     sys_user = get_or_create_sys_user(db_for_aas)
 
-    # Create an existing agreement
+    # Create an existing agreement. Its service_requirement_type is intentionally
+    # different from the CSV value below so we can assert it is copied to the new AA.
     existing_agreement = ContractAgreement(
         name="Existing Contract",
         agreement_type=AgreementType.CONTRACT,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         created_by=sys_user.id,
         updated_by=sys_user.id,
         created_on=datetime.now(),
@@ -436,7 +438,8 @@ def test_existing_agreement_handling(db_for_aas):
     assert new_agreement.project.title == "Test Project"
     assert new_agreement.requesting_agency.name == "HHS"
     assert new_agreement.servicing_agency.name == "NSF"
-    assert new_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
+    # service_requirement_type is copied from the existing agreement, not the CSV
+    assert new_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
     assert new_agreement.created_by == sys_user.id
     assert new_agreement.updated_by == sys_user.id
 
