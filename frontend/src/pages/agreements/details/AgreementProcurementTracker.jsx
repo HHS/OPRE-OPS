@@ -144,6 +144,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
             />
             {stepsToRender.map((step) => {
                 const isCompletedStep = step.step_number === completedStepNumber;
+                const isActiveStep = hasActiveTracker && activeTracker.active_step_number === step.step_number;
                 return (
                     <StepBuilderAccordion
                         ref={isCompletedStep ? completedStepRef : null}
@@ -167,7 +168,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
@@ -179,7 +180,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepTwoData={stepTwoData}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
@@ -202,7 +203,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepThreeData={stepThreeData}
                                 isDisabled={isStepDisabled}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 isReadOnly={isProcurementTeamOnly}
                             />
                         )}
@@ -222,7 +223,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 stepFourData={stepFourData}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
                             />
@@ -243,7 +244,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 stepFiveData={stepFiveData}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
@@ -268,7 +269,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepSixData={step}
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={hasActiveTracker && activeTracker.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}

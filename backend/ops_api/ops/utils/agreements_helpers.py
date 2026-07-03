@@ -13,6 +13,28 @@ from ops_api.ops.utils.users import is_super_user
 # Defined in models/agreements.py and migration 2025_12_09_1950-d8f34037b656.
 AGREEMENT_NAME_UNIQUE_INDEX = "ix_agreement_name_type_lower"
 
+# Name of the unique constraint on CLIN (number, agreement_id).
+# Defined in models/services_components.py. PostgreSQL auto-generates this name from
+# the table and column names since no explicit name= was given to UniqueConstraint.
+CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT = "clin_number_agreement_id_key"
+
+
+def is_unique_violation(error: IntegrityError, constraint_name: str) -> bool:
+    """Return True if ``error`` was raised by the named unique constraint.
+
+    Prefer the structured ``constraint_name`` from the underlying psycopg diagnostics.
+    Only fall back to a substring check on the error message when the driver doesn't expose
+    diag (e.g. SQLite in unit tests, or wrapped errors). When diag IS available, it is
+    authoritative — a diag mismatch means it's a different constraint, no substring fallback.
+    """
+    diag = getattr(getattr(error, "orig", None), "diag", None)
+    actual_constraint = getattr(diag, "constraint_name", None) if diag is not None else None
+    if actual_constraint is not None:
+        # Diag is available — trust it exclusively
+        return actual_constraint == constraint_name
+    # Diag unavailable (e.g. SQLite, wrapped error) — fall back to substring check
+    return constraint_name in str(error)
+
 
 def is_agreement_name_unique_violation(error: IntegrityError) -> bool:
     """Return True if ``error`` was raised by the agreement (name, agreement_type) unique index.
@@ -21,11 +43,7 @@ def is_agreement_name_unique_violation(error: IntegrityError) -> bool:
     to a substring check on the error message when the driver doesn't expose diag (e.g. SQLite
     in unit tests, or wrapped errors).
     """
-    diag = getattr(getattr(error, "orig", None), "diag", None)
-    constraint_name = getattr(diag, "constraint_name", None) if diag is not None else None
-    if constraint_name == AGREEMENT_NAME_UNIQUE_INDEX:
-        return True
-    return AGREEMENT_NAME_UNIQUE_INDEX in str(error)
+    return is_unique_violation(error, AGREEMENT_NAME_UNIQUE_INDEX)
 
 
 def associated_with_agreement(id: int) -> bool:

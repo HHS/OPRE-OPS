@@ -68,6 +68,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.stepSixDateCompleted).toBe("");
             expect(result.current.stepSixNotes).toBe("");
+            expect(result.current.isSubmitting).toBe(false);
         });
 
         it("returns all setter functions", () => {
@@ -603,7 +604,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(callArgs.data.notes).toBe("Award completed");
         });
 
-        it("does not call handleSetCompletedStepNumber for Step 6 (final step)", async () => {
+        it("calls handleSetCompletedStepNumber(6) on successful completion", async () => {
             const unwrapMock = vi.fn().mockResolvedValue({});
             mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
 
@@ -620,9 +621,8 @@ describe("useProcurementTrackerStepSix", () => {
                 await result.current.handleStepSixComplete(6);
             });
 
-            // Step 6 is the final step - it should NOT trigger accordion remount
-            // to avoid race condition with RTK Query refetch
-            expect(mockHandleSetCompletedStepNumber).not.toHaveBeenCalled();
+            // Step 6 notifies the parent so the accordion/scroll state updates correctly
+            expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(6);
         });
 
         it("does not call handleSetCompletedStepNumber if undefined", async () => {
@@ -640,8 +640,8 @@ describe("useProcurementTrackerStepSix", () => {
                 await result.current.handleStepSixComplete(6);
             });
 
-            // Should not throw
-            expect(true).toBe(true);
+            // Test passes if no error is thrown when handleSetCompletedStepNumber is undefined
+            expect(mockPatchStepSix).toHaveBeenCalledTimes(1);
         });
 
         it("shows error alert on step completion failure", async () => {
@@ -667,6 +667,53 @@ describe("useProcurementTrackerStepSix", () => {
                 heading: "Error",
                 message: "There was an error completing the procurement tracker step. Please try again."
             });
+        });
+
+        it("keeps isSubmitting true after a successful patch", async () => {
+            // Guards the intentional no-reset: isSubmitting must stay true until the RTK Query
+            // refetch flips stepStatus to COMPLETED and the form unmounts. Resetting it early
+            // (e.g. via setTimeout) would re-enable the button and allow a duplicate PATCH.
+            const unwrapMock = vi.fn().mockResolvedValue({});
+            mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 100 });
+                result.current.setStepSixDateCompleted("02/15/2024");
+            });
+
+            expect(result.current.isSubmitting).toBe(false);
+
+            await act(async () => {
+                await result.current.handleStepSixComplete(6);
+            });
+
+            expect(result.current.isSubmitting).toBe(true);
+        });
+
+        it("resets isSubmitting to false on patch failure", async () => {
+            // Ensures the form re-enables so the user can correct and resubmit after an error.
+            const error = new Error("API Error");
+            const unwrapMock = vi.fn().mockRejectedValue(error);
+            mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 100 });
+                result.current.setStepSixDateCompleted("02/15/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepSixComplete(6);
+            });
+
+            expect(result.current.isSubmitting).toBe(false);
         });
     });
 

@@ -39,8 +39,10 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import (
+    CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
     associated_with_agreement,
     check_user_association,
+    is_unique_violation,
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
@@ -546,18 +548,15 @@ class BudgetLineItemService:
             # CLIN IDs are >= 5000 (from sequence) and reference existing records
             if 1 <= clin_value <= 10:
                 # CLIN number: ensure the CLIN record exists and get its ID
-                actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
-                updated_fields["clin_id"] = actual_clin_id
-            elif clin_value >= 5000:
-                # CLIN ID: already a valid foreign key, pass through unchanged
-                pass
-            else:
+                updated_fields["clin_id"] = self._ensure_clin_exists(budget_line_item, clin_value)
+            elif clin_value < 5000:
                 # Invalid: not a CLIN number (1-10) and not a CLIN ID (>= 5000)
                 raise ValidationError(
                     {
                         "clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."
                     }
                 )
+            # clin_value >= 5000: valid CLIN ID, passes through unchanged
 
         change_request_ids: list[int] = []
         if directly_editable:
@@ -647,11 +646,11 @@ class BudgetLineItemService:
         if not agreement:
             raise ValidationError({"clin_id": "Cannot assign CLIN to budget line item without an agreement."})
 
+        clin_lookup = select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
+
         for attempt in range(max_retries):
             # Check if CLIN record already exists for this (number, agreement_id) pair
-            existing_clin = self.db_session.execute(
-                select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
-            ).scalar_one_or_none()
+            existing_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
 
             if existing_clin:
                 return existing_clin.id
@@ -678,18 +677,10 @@ class BudgetLineItemService:
 
             except IntegrityError as e:
                 # Another transaction created this CLIN between our check and insert
-                # Check for the CLIN unique constraint violation (constraint name or key columns in error message)
-                error_msg = str(e.orig).lower()
-                is_clin_duplicate = "clin_number_agreement_id_key" in error_msg or (
-                    "unique constraint" in error_msg and "number" in error_msg and "agreement_id" in error_msg
-                )
-
-                if is_clin_duplicate:
+                if is_unique_violation(e, CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT):
                     savepoint.rollback()  # Only rollback the nested transaction
                     # Fetch the CLIN that was created by the concurrent transaction
-                    concurrent_clin = self.db_session.execute(
-                        select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
-                    ).scalar_one_or_none()
+                    concurrent_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
 
                     if concurrent_clin:
                         logger.debug(

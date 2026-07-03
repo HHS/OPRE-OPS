@@ -11,14 +11,14 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  */
 
-const MemoizedDatePicker = React.memo(DatePicker);
+const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at source
 
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
- * @param {Function | undefined} _handleSetCompletedStepNumber - Function to set the completed step number (unused for final step).
+ * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepSix(stepSixData, _handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
     const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
         () => stepSixData?.approval_requested ?? false
     );
@@ -111,15 +111,13 @@ export default function useProcurementTrackerStepSix(stepSixData, _handleSetComp
                 stepId,
                 data: payload
             }).unwrap();
-            // Step 6 is the final step - don't trigger accordion remount
-            // Unlike Steps 1-5, there's no "next step" to open, and remounting
-            // causes a race condition where the form shows with stale "ACTIVE" status
-            // before RTK Query refetches the updated "COMPLETED" status
-            // handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
-            // Reset isSubmitting after a brief delay to prevent button from getting stuck
-            // if refetch is delayed or cache update fails
-            setTimeout(() => setIsSubmitting(false), 1000);
+            // Notify the parent so the accordion/scroll state updates for the completed step.
+            // isSubmitting stays true here intentionally: the edit form only unmounts once
+            // RTK Query refetches and stepStatus flips to COMPLETED, which naturally prevents
+            // a duplicate submit. Resetting it early (e.g. via setTimeout) would re-enable
+            // the button on slow networks before the status has updated.
+            handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);
             setAlert({
