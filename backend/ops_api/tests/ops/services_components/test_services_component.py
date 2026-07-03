@@ -1174,3 +1174,96 @@ def test_draft_blis_are_ignored_by_pop_validation(
         loaded_db.add(restored_bli)
         loaded_db.commit()
         pop_validation_agreement["bli_planned"] = restored_bli
+
+
+def test_shrinking_pop_window_past_draft_bli_via_patch_is_allowed(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Shrinking SC 2's period_end to 2025-01-15 collapses the overall window end
+    to 2025-06-30 (SC 1), leaving the draft BLI at 2025-08-15 outside — but
+    because that BLI is DRAFT the validation must not block the update.
+    The planned BLI is temporarily removed so it cannot trigger the check.
+    """
+    sc2 = pop_validation_agreement["sc2"]
+    bli_planned = pop_validation_agreement["bli_planned"]
+    bli_draft = pop_validation_agreement["bli_draft"]
+
+    loaded_db.delete(bli_planned)
+    loaded_db.commit()
+
+    # Move the draft BLI's date_needed outside the window we are about to create
+    bli_draft.date_needed = datetime.date(2025, 11, 1)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.patch(
+            url_for("api.services-component-item", id=sc2.id),
+            json={"period_end": "2025-07-31"},
+        )
+
+        assert response.status_code == 200
+    finally:
+        loaded_db.refresh(sc2)
+        sc2.period_end = datetime.date(2025, 12, 31)
+        bli_draft.date_needed = datetime.date(2025, 2, 1)
+        restored_bli = ContractBudgetLineItem(
+            line_description="Planned BLI inside SC 2 window",
+            agreement_id=pop_validation_agreement["agreement"].id,
+            services_component_id=sc2.id,
+            amount=10000.00,
+            status=BudgetLineItemStatus.PLANNED,
+            date_needed=datetime.date(2025, 8, 15),
+            created_by=4,
+        )
+        loaded_db.add(restored_bli)
+        loaded_db.commit()
+        pop_validation_agreement["bli_planned"] = restored_bli
+
+
+def test_advancing_pop_window_start_past_draft_bli_via_put_is_allowed(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Replacing SC 1 via PUT with period_start=2025-04-01 advances the overall
+    window start to match SC 2 (2025-04-01), leaving the draft BLI at
+    2025-02-01 before the window — but because that BLI is DRAFT the
+    validation must not block the update.
+    The planned BLI is temporarily removed so it cannot trigger the check.
+    """
+    sc1 = pop_validation_agreement["sc1"]
+    bli_planned = pop_validation_agreement["bli_planned"]
+
+    loaded_db.delete(bli_planned)
+    loaded_db.commit()
+
+    try:
+        put_data = {
+            "agreement_id": sc1.agreement_id,
+            "number": sc1.number,
+            "optional": sc1.optional,
+            "description": sc1.description,
+            "period_start": "2025-04-01",
+            "period_end": "2025-06-30",
+        }
+        response = auth_client.put(
+            url_for("api.services-component-item", id=sc1.id),
+            json=put_data,
+        )
+
+        assert response.status_code == 200
+    finally:
+        loaded_db.refresh(sc1)
+        sc1.period_start = datetime.date(2025, 1, 1)
+        restored_bli = ContractBudgetLineItem(
+            line_description="Planned BLI inside SC 2 window",
+            agreement_id=pop_validation_agreement["agreement"].id,
+            services_component_id=pop_validation_agreement["sc2"].id,
+            amount=10000.00,
+            status=BudgetLineItemStatus.PLANNED,
+            date_needed=datetime.date(2025, 8, 15),
+            created_by=4,
+        )
+        loaded_db.add(restored_bli)
+        loaded_db.commit()
+        pop_validation_agreement["bli_planned"] = restored_bli

@@ -231,4 +231,56 @@ describe("ServicesComponentForm Validation Suite", () => {
             expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
         });
     });
+
+    // -------------------------------------------------------------------------
+    // Draft BLI exemption — edit mode
+    //
+    // Draft BLIs are excluded from PoP boundary checks. The hook pre-filters them
+    // out before passing nonDraftBudgetLines to the suite, so from the suite's
+    // perspective the draft BLI simply does not appear. These tests confirm that
+    // a window change which would leave a draft BLI outside the new window does
+    // NOT trigger a validation error, mirroring the backend unit tests.
+    //
+    // Fixture mirrors the backend pop_validation_agreement:
+    //   SC 1: 2025-01-01 → 2025-06-30
+    //   SC 2: 2025-04-01 → 2025-12-31
+    //   Draft BLI date: 2025-11-01 (outside the reduced window in test 1)
+    //                   2025-02-01 (before the advanced window start in test 2)
+    // -------------------------------------------------------------------------
+    describe("draft BLI exemption — edit mode", () => {
+        const twoSCs = [
+            sc(1, "2025-01-01", "2025-06-30"),
+            sc(2, "2025-04-01", "2025-12-31")
+        ];
+
+        it("shrinking SC 2 period_end past a draft BLI date is allowed", () => {
+            // A draft BLI sits at 2025-11-01. Shrinking SC 2's period_end to 2025-07-31
+            // drops the overall window end to 2025-07-31, which is before 2025-11-01.
+            // Because the BLI is draft it is absent from nonDraftBudgetLines — no error.
+            const result = suite.run({
+                servicesComponentSelect: 2,
+                mode: "edit",
+                number: 2,
+                nonDraftBudgetLines: [], // draft BLI excluded by hook
+                allServicesComponents: mergeFormDates(twoSCs, 2, "04/01/2025", "07/31/2025")
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("advancing SC 1 period_start past a draft BLI date is allowed", () => {
+            // A draft BLI sits at 2025-02-01. Advancing SC 1's period_start to 2025-04-01
+            // pushes the overall window start to 2025-04-01, which is after 2025-02-01.
+            // Because the BLI is draft it is absent from nonDraftBudgetLines — no error.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                nonDraftBudgetLines: [], // draft BLI excluded by hook
+                allServicesComponents: mergeFormDates(twoSCs, 1, "04/01/2025", "06/30/2025")
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+    });
 });
