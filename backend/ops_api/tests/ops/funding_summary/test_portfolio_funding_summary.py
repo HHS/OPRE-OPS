@@ -288,7 +288,9 @@ def mock_portfolio():
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio):
+def test_get_total_funding_all_values(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 100000
@@ -309,7 +311,9 @@ def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mo
     "ops_api.ops.utils.portfolios._get_budget_line_item_total_by_status",
     side_effect=lambda portfolio_id, fiscal_year, status: 0,
 )
-def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio):
+def test_get_total_funding_zero_values(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 0
@@ -334,7 +338,9 @@ def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, m
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_percentage(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio):
+def test_get_total_funding_percentage(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["draft_funding"]["percent"] == "10.0"
