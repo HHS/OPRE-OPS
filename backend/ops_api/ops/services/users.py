@@ -8,6 +8,21 @@ from models import Role, User, UserStatus
 from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_active_user_sessions
 from ops_api.ops.utils.users import is_user_admin
 
+READ_ONLY_ROLE = "READ_ONLY"
+
+
+def resolve_roles(session: Session, role_names: list[str]) -> list[Role]:
+    """
+    Resolve a list of role names to Role objects, enforcing role-combination rules.
+
+    Business Rules:
+    - The READ_ONLY role cannot be combined with any other role.
+    """
+    if READ_ONLY_ROLE in role_names and len(role_names) > 1:
+        raise BadRequest("The READ_ONLY role cannot be combined with other roles.")
+
+    return [session.scalar(select(Role).where(Role.name == role_name)) for role_name in role_names]
+
 
 def get_user(session: Session, **kwargs) -> User:
     id = kwargs.get("id")
@@ -56,9 +71,7 @@ def update_user(session: Session, **kwargs) -> User:
         deactivate_all_user_sessions(user_sessions)
 
     if "roles" in data:
-        data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
-        ]
+        data["roles"] = resolve_roles(session, data.get("roles", []))
     data["id"] = data.get("id", user_id)
     updated_user = User(**data)
 
@@ -92,7 +105,7 @@ def get_users(session: Session, **kwargs) -> list[User]:
             stmt = stmt.where(cast(ColumnElement[bool], getattr(User, key)) == value)
 
     if exclude_read_only:
-        stmt = stmt.where(~User.roles.any(Role.name == "READ_ONLY"))
+        stmt = stmt.where(~User.roles.any(Role.name == READ_ONLY_ROLE))
 
     stmt = stmt.order_by(User.id)
 
@@ -121,9 +134,7 @@ def create_user(session: Session, **kwargs) -> User:
         raise Forbidden("You do not have permission to create a user.")
 
     if "roles" in data:
-        data["roles"] = [
-            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
-        ]
+        data["roles"] = resolve_roles(session, data.get("roles", []))
     new_user = User(**data)
 
     session.add(new_user)

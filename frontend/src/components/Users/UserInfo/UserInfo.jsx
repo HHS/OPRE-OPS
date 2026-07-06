@@ -34,6 +34,7 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
+    const [showCancelModal, setShowCancelModal] = React.useState(false);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -104,7 +105,7 @@ const UserInfo = ({ user, isEditable }) => {
             });
             updateUserResult.reset();
         }
-    }, [updateUserResult, dispatch, setAlert]);
+    }, [updateUserResult, setAlert]);
     // Detect unsaved edits by comparing the staged selections against the persisted user.
     const persistedRoleNames = (user.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
     const selectedRoleNames = selectedRoles.map((role) => role.name);
@@ -115,7 +116,6 @@ const UserInfo = ({ user, isEditable }) => {
     const statusChanged = (selectedStatus?.name ?? null) !== (user.status ?? null);
     const isDirty = divisionChanged || statusChanged || rolesChanged;
 
-    }, [updateUserResult, setAlert]);
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
     };
@@ -155,10 +155,15 @@ const UserInfo = ({ user, isEditable }) => {
     };
 
     // Discard unsaved edits by resetting each field to the persisted user value.
-    const handleCancel = () => {
+    const handleCancelEdits = () => {
         setSelectedDivision(divisions?.find((division) => division.id === user.division) ?? {});
         setSelectedStatus(STATUS_DATA.find((status) => status.name === user.status) ?? {});
         setSelectedRoles(roles?.filter((role) => persistedRoleNames.includes(role.name)) ?? []);
+    };
+
+    // Cancel prompts for confirmation so unsaved edits aren't discarded accidentally.
+    const handleCancel = () => {
+        setShowCancelModal(true);
     };
 
     if (isLoadingDivisions || isLoadingRoles) {
@@ -182,6 +187,15 @@ const UserInfo = ({ user, isEditable }) => {
                     actionButtonText="Change Role"
                     secondaryButtonText="Cancel"
                     handleConfirm={handleConfirmReadOnly}
+                />
+            )}
+            {showCancelModal && (
+                <ConfirmationModal
+                    heading="Are you sure you want to cancel editing? Your changes will not be saved."
+                    setShowModal={setShowCancelModal}
+                    actionButtonText="Cancel edits"
+                    secondaryButtonText="Continue editing"
+                    handleConfirm={handleCancelEdits}
                 />
             )}
             <div className="usa-card__container">
