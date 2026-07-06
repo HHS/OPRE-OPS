@@ -20,7 +20,11 @@ const toISO = (mdy) => {
 const mergeFormDates = (scs, editedNumber, popStartDate, popEndDate) =>
     scs.map((s) =>
         s.number === editedNumber
-            ? { ...s, period_start: toISO(popStartDate) ?? s.period_start, period_end: toISO(popEndDate) ?? s.period_end }
+            ? {
+                  ...s,
+                  period_start: toISO(popStartDate) ?? s.period_start,
+                  period_end: toISO(popEndDate) ?? s.period_end
+              }
             : s
     );
 
@@ -162,10 +166,7 @@ describe("ServicesComponentForm Validation Suite", () => {
     // Overall window: 2025-01-01 → 2025-12-31 (driven by SC 1 start, SC 2 end).
     // -------------------------------------------------------------------------
     describe("two SCs — BLI falls between SC 1 end and SC 2 end", () => {
-        const twoSCs = [
-            sc(1, "2025-01-01", "2025-06-30"),
-            sc(2, "2025-04-01", "2025-12-31")
-        ];
+        const twoSCs = [sc(1, "2025-01-01", "2025-06-30"), sc(2, "2025-04-01", "2025-12-31")];
         // BLI at 2025-08-15: past SC 1's end but inside SC 2's window
         const bliBetween = [bli("2025-08-15")];
 
@@ -252,10 +253,7 @@ describe("ServicesComponentForm Validation Suite", () => {
     //                   2025-02-01 (before the advanced window start in test 2)
     // -------------------------------------------------------------------------
     describe("draft BLI exemption — edit mode", () => {
-        const twoSCs = [
-            sc(1, "2025-01-01", "2025-06-30"),
-            sc(2, "2025-04-01", "2025-12-31")
-        ];
+        const twoSCs = [sc(1, "2025-01-01", "2025-06-30"), sc(2, "2025-04-01", "2025-12-31")];
 
         it("shrinking SC 2 period_end past a draft BLI date is allowed", () => {
             // A draft BLI sits at 2025-11-01. Shrinking SC 2's period_end to 2025-07-31

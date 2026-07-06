@@ -47,13 +47,7 @@ const ServicesComponents = ({
         servicesComponentsNumbers,
         formKey,
         allServicesComponentsForSuite
-    } = useServicesComponents(
-        agreementId,
-        serviceRequirementType,
-        continueBtnText,
-        setHasUnsavedChanges,
-        scFormSuite
-    );
+    } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges, scFormSuite);
 
     return (
         <>
