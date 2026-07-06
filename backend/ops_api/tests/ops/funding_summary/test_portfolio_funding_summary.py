@@ -329,6 +329,7 @@ def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, m
     side_effect=lambda portfolio_id, fiscal_year, status: {
         BudgetLineItemStatus.DRAFT: 10000,
         BudgetLineItemStatus.PLANNED: 20000,
+        BudgetLineItemStatus.PLANNED_MOD: 0,
         BudgetLineItemStatus.OBLIGATED: 15000,
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),

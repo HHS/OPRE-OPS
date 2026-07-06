@@ -135,14 +135,20 @@ def get_total_funding(
         status=BudgetLineItemStatus.DRAFT,
     )
 
-    planned_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id,
-        fiscal_year=fiscal_year,
-        status=BudgetLineItemStatus.PLANNED,
-    ) + _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id,
-        fiscal_year=fiscal_year,
-        status=BudgetLineItemStatus.PLANNED_MOD,
+    planned_funding = (
+        _get_budget_line_item_total_by_status(
+            portfolio_id=portfolio.id,
+            fiscal_year=fiscal_year,
+            status=BudgetLineItemStatus.PLANNED,
+        )
+        or Decimal(0)
+    ) + (
+        _get_budget_line_item_total_by_status(
+            portfolio_id=portfolio.id,
+            fiscal_year=fiscal_year,
+            status=BudgetLineItemStatus.PLANNED_MOD,
+        )
+        or Decimal(0)
     )
 
     obligated_funding = _get_budget_line_item_total_by_status(
