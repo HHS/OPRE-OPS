@@ -182,6 +182,28 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.isAgreementNotYetDeveloped).toBe(true);
     });
 
+    it("resets validation suites on mount and unmount so stale errors do not leak (issue #5894)", async () => {
+        const [pageSuite, budgetSuite, dateSuite] = await Promise.all([
+            import("./suite"),
+            import("../BudgetLinesForm/suite"),
+            import("../BudgetLinesForm/datePickerSuite")
+        ]);
+
+        const { unmount } = renderSubject();
+
+        // reset runs on mount to clear any result left by a prior mount/session
+        expect(pageSuite.default.reset).toHaveBeenCalledTimes(1);
+        expect(budgetSuite.default.reset).toHaveBeenCalledTimes(1);
+        expect(dateSuite.default.reset).toHaveBeenCalledTimes(1);
+
+        unmount();
+
+        // and again on unmount, leaving suites clean for the next consumer
+        expect(pageSuite.default.reset).toHaveBeenCalledTimes(2);
+        expect(budgetSuite.default.reset).toHaveBeenCalledTimes(2);
+        expect(dateSuite.default.reset).toHaveBeenCalledTimes(2);
+    });
+
     it("adds a budget line and raises success toast", () => {
         const { result } = renderSubject();
 
