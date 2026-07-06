@@ -792,3 +792,62 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
                 raise ValidationError(
                     {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
                 )
+
+
+class AwardApprovalResponseAuthorizationRule(ValidationRule):
+    """
+    Validates that the user responding to an award approval request is authorized.
+    Only BUDGET_TEAM or SYSTEM_OWNER may respond to AWARD step approvals.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        user_id = context.user.id
+        user = context.db_session.get(User, user_id)
+        if user:
+            user_role_names = {role.name for role in user.roles}
+            if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+                return
+
+        raise AuthorizationError(
+            f"User {user_id} is not authorized to respond to award approval requests. "
+            "Only BUDGET_TEAM or SYSTEM_OWNER members may approve award requests.",
+            "ProcurementTrackerStep",
+        )
+
+
+class AwardApprovalResponseValidationRule(ValidationRule):
+    """
+    Validates that award approval responses are valid:
+    - Approval must have been requested first
+    - Cannot respond if already responded (APPROVED/DECLINED)
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Validation"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        if not procurement_tracker_step.award_approval_requested:
+            raise ValidationError(
+                {"approval_status": "Cannot respond to an award approval request that has not been submitted."}
+            )
+
+        current_status = procurement_tracker_step.award_approval_status
+        if current_status in ["APPROVED", "DECLINED"]:
+            raise ValidationError(
+                {"approval_status": f"This award approval request has already been {current_status.lower()}."}
+            )

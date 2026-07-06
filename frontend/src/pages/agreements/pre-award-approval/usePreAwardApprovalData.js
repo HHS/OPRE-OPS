@@ -55,8 +55,10 @@ export default function usePreAwardApprovalData(agreementId) {
     const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
     const step4 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
+    const step6 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 6);
 
     const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
+    const awardRequestorName = useGetUserFullNameFromId(step6?.approval_requested_by);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
@@ -80,6 +82,9 @@ export default function usePreAwardApprovalData(agreementId) {
         step4,
         step5,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate: step5?.approval_requested_date
+        preAwardApprovalRequestedDate: step5?.approval_requested_date,
+        step6,
+        requestorName: awardRequestorName,
+        requestorDate: step6?.approval_requested_date
     };
 }
