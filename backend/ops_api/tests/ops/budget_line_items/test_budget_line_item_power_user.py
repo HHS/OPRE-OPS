@@ -1029,18 +1029,25 @@ def test_planned_bli_can_update_services_component_without_change_request(
     loaded_db,
     test_can,
     test_contract,
-    test_services_component,
     app_ctx,
 ):
     """A PLANNED BLI can have its services_component_id changed directly, without creating a change request."""
     agreement = test_contract
 
+    # Neither SC has period dates, so the SC window is undefined and PoP validation passes.
+    sc1 = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+    )
     sc2 = ServicesComponent(
         agreement=agreement,
         number=100,
         optional=False,
     )
+    loaded_db.add(sc1)
     loaded_db.add(sc2)
+    loaded_db.flush()  # populate sc1.id and sc2.id before referencing them
 
     bli = ContractBudgetLineItem(
         line_description="Planned BLI for SC update test",
@@ -1049,7 +1056,7 @@ def test_planned_bli_can_update_services_component_without_change_request(
         can_id=test_can.id,
         status=BudgetLineItemStatus.PLANNED,
         amount=1000.00,
-        services_component_id=test_services_component.id,
+        services_component_id=sc1.id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -1068,6 +1075,7 @@ def test_planned_bli_can_update_services_component_without_change_request(
     assert bli.change_requests_in_review is None, "No change request should be created for services_component_id update"
 
     loaded_db.delete(bli)
+    loaded_db.delete(sc1)
     loaded_db.delete(sc2)
     loaded_db.commit()
 
@@ -1077,11 +1085,19 @@ def test_planned_bli_can_update_line_description_without_change_request(
     loaded_db,
     test_can,
     test_contract,
-    test_services_component,
     app_ctx,
 ):
     """A PLANNED BLI can have its line_description changed directly, without creating a change request."""
     agreement = test_contract
+
+    # SC has no period dates, so the PoP window is undefined and validation passes.
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+    )
+    loaded_db.add(sc)
+    loaded_db.flush()  # populate sc.id before referencing it on the BLI
 
     bli = ContractBudgetLineItem(
         line_description="Original Description",
@@ -1090,7 +1106,7 @@ def test_planned_bli_can_update_line_description_without_change_request(
         can_id=test_can.id,
         status=BudgetLineItemStatus.PLANNED,
         amount=1000.00,
-        services_component_id=test_services_component.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -1109,6 +1125,7 @@ def test_planned_bli_can_update_line_description_without_change_request(
     assert bli.change_requests_in_review is None, "No change request should be created for line_description update"
 
     loaded_db.delete(bli)
+    loaded_db.delete(sc)
     loaded_db.commit()
 
 
