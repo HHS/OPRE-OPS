@@ -4,9 +4,6 @@ Budget lines transitioning from PLANNED to OBLIGATED during award approval
 get an intermediate PLANNED_MOD status to indicate they are part of an awarded
 contract but were not in executing status at the time of award.
 
-NOTE: ALTER TYPE ... ADD VALUE cannot run inside a transaction on PostgreSQL.
-Alembic executes this outside the BEGIN/COMMIT block via execute_if.
-
 Revision ID: a8b9c1d2e3f4
 Revises: d67e125881ac
 Create Date: 2026-07-03 12:00:00.000000+00:00
@@ -25,9 +22,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # ALTER TYPE ... ADD VALUE cannot run inside a transaction on PostgreSQL,
-    # so we use execute_if to emit it outside the transaction context.
-    op.execute("COMMIT")
     op.execute("ALTER TYPE budgetlineitemstatus ADD VALUE IF NOT EXISTS 'PLANNED_MOD'")
 
 
