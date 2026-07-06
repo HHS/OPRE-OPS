@@ -1159,9 +1159,9 @@ def test_power_user_can_save_non_draft_bli_with_date_outside_sc_pop(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"amount": 6000.00},
     )
-    assert response.status_code == 200, (
-        f"Power user should be able to save a {bli_status} BLI with obligate-by date outside the SC PoP window"
-    )
+    assert (
+        response.status_code == 200
+    ), f"Power user should be able to save a {bli_status} BLI with obligate-by date outside the SC PoP window"
 
     loaded_db.refresh(bli)
     assert float(bli.amount) == 6000.00

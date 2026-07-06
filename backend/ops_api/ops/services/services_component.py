@@ -131,8 +131,12 @@ class ServicesComponentService:
         if "agreement_id" in updated_fields and services_component.agreement_id != updated_fields.get("agreement_id"):
             raise ValidationError({"agreement_id": ["Agreement ID cannot be changed"]})
 
-        period_start_changing = "period_start" in updated_fields and updated_fields["period_start"] != services_component.period_start
-        period_end_changing = "period_end" in updated_fields and updated_fields["period_end"] != services_component.period_end
+        period_start_changing = (
+            "period_start" in updated_fields and updated_fields["period_start"] != services_component.period_start
+        )
+        period_end_changing = (
+            "period_end" in updated_fields and updated_fields["period_end"] != services_component.period_end
+        )
 
         if period_start_changing or period_end_changing:
             self._validate_bli_pop_window(services_component, updated_fields)

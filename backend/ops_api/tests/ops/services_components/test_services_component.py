@@ -1062,9 +1062,7 @@ def pop_validation_agreement(loaded_db, test_project):
     loaded_db.commit()
 
 
-def test_cannot_create_sc_when_non_draft_bli_falls_outside_sc_window(
-    auth_client, loaded_db, test_project
-):
+def test_cannot_create_sc_when_non_draft_bli_falls_outside_sc_window(auth_client, loaded_db, test_project):
     """
     Agreement has no SCs and one non-draft (PLANNED) BLI at 2025-11-01.
     POSTing a new SC with period 2025-01-01 → 2025-06-30 leaves the BLI
@@ -1208,9 +1206,7 @@ def test_update_sc1_period_start_later_while_sc2_still_covers_bli_passes(
     assert response.status_code == 200
 
 
-def test_draft_blis_are_ignored_by_pop_validation(
-    auth_client, loaded_db, pop_validation_agreement
-):
+def test_draft_blis_are_ignored_by_pop_validation(auth_client, loaded_db, pop_validation_agreement):
     """
     The fixture's draft BLI sits at 2025-02-01 (inside SC 1's current window).
     Shrinking SC 2's period_end to 2025-07-31 would leave it outside the window
@@ -1248,9 +1244,7 @@ def test_draft_blis_are_ignored_by_pop_validation(
         pop_validation_agreement["bli_planned"] = restored_bli
 
 
-def test_shrinking_pop_window_past_draft_bli_via_patch_is_allowed(
-    auth_client, loaded_db, pop_validation_agreement
-):
+def test_shrinking_pop_window_past_draft_bli_via_patch_is_allowed(auth_client, loaded_db, pop_validation_agreement):
     """
     Shrinking SC 2's period_end to 2025-01-15 collapses the overall window end
     to 2025-06-30 (SC 1), leaving the draft BLI at 2025-08-15 outside — but
@@ -1293,9 +1287,7 @@ def test_shrinking_pop_window_past_draft_bli_via_patch_is_allowed(
         pop_validation_agreement["bli_planned"] = restored_bli
 
 
-def test_advancing_pop_window_start_past_draft_bli_via_put_is_allowed(
-    auth_client, loaded_db, pop_validation_agreement
-):
+def test_advancing_pop_window_start_past_draft_bli_via_put_is_allowed(auth_client, loaded_db, pop_validation_agreement):
     """
     Replacing SC 1 via PUT with period_start=2025-04-01 advances the overall
     window start to match SC 2 (2025-04-01), leaving the draft BLI at
