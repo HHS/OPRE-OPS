@@ -12,6 +12,7 @@ import {
     useGetChangeRequestsListQuery,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
+    useGetPendingAwardApprovalsQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -47,6 +48,7 @@ describe("ChangeRequestList", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: { data: [], count: 0, limit: 1000, offset: 0 } });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetCanByIdQuery.mockReturnValue({ data: { display_name: "CAN Name" }, isSuccess: true });
         useGetUserFullNameFromId.mockReturnValue("unknown");
@@ -72,6 +74,7 @@ describe("ChangeRequestList", () => {
         });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
@@ -126,6 +129,7 @@ describe("ChangeRequestList", () => {
         });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -180,6 +184,7 @@ describe("ChangeRequestList", () => {
             isError: false
         });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -218,6 +223,7 @@ describe("ChangeRequestList", () => {
         });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCanByIdQuery.mockReturnValue({ data: agreement.budget_line_items[0].can, isSuccess: true });
@@ -269,6 +275,7 @@ describe("ChangeRequestList", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false }); // undefined simulates unloaded
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
 
         render(
             <Provider store={emptyUserStore}>
