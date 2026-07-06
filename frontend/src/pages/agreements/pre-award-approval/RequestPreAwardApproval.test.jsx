@@ -342,6 +342,21 @@ describe("RequestPreAwardApproval", () => {
             expect(screen.getByRole("list")).toBeInTheDocument();
         });
 
+        it("keeps the page header h1 visible while the error banner is shown", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { name: ["Agreement name is required"] },
+                isStep4Completed: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            // The h1 landmark must remain for orientation/screen readers even when errors show.
+            expect(screen.getByRole("heading", { level: 1, name: "Request Pre-Award Approval" })).toBeInTheDocument();
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+        });
+
         it("hides the error banner when step 4 is not completed even if there are errors", () => {
             requestPreAwardApprovalHookMock.mockReturnValue({
                 ...baseHookResult(),

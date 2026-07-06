@@ -114,43 +114,31 @@ export const RequestPreAwardApproval = () => {
                 />
             )}
 
-            <div style={{ position: "relative" }}>
-                {hasValidationErrors ? (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 1000
-                        }}
-                    >
-                        <SimpleAlert
-                            type="error"
-                            heading="Please resolve the errors outlined below"
-                            message="In order to send this agreement to approval, click edit to update the required information."
-                            isClosable={true}
-                            setIsAlertVisible={setIsAlertActive}
-                        >
-                            <ul data-cy="error-list">
-                                {Object.entries(pageErrors).map(([key]) => (
-                                    <li
-                                        key={key}
-                                        data-cy="error-item"
-                                    >
-                                        {convertCodeForDisplay("validation", key)}
-                                    </li>
-                                ))}
-                            </ul>
-                        </SimpleAlert>
-                    </div>
-                ) : (
-                    <PageHeader
-                        title="Request Pre-Award Approval"
-                        subTitle={agreement?.name}
-                    />
-                )}
-            </div>
+            <PageHeader
+                title="Request Pre-Award Approval"
+                subTitle={agreement?.name}
+            />
+
+            {hasValidationErrors && (
+                <SimpleAlert
+                    type="error"
+                    heading="Please resolve the errors outlined below"
+                    message="In order to send this agreement to approval, click edit to update the required information."
+                    isClosable={true}
+                    setIsAlertVisible={setIsAlertActive}
+                >
+                    <ul data-cy="error-list">
+                        {Object.entries(pageErrors).map(([key]) => (
+                            <li
+                                key={key}
+                                data-cy="error-item"
+                            >
+                                {convertCodeForDisplay("validation", key)}
+                            </li>
+                        ))}
+                    </ul>
+                </SimpleAlert>
+            )}
 
             <p className="margin-y-3">
                 Review the agreement details to make sure everything looks up to date and upload the Final Consensus

@@ -92,15 +92,6 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
 
-    useEffect(() => {
-        if (!agreement) return undefined;
-        const result = agreementSuite.run({ ...agreement });
-        setAgreementValidationResults(result);
-        return () => {
-            agreementSuite.reset();
-        };
-    }, [agreement]);
-
     const bliValidationResults = useMemo(() => {
         if (validatableBudgetLines.length === 0) return [];
         return validateBudgetLineItems(validatableBudgetLines);
@@ -108,17 +99,25 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
 
+    // Run agreement validation and aggregate page errors in a single effect.
+    // Aggregating from the local `result` (rather than the agreementValidationResults
+    // state) avoids a stale-read window where errors would be derived from the
+    // previous agreement's validation on the first commit after `agreement` changes.
     useEffect(() => {
         if (!agreement) {
+            setAgreementValidationResults(null);
             setPageErrors({});
             setIsAlertActive(false);
-            return;
+            return undefined;
         }
+
+        const result = agreementSuite.run({ ...agreement });
+        setAgreementValidationResults(result);
 
         const aggregated = {};
 
-        if (agreementValidationResults && !agreementValidationResults.isValid()) {
-            const errors = { ...agreementValidationResults.getErrors() };
+        if (result && !result.isValid()) {
+            const errors = { ...result.getErrors() };
             // Match ReviewAgreement behavior: for CONTRACT/IAA the project officer
             // field is labelled "COR" in the UI, so rekey the error accordingly.
             if (
@@ -150,7 +149,11 @@ export default function useRequestPreAwardApproval(agreementId) {
             setPageErrors({});
             setIsAlertActive(false);
         }
-    }, [agreement, agreementValidationResults, hasBLIError, bliValidationResults]);
+
+        return () => {
+            agreementSuite.reset();
+        };
+    }, [agreement, hasBLIError, bliValidationResults]);
 
     /**
      * Track if any changes have been made to the form
