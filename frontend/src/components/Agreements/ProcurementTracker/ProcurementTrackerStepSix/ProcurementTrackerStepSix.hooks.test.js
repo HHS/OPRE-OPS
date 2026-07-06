@@ -68,6 +68,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.stepSixDateCompleted).toBe("");
             expect(result.current.stepSixNotes).toBe("");
+            expect(result.current.isSubmitting).toBe(false);
         });
 
         it("returns all setter functions", () => {
@@ -105,6 +106,58 @@ describe("useProcurementTrackerStepSix", () => {
             );
 
             expect(result.current.MemoizedDatePicker).toBeDefined();
+        });
+
+        it("initializes isAwardCheckboxChecked to true when approval_requested is true", () => {
+            const stepDataWithApproval = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is false", () => {
+            const stepDataWithoutApproval = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithoutApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is null", () => {
+            const stepDataWithNullApproval = {
+                ...mockStepSixData,
+                approval_requested: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithNullApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is undefined", () => {
+            const stepDataWithUndefinedApproval = {
+                ...mockStepSixData,
+                approval_requested: undefined
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithUndefinedApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
         });
     });
 
@@ -169,6 +222,79 @@ describe("useProcurementTrackerStepSix", () => {
             });
 
             expect(result.current.stepSixNotes).toBe("Test notes");
+        });
+
+        it("syncs isAwardCheckboxChecked when approval_requested prop changes to true", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+
+            // Change prop to true
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+        });
+
+        it("syncs isAwardCheckboxChecked when approval_requested prop changes to false", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+
+            // Change prop to false
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("does not sync isAwardCheckboxChecked when approval_requested is null", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+
+            // Change prop to null - should not sync
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: null
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            // Should remain true (no sync)
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
         });
     });
 
@@ -478,7 +604,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(callArgs.data.notes).toBe("Award completed");
         });
 
-        it("calls handleSetCompletedStepNumber with 6 after successful completion", async () => {
+        it("calls handleSetCompletedStepNumber(6) on successful completion", async () => {
             const unwrapMock = vi.fn().mockResolvedValue({});
             mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
 
@@ -495,6 +621,7 @@ describe("useProcurementTrackerStepSix", () => {
                 await result.current.handleStepSixComplete(6);
             });
 
+            // Step 6 notifies the parent so the accordion/scroll state updates correctly
             expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(6);
         });
 
@@ -513,8 +640,8 @@ describe("useProcurementTrackerStepSix", () => {
                 await result.current.handleStepSixComplete(6);
             });
 
-            // Should not throw
-            expect(true).toBe(true);
+            // Test passes if no error is thrown when handleSetCompletedStepNumber is undefined
+            expect(mockPatchStepSix).toHaveBeenCalledTimes(1);
         });
 
         it("shows error alert on step completion failure", async () => {
@@ -540,6 +667,53 @@ describe("useProcurementTrackerStepSix", () => {
                 heading: "Error",
                 message: "There was an error completing the procurement tracker step. Please try again."
             });
+        });
+
+        it("keeps isSubmitting true after a successful patch", async () => {
+            // Guards the intentional no-reset: isSubmitting must stay true until the RTK Query
+            // refetch flips stepStatus to COMPLETED and the form unmounts. Resetting it early
+            // (e.g. via setTimeout) would re-enable the button and allow a duplicate PATCH.
+            const unwrapMock = vi.fn().mockResolvedValue({});
+            mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 100 });
+                result.current.setStepSixDateCompleted("02/15/2024");
+            });
+
+            expect(result.current.isSubmitting).toBe(false);
+
+            await act(async () => {
+                await result.current.handleStepSixComplete(6);
+            });
+
+            expect(result.current.isSubmitting).toBe(true);
+        });
+
+        it("resets isSubmitting to false on patch failure", async () => {
+            // Ensures the form re-enables so the user can correct and resubmit after an error.
+            const error = new Error("API Error");
+            const unwrapMock = vi.fn().mockRejectedValue(error);
+            mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 100 });
+                result.current.setStepSixDateCompleted("02/15/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepSixComplete(6);
+            });
+
+            expect(result.current.isSubmitting).toBe(false);
         });
     });
 
