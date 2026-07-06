@@ -85,9 +85,10 @@ export const ApproveAwardApproval = () => {
 
             <p className="margin-y-3">
                 Review the agreement details and the Signed Award attached below. Confirm that the CLINs have been
-                entered correctly and that all the agreement details match the award exactly. After the Budget Team
-                approves, the agreement will change to Awarded. This will change the budget lines in Executing Status to
-                Obligated Status, and change budget lines in Planned Status to Planned Mod Status.
+                entered correctly and that all the agreement details match the award exactly. Make any final edits, as
+                needed. After the Budget Team approves, the agreement will change to Awarded. This will change the
+                budget lines in Executing Status to Obligated Status, and change budget lines in Planned Status to
+                Planned - Mod Status.
             </p>
 
             {approvalAlreadyProcessed && (
