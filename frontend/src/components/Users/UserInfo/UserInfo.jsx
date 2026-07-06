@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
 import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import constants from "../../../constants.js";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { setIsActive } from "../../UI/Alert/alertSlice.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal.jsx";
 import { USER_STATUS } from "./UserInfo.constants.js";
@@ -31,7 +29,6 @@ const STATUS_DATA = [
 const UserInfo = ({ user, isEditable }) => {
     const navigate = useNavigate();
     const { setAlert } = useAlert();
-    const dispatch = useDispatch();
 
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
@@ -96,7 +93,7 @@ const UserInfo = ({ user, isEditable }) => {
                 heading: "User Updated",
                 message: "The user has been updated successfully."
             });
-            dispatch(setIsActive(true));
+            updateUserResult.reset();
         }
 
         if (updateUserResult.isError) {
@@ -105,7 +102,7 @@ const UserInfo = ({ user, isEditable }) => {
                 heading: "Error",
                 message: "An error occurred while updating the user."
             });
-            dispatch(setIsActive(true));
+            updateUserResult.reset();
         }
     }, [updateUserResult, dispatch, setAlert]);
     // Detect unsaved edits by comparing the staged selections against the persisted user.
@@ -118,6 +115,7 @@ const UserInfo = ({ user, isEditable }) => {
     const statusChanged = (selectedStatus?.name ?? null) !== (user.status ?? null);
     const isDirty = divisionChanged || statusChanged || rolesChanged;
 
+    }, [updateUserResult, setAlert]);
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
     };
