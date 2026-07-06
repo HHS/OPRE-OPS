@@ -7,10 +7,4 @@ describe("TableTag - PLANNED_MOD status", () => {
         render(<TableTag status="PLANNED_MOD" />);
         expect(screen.getByText("Planned Mod")).toBeInTheDocument();
     });
-
-    it("renders 'Planned Mod' text (color is applied via className)", () => {
-        render(<TableTag status="PLANNED_MOD" />);
-        // Just verify we can find the tag by its label text
-        expect(screen.getByText("Planned Mod")).toBeInTheDocument();
-    });
 });
