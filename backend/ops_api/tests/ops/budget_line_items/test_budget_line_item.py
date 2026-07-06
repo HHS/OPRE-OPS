@@ -3491,3 +3491,188 @@ def test_sc_window_date_needed_in_second_sc_period_is_valid(auth_client, agreeme
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": mid_second_sc.isoformat()})
 
     assert resp.status_code in (200, 202)
+
+
+@pytest.fixture()
+def agreement_and_bli_no_sc_dates(budget_team_auth_client, app, test_project, test_can):
+    """
+    A DRAFT ContractBudgetLineItem on an agreement whose only SC has no period_start
+    or period_end set.  The PoP window is therefore undefined, and PoP-bounds validation
+    must not fire when the BLI transitions out of DRAFT.
+    """
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: BLI on SC with no PoP dates",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for undefined-SC-window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=None,
+        period_end=None,
+    )
+    session.add(sc)
+    session.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="DRAFT BLI — SC has no PoP dates",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.DRAFT,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=datetime.date(2044, 6, 15),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_draft_to_planned_allowed_when_no_sc_pop_dates(
+    budget_team_auth_client, agreement_and_bli_no_sc_dates
+):
+    """Transitioning DRAFT→PLANNED succeeds when no SC in the agreement has period_start or
+    period_end set.
+
+    When the SC window is undefined (both sc_start_date and sc_end_date are None on the
+    agreement), _validate_date_within_sc_window treats the BLI as in-window and must not
+    raise a validation error.
+    """
+    _, bli_id = agreement_and_bli_no_sc_dates
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"DRAFT→PLANNED must succeed when no SC has PoP dates (window undefined), "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+@pytest.fixture()
+def draft_bli_outside_sc_window(budget_team_auth_client, app, test_project, test_can):
+    """
+    A DRAFT ContractBudgetLineItem whose date_needed falls outside the SC PoP window.
+
+    The agreement has one SC: [_SC_START, _SC_END].
+    date_needed is set to one day after _SC_END so it is clearly out of bounds.
+    The BLI is DRAFT, which means PoP-window validation must NOT fire on plain saves.
+    """
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: draft BLI outside SC window",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for draft-BLI PoP-window exemption test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=_SC_START,
+        period_end=_SC_END,
+    )
+    session.add(sc)
+    session.flush()
+
+    out_of_bounds_date = _SC_END + datetime.timedelta(days=1)
+    bli = ContractBudgetLineItem(
+        line_description="DRAFT BLI with out-of-bounds date_needed",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.DRAFT,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=out_of_bounds_date,
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id, out_of_bounds_date
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_draft_bli_with_out_of_bounds_date_saves_without_error(
+    budget_team_auth_client, draft_bli_outside_sc_window
+):
+    """A DRAFT BLI can be saved when its date_needed falls outside the SC PoP window.
+
+    The PoP-window check only fires when transitioning out of DRAFT status.
+    Plain field updates on a DRAFT BLI must always succeed regardless of whether
+    date_needed is inside or outside the SC window.
+    """
+    _, bli_id, _ = draft_bli_outside_sc_window
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"amount": 600_000.00},
+    )
+
+    assert resp.status_code == 200, (
+        f"Saving a DRAFT BLI with an out-of-bounds date_needed must succeed, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+def test_draft_to_planned_transition_blocked_when_date_outside_sc_window(
+    budget_team_auth_client, draft_bli_outside_sc_window
+):
+    """Transitioning a DRAFT BLI to PLANNED is rejected when date_needed is outside the SC window.
+
+    The PoP-window validation fires only on status transitions out of DRAFT, not on
+    plain field saves.  For non-superusers the transition must return 400 with a
+    date_needed error explaining the constraint.
+    """
+    _, bli_id, _ = draft_bli_outside_sc_window
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+
+    assert resp.status_code == 400, (
+        f"Transitioning DRAFT→PLANNED with an out-of-bounds date_needed must be "
+        f"rejected for non-superusers, got {resp.status_code}: {resp.json}"
+    )
+    assert "date_needed" in resp.json.get("errors", {}), (
+        f"Response must contain a date_needed validation error, got: {resp.json}"
+    )

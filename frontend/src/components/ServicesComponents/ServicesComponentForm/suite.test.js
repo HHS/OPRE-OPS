@@ -252,6 +252,54 @@ describe("ServicesComponentForm Validation Suite", () => {
     //   Draft BLI date: 2025-11-01 (outside the reduced window in test 1)
     //                   2025-02-01 (before the advanced window start in test 2)
     // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Undefined SC window — PoP check does not fire
+    //
+    // When no SC in the agreement has period_start or period_end set, the overall
+    // window (windowStart / windowEnd) is null.  The suite guards each PoP test
+    // with `if (!windowStart)` / `if (!windowEnd)`, so no error is raised
+    // regardless of the BLI's date_needed.
+    // -------------------------------------------------------------------------
+    describe("undefined SC window — no PoP error", () => {
+        it("passes when all SCs have null period_start and period_end", () => {
+            // SC has no dates — window is fully undefined.
+            // A non-draft BLI with any date_needed must not trigger a PoP error.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: [sc(1, null, null)],
+                nonDraftBudgetLines: [bli("2025-06-15")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes when period_start is set but period_end is null (open-ended window)", () => {
+            // Window has a start but no end — the popEndDate test must not fire.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: [sc(1, "2025-01-01", null)],
+                nonDraftBudgetLines: [bli("2030-12-31")]
+            });
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes when period_end is set but period_start is null (open-start window)", () => {
+            // Window has an end but no start — the popStartDate test must not fire.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: [sc(1, null, "2025-06-30")],
+                nonDraftBudgetLines: [bli("2020-01-01")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+        });
+    });
+
     describe("draft BLI exemption — edit mode", () => {
         const twoSCs = [sc(1, "2025-01-01", "2025-06-30"), sc(2, "2025-04-01", "2025-12-31")];
 
