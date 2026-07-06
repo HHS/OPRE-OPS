@@ -28,6 +28,21 @@ import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers
  * @param {FundingByPortfolioItem[]} props.fundingByPortfolio
  * @returns {JSX.Element}
  */
+// Portfolio color vars with light fills that need dark text for readability
+// when used as the active percentage-tag background (mirrors the
+// lightBackgroundPortfolios list in PortfolioLegend, keyed by color instead of
+// abbreviation since this card assigns colors sequentially).
+const LIGHT_BACKGROUND_COLORS = new Set([
+    "var(--portfolio-bar-graph-cc)",
+    "var(--portfolio-bar-graph-hs)",
+    "var(--portfolio-bar-graph-hmrf)",
+    "var(--portfolio-bar-graph-hv)",
+    "var(--portfolio-bar-graph-dd)",
+    "var(--portfolio-bar-graph-none-opre)",
+    "var(--portfolio-bar-graph-ocdo)",
+    "var(--portfolio-bar-graph-otip)"
+]);
+
 const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) => {
     const [activeId, setActiveId] = useState(0);
 
@@ -57,6 +72,7 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                         >
                             {chartData.map((item) => {
                                 const isActive = activeId === item.id;
+                                const activeTextColor = LIGHT_BACKGROUND_COLORS.has(item.color) ? "#1B1B1B" : "#FFFFFF";
                                 return (
                                     <div
                                         key={item.id}
@@ -80,7 +96,10 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                                             style={{
                                                 padding: "0.25rem 0.5rem",
                                                 borderRadius: "0.25rem",
-                                                fontSize: "12px"
+                                                fontSize: "12px",
+                                                ...(isActive
+                                                    ? { backgroundColor: item.color, color: activeTextColor }
+                                                    : {})
                                             }}
                                         >
                                             {item.percent}%
