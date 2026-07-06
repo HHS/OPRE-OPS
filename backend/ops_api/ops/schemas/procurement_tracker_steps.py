@@ -140,6 +140,13 @@ class ProcurementTrackerStepResponseSchema(Schema):
     requisition_approved_by = fields.Integer(allow_none=True)
     requisition_approved_date = fields.Date(allow_none=True)
 
+    # OPS-2280: AWARD step vendor and contract information fields
+    vendor_id = fields.Integer(allow_none=True)
+    vendor = fields.Dict(allow_none=True)
+    contract_number = fields.String(allow_none=True)
+    award_amount = fields.Float(allow_none=True)
+    award_date = fields.Date(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -235,6 +242,22 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["approval_responded_by"] = getattr(obj, "award_approval_responded_by", None)
             data["approval_responded_date"] = getattr(obj, "award_approval_responded_date", None)
             data["reviewer_notes"] = getattr(obj, "award_approval_reviewer_notes", None)
+            # OPS-2280: award vendor and contract information fields
+            data["vendor_id"] = getattr(obj, "award_vendor_id", None)
+            vendor = getattr(obj, "award_vendor", None)
+            if vendor and hasattr(vendor, "id"):
+                data["vendor"] = {
+                    "id": vendor.id,
+                    "name": vendor.name,
+                    "duns": vendor.duns,
+                    "vendor_type": vendor.vendor_type.name if vendor.vendor_type else None,
+                }
+            else:
+                data["vendor"] = None
+            data["contract_number"] = getattr(obj, "award_contract_number", None)
+            raw_amount = getattr(obj, "award_amount", None)
+            data["award_amount"] = float(raw_amount) if raw_amount is not None else None
+            data["award_date"] = getattr(obj, "award_date", None)
 
         return data
 
@@ -339,6 +362,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_responded_by",
                 "approval_responded_date",
                 "reviewer_notes",
+                # OPS-2280: award vendor and contract fields
+                "vendor_id",
+                "vendor",
+                "contract_number",
+                "award_amount",
+                "award_date",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -369,6 +398,11 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_responded_by",
                 "approval_responded_date",
                 "reviewer_notes",
+                "vendor_id",
+                "vendor",
+                "contract_number",
+                "award_amount",
+                "award_date",
             ]:
                 data.pop(field, None)
 
@@ -426,6 +460,9 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     award_amount = fields.Float(required=False, allow_none=True)
     award_date = fields.Date(required=False, allow_none=True)
 
+    # OPS-2280: Obligated date entered by Budget Team on award approval
+    obligated_date = fields.Date(required=False, allow_none=True)
+
 
 class ProcurementTrackerStepSchema(Schema):
     """Schema for procurement tracker step serialization."""
@@ -468,6 +505,13 @@ class ProcurementTrackerStepSchema(Schema):
     requisition_date = fields.Date(allow_none=True)
     requisition_approved_by = fields.Integer(allow_none=True)
     requisition_approved_date = fields.Date(allow_none=True)
+
+    # OPS-2280: AWARD step vendor and contract information fields
+    vendor_id = fields.Integer(allow_none=True)
+    vendor = fields.Dict(allow_none=True)
+    contract_number = fields.String(allow_none=True)
+    award_amount = fields.Float(allow_none=True)
+    award_date = fields.Date(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
@@ -554,6 +598,22 @@ class ProcurementTrackerStepSchema(Schema):
             data["approval_responded_by"] = getattr(obj, "award_approval_responded_by", None)
             data["approval_responded_date"] = getattr(obj, "award_approval_responded_date", None)
             data["reviewer_notes"] = getattr(obj, "award_approval_reviewer_notes", None)
+            # OPS-2280: award vendor and contract information fields
+            data["vendor_id"] = getattr(obj, "award_vendor_id", None)
+            vendor = getattr(obj, "award_vendor", None)
+            if vendor and hasattr(vendor, "id"):
+                data["vendor"] = {
+                    "id": vendor.id,
+                    "name": vendor.name,
+                    "duns": vendor.duns,
+                    "vendor_type": vendor.vendor_type.name if vendor.vendor_type else None,
+                }
+            else:
+                data["vendor"] = None
+            data["contract_number"] = getattr(obj, "award_contract_number", None)
+            raw_amount = getattr(obj, "award_amount", None)
+            data["award_amount"] = float(raw_amount) if raw_amount is not None else None
+            data["award_date"] = getattr(obj, "award_date", None)
 
         return data
 
@@ -666,6 +726,12 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_responded_by",
                 "approval_responded_date",
                 "reviewer_notes",
+                # OPS-2280: award vendor and contract fields
+                "vendor_id",
+                "vendor",
+                "contract_number",
+                "award_amount",
+                "award_date",
             }
             preserve_keys = base_fields | award_fields
             # Remove PRE_SOLICITATION-only fields

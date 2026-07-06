@@ -50,6 +50,7 @@ class BudgetLineItemStatus(str, Enum):
     PLANNED = "PLANNED"
     IN_EXECUTION = "IN_EXECUTION"
     OBLIGATED = "OBLIGATED"
+    PLANNED_MOD = "PLANNED_MOD"
 
 
 class BudgetLineSortCondition(Enum):
