@@ -79,8 +79,10 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
 
-    // Only PLANNED and IN_EXECUTION budget lines participate in pre-award validation.
-    // Draft and obligated lines are shown for context but never trigger errors here.
+    // Only PLANNED and IN_EXECUTION budget lines require pre-award validation.
+    // DRAFT lines aren't yet committed for approval; OBLIGATED lines have already
+    // completed the full award cycle and don't need pre-award checks.
+    // PLANNED_MOD lines are excluded because modifications follow a separate approval path.
     const validatableBudgetLines = useMemo(
         () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
         [allBudgetLines]
