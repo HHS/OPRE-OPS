@@ -159,9 +159,22 @@ def test_services_components_get_list(auth_client, app_ctx):
         assert sc1[key] == value
 
 
-def test_services_components_post(auth_client, loaded_db, app_ctx):
+def test_services_components_post(auth_client, loaded_db, app_ctx, test_project):
+    ca = ContractAgreement(
+        name="CTXX-post-sc-test",
+        contract_number="XXXX000099100",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+
     data = {
-        "agreement_id": 1,
+        "agreement_id": ca.id,
         "number": 99,
         "optional": False,
         "description": "Test SC description",
@@ -182,6 +195,10 @@ def test_services_components_post(auth_client, loaded_db, app_ctx):
     assert sc.number == data["number"]
     assert sc.period_start == datetime.date(2043, 6, 13)
     assert sc.period_end == datetime.date(2044, 6, 13)
+
+    loaded_db.delete(sc)
+    loaded_db.delete(ca)
+    loaded_db.commit()
 
 
 def test_services_components_patch(auth_client, loaded_db, test_service_component, app_ctx):
@@ -1043,6 +1060,61 @@ def pop_validation_agreement(loaded_db, test_project):
     loaded_db.delete(sc2)
     loaded_db.delete(ca)
     loaded_db.commit()
+
+
+def test_cannot_create_sc_when_non_draft_bli_falls_outside_sc_window(
+    auth_client, loaded_db, test_project
+):
+    """
+    Agreement has no SCs and one non-draft (PLANNED) BLI at 2025-11-01.
+    POSTing a new SC with period 2025-01-01 → 2025-06-30 leaves the BLI
+    outside the new window — must return 400.
+
+    This scenario arises from data import: non-draft BLIs can exist on an
+    agreement before any SC is created.
+    """
+    ca = ContractAgreement(
+        name="CTXX99002-no-sc-pop-validation",
+        contract_number="XXXX000099002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+
+    bli = ContractBudgetLineItem(
+        line_description="Planned BLI outside new SC window",
+        agreement_id=ca.id,
+        amount=10000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2025, 11, 1),
+        created_by=4,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.post(
+            url_for("api.services-component-group"),
+            json={
+                "agreement_id": ca.id,
+                "number": 1,
+                "optional": False,
+                "description": "New SC that leaves BLI outside window",
+                "period_start": "2025-01-01",
+                "period_end": "2025-06-30",
+            },
+        )
+
+        assert response.status_code == 400
+    finally:
+        loaded_db.delete(bli)
+        loaded_db.delete(ca)
+        loaded_db.commit()
 
 
 def test_update_sc_period_end_before_non_draft_bli_raises_validation_error(

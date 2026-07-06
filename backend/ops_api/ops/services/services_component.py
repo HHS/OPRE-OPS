@@ -88,6 +88,8 @@ class ServicesComponentService:
 
         new_sc = ServicesComponent(**create_request)
 
+        self._validate_bli_pop_window_for_create(create_request)
+
         try:
             self.db_session.add(new_sc)
             if commit:
@@ -171,6 +173,62 @@ class ServicesComponentService:
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
+
+    def _validate_bli_pop_window_for_create(self, create_request: dict[str, Any]) -> None:
+        """
+        Validate that all non-draft BLIs on the agreement fall within the window
+        defined by the new SC being created, combined with any existing SCs.
+
+        Raises:
+            ValidationError: if any non-draft BLI would fall outside the resulting window.
+        """
+        from models import Agreement
+
+        agreement_id = create_request.get("agreement_id")
+        if not agreement_id:
+            return
+
+        agreement = self.db_session.get(Agreement, agreement_id)
+        if not agreement:
+            return
+
+        new_start = create_request.get("period_start")
+        new_end = create_request.get("period_end")
+
+        all_starts = [sc.period_start for sc in agreement.services_components if sc.period_start]
+        all_ends = [sc.period_end for sc in agreement.services_components if sc.period_end]
+        if new_start:
+            all_starts.append(new_start)
+        if new_end:
+            all_ends.append(new_end)
+
+        window_start = min(all_starts) if all_starts else None
+        window_end = max(all_ends) if all_ends else None
+
+        non_draft_blis = [
+            bli
+            for bli in agreement.budget_line_items
+            if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed is not None
+        ]
+
+        if not non_draft_blis or (window_start is None and window_end is None):
+            return
+
+        affected = [
+            bli
+            for bli in non_draft_blis
+            if (window_start and bli.date_needed < window_start) or (window_end and bli.date_needed > window_end)
+        ]
+
+        if affected:
+            affected_ids = ", ".join(str(bli.id) for bli in affected)
+            raise ValidationError(
+                {
+                    "period_start": [
+                        f"Budget Line Items {affected_ids} fall outside the updated Period of Performance window."
+                    ]
+                }
+            )
 
     def _validate_bli_pop_window(self, services_component: ServicesComponent, updated_fields: dict[str, Any]) -> None:
         """

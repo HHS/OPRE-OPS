@@ -54,18 +54,22 @@ describe("ServicesComponentForm Validation Suite", () => {
     });
 
     // -------------------------------------------------------------------------
-    // Add mode — PoP boundary checks must NOT run
+    // Add mode — PoP boundary checks
+    //
+    // When an agreement already has non-draft BLIs (e.g. from data import) and
+    // the user is adding the first SC, the new SC's window must cover all of them.
     // -------------------------------------------------------------------------
-    describe("add mode — no PoP boundary checks", () => {
-        it("does not run PoP checks when mode is add, even with a BLI outside any SC window", () => {
+    describe("add mode — PoP boundary checks", () => {
+        it("fails when a non-draft BLI falls outside the new SC's window", () => {
+            // Agreement has no existing SCs and a planned BLI at 2025-11-01.
+            // New SC covers 2025-01-01 → 2025-06-30, leaving the BLI outside.
             const result = suite.run({
                 ...validAddData,
                 mode: "add",
                 allServicesComponents: [sc(1, "2025-01-01", "2025-06-30")],
-                nonDraftBudgetLines: [bli("2025-11-01")] // outside the SC window
+                nonDraftBudgetLines: [bli("2025-11-01")]
             });
-            expect(result.getErrors("popStartDate")).toHaveLength(0);
-            expect(result.getErrors("popEndDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toContain(BLI_POP_MESSAGE);
         });
     });
 

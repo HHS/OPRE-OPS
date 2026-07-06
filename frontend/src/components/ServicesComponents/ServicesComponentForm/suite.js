@@ -30,7 +30,7 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.servicesComponentSelect).isNumeric().greaterThan(0);
     });
 
-    if (data.mode !== "edit") return;
+    if (data.mode !== "edit" && data.mode !== "add") return;
     const allSCs = data.allServicesComponents ?? [];
     const nonDraftBLIs = data.nonDraftBudgetLines ?? [];
     if (allSCs.length === 0 || nonDraftBLIs.length === 0) return;
