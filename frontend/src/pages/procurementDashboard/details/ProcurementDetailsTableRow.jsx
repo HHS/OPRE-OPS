@@ -56,9 +56,7 @@ export const ProcurementDetailsTableRow = ({
 
     const getStatusCount = (status) => {
         if (status === "PLANNED") {
-            return budgetLineItems.filter(
-                (bli) => bli.status === "PLANNED" || bli.status === "PLANNED_MOD"
-            ).length;
+            return budgetLineItems.filter((bli) => bli.status === "PLANNED" || bli.status === "PLANNED_MOD").length;
         }
         return budgetLineItems.filter((bli) => bli.status === status).length;
     };
