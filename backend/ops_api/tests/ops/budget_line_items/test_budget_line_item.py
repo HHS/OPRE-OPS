@@ -3549,9 +3549,7 @@ def agreement_and_bli_no_sc_dates(budget_team_auth_client, app, test_project, te
     session.commit()
 
 
-def test_draft_to_planned_allowed_when_no_sc_pop_dates(
-    budget_team_auth_client, agreement_and_bli_no_sc_dates
-):
+def test_draft_to_planned_allowed_when_no_sc_pop_dates(budget_team_auth_client, agreement_and_bli_no_sc_dates):
     """Transitioning DRAFT→PLANNED succeeds when no SC in the agreement has period_start or
     period_end set.
 
@@ -3631,9 +3629,7 @@ def draft_bli_outside_sc_window(budget_team_auth_client, app, test_project, test
     session.commit()
 
 
-def test_draft_bli_with_out_of_bounds_date_saves_without_error(
-    budget_team_auth_client, draft_bli_outside_sc_window
-):
+def test_draft_bli_with_out_of_bounds_date_saves_without_error(budget_team_auth_client, draft_bli_outside_sc_window):
     """A DRAFT BLI can be saved when its date_needed falls outside the SC PoP window.
 
     The PoP-window check only fires when transitioning out of DRAFT status.
@@ -3648,8 +3644,7 @@ def test_draft_bli_with_out_of_bounds_date_saves_without_error(
     )
 
     assert resp.status_code == 200, (
-        f"Saving a DRAFT BLI with an out-of-bounds date_needed must succeed, "
-        f"got {resp.status_code}: {resp.json}"
+        f"Saving a DRAFT BLI with an out-of-bounds date_needed must succeed, " f"got {resp.status_code}: {resp.json}"
     )
 
 
@@ -3673,6 +3668,380 @@ def test_draft_to_planned_transition_blocked_when_date_outside_sc_window(
         f"Transitioning DRAFT→PLANNED with an out-of-bounds date_needed must be "
         f"rejected for non-superusers, got {resp.status_code}: {resp.json}"
     )
-    assert "date_needed" in resp.json.get("errors", {}), (
-        f"Response must contain a date_needed validation error, got: {resp.json}"
+    assert "date_needed" in resp.json.get(
+        "errors", {}
+    ), f"Response must contain a date_needed validation error, got: {resp.json}"
+
+
+# ---------------------------------------------------------------------------
+# One-sided SC window: period_start only (no period_end)
+# ---------------------------------------------------------------------------
+# When every SC in the agreement has period_start set but no period_end, the
+# sc_end_date property on Agreement returns None. _validate_date_within_sc_window
+# treats a missing bound as "no constraint from that side", so:
+#   - date_needed >= sc_start_date  → valid
+#   - date_needed <  sc_start_date  → invalid (start bound still enforced)
+#   - date_needed far in the future  → valid (no upper bound)
+# ---------------------------------------------------------------------------
+
+_SC_START_ONLY = datetime.date(2044, 3, 1)
+
+
+@pytest.fixture()
+def agreement_and_bli_start_only(budget_team_auth_client, app, test_project, test_can):
+    """Agreement with one SC that has period_start set but no period_end."""
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: SC period_start only (no period_end)",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for one-sided start-only SC window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
     )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=_SC_START_ONLY,
+        period_end=None,
+    )
+    session.add(sc)
+    session.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="BLI on SC with start only",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=_SC_START_ONLY,
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_sc_start_only_date_before_start_is_invalid(budget_team_auth_client, agreement_and_bli_start_only, app_ctx):
+    """When only period_start is set, date_needed before it must be rejected."""
+    _, bli_id = agreement_and_bli_start_only
+    one_day_before = _SC_START_ONLY - datetime.timedelta(days=1)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": one_day_before.isoformat()},
+    )
+
+    assert resp.status_code == 400, (
+        f"date_needed before the only SC period_start must be rejected, " f"got {resp.status_code}: {resp.json}"
+    )
+    assert "date_needed" in resp.json.get("errors", {}), resp.json
+
+
+def test_sc_start_only_date_on_start_is_valid(budget_team_auth_client, agreement_and_bli_start_only, app_ctx):
+    """When only period_start is set, date_needed equal to it is valid (inclusive lower bound)."""
+    _, bli_id = agreement_and_bli_start_only
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": _SC_START_ONLY.isoformat()},
+    )
+
+    assert resp.status_code in (
+        200,
+        202,
+    ), f"date_needed on the SC period_start must be valid, got {resp.status_code}: {resp.json}"
+
+
+def test_sc_start_only_date_far_future_is_valid(budget_team_auth_client, agreement_and_bli_start_only, app_ctx):
+    """When only period_start is set, a date far in the future is valid (no upper bound enforced)."""
+    _, bli_id = agreement_and_bli_start_only
+    far_future = datetime.date(2099, 12, 31)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": far_future.isoformat()},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"date_needed far in the future must be valid when no period_end is set, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# One-sided SC window: period_end only (no period_start)
+# ---------------------------------------------------------------------------
+# When every SC in the agreement has period_end set but no period_start, the
+# sc_start_date property on Agreement returns None. _validate_date_within_sc_window
+# treats a missing bound as "no constraint from that side", so:
+#   - date_needed <= sc_end_date  → valid
+#   - date_needed >  sc_end_date  → invalid (end bound still enforced)
+#   - date_needed far in the past  → valid (no lower bound)
+# ---------------------------------------------------------------------------
+
+_SC_END_ONLY = datetime.date(2044, 9, 30)
+
+
+@pytest.fixture()
+def agreement_and_bli_end_only(budget_team_auth_client, app, test_project, test_can):
+    """Agreement with one SC that has period_end set but no period_start."""
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: SC period_end only (no period_start)",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for one-sided end-only SC window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=None,
+        period_end=_SC_END_ONLY,
+    )
+    session.add(sc)
+    session.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="BLI on SC with end only",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=_SC_END_ONLY,
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_sc_end_only_date_after_end_is_invalid(budget_team_auth_client, agreement_and_bli_end_only, app_ctx):
+    """When only period_end is set, date_needed after it must be rejected."""
+    _, bli_id = agreement_and_bli_end_only
+    one_day_after = _SC_END_ONLY + datetime.timedelta(days=1)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": one_day_after.isoformat()},
+    )
+
+    assert resp.status_code == 400, (
+        f"date_needed after the only SC period_end must be rejected, " f"got {resp.status_code}: {resp.json}"
+    )
+    assert "date_needed" in resp.json.get("errors", {}), resp.json
+
+
+def test_sc_end_only_date_on_end_is_valid(budget_team_auth_client, agreement_and_bli_end_only, app_ctx):
+    """When only period_end is set, date_needed equal to it is valid (inclusive upper bound)."""
+    _, bli_id = agreement_and_bli_end_only
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": _SC_END_ONLY.isoformat()},
+    )
+
+    assert resp.status_code in (
+        200,
+        202,
+    ), f"date_needed on the SC period_end must be valid, got {resp.status_code}: {resp.json}"
+
+
+def test_sc_end_only_date_well_before_end_is_valid(budget_team_auth_client, agreement_and_bli_end_only, app_ctx):
+    """When only period_end is set, a future date well before it is valid (no lower bound enforced).
+
+    The window has only an upper bound; any date_needed that satisfies the future-date
+    check and is <= period_end must pass PoP validation.  Using a future date avoids
+    the separate 'must be in the future' guard, isolating the one-sided PoP-window logic.
+    """
+    _, bli_id = agreement_and_bli_end_only
+    # A date clearly before the end (_SC_END_ONLY = 2044-09-30) and after today.
+    date_before_end = datetime.date(2044, 1, 1)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": date_before_end.isoformat()},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"date_needed before period_end must be valid when no period_start is set, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# One-sided window: draft-to-PLANNED transitions
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def draft_bli_start_only(budget_team_auth_client, app, test_project, test_can):
+    """DRAFT BLI on a start-only SC; date_needed is on the SC start (valid for PoP)."""
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: DRAFT BLI start-only SC transition",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for one-sided start-only DRAFT→PLANNED test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=_SC_START_ONLY,
+        period_end=None,
+    )
+    session.add(sc)
+    session.flush()
+
+    # date_needed is after the SC start — valid under the start-only bound
+    bli = ContractBudgetLineItem(
+        line_description="DRAFT BLI on start-only SC",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.DRAFT,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=_SC_START_ONLY + datetime.timedelta(days=30),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_draft_to_planned_start_only_date_inside_allowed(budget_team_auth_client, draft_bli_start_only):
+    """DRAFT→PLANNED succeeds when date_needed is after SC period_start and no period_end exists."""
+    _, bli_id = draft_bli_start_only
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"DRAFT→PLANNED must succeed when date_needed satisfies the start-only bound, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+@pytest.fixture()
+def draft_bli_before_start_only(budget_team_auth_client, app, test_project, test_can):
+    """DRAFT BLI on a start-only SC; date_needed is before the SC start (out of bounds)."""
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: DRAFT BLI before start-only SC",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for start-only DRAFT→PLANNED rejection test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=_SC_START_ONLY,
+        period_end=None,
+    )
+    session.add(sc)
+    session.flush()
+
+    # date_needed is before the SC start — violates the lower bound
+    bli = ContractBudgetLineItem(
+        line_description="DRAFT BLI before start-only SC",
+        agreement_id=agreement_id,
+        services_component_id=sc.id,
+        status=BudgetLineItemStatus.DRAFT,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=_SC_START_ONLY - datetime.timedelta(days=1),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_draft_to_planned_start_only_date_before_start_blocked(budget_team_auth_client, draft_bli_before_start_only):
+    """DRAFT→PLANNED is rejected when date_needed is before SC period_start (no period_end)."""
+    _, bli_id = draft_bli_before_start_only
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+
+    assert resp.status_code == 400, (
+        f"DRAFT→PLANNED must be rejected when date_needed violates start-only PoP bound, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+    assert "date_needed" in resp.json.get("errors", {}), resp.json

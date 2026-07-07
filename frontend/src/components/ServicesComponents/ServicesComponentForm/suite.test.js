@@ -300,6 +300,156 @@ describe("ServicesComponentForm Validation Suite", () => {
         });
     });
 
+    // -------------------------------------------------------------------------
+    // One-sided SC window — bound that exists is enforced; absent bound is not
+    //
+    // The suite guards each PoP test:
+    //   popStartDate: `if (!windowStart) return;`  — skipped when no SC has period_start
+    //   popEndDate:   `if (!windowEnd) return;`    — skipped when no SC has period_end
+    //
+    // So when only one side is defined:
+    //   - The defined side must still reject violations.
+    //   - The absent side must place no constraint.
+    // -------------------------------------------------------------------------
+    describe("one-sided SC window — period_start only (no period_end)", () => {
+        // SC has a start but no end. Overall window: start=2025-01-01, end=null.
+        const startOnlySC = [sc(1, "2025-01-01", null)];
+
+        it("fails when BLI date is before period_start (start bound is enforced)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: startOnlySC,
+                nonDraftBudgetLines: [bli("2024-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
+        });
+
+        it("passes when BLI date equals period_start (start bound inclusive)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: startOnlySC,
+                nonDraftBudgetLines: [bli("2025-01-01")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+        });
+
+        it("passes when BLI date is far in the future (no end bound enforced)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: startOnlySC,
+                nonDraftBudgetLines: [bli("2099-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("fails start bound but has no end-bound error (absent end places no constraint)", () => {
+            // BLI is before the start — start error fires; popEndDate must not fire independently.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: startOnlySC,
+                nonDraftBudgetLines: [bli("2024-06-15")]
+            });
+            expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+    });
+
+    describe("one-sided SC window — period_end only (no period_start)", () => {
+        // SC has an end but no start. Overall window: start=null, end=2025-12-31.
+        const endOnlySC = [sc(1, null, "2025-12-31")];
+
+        it("fails when BLI date is after period_end (end bound is enforced)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: endOnlySC,
+                nonDraftBudgetLines: [bli("2026-01-01")]
+            });
+            expect(result.getErrors("popEndDate")).toContain(BLI_POP_MESSAGE);
+        });
+
+        it("passes when BLI date equals period_end (end bound inclusive)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: endOnlySC,
+                nonDraftBudgetLines: [bli("2025-12-31")]
+            });
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes when BLI date is far in the past (no start bound enforced)", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: endOnlySC,
+                nonDraftBudgetLines: [bli("2000-01-01")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("fails end bound but has no start-bound error (absent start places no constraint)", () => {
+            // BLI is after the end — end error fires; popStartDate must not fire independently.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: endOnlySC,
+                nonDraftBudgetLines: [bli("2026-06-15")]
+            });
+            expect(result.getErrors("popEndDate")).toContain(BLI_POP_MESSAGE);
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // One-sided window — multiple SCs, mixed presence of start/end
+    //
+    // If SC 1 has only period_start and SC 2 has only period_end, the overall
+    // window has a defined start AND a defined end. Both bounds must be enforced.
+    // But if ALL SCs lack period_end (or period_start), that side is absent.
+    // -------------------------------------------------------------------------
+    describe("one-sided window — multiple SCs all missing the same bound", () => {
+        // Two SCs, neither has period_end. Overall window: start=min, end=null.
+        const twoStartOnlySCs = [sc(1, "2025-01-01", null), sc(2, "2025-06-01", null)];
+
+        it("uses the earliest period_start across all SCs as the lower bound", () => {
+            // BLI at 2024-12-31 is before SC 1's start (the overall minimum) → error
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: twoStartOnlySCs,
+                nonDraftBudgetLines: [bli("2024-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
+        });
+
+        it("no end-bound error when no SC has period_end, even with a far-future BLI", () => {
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: twoStartOnlySCs,
+                nonDraftBudgetLines: [bli("2099-12-31")]
+            });
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+    });
+
     describe("draft BLI exemption — edit mode", () => {
         const twoSCs = [sc(1, "2025-01-01", "2025-06-30"), sc(2, "2025-04-01", "2025-12-31")];
 
