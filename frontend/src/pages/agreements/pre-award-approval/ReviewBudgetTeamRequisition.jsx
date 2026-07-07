@@ -24,12 +24,12 @@ export const ReviewBudgetTeamRequisition = () => {
     const {
         agreement,
         isLoading,
-        allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
         reviewerNotes,
@@ -116,19 +116,20 @@ export const ReviewBudgetTeamRequisition = () => {
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines and Executing Total */}
+            {/* Budget Lines and Executing Total (only budget lines in Executing status are
+                relevant to the requisition, so limit the review to those) */}
             <PreAwardBudgetLinesReviewAccordion
-                budgetLineItems={allBudgetLines}
+                budgetLineItems={executingBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
-                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                groupedBudgetLines={groupedExecutingBudgetLinesByServicesComponent}
                 executingTotal={executingTotal}
             />
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
                 instructions="The budget lines on this agreement have allocated funds from the CANs displayed below. Review to confirm everything looks good and click on each CAN to view more details."
-                selectedBudgetLines={allBudgetLines}
+                selectedBudgetLines={executingBudgetLines}
                 afterApproval={false}
                 setAfterApproval={() => {}}
                 action=""
@@ -235,7 +236,7 @@ export const ReviewBudgetTeamRequisition = () => {
                         <MemoizedDatePicker
                             id="requisition-date"
                             name="requisitionDate"
-                            label="Requisition Date"
+                            label="Requisition Approval Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
                             onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
