@@ -1,3 +1,4 @@
+import React from "react";
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
@@ -5,7 +6,7 @@ import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faCheck, faPen } from "@fortawesome/free-solid-svg-icons";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
@@ -68,6 +69,8 @@ const ProcurementTrackerStepThree = ({
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
     } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber);
+
+    const [isEditingNotes, setIsEditingNotes] = React.useState(false);
 
     // Check if solicitation dates exist (either saved or entered)
     const hasSavedSolicitationDates =
@@ -388,7 +391,71 @@ const ProcurementTrackerStepThree = ({
                         />
                         <div style={{ gridColumn: "1 / -1" }}>
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step3NotesLabel}</dd>
+                            {isEditingNotes ? (
+                                <div className="display-table">
+                                    <TextArea
+                                        name="notes"
+                                        label=""
+                                        className="margin-top-1"
+                                        maxLength={750}
+                                        value={step3Notes}
+                                        onChange={
+                                            /** @param {any} _ @param {any} value */ (_, value) => setStep3Notes(value)
+                                        }
+                                        textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <div className="display-flex flex-justify-end">
+                                        <button
+                                            type="button"
+                                            className="usa-button usa-button--unstyled margin-right-2"
+                                            data-cy="cancel-edit-notes-button"
+                                            onClick={() => {
+                                                setStep3Notes(stepThreeData?.notes ?? "");
+                                                setIsEditingNotes(false);
+                                            }}
+                                            disabled={isDisabled}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="usa-button usa-button--unstyled"
+                                            data-cy="save-notes-button"
+                                            onClick={async () => {
+                                                await handleSaveNotes(stepThreeData?.id);
+                                                setIsEditingNotes(false);
+                                            }}
+                                            disabled={isDisabled}
+                                        >
+                                            <FontAwesomeIcon
+                                                icon={faCheck}
+                                                size="2x"
+                                                className="text-primary height-2 width-2 cursor-pointer"
+                                            />
+                                            Save Notes
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <dd className="margin-0 margin-top-1">{step3NotesLabel}</dd>
+                                    <button
+                                        type="button"
+                                        className="usa-button usa-button--unstyled margin-top-1"
+                                        data-cy="edit-notes-button"
+                                        onClick={() => setIsEditingNotes(true)}
+                                        disabled={isDisabled}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faPen}
+                                            className="margin-right-1"
+                                            aria-hidden="true"
+                                        />
+                                        Edit Notes
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </dl>
                 </div>

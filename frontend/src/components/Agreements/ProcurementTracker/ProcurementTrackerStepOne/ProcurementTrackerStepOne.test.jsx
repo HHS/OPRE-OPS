@@ -1286,6 +1286,95 @@ describe("ProcurementTrackerStepOne", () => {
         });
     });
 
+    describe("COMPLETED State — Edit Notes", () => {
+        beforeEach(() => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Existing notes",
+                step1NotesLabel: "Existing notes"
+            });
+        });
+
+        it("Edit Notes button is visible when step is in COMPLETED state", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            const editNotesButton = screen.getByRole("button", { name: /edit notes/i });
+            expect(editNotesButton).toBeInTheDocument();
+            expect(editNotesButton).toHaveAttribute("data-cy", "edit-notes-button");
+        });
+
+        it("clicking Edit Notes replaces the notes label with a TextArea populated from step1Notes", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toHaveValue("Existing notes");
+        });
+
+        it("clicking Cancel makes no API call and exits edit mode", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+            expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with the step id and not handleStep1Complete", () => {
+            mockHandleSaveNotes.mockResolvedValue(undefined);
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            fireEvent.click(screen.getByRole("button", { name: /save notes/i }));
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(1);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+            expect(mockHandleStep1Complete).not.toHaveBeenCalled();
+        });
+    });
+
     describe("Read-Only Mode", () => {
         it("renders TermTags and no form controls when isReadOnly is true and PENDING", () => {
             render(

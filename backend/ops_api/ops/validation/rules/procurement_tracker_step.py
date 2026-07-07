@@ -116,16 +116,27 @@ class CompletedByUpdateAuthorizationRule(ValidationRule):
 
 class NoUpdatingCompletedProcurementStepRule(ValidationRule):
     """
-    Validates that completed procurement tracker steps cannot be updated.
+    Validates that completed procurement tracker steps cannot be updated,
+    except when the only field being updated is the notes.
     """
+
+    # Fields that are still editable after a step has been completed.
+    EDITABLE_AFTER_COMPLETION = frozenset({"notes"})
 
     @property
     def name(self) -> str:
         return "No Updating Completed Procurement Step"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
-        if procurement_tracker_step.status == ProcurementTrackerStepStatus.COMPLETED:
-            raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
+        if procurement_tracker_step.status != ProcurementTrackerStepStatus.COMPLETED:
+            return
+
+        # Allow notes-only edits on a completed step; block any other field change.
+        updated_field_names = set(context.updated_fields.keys())
+        if updated_field_names.issubset(self.EDITABLE_AFTER_COMPLETION):
+            return
+
+        raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
 
 
 class AcquisitionPlanningRequiredFieldsRule(ValidationRule):

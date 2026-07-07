@@ -907,6 +907,72 @@ describe("ProcurementTrackerStepSix", () => {
         });
     });
 
+    describe("COMPLETED State — Edit Notes", () => {
+        const completedProps = {
+            ...defaultProps,
+            stepStatus: "COMPLETED",
+            stepSixData: {
+                ...defaultProps.stepSixData,
+                notes: "Existing notes"
+            }
+        };
+
+        beforeEach(() => {
+            useProcurementTrackerStepSix.mockReturnValue({
+                ...defaultHookReturn,
+                stepSixNotes: "Existing notes",
+                stepSixNotesLabel: "Existing notes"
+            });
+        });
+
+        it("Edit Notes button is visible when step is in COMPLETED state", () => {
+            render(<ProcurementTrackerStepSix {...completedProps} />);
+
+            const editNotesButton = screen.getByRole("button", { name: /edit notes/i });
+            expect(editNotesButton).toBeInTheDocument();
+            expect(editNotesButton).toHaveAttribute("data-cy", "edit-notes-button");
+        });
+
+        it("clicking Edit Notes replaces the notes label with a TextArea populated from stepSixNotes", () => {
+            render(<ProcurementTrackerStepSix {...completedProps} />);
+
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toHaveValue("Existing notes");
+        });
+
+        it("clicking Cancel makes no API call and exits edit mode", () => {
+            render(<ProcurementTrackerStepSix {...completedProps} />);
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+            expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with the step id and not handleStepSixComplete", () => {
+            mockHandleSaveNotes.mockResolvedValue(undefined);
+
+            render(<ProcurementTrackerStepSix {...completedProps} />);
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            fireEvent.click(screen.getByRole("button", { name: /save notes/i }));
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(6);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+            expect(mockHandleStepSixComplete).not.toHaveBeenCalled();
+        });
+    });
+
     describe("Read-Only Mode", () => {
         it("renders read-only completed view when isReadOnly is true and status is COMPLETED", () => {
             useProcurementTrackerStepSix.mockReturnValue({
