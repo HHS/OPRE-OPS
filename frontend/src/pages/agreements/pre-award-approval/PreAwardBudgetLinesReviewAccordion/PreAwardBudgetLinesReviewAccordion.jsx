@@ -2,7 +2,7 @@ import AgreementBLIAccordion from "../../../../components/Agreements/AgreementBL
 import AgreementBLIReviewTable from "../../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../../components/ServicesComponents/ServicesComponentAccordion";
 import ReviewExecutingTotalAccordion from "../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
-import { VALIDATABLE_BLI_STATUSES } from "../RequestPreAwardApproval.hooks";
+import { VALIDATABLE_BLI_STATUSES } from "../constants";
 import {
     findDescription,
     findIfOptional,
@@ -17,6 +17,9 @@ import {
  * @property {any[]} servicesComponents - Services components for the agreement
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
  * @property {number} executingTotal - Total of executing budget lines
+ * @property {boolean} [showBudgetLineErrors] - When true, inline error styling is applied to
+ *   PLANNED/IN_EXECUTION BLI cells. Omit (default false) for read-only review pages
+ *   (ApprovePreAwardApproval, ReviewBudgetTeamRequisition) where no errors should be highlighted.
  */
 
 /**
@@ -32,7 +35,8 @@ export const PreAwardBudgetLinesReviewAccordion = ({
     agreement,
     servicesComponents,
     groupedBudgetLines,
-    executingTotal
+    executingTotal,
+    showBudgetLineErrors = false
 }) => {
     return (
         <>
@@ -71,7 +75,7 @@ export const PreAwardBudgetLinesReviewAccordion = ({
                                         isReviewMode={true}
                                         servicesComponentNumber={group.servicesComponentNumber}
                                         action=""
-                                        errorStatuses={VALIDATABLE_BLI_STATUSES}
+                                        errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                     />
                                 ) : (
                                     <p className="text-center margin-y-7">

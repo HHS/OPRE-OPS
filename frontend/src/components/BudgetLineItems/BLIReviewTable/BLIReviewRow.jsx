@@ -57,6 +57,14 @@ const BLIReviewRow = ({
     // When errorStatuses is provided, inline errors only apply to rows whose status is in the list.
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
+
+    // Services component has no column in this table; surface its absence as a row-level error
+    // class so the user can locate the offending BLI when errorStatuses-mode is active.
+    const statusScopedErrors = Array.isArray(errorStatuses);
+    const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
+    const missingServicesComponentClass =
+        showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
+
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -156,12 +164,8 @@ const BLIReviewRow = ({
     };
 
     const TableRowData = (() => {
-        // When errorStatuses is provided (e.g. pre-award page), inline errors follow rowInReviewMode
-        // directly — the caller has already scoped which statuses trigger errors and there are no
-        // checkboxes, so selection is meaningless. Without errorStatuses (ReviewAgreement page),
-        // preserve the original behavior: errors only show when the row is selected.
-        const statusScopedErrors = Array.isArray(errorStatuses);
-        const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine.selected;
+        // showCellErrors and statusScopedErrors are computed at the component level
+        // (above the IIFE) so they are also available for the row className.
 
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
@@ -276,7 +280,7 @@ const BLIReviewRow = ({
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
-                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
+                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""} ${missingServicesComponentClass}`.trim()}
             />
         </>
     );

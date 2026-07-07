@@ -8,7 +8,7 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
@@ -197,6 +197,7 @@ export const RequestPreAwardApproval = () => {
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
                 executingTotal={executingTotal}
+                showBudgetLineErrors={true}
             />
 
             {/* Upload Final Consensus Memo */}
@@ -332,28 +333,13 @@ export const RequestPreAwardApproval = () => {
                     Edit
                 </button>
                 {isStep4Completed && (isAgreementInvalid || hasBLIError) ? (
-                    <Tooltip
+                    <DisabledButtonWithTooltip
                         label="In order to send this agreement to approval, click edit to update the required information."
-                        position="top"
+                        tooltipPosition="top"
+                        dataCy="send-to-approval-btn"
                     >
-                        {/* Wrap in a focusable div so the tooltip fires on hover/focus even though the inner button is disabled */}
-                        <div
-                            tabIndex={0}
-                            role="button"
-                            aria-disabled="true"
-                            style={{ display: "inline-block", cursor: "not-allowed" }}
-                        >
-                            <button
-                                type="button"
-                                className="usa-button"
-                                data-cy="send-to-approval-btn"
-                                disabled={true}
-                                style={{ pointerEvents: "none" }}
-                            >
-                                {isSubmitting ? "Submitting..." : "Send to Approval"}
-                            </button>
-                        </div>
-                    </Tooltip>
+                        {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    </DisabledButtonWithTooltip>
                 ) : (
                     <button
                         type="button"

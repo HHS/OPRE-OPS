@@ -15,11 +15,9 @@ import {
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import agreementSuite, { validateBudgetLineItems } from "./suite";
-
-export const VALIDATABLE_BLI_STATUSES = [BLI_STATUS.PLANNED, BLI_STATUS.EXECUTING];
+import { VALIDATABLE_BLI_STATUSES } from "./constants";
 
 /**
  * Custom hook for the Request Pre-Award Approval page

@@ -13,6 +13,7 @@ import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndS
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
+import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -35,13 +36,15 @@ const DEFAULT_RETURN_PATH = (agreementId) => `/agreements/review/${agreementId}`
 
 // Only allow same-origin absolute paths under /agreements/ so a crafted ?returnTo=
 // can't open-redirect the user off-site after saving.
+// Composes safeRedirectPath (handles scheme/backslash/protocol-relative checks) and
+// then enforces the /agreements/ prefix and absence of path traversal sequences.
 const sanitizeReturnTo = (raw, agreementId) => {
     const fallback = DEFAULT_RETURN_PATH(agreementId);
-    if (!raw || typeof raw !== "string") return fallback;
-    if (!raw.startsWith("/agreements/")) return fallback;
-    if (raw.startsWith("//")) return fallback;
-    if (raw.includes("..")) return fallback;
-    return raw;
+    const safe = safeRedirectPath(raw);
+    if (safe === "/") return fallback;
+    if (!safe.startsWith("/agreements/")) return fallback;
+    if (safe.includes("..")) return fallback;
+    return safe;
 };
 
 const EditAgreementAndBudgetLines = () => {
