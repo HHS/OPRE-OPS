@@ -14,10 +14,17 @@ from ops_api.ops.services.procurement_tracker_steps import ProcurementTrackerSte
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _make_role(name):
+    """Create a mock role with a proper .name attribute (not MagicMock display name)."""
+    role = MagicMock()
+    role.name = name
+    return role
+
+
 def _make_user(roles=None):
     user = MagicMock()
     user.id = 1
-    user.roles = [MagicMock(name=r) for r in (roles or [])]
+    user.roles = [_make_role(r) for r in (roles or [])]
     return user
 
 
@@ -58,7 +65,7 @@ class TestGetPendingAwardApprovalsForUser:
         assert result == []
 
     def test_budget_team_user_gets_query_executed(self):
-        """BUDGET_TEAM users trigger the pending-award query."""
+        """BUDGET_TEAM users trigger the pending-award query and receive the results."""
         service = ProcurementTrackerStepService.__new__(ProcurementTrackerStepService)
         session = MagicMock()
         user = _make_user(roles=["BUDGET_TEAM"])
@@ -69,11 +76,13 @@ class TestGetPendingAwardApprovalsForUser:
         service.db_session = session
 
         result = service.get_pending_award_approvals_for_user(user.id)
-        # Result should be a list (DB call was made)
-        assert isinstance(result, list)
+
+        # DB was queried (not short-circuited) and the mock step is returned
+        session.scalars.assert_called_once()
+        assert result == [mock_step]
 
     def test_system_owner_gets_query_executed(self):
-        """SYSTEM_OWNER users also get the query."""
+        """SYSTEM_OWNER users also trigger the pending-award query and receive results."""
         service = ProcurementTrackerStepService.__new__(ProcurementTrackerStepService)
         session = MagicMock()
         user = _make_user(roles=["SYSTEM_OWNER"])
@@ -84,4 +93,7 @@ class TestGetPendingAwardApprovalsForUser:
         service.db_session = session
 
         result = service.get_pending_award_approvals_for_user(user.id)
-        assert isinstance(result, list)
+
+        # DB was queried (not short-circuited) and the mock step is returned
+        session.scalars.assert_called_once()
+        assert result == [mock_step]

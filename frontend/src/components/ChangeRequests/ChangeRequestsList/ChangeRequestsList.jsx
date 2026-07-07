@@ -16,6 +16,7 @@ import AwardReviewCard from "../AwardReviewCard";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
 /** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep */
+/** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerAwardStep} ProcurementTrackerAwardStep */
 
 const BLI_STATUS_IN_EXECUTION = "IN_EXECUTION";
 const PAGE_SIZE = 10;
@@ -85,7 +86,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     };
 
     const taggedAwardApprovals = (awardApprovals ?? []).map(
-        (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
+        (/** @type {ProcurementTrackerAwardStep} */ step) => ({
             _type: "award",
             _sortDate: step.approval_requested_date ?? "",
             item: step

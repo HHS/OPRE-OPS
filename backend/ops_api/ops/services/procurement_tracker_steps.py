@@ -1074,7 +1074,10 @@ class ProcurementTrackerStepService:
 
         # Case 2: Award was approved — notify requester + broader team
         new_award_status = data.get("approval_status")
-        award_approved_transitioned = new_award_status == "APPROVED" and old_award_approval_status is None
+        award_approved_transitioned = new_award_status == "APPROVED" and old_award_approval_status in (
+            None,
+            "PENDING",
+        )
 
         if award_approved_transitioned:
             recipient_ids = self._get_award_approval_notification_recipients(agreement, step)
