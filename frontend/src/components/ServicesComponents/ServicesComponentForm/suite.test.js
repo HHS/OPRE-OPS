@@ -260,6 +260,14 @@ describe("ServicesComponentForm Validation Suite", () => {
     // with `if (!windowStart)` / `if (!windowEnd)`, so no error is raised
     // regardless of the BLI's date_needed.
     // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Fully undefined SC window — no PoP error regardless of BLI dates
+    //
+    // When every SC in allServicesComponents has both period_start and period_end
+    // null, windowStart and windowEnd are both null.  The suite returns early from
+    // each PoP test (`if (!windowStart) return` / `if (!windowEnd) return`), so no
+    // BLI date can trigger a popStartDate or popEndDate error.
+    // -------------------------------------------------------------------------
     describe("undefined SC window — no PoP error", () => {
         it("passes when all SCs have null period_start and period_end", () => {
             // SC has no dates — window is fully undefined.
@@ -297,6 +305,48 @@ describe("ServicesComponentForm Validation Suite", () => {
                 nonDraftBudgetLines: [bli("2020-01-01")]
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
+        });
+
+        it("passes with multiple SCs when all have null period_start and period_end", () => {
+            // Two null-dated SCs — aggregate window is still fully undefined.
+            // Multiple BLIs with dates spread far apart must not trigger any PoP error.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: [sc(1, null, null), sc(2, null, null)],
+                nonDraftBudgetLines: [bli("2000-01-01"), bli("2099-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes in add mode when the new SC has null period_start and period_end", () => {
+            // Adding a SC with no PoP dates and a non-draft BLI already on the
+            // agreement — the undefined window must not trigger a PoP error.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "add",
+                number: 1,
+                allServicesComponents: [sc(1, null, null)],
+                nonDraftBudgetLines: [bli("2025-06-15")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes when a BLI has an extreme future date and window is undefined", () => {
+            // Extreme date that would fail almost any real window — must be fine when
+            // no SC contributes a bound.
+            const result = suite.run({
+                servicesComponentSelect: 1,
+                mode: "edit",
+                number: 1,
+                allServicesComponents: [sc(1, null, null)],
+                nonDraftBudgetLines: [bli("2099-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
         });
     });
 

@@ -3570,6 +3570,235 @@ def test_draft_to_planned_allowed_when_no_sc_pop_dates(budget_team_auth_client, 
     )
 
 
+# ---------------------------------------------------------------------------
+# Undefined SC window — no PoP-bounds validation regardless of date_needed
+# ---------------------------------------------------------------------------
+# When every SC in the agreement has both period_start and period_end set to None,
+# agreement.sc_start_date and agreement.sc_end_date both return None.
+# _validate_date_within_sc_window short-circuits both bound checks (True for each
+# absent bound), so the BLI is always "in window" no matter what date_needed is.
+#
+# Covered scenarios:
+#   1. Multiple SCs — all null — DRAFT→PLANNED allowed for any date_needed
+#   2. PLANNED BLI — direct date_needed update to an extreme date is allowed
+#   3. No SCs at all (empty services_components list) — window is also undefined
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def agreement_multi_sc_no_dates(budget_team_auth_client, app, test_project, test_can):
+    """
+    Agreement with two SCs, both having period_start=None and period_end=None.
+    The BLI is PLANNED with a moderate date_needed so the fixture itself is valid.
+    """
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: two SCs, both no PoP dates",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for multi-SC undefined-window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc1 = ServicesComponent(number=1, agreement_id=agreement_id, period_start=None, period_end=None)
+    sc2 = ServicesComponent(number=2, agreement_id=agreement_id, period_start=None, period_end=None)
+    session.add_all([sc1, sc2])
+    session.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="PLANNED BLI — two SCs, both no dates",
+        agreement_id=agreement_id,
+        services_component_id=sc1.id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=datetime.date(2044, 6, 15),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_undefined_window_multi_sc_all_null_date_update_allowed(
+    budget_team_auth_client, agreement_multi_sc_no_dates
+):
+    """Updating date_needed on a PLANNED BLI is allowed when all SCs have no PoP dates.
+
+    With two SCs and neither providing a period_start or period_end, sc_start_date and
+    sc_end_date are both None.  Moving date_needed to an extreme future date must not
+    trigger a PoP-bounds error.
+    """
+    _, bli_id = agreement_multi_sc_no_dates
+    extreme_future = datetime.date(2099, 12, 31)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": extreme_future.isoformat()},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"date_needed update must succeed when all SCs have no PoP dates, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+@pytest.fixture()
+def draft_bli_multi_sc_no_dates(budget_team_auth_client, app, test_project, test_can):
+    """
+    A DRAFT BLI on an agreement with two null-dated SCs; date_needed is set to a
+    date that would be out of bounds for almost any real SC window (very early).
+    The intent is to confirm PoP validation is entirely skipped on status transition.
+    """
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: DRAFT BLI multi-SC all null dates",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for multi-SC undefined-window DRAFT→PLANNED test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc1 = ServicesComponent(number=1, agreement_id=agreement_id, period_start=None, period_end=None)
+    sc2 = ServicesComponent(number=2, agreement_id=agreement_id, period_start=None, period_end=None)
+    session.add_all([sc1, sc2])
+    session.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="DRAFT BLI — two SCs, both no dates",
+        agreement_id=agreement_id,
+        services_component_id=sc1.id,
+        status=BudgetLineItemStatus.DRAFT,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=datetime.date(2099, 12, 31),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_undefined_window_multi_sc_all_null_draft_to_planned_allowed(
+    budget_team_auth_client, draft_bli_multi_sc_no_dates
+):
+    """DRAFT→PLANNED succeeds when multiple SCs exist but none have PoP dates.
+
+    The aggregate window (sc_start_date, sc_end_date) is None/None regardless of how
+    many SCs are present if none contribute a period_start or period_end.  No PoP error
+    must fire on the status transition.
+    """
+    _, bli_id = draft_bli_multi_sc_no_dates
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"DRAFT→PLANNED must succeed when multiple SCs all have no PoP dates, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
+@pytest.fixture()
+def agreement_no_scs(budget_team_auth_client, app, test_project, test_can):
+    """
+    Agreement with no ServicesComponents at all.  agreement.sc_start_date and
+    sc_end_date both return None (empty list guard).  The BLI is PLANNED.
+    """
+    session = app.db_session
+
+    resp = budget_team_auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: BLI on agreement with no SCs",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for no-SC undefined-window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    bli = ContractBudgetLineItem(
+        line_description="PLANNED BLI — no SCs on agreement",
+        agreement_id=agreement_id,
+        services_component_id=None,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=datetime.date(2044, 6, 15),
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_undefined_window_no_scs_date_update_allowed(budget_team_auth_client, agreement_no_scs):
+    """Updating date_needed is allowed when the agreement has no SCs at all.
+
+    agreement.sc_start_date / sc_end_date both return None when services_components is
+    empty, so _validate_date_within_sc_window must not raise a validation error.
+    """
+    _, bli_id = agreement_no_scs
+    extreme_future = datetime.date(2099, 12, 31)
+
+    resp = budget_team_auth_client.patch(
+        f"/api/v1/budget-line-items/{bli_id}",
+        json={"date_needed": extreme_future.isoformat()},
+    )
+
+    assert resp.status_code in (200, 202), (
+        f"date_needed update must succeed when the agreement has no SCs, "
+        f"got {resp.status_code}: {resp.json}"
+    )
+
+
 @pytest.fixture()
 def draft_bli_outside_sc_window(budget_team_auth_client, app, test_project, test_can):
     """
