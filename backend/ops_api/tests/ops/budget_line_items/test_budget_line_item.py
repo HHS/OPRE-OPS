@@ -3636,9 +3636,7 @@ def agreement_multi_sc_no_dates(budget_team_auth_client, app, test_project, test
     session.commit()
 
 
-def test_undefined_window_multi_sc_all_null_date_update_allowed(
-    budget_team_auth_client, agreement_multi_sc_no_dates
-):
+def test_undefined_window_multi_sc_all_null_date_update_allowed(budget_team_auth_client, agreement_multi_sc_no_dates):
     """Updating date_needed on a PLANNED BLI is allowed when all SCs have no PoP dates.
 
     With two SCs and neither providing a period_start or period_end, sc_start_date and
@@ -3654,8 +3652,7 @@ def test_undefined_window_multi_sc_all_null_date_update_allowed(
     )
 
     assert resp.status_code in (200, 202), (
-        f"date_needed update must succeed when all SCs have no PoP dates, "
-        f"got {resp.status_code}: {resp.json}"
+        f"date_needed update must succeed when all SCs have no PoP dates, " f"got {resp.status_code}: {resp.json}"
     )
 
 
@@ -3728,8 +3725,7 @@ def test_undefined_window_multi_sc_all_null_draft_to_planned_allowed(
     )
 
     assert resp.status_code in (200, 202), (
-        f"DRAFT→PLANNED must succeed when multiple SCs all have no PoP dates, "
-        f"got {resp.status_code}: {resp.json}"
+        f"DRAFT→PLANNED must succeed when multiple SCs all have no PoP dates, " f"got {resp.status_code}: {resp.json}"
     )
 
 
@@ -3794,8 +3790,7 @@ def test_undefined_window_no_scs_date_update_allowed(budget_team_auth_client, ag
     )
 
     assert resp.status_code in (200, 202), (
-        f"date_needed update must succeed when the agreement has no SCs, "
-        f"got {resp.status_code}: {resp.json}"
+        f"date_needed update must succeed when the agreement has no SCs, " f"got {resp.status_code}: {resp.json}"
     )
 
 
