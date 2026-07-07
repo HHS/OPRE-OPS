@@ -181,6 +181,60 @@ describe("BLIReviewRow", () => {
         expect(setSelectedBLIs).toHaveBeenCalledWith(defaultBudgetLine.id.toString());
     });
 
+    describe("errorStatuses prop", () => {
+        // Target the CAN cell — it uses showCellErrors which is the new gate this prop controls.
+        const bliWithMissingCan = (status) => ({
+            ...defaultBudgetLine,
+            status,
+            can: null,
+            can_id: null,
+            selected: false // explicitly unselected, simulating the pre-award page
+        });
+
+        it("applies CAN error styling to a PLANNED row when errorStatuses includes PLANNED", () => {
+            renderComponent({
+                isReviewMode: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingCan("PLANNED")
+            });
+
+            // CAN cell shows NO_DATA ("--") with table-item-error class
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeDefined();
+        });
+
+        it("suppresses CAN error styling on a DRAFT row when errorStatuses excludes DRAFT", () => {
+            renderComponent({
+                isReviewMode: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingCan("DRAFT")
+            });
+
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
+        });
+
+        it("does NOT apply CAN error styling when errorStatuses is omitted and row is unselected (ReviewAgreement regression guard)", () => {
+            renderComponent({
+                isReviewMode: true,
+                // no errorStatuses — ReviewAgreement page behavior
+                budgetLine: bliWithMissingCan("PLANNED")
+            });
+
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
+        });
+    });
+
     describe("CLIN Selector", () => {
         // Note: Hover interaction tests are covered by E2E tests rather than unit tests
         // because React Testing Library's hover simulation doesn't reliably trigger state updates
