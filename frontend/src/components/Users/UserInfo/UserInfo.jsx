@@ -35,6 +35,10 @@ const UserInfo = ({ user, isEditable }) => {
     const [selectedRoles, setSelectedRoles] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [showCancelModal, setShowCancelModal] = React.useState(false);
+    // Baseline of the last-saved values. The `user` prop is a stale snapshot from the
+    // parent's selected-users state and is not re-synced after a save, so we track what
+    // was persisted here to keep the dirty check (and Cancel reset) accurate.
+    const [lastSaved, setLastSaved] = React.useState(null);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -106,14 +110,18 @@ const UserInfo = ({ user, isEditable }) => {
             updateUserResult.reset();
         }
     }, [updateUserResult, setAlert]);
-    // Detect unsaved edits by comparing the staged selections against the persisted user.
-    const persistedRoleNames = (user.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
+    // Detect unsaved edits by comparing the staged selections against the persisted values.
+    // Prefer the local last-saved baseline (updated on save) over the stale `user` prop.
+    const persistedDivision = lastSaved?.division ?? user.division ?? null;
+    const persistedStatus = lastSaved?.status ?? user.status ?? null;
+    const persistedRoleNames =
+        lastSaved?.roleNames ?? (user.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
     const selectedRoleNames = selectedRoles.map((role) => role.name);
     const rolesChanged =
         persistedRoleNames.length !== selectedRoleNames.length ||
         !persistedRoleNames.every((name) => selectedRoleNames.includes(name));
-    const divisionChanged = (selectedDivision?.id ?? null) !== (user.division ?? null);
-    const statusChanged = (selectedStatus?.name ?? null) !== (user.status ?? null);
+    const divisionChanged = (selectedDivision?.id ?? null) !== persistedDivision;
+    const statusChanged = (selectedStatus?.name ?? null) !== persistedStatus;
     const isDirty = divisionChanged || statusChanged || rolesChanged;
 
     const handleDivisionChange = (division) => {
@@ -129,14 +137,19 @@ const UserInfo = ({ user, isEditable }) => {
     };
 
     const saveUser = (roleNames) => {
+        const division = selectedDivision?.id ?? null;
+        const status = selectedStatus?.name ?? "LOCKED";
         updateUser({
             id: user.id,
             data: {
-                division: selectedDivision?.id ?? null,
+                division,
                 roles: roleNames,
-                status: selectedStatus?.name ?? "LOCKED"
+                status
             }
         });
+        // Record the persisted values so the dirty check resets the buttons to disabled
+        // once the save completes (the `user` prop won't reflect this change).
+        setLastSaved({ division, status, roleNames });
     };
 
     // Selecting Read Only requires confirmation because it strips all other roles.
@@ -154,10 +167,10 @@ const UserInfo = ({ user, isEditable }) => {
         saveUser([READ_ONLY_ROLE]);
     };
 
-    // Discard unsaved edits by resetting each field to the persisted user value.
+    // Discard unsaved edits by resetting each field to the last-persisted value.
     const handleCancelEdits = () => {
-        setSelectedDivision(divisions?.find((division) => division.id === user.division) ?? {});
-        setSelectedStatus(STATUS_DATA.find((status) => status.name === user.status) ?? {});
+        setSelectedDivision(divisions?.find((division) => division.id === persistedDivision) ?? {});
+        setSelectedStatus(STATUS_DATA.find((status) => status.name === persistedStatus) ?? {});
         setSelectedRoles(roles?.filter((role) => persistedRoleNames.includes(role.name)) ?? []);
     };
 
