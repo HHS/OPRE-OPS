@@ -54,7 +54,14 @@ export const ProcurementDetailsTableRow = ({
     const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
 
-    const getStatusCount = (status) => budgetLineItems.filter((bli) => bli.status === status).length;
+    const getStatusCount = (status) => {
+        if (status === "PLANNED") {
+            return budgetLineItems.filter(
+                (bli) => bli.status === "PLANNED" || bli.status === "PLANNED_MOD"
+            ).length;
+        }
+        return budgetLineItems.filter((bli) => bli.status === status).length;
+    };
 
     const TableRowData = (
         <>
