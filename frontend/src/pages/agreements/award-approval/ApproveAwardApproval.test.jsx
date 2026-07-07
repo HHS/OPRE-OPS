@@ -180,7 +180,15 @@ describe("ApproveAwardApproval", () => {
     });
 
     it("shows confirmation modal when showModal is true", () => {
-        renderPage({ showModal: true, modalProps: { heading: "Confirm?", actionButtonText: "Approve", secondaryButtonText: "Cancel", handleConfirm: vi.fn() } });
+        renderPage({
+            showModal: true,
+            modalProps: {
+                heading: "Confirm?",
+                actionButtonText: "Approve",
+                secondaryButtonText: "Cancel",
+                handleConfirm: vi.fn()
+            }
+        });
         expect(screen.getByTestId("confirmation-modal")).toBeInTheDocument();
         expect(screen.getByText("Confirm?")).toBeInTheDocument();
     });
