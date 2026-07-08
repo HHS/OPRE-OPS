@@ -126,6 +126,7 @@ export const ApproveAwardApproval = () => {
                 }))}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
+                executingTotalInstructions="Review the total of all budget lines in Executing Status."
             />
 
             {/* CAN Impact */}
