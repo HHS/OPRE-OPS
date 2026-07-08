@@ -6,7 +6,6 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import { BudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/BudgetLinesReviewAccordion";
-import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import SummaryBox from "../../../components/Agreements/SummaryBox";
@@ -31,8 +30,6 @@ export const ApproveAwardApproval = () => {
         executingTotal,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
-        reviewerNotes,
-        setReviewerNotes,
         requestorNotes,
         handleApprove,
         handleCancel,
@@ -222,14 +219,14 @@ export const ApproveAwardApproval = () => {
                 </div>
             </Accordion>
 
-            {/* Notes */}
+            {/* Notes — read-only Submitter's Notes per Figma */}
             <Accordion
                 heading="Notes"
                 level={2}
             >
                 <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
-                {requestorNotes && (
+                {requestorNotes ? (
                     <section className="margin-top-5">
                         <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
                         <p
@@ -239,20 +236,9 @@ export const ApproveAwardApproval = () => {
                             {requestorNotes}
                         </p>
                     </section>
+                ) : (
+                    <p className="text-base-dark margin-top-3">No notes from the submitter.</p>
                 )}
-
-                <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
-                    <h2 className="font-sans-lg text-semibold margin-bottom-0">Reviewer&apos;s Notes</h2>
-                    <TextArea
-                        name="reviewer-notes"
-                        label="Notes (optional)"
-                        maxLength={150}
-                        value={reviewerNotes}
-                        onChange={(/** @type {string} */ _name, /** @type {string} */ value) => setReviewerNotes(value)}
-                        isDisabled={approvalAlreadyProcessed}
-                        textAreaStyle={{ height: "8.5rem", maxWidth: "40rem" }}
-                    />
-                </section>
             </Accordion>
 
             {/* Submit Error Alert */}
