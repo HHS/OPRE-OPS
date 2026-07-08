@@ -49,8 +49,14 @@ export const PreAwardBudgetLinesReviewAccordion = ({
             >
                 {groupedBudgetLines &&
                     groupedBudgetLines.length > 0 &&
-                    groupedBudgetLines.map((/** @type {any} */ group, /** @type {number} */ index) => {
-                        const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                    groupedBudgetLines
+                        .filter(
+                            (group) =>
+                                // Hide "BLs not associated with a Services Component" when empty
+                                group.serviceComponentGroupingLabel !== "0" || group.budgetLines.length > 0
+                        )
+                        .map((/** @type {any} */ group, /** @type {number} */ index) => {
+                            const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                             ? group.serviceComponentGroupingLabel
                             : group.servicesComponentNumber;
                         return (

@@ -120,16 +120,10 @@ export const ApproveAwardApproval = () => {
                 budgetLineItems={allBudgetLines.filter((bli) => bli.status !== "DRAFT")}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
-                groupedBudgetLines={(groupedBudgetLinesByServicesComponent ?? [])
-                    .map((group) => ({
-                        ...group,
-                        budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
-                    }))
-                    .filter(
-                        (group) =>
-                            // Hide the "BLs not associated with a Services Component" group when empty
-                            group.serviceComponentGroupingLabel !== "0" || group.budgetLines.length > 0
-                    )}
+                groupedBudgetLines={(groupedBudgetLinesByServicesComponent ?? []).map((group) => ({
+                    ...group,
+                    budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
+                }))}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
             />
