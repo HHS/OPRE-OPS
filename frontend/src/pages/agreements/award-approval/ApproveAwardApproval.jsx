@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
@@ -21,6 +21,7 @@ import useApproveAwardApproval from "./ApproveAwardApproval.hooks";
 export const ApproveAwardApproval = () => {
     const { id } = useParams();
     const agreementId = Number(id);
+    const navigate = useNavigate();
 
     const {
         agreement,
@@ -296,6 +297,15 @@ export const ApproveAwardApproval = () => {
                     data-cy="cancel-approval-btn"
                 >
                     Cancel
+                </button>
+
+                <button
+                    className="usa-button usa-button--outline margin-right-2"
+                    onClick={() => navigate(`/agreements/review/${agreementId}/edit`)}
+                    disabled={isSubmitting || approvalAlreadyProcessed}
+                    data-cy="edit-agreement-btn"
+                >
+                    Edit
                 </button>
 
                 <button
