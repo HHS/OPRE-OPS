@@ -387,12 +387,24 @@ class ProcurementTrackerStepService:
                 if procurement_tracker.procurement_action:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
                     if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
-                        procurement_action.status = ProcurementActionStatus.AWARDED
-                        if procurement_action.date_awarded_obligated is None:
-                            procurement_action.date_awarded_obligated = date.today()
-                            logger.debug(f"Set procurement action status to AWARDED and award_date to {date.today()}")
+                        # Only mark AWARDED on step completion if Budget Team has already approved
+                        # (award_approval_status == "APPROVED"). If approval is still pending,
+                        # the agreement will be awarded when Budget Team approves via _handle_award_approval.
+                        if procurement_action.status == ProcurementActionStatus.AWARDED:
+                            logger.debug(
+                                "Procurement action already AWARDED by budget team approval — skipping on step completion"
+                            )
+                        elif hasattr(step, "award_approval_status") and step.award_approval_status == "APPROVED":
+                            procurement_action.status = ProcurementActionStatus.AWARDED
+                            if procurement_action.date_awarded_obligated is None:
+                                procurement_action.date_awarded_obligated = date.today()
+                                logger.debug(
+                                    f"Set procurement action status to AWARDED and award_date to {date.today()}"
+                                )
                         else:
-                            logger.debug("Skipping date_awarded_obligated update — already set by award approval")
+                            logger.debug(
+                                "Skipping AWARDED status on step completion — award approval not yet granted by Budget Team"
+                            )
 
             # Create UPDATE_PROCUREMENT_TRACKER event if tracker was modified
             if tracker_modified:
