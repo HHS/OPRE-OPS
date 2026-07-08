@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import { BudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/BudgetLinesReviewAccordion";
+import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SummaryBox from "../../../components/Agreements/SummaryBox";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
@@ -21,7 +23,6 @@ import useApproveAwardApproval from "./ApproveAwardApproval.hooks";
 export const ApproveAwardApproval = () => {
     const { id } = useParams();
     const agreementId = Number(id);
-    const navigate = useNavigate();
 
     const {
         agreement,
@@ -30,6 +31,8 @@ export const ApproveAwardApproval = () => {
         executingTotal,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        reviewerNotes,
+        setReviewerNotes,
         requestorNotes,
         handleApprove,
         handleCancel,
@@ -123,7 +126,6 @@ export const ApproveAwardApproval = () => {
                 }))}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
-                executingTotalInstructions="Review the total of all budget lines in Executing Status."
             />
 
             {/* CAN Impact */}
@@ -137,32 +139,21 @@ export const ApproveAwardApproval = () => {
             />
 
             {/* Vendor Information — read-only */}
-            <Accordion
-                heading="Review Vendor Information"
-                level={2}
-            >
-                <p>Please review the vendor details below to ensure everything is correct.</p>
-                <div className="grid-row grid-gap margin-top-3">
-                    <div className="grid-col-4">
-                        <dl className="font-12px margin-0">
-                            <dt className="text-base-dark">Vendor</dt>
-                            <dd className="margin-0 text-bold">{step6?.vendor?.name || "—"}</dd>
-                        </dl>
-                    </div>
-                    <div className="grid-col-4">
-                        <dl className="font-12px margin-0">
-                            <dt className="text-base-dark">Unique Entity ID (SAM.gov ID)</dt>
-                            <dd className="margin-0 text-bold">{step6?.vendor?.duns || "—"}</dd>
-                        </dl>
-                    </div>
-                    <div className="grid-col-4">
-                        <dl className="font-12px margin-0">
-                            <dt className="text-base-dark">Vendor Type</dt>
-                            <dd className="margin-0 text-bold">{step6?.vendor?.vendor_type || "—"}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </Accordion>
+            {step6?.vendor && (
+                <Accordion
+                    heading="Review Vendor Information"
+                    level={2}
+                >
+                    <p>Please review the vendor details below to ensure everything is correct.</p>
+                    <SummaryBox
+                        leftLabel="Vendor"
+                        leftValue={step6.vendor.name || "—"}
+                        rightLabel="Unique Entity ID (SAM.gov ID)"
+                        rightValue={step6.vendor.duns || "—"}
+                        dataCy="vendor-info-box"
+                    />
+                </Accordion>
+            )}
 
             {/* Current Award Information — read-only */}
             <Accordion
@@ -232,25 +223,36 @@ export const ApproveAwardApproval = () => {
                 </div>
             </Accordion>
 
-            {/* Notes — read-only Submitter's Notes per Figma */}
+            {/* Notes */}
             <Accordion
                 heading="Notes"
                 level={2}
             >
                 <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
-                <section className="margin-top-5">
-                    <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
-                    {requestorNotes ? (
+                {requestorNotes && (
+                    <section className="margin-top-5">
+                        <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
                         <p
                             className="maxw-mobile-lg"
                             style={{ whiteSpace: "pre-wrap" }}
                         >
                             {requestorNotes}
                         </p>
-                    ) : (
-                        <p className="text-base-dark">No notes from the submitter.</p>
-                    )}
+                    </section>
+                )}
+
+                <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
+                    <h2 className="font-sans-lg text-semibold margin-bottom-0">Reviewer&apos;s Notes</h2>
+                    <TextArea
+                        name="reviewer-notes"
+                        label="Notes (optional)"
+                        maxLength={150}
+                        value={reviewerNotes}
+                        onChange={(/** @type {string} */ _name, /** @type {string} */ value) => setReviewerNotes(value)}
+                        isDisabled={approvalAlreadyProcessed}
+                        textAreaStyle={{ height: "8.5rem", maxWidth: "40rem" }}
+                    />
                 </section>
             </Accordion>
 
@@ -297,19 +299,6 @@ export const ApproveAwardApproval = () => {
                     data-cy="cancel-approval-btn"
                 >
                     Cancel
-                </button>
-
-                <button
-                    className="usa-button usa-button--outline margin-right-2"
-                    onClick={() =>
-                        navigate(
-                            `/agreements/review/${agreementId}/edit?returnTo=/agreements/${agreementId}/review-award`
-                        )
-                    }
-                    disabled={isSubmitting || approvalAlreadyProcessed}
-                    data-cy="edit-agreement-btn"
-                >
-                    Edit
                 </button>
 
                 <button

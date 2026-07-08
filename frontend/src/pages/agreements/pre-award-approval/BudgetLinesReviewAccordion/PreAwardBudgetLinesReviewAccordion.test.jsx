@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
+import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 
 // Mock child components
 vi.mock("../../../../components/Agreements/AgreementBLIAccordion", () => ({
@@ -45,7 +45,7 @@ vi.mock("../../../../helpers/servicesComponent.helpers", () => ({
     findPeriodStart: vi.fn()
 }));
 
-describe("BudgetLinesReviewAccordion", () => {
+describe("PreAwardBudgetLinesReviewAccordion", () => {
     const mockAgreement = {
         id: 1,
         name: "Test Agreement",
@@ -84,13 +84,13 @@ describe("BudgetLinesReviewAccordion", () => {
     };
 
     it("renders the budget lines accordion with correct title", () => {
-        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(screen.getByText("Review Budget Lines")).toBeInTheDocument();
     });
 
     it("displays standard instructions text", () => {
-        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(
             screen.getByText(
@@ -100,14 +100,14 @@ describe("BudgetLinesReviewAccordion", () => {
     });
 
     it("renders services component accordions for grouped budget lines", () => {
-        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
 
         const serviceComponents = screen.getAllByTestId("services-component-accordion");
         expect(serviceComponents).toHaveLength(2);
     });
 
     it("renders BLI review tables for each service component", () => {
-        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
 
         const reviewTables = screen.getAllByTestId("bli-review-table");
         expect(reviewTables).toHaveLength(2);
@@ -125,13 +125,13 @@ describe("BudgetLinesReviewAccordion", () => {
             ]
         };
 
-        render(<BudgetLinesReviewAccordion {...propsWithEmptyGroup} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...propsWithEmptyGroup} />);
 
         expect(screen.getByText("No budget lines in this services component.")).toBeInTheDocument();
     });
 
     it("renders the executing total accordion", () => {
-        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(screen.getByTestId("review-executing-total-accordion")).toBeInTheDocument();
         expect(screen.getByText(/Executing Total: \$100000/)).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe("BudgetLinesReviewAccordion", () => {
             groupedBudgetLines: []
         };
 
-        render(<BudgetLinesReviewAccordion {...propsWithEmptyGroups} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...propsWithEmptyGroups} />);
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
@@ -155,7 +155,7 @@ describe("BudgetLinesReviewAccordion", () => {
             groupedBudgetLines: null
         };
 
-        render(<BudgetLinesReviewAccordion {...propsWithNullGroups} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...propsWithNullGroups} />);
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
@@ -173,7 +173,7 @@ describe("BudgetLinesReviewAccordion", () => {
             ]
         };
 
-        render(<BudgetLinesReviewAccordion {...propsWithLabel} />);
+        render(<PreAwardBudgetLinesReviewAccordion {...propsWithLabel} />);
 
         const serviceComponents = screen.getAllByTestId("services-component-accordion");
         expect(serviceComponents).toHaveLength(1);

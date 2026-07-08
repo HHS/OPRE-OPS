@@ -17,7 +17,6 @@ import {
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
- * @property {string} [executingTotalInstructions] - Override instructions for the Review Executing Total section
  */
 
 /**
@@ -34,8 +33,7 @@ export const BudgetLinesReviewAccordion = ({
     servicesComponents,
     groupedBudgetLines,
     executingTotal,
-    showCLINColumn = false,
-    executingTotalInstructions = undefined
+    showCLINColumn = false
 }) => {
     return (
         <>
@@ -59,44 +57,41 @@ export const BudgetLinesReviewAccordion = ({
                         )
                         .map((/** @type {any} */ group, /** @type {number} */ index) => {
                             const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
-                                ? group.serviceComponentGroupingLabel
-                                : group.servicesComponentNumber;
-                            return (
-                                <ServicesComponentAccordion
-                                    key={`${group.servicesComponentNumber}-${index}`}
-                                    servicesComponentNumber={group.servicesComponentNumber}
-                                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                                    withMetadata={true}
-                                    periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                                    periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                                    description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                                    optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                                    serviceRequirementType={agreement?.service_requirement_type}
-                                >
-                                    {group.budgetLines.length > 0 ? (
-                                        <AgreementBLIReviewTable
-                                            readOnly={true}
-                                            budgetLines={group.budgetLines}
-                                            isReviewMode={true}
-                                            servicesComponentNumber={group.servicesComponentNumber}
-                                            action=""
-                                            showCLINColumn={showCLINColumn}
-                                        />
-                                    ) : (
-                                        <p className="text-center margin-y-7">
-                                            No budget lines in this services component.
-                                        </p>
-                                    )}
-                                </ServicesComponentAccordion>
-                            );
-                        })}
+                            ? group.serviceComponentGroupingLabel
+                            : group.servicesComponentNumber;
+                        return (
+                            <ServicesComponentAccordion
+                                key={`${group.servicesComponentNumber}-${index}`}
+                                servicesComponentNumber={group.servicesComponentNumber}
+                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                withMetadata={true}
+                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                serviceRequirementType={agreement?.service_requirement_type}
+                            >
+                                {group.budgetLines.length > 0 ? (
+                                    <AgreementBLIReviewTable
+                                        readOnly={true}
+                                        budgetLines={group.budgetLines}
+                                        isReviewMode={true}
+                                        servicesComponentNumber={group.servicesComponentNumber}
+                                        action=""
+                                        showCLINColumn={showCLINColumn}
+                                    />
+                                ) : (
+                                    <p className="text-center margin-y-7">
+                                        No budget lines in this services component.
+                                    </p>
+                                )}
+                            </ServicesComponentAccordion>
+                        );
+                    })}
             </AgreementBLIAccordion>
 
             {/* Review Executing Total */}
-            <ReviewExecutingTotalAccordion
-                executingTotal={executingTotal}
-                {...(executingTotalInstructions !== undefined && { instructions: executingTotalInstructions })}
-            />
+            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
         </>
     );
 };
