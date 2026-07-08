@@ -226,19 +226,19 @@ export const ApproveAwardApproval = () => {
             >
                 <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
-                {requestorNotes ? (
-                    <section className="margin-top-5">
-                        <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
+                <section className="margin-top-5">
+                    <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
+                    {requestorNotes ? (
                         <p
                             className="maxw-mobile-lg"
                             style={{ whiteSpace: "pre-wrap" }}
                         >
                             {requestorNotes}
                         </p>
-                    </section>
-                ) : (
-                    <p className="text-base-dark margin-top-3">No notes from the submitter.</p>
-                )}
+                    ) : (
+                        <p className="text-base-dark">No notes from the submitter.</p>
+                    )}
+                </section>
             </Accordion>
 
             {/* Submit Error Alert */}
