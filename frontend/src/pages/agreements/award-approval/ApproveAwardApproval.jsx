@@ -301,7 +301,11 @@ export const ApproveAwardApproval = () => {
 
                 <button
                     className="usa-button usa-button--outline margin-right-2"
-                    onClick={() => navigate(`/agreements/review/${agreementId}/edit`)}
+                    onClick={() =>
+                        navigate(`/agreements/review/${agreementId}/edit`, {
+                            state: { returnTo: `/agreements/${agreementId}/review-award` }
+                        })
+                    }
                     disabled={isSubmitting || approvalAlreadyProcessed}
                     data-cy="edit-agreement-btn"
                 >
