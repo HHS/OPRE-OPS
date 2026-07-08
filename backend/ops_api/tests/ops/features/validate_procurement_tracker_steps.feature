@@ -68,7 +68,7 @@ Feature: Validate Procurement Tracker Steps
 
     Then I should get a validation error
 
-Scenario: When no presolicitation package is sent to proc shop, the request is valid with unfilled request
+Scenario: Cannot complete acquisition planning step without required fields
   Given I am logged in as an OPS user
   And I have a Contract Agreement with OPS user as a team member
   And I have a procurement tracker
@@ -77,7 +77,7 @@ Scenario: When no presolicitation package is sent to proc shop, the request is v
   When I have a procurement step with no presolicitation package sent to procurement shop
   And I submit a procurement step update
 
-  Then I should get a message that it was successful and my procurement tracker has moved onto the next step
+  Then I should get a validation error
 
 Scenario: Cannot update completed procurement tracker step
   Given I am logged in as an OPS user

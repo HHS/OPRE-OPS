@@ -101,7 +101,7 @@ def test_validate_updating_procurement_tracker_step_with_valid_status(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "When no presolicitation package is sent to proc shop, the request is valid with unfilled request",
+    "Cannot complete acquisition planning step without required fields",
 )
 def test_validate_updating_procurement_tracker_step_without_presolicitation_package(): ...
 
