@@ -5,6 +5,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
+import { PreAwardBudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/PreAwardBudgetLinesReviewAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
@@ -27,6 +28,9 @@ export const ApproveAwardApproval = () => {
         agreement,
         isLoading,
         allBudgetLines,
+        executingTotal,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent,
         reviewerNotes,
         setReviewerNotes,
         requestorNotes,
@@ -111,16 +115,14 @@ export const ApproveAwardApproval = () => {
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines — read-only */}
-            <Accordion
-                heading="Review Budget Lines"
-                level={2}
-            >
-                <p>Please review the Services Components and Budget Lines below to ensure everything is correct.</p>
-                {allBudgetLines.length === 0 && (
-                    <p className="text-center margin-y-5">No budget lines on this agreement.</p>
-                )}
-            </Accordion>
+            {/* Budget Lines — read-only, same component as Pre-Award Requisition review */}
+            <PreAwardBudgetLinesReviewAccordion
+                budgetLineItems={allBudgetLines}
+                agreement={agreement}
+                servicesComponents={servicesComponents}
+                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                executingTotal={executingTotal}
+            />
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
