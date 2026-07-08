@@ -6,7 +6,7 @@ from flask import current_app
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
-from models import ProcurementTracker
+from models import DefaultProcurementTrackerStep, ProcurementTracker
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 
@@ -39,7 +39,9 @@ class ProcurementTrackerService:
             select(ProcurementTracker)
             .where(ProcurementTracker.id == id)
             .options(
-                selectinload(ProcurementTracker.steps),
+                selectinload(ProcurementTracker.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
+                    DefaultProcurementTrackerStep.award_vendor
+                ),
             )
         )
         procurement_tracker = self.db_session.scalar(stmt)
@@ -87,9 +89,11 @@ class ProcurementTrackerService:
         Returns:
             Tuple of (list of ProcurementTracker objects, metadata dict with count/limit/offset)
         """
-        # Build base query with eager loading
+        # Build base query with eager loading (including award_vendor for AWARD steps)
         stmt = select(ProcurementTracker).options(
-            selectinload(ProcurementTracker.steps),
+            selectinload(ProcurementTracker.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
+                DefaultProcurementTrackerStep.award_vendor
+            ),
         )
 
         # Extract pagination values
