@@ -633,29 +633,38 @@ class BudgetLineItemService:
         if not agreement:
             raise ValidationError({"clin_id": "Cannot assign CLIN to budget line item without an agreement."})
 
-        # Check if CLIN record already exists for this (number, agreement_id) pair
-        existing_clin = self.db_session.execute(
-            select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
-        ).scalar_one_or_none()
+        # Check if CLIN record already exists for this (number, agreement_id) pair.
+        clin_query = select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
+        existing_clin = self.db_session.execute(clin_query).scalar_one_or_none()
 
         if existing_clin:
             return existing_clin.id
 
-        # Lazy create: CLIN doesn't exist yet, create it now
-        new_clin = CLIN(
-            number=clin_number,
-            name=f"CLIN {clin_number}",
-            agreement_id=agreement.id,
-            pop_start_date=agreement.sc_start_date,  # Use services component dates
-            pop_end_date=agreement.sc_end_date,
-            created_by=get_current_user().id,
+        # Lazy create: CLIN doesn't exist yet, create it now.
+        # Use INSERT ... ON CONFLICT DO NOTHING to handle concurrent requests where two BLIs are
+        # assigned the same CLIN number in parallel (e.g. via Promise.all on the frontend).
+        from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+        stmt = (
+            pg_insert(CLIN)
+            .values(
+                number=clin_number,
+                name=f"CLIN {clin_number}",
+                agreement_id=agreement.id,
+                pop_start_date=agreement.sc_start_date,
+                pop_end_date=agreement.sc_end_date,
+                created_by=get_current_user().id,
+            )
+            .on_conflict_do_nothing(constraint="clin_number_agreement_id_key")
         )
-        self.db_session.add(new_clin)
-        self.db_session.flush()  # Get the ID without committing
+        self.db_session.execute(stmt)
+        self.db_session.flush()
 
-        logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+        # Re-query to get the CLIN ID (either just-created or pre-existing from a concurrent request)
+        existing_clin = self.db_session.execute(clin_query).scalar_one()
+        logger.info(f"Ensured CLIN {clin_number} (ID {existing_clin.id}) for agreement {agreement.id}")
 
-        return new_clin.id
+        return existing_clin.id
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
