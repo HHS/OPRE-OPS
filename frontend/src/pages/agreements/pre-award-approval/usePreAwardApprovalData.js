@@ -50,9 +50,12 @@ export default function usePreAwardApprovalData(agreementId) {
         servicesComponents || []
     );
 
-    // Get active tracker and steps from procurement tracker
+    // Get active tracker and steps — include COMPLETED trackers so award approval data
+    // remains visible after step 6 is completed (tracker moves to COMPLETED at that point)
     const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
+    const activeTracker =
+        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE") ||
+        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "COMPLETED");
     const step4 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
     const step6 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 6);
