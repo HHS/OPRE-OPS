@@ -5,7 +5,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
-import { PreAwardBudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/BudgetLinesReviewAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
@@ -116,7 +116,7 @@ export const ApproveAwardApproval = () => {
             />
 
             {/* Budget Lines — show only PLANNED and IN_EXECUTION (not DRAFT), with CLIN column */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={allBudgetLines.filter((bli) => bli.status !== "DRAFT")}
                 agreement={agreement}
                 servicesComponents={servicesComponents}

@@ -7,7 +7,7 @@ import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
