@@ -115,13 +115,17 @@ export const ApproveAwardApproval = () => {
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines — read-only, same component as Pre-Award Requisition review */}
+            {/* Budget Lines — show only PLANNED and IN_EXECUTION (not DRAFT), with CLIN column */}
             <PreAwardBudgetLinesReviewAccordion
-                budgetLineItems={allBudgetLines}
+                budgetLineItems={allBudgetLines.filter((bli) => bli.status !== "DRAFT")}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
-                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                groupedBudgetLines={(groupedBudgetLinesByServicesComponent ?? []).map((group) => ({
+                    ...group,
+                    budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
+                }))}
                 executingTotal={executingTotal}
+                showCLINColumn={true}
             />
 
             {/* CAN Impact */}
