@@ -140,21 +140,19 @@ export const ApproveAwardApproval = () => {
             />
 
             {/* Vendor Information — read-only */}
-            {step6?.vendor && (
-                <Accordion
-                    heading="Review Vendor Information"
-                    level={2}
-                >
-                    <p>Please review the vendor details below to ensure everything is correct.</p>
-                    <SummaryBox
-                        leftLabel="Vendor"
-                        leftValue={step6.vendor.name || "—"}
-                        rightLabel="Unique Entity ID (SAM.gov ID)"
-                        rightValue={step6.vendor.duns || "—"}
-                        dataCy="vendor-info-box"
-                    />
-                </Accordion>
-            )}
+            <Accordion
+                heading="Review Vendor Information"
+                level={2}
+            >
+                <p>Please review the vendor details below to ensure everything is correct.</p>
+                <SummaryBox
+                    leftLabel="Vendor"
+                    leftValue={step6?.vendor?.name || "—"}
+                    rightLabel="Unique Entity ID (SAM.gov ID)"
+                    rightValue={step6?.vendor?.duns || "—"}
+                    dataCy="vendor-info-box"
+                />
+            </Accordion>
 
             {/* Current Award Information — read-only */}
             <Accordion
