@@ -373,9 +373,13 @@ describe("ProcurementTrackerStepSix", () => {
             const props = { ...defaultProps, stepStatus: "COMPLETED" };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            expect(screen.getByText(/Completed by John Doe/i)).toBeInTheDocument();
+            expect(screen.getByText("Completed By")).toBeInTheDocument();
+            expect(screen.getByText("John Doe")).toBeInTheDocument();
+            expect(screen.getByText("Date Completed")).toBeInTheDocument();
             expect(screen.getByText(/January 15, 2024/i)).toBeInTheDocument();
-            expect(screen.getByText(/Award received and uploaded/i)).toBeInTheDocument();
+            expect(screen.getByText("Notes")).toBeInTheDocument();
+            const notesElements = screen.getAllByText(/Award received and uploaded/i);
+            expect(notesElements.length).toBeGreaterThan(0);
         });
 
         it("displays completed status message with check icon", () => {
@@ -388,7 +392,11 @@ describe("ProcurementTrackerStepSix", () => {
             const props = { ...defaultProps, stepStatus: "COMPLETED" };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            expect(screen.getByText(/Completed by John Doe/i)).toBeInTheDocument();
+            expect(
+                screen.getByText("Award received and uploaded. CLINs entered and Award Approval requested.")
+            ).toBeInTheDocument();
+            expect(screen.getByText("Completed By")).toBeInTheDocument();
+            expect(screen.getByText("John Doe")).toBeInTheDocument();
         });
 
         it("does not render form fields in completed view", () => {

@@ -38,10 +38,6 @@ const suite = create((data = {}, fieldName = undefined) => {
         enforce(data.contract_type).notEquals("-Select an option-");
         enforce(data.contract_type).isNotEmpty();
     });
-    test("team-members", "This information is required to submit for approval", () => {
-        const teamMembers = Array.isArray(data.team_members) ? data.team_members : [];
-        enforce(teamMembers).longerThan(0);
-    });
     // test to ensure at least one budget line item exists
     test("budget-line-items", "Must have at least one budget line item", () => {
         const budgetLines = Array.isArray(data.budget_line_items) ? data.budget_line_items : [];
@@ -80,9 +76,31 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
     });
 });
 
-const cloneErrors = (errors = {}) => {
-    return Object.entries(errors).reduce((acc, [key, value]) => {
-        acc[key] = Array.isArray(value) ? [...value] : value;
+/**
+ * Map from raw budgetLineSuite test() keys → normalized field ids used by
+ * convertCodeForDisplay("validation", key) in the error banner.
+ * The vest test keys are verbose strings; the normalized ids are short, consistent,
+ * and registered in the validation display map in src/helpers/utils.js.
+ */
+const BLI_ERROR_KEY_MAP = {
+    "Budget Line Amount": "amount",
+    "Budget Line CAN": "can",
+    "Budget lines need to be assigned to a services component to change their status": "services_component",
+    "Budget Line Obligate By Date": "date_needed",
+    "Budget Line Obligate By Date must be in the future": "date_needed"
+};
+
+/**
+ * Remap raw budgetLineSuite error keys to normalized ids.
+ * Multiple raw keys may map to the same normalized id (e.g. both date tests → date_needed);
+ * the first message wins, matching the de-dup behavior in the callers' seen-set loops.
+ */
+const normalizeErrors = (rawErrors = {}) => {
+    return Object.entries(rawErrors).reduce((acc, [key, value]) => {
+        const normalizedKey = BLI_ERROR_KEY_MAP[key] ?? key;
+        if (!Object.prototype.hasOwnProperty.call(acc, normalizedKey)) {
+            acc[normalizedKey] = Array.isArray(value) ? [...value] : value;
+        }
         return acc;
     }, {});
 };
@@ -99,7 +117,7 @@ export const validateBudgetLineItem = (budgetLine, fieldName) => {
     const result = budgetLineSuite.get();
     return {
         isValid: result.isValid(),
-        errors: cloneErrors(result.getErrors())
+        errors: normalizeErrors(result.getErrors())
     };
 };
 

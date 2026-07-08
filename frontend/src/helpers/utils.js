@@ -145,7 +145,11 @@ export const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
         "contract-type": "Contract Type",
-        "team-members": "Team Members"
+        // BLI-level validation keys (normalized from budgetLineSuite test strings)
+        amount: "Amount",
+        can: "CAN",
+        services_component: "Services Component",
+        date_needed: "Obligate By Date"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",

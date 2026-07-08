@@ -4,6 +4,22 @@ import { renderWithProviders } from "../../../test-utils.js";
 import { vi, beforeEach } from "vitest";
 import UserInfo from "./UserInfo";
 
+// Stable mock references so tests can assert on them and control the
+// mutation result to exercise the success/error alert-lifecycle branches.
+const { mockSetAlert, mockUpdateUser, mockResetMutation, mockUseUpdateUserMutation } = vi.hoisted(() => {
+    const mockUpdateUser = vi.fn();
+    const mockResetMutation = vi.fn();
+    return {
+        mockSetAlert: vi.fn(),
+        mockUpdateUser,
+        mockResetMutation,
+        mockUseUpdateUserMutation: vi.fn(() => [
+            mockUpdateUser,
+            { isSuccess: false, isError: false, reset: mockResetMutation }
+        ])
+    };
+});
+
 // Mock React Router navigate
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
@@ -16,7 +32,7 @@ vi.mock("react-router-dom", async () => {
 // Mock the useAlert hook
 vi.mock("../../../hooks/use-alert.hooks.js", () => ({
     default: vi.fn(() => ({
-        setAlert: vi.fn()
+        setAlert: mockSetAlert
     }))
 }));
 
@@ -74,10 +90,7 @@ vi.mock("../../../api/opsAPI.js", () => ({
         error: null,
         isLoading: false
     })),
-    useUpdateUserMutation: vi.fn(() => [
-        vi.fn(), // updateUser function
-        { isSuccess: false, isError: false } // result object
-    ])
+    useUpdateUserMutation: mockUseUpdateUserMutation
 }));
 
 vi.mock("../../../api/opsAuthAPI.js", () => ({
@@ -115,6 +128,76 @@ describe("UserInfo", () => {
     beforeEach(() => {
         // Reset all mocks before each test
         vi.clearAllMocks();
+        // Restore the default mutation result after clearAllMocks wiped the implementation
+        mockUseUpdateUserMutation.mockReturnValue([
+            mockUpdateUser,
+            { isSuccess: false, isError: false, reset: mockResetMutation }
+        ]);
+    });
+
+    test("fires a success alert and resets the mutation when the update succeeds", async () => {
+        // Simulate a successful mutation so the success branch of the effect runs
+        mockUseUpdateUserMutation.mockReturnValue([
+            mockUpdateUser,
+            { isSuccess: true, isError: false, reset: mockResetMutation }
+        ]);
+
+        const user = {
+            id: 1,
+            full_name: "Test User",
+            email: "test.user@example.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
+        };
+        renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "success",
+                heading: "User Updated",
+                message: "The user has been updated successfully."
+            });
+        });
+        // reset() guards against the alert re-firing on subsequent renders
+        expect(mockResetMutation).toHaveBeenCalled();
+    });
+
+    test("fires an error alert and resets the mutation when the update fails", async () => {
+        // Simulate a failed mutation so the error branch of the effect runs
+        mockUseUpdateUserMutation.mockReturnValue([
+            mockUpdateUser,
+            { isSuccess: false, isError: true, reset: mockResetMutation }
+        ]);
+
+        const user = {
+            id: 1,
+            full_name: "Test User",
+            email: "test.user@example.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
+        };
+        renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the user."
+            });
+        });
+        expect(mockResetMutation).toHaveBeenCalled();
     });
 
     test("renders correctly (read only)", async () => {

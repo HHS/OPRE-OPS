@@ -126,10 +126,11 @@ const buildStore = () =>
         }
     });
 
-const renderPage = () =>
-    render(
-        <Provider store={buildStore()}>
-            <MemoryRouter initialEntries={["/agreements/review/42/edit"]}>
+const renderPage = (initialEntry = "/agreements/review/42/edit") => {
+    const store = buildStore();
+    const utils = render(
+        <Provider store={store}>
+            <MemoryRouter initialEntries={[initialEntry]}>
                 <Routes>
                     <Route
                         path="/agreements/review/:id/edit"
@@ -139,6 +140,8 @@ const renderPage = () =>
             </MemoryRouter>
         </Provider>
     );
+    return { ...utils, store };
+};
 
 describe("EditAgreementAndBudgetLines", () => {
     beforeEach(() => {
@@ -176,6 +179,34 @@ describe("EditAgreementAndBudgetLines", () => {
         renderPage();
         fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
+    it("returns to the sanitized returnTo path from the query string on Cancel", () => {
+        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/42/pre-award-approval");
+    });
+
+    it("falls back to the default review path when returnTo is not a same-origin /agreements/ path", () => {
+        renderPage("/agreements/review/42/edit?returnTo=https%3A%2F%2Fevil.example.com%2Fx");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
+    it("falls back to the default review path when returnTo contains path traversal", () => {
+        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F..%2Fadmin");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
+    it("uses returnTo as the success alert redirect after saving", async () => {
+        const { store } = renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
+        });
+        expect(store.getState().alert.redirectUrl).toBe("/agreements/42/pre-award-approval");
     });
 
     it("fires a single edit-bundle mutation combining both child slices", async () => {

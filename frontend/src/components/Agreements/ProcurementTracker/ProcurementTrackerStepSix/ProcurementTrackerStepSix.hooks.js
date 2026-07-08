@@ -11,17 +11,22 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  */
 
+const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at source
+
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
 export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
-    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(false);
+    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
+        () => stepSixData?.approval_requested ?? false
+    );
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
     const [stepSixNotes, setStepSixNotes] = React.useState(stepSixData?.notes ?? "");
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     React.useEffect(() => {
         setStepSixNotes(stepSixData?.notes ?? "");
@@ -40,7 +45,13 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const stepSixTargetCompletionDateLabel =
         formatDateToMonthDayYear(stepSixData?.target_completion_date ?? "") ?? undefined;
     const stepSixNotesLabel = stepSixData?.notes;
-    const MemoizedDatePicker = React.memo(DatePicker);
+
+    // Sync checkbox state when approval_requested changes (e.g., after requesting approval)
+    React.useEffect(() => {
+        if (stepSixData?.approval_requested !== undefined && stepSixData?.approval_requested !== null) {
+            setIsAwardCheckboxChecked(stepSixData.approval_requested);
+        }
+    }, [stepSixData?.approval_requested]);
 
     /**
      * @param {string} name
@@ -118,13 +129,19 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
             payload.target_completion_date = formatDateForApi(targetCompletionDate);
         }
 
+        setIsSubmitting(true);
         try {
             await patchStepSix({
                 stepId,
                 data: payload
             }).unwrap();
-            handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
+            // Notify the parent so the accordion/scroll state updates for the completed step.
+            // isSubmitting stays true here intentionally: the edit form only unmounts once
+            // RTK Query refetches and stepStatus flips to COMPLETED, which naturally prevents
+            // a duplicate submit. Resetting it early (e.g. via setTimeout) would re-enable
+            // the button on slow networks before the status has updated.
+            handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);
             setAlert({
@@ -132,6 +149,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
                 heading: "Error",
                 message: "There was an error completing the procurement tracker step. Please try again."
             });
+            setIsSubmitting(false); // Re-enable form on error
         }
     };
 
@@ -175,6 +193,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        isSubmitting,
         showModal,
         setShowModal,
         modalProps,

@@ -75,15 +75,20 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const completedTracker = trackers.find((tracker) => tracker.status === "COMPLETED");
+    const displayTracker = activeTracker || completedTracker;
     const hasActiveTracker = !!activeTracker;
-    const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
-    const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
+    const hasCompletedTracker = !!completedTracker;
 
-    // Single source of truth for all steps
+    // Use displayTracker for step data (shows completed tracker data after final step completion)
+    const stepOneData = displayTracker?.steps.find((step) => step.step_number === 1);
+    const stepTwoData = displayTracker?.steps.find((step) => step.step_number === 2);
+
+    // Single source of truth for all steps - disable editing if no active tracker OR not editable
     const isStepDisabled = !hasActiveTracker || !isEditable;
-    const stepThreeData = activeTracker?.steps.find((step) => step.step_number === 3);
-    const stepFourData = activeTracker?.steps.find((step) => step.step_number === 4);
-    const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
+    const stepThreeData = displayTracker?.steps.find((step) => step.step_number === 3);
+    const stepFourData = displayTracker?.steps.find((step) => step.step_number === 4);
+    const stepFiveData = displayTracker?.steps.find((step) => step.step_number === 5);
 
     // Handle loading state
     if (isLoading) {
@@ -95,16 +100,26 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>Error loading procurement tracker data</div>;
     }
 
-    // Active trackers default to step 1 when no active_step_number exists.
-    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 1;
-    // Keep step 1 open for read-only/no-active-tracker mode, but don't show any active segment in the step indicator.
-    const accordionOpenStep = hasActiveTracker ? currentStep : 1;
-    const indicatorCurrentStep = hasActiveTracker ? currentStep : 0;
-    const sortedActiveSteps = [...(activeTracker?.steps || [])].sort(
+    // Determine current step based on tracker state:
+    // - Active tracker: use active_step_number (defaults to 1 if not set)
+    // - Completed tracker: show step 6 (final step)
+    // - No tracker: default to step 1
+    const currentStep = hasActiveTracker ? activeTracker.active_step_number || 1 : hasCompletedTracker ? 6 : 1;
+
+    // Accordion behavior: open the current step
+    const accordionOpenStep = currentStep;
+
+    // Step indicator: show progress based on tracker state
+    // - Active tracker: highlight current step
+    // - Completed tracker: show all steps complete (step 6)
+    // - No tracker: no active segment (0)
+    const indicatorCurrentStep = hasActiveTracker ? currentStep : hasCompletedTracker ? 6 : 0;
+
+    const sortedSteps = [...(displayTracker?.steps || [])].sort(
         (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
     );
 
-    // Create default steps structure when there's no active tracker
+    // Create default steps structure when there's no tracker at all
     const defaultSteps = WIZARD_STEPS.map((stepName, index) => ({
         id: `default-step-${index + 1}`,
         step_number: index + 1,
@@ -112,8 +127,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
         status: "PENDING"
     }));
 
-    // Use sorted active tracker steps when present, otherwise use default read-only structure.
-    const stepsToRender = hasActiveTracker ? sortedActiveSteps : defaultSteps;
+    // Use displayTracker steps when available (ACTIVE or COMPLETED), otherwise default
+    const stepsToRender = displayTracker ? sortedSteps : defaultSteps;
 
     return (
         <>
@@ -129,6 +144,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
             />
             {stepsToRender.map((step) => {
                 const isCompletedStep = step.step_number === completedStepNumber;
+                const isActiveStep = hasActiveTracker && activeTracker.active_step_number === step.step_number;
                 return (
                     <StepBuilderAccordion
                         ref={isCompletedStep ? completedStepRef : null}
@@ -152,7 +168,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
@@ -164,7 +180,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepTwoData={stepTwoData}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
@@ -187,7 +203,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepThreeData={stepThreeData}
                                 isDisabled={isStepDisabled}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 isReadOnly={isProcurementTeamOnly}
                             />
                         )}
@@ -207,7 +223,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 stepFourData={stepFourData}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
                             />
@@ -228,7 +244,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 stepFiveData={stepFiveData}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
@@ -253,7 +269,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepSixData={step}
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
-                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}

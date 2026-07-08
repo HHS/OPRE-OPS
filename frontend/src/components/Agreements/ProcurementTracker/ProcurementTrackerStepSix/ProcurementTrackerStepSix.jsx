@@ -58,6 +58,7 @@ const ProcurementTrackerStepSix = ({
         stepSixNotes,
         setStepSixNotes,
         stepSixNotesLabel,
+        isSubmitting,
         runValidate,
         validatorRes,
         stepSixDateCompletedLabel,
@@ -77,7 +78,9 @@ const ProcurementTrackerStepSix = ({
     // Disabled flags for form controls
     const isApprovalRequested =
         stepSixData?.approval_requested &&
-        (stepSixData?.approval_status == null || stepSixData?.approval_status === "PENDING");
+        (stepSixData?.approval_status === null ||
+            stepSixData?.approval_status === undefined ||
+            stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
     const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !stepSixData?.approval_requested;
@@ -309,6 +312,7 @@ const ProcurementTrackerStepSix = ({
                                     onClick={() => handleStepSixComplete(stepSixData?.id)}
                                     disabled={
                                         isDisabled ||
+                                        isSubmitting ||
                                         validatorRes.hasErrors("dateCompleted") ||
                                         validatorRes.hasErrors("users") ||
                                         !selectedUser ||
@@ -317,7 +321,7 @@ const ProcurementTrackerStepSix = ({
                                     }
                                     data-cy="complete-step-6"
                                 >
-                                    Complete Step 6
+                                    {isSubmitting ? "Completing..." : "Complete Step 6"}
                                 </button>
                             </div>
                         </fieldset>
@@ -327,18 +331,47 @@ const ProcurementTrackerStepSix = ({
             {/* State 3: Completed Non-ReadOnly View */}
             {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
-                    <div className="display-flex flex-align-center">
+                    <p>
+                        Once you receive the signed award, please send it to the Budget Team and click Request Award
+                        Approval below. During this process you will add CLINs, and update the Vendor and Vendor Type.
+                        The budget team will review everything has been entered correctly before changing the agreement
+                        to Awarded in OPS.
+                    </p>
+                    <div className="display-flex flex-align-center margin-top-5">
                         <FontAwesomeIcon
                             icon={faCircleCheck}
-                            className="text-green margin-right-1"
                             size="lg"
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
+                            aria-hidden="true"
                         />
-                        <span>
-                            Completed by {stepSixCompletedByUserName || "Unknown"} on{" "}
-                            {stepSixDateCompletedLabel || "Unknown"}
-                        </span>
+                        <p className="margin-y-0">
+                            Award received and uploaded. CLINs entered and Award Approval requested.
+                        </p>
                     </div>
-                    <div className="margin-top-2">
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={stepSixTargetCompletionDateLabel || "None"}
+                            />
+                        </div>
+                        <TermTag
+                            term="Completed By"
+                            description={stepSixCompletedByUserName || "Unknown"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={stepSixDateCompletedLabel || "Unknown"}
+                        />
+                        {stepSixData?.approval_status && (
+                            <TermTag
+                                term="Award Approval Status"
+                                description={stepSixData.approval_status}
+                                className="margin-left-4"
+                            />
+                        )}
+<div className="margin-top-2">
                         <dt className="margin-0 text-base-dark font-12px">Notes</dt>
                         {isEditingNotes ? (
                             <div className="display-table">
@@ -406,6 +439,7 @@ const ProcurementTrackerStepSix = ({
                             </>
                         )}
                     </div>
+                    </dl>
                 </div>
             )}
         </>

@@ -8,6 +8,7 @@ from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
 from models import (
@@ -38,8 +39,10 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import (
+    CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
     associated_with_agreement,
     check_user_association,
+    is_unique_violation,
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
@@ -538,17 +541,22 @@ class BudgetLineItemService:
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
         # ensure CLIN record exists and replace with actual CLIN ID
+        # If clin_id is already a CLIN record ID (>= 5000), pass it through unchanged
         if "clin_id" in updated_fields and updated_fields["clin_id"] is not None:
             clin_value = updated_fields["clin_id"]
-            # Assume values 1-10 are CLIN numbers, not CLIN IDs (IDs start at 5000)
+            # CLIN numbers are 1-10 and need lazy creation
+            # CLIN IDs are >= 5000 (from sequence) and reference existing records
             if 1 <= clin_value <= 10:
-                actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
-                updated_fields["clin_id"] = actual_clin_id
+                # CLIN number: ensure the CLIN record exists and get its ID
+                updated_fields["clin_id"] = self._ensure_clin_exists(budget_line_item, clin_value)
             elif clin_value < 5000:
-                # Invalid CLIN number: not in 1-10 range and not a valid CLIN ID
-                raise ValueError(
-                    f"Invalid CLIN number: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for existing CLIN IDs."
+                # Invalid: not a CLIN number (1-10) and not a CLIN ID (>= 5000)
+                raise ValidationError(
+                    {
+                        "clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."
+                    }
                 )
+            # clin_value >= 5000: valid CLIN ID, passes through unchanged
 
         change_request_ids: list[int] = []
         if directly_editable:
@@ -617,14 +625,19 @@ class BudgetLineItemService:
         else:
             self.db_session.flush()
 
-    def _ensure_clin_exists(self, budget_line_item: BudgetLineItem, clin_number: int) -> int:
+    def _ensure_clin_exists(self, budget_line_item: BudgetLineItem, clin_number: int, max_retries: int = 3) -> int:
         """
         Ensure a CLIN record exists for the given CLIN number and agreement.
         Creates CLIN record if it doesn't exist (lazy creation pattern, similar to services components).
 
+        Handles concurrent creation: if multiple requests try to create the same CLIN simultaneously,
+        the first succeeds and others catch the IntegrityError and use the existing record.
+        Automatically retries on transient race conditions (concurrent rollback).
+
         Args:
             budget_line_item: The BLI being updated
             clin_number: The CLIN number (1-10) from frontend
+            max_retries: Maximum retry attempts for transient concurrency issues (default: 3)
 
         Returns:
             The CLIN record ID to use for the foreign key
@@ -633,29 +646,74 @@ class BudgetLineItemService:
         if not agreement:
             raise ValidationError({"clin_id": "Cannot assign CLIN to budget line item without an agreement."})
 
-        # Check if CLIN record already exists for this (number, agreement_id) pair
-        existing_clin = self.db_session.execute(
-            select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
-        ).scalar_one_or_none()
+        clin_lookup = select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
 
-        if existing_clin:
-            return existing_clin.id
+        for attempt in range(max_retries):
+            # Check if CLIN record already exists for this (number, agreement_id) pair
+            existing_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
 
-        # Lazy create: CLIN doesn't exist yet, create it now
-        new_clin = CLIN(
-            number=clin_number,
-            name=f"CLIN {clin_number}",
-            agreement_id=agreement.id,
-            pop_start_date=agreement.sc_start_date,  # Use services component dates
-            pop_end_date=agreement.sc_end_date,
-            created_by=get_current_user().id,
-        )
-        self.db_session.add(new_clin)
-        self.db_session.flush()  # Get the ID without committing
+            if existing_clin:
+                return existing_clin.id
 
-        logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+            # Lazy create: CLIN doesn't exist yet, create it now
+            # Use savepoint (nested transaction) to isolate CLIN creation attempt
+            # This prevents rollback from discarding other session changes (e.g., BLI updates)
+            savepoint = self.db_session.begin_nested()
+            try:
+                new_clin = CLIN(
+                    number=clin_number,
+                    name=f"CLIN {clin_number}",
+                    agreement_id=agreement.id,
+                    pop_start_date=agreement.sc_start_date,  # Use services component dates
+                    pop_end_date=agreement.sc_end_date,
+                    created_by=get_current_user().id,
+                )
+                self.db_session.add(new_clin)
+                self.db_session.flush()  # Get the ID without committing
+                savepoint.commit()  # Commit the savepoint
 
-        return new_clin.id
+                logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+                return new_clin.id
+
+            except IntegrityError as e:
+                # Another transaction created this CLIN between our check and insert
+                if is_unique_violation(e, CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT):
+                    savepoint.rollback()  # Only rollback the nested transaction
+                    # Fetch the CLIN that was created by the concurrent transaction
+                    concurrent_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
+
+                    if concurrent_clin:
+                        logger.debug(
+                            f"CLIN {clin_number} for agreement {agreement.id} was created by concurrent request, "
+                            f"using existing ID {concurrent_clin.id}"
+                        )
+                        return concurrent_clin.id
+                    elif attempt < max_retries - 1:
+                        # Concurrent transaction rolled back between duplicate error and fetch - retry
+                        logger.warning(
+                            f"CLIN {clin_number} not found after concurrent rollback, "
+                            f"retrying (attempt {attempt + 1}/{max_retries})"
+                        )
+                        continue
+                    else:
+                        # Max retries exhausted - this is a persistent concurrency issue
+                        logger.error(
+                            f"CLIN {clin_number} for agreement {agreement.id} could not be created or retrieved "
+                            f"after {max_retries} attempts"
+                        )
+                        raise ValidationError(
+                            {
+                                "clin_id": f"Unable to create or retrieve CLIN {clin_number} after {max_retries} "
+                                f"attempts due to concurrent modifications. Please try again later."
+                            }
+                        )
+
+                # Re-raise if it's a different integrity error
+                savepoint.rollback()
+                raise
+
+        # Should never reach here due to loop logic, but satisfy type checker
+        raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}

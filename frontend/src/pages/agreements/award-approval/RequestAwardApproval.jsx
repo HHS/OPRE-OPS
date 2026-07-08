@@ -127,7 +127,7 @@ export const RequestAwardApproval = () => {
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
-                    setShowModal={modalProps.closeModal || setShowModal}
+                    setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
@@ -385,6 +385,7 @@ export const RequestAwardApproval = () => {
                             <CurrencyInput
                                 name="awardAmount"
                                 label="Award Amount"
+                                prefix="$"
                                 value={awardAmount}
                                 onChange={(_name, value) => {
                                     setAwardAmount(value);
