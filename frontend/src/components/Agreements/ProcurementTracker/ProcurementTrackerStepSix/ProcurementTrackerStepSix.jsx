@@ -371,74 +371,75 @@ const ProcurementTrackerStepSix = ({
                                 className="margin-left-4"
                             />
                         )}
-<div className="margin-top-2">
-                        <dt className="margin-0 text-base-dark font-12px">Notes</dt>
-                        {isEditingNotes ? (
-                            <div className="display-table">
-                                <TextArea
-                                    name="notes-step-6"
-                                    label=""
-                                    className="margin-top-1"
-                                    maxLength={750}
-                                    value={stepSixNotes}
-                                    onChange={
-                                        /** @param {any} _ @param {any} value */ (_, value) => setStepSixNotes(value)
-                                    }
-                                    textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
-                                    isDisabled={isDisabled}
-                                />
-                                <div className="display-flex flex-justify-end">
+                        <div className="margin-top-2">
+                            <dt className="margin-0 text-base-dark font-12px">Notes</dt>
+                            {isEditingNotes ? (
+                                <div className="display-table">
+                                    <TextArea
+                                        name="notes-step-6"
+                                        label=""
+                                        className="margin-top-1"
+                                        maxLength={750}
+                                        value={stepSixNotes}
+                                        onChange={
+                                            /** @param {any} _ @param {any} value */ (_, value) =>
+                                                setStepSixNotes(value)
+                                        }
+                                        textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <div className="display-flex flex-justify-end">
+                                        <button
+                                            type="button"
+                                            className="usa-button usa-button--unstyled margin-right-2"
+                                            data-cy="cancel-edit-notes-button"
+                                            onClick={() => {
+                                                setStepSixNotes(stepSixData?.notes ?? "");
+                                                setIsEditingNotes(false);
+                                            }}
+                                            disabled={isDisabled}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="usa-button usa-button--unstyled"
+                                            data-cy="save-notes-button"
+                                            onClick={async () => {
+                                                await handleSaveNotes(stepSixData?.id);
+                                                setIsEditingNotes(false);
+                                            }}
+                                            disabled={isDisabled}
+                                        >
+                                            <FontAwesomeIcon
+                                                icon={faCheck}
+                                                size="2x"
+                                                className="text-primary height-2 width-2 cursor-pointer"
+                                            />
+                                            Save Notes
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <dd className="margin-0 margin-top-1">{stepSixNotesLabel || "None"}</dd>
                                     <button
                                         type="button"
-                                        className="usa-button usa-button--unstyled margin-right-2"
-                                        data-cy="cancel-edit-notes-button"
-                                        onClick={() => {
-                                            setStepSixNotes(stepSixData?.notes ?? "");
-                                            setIsEditingNotes(false);
-                                        }}
-                                        disabled={isDisabled}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="usa-button usa-button--unstyled"
-                                        data-cy="save-notes-button"
-                                        onClick={async () => {
-                                            await handleSaveNotes(stepSixData?.id);
-                                            setIsEditingNotes(false);
-                                        }}
+                                        className="usa-button usa-button--unstyled margin-top-1"
+                                        data-cy="edit-notes-button"
+                                        onClick={() => setIsEditingNotes(true)}
                                         disabled={isDisabled}
                                     >
                                         <FontAwesomeIcon
-                                            icon={faCheck}
-                                            size="2x"
-                                            className="text-primary height-2 width-2 cursor-pointer"
+                                            icon={faPen}
+                                            className="margin-right-1"
+                                            aria-hidden="true"
                                         />
-                                        Save Notes
+                                        Edit Notes
                                     </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <dd className="margin-0 margin-top-1">{stepSixNotesLabel || "None"}</dd>
-                                <button
-                                    type="button"
-                                    className="usa-button usa-button--unstyled margin-top-1"
-                                    data-cy="edit-notes-button"
-                                    onClick={() => setIsEditingNotes(true)}
-                                    disabled={isDisabled}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faPen}
-                                        className="margin-right-1"
-                                        aria-hidden="true"
-                                    />
-                                    Edit Notes
-                                </button>
-                            </>
-                        )}
-                    </div>
+                                </>
+                            )}
+                        </div>
                     </dl>
                 </div>
             )}
