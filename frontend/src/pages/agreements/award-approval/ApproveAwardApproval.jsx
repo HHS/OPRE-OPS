@@ -8,7 +8,6 @@ import Accordion from "../../../components/UI/Accordion";
 import { BudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/BudgetLinesReviewAccordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import SummaryBox from "../../../components/Agreements/SummaryBox";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
@@ -142,13 +141,26 @@ export const ApproveAwardApproval = () => {
                 level={2}
             >
                 <p>Please review the vendor details below to ensure everything is correct.</p>
-                <SummaryBox
-                    leftLabel="Vendor"
-                    leftValue={step6?.vendor?.name || "—"}
-                    rightLabel="Unique Entity ID (SAM.gov ID)"
-                    rightValue={step6?.vendor?.duns || "—"}
-                    dataCy="vendor-info-box"
-                />
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Vendor</dt>
+                            <dd className="margin-0 text-bold">{step6?.vendor?.name || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Unique Entity ID (SAM.gov ID)</dt>
+                            <dd className="margin-0 text-bold">{step6?.vendor?.duns || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Vendor Type</dt>
+                            <dd className="margin-0 text-bold">{step6?.vendor?.vendor_type || "—"}</dd>
+                        </dl>
+                    </div>
+                </div>
             </Accordion>
 
             {/* Current Award Information — read-only */}
