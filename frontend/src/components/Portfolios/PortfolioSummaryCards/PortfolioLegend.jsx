@@ -2,6 +2,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tag from "../../UI/Tag";
+import { getActivePortfolioTagTextColor } from "./PortfolioSummaryCards.helpers";
 import styles from "./PortfolioLegend.module.scss";
 
 /**
@@ -46,8 +47,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                 const displayPercent = item.percent;
 
                 // Portfolios with light backgrounds need dark text for readability
-                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
-                const textColor = lightBackgroundPortfolios.includes(item.abbreviation) ? "#1B1B1B" : "#FFFFFF";
+                const textColor = getActivePortfolioTagTextColor(item.abbreviation);
 
                 return (
                     <div

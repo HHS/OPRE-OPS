@@ -30,6 +30,24 @@ const matchesConfig = (abbreviation, config) =>
     config.abbreviation === abbreviation || (config.aliases && config.aliases.includes(abbreviation));
 
 /**
+ * Portfolios whose bar color is light enough that the active percentage-tag
+ * needs dark text for readability. Any other portfolio uses white text.
+ * Shared so every portfolio legend (PortfolioLegend, ProjectFundingByPortfolioCard)
+ * renders an identical hover effect.
+ * HMRF is intentionally excluded so it renders with white text (per design).
+ */
+export const LIGHT_BACKGROUND_PORTFOLIOS = ["CC", "HS", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
+
+/**
+ * Returns the text color for an active (hovered) portfolio percentage tag:
+ * dark for light backgrounds, white otherwise.
+ * @param {string} abbreviation - Portfolio abbreviation
+ * @returns {string} Hex color
+ */
+export const getActivePortfolioTagTextColor = (abbreviation) =>
+    LIGHT_BACKGROUND_PORTFOLIOS.includes(abbreviation) ? "#1B1B1B" : "#FFFFFF";
+
+/**
  * Sorts portfolios according to static PORTFOLIO_ORDER
  * Portfolios not in PORTFOLIO_ORDER are appended to the end
  * @param {Array} portfolios - Array of portfolio objects

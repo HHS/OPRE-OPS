@@ -5,6 +5,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import HorizontalStackedBar from "../../UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import styles from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.module.scss";
+import { getActivePortfolioTagTextColor } from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.helpers";
 import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers";
 
 /**
@@ -28,20 +29,6 @@ import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers
  * @param {FundingByPortfolioItem[]} props.fundingByPortfolio
  * @returns {JSX.Element}
  */
-// Portfolio color vars with light fills that need dark text for readability
-// when used as the active percentage-tag background (mirrors the
-// lightBackgroundPortfolios list in PortfolioLegend, keyed by color instead of
-// abbreviation since this card assigns colors sequentially).
-const LIGHT_BACKGROUND_COLORS = new Set([
-    "var(--portfolio-bar-graph-cc)",
-    "var(--portfolio-bar-graph-hs)",
-    "var(--portfolio-bar-graph-hv)",
-    "var(--portfolio-bar-graph-dd)",
-    "var(--portfolio-bar-graph-none-opre)",
-    "var(--portfolio-bar-graph-ocdo)",
-    "var(--portfolio-bar-graph-otip)"
-]);
-
 const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) => {
     const [activeId, setActiveId] = useState(0);
 
@@ -71,7 +58,7 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                         >
                             {chartData.map((item) => {
                                 const isActive = activeId === item.id;
-                                const activeTextColor = LIGHT_BACKGROUND_COLORS.has(item.color) ? "#1B1B1B" : "#FFFFFF";
+                                const activeTextColor = getActivePortfolioTagTextColor(item.abbreviation);
                                 return (
                                     <div
                                         key={item.id}
