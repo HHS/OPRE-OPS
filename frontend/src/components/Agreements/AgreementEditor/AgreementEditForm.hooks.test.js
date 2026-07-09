@@ -16,6 +16,7 @@ const useSelectorMock = vi.fn();
 const useLocationMock = vi.fn();
 const hasStateChangedMock = vi.fn();
 const scrollToCenterMock = vi.fn();
+const setIsCancellingMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -59,7 +60,7 @@ vi.mock("../../../hooks/useNavigationBlocker.hooks", () => ({
         showBlockerModal: false,
         setShowBlockerModal: vi.fn(),
         blockerModalProps: {},
-        setIsCancelling: vi.fn()
+        setIsCancelling: setIsCancellingMock
     })
 }));
 
@@ -449,13 +450,18 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         });
 
         expect(addAgreementMock).toHaveBeenCalled();
+        // Bypasses the navigation blocker and defers navigation to the success alert's
+        // redirectUrl instead of calling navigate() directly, so the "unsaved changes"
+        // modal does not appear (issue #5910).
+        expect(setIsCancellingMock).toHaveBeenCalledWith(true);
         expect(setAlertMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: "success",
-                heading: "Agreement Draft Saved"
+                heading: "Agreement Draft Saved",
+                redirectUrl: "/agreements"
             })
         );
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 
     it("does NOT call addAgreement when agreement has an id (existing agreement)", async () => {
@@ -475,7 +481,17 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         });
 
         expect(addAgreementMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        // Existing draft with changes: saveAgreement("/agreements") updates it and carries the
+        // redirectUrl on its own success alert, so navigate() is not called directly.
+        expect(setIsCancellingMock).toHaveBeenCalledWith(true);
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "success",
+                heading: "Agreement Updated",
+                redirectUrl: "/agreements"
+            })
+        );
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 
     it("shows error alert when addAgreement fails", async () => {
