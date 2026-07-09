@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
@@ -7,7 +6,8 @@ import TermTag from "../../../UI/Term/TermTag";
 import Tooltip from "../../../UI/USWDS/Tooltip/Tooltip";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
-import { faCircleCheck, faCheck, faPen } from "@fortawesome/free-solid-svg-icons";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } from "../ProcurementTracker.constants";
 
@@ -72,8 +72,6 @@ const ProcurementTrackerStepFive = ({
         handleSaveNotes,
         handleStepFiveComplete
     } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
-
-    const [isEditingNotes, setIsEditingNotes] = React.useState(false);
 
     // Disabled flags for form controls
     const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
@@ -456,71 +454,15 @@ const ProcurementTrackerStepFive = ({
                         />
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            {isEditingNotes ? (
-                                <div className="display-table">
-                                    <TextArea
-                                        name="notes"
-                                        label=""
-                                        className="margin-top-1"
-                                        maxLength={750}
-                                        value={step5Notes}
-                                        onChange={
-                                            /** @param {any} _ @param {any} value */ (_, value) => setStep5Notes(value)
-                                        }
-                                        textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
-                                        isDisabled={isDisabled}
-                                    />
-                                    <div className="display-flex flex-justify-end">
-                                        <button
-                                            type="button"
-                                            className="usa-button usa-button--unstyled margin-right-2"
-                                            data-cy="cancel-edit-notes-button"
-                                            onClick={() => {
-                                                setStep5Notes(stepFiveData?.notes ?? "");
-                                                setIsEditingNotes(false);
-                                            }}
-                                            disabled={isDisabled}
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="usa-button usa-button--unstyled"
-                                            data-cy="save-notes-button"
-                                            onClick={async () => {
-                                                await handleSaveNotes(stepFiveData?.id);
-                                                setIsEditingNotes(false);
-                                            }}
-                                            disabled={isDisabled}
-                                        >
-                                            <FontAwesomeIcon
-                                                icon={faCheck}
-                                                size="2x"
-                                                className="text-primary height-2 width-2 cursor-pointer"
-                                            />
-                                            Save Notes
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <dd className="margin-0 margin-top-1">{step5NotesLabel || "None"}</dd>
-                                    <button
-                                        type="button"
-                                        className="usa-button usa-button--unstyled margin-top-1"
-                                        data-cy="edit-notes-button"
-                                        onClick={() => setIsEditingNotes(true)}
-                                        disabled={isDisabled}
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={faPen}
-                                            className="margin-right-1"
-                                            aria-hidden="true"
-                                        />
-                                        Edit Notes
-                                    </button>
-                                </>
-                            )}
+                            <StepNotesEditor
+                                notes={step5Notes}
+                                setNotes={setStep5Notes}
+                                notesLabel={step5NotesLabel}
+                                savedNotes={stepFiveData?.notes}
+                                stepId={stepFiveData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>

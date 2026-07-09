@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerSolicitationStep} ProcurementTrackerSolicitationStep
@@ -20,11 +21,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
     const [solicitationPeriodEndDate, setSolicitationPeriodEndDate] = React.useState("");
-    const [step3Notes, setStep3Notes] = React.useState(stepThreeData?.notes ?? "");
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
-    React.useEffect(() => {
-        setStep3Notes(stepThreeData?.notes ?? "");
-    }, [stepThreeData?.notes]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [patchStepThree] = useUpdateProcurementTrackerStepMutation();
@@ -62,26 +59,11 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
 
     let validatorRes = suite.get();
 
-    const handleSaveNotes = async (stepId) => {
-        try {
-            await patchStepThree({
-                stepId,
-                data: { notes: step3Notes.trim() }
-            }).unwrap();
-            setAlert({
-                type: "success",
-                heading: "Notes Saved",
-                message: "Your notes have been saved."
-            });
-        } catch (error) {
-            console.error("Failed to save notes", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "There was an error saving the notes. Please try again."
-            });
-        }
-    };
+    const {
+        notes: step3Notes,
+        setNotes: setStep3Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
 
     const cancelStep3 = () => {
         setIsSolicitationClosed(false);

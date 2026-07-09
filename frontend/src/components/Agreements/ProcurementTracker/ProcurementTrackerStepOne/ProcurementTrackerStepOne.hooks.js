@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAcquisitionPlanningStep} ProcurementTrackerAcquisitionPlanningStep
@@ -20,10 +21,6 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
-    const [step1Notes, setStep1Notes] = React.useState(stepOneData?.notes ?? "");
-    React.useEffect(() => {
-        setStep1Notes(stepOneData?.notes ?? "");
-    }, [stepOneData?.notes]);
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -44,26 +41,11 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
 
     let validatorRes = suite.get();
 
-    const handleSaveNotes = async (stepId) => {
-        try {
-            await patchStepOne({
-                stepId,
-                data: { notes: step1Notes.trim() }
-            }).unwrap();
-            setAlert({
-                type: "success",
-                heading: "Notes Saved",
-                message: "Your notes have been saved."
-            });
-        } catch (error) {
-            console.error("Failed to save notes", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "There was an error saving the notes. Please try again."
-            });
-        }
-    };
+    const {
+        notes: step1Notes,
+        setNotes: setStep1Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
 
     const handleStep1Complete = async (stepId) => {
         const payload = {

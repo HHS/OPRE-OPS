@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAwardStep} ProcurementTrackerAwardStep
@@ -25,12 +26,8 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
-    const [stepSixNotes, setStepSixNotes] = React.useState(stepSixData?.notes ?? "");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
-    React.useEffect(() => {
-        setStepSixNotes(stepSixData?.notes ?? "");
-    }, [stepSixData?.notes]);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -63,26 +60,11 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
 
     let validatorRes = suite.get();
 
-    const handleSaveNotes = async (stepId) => {
-        try {
-            await patchStepSix({
-                stepId,
-                data: { notes: stepSixNotes.trim() }
-            }).unwrap();
-            setAlert({
-                type: "success",
-                heading: "Notes Saved",
-                message: "Your notes have been saved."
-            });
-        } catch (error) {
-            console.error("Failed to save notes", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "There was an error saving the notes. Please try again."
-            });
-        }
-    };
+    const {
+        notes: stepSixNotes,
+        setNotes: setStepSixNotes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step six, updating the procurement tracker step with the new date.

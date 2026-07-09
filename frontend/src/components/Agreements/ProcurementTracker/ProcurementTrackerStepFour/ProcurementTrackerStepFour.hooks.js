@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerEvaluationStep} ProcurementTrackerEvaluationStep
@@ -21,11 +22,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step4DateCompleted, setStep4DateCompleted] = React.useState("");
-    const [step4Notes, setStep4Notes] = React.useState(stepFourData?.notes ?? "");
     const [showModal, setShowModal] = React.useState(false);
-    React.useEffect(() => {
-        setStep4Notes(stepFourData?.notes ?? "");
-    }, [stepFourData?.notes]);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -52,26 +49,11 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
 
     let validatorRes = suite.get();
 
-    const handleSaveNotes = async (stepId) => {
-        try {
-            await patchStepFour({
-                stepId,
-                data: { notes: step4Notes.trim() }
-            }).unwrap();
-            setAlert({
-                type: "success",
-                heading: "Notes Saved",
-                message: "Your notes have been saved."
-            });
-        } catch (error) {
-            console.error("Failed to save notes", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "There was an error saving the notes. Please try again."
-            });
-        }
-    };
+    const {
+        notes: step4Notes,
+        setNotes: setStep4Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step four, updating the procurement tracker step with the new date.
