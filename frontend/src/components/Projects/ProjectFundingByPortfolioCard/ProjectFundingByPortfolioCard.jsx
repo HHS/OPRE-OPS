@@ -35,7 +35,6 @@ import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers
 const LIGHT_BACKGROUND_COLORS = new Set([
     "var(--portfolio-bar-graph-cc)",
     "var(--portfolio-bar-graph-hs)",
-    "var(--portfolio-bar-graph-hmrf)",
     "var(--portfolio-bar-graph-hv)",
     "var(--portfolio-bar-graph-dd)",
     "var(--portfolio-bar-graph-none-opre)",
