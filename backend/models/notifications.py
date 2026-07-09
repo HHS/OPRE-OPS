@@ -93,7 +93,6 @@ class AwardApprovalNotification(Notification):
         ForeignKey("procurement_tracker_step.id", ondelete="CASCADE"),
         index=True,
         nullable=True,
-        use_existing_column=True,
     )
     procurement_tracker_step = relationship(
         "ProcurementTrackerStep",
