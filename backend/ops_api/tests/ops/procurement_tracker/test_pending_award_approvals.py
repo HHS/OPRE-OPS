@@ -9,10 +9,10 @@ from unittest.mock import MagicMock
 from models.procurement_tracker import ProcurementTrackerStepType
 from ops_api.ops.services.procurement_tracker_steps import ProcurementTrackerStepService
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_role(name):
     """Create a mock role with a proper .name attribute (not MagicMock display name)."""
@@ -39,6 +39,7 @@ def _make_award_step(approval_requested=True, approval_status=None):
 # ---------------------------------------------------------------------------
 # Unit tests — get_pending_award_approvals_for_user
 # ---------------------------------------------------------------------------
+
 
 class TestGetPendingAwardApprovalsForUser:
     """Service method returns pending AWARD steps for BUDGET_TEAM/SYSTEM_OWNER."""
