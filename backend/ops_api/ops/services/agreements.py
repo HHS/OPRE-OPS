@@ -523,32 +523,30 @@ class AgreementsService(OpsService[Agreement]):
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
-        # Get the current status list for ordering
-        bli_statuses = list(BudgetLineItemStatus.__members__.values())
-
-        # Block if any BLIs are IN_EXECUTION or higher
-        if any(
-            [
-                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
-                for bli in agreement.budget_line_items
-            ]
-        ):
+        # Block if any BLIs are IN_EXECUTION or higher (use explicit set, not ordinal position,
+        # to avoid PLANNED_MOD sorting after OBLIGATED in the enum definition order)
+        _blocked_statuses = {
+            BudgetLineItemStatus.IN_EXECUTION,
+            BudgetLineItemStatus.OBLIGATED,
+            BudgetLineItemStatus.PLANNED_MOD,
+        }
+        if any(bli.status in _blocked_statuses for bli in agreement.budget_line_items):
             raise ValidationError(
                 "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
             )
 
         # Apply the change immediate if all BLIs are DRAFT
-        if all(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
-            for bli in agreement.budget_line_items
-        ):
+        if all(bli.status == BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
             agreement.awarding_entity_id = new_value
             # TODO: update budget line items' procurement shop fees directly for DRAFT BLIs
             # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # Create a change request if at least one BLI is in PLANNED status
-        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+        # Create a change request if at least one BLI is in PLANNED or PLANNED_MOD status
+        if any(
+            bli.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
+            for bli in agreement.budget_line_items
+        ):
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -941,6 +939,7 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     """
     tracked_statuses = [
         BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.PLANNED_MOD,
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ]

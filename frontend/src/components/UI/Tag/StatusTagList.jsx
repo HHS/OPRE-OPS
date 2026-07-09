@@ -4,6 +4,7 @@ import Tag from "./Tag";
 const statusClasses = {
     DRAFT: "bg-brand-neutral-lighter",
     PLANNED: "bg-brand-data-viz-primary-11 text-white",
+    PLANNED_MOD: "bg-brand-data-viz-primary-11 text-white",
     IN_EXECUTION: "bg-brand-data-viz-primary-8",
     OBLIGATED: "bg-brand-data-viz-primary-6 text-white"
 };

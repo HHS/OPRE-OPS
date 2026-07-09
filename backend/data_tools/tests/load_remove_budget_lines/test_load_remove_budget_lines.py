@@ -15,6 +15,8 @@ from data_tools.src.load_remove_budget_lines.utils import (
 )
 from models import (
     CAN,
+    AgreementHistory,
+    AgreementHistoryType,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -221,6 +223,7 @@ def db_with_data(loaded_db):
 
     yield loaded_db
 
+    loaded_db.execute(text("DELETE FROM agreement_history"))
     loaded_db.execute(text("DELETE FROM ops_event"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
 
@@ -274,6 +277,17 @@ def test_create_model_delete(db_with_data):
     assert ops_event.created_by == 1
     assert "deleted_bli" in ops_event.event_details
     assert ops_event.event_details["deleted_bli"]["id"] == bli_id
+
+    # An AgreementHistory record should have been created by the trigger
+    agreement_id = ops_event.event_details["deleted_bli"]["agreement_id"]
+    history = db_with_data.execute(
+        select(AgreementHistory).where(AgreementHistory.budget_line_id_record == bli_id)
+    ).scalar_one_or_none()
+
+    assert history is not None
+    assert history.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
+    assert history.agreement_id_record == agreement_id
+    assert history.ops_event_id == ops_event.id
 
 
 def test_create_model_delete_nonexistent_bli(db_with_data):

@@ -207,7 +207,7 @@ describe("Procurement Shop Change Request", () => {
                 ).should("have.text", "Budget Line Deleted");
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                     "have.text",
-                    `System Owner deleted the Draft BL ${bliId}.`
+                    `System Owner deleted the BL ${bliId}.`
                 );
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'

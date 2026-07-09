@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -5,7 +6,7 @@ from typing import List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import BudgetLineItem, OpsEvent, OpsEventStatus, OpsEventType, User
+from models import BudgetLineItem, OpsEvent, OpsEventStatus, OpsEventType, User, agreement_history_trigger_func
 
 
 @dataclass
@@ -80,6 +81,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         raise ValueError(f"BudgetLineItem with SYS_BUDGET_ID {data.SYS_BUDGET_ID} not found.")
 
     agreement = budget_line_item.agreement
+    bli_dict = budget_line_item.to_dict()  # capture before delete; object becomes detached after session.delete()
+
+    if os.getenv("DRY_RUN"):
+        logger.info("Dry run enabled. Skipping BLI deletion.")
+        return
 
     session.delete(budget_line_item)
     session.commit()
@@ -97,10 +103,14 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         event_type=OpsEventType.DELETE_BLI,
         event_status=OpsEventStatus.SUCCESS,
         created_by=sys_user.id,
-        event_details={"deleted_bli": budget_line_item.to_dict()},
+        event_details={"deleted_bli": bli_dict},
     )
 
     session.add(ops_event)
+    session.flush()  # Populate ops_event.id and created_on before the history trigger reads them
+
+    # Fire the agreement-history trigger so the deletion is recorded in AgreementHistory.
+    agreement_history_trigger_func(ops_event, session, sys_user, dry_run=False)
     session.commit()
 
 

@@ -128,7 +128,8 @@ export const codesToDisplayText = {
         DRAFT: "Draft",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
-        OBLIGATED: "Obligated"
+        OBLIGATED: "Obligated",
+        PLANNED_MOD: "Planned Mod"
     },
     validation: {
         name: "Name",
@@ -144,7 +145,12 @@ export const codesToDisplayText = {
         cor: "COR",
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
-        "contract-type": "Contract Type"
+        "contract-type": "Contract Type",
+        // BLI-level validation keys (normalized from budgetLineSuite test strings)
+        amount: "Amount",
+        can: "CAN",
+        services_component: "Services Component",
+        date_needed: "Obligate By Date"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
@@ -418,6 +424,7 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
+            case BLI_STATUS.PLANNED_MOD:
                 return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
                 return "text-brand-data-viz-bl-by-status-3";
@@ -432,6 +439,7 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
+            case BLI_STATUS.PLANNED_MOD:
                 return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
                 return "brand-data-viz-bl-by-status-3";
