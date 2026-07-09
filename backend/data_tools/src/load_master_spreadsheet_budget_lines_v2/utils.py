@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -34,6 +35,7 @@ from models import (
     ProcurementShop,
     ProcurementShopFee,
     User,
+    agreement_history_trigger_func,
 )
 from models.procurement_workflow import (
     get_or_create_procurement_records_for_modification,
@@ -41,6 +43,7 @@ from models.procurement_workflow import (
     has_obligated_blis,
     link_blis_to_action,
 )
+from models.utils import generate_events_update
 
 
 def _strip_or_none(val):
@@ -229,6 +232,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
 
         else:
+            existing_bli_dict = existing_budget_line_item.to_dict()  # capture before mutating for diff
             bli = existing_budget_line_item
             bli.line_description = data.LINE_DESC
             bli.comments = data.COMMENTS
@@ -278,15 +282,30 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             link_blis_to_action(session, agreement, action, BudgetLineItemStatus.IN_EXECUTION)
             commit_or_rollback(session)
 
-        # Create an OPSEvent record for the new BLI
-        ops_event = OpsEvent(
-            event_type=OpsEventType.CREATE_BLI if not existing_budget_line_item else OpsEventType.UPDATE_BLI,
-            event_status=OpsEventStatus.SUCCESS,
-            created_by=sys_user.id,
-            event_details={"new_bli": bli.to_dict()},
-        )
+        # Create an OPSEvent record for the BLI create/update with the correct payload shape for each case.
+        if not existing_budget_line_item:
+            ops_event = OpsEvent(
+                event_type=OpsEventType.CREATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={"new_bli": bli.to_dict()},
+            )
+        else:
+            updates = generate_events_update(existing_bli_dict, bli.to_dict(), bli.id, sys_user.id)
+            ops_event = OpsEvent(
+                event_type=OpsEventType.UPDATE_BLI,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={"bli_updates": updates, "bli": bli.to_dict()},
+            )
         session.add(ops_event)
-        commit_or_rollback(session)
+        session.flush()  # populate ops_event.id and created_on before the history trigger reads them
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
 
     except Exception as err:
         logger.error(f"Error creating models for {data}: {err}")
