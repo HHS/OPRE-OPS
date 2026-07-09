@@ -22,7 +22,7 @@ const CLINSelector = ({ onAddCLIN, budgetLineId, currentClinNumber }) => {
 
     const handleAddCLIN = () => {
         if (selectedCLIN) {
-            onAddCLIN(parseInt(selectedCLIN)); // Pass CLIN number (1-10)
+            onAddCLIN(parseInt(selectedCLIN));
         }
     };
 
