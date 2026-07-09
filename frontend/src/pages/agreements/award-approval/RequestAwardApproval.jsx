@@ -385,6 +385,7 @@ export const RequestAwardApproval = () => {
                             <CurrencyInput
                                 name="awardAmount"
                                 label="Award Amount"
+                                prefix="$"
                                 value={awardAmount}
                                 onChange={(_name, value) => {
                                     setAwardAmount(value);
