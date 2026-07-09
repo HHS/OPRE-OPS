@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import {
     calculateTotalBudget,
+    getActivePortfolioTagTextColor,
     sortPortfoliosByStaticOrder,
     transformPortfoliosToChartData
 } from "./PortfolioSummaryCards.helpers";
@@ -519,6 +520,41 @@ describe("PortfolioSummaryCards.helpers", () => {
             transformPortfoliosToChartData(portfolios, totalBudget);
             // Original portfolio object should not have a percent field added
             expect(portfolios[0]).not.toHaveProperty("percent");
+        });
+    });
+
+    describe("getActivePortfolioTagTextColor", () => {
+        it("returns dark text for light-background portfolios", () => {
+            ["CC", "HS", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"].forEach((abbr) => {
+                expect(getActivePortfolioTagTextColor(abbr)).toBe("#1B1B1B");
+            });
+        });
+
+        it("returns white text for dark-background portfolios (e.g. CW, ADR, WR)", () => {
+            ["CW", "ADR", "WR", "OD"].forEach((abbr) => {
+                expect(getActivePortfolioTagTextColor(abbr)).toBe("#FFFFFF");
+            });
+        });
+
+        it("returns white text for HMRF (intentionally excluded from light backgrounds)", () => {
+            expect(getActivePortfolioTagTextColor("HMRF")).toBe("#FFFFFF");
+        });
+
+        it("is alias-aware — DO resolves to the same dark text as its alias DD (shared color)", () => {
+            // DD is in LIGHT_BACKGROUND_PORTFOLIOS; DO is its primary abbreviation and
+            // shares --portfolio-bar-graph-dd, so both must get dark text.
+            expect(getActivePortfolioTagTextColor("DD")).toBe("#1B1B1B");
+            expect(getActivePortfolioTagTextColor("DO")).toBe("#1B1B1B");
+        });
+
+        it("resolves other abbreviations sharing a light color var (e.g. DB → dark)", () => {
+            // DB also uses --portfolio-bar-graph-dd, so it must match DD's dark text.
+            expect(getActivePortfolioTagTextColor("DB")).toBe("#1B1B1B");
+        });
+
+        it("defaults to white text for unknown portfolios", () => {
+            expect(getActivePortfolioTagTextColor("UNKNOWN")).toBe("#FFFFFF");
+            expect(getActivePortfolioTagTextColor(undefined)).toBe("#FFFFFF");
         });
     });
 });

@@ -39,13 +39,30 @@ const matchesConfig = (abbreviation, config) =>
 export const LIGHT_BACKGROUND_PORTFOLIOS = ["CC", "HS", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
 
 /**
+ * Set of PORTFOLIO_ORDER color vars that render with a light-enough background to
+ * need dark text. Derived from LIGHT_BACKGROUND_PORTFOLIOS so that list stays the
+ * single source of truth, while keying off the resolved color makes the lookup
+ * alias-aware: any abbreviation sharing a light color var (e.g. DO/DD, and DB —
+ * all `--portfolio-bar-graph-dd`) gets dark text, regardless of which the API returns.
+ */
+const LIGHT_BACKGROUND_COLORS = new Set(
+    LIGHT_BACKGROUND_PORTFOLIOS.map((abbr) => PORTFOLIO_ORDER.find((c) => matchesConfig(abbr, c))?.color).filter(
+        Boolean
+    )
+);
+
+/**
  * Returns the text color for an active (hovered) portfolio percentage tag:
- * dark for light backgrounds, white otherwise.
+ * dark for light backgrounds, white otherwise. Alias-aware — resolves the
+ * abbreviation to its PORTFOLIO_ORDER color (the same way bar colors are assigned)
+ * so text color always matches the fixed background color.
  * @param {string} abbreviation - Portfolio abbreviation
  * @returns {string} Hex color
  */
-export const getActivePortfolioTagTextColor = (abbreviation) =>
-    LIGHT_BACKGROUND_PORTFOLIOS.includes(abbreviation) ? "#1B1B1B" : "#FFFFFF";
+export const getActivePortfolioTagTextColor = (abbreviation) => {
+    const config = PORTFOLIO_ORDER.find((c) => matchesConfig(abbreviation, c));
+    return config && LIGHT_BACKGROUND_COLORS.has(config.color) ? "#1B1B1B" : "#FFFFFF";
+};
 
 /**
  * Sorts portfolios according to static PORTFOLIO_ORDER
