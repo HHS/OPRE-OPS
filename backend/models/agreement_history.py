@@ -995,13 +995,27 @@ def create_procurement_tracker_step_update_history_event(
     procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
 
     # Handle approval request events
+    step_type = procurement_tracker_step.get("step_type")
+
     if "approval_requested" in updates and updates["approval_requested"]["new_value"] is True:
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+        if is_award_step:
+            history_title = "Award Approval Requested"
+            history_message = (
+                f"{event_user.full_name} uploaded the signed award, entered the CLINs and award details, "
+                "and requested award approval from the Budget Team."
+            )
+        else:
+            history_title = "Pre-Award Approval Requested"
+            history_message = (
+                f"{event_user.full_name} requested pre-award approval from the Division Director."
+            )
         return AgreementHistory(
             agreement_id=procurement_tracker.agreement_id,
             agreement_id_record=procurement_tracker.agreement_id,
             ops_event_id=event.id,
-            history_title="Pre-Award Approval Requested",
-            history_message=f"{event_user.full_name} requested pre-award approval from the Division Director.",
+            history_title=history_title,
+            history_message=history_message,
             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
         )
@@ -1021,22 +1035,35 @@ def create_procurement_tracker_step_update_history_event(
             )
         requester_name = requester_user.full_name
 
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+
         if status == "APPROVED":
-            # Extract first name from full name (e.g., "Dave Director" -> "Dave")
-            name_parts = event_user.full_name.split() if event_user.full_name else []
-            approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Approved & Requisition Started"
-            history_message = (
-                f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
-                f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
-                f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
-            )
+            if is_award_step:
+                history_title = "Agreement Awarded"
+                history_message = (
+                    "The Budget Team reviewed and approved this agreement for award. "
+                    "The Executing budget lines were changed to Obligated Status."
+                )
+            else:
+                # Extract first name from full name (e.g., "Dave Director" -> "Dave")
+                name_parts = event_user.full_name.split() if event_user.full_name else []
+                approver_first_name = name_parts[0] if name_parts else "Unknown"
+                history_title = "Pre-Award Approved & Requisition Started"
+                history_message = (
+                    f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
+                    f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+                    f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
+                )
         elif status == "DECLINED":
             # Extract first name from full name (e.g., "Dave Director" -> "Dave")
             name_parts = event_user.full_name.split() if event_user.full_name else []
             approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Declined"
-            history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
+            if is_award_step:
+                history_title = "Award Declined"
+                history_message = f"{approver_first_name} declined this agreement for award as requested by {requester_name}."
+            else:
+                history_title = "Pre-Award Declined"
+                history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
         else:
             history_title = None
 
