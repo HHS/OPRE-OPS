@@ -42,6 +42,7 @@ def test_pending_award_step(app_ctx, loaded_db):
     loaded_db.rollback()
     try:
         from models.procurement_tracker import ProcurementTrackerStep
+
         fresh = loaded_db.get(ProcurementTrackerStep, step.id)
         if fresh:
             loaded_db.delete(fresh)
@@ -74,6 +75,7 @@ def test_already_approved_award_step(app_ctx, loaded_db):
     loaded_db.rollback()
     try:
         from models.procurement_tracker import ProcurementTrackerStep
+
         fresh = loaded_db.get(ProcurementTrackerStep, step.id)
         if fresh:
             loaded_db.delete(fresh)
@@ -82,9 +84,7 @@ def test_already_approved_award_step(app_ctx, loaded_db):
         loaded_db.rollback()
 
 
-def test_pending_award_approvals_budget_team_sees_pending(
-    budget_team_auth_client, test_pending_award_step, loaded_db
-):
+def test_pending_award_approvals_budget_team_sees_pending(budget_team_auth_client, test_pending_award_step, loaded_db):
     """Budget team sees AWARD steps where approval is requested but not yet responded."""
     response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-award-approvals/")
     assert response.status_code == 200
@@ -106,17 +106,13 @@ def test_pending_award_approvals_excludes_already_approved(
     assert test_already_approved_award_step.id not in step_ids
 
 
-def test_pending_award_approvals_non_budget_team_gets_empty(
-    client, test_pending_award_step, loaded_db
-):
+def test_pending_award_approvals_non_budget_team_gets_empty(client, test_pending_award_step, loaded_db):
     """Unauthenticated/non-budget-team user gets 401, not the list."""
     response = client.get("/api/v1/procurement-tracker-steps/pending-award-approvals/")
     assert response.status_code == 401
 
 
-def test_pending_award_approvals_includes_award_fields(
-    budget_team_auth_client, test_pending_award_step, loaded_db
-):
+def test_pending_award_approvals_includes_award_fields(budget_team_auth_client, test_pending_award_step, loaded_db):
     """Response must include contract_number, award_amount, award_date for the card."""
     response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-award-approvals/")
     assert response.status_code == 200

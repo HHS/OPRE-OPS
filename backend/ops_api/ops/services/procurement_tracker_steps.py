@@ -1024,7 +1024,9 @@ class ProcurementTrackerStepService:
             if procurement_action:
                 if procurement_action.date_awarded_obligated is None:
                     procurement_action.date_awarded_obligated = obligated_date or date.today()
-                    logger.debug(f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval")
+                    logger.debug(
+                        f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
+                    )
                 procurement_action.status = ProcurementActionStatus.AWARDED
                 logger.debug("Marked procurement action as AWARDED via award approval")
 
