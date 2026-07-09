@@ -230,9 +230,6 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
 
         session.merge(aa)
         session.flush()
-        # Set Dry Run true so that we don't commit at the end of the function
-        # This allows us to rollback the session if dry_run is enabled or not commit changes
-        # if something errors after this point
         agreement_history_trigger_func(ops_event, session, sys_user, dry_run=False)
         session.commit()
 

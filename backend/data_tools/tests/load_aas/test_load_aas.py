@@ -250,9 +250,11 @@ def test_create_models_preserves_existing_fields(db_for_aas):
         SERVICE_REQUIREMENT_TYPE=ServiceRequirementType.SEVERABLE.name,
     )
 
-    # A procurement shop to reference (the test DB does not seed these).
+    # A procurement shop and PSC to reference (the test DB does not seed these).
     proc_shop = ProcurementShop(name="Test Shop", abbr="TS")
     db_for_aas.add(proc_shop)
+    psc = ProductServiceCode(name="Test PSC")
+    db_for_aas.add(psc)
     db_for_aas.commit()
 
     # Initial import creates the AA. These fields are not present in the AA CSV.
@@ -262,6 +264,8 @@ def test_create_models_preserves_existing_fields(db_for_aas):
     # Simulate the fields being populated later (e.g. via the app/UI).
     aa_model.awarding_entity_id = proc_shop.id
     aa_model.project_officer_id = sys_user.id
+    aa_model.alternate_project_officer_id = sys_user.id
+    aa_model.product_service_code_id = psc.id
     db_for_aas.commit()
 
     # Re-import the same AA row.
@@ -270,11 +274,14 @@ def test_create_models_preserves_existing_fields(db_for_aas):
     aa_model = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "Family Support Research")).scalar()
     assert aa_model.awarding_entity_id == proc_shop.id
     assert aa_model.project_officer_id == sys_user.id
+    assert aa_model.alternate_project_officer_id == sys_user.id
+    assert aa_model.product_service_code_id == psc.id
 
-    # cleanup created data (delete the agreement before the shop it references)
+    # cleanup created data (delete the agreement before the shop/PSC it references)
     db_for_aas.delete(aa_model)
     db_for_aas.commit()
     db_for_aas.execute(text("DELETE FROM procurement_shop"))
+    db_for_aas.execute(text("DELETE FROM product_service_code WHERE name = 'Test PSC'"))
     db_for_aas.commit()
 
 

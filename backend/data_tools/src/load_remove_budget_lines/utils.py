@@ -81,6 +81,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         raise ValueError(f"BudgetLineItem with SYS_BUDGET_ID {data.SYS_BUDGET_ID} not found.")
 
     agreement = budget_line_item.agreement
+    bli_dict = budget_line_item.to_dict()  # capture before delete; object becomes detached after session.delete()
+
+    if os.getenv("DRY_RUN"):
+        logger.info("Dry run enabled. Skipping BLI deletion.")
+        return
 
     session.delete(budget_line_item)
     session.commit()
@@ -98,21 +103,15 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         event_type=OpsEventType.DELETE_BLI,
         event_status=OpsEventStatus.SUCCESS,
         created_by=sys_user.id,
-        event_details={"deleted_bli": budget_line_item.to_dict()},
+        event_details={"deleted_bli": bli_dict},
     )
 
     session.add(ops_event)
     session.flush()  # Populate ops_event.id and created_on before the history trigger reads them
 
     # Fire the agreement-history trigger so the deletion is recorded in AgreementHistory.
-    # DRY_RUN drives both the trigger's commit and our rollback/commit (single source of truth).
-    dry_run = bool(os.getenv("DRY_RUN"))
-    agreement_history_trigger_func(ops_event, session, sys_user, dry_run=dry_run)
-    if dry_run:
-        logger.info("Dry run enabled. Rolling back transaction.")
-        session.rollback()
-    else:
-        session.commit()
+    agreement_history_trigger_func(ops_event, session, sys_user, dry_run=False)
+    session.commit()
 
 
 def create_all_models(data: List[BudgetLineItemData], sys_user: User, session: Session) -> None:
