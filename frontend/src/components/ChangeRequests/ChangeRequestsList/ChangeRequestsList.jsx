@@ -85,13 +85,11 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return new Date(Math.min(...dates)).toISOString().split("T")[0];
     };
 
-    const taggedAwardApprovals = (awardApprovals ?? []).map(
-        (/** @type {ProcurementTrackerAwardStep} */ step) => ({
-            _type: "award",
-            _sortDate: step.approval_requested_date ?? "",
-            item: step
-        })
-    );
+    const taggedAwardApprovals = (awardApprovals ?? []).map((/** @type {ProcurementTrackerAwardStep} */ step) => ({
+        _type: "award",
+        _sortDate: step.approval_requested_date ?? "",
+        item: step
+    }));
     const taggedBudgetRequisitions = (budgetRequisitions ?? []).map(
         (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
             _type: "budgetRequisition",
@@ -116,7 +114,12 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return cards;
     });
 
-    const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedAwardApprovals, ...taggedChangeRequests].sort((a, b) =>
+    const allItems = [
+        ...taggedBudgetRequisitions,
+        ...taggedPreAwardApprovals,
+        ...taggedAwardApprovals,
+        ...taggedChangeRequests
+    ].sort((a, b) =>
         b._sortDate > a._sortDate
             ? 1
             : b._sortDate < a._sortDate

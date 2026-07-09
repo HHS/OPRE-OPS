@@ -111,8 +111,7 @@ export default function useRequestAwardApproval(agreementId) {
     // Warning is shown only while approval is pending (requested but not yet approved or declined).
     // Once Budget Team approves, the warning should disappear.
     const hasApprovalBeenRequested =
-        step6?.approval_requested === true &&
-        (!step6?.approval_status || step6?.approval_status === "PENDING");
+        step6?.approval_requested === true && (!step6?.approval_status || step6?.approval_status === "PENDING");
 
     // Block re-submission once the award has been approved by Budget Team
     const isApprovalApproved = step6?.approval_status === "APPROVED";
