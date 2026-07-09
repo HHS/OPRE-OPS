@@ -132,9 +132,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
                         if updated_by_system_user
-                        else f"{event_user.full_name} deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
@@ -406,14 +406,24 @@ def create_change_request_history_event(
             if old_proc_shop:
                 old_proc_shop_abbr = old_proc_shop.abbr
                 old_proc_shop_fee_total = (
-                    sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
             if new_proc_shop:
                 new_proc_shop_abbr = new_proc_shop.abbr
                 new_proc_shop_fee_total = (
-                    sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
@@ -671,7 +681,7 @@ def create_agreement_update_history_event(
                     old_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (old_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -684,7 +694,7 @@ def create_agreement_update_history_event(
                     new_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (new_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )

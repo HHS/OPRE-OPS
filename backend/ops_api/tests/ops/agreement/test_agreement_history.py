@@ -10,8 +10,9 @@ from models import (
     OpsEventStatus,
     OpsEventType,
 )
-from models.agreement_history import add_history_events, get_project_display_name
+from models.agreement_history import add_history_events, create_agreement_update_history_event, get_project_display_name
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
+from ops_api.ops.utils.users import get_sys_user
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -473,6 +474,49 @@ def test_proc_shop_fee_changes(loaded_db, app_ctx):
     )
 
 
+def test_proc_shop_change_with_none_amount_budget_line(loaded_db, app_ctx):
+    """A procurement shop change must not crash when a budget line has a None amount."""
+    from models import ContractAgreement, ContractBudgetLineItem
+    from models.agreements import AgreementType
+    from models.budget_line_items import BudgetLineItemStatus
+
+    sys_user = get_sys_user(loaded_db)
+
+    agreement = ContractAgreement(
+        name="None Amount Fee Regression",
+        agreement_type=AgreementType.CONTRACT,
+        awarding_entity_id=3,  # NIH (seeded)
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        amount=None,  # the exact condition that previously raised TypeError
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    loaded_db.add(bli)
+    loaded_db.flush()
+
+    # Fire the awarding_entity_id branch directly (proc shop 3 -> None).
+    history_item = create_agreement_update_history_event(
+        "awarding_entity_id",
+        3,
+        None,
+        sys_user,
+        timestamp,
+        agreement.id,
+        None,
+        loaded_db,
+        sys_user,
+    )
+
+    assert history_item is not None
+    assert history_item.history_title == "Change to Procurement Shop"
+    # None amount is treated as 0, so the fee total is $0.00 rather than crashing.
+    assert "fee total from $0.00 to $0.00" in history_item.history_message
+
+
 def test_agreement_history_create_bli(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 48)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -622,7 +666,7 @@ def test_agreement_history_bli_deletion(loaded_db, app_ctx):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
     assert new_agreement_history_item.history_title == "Budget Line Deleted"
-    assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
+    assert new_agreement_history_item.history_message == "Steve Tekell deleted the BL 16044."
 
 
 def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
