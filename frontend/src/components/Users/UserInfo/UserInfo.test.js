@@ -777,6 +777,37 @@ describe("UserInfo", () => {
                 }
             });
         });
+
+        test("saving a change for an existing Read-Only user does not open the modal and saves directly", async () => {
+            const browserUser = userEvent.setup();
+            // User already holds only READ_ONLY, so there are no other roles to strip —
+            // changing an unrelated field should save without the confirmation modal.
+            const readOnlyUser = {
+                ...baseUser,
+                roles: [{ id: 8, name: "READ_ONLY", is_superuser: false }]
+            };
+            renderWithProviders(
+                <App
+                    user={readOnlyUser}
+                    isEditable={true}
+                />
+            );
+
+            const divisionCombo = await screen.findByTestId("division-combobox");
+            await browserUser.selectOptions(within(divisionCombo).getByRole("combobox"), "2"); // Division of Economic Independence
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+            expect(mockUpdateUser).toHaveBeenCalledWith({
+                id: 1,
+                data: {
+                    division: 2,
+                    roles: ["READ_ONLY"],
+                    status: "ACTIVE"
+                }
+            });
+        });
     });
 
     describe("Cancel confirmation modal", () => {

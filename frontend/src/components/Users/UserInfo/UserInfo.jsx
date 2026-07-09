@@ -152,10 +152,11 @@ const UserInfo = ({ user, isEditable }) => {
         setLastSaved({ division, status, roleNames });
     };
 
-    // Selecting Read Only requires confirmation because it strips all other roles.
-    // Any other change saves directly.
+    // Newly assigning Read Only requires confirmation because it strips all other roles.
+    // Skip the modal when the user already had Read Only (no roles to remove), and for
+    // any other change save directly.
     const handleSave = () => {
-        if (selectedRoleNames.includes(READ_ONLY_ROLE)) {
+        if (selectedRoleNames.includes(READ_ONLY_ROLE) && !persistedRoleNames.includes(READ_ONLY_ROLE)) {
             setShowModal(true);
             return;
         }
