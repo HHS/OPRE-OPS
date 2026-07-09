@@ -16,7 +16,6 @@ from models.procurement_action import ProcurementActionStatus
 from models.procurement_tracker import ProcurementTrackerStepType
 from ops_api.ops.services.procurement_tracker_steps import ProcurementTrackerStepService
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

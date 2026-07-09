@@ -15,7 +15,6 @@ from ops_api.ops.validation.rules.procurement_tracker_step import (
     AwardApprovalResponseValidationRule,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
