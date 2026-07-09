@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -49,10 +49,8 @@ const sanitizeReturnTo = (raw, agreementId) => {
 
 const EditAgreementAndBudgetLines = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const urlPathParams = useParams();
     const agreementId = Number(urlPathParams.id);
-    const returnTo = location.state?.returnTo ?? `/agreements/review/${agreementId}`;
     const isValidId = Number.isFinite(agreementId);
     const [searchParams] = useSearchParams();
     const returnTo = useMemo(

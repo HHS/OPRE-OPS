@@ -44,7 +44,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
     default: () => <div data-testid="agreement-meta-accordion">Agreement Meta</div>
 }));
 
-vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
+vi.mock("./BudgetLinesReviewAccordion", () => ({
     BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
