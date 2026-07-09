@@ -12,7 +12,7 @@ import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledBut
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 // Feature flag for upload consensus memo functionality
@@ -191,7 +191,7 @@ export const RequestPreAwardApproval = () => {
             />
 
             {/* Budget Lines and Executing Total */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
