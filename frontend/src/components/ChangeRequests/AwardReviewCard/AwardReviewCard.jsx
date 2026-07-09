@@ -133,8 +133,8 @@ function AwardReviewCard({ agreementId, requestorId, requestDate, awardAmount, a
 
 AwardReviewCard.propTypes = {
     agreementId: PropTypes.number.isRequired,
-    requestorId: PropTypes.number.isRequired,
-    requestDate: PropTypes.string.isRequired,
+    requestorId: PropTypes.number,
+    requestDate: PropTypes.string,
     awardAmount: PropTypes.number,
     awardDate: PropTypes.string
 };

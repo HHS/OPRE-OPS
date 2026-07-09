@@ -206,8 +206,8 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                         <AwardReviewCard
                             key={`award-${item.id}`}
                             agreementId={item.procurement_tracker?.agreement?.id}
-                            requestorId={item.approval_requested_by}
-                            requestDate={item.approval_requested_date}
+                            requestorId={item.approval_requested_by ?? undefined}
+                            requestDate={item.approval_requested_date ?? undefined}
                             awardAmount={item.award_amount ?? undefined}
                             awardDate={item.award_date ?? undefined}
                         />

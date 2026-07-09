@@ -394,7 +394,9 @@ class ProcurementTrackerStepService:
                             logger.debug(
                                 "Procurement action already AWARDED by budget team approval — skipping on step completion"
                             )
-                        elif hasattr(step, "award_approval_status") and step.award_approval_status == "APPROVED":
+                        elif (
+                            isinstance(step, DefaultProcurementTrackerStep) and step.award_approval_status == "APPROVED"
+                        ):
                             procurement_action.status = ProcurementActionStatus.AWARDED
                             if procurement_action.date_awarded_obligated is None:
                                 procurement_action.date_awarded_obligated = date.today()
@@ -757,20 +759,25 @@ class ProcurementTrackerStepService:
         """
         from sqlalchemy import and_, update
 
-        from models import PreAwardApprovalNotification
+        from models import AwardApprovalNotification, PreAwardApprovalNotification
 
-        dismiss_result = self.db_session.execute(
-            update(PreAwardApprovalNotification)
-            .where(
-                and_(
-                    PreAwardApprovalNotification.title == title,
-                    PreAwardApprovalNotification.is_read.is_(False),
-                    PreAwardApprovalNotification.procurement_tracker_step_id == step_id,
+        # Dismiss from whichever notification table holds records with this title + step
+        for notification_model in (PreAwardApprovalNotification, AwardApprovalNotification):
+            dismiss_result = self.db_session.execute(
+                update(notification_model)
+                .where(
+                    and_(
+                        notification_model.title == title,
+                        notification_model.is_read.is_(False),
+                        notification_model.procurement_tracker_step_id == step_id,
+                    )
                 )
+                .values(is_read=True)
             )
-            .values(is_read=True)
-        )
-        logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} {log_message}")
+            if dismiss_result.rowcount:
+                logger.debug(
+                    f"Auto-dismissed {dismiss_result.rowcount} {log_message} from {notification_model.__name__}"
+                )
 
     def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
@@ -1079,7 +1086,7 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": recipient_id,
-                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "notification_type": NotificationType.AWARD_APPROVAL_NOTIFICATION,
                         "procurement_tracker_step_id": step.id,
                     },
                     commit=False,
@@ -1106,7 +1113,7 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": recipient_id,
-                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "notification_type": NotificationType.AWARD_APPROVAL_NOTIFICATION,
                         "procurement_tracker_step_id": step.id,
                     },
                     commit=False,
@@ -1150,10 +1157,7 @@ class ProcurementTrackerStepService:
 
         # Include team members
         for member in agreement.team_members or []:
-            if hasattr(member, "id"):
-                recipient_ids.add(member.id)
-            else:
-                recipient_ids.add(member)
+            recipient_ids.add(member.id)
 
         # Include all Budget Team members
         budget_team_ids = self._get_budget_team_user_ids()
