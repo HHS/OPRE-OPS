@@ -56,8 +56,18 @@ vi.mock("../../UI/Form/ComboBox", () => ({
                     onChange={(e) => {
                         const selected = props.data?.find((item) => item.id.toString() === e.target.value);
                         if (selected && props.setSelectedData) {
-                            // Multi-select combos (e.g. roles) hand back an array like react-select does.
-                            props.setSelectedData(props.isMulti ? [selected] : selected);
+                            if (props.isMulti) {
+                                // Multi-select combos (e.g. roles) accumulate selections like
+                                // react-select does — merge the new pick into the current array
+                                // rather than replacing it, so multi-role states are testable.
+                                const current = Array.isArray(props.selectedData) ? props.selectedData : [];
+                                const next = current.some((item) => item.id === selected.id)
+                                    ? current
+                                    : [...current, selected];
+                                props.setSelectedData(next);
+                            } else {
+                                props.setSelectedData(selected);
+                            }
                         }
                     }}
                 >
@@ -807,6 +817,30 @@ describe("UserInfo", () => {
                     status: "ACTIVE"
                 }
             });
+        });
+
+        test("adding a second role to an existing Read-Only user opens the modal instead of saving", async () => {
+            const browserUser = userEvent.setup();
+            // User already holds READ_ONLY; adding another role would violate the exclusivity
+            // rule, so the modal must fire rather than letting the backend reject the save.
+            const readOnlyUser = {
+                ...baseUser,
+                roles: [{ id: 8, name: "READ_ONLY", is_superuser: false }]
+            };
+            renderWithProviders(
+                <App
+                    user={readOnlyUser}
+                    isEditable={true}
+                />
+            );
+
+            const rolesCombo = await screen.findByTestId("roles-combobox");
+            await browserUser.selectOptions(within(rolesCombo).getByRole("combobox"), "1"); // SYSTEM_OWNER
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(await screen.findByRole("dialog")).toBeInTheDocument();
+            expect(mockUpdateUser).not.toHaveBeenCalled();
         });
     });
 

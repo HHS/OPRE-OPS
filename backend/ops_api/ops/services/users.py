@@ -21,7 +21,13 @@ def resolve_roles(session: Session, role_names: list[str]) -> list[Role]:
     if READ_ONLY_ROLE in role_names and len(role_names) > 1:
         raise BadRequest("The READ_ONLY role cannot be combined with other roles.")
 
-    return [session.scalar(select(Role).where(Role.name == role_name)) for role_name in role_names]
+    resolved_roles = []
+    for role_name in role_names:
+        role = session.scalar(select(Role).where(Role.name == role_name))
+        if role is None:
+            raise BadRequest(f"Role '{role_name}' does not exist.")
+        resolved_roles.append(role)
+    return resolved_roles
 
 
 def get_user(session: Session, **kwargs) -> User:

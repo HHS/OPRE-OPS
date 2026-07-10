@@ -39,6 +39,9 @@ const UserInfo = ({ user, isEditable }) => {
     // parent's selected-users state and is not re-synced after a save, so we track what
     // was persisted here to keep the dirty check (and Cancel reset) accurate.
     const [lastSaved, setLastSaved] = React.useState(null);
+    // Values sent in the in-flight save. Committed to `lastSaved` only once the mutation
+    // succeeds, so the dirty-check baseline never advances on a failed save.
+    const pendingSaveRef = React.useRef(null);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -93,6 +96,11 @@ const UserInfo = ({ user, isEditable }) => {
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
+            // Advance the dirty-check baseline only now that the save has succeeded.
+            if (pendingSaveRef.current) {
+                setLastSaved(pendingSaveRef.current);
+                pendingSaveRef.current = null;
+            }
             setAlert({
                 type: "success",
                 heading: "User Updated",
@@ -147,16 +155,18 @@ const UserInfo = ({ user, isEditable }) => {
                 status
             }
         });
-        // Record the persisted values so the dirty check resets the buttons to disabled
-        // once the save completes (the `user` prop won't reflect this change).
-        setLastSaved({ division, status, roleNames });
+        // Stage the persisted values; they become the dirty-check baseline once the
+        // mutation succeeds (see the updateUserResult effect). The `user` prop won't
+        // reflect this change.
+        pendingSaveRef.current = { division, status, roleNames };
     };
 
-    // Newly assigning Read Only requires confirmation because it strips all other roles.
-    // Skip the modal when the user already had Read Only (no roles to remove), and for
-    // any other change save directly.
+    // Read Only cannot be combined with other roles. Whenever the selection mixes Read Only
+    // with anything else, require confirmation because saving strips the other role(s). This
+    // also guards the already-Read-Only case (adding a second role), so we never rely on the
+    // backend 400. Any other change saves directly.
     const handleSave = () => {
-        if (selectedRoleNames.includes(READ_ONLY_ROLE) && !persistedRoleNames.includes(READ_ONLY_ROLE)) {
+        if (selectedRoleNames.includes(READ_ONLY_ROLE) && selectedRoleNames.length > 1) {
             setShowModal(true);
             return;
         }
@@ -300,7 +310,6 @@ const UserInfo = ({ user, isEditable }) => {
                                 Cancel
                             </button>
                             <button
-                                id="save-changes"
                                 type="button"
                                 className="usa-button"
                                 disabled={!isDirty}
