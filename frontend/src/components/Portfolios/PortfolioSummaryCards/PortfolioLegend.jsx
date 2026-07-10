@@ -70,7 +70,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                         <div className={styles.valueAndPercent}>
                             <span className={isActive ? "fake-bold" : ""}>{formatCurrency(item.value)}</span>
                             <Tag
-                                className={`${styles.percentTag}`}
+                                className={`${styles.percentTag} ${isActive ? "fake-bold" : ""}`}
                                 tagStyle="darkTextWhiteBackground"
                                 text={`${displayPercent}%`}
                                 label={item.abbreviation}
@@ -79,8 +79,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                                     isActive
                                         ? {
                                               backgroundColor: item.color,
-                                              color: textColor,
-                                              fontWeight: "bold"
+                                              color: textColor
                                           }
                                         : {}
                                 }
