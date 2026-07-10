@@ -529,7 +529,14 @@ const useAgreementEditForm = (
         }
 
         try {
-            const result = await saveAgreement();
+            // Bypass the navigation blocker: saving a draft is an intentional, saved exit,
+            // so the "You have unsaved changes" modal must not appear. Note that
+            // setHasAgreementChanged(false) only resets the parent's copy — the blocker's
+            // hasChanged is bound to the local useHasStateChanged(agreement) value, which
+            // stays true here. Navigation is deferred to the success alert's redirectUrl so a
+            // re-render propagates isCancelling before useBlocker re-evaluates.
+            setIsCancelling(true);
+            const result = await saveAgreement("/agreements");
             if (result === false && !agreement.id) {
                 const data = {
                     ...agreement,
@@ -545,12 +552,16 @@ const useAgreementEditForm = (
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
-                    message: `The agreement ${agreement.name} has been successfully created.`
+                    message: `The agreement ${agreement.name} has been successfully created.`,
+                    redirectUrl: "/agreements"
                 });
                 scrollToTop();
+            } else if (result === false) {
+                // Existing agreement with no changes to save: saveAgreement set no alert and
+                // hasChanged is false, so the blocker is inactive — navigate directly.
+                navigate("/agreements");
             }
             setHasAgreementChanged(false);
-            navigate("/agreements");
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
             if (!agreement.id) {

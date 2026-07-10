@@ -236,6 +236,55 @@ def test_create_models_upsert(db_for_aas):
     db_for_aas.commit()
 
 
+def test_create_models_preserves_existing_fields(db_for_aas):
+    """Re-importing an existing AA must not null out fields the CSV does not carry."""
+    from data_tools.src.load_aas.utils import AAData, create_models
+
+    sys_user = get_or_create_sys_user(db_for_aas)
+
+    data = AAData(
+        PROJECT_NAME="Test Project",
+        AA_NAME="Family Support Research",
+        REQUESTING_AGENCY_NAME="HHS",
+        SERVICING_AGENCY_NAME="NSF",
+        SERVICE_REQUIREMENT_TYPE=ServiceRequirementType.SEVERABLE.name,
+    )
+
+    # A procurement shop and PSC to reference (the test DB does not seed these).
+    proc_shop = ProcurementShop(name="Test Shop", abbr="TS")
+    db_for_aas.add(proc_shop)
+    psc = ProductServiceCode(name="Test PSC")
+    db_for_aas.add(psc)
+    db_for_aas.commit()
+
+    # Initial import creates the AA. These fields are not present in the AA CSV.
+    create_models(data, sys_user, db_for_aas)
+    aa_model = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "Family Support Research")).scalar()
+
+    # Simulate the fields being populated later (e.g. via the app/UI).
+    aa_model.awarding_entity_id = proc_shop.id
+    aa_model.project_officer_id = sys_user.id
+    aa_model.alternate_project_officer_id = sys_user.id
+    aa_model.product_service_code_id = psc.id
+    db_for_aas.commit()
+
+    # Re-import the same AA row.
+    create_models(data, sys_user, db_for_aas)
+
+    aa_model = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "Family Support Research")).scalar()
+    assert aa_model.awarding_entity_id == proc_shop.id
+    assert aa_model.project_officer_id == sys_user.id
+    assert aa_model.alternate_project_officer_id == sys_user.id
+    assert aa_model.product_service_code_id == psc.id
+
+    # cleanup created data (delete the agreement before the shop/PSC it references)
+    db_for_aas.delete(aa_model)
+    db_for_aas.commit()
+    db_for_aas.execute(text("DELETE FROM procurement_shop"))
+    db_for_aas.execute(text("DELETE FROM product_service_code WHERE name = 'Test PSC'"))
+    db_for_aas.commit()
+
+
 def test_transform_with_csv(db_for_aas, tmp_path):
     """Test transform function with CSV data"""
     from csv import DictReader
@@ -329,10 +378,12 @@ def test_existing_agreement_handling(db_for_aas):
 
     sys_user = get_or_create_sys_user(db_for_aas)
 
-    # Create an existing agreement
+    # Create an existing agreement. Its service_requirement_type is intentionally
+    # different from the CSV value below so we can assert it is copied to the new AA.
     existing_agreement = ContractAgreement(
         name="Existing Contract",
         agreement_type=AgreementType.CONTRACT,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         created_by=sys_user.id,
         updated_by=sys_user.id,
         created_on=datetime.now(),
@@ -394,7 +445,8 @@ def test_existing_agreement_handling(db_for_aas):
     assert new_agreement.project.title == "Test Project"
     assert new_agreement.requesting_agency.name == "HHS"
     assert new_agreement.servicing_agency.name == "NSF"
-    assert new_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
+    # service_requirement_type is copied from the existing agreement, not the CSV
+    assert new_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
     assert new_agreement.created_by == sys_user.id
     assert new_agreement.updated_by == sys_user.id
 
