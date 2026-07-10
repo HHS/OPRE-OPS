@@ -73,12 +73,14 @@ export const TextArea = ({
                     value={value}
                     aria-describedby={`${name}-with-hint-textarea-info ${name}-with-hint-textarea-hint`}
                 />
-                <span
-                    id={`${name}-with-hint-textarea-info`}
-                    className="usa-character-count__message usa-hint"
-                >
-                    {maxLength - textLength} left
-                </span>
+                {maxLength && (
+                    <span
+                        id={`${name}-with-hint-textarea-info`}
+                        className="usa-character-count__message usa-hint"
+                    >
+                        {maxLength - textLength} left
+                    </span>
+                )}
             </div>
         </fieldset>
     );

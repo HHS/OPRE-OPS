@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 
@@ -180,6 +180,59 @@ describe("useCreateBLIsAndSCs", () => {
     it("flags not-yet-developed agreement types", () => {
         const { result } = renderSubject();
         expect(result.current.isAgreementNotYetDeveloped).toBe(true);
+    });
+
+    it("resets validation suites on mount and unmount so stale errors do not leak (issue #5894)", async () => {
+        const [pageSuite, budgetSuite, dateSuite] = await Promise.all([
+            import("./suite"),
+            import("../BudgetLinesForm/suite"),
+            import("../BudgetLinesForm/datePickerSuite")
+        ]);
+
+        const { unmount } = renderSubject();
+
+        // reset runs on mount to clear any result left by a prior mount/session
+        expect(pageSuite.default.reset).toHaveBeenCalledTimes(1);
+        expect(budgetSuite.default.reset).toHaveBeenCalledTimes(1);
+        expect(dateSuite.default.reset).toHaveBeenCalledTimes(1);
+
+        unmount();
+
+        // and again on unmount, leaving suites clean for the next consumer
+        expect(pageSuite.default.reset).toHaveBeenCalledTimes(2);
+        expect(budgetSuite.default.reset).toHaveBeenCalledTimes(2);
+        expect(dateSuite.default.reset).toHaveBeenCalledTimes(2);
+    });
+
+    it("clears a stale page-suite result left by a prior session on mount (issue #5894)", async () => {
+        const pageSuite = (await import("./suite")).default;
+
+        // Model the module-level singleton as actually stateful: a prior session left it
+        // "dirty", so get() surfaces Budget line item errors until reset() is called.
+        // This makes the assertion depend on the reset + state repaint working, not merely
+        // on reset() having been invoked (the previous test's weakness).
+        let dirty = true;
+        const staleResult = {
+            getErrors: () => ({ "Budget line item (stale-1)": ["This is required information"] }),
+            hasErrors: () => true,
+            isValid: () => false
+        };
+        const cleanResult = {
+            getErrors: () => ({}),
+            hasErrors: () => false,
+            isValid: () => true
+        };
+        pageSuite.get.mockImplementation(() => (dirty ? staleResult : cleanResult));
+        pageSuite.reset.mockImplementation(() => {
+            dirty = false;
+        });
+
+        const { result } = renderSubject();
+
+        // After the mount effect resets the suite and repaints from clean state,
+        // the stale page errors must be gone without any user interaction.
+        await waitFor(() => expect(result.current.budgetLinePageErrorsExist).toBe(false));
+        expect(result.current.pageErrors).toEqual([]);
     });
 
     it("adds a budget line and raises success toast", () => {
