@@ -241,6 +241,25 @@ describe("TextArea Component", () => {
         expect(screen.getByText("500 left")).toBeInTheDocument();
     });
 
+    it("hides characters left hint when no maxLength is provided", () => {
+        // eslint-disable-next-line no-unused-vars
+        const { maxLength, ...propsWithoutMax } = defaultProps;
+        render(<TextArea {...propsWithoutMax} />);
+
+        expect(screen.queryByText(/left/)).not.toBeInTheDocument();
+    });
+
+    it("shows characters left hint when maxLength is provided", () => {
+        render(
+            <TextArea
+                {...defaultProps}
+                maxLength={200}
+            />
+        );
+
+        expect(screen.getByText("200 left")).toBeInTheDocument();
+    });
+
     it("has correct aria-describedby attributes", () => {
         render(<TextArea {...defaultProps} />);
 
