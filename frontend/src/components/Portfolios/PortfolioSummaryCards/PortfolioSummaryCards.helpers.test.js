@@ -525,7 +525,7 @@ describe("PortfolioSummaryCards.helpers", () => {
 
     describe("getActivePortfolioTagTextColor", () => {
         it("returns dark text for light-background portfolios", () => {
-            ["CC", "HS", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"].forEach((abbr) => {
+            ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"].forEach((abbr) => {
                 expect(getActivePortfolioTagTextColor(abbr)).toBe("#1B1B1B");
             });
         });
@@ -536,8 +536,12 @@ describe("PortfolioSummaryCards.helpers", () => {
             });
         });
 
-        it("returns white text for HMRF (intentionally excluded from light backgrounds)", () => {
-            expect(getActivePortfolioTagTextColor("HMRF")).toBe("#FFFFFF");
+        it("returns dark text for HMRF (#428cae — white fails WCAG AA at 3.75:1, dark passes at 4.59:1)", () => {
+            expect(getActivePortfolioTagTextColor("HMRF")).toBe("#1B1B1B");
+        });
+
+        it("returns white text for OTIP (#1975aa — dark fails WCAG AA at 3.42:1, white passes at 5.04:1)", () => {
+            expect(getActivePortfolioTagTextColor("OTIP")).toBe("#FFFFFF");
         });
 
         it("is alias-aware — DO resolves to the same dark text as its alias DD (shared color)", () => {
