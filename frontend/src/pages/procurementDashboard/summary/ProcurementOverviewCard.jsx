@@ -3,7 +3,7 @@ import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
-import { computeDisplayPercents } from "../../../helpers/utils";
+import { computeDisplayPercents, convertCodeForDisplay } from "../../../helpers/utils";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
@@ -20,7 +20,7 @@ const buildStatusData = (procurementOverview) => {
 
     const statusItems = status_data.map((item, index) => ({
         id: index + 1,
-        label: item.label,
+        label: convertCodeForDisplay("budgetLineStatus", item.status),
         color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
         amount: item.amount,
         abbreviation: item.label,
@@ -140,7 +140,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                 <LegendItem
                                     activeId={activeId}
                                     id={item.id}
-                                    label={item.label === "In Execution" ? "Executing" : item.label}
+                                    label={item.label}
                                     value={item.amount}
                                     color={item.color}
                                     percent={item.amountDisplayPercent}
