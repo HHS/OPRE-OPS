@@ -37,7 +37,7 @@ const matchesConfig = (abbreviation, config) =>
  * HMRF (#428cae) gets dark text: white text fails WCAG AA (3.75:1) while dark passes (4.59:1).
  * OTIP (#1975aa) is intentionally NOT listed: it needs white text (5.04:1) because dark fails (3.42:1).
  */
-export const LIGHT_BACKGROUND_PORTFOLIOS = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"];
+export const LIGHT_BACKGROUND_PORTFOLIOS = ["CC", "HS", "HMRF", "HV", "DO", "Non-OPRE", "OCDO"];
 
 /**
  * Set of PORTFOLIO_ORDER color vars that render with a light-enough background to

@@ -525,7 +525,7 @@ describe("PortfolioSummaryCards.helpers", () => {
 
     describe("getActivePortfolioTagTextColor", () => {
         it("returns dark text for light-background portfolios", () => {
-            ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"].forEach((abbr) => {
+            ["CC", "HS", "HMRF", "HV", "DO", "Non-OPRE", "OCDO"].forEach((abbr) => {
                 expect(getActivePortfolioTagTextColor(abbr)).toBe("#1B1B1B");
             });
         });
@@ -544,15 +544,15 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(getActivePortfolioTagTextColor("OTIP")).toBe("#FFFFFF");
         });
 
-        it("is alias-aware — DO resolves to the same dark text as its alias DD (shared color)", () => {
-            // DD is in LIGHT_BACKGROUND_PORTFOLIOS; DO is its primary abbreviation and
+        it("is alias-aware — DD resolves to the same dark text as its primary abbreviation DO (shared color)", () => {
+            // DO is in LIGHT_BACKGROUND_PORTFOLIOS; DD is its alias and
             // shares --portfolio-bar-graph-dd, so both must get dark text.
-            expect(getActivePortfolioTagTextColor("DD")).toBe("#1B1B1B");
             expect(getActivePortfolioTagTextColor("DO")).toBe("#1B1B1B");
+            expect(getActivePortfolioTagTextColor("DD")).toBe("#1B1B1B");
         });
 
         it("resolves other abbreviations sharing a light color var (e.g. DB → dark)", () => {
-            // DB also uses --portfolio-bar-graph-dd, so it must match DD's dark text.
+            // DB also uses --portfolio-bar-graph-dd, so it must match DO's dark text.
             expect(getActivePortfolioTagTextColor("DB")).toBe("#1B1B1B");
         });
 
