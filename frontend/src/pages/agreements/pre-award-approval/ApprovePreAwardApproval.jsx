@@ -11,7 +11,7 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 /**
@@ -113,7 +113,7 @@ export const ApprovePreAwardApproval = () => {
             />
 
             {/* Budget Lines and Executing Total */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}

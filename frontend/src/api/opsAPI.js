@@ -1230,6 +1230,10 @@ export const opsApi = createApi({
         getPendingBudgetRequisitions: builder.query({
             query: () => `/procurement-tracker-steps/pending-requisitions/`,
             providesTags: ["Budget Requisitions"]
+        }),
+        getPendingAwardApprovals: builder.query({
+            query: () => `/procurement-tracker-steps/pending-award-approvals/`,
+            providesTags: ["Procurement Tracker Steps"]
         })
     })
 });
@@ -1343,5 +1347,6 @@ export const {
     useLazyGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery,
-    useGetPendingBudgetRequisitionsQuery
+    useGetPendingBudgetRequisitionsQuery,
+    useGetPendingAwardApprovalsQuery
 } = opsApi;
