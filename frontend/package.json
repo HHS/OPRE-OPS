@@ -40,7 +40,7 @@
         "vest": "6.3.2"
     },
     "overrides": {
-        "caniuse-lite": "1.0.30001803",
+        "caniuse-lite": "1.0.30001805",
         "lodash": "4.18.1",
         "uuid": "14.0.1",
         "glob": "13.0.6"
