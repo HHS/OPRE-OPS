@@ -1128,8 +1128,7 @@ class ProcurementTrackerStepService:
 
         if award_declined_transitioned and step.award_approval_requested_by:
             message = (
-                f"The award for Agreement {agreement.display_name} has been declined by "
-                f"{current_user.full_name}."
+                f"The award for Agreement {agreement.display_name} has been declined by " f"{current_user.full_name}."
             )
             reviewer_notes = data.get("reviewer_notes") or getattr(step, "award_approval_reviewer_notes", None)
             if reviewer_notes and reviewer_notes.strip():

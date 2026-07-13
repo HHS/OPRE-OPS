@@ -227,7 +227,11 @@ class TestNoUpdatingCompletedProcurementStepRuleAwardCarveOut:
     def test_passes_for_completed_award_step_with_approval_fields(self):
         step = _make_completed_award_step()
         ctx = _make_context(
-            updated_fields={"approval_status": "DECLINED", "reviewer_notes": "See notes.", "obligated_date": "2026-07-01"}
+            updated_fields={
+                "approval_status": "DECLINED",
+                "reviewer_notes": "See notes.",
+                "obligated_date": "2026-07-01",
+            }
         )
         self.rule.validate(step, ctx)  # Should not raise
 
