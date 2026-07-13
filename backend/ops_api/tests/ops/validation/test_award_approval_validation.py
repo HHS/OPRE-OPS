@@ -1,6 +1,7 @@
 """Unit tests for award approval validation rules (OPS-2280).
 
-Tests AwardApprovalResponseAuthorizationRule and AwardApprovalResponseValidationRule.
+Tests AwardApprovalResponseAuthorizationRule, AwardApprovalResponseValidationRule,
+and NoUpdatingCompletedProcurementStepRule (AWARD carve-out).
 No DB or Docker required.
 """
 
@@ -8,11 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from models.procurement_tracker import ProcurementTrackerStepType
+from models.procurement_tracker import ProcurementTrackerStepStatus, ProcurementTrackerStepType
 from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.procurement_tracker_step import (
     AwardApprovalResponseAuthorizationRule,
     AwardApprovalResponseValidationRule,
+    NoUpdatingCompletedProcurementStepRule,
 )
 
 # ---------------------------------------------------------------------------
@@ -158,6 +160,97 @@ class TestAwardApprovalResponseValidationRule:
         from ops_api.ops.services.ops_service import ValidationError
 
         step = _make_award_step(approval_requested=True, approval_status="DECLINED")
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
+        with pytest.raises(ValidationError):
+            self.rule.validate(step, ctx)
+
+    def test_raises_when_declining_without_reviewer_notes(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_award_step(approval_requested=True, approval_status=None)
+        ctx = _make_context(updated_fields={"approval_status": "DECLINED"})
+        with pytest.raises(ValidationError) as exc_info:
+            self.rule.validate(step, ctx)
+        assert "reviewer_notes" in exc_info.value.validation_errors
+
+    def test_raises_when_declining_with_blank_reviewer_notes(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_award_step(approval_requested=True, approval_status=None)
+        ctx = _make_context(updated_fields={"approval_status": "DECLINED", "reviewer_notes": "   "})
+        with pytest.raises(ValidationError) as exc_info:
+            self.rule.validate(step, ctx)
+        assert "reviewer_notes" in exc_info.value.validation_errors
+
+    def test_passes_when_declining_with_reviewer_notes(self):
+        step = _make_award_step(approval_requested=True, approval_status=None)
+        ctx = _make_context(updated_fields={"approval_status": "DECLINED", "reviewer_notes": "Needs revision."})
+        self.rule.validate(step, ctx)  # Should not raise
+
+
+# ---------------------------------------------------------------------------
+# NoUpdatingCompletedProcurementStepRule — AWARD carve-out
+# ---------------------------------------------------------------------------
+
+
+def _make_completed_award_step():
+    step = MagicMock()
+    step.step_type = ProcurementTrackerStepType.AWARD
+    step.status = ProcurementTrackerStepStatus.COMPLETED
+    return step
+
+
+def _make_completed_pre_award_step():
+    step = MagicMock()
+    step.step_type = ProcurementTrackerStepType.PRE_AWARD
+    step.status = ProcurementTrackerStepStatus.COMPLETED
+    return step
+
+
+class TestNoUpdatingCompletedProcurementStepRuleAwardCarveOut:
+    """AWARD steps in COMPLETED status should still accept approval-only field patches."""
+
+    rule = NoUpdatingCompletedProcurementStepRule()
+
+    def test_passes_for_active_step(self):
+        step = MagicMock()
+        step.status = ProcurementTrackerStepStatus.ACTIVE
+        step.step_type = ProcurementTrackerStepType.AWARD
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_passes_for_completed_award_step_with_approval_status_only(self):
+        step = _make_completed_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_passes_for_completed_award_step_with_approval_fields(self):
+        step = _make_completed_award_step()
+        ctx = _make_context(
+            updated_fields={"approval_status": "DECLINED", "reviewer_notes": "See notes.", "obligated_date": "2026-07-01"}
+        )
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_raises_for_completed_award_step_with_non_approval_field(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_completed_award_step()
+        ctx = _make_context(updated_fields={"status": "IN_PROGRESS"})
+        with pytest.raises(ValidationError):
+            self.rule.validate(step, ctx)
+
+    def test_raises_for_completed_award_step_with_mixed_fields(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_completed_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "status": "IN_PROGRESS"})
+        with pytest.raises(ValidationError):
+            self.rule.validate(step, ctx)
+
+    def test_raises_for_completed_non_award_step_with_approval_fields(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_completed_pre_award_step()
         ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
         with pytest.raises(ValidationError):
             self.rule.validate(step, ctx)

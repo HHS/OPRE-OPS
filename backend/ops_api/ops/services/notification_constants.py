@@ -15,3 +15,4 @@ class AwardNotificationTitle:
 
     APPROVAL_REQUEST = "Award Approval Request"
     APPROVED = "Award Approved"
+    DECLINED = "Award Approval Declined"

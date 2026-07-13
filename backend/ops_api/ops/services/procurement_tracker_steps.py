@@ -1120,6 +1120,34 @@ class ProcurementTrackerStepService:
                 )
             logger.debug(f"Created {len(recipient_ids)} award approved notifications")
 
+        # Case 3: Award was declined — notify requester
+        award_declined_transitioned = new_award_status == "DECLINED" and old_award_approval_status in (
+            None,
+            "PENDING",
+        )
+
+        if award_declined_transitioned and step.award_approval_requested_by:
+            message = (
+                f"The award for Agreement {agreement.display_name} has been declined by "
+                f"{current_user.full_name}."
+            )
+            reviewer_notes = data.get("reviewer_notes") or getattr(step, "award_approval_reviewer_notes", None)
+            if reviewer_notes and reviewer_notes.strip():
+                message += f"\n\nNotes:\n{escape_markdown(reviewer_notes.strip())}"
+
+            notification_service.create(
+                {
+                    "title": AwardNotificationTitle.DECLINED,
+                    "message": message,
+                    "is_read": False,
+                    "recipient_id": step.award_approval_requested_by,
+                    "notification_type": NotificationType.AWARD_APPROVAL_NOTIFICATION,
+                    "procurement_tracker_step_id": step.id,
+                },
+                commit=False,
+            )
+            logger.debug("Created award approval declined notification for requester")
+
     def _get_budget_team_user_ids(self) -> list[int]:
         """
         Get user IDs of all BUDGET_TEAM members.

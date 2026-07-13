@@ -17,6 +17,7 @@ import {
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
+ * @property {string} [executingTotalInstructions] - Custom instructions for the executing total accordion
  */
 
 /**
@@ -33,7 +34,8 @@ export const BudgetLinesReviewAccordion = ({
     servicesComponents,
     groupedBudgetLines,
     executingTotal,
-    showCLINColumn = false
+    showCLINColumn = false,
+    executingTotalInstructions
 }) => {
     return (
         <>
@@ -91,7 +93,10 @@ export const BudgetLinesReviewAccordion = ({
             </AgreementBLIAccordion>
 
             {/* Review Executing Total */}
-            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
+            <ReviewExecutingTotalAccordion
+                executingTotal={executingTotal}
+                instructions={executingTotalInstructions}
+            />
         </>
     );
 };

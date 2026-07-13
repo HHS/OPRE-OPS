@@ -118,10 +118,13 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
     """
     Validates that completed procurement tracker steps cannot be updated,
     except when the only field being updated is the notes.
+    AWARD steps are also exempt when the PATCH only contains approval-response fields, because
+    Budget Team approval happens after the COR completes (status=COMPLETED) the step.
     """
 
     # Fields that are still editable after a step has been completed.
     EDITABLE_AFTER_COMPLETION = frozenset({"notes"})
+    AWARD_APPROVAL_FIELDS = frozenset({"approval_status", "reviewer_notes", "obligated_date"})
 
     @property
     def name(self) -> str:
@@ -135,6 +138,10 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
         updated_field_names = set(context.updated_fields.keys())
         if updated_field_names.issubset(self.EDITABLE_AFTER_COMPLETION):
             return
+
+        if procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            if updated_field_names <= self.AWARD_APPROVAL_FIELDS:
+                return
 
         raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
 
@@ -851,3 +858,9 @@ class AwardApprovalResponseValidationRule(ValidationRule):
             raise ValidationError(
                 {"approval_status": f"This award approval request has already been {current_status.lower()}."}
             )
+
+        if context.updated_fields["approval_status"] == "DECLINED":
+            if not context.updated_fields.get("reviewer_notes") or not context.updated_fields["reviewer_notes"].strip():
+                raise ValidationError(
+                    {"reviewer_notes": "Reviewer notes are required when declining an award approval request."}
+                )
