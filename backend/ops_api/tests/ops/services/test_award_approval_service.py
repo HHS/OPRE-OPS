@@ -135,18 +135,6 @@ class TestHandleAwardApprovalBLITransitions:
         assert bli_planned.status == BudgetLineItemStatus.PLANNED_MOD
         assert bli_draft.status == BudgetLineItemStatus.DRAFT
 
-    def test_declined_does_not_transition_blis(self):
-        service = _make_service()
-        bli = _make_bli(BudgetLineItemStatus.IN_EXECUTION)
-        agreement = _make_agreement()
-        agreement.budget_line_items = [bli]
-        step = _make_step()
-        step.procurement_tracker.agreement = agreement
-
-        service._handle_award_approval(step, "DECLINED", None, _make_current_user())
-
-        assert bli.status == BudgetLineItemStatus.IN_EXECUTION
-
 
 # ---------------------------------------------------------------------------
 # _handle_award_approval: obligated_date threading

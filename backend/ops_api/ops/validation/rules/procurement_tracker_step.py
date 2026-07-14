@@ -835,7 +835,7 @@ class AwardApprovalResponseValidationRule(ValidationRule):
     """
     Validates that award approval responses are valid:
     - Approval must have been requested first
-    - Cannot respond if already responded (APPROVED/DECLINED)
+    - Cannot respond if already responded (APPROVED)
     """
 
     @property
@@ -854,13 +854,5 @@ class AwardApprovalResponseValidationRule(ValidationRule):
             )
 
         current_status = procurement_tracker_step.award_approval_status
-        if current_status in ["APPROVED", "DECLINED"]:
-            raise ValidationError(
-                {"approval_status": f"This award approval request has already been {current_status.lower()}."}
-            )
-
-        if context.updated_fields["approval_status"] == "DECLINED":
-            if not context.updated_fields.get("reviewer_notes") or not context.updated_fields["reviewer_notes"].strip():
-                raise ValidationError(
-                    {"reviewer_notes": "Reviewer notes are required when declining an award approval request."}
-                )
+        if current_status == "APPROVED":
+            raise ValidationError({"approval_status": "This award approval request has already been approved."})

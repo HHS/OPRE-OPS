@@ -156,37 +156,6 @@ class TestAwardApprovalResponseValidationRule:
         with pytest.raises(ValidationError):
             self.rule.validate(step, ctx)
 
-    def test_raises_when_already_declined(self):
-        from ops_api.ops.services.ops_service import ValidationError
-
-        step = _make_award_step(approval_requested=True, approval_status="DECLINED")
-        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
-        with pytest.raises(ValidationError):
-            self.rule.validate(step, ctx)
-
-    def test_raises_when_declining_without_reviewer_notes(self):
-        from ops_api.ops.services.ops_service import ValidationError
-
-        step = _make_award_step(approval_requested=True, approval_status=None)
-        ctx = _make_context(updated_fields={"approval_status": "DECLINED"})
-        with pytest.raises(ValidationError) as exc_info:
-            self.rule.validate(step, ctx)
-        assert "reviewer_notes" in exc_info.value.validation_errors
-
-    def test_raises_when_declining_with_blank_reviewer_notes(self):
-        from ops_api.ops.services.ops_service import ValidationError
-
-        step = _make_award_step(approval_requested=True, approval_status=None)
-        ctx = _make_context(updated_fields={"approval_status": "DECLINED", "reviewer_notes": "   "})
-        with pytest.raises(ValidationError) as exc_info:
-            self.rule.validate(step, ctx)
-        assert "reviewer_notes" in exc_info.value.validation_errors
-
-    def test_passes_when_declining_with_reviewer_notes(self):
-        step = _make_award_step(approval_requested=True, approval_status=None)
-        ctx = _make_context(updated_fields={"approval_status": "DECLINED", "reviewer_notes": "Needs revision."})
-        self.rule.validate(step, ctx)  # Should not raise
-
 
 # ---------------------------------------------------------------------------
 # NoUpdatingCompletedProcurementStepRule — AWARD carve-out
@@ -228,8 +197,8 @@ class TestNoUpdatingCompletedProcurementStepRuleAwardCarveOut:
         step = _make_completed_award_step()
         ctx = _make_context(
             updated_fields={
-                "approval_status": "DECLINED",
-                "reviewer_notes": "See notes.",
+                "approval_status": "APPROVED",
+                "reviewer_notes": "Looks good.",
                 "obligated_date": "2026-07-01",
             }
         )
