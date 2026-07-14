@@ -247,6 +247,141 @@ describe("EditAgreementAndBudgetLines", () => {
         });
     });
 
+    describe("BLI change-request modal (financial snapshot changes)", () => {
+        it("shows the BLI approval modal when a PLANNED/EXECUTING BLI has financial changes (non-superuser)", async () => {
+            blisSlice = {
+                services_components: { create: [], update: [], delete: [] },
+                budget_line_items: { create: [], update: [], delete: [] },
+                hasFinancialSnapshotChanges: true,
+                bliChangeMessages: "• BL 1 Amount: $100.00 to $200.00"
+            };
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            // Modal should appear; mutation should NOT have fired yet.
+            await waitFor(() => {
+                expect(
+                    screen.getByText(/Budget changes require approval from your Division Director/)
+                ).toBeInTheDocument();
+            });
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+
+        it("fires the mutation when the user confirms the BLI approval modal", async () => {
+            blisSlice = {
+                services_components: { create: [], update: [], delete: [] },
+                budget_line_items: { create: [], update: [], delete: [] },
+                hasFinancialSnapshotChanges: true,
+                bliChangeMessages: "• BL 1 Amount: $100.00 to $200.00"
+            };
+            nextBundleResult = {
+                resolveWith: { change_request_ids: [99], failed_notification_change_request_ids: [] }
+            };
+            const { store } = renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => {
+                expect(
+                    screen.getByText(/Budget changes require approval from your Division Director/)
+                ).toBeInTheDocument();
+            });
+            fireEvent.click(screen.getByRole("button", { name: "Send to Approval" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            await waitFor(() => {
+                expect(store.getState().alert.heading).toBe("Changes Sent to Approval");
+            });
+        });
+
+        it("skips the BLI modal and fires directly when user is a superuser", async () => {
+            blisSlice = {
+                services_components: { create: [], update: [], delete: [] },
+                budget_line_items: { create: [], update: [], delete: [] },
+                hasFinancialSnapshotChanges: true,
+                bliChangeMessages: "• BL 1 Amount: $100.00 to $200.00"
+            };
+            // Render with a superuser in auth state
+            const store = configureStore({
+                reducer: { auth: authSlice, alert: alertSlice },
+                preloadedState: {
+                    auth: { activeUser: { id: 1, roles: [], is_superuser: true } },
+                    alert: { isActive: false, type: "", heading: "", message: "" }
+                }
+            });
+            render(
+                <Provider store={store}>
+                    <MemoryRouter initialEntries={["/agreements/review/42/edit"]}>
+                        <Routes>
+                            <Route
+                                path="/agreements/review/:id/edit"
+                                element={<EditAgreementAndBudgetLines />}
+                            />
+                        </Routes>
+                    </MemoryRouter>
+                </Provider>
+            );
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            // No modal should have appeared
+            expect(
+                screen.queryByText(/Budget changes require approval from your Division Director/)
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    describe("fireBundleSave alert branches", () => {
+        it("shows 'Changes Sent to Approval' when response has change_request_ids", async () => {
+            nextBundleResult = {
+                resolveWith: { change_request_ids: [101], failed_notification_change_request_ids: [] }
+            };
+            blisSlice = {
+                services_components: { create: [], update: [], delete: [] },
+                budget_line_items: { create: [], update: [], delete: [] },
+                hasFinancialSnapshotChanges: false,
+                bliChangeMessages: "• BL 1 Amount: $100.00 to $200.00"
+            };
+            const { store } = renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            await waitFor(() => {
+                expect(store.getState().alert.heading).toBe("Changes Sent to Approval");
+            });
+        });
+
+        it("shows a warning alert when failed_notification_change_request_ids is non-empty", async () => {
+            nextBundleResult = {
+                resolveWith: { change_request_ids: [101], failed_notification_change_request_ids: [101] }
+            };
+            const { store } = renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            await waitFor(() => {
+                expect(store.getState().alert.type).toBe("warning");
+                expect(store.getState().alert.heading).toBe("Changes Saved — Approval Request Failed");
+            });
+        });
+
+        it("shows 'Changes Saved' when response has no change_request_ids", async () => {
+            nextBundleResult = {
+                resolveWith: { change_request_ids: [], failed_notification_change_request_ids: [] }
+            };
+            const { store } = renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            await waitFor(() => {
+                expect(store.getState().alert.heading).toBe("Changes Saved");
+            });
+        });
+
+        it("shows 'Changes Saved' when response is the legacy {ok: true} shape (no change_request_ids field)", async () => {
+            // Regression guard: old resolveWith shape has no change_request_ids — must default to "Changes Saved"
+            nextBundleResult = { resolveWith: { ok: true } };
+            const { store } = renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            await waitFor(() => {
+                expect(store.getState().alert.heading).toBe("Changes Saved");
+            });
+        });
+    });
+
     it("renders an access denied screen when the agreement is not editable", () => {
         mockAgreementResult = {
             data: { ...mockAgreement, _meta: { isEditable: false } },

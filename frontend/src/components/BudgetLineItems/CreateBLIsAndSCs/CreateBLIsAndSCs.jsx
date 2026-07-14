@@ -113,7 +113,9 @@ export const CreateBLIsAndSCs = ({
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
-        setServicesComponentNumber
+        setServicesComponentNumber,
+        hasFinancialSnapshotChanges,
+        createBudgetChangeMessages
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -262,7 +264,11 @@ export const CreateBLIsAndSCs = ({
                         create: newBlis,
                         update: updatedBlis,
                         delete: (deletedBudgetLines ?? []).map((b) => b.id)
-                    }
+                    },
+                    // Used by EditAgreementAndBudgetLines to gate the BLI change-request
+                    // modal and to build the "Pending Changes" list in the success alert.
+                    hasFinancialSnapshotChanges,
+                    bliChangeMessages: createBudgetChangeMessages(tempBudgetLines)
                 };
             }
         };

@@ -1,4 +1,12 @@
 import cryptoRandomString from "crypto-random-string";
+
+// Shared copy constants — imported by EditAgreementAndBudgetLines so both surfaces use the
+// same wording and stay in sync without inline re-typing.
+export const BLI_CHANGE_REQUEST_MODAL_HEADING =
+    "Budget changes require approval from your Division Director. Do you want to send it to approval?";
+export const BLI_CHANGES_SENT_TO_APPROVAL_HEADING = "Changes Sent to Approval";
+export const BLI_CHANGES_SENT_TO_APPROVAL_MESSAGE =
+    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useBlocker, useNavigate } from "react-router-dom";
@@ -1122,7 +1130,11 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        // Exposed for EditAgreementAndBudgetLines bundle-save path so it can gate on
+        // financial changes without re-deriving the logic or duplicating the copy.
+        hasFinancialSnapshotChanges,
+        createBudgetChangeMessages
     };
 };
 

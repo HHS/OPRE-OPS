@@ -17,6 +17,12 @@ import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import {
+    BLI_CHANGE_REQUEST_MODAL_HEADING,
+    BLI_CHANGES_SENT_TO_APPROVAL_HEADING,
+    BLI_CHANGES_SENT_TO_APPROVAL_MESSAGE
+} from "../../../components/BudgetLineItems/CreateBLIsAndSCs/CreateBLIsAndSCs.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -58,6 +64,7 @@ const EditAgreementAndBudgetLines = () => {
         [searchParams, agreementId]
     );
     const { setAlert } = useAlert();
+    const isSuperUser = useIsUserSuperUser();
 
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
@@ -84,6 +91,7 @@ const EditAgreementAndBudgetLines = () => {
         newProcurementShop: null
     });
     const [showProcurementShopModal, setShowProcurementShopModal] = useState(false);
+    const [showBLIChangeRequestModal, setShowBLIChangeRequestModal] = useState(false);
 
     const {
         data: agreement,
@@ -137,12 +145,28 @@ const EditAgreementAndBudgetLines = () => {
     const fireBundleSave = async () => {
         if (isSaving) return;
         setIsSaving(true);
+        // Pre-capture before mutation — RTK Query invalidation triggers re-renders that
+        // could affect child state; capturing here ensures the alert reflects what was sent.
+        const bliSlice = blisSliceRef.current?.getSlice?.() ?? {};
+        const bliChangeMessages = bliSlice.bliChangeMessages ?? "";
         try {
             const bundle = buildBundle();
-            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
+            const result = await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
-            if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
+
+            // Branch order (precedence matters — see plan for rationale):
+            if (result?.failed_notification_change_request_ids?.length > 0) {
+                // Data saved as change requests, but Division Director notification failed.
+                setAlert({
+                    type: "warning",
+                    heading: "Changes Saved — Approval Request Failed",
+                    message:
+                        "Your changes were saved but the Division Director could not be notified. Please contact your Division Director directly.",
+                    redirectUrl: returnTo
+                });
+            } else if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
+                // Procurement-shop change request — existing alert, highest priority.
                 setAlert(
                     buildProcurementShopChangeAlert({
                         budgetLines: agreement?.budget_line_items ?? [],
@@ -151,6 +175,14 @@ const EditAgreementAndBudgetLines = () => {
                         redirectUrl: returnTo
                     })
                 );
+            } else if (result?.change_request_ids?.length > 0) {
+                // BLI financial change requests (amount / CAN / date_needed on PLANNED/EXECUTING BLIs).
+                setAlert({
+                    type: "success",
+                    heading: BLI_CHANGES_SENT_TO_APPROVAL_HEADING,
+                    message: `${BLI_CHANGES_SENT_TO_APPROVAL_MESSAGE}\n\n<strong>Pending Changes:</strong>\n ${bliChangeMessages}`,
+                    redirectUrl: returnTo
+                });
             } else {
                 setAlert({
                     type: "success",
@@ -185,6 +217,14 @@ const EditAgreementAndBudgetLines = () => {
         // a change request — confirm before sending it to the Division Director.
         if (procurementShopChangeState.shouldRequestChange) {
             setShowProcurementShopModal(true);
+            return;
+        }
+        // BLI financial changes (amount / CAN / date_needed) on PLANNED/EXECUTING BLIs
+        // also route through a change request — confirm before sending to Division Director.
+        // Superusers bypass the modal (backend applies direct edits, no change request created).
+        const bliSlice = blisSliceRef.current?.getSlice?.() ?? {};
+        if (bliSlice.hasFinancialSnapshotChanges && !isSuperUser) {
+            setShowBLIChangeRequestModal(true);
             return;
         }
         fireBundleSave();
@@ -248,6 +288,15 @@ const EditAgreementAndBudgetLines = () => {
                         actionButtonText="Send to Approval"
                         secondaryButtonText="Continue Editing"
                         setShowModal={setShowProcurementShopModal}
+                        handleConfirm={fireBundleSave}
+                    />
+                )}
+                {showBLIChangeRequestModal && (
+                    <ConfirmationModal
+                        heading={BLI_CHANGE_REQUEST_MODAL_HEADING}
+                        actionButtonText="Send to Approval"
+                        secondaryButtonText="Continue Editing"
+                        setShowModal={setShowBLIChangeRequestModal}
                         handleConfirm={fireBundleSave}
                     />
                 )}
