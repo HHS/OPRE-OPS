@@ -78,7 +78,7 @@
         "history": "5.3.0",
         "jsdom": "29.1.1",
         "msw": "2.14.7",
-        "prettier": "3.8.5",
+        "prettier": "3.9.5",
         "prop-types": "15.8.1",
         "redux-mock-store": "1.5.5",
         "sass-loader": "17.0.0",
@@ -2202,7 +2202,7 @@
 
     "prelude-ls": ["prelude-ls@1.2.1", "", {}, "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g=="],
 
-    "prettier": ["prettier@3.8.5", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-zxcTTCedNGJM4R8sj/Cq/F0W/c4iE0afWBcBwMTRtw4WHYP9TWkYjdiH3npPRUYsXQCPR0hTU9yjovOu+E6EQA=="],
+    "prettier": ["prettier@3.9.5", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-/FVl766LpUfB5vXgCYOYa0MeV/441Ia99AeICQIQFTY/Nw0roZwULcXpku5i1/m5kt/baz+s4Zogspd839HSMg=="],
 
     "prettier-linter-helpers": ["prettier-linter-helpers@1.0.1", "", { "dependencies": { "fast-diff": "^1.1.2" } }, "sha512-SxToR7P8Y2lWmv/kTzVLC1t/GDI2WGjMwNhLLE9qtH8Q13C+aEmuRlzDst4Up4s0Wc8sF2M+J57iB3cMLqftfg=="],
 
