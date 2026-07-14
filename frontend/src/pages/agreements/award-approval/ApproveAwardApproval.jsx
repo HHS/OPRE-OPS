@@ -7,7 +7,7 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import Accordion from "../../../components/UI/Accordion";
 import { BudgetLinesReviewAccordion } from "../../agreements/pre-award-approval/BudgetLinesReviewAccordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
@@ -70,12 +70,13 @@ export const ApproveAwardApproval = () => {
     return (
         <App breadCrumbName="Award Approval">
             {showModal && (
-                <ConfirmationModal
+                <SaveChangesAndExitModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    closeModal={modalProps.closeModal}
                 />
             )}
 

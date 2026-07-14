@@ -60,7 +60,7 @@ vi.mock("../../../components/UI/Alert/SimpleAlert", () => ({
     )
 }));
 
-vi.mock("../../../components/UI/Modals/ConfirmationModal", () => ({
+vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     default: ({ heading, handleConfirm, actionButtonText, secondaryButtonText }) => (
         <div data-testid="confirmation-modal">
             <p>{heading}</p>

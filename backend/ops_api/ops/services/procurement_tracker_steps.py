@@ -237,8 +237,9 @@ class ProcurementTrackerStepService:
         if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             self._handle_requisition_approval(step, data, current_user)
 
-        # Pop is_draft before field update loop (request-only flag, not a model field)
+        # Pop request-only fields before field update loop (not model fields)
         data.pop("is_draft", None)
+        obligated_date = data.pop("obligated_date", None)
 
         # Update fields
         for key, value in data.items():
@@ -302,7 +303,6 @@ class ProcurementTrackerStepService:
 
         # Handle award-specific side effects (OPS-2280)
         if step.step_type == ProcurementTrackerStepType.AWARD:
-            obligated_date = data.get("obligated_date")
             new_award_status = data.get("approval_status")
             self._handle_award_approval(step, new_award_status, obligated_date, current_user)
             self._handle_award_approval_notifications(
@@ -541,6 +541,10 @@ class ProcurementTrackerStepService:
             old_approval_status: Previous value of pre_award_approval_status before update
             old_requisition_approved_by: Previous value of pre_award_requisition_approved_by before update
         """
+        # AWARD steps have their own notification handler (_handle_award_approval_notifications)
+        if step.step_type == ProcurementTrackerStepType.AWARD:
+            return
+
         from models import NotificationType
         from ops_api.ops.services.notifications import NotificationService
 
