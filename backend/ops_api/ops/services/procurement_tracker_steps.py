@@ -1029,10 +1029,11 @@ class ProcurementTrackerStepService:
                 bli.status = BudgetLineItemStatus.PLANNED_MOD
                 logger.debug(f"Transitioned BLI {bli.id} PLANNED → PLANNED_MOD")
 
-        # Set procurement action date and status if applicable
+        # Set procurement action date and status — only for NEW_AWARD actions
+        # (consistent with _advance_active_step_if_needed which gates on NEW_AWARD)
         if step.procurement_tracker.procurement_action:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
-            if procurement_action:
+            if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
                 if procurement_action.date_awarded_obligated is None:
                     procurement_action.date_awarded_obligated = obligated_date or date.today()
                     logger.debug(

@@ -95,8 +95,6 @@ const baseHookReturn = {
     isLoading: false,
     allBudgetLines: [],
     executingTotal: 1000000,
-    reviewerNotes: "",
-    setReviewerNotes: vi.fn(),
     requestorNotes: "COR notes here",
     handleApprove: vi.fn(),
     handleCancel: vi.fn(),

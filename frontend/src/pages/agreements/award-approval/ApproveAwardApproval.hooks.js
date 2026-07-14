@@ -22,7 +22,6 @@ export default function useApproveAwardApproval(agreementId) {
     const { setAlert } = useAlert();
 
     // Form state
-    const [reviewerNotes, setReviewerNotes] = useState("");
     const [obligatedDate, setObligatedDate] = useState("");
 
     // UI state
@@ -69,9 +68,7 @@ export default function useApproveAwardApproval(agreementId) {
     /**
      * Track unsaved changes
      */
-    const hasChanged = useMemo(() => {
-        return reviewerNotes.trim() !== "" || obligatedDate !== "";
-    }, [reviewerNotes, obligatedDate]);
+    const hasChanged = useMemo(() => obligatedDate !== "", [obligatedDate]);
 
     /**
      * Navigation blocker — prevents accidental navigation when form has unsaved changes
@@ -128,7 +125,6 @@ export default function useApproveAwardApproval(agreementId) {
                         stepId: step6.id,
                         data: {
                             approval_status: "APPROVED",
-                            reviewer_notes: reviewerNotes.trim() || null,
                             ...(obligatedDate ? { obligated_date: formatDateForApi(obligatedDate) } : {})
                         }
                     }).unwrap();
@@ -186,8 +182,6 @@ export default function useApproveAwardApproval(agreementId) {
         requestorNotes,
         requestorName,
         requestorDate,
-        reviewerNotes,
-        setReviewerNotes,
         obligatedDate,
         setObligatedDate,
         MemoizedDatePicker,

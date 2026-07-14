@@ -137,6 +137,53 @@ class TestHandleAwardApprovalBLITransitions:
 
 
 # ---------------------------------------------------------------------------
+# _handle_award_approval: AwardType.NEW_AWARD gate
+# ---------------------------------------------------------------------------
+
+
+class TestHandleAwardApprovalAwardTypeGate:
+    """AWARDED status must only be set for NEW_AWARD procurement actions."""
+
+    def test_new_award_sets_awarded_status(self):
+        from models.procurement_action import AwardType
+
+        service = _make_service()
+        agreement = _make_agreement()
+        agreement.budget_line_items = []
+        step = _make_step()
+        step.procurement_tracker.agreement = agreement
+        step.procurement_tracker.procurement_action = 1
+
+        proc_action = MagicMock()
+        proc_action.award_type = AwardType.NEW_AWARD
+        proc_action.date_awarded_obligated = None
+        service.db_session.get.return_value = proc_action
+
+        service._handle_award_approval(step, "APPROVED", None, _make_current_user())
+
+        assert proc_action.status == ProcurementActionStatus.AWARDED
+
+    def test_non_new_award_does_not_set_awarded_status(self):
+        from models.procurement_action import AwardType
+
+        service = _make_service()
+        agreement = _make_agreement()
+        agreement.budget_line_items = []
+        step = _make_step()
+        step.procurement_tracker.agreement = agreement
+        step.procurement_tracker.procurement_action = 1
+
+        proc_action = MagicMock()
+        proc_action.award_type = AwardType.MODIFICATION
+        original_status = proc_action.status
+        service.db_session.get.return_value = proc_action
+
+        service._handle_award_approval(step, "APPROVED", None, _make_current_user())
+
+        assert proc_action.status == original_status
+
+
+# ---------------------------------------------------------------------------
 # _handle_award_approval: obligated_date threading
 # ---------------------------------------------------------------------------
 
