@@ -139,6 +139,7 @@ describe("ProcurementTrackerStepThree", () => {
     };
 
     const mockSetStep3Notes = vi.fn();
+    const mockResetStep3Notes = vi.fn();
     const mockSetIsSolicitationClosed = vi.fn();
     const mockSetShowModal = vi.fn();
     const mockCancelModalStep3 = vi.fn();
@@ -157,6 +158,7 @@ describe("ProcurementTrackerStepThree", () => {
         setSolicitationPeriodEndDate: mockSetSolicitationPeriodEndDate,
         step3Notes: "",
         setStep3Notes: mockSetStep3Notes,
+        resetStep3Notes: mockResetStep3Notes,
         step3CompletedByUserName: "John Doe",
         step3DateCompletedLabel: "January 15, 2024",
         solicitationStartDateLabel: "February 1, 2024",

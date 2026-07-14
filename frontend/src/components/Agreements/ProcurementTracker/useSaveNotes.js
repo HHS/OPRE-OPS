@@ -18,7 +18,7 @@ import React from "react";
  * @param {ReturnType<typeof import("../../../api/opsAPI").useUpdateProcurementTrackerStepMutation>[0]} patchStep - The RTK Query mutation trigger for updating a step.
  * @param {string | null | undefined} serverNotes - The notes value from the server (from the step's fetched data).
  * @param {(alert: any) => void} setAlert - Callback to surface success/error alerts.
- * @returns {{ notes: string, setNotes: (value: string) => void, handleSaveNotes: (stepId: number) => Promise<boolean> }} The current notes value, a setter that marks the field dirty, and a handler that resolves `true` on success and `false` on failure.
+ * @returns {{ notes: string, setNotes: (value: string) => void, resetNotes: (value: string) => void, handleSaveNotes: (stepId: number) => Promise<boolean> }} The current notes value, a dirty setter, a clean-reset setter, and a save handler.
  */
 export default function useSaveNotes(patchStep, serverNotes, setAlert) {
     const [notes, setNotesState] = React.useState(serverNotes ?? "");
@@ -40,6 +40,16 @@ export default function useSaveNotes(patchStep, serverNotes, setAlert) {
     const setNotes = React.useCallback((value) => {
         isDirtyRef.current = true;
         setNotesState(value);
+    }, []);
+
+    /**
+     * Resets the notes value and clears the dirty flag so the field resumes
+     * syncing from the server. Use on cancel and after step completion.
+     * @param {string} value - The value to restore (typically the last server value or "").
+     */
+    const resetNotes = React.useCallback((value) => {
+        isDirtyRef.current = false;
+        setNotesState(value ?? "");
     }, []);
 
     /**
@@ -73,5 +83,5 @@ export default function useSaveNotes(patchStep, serverNotes, setAlert) {
         }
     };
 
-    return { notes, setNotes, handleSaveNotes };
+    return { notes, setNotes, resetNotes, handleSaveNotes };
 }

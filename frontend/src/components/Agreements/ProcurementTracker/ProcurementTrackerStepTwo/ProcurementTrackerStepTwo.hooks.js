@@ -72,6 +72,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const {
         notes: step2Notes,
         setNotes: setStep2Notes,
+        resetNotes: resetStep2Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
 
@@ -174,7 +175,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setSelectedUser({});
         setTargetCompletionDate("");
         setStep2DateCompleted("");
-        setStep2Notes("");
+        resetStep2Notes(stepTwoData?.notes ?? "");
         setRevisedTargetDate("");
     };
 
@@ -209,6 +210,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2TargetCompletionDateLabel,
         step2Notes,
         setStep2Notes,
+        resetStep2Notes,
         step2NotesLabel,
         runValidate,
         validatorRes,

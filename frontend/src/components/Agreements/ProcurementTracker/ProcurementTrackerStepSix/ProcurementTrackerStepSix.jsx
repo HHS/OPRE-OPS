@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
@@ -57,6 +57,7 @@ const ProcurementTrackerStepSix = ({
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        resetStepSixNotes,
         stepSixNotesLabel,
         isSubmitting,
         runValidate,
@@ -262,37 +263,13 @@ const ProcurementTrackerStepSix = ({
                             </div>
 
                             {/* Notes */}
-                            <div className="display-table">
-                                <TextArea
-                                    name="notes-step-6"
-                                    label="Notes (optional)"
-                                    className="margin-top-2"
-                                    value={stepSixNotes}
-                                    onChange={
-                                        /** @param {any} _ @param {any} value */ (_, value) => setStepSixNotes(value)
-                                    }
-                                    isDisabled={isDisabled}
-                                    maxLength={750}
-                                    data-cy="notes-step-6"
-                                    textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
-                                />
-                                <div className="display-flex flex-justify-end">
-                                    <button
-                                        type="button"
-                                        className="usa-button usa-button--unstyled"
-                                        data-cy="save-notes-button"
-                                        onClick={() => handleSaveNotes(stepSixData?.id)}
-                                        disabled={isDisabled}
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={faCheck}
-                                            size="2x"
-                                            className={"text-primary height-2 width-2 cursor-pointer"}
-                                        />
-                                        Save Notes
-                                    </button>
-                                </div>
-                            </div>
+                            <StepNotesForm
+                                textAreaName="notes-step-6"
+                                notes={stepSixNotes}
+                                setNotes={setStepSixNotes}
+                                onSave={() => handleSaveNotes(stepSixData?.id)}
+                                isDisabled={isDisabled}
+                            />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
                                 <button
@@ -374,6 +351,7 @@ const ProcurementTrackerStepSix = ({
                             <StepNotesEditor
                                 notes={stepSixNotes}
                                 setNotes={setStepSixNotes}
+                                resetNotes={resetStepSixNotes}
                                 notesLabel={stepSixNotesLabel}
                                 savedNotes={stepSixData?.notes}
                                 stepId={stepSixData?.id}

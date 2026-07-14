@@ -657,7 +657,7 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.step1DateCompleted).toBe("");
-            expect(result.current.step1Notes).toBe("");
+            expect(result.current.step1Notes).toBe(mockStepOneData.notes);
         });
 
         it("can call cancelModalStep1 multiple times", () => {

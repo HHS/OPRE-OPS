@@ -1,12 +1,15 @@
 import React from "react";
-import { faCheck, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TextArea from "../../../UI/Form/TextArea";
+import SaveNotesButton from "../SaveNotesButton/SaveNotesButton";
+import { STEP_NOTES_MAX_LENGTH, STEP_NOTES_TEXTAREA_STYLE } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {Object} StepNotesEditorProps
  * @property {string} notes - The current notes value bound to the TextArea.
- * @property {(value: string) => void} setNotes - Setter for the notes value.
+ * @property {(value: string) => void} setNotes - Setter for the notes value (marks the field dirty).
+ * @property {(value: string) => void} resetNotes - Resets the notes value and clears the dirty flag; use on cancel.
  * @property {string} [notesLabel] - The persisted notes to display in read-only mode.
  * @property {string} [savedNotes] - The last-saved notes value, restored when the user cancels an edit.
  * @property {number} [stepId] - The ID of the procurement tracker step being edited.
@@ -29,6 +32,7 @@ import TextArea from "../../../UI/Form/TextArea";
 const StepNotesEditor = ({
     notes,
     setNotes,
+    resetNotes,
     notesLabel,
     savedNotes,
     stepId,
@@ -45,10 +49,10 @@ const StepNotesEditor = ({
                     name={textAreaName}
                     label=""
                     className="margin-top-1"
-                    maxLength={750}
+                    maxLength={STEP_NOTES_MAX_LENGTH}
                     value={notes}
                     onChange={/** @param {any} _ @param {any} value */ (_, value) => setNotes(value)}
-                    textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
+                    textAreaStyle={STEP_NOTES_TEXTAREA_STYLE}
                     isDisabled={isDisabled}
                 />
                 <div className="display-flex flex-justify-end">
@@ -57,32 +61,22 @@ const StepNotesEditor = ({
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-edit-notes-button"
                         onClick={() => {
-                            setNotes(savedNotes ?? "");
+                            resetNotes(savedNotes ?? "");
                             setIsEditingNotes(false);
                         }}
                         disabled={isDisabled}
                     >
                         Cancel
                     </button>
-                    <button
-                        type="button"
-                        className="usa-button usa-button--unstyled"
-                        data-cy="save-notes-button"
+                    <SaveNotesButton
                         onClick={async () => {
                             const didSave = await onSave(stepId);
                             if (didSave) {
                                 setIsEditingNotes(false);
                             }
                         }}
-                        disabled={isDisabled}
-                    >
-                        <FontAwesomeIcon
-                            icon={faCheck}
-                            size="2x"
-                            className="text-primary height-2 width-2 cursor-pointer"
-                        />
-                        Save Notes
-                    </button>
+                        isDisabled={isDisabled}
+                    />
                 </div>
             </div>
         );

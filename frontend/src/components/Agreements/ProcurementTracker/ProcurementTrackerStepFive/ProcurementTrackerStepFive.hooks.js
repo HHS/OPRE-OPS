@@ -52,6 +52,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
     const {
         notes: step5Notes,
         setNotes: setStep5Notes,
+        resetNotes: resetStep5Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
 
@@ -125,7 +126,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep5DateCompleted("");
-        setStep5Notes("");
+        resetStep5Notes(stepFiveData?.notes ?? "");
     };
 
     const cancelModalStep5 = () => {
@@ -156,6 +157,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         step5TargetCompletionDateLabel,
         step5Notes,
         setStep5Notes,
+        resetStep5Notes,
         step5NotesLabel,
         runValidate,
         validatorRes,

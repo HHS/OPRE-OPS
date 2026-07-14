@@ -63,6 +63,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const {
         notes: stepSixNotes,
         setNotes: setStepSixNotes,
+        resetNotes: resetStepSixNotes,
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
@@ -144,7 +145,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
-        setStepSixNotes("");
+        resetStepSixNotes(stepSixData?.notes ?? "");
         setShowModal(false);
     };
 
@@ -175,6 +176,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        resetStepSixNotes,
         isSubmitting,
         showModal,
         setShowModal,

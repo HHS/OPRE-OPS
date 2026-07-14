@@ -382,7 +382,7 @@ describe("useProcurementTrackerStepFour", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step4DateCompleted).toBe("");
-            expect(result.current.step4Notes).toBe("");
+            expect(result.current.step4Notes).toBe(mockStepFourData.notes);
         });
     });
 
@@ -428,7 +428,7 @@ describe("useProcurementTrackerStepFour", () => {
 
             // Verify state was reset
             expect(result.current.isEvaluationComplete).toBe(false);
-            expect(result.current.step4Notes).toBe("");
+            expect(result.current.step4Notes).toBe(mockStepFourData.notes);
         });
     });
 });

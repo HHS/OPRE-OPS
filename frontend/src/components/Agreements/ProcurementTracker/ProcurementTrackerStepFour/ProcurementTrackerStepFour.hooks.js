@@ -52,6 +52,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     const {
         notes: step4Notes,
         setNotes: setStep4Notes,
+        resetNotes: resetStep4Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
 
@@ -124,7 +125,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep4DateCompleted("");
-        setStep4Notes("");
+        resetStep4Notes(stepFourData?.notes ?? "");
     };
 
     const cancelModalStep4 = () => {
@@ -155,6 +156,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         step4TargetCompletionDateLabel,
         step4Notes,
         setStep4Notes,
+        resetStep4Notes,
         step4NotesLabel,
         runValidate,
         validatorRes,

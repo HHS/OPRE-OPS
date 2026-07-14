@@ -90,6 +90,7 @@ describe("ProcurementTrackerStepOne", () => {
     const mockSetSelectedUser = vi.fn();
     const mockSetStep1DateCompleted = vi.fn();
     const mockSetStep1Notes = vi.fn();
+    const mockResetStep1Notes = vi.fn();
     const mockHandleStep1Complete = vi.fn();
     const mockHandleSaveNotes = vi.fn();
     const mockCancelStep1 = vi.fn();
@@ -132,6 +133,7 @@ describe("ProcurementTrackerStepOne", () => {
         MemoizedDatePicker: MockDatePicker,
         step1Notes: "",
         setStep1Notes: mockSetStep1Notes,
+        resetStep1Notes: mockResetStep1Notes,
         handleStep1Complete: mockHandleStep1Complete,
         handleSaveNotes: mockHandleSaveNotes,
         cancelStep1: mockCancelStep1,
@@ -1108,6 +1110,7 @@ describe("ProcurementTrackerStepOne", () => {
                     ),
                     step1Notes: "Test notes",
                     setStep1Notes: mockSetStep1Notes,
+                    resetStep1Notes: mockResetStep1Notes,
                     handleStep1Complete: mockHandleStep1Complete,
                     cancelModalStep1: mockCancelStep1,
                     // Hook properly calculates disable state based on isEditable

@@ -138,6 +138,7 @@ describe("ProcurementTrackerStepSix", () => {
     const mockSetSelectedUser = vi.fn();
     const mockSetStepSixDateCompleted = vi.fn();
     const mockSetStepSixNotes = vi.fn();
+    const mockResetStepSixNotes = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
     const mockRunValidate = vi.fn();
     const mockHandleStepSixComplete = vi.fn();
@@ -158,6 +159,7 @@ describe("ProcurementTrackerStepSix", () => {
         stepSixDateCompletedLabel: "",
         stepSixNotes: "",
         setStepSixNotes: mockSetStepSixNotes,
+        resetStepSixNotes: mockResetStepSixNotes,
         stepSixNotesLabel: "",
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,

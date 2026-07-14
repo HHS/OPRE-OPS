@@ -747,7 +747,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.stepSixDateCompleted).toBe("");
-            expect(result.current.stepSixNotes).toBe("");
+            expect(result.current.stepSixNotes).toBe(mockStepSixData.notes);
             expect(result.current.showModal).toBe(false);
         });
     });
@@ -795,7 +795,7 @@ describe("useProcurementTrackerStepSix", () => {
                 result.current.modalProps.handleConfirm();
             });
 
-            expect(result.current.stepSixNotes).toBe("");
+            expect(result.current.stepSixNotes).toBe(mockStepSixData.notes);
         });
     });
 

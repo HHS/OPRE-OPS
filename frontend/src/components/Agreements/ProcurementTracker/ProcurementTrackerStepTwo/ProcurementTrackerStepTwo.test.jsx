@@ -143,6 +143,7 @@ describe("ProcurementTrackerStepTwo", () => {
     };
 
     const mockSetStep2Notes = vi.fn();
+    const mockResetStep2Notes = vi.fn();
     const mockHandleSetCompletedStepNumber = vi.fn();
     const mockHandleSaveNotes = vi.fn();
     const mockHandleStepTwoComplete = vi.fn();
@@ -164,6 +165,7 @@ describe("ProcurementTrackerStepTwo", () => {
         setStep2DateCompleted: mockSetStep2DateCompleted,
         step2Notes: "",
         setStep2Notes: mockSetStep2Notes,
+        resetStep2Notes: mockResetStep2Notes,
         step2NotesLabel: "Test notes",
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,

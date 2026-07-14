@@ -44,6 +44,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     const {
         notes: step1Notes,
         setNotes: setStep1Notes,
+        resetNotes: resetStep1Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
 
@@ -75,7 +76,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         setIsPreSolicitationPackageSent(false);
         setSelectedUser({});
         setStep1DateCompleted("");
-        setStep1Notes("");
+        resetStep1Notes(stepOneData?.notes ?? "");
         suite.reset();
     };
     const cancelModalStep1 = () => {
@@ -103,6 +104,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         MemoizedDatePicker,
         step1Notes,
         setStep1Notes,
+        resetStep1Notes,
         handleStep1Complete,
         handleSaveNotes,
         cancelModalStep1,

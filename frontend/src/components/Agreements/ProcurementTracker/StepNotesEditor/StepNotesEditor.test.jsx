@@ -11,12 +11,14 @@ const cancelBtn = () => screen.queryByRole("button", { name: /cancel/i });
  */
 const renderEditor = (props = {}) => {
     const setNotes = vi.fn();
+    const resetNotes = props.resetNotes ?? vi.fn();
     const onSave = props.onSave ?? vi.fn().mockResolvedValue(true);
     const utils = render(
         <dl>
             <StepNotesEditor
                 notes={props.notes ?? "Existing notes"}
                 setNotes={setNotes}
+                resetNotes={resetNotes}
                 notesLabel={props.notesLabel ?? "Existing notes"}
                 savedNotes={props.savedNotes ?? "Existing notes"}
                 stepId={props.stepId ?? 42}
@@ -26,7 +28,7 @@ const renderEditor = (props = {}) => {
             />
         </dl>
     );
-    return { setNotes, onSave, ...utils };
+    return { setNotes, resetNotes, onSave, ...utils };
 };
 
 describe("StepNotesEditor", () => {
@@ -57,13 +59,14 @@ describe("StepNotesEditor", () => {
         expect(cancelBtn()).toBeInTheDocument();
     });
 
-    it("restores the saved notes and exits edit mode on Cancel", () => {
-        const { setNotes } = renderEditor({ savedNotes: "Original notes" });
+    it("restores the saved notes and exits edit mode on Cancel, using resetNotes to clear the dirty flag", () => {
+        const { setNotes, resetNotes } = renderEditor({ savedNotes: "Original notes" });
 
         fireEvent.click(editNotesBtn());
         fireEvent.click(cancelBtn());
 
-        expect(setNotes).toHaveBeenCalledWith("Original notes");
+        expect(resetNotes).toHaveBeenCalledWith("Original notes");
+        expect(setNotes).not.toHaveBeenCalled();
         expect(saveNotesBtn()).not.toBeInTheDocument();
         expect(editNotesBtn()).toBeInTheDocument();
     });

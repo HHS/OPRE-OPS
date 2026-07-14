@@ -554,7 +554,7 @@ describe("useProcurementTrackerStepFive", () => {
             expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step5DateCompleted).toBe("");
-            expect(result.current.step5Notes).toBe("");
+            expect(result.current.step5Notes).toBe(mockStepFiveData.notes);
         });
     });
 
@@ -606,7 +606,7 @@ describe("useProcurementTrackerStepFive", () => {
             });
 
             expect(result.current.isPreAwardComplete).toBe(false);
-            expect(result.current.step5Notes).toBe("");
+            expect(result.current.step5Notes).toBe(mockStepFiveData.notes);
         });
     });
 

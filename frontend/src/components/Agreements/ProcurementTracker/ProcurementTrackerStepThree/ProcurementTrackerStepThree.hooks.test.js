@@ -519,7 +519,7 @@ describe("useProcurementTrackerStepThree", () => {
             expect(result.current.step3DateCompleted).toBe("");
             expect(result.current.solicitationPeriodStartDate).toBe("");
             expect(result.current.solicitationPeriodEndDate).toBe("");
-            expect(result.current.step3Notes).toBe("");
+            expect(result.current.step3Notes).toBe(mockStepThreeData.notes);
             expect(result.current.isSolicitationClosed).toBe(false);
         });
     });

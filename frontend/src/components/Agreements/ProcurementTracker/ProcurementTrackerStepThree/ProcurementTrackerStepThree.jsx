@@ -1,12 +1,12 @@
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
-import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
@@ -50,6 +50,7 @@ const ProcurementTrackerStepThree = ({
         setSolicitationPeriodEndDate,
         step3Notes,
         setStep3Notes,
+        resetStep3Notes,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -285,34 +286,12 @@ const ProcurementTrackerStepThree = ({
                             />
                         </div>
 
-                        <div className="display-table">
-                            <TextArea
-                                name="notes"
-                                label="Notes (optional)"
-                                className="margin-top-2"
-                                maxLength={750}
-                                value={step3Notes}
-                                onChange={(_, value) => setStep3Notes(value)}
-                                textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
-                                isDisabled={isDisabled}
-                            />
-                            <div className="display-flex flex-justify-end">
-                                <button
-                                    type="button"
-                                    className="usa-button usa-button--unstyled"
-                                    data-cy="save-notes-button"
-                                    onClick={() => handleSaveNotes(stepThreeData?.id)}
-                                    disabled={isDisabled}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faCheck}
-                                        size="2x"
-                                        className={"text-primary height-2 width-2 cursor-pointer"}
-                                    />
-                                    Save Notes
-                                </button>
-                            </div>
-                        </div>
+                        <StepNotesForm
+                            notes={step3Notes}
+                            setNotes={setStep3Notes}
+                            onSave={() => handleSaveNotes(stepThreeData?.id)}
+                            isDisabled={isDisabled}
+                        />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
@@ -392,6 +371,7 @@ const ProcurementTrackerStepThree = ({
                             <StepNotesEditor
                                 notes={step3Notes}
                                 setNotes={setStep3Notes}
+                                resetNotes={resetStep3Notes}
                                 notesLabel={step3NotesLabel}
                                 savedNotes={stepThreeData?.notes}
                                 stepId={stepThreeData?.id}

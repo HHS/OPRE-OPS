@@ -62,6 +62,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     const {
         notes: step3Notes,
         setNotes: setStep3Notes,
+        resetNotes: resetStep3Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
 
@@ -71,7 +72,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setSolicitationPeriodEndDate("");
         setSelectedUser({});
         setStep3DateCompleted("");
-        setStep3Notes("");
+        resetStep3Notes(stepThreeData?.notes ?? "");
         suite.reset();
     };
 
@@ -162,6 +163,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setSolicitationPeriodEndDate,
         step3Notes,
         setStep3Notes,
+        resetStep3Notes,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,

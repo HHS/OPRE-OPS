@@ -117,6 +117,47 @@ describe("useSaveNotes", () => {
         expect(result.current.notes).toBe("User keystrokes after save");
     });
 
+    it("resetNotes restores the value and clears the dirty flag so the field resumes server sync", () => {
+        const { result, rerender } = renderHook(
+            ({ serverNotes }) => useSaveNotes(mockPatchStep, serverNotes, mockSetAlert),
+            { initialProps: { serverNotes: "Saved value" } }
+        );
+
+        act(() => {
+            result.current.setNotes("Unsaved edit");
+        });
+        expect(result.current.notes).toBe("Unsaved edit");
+
+        act(() => {
+            result.current.resetNotes("Saved value");
+        });
+        expect(result.current.notes).toBe("Saved value");
+
+        // Dirty flag is cleared — a new server value should now sync in.
+        rerender({ serverNotes: "Updated from server" });
+        expect(result.current.notes).toBe("Updated from server");
+    });
+
+    it("resetNotes does not mark the field dirty, so a subsequent server update overwrites it", () => {
+        const { result, rerender } = renderHook(
+            ({ serverNotes }) => useSaveNotes(mockPatchStep, serverNotes, mockSetAlert),
+            { initialProps: { serverNotes: "Original" } }
+        );
+
+        act(() => {
+            result.current.setNotes("Dirty edit");
+        });
+
+        // Cancel: reset to the server value and clear the dirty flag.
+        act(() => {
+            result.current.resetNotes("Original");
+        });
+
+        // An unrelated server update should now flow in (dirty flag is clear).
+        rerender({ serverNotes: "External update" });
+        expect(result.current.notes).toBe("External update");
+    });
+
     it("resumes syncing from the server after a successful save clears the dirty flag", async () => {
         mockUnwrap.mockResolvedValue({ success: true });
         const { result, rerender } = renderHook(
