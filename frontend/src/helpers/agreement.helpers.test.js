@@ -215,8 +215,18 @@ describe("isFieldVisible", () => {
     });
 
     it("returns false for unsupported agreement types", () => {
-        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.DescriptionAndNotes)).toBe(false);
         expect(isFieldVisible(AgreementType.IAA, AgreementFields.ContractType)).toBe(false);
+    });
+
+    it("returns true for GRANT DescriptionAndNotes and NickName fields", () => {
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.DescriptionAndNotes)).toBe(true);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.NickName)).toBe(true);
+    });
+
+    it("returns false for GRANT contract-only fields", () => {
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.ProcurementShop)).toBe(false);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.ContractType)).toBe(false);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.Vendor)).toBe(false);
     });
 
     it("returns false for unknown fields", () => {

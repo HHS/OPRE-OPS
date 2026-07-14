@@ -141,64 +141,83 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
                 </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0">{procurementShopDisplay}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
-                    <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
-                </dl>
+                {/* REVIEW: NEW — gates Procurement Shop / Subtotal / Fees / Lifetime Obligated for GRANT rows.
+                    Grants have no procurement shop and no BLIs at creation time, so these cells would all
+                    show TBD or $0 and are misleading. Using a string literal "GRANT" rather than importing
+                    the AGREEMENT_TYPES constant because this file already uses the string form elsewhere
+                    (e.g. isNotDevelopedYet) and adding another import for a one-liner guard would be noisy.
+                    QUESTION FOR REVIEW: should we import AGREEMENT_TYPES.GRANT here for consistency? */}
+                {agreement?.agreement_type !== "GRANT" && (
+                    <>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                            <dd className="margin-0">{procurementShopDisplay}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Subtotal</dt>
+                            <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Fees</dt>
+                            <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
+                            <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
+                        </dl>
+                    </>
+                )}
             </div>
             <div
                 className="display-flex padding-right-4"
                 style={{ justifyContent: "space-between" }}
             >
-                <dl className="font-12px">
-                    <dt className="margin-0 text-base-dark">Contract #</dt>
-                    <dd className="margin-0">{contractNumber || NO_DATA}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "7rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Award Type</dt>
-                    <dd className="margin-0">{awardType}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">&nbsp;</dt>
-                    <dd className="margin-0">&nbsp;</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "4rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Vendor</dt>
-                    <dd className="margin-0">{vendor}</dd>
-                </dl>
+                {/* REVIEW: NEW — gates Contract # / Award Type / spacer / Vendor for GRANT rows.
+                    Change-icons div intentionally kept outside this gate so delete/edit icons
+                    still render for grants. The spacer dl (&nbsp;) is a layout placeholder that
+                    existed before this change; it's included in the gate since it only makes sense
+                    when Contract # and Vendor are present. */}
+                {agreement?.agreement_type !== "GRANT" && (
+                    <>
+                        <dl className="font-12px">
+                            <dt className="margin-0 text-base-dark">Contract #</dt>
+                            <dd className="margin-0">{contractNumber || NO_DATA}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "7rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Award Type</dt>
+                            <dd className="margin-0">{awardType}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">&nbsp;</dt>
+                            <dd className="margin-0">&nbsp;</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "4rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Vendor</dt>
+                            <dd className="margin-0">{vendor}</dd>
+                        </dl>
+                    </>
+                )}
                 {!isReadOnly && (
                     <div
                         className="flex-align-self-end margin-bottom-1"

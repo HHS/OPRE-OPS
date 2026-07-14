@@ -122,3 +122,22 @@ it("renders without crashing", () => {
     expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByText("FY25 Obligated")).toBeInTheDocument();
 });
+
+it("does not render contract-only expanded fields for a GRANT agreement row", () => {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="2025"
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    // Contract-only column headers should not appear in the grant row
+    expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+    expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+    expect(screen.queryByText("Award Type")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
+});
