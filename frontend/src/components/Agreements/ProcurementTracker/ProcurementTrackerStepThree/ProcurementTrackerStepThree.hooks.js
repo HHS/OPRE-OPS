@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerSolicitationStep} ProcurementTrackerSolicitationStep
@@ -20,7 +21,6 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
     const [solicitationPeriodEndDate, setSolicitationPeriodEndDate] = React.useState("");
-    const [step3Notes, setStep3Notes] = React.useState("");
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -59,13 +59,20 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
 
     let validatorRes = suite.get();
 
+    const {
+        notes: step3Notes,
+        setNotes: setStep3Notes,
+        resetNotes: resetStep3Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
+
     const cancelStep3 = () => {
         setIsSolicitationClosed(false);
         setSolicitationPeriodStartDate("");
         setSolicitationPeriodEndDate("");
         setSelectedUser({});
         setStep3DateCompleted("");
-        setStep3Notes("");
+        resetStep3Notes(stepThreeData?.notes ?? "");
         suite.reset();
     };
 
@@ -156,6 +163,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setSolicitationPeriodEndDate,
         step3Notes,
         setStep3Notes,
+        resetStep3Notes,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -170,6 +178,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setShowModal,
         modalProps,
         cancelModalStep3,
+        handleSaveNotes,
         handleSolicitationDatesSubmit,
         handleStep3Complete
     };
