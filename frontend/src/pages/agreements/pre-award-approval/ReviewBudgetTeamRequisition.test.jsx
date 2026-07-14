@@ -45,7 +45,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 }));
 
 vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
-    PreAwardBudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
+    BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({

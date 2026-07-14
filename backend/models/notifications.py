@@ -12,6 +12,7 @@ class NotificationType(Enum):
     NOTIFICATION = auto()
     CHANGE_REQUEST_NOTIFICATION = auto()
     PRE_AWARD_APPROVAL_NOTIFICATION = auto()
+    AWARD_APPROVAL_NOTIFICATION = auto()
 
 
 class Notification(BaseModel):
@@ -28,12 +29,8 @@ class Notification(BaseModel):
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     expires: Mapped[Optional[Date]] = mapped_column(Date)
 
-    recipient_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("ops_user.id")
-    )
-    recipient = relationship(
-        "User", back_populates="notifications", foreign_keys=[recipient_id]
-    )
+    recipient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
+    recipient = relationship("User", back_populates="notifications", foreign_keys=[recipient_id])
 
     __table_args__ = (
         Index(
@@ -85,7 +82,25 @@ class PreAwardApprovalNotification(Notification):
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": (
-            NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION
-        ),
+        "polymorphic_identity": (NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION),
+    }
+
+
+class AwardApprovalNotification(Notification):
+    """Notification for award approval requests and responses (OPS-2280)."""
+
+    procurement_tracker_step_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("procurement_tracker_step.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+        use_existing_column=True,
+    )
+    procurement_tracker_step = relationship(
+        "ProcurementTrackerStep",
+        passive_deletes=True,
+        overlaps="procurement_tracker_step",
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": NotificationType.AWARD_APPROVAL_NOTIFICATION,
     }

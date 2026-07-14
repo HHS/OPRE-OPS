@@ -108,8 +108,13 @@ export default function useRequestAwardApproval(agreementId) {
     // Check if Step 5 is completed (prerequisite)
     const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
 
-    // Check if approval has been requested
-    const hasApprovalBeenRequested = step6?.approval_requested === true;
+    // Warning is shown only while approval is pending (requested but not yet approved or declined).
+    // Once Budget Team approves, the warning should disappear.
+    const hasApprovalBeenRequested =
+        step6?.approval_requested === true && (!step6?.approval_status || step6?.approval_status === "PENDING");
+
+    // Block re-submission once the award has been approved by Budget Team
+    const isApprovalApproved = step6?.approval_status === "APPROVED";
 
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
@@ -270,6 +275,7 @@ export default function useRequestAwardApproval(agreementId) {
         submitError,
         isSubmitting,
         hasApprovalBeenRequested,
+        isApprovalApproved,
         hasBLIInReview,
         isStep5Completed,
         projectOfficerName,

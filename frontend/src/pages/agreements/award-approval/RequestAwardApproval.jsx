@@ -94,6 +94,7 @@ export const RequestAwardApproval = () => {
         submitError,
         isSubmitting,
         hasApprovalBeenRequested,
+        isApprovalApproved,
         hasBLIInReview,
         isStep5Completed,
         projectOfficerName,
@@ -474,6 +475,7 @@ export const RequestAwardApproval = () => {
                     disabled={
                         isSubmitting ||
                         hasApprovalBeenRequested ||
+                        isApprovalApproved ||
                         hasBLIInReview ||
                         !isStep5Completed ||
                         validationResult.hasErrors() ||

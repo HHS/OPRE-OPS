@@ -7,7 +7,7 @@ import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
@@ -118,7 +118,7 @@ export const ReviewBudgetTeamRequisition = () => {
 
             {/* Budget Lines and Executing Total (only budget lines in Executing status are
                 relevant to the requisition, so limit the review to those) */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={executingBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}

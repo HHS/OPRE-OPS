@@ -1,4 +1,4 @@
-"""Notification title constants for approval workflows."""
+"""Notification title constants for pre-award approval workflow."""
 
 
 class PreAwardNotificationTitle:
@@ -11,7 +11,7 @@ class PreAwardNotificationTitle:
 
 
 class AwardNotificationTitle:
-    """Notification titles for award approval process (OPS-2280)."""
+    """Notification titles for award approval process."""
 
     APPROVAL_REQUEST = "Award Approval Request"
     APPROVED = "Award Approved"
