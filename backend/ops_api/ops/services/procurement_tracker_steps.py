@@ -591,6 +591,11 @@ class ProcurementTrackerStepService:
                 # DD approved - notify BUDGET_TEAM members (not requester)
                 self._notify_budget_team_for_requisition_review(step, agreement, current_user, notification_service)
 
+                # Dismiss the DD's "in review" notification now that they've responded
+                self._dismiss_notifications_by_title(
+                    PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications after DD approval"
+                )
+
             elif new_approval_status == "DECLINED":
                 # DD declined - notify requester (existing behavior)
                 self._notify_requester_of_decline(step, agreement, current_user, notification_service)
