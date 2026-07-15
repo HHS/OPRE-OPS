@@ -74,6 +74,12 @@ const suite = create((data = {}, fieldName) => {
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });
+    // REVIEW: NEW — NOFO Number is required for GRANT only. Inverse-guard pattern (if (!isGrant) return;),
+    // the mirror image of the contract-only guards above.
+    test("nofo_number", "This is required information", () => {
+        if (!isGrant) return;
+        enforce(data.nofo_number).isNotBlank();
+    });
     // REVIEW: UNCHANGED — requesting_agency / servicing_agency remain AA-only; no change needed.
     test("requesting_agency", "This is required information", () => {
         if (data.agreement_type === AGREEMENT_TYPES.AA) {

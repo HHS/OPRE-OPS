@@ -91,6 +91,10 @@ const useAgreementEditForm = (
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
     const setRequestingAgency = useUpdateAgreement("requesting_agency");
     const setServicingAgency = useUpdateAgreement("servicing_agency");
+    // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
+    const setNofoNumber = useUpdateAgreement("nofo_number");
+    const setAlnNumber = useUpdateAgreement("aln_number");
+    const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -145,6 +149,9 @@ const useAgreementEditForm = (
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
+        nofo_number: nofoNumber,
+        aln_number: alnNumber,
+        funding_period_months: fundingPeriodMonths,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
@@ -309,7 +316,10 @@ const useAgreementEditForm = (
         !agreementType ||
         res.hasErrors() ||
         hasUniquenessErrors ||
-        (isAgreementAA && (!servicingAgency || !requestingAgency));
+        (isAgreementAA && (!servicingAgency || !requestingAgency)) ||
+        // NOFO Number is the grant-equivalent hard requirement to Title — enforced both here
+        // (explicit check, mirroring !agreementTitle) and via the Vest suite's nofo_number test.
+        (isGrant && !nofoNumber);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -663,6 +673,7 @@ const useAgreementEditForm = (
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
+            clearGrantOnlyFields();
         } else if (value === AGREEMENT_TYPES.GRANT) {
             suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
@@ -679,10 +690,22 @@ const useAgreementEditForm = (
             dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
+            clearGrantOnlyFields();
         }
+    };
+
+    // Clear Grant-only fields (NOFO/ALN/Funding Period) when switching AWAY from GRANT.
+    // Deliberately does NOT clear alternate_project_officer_id / Project Specialist: that column
+    // is shared with Contracts (their Alternate PO/Alt-COR), so a value present when switching
+    // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
+    const clearGrantOnlyFields = () => {
+        setNofoNumber(null);
+        setAlnNumber(null);
+        setFundingPeriodMonths(null);
     };
 
     return {
@@ -711,6 +734,12 @@ const useAgreementEditForm = (
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumber,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumber,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
