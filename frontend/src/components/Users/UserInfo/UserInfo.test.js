@@ -56,7 +56,18 @@ vi.mock("../../UI/Form/ComboBox", () => ({
                     onChange={(e) => {
                         const selected = props.data?.find((item) => item.id.toString() === e.target.value);
                         if (selected && props.setSelectedData) {
-                            props.setSelectedData(selected);
+                            if (props.isMulti) {
+                                // Multi-select combos (e.g. roles) accumulate selections like
+                                // react-select does — merge the new pick into the current array
+                                // rather than replacing it, so multi-role states are testable.
+                                const current = Array.isArray(props.selectedData) ? props.selectedData : [];
+                                const next = current.some((item) => item.id === selected.id)
+                                    ? current
+                                    : [...current, selected];
+                                props.setSelectedData(next);
+                            } else {
+                                props.setSelectedData(selected);
+                            }
                         }
                     }}
                 >
@@ -75,9 +86,13 @@ vi.mock("../../UI/Form/ComboBox", () => ({
     })
 }));
 
-// Mock the API hooks directly to avoid MSW/AbortSignal compatibility issues
-vi.mock("../../../api/opsAPI.js", () => ({
-    useGetDivisionsQuery: vi.fn(() => ({
+// Mock the API hooks directly to avoid MSW/AbortSignal compatibility issues.
+// The query results are defined once (not per call) so they keep a STABLE reference
+// across renders — the way real RTK Query behaves. Returning a fresh array literal on
+// every render would make UserInfo's roles/divisions effects re-run each render and
+// revert staged selections, breaking the dirty-state and modal flows.
+vi.mock("../../../api/opsAPI.js", () => {
+    const divisionsResult = {
         data: [
             { id: 1, name: "Child Care" },
             { id: 2, name: "Division of Economic Independence" },
@@ -89,12 +104,15 @@ vi.mock("../../../api/opsAPI.js", () => ({
         ],
         error: null,
         isLoading: false
-    })),
-    useUpdateUserMutation: mockUseUpdateUserMutation
-}));
+    };
+    return {
+        useGetDivisionsQuery: vi.fn(() => divisionsResult),
+        useUpdateUserMutation: mockUseUpdateUserMutation
+    };
+});
 
-vi.mock("../../../api/opsAuthAPI.js", () => ({
-    useGetRolesQuery: vi.fn(() => ({
+vi.mock("../../../api/opsAuthAPI.js", () => {
+    const rolesResult = {
         data: [
             { id: 1, name: "SYSTEM_OWNER", is_superuser: false },
             { id: 2, name: "USER_ADMIN", is_superuser: false },
@@ -102,12 +120,16 @@ vi.mock("../../../api/opsAuthAPI.js", () => ({
             { id: 4, name: "REVIEWER_APPROVER", is_superuser: false },
             { id: 5, name: "BUDGET_TEAM", is_superuser: false },
             { id: 6, name: "PROCUREMENT_TEAM", is_superuser: false },
-            { id: 7, name: "SUPER_USER", is_superuser: true }
+            { id: 7, name: "SUPER_USER", is_superuser: true },
+            { id: 8, name: "READ_ONLY", is_superuser: false }
         ],
         error: null,
         isLoading: false
-    }))
-}));
+    };
+    return {
+        useGetRolesQuery: vi.fn(() => rolesResult)
+    };
+});
 
 // Mock constants to prevent issues with constants.js
 vi.mock("../../../constants.js", () => ({
@@ -119,7 +141,8 @@ vi.mock("../../../constants.js", () => ({
             { name: "USER_ADMIN", label: "User Admin" },
             { name: "BUDGET_TEAM", label: "Budget Team" },
             { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
-            { name: "SUPER_USER", label: "Administrative Power User" }
+            { name: "SUPER_USER", label: "Administrative Power User" },
+            { name: "READ_ONLY", label: "Read Only" }
         ]
     }
 }));
@@ -628,6 +651,275 @@ describe("UserInfo", () => {
         // and the component would re-render with the new status
         // For now, we just verify the component remains stable
     }, 10000); // 10 second timeout for the entire test
+
+    describe("Save/Cancel dirty-state gating", () => {
+        const baseUser = {
+            id: 1,
+            full_name: "Test User",
+            email: "test.user@example.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
+        };
+
+        test("Save and Cancel buttons are disabled until an edit is made", async () => {
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            expect(await screen.findByRole("button", { name: "Save changes" })).toBeDisabled();
+            expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+        });
+
+        test("changing the status enables the Save and Cancel buttons", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "3"); // LOCKED
+
+            expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
+            expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+        });
+
+        test("Save changes stages division, roles, and status into a single updateUser call", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "2"); // INACTIVE
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(mockUpdateUser).toHaveBeenCalledWith({
+                id: 1,
+                data: {
+                    division: 1,
+                    roles: ["SYSTEM_OWNER"],
+                    status: "INACTIVE"
+                }
+            });
+        });
+
+        test("no confirmation modal appears when saving a non-Read-Only change", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "2"); // INACTIVE
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+            expect(mockUpdateUser).toHaveBeenCalled();
+        });
+    });
+
+    describe("Read Only confirmation modal", () => {
+        const baseUser = {
+            id: 1,
+            full_name: "Test User",
+            email: "test.user@example.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
+        };
+
+        test("selecting Read Only and saving opens the confirmation modal instead of saving immediately", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const rolesCombo = await screen.findByTestId("roles-combobox");
+            await browserUser.selectOptions(within(rolesCombo).getByRole("combobox"), "8"); // READ_ONLY
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(await screen.findByRole("dialog")).toBeInTheDocument();
+            expect(screen.getByText(/change this role to Read Only/i)).toBeInTheDocument();
+            // The save is deferred until the user confirms.
+            expect(mockUpdateUser).not.toHaveBeenCalled();
+        });
+
+        test("confirming the Read Only modal saves with only the READ_ONLY role", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const rolesCombo = await screen.findByTestId("roles-combobox");
+            await browserUser.selectOptions(within(rolesCombo).getByRole("combobox"), "8"); // READ_ONLY
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+            await browserUser.click(await screen.findByRole("button", { name: "Change Role" }));
+
+            expect(mockUpdateUser).toHaveBeenCalledWith({
+                id: 1,
+                data: {
+                    division: 1,
+                    roles: ["READ_ONLY"],
+                    status: "ACTIVE"
+                }
+            });
+        });
+
+        test("saving a change for an existing Read-Only user does not open the modal and saves directly", async () => {
+            const browserUser = userEvent.setup();
+            // User already holds only READ_ONLY, so there are no other roles to strip —
+            // changing an unrelated field should save without the confirmation modal.
+            const readOnlyUser = {
+                ...baseUser,
+                roles: [{ id: 8, name: "READ_ONLY", is_superuser: false }]
+            };
+            renderWithProviders(
+                <App
+                    user={readOnlyUser}
+                    isEditable={true}
+                />
+            );
+
+            const divisionCombo = await screen.findByTestId("division-combobox");
+            await browserUser.selectOptions(within(divisionCombo).getByRole("combobox"), "2"); // Division of Economic Independence
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+            expect(mockUpdateUser).toHaveBeenCalledWith({
+                id: 1,
+                data: {
+                    division: 2,
+                    roles: ["READ_ONLY"],
+                    status: "ACTIVE"
+                }
+            });
+        });
+
+        test("adding a second role to an existing Read-Only user opens the modal instead of saving", async () => {
+            const browserUser = userEvent.setup();
+            // User already holds READ_ONLY; adding another role would violate the exclusivity
+            // rule, so the modal must fire rather than letting the backend reject the save.
+            const readOnlyUser = {
+                ...baseUser,
+                roles: [{ id: 8, name: "READ_ONLY", is_superuser: false }]
+            };
+            renderWithProviders(
+                <App
+                    user={readOnlyUser}
+                    isEditable={true}
+                />
+            );
+
+            const rolesCombo = await screen.findByTestId("roles-combobox");
+            await browserUser.selectOptions(within(rolesCombo).getByRole("combobox"), "1"); // SYSTEM_OWNER
+
+            await browserUser.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(await screen.findByRole("dialog")).toBeInTheDocument();
+            expect(mockUpdateUser).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("Cancel confirmation modal", () => {
+        const baseUser = {
+            id: 1,
+            full_name: "Test User",
+            email: "test.user@example.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: [{ id: 1, name: "SYSTEM_OWNER", is_superuser: false }]
+        };
+
+        test("clicking Cancel with unsaved edits opens the cancel confirmation modal", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "3"); // LOCKED
+
+            await browserUser.click(screen.getByRole("button", { name: "Cancel" }));
+
+            expect(await screen.findByRole("dialog")).toBeInTheDocument();
+            expect(screen.getByText(/cancel editing\? Your changes will not be saved/i)).toBeInTheDocument();
+        });
+
+        test("Continue editing closes the modal and keeps the staged edits", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "3"); // LOCKED
+
+            await browserUser.click(screen.getByRole("button", { name: "Cancel" }));
+            await browserUser.click(await screen.findByRole("button", { name: "Continue editing" }));
+
+            await waitFor(() => {
+                expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+            });
+            // The edit is preserved, so the form is still dirty (Save stays enabled) and nothing was saved.
+            expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
+            expect(mockUpdateUser).not.toHaveBeenCalled();
+        });
+
+        test("Cancel edits reverts the staged edits and does not save", async () => {
+            const browserUser = userEvent.setup();
+            renderWithProviders(
+                <App
+                    user={baseUser}
+                    isEditable={true}
+                />
+            );
+
+            const statusCombo = await screen.findByTestId("status-combobox");
+            await browserUser.selectOptions(within(statusCombo).getByRole("combobox"), "3"); // LOCKED
+            expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
+
+            await browserUser.click(screen.getByRole("button", { name: "Cancel" }));
+            await browserUser.click(await screen.findByRole("button", { name: "Cancel edits" }));
+
+            await waitFor(() => {
+                expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+            });
+            // Reverting to the persisted value clears the dirty state, re-disabling the buttons.
+            expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+            expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+            expect(mockUpdateUser).not.toHaveBeenCalled();
+        });
+    });
 });
 
 /**
@@ -637,7 +929,7 @@ describe("UserInfo", () => {
  * @property {string} email - The user's email
  * @property {number} division - The user's division ID
  * @property {string} status - The user's status
- * @property {string[]} roles - The user's roles
+ * @property {Array<{id: number, name: string, is_superuser: boolean}>} roles - The user's roles
  * @param {Object} props - The component props.
  * @param {TestUser} props.user - The user object.
  * @param {boolean} props.isEditable - Whether the user information is editable.

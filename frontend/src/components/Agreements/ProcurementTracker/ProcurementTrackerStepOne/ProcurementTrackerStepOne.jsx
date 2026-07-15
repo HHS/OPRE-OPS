@@ -1,8 +1,9 @@
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { getLocalISODate } from "../../../../helpers/utils";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -47,8 +48,10 @@ const ProcurementTrackerStepOne = ({
         setStep1DateCompleted,
         MemoizedDatePicker,
         setStep1Notes,
+        resetStep1Notes,
         step1Notes,
         handleStep1Complete,
+        handleSaveNotes,
         cancelModalStep1,
         disableStep1Buttons,
         modalProps,
@@ -162,14 +165,11 @@ const ProcurementTrackerStepOne = ({
                                 maxDate={getLocalISODate()}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step1Notes}
-                            onChange={(_, value) => setStep1Notes(value)}
-                            isDisabled={isDisabled || !isPreSolicitationPackageSent}
+                        <StepNotesForm
+                            notes={step1Notes}
+                            setNotes={setStep1Notes}
+                            onSave={() => handleSaveNotes(stepOneData?.id)}
+                            isDisabled={isDisabled}
                         />
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
@@ -223,7 +223,16 @@ const ProcurementTrackerStepOne = ({
                         />
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
+                            <StepNotesEditor
+                                notes={step1Notes}
+                                setNotes={setStep1Notes}
+                                resetNotes={resetStep1Notes}
+                                notesLabel={step1NotesLabel}
+                                savedNotes={stepOneData?.notes}
+                                stepId={stepOneData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>

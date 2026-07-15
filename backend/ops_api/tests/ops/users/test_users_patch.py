@@ -175,3 +175,38 @@ def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db,
         },
     )
     assert response.status_code == 400
+
+
+def test_patch_user_read_only_cannot_be_combined_with_other_roles(
+    auth_client, new_user, loaded_db, test_admin_user, app_ctx
+):
+    """
+    The READ_ONLY role strips all other roles, so it cannot be assigned alongside another role.
+    """
+    response = auth_client.patch(
+        url_for("api.users-item", id=new_user.id),
+        json={
+            "id": new_user.id,
+            "roles": ["READ_ONLY", "SYSTEM_OWNER"],
+        },
+    )
+    assert response.status_code == 400
+
+    # The user's roles should be unchanged.
+    unchanged_user = loaded_db.get(User, new_user.id)
+    assert not any(role.name == "READ_ONLY" for role in unchanged_user.roles)
+
+
+def test_patch_user_read_only_alone_is_allowed(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
+    """
+    Assigning READ_ONLY on its own is valid.
+    """
+    response = auth_client.patch(
+        url_for("api.users-item", id=new_user.id),
+        json={
+            "id": new_user.id,
+            "roles": ["READ_ONLY"],
+        },
+    )
+    assert response.status_code == 200
+    assert [role["name"] for role in response.json["roles"]] == ["READ_ONLY"]

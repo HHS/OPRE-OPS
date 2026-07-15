@@ -1,9 +1,10 @@
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
-import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -49,6 +50,7 @@ const ProcurementTrackerStepThree = ({
         setSolicitationPeriodEndDate,
         step3Notes,
         setStep3Notes,
+        resetStep3Notes,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -63,6 +65,7 @@ const ProcurementTrackerStepThree = ({
         setShowModal,
         modalProps,
         cancelModalStep3,
+        handleSaveNotes,
         handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
@@ -283,14 +286,11 @@ const ProcurementTrackerStepThree = ({
                             />
                         </div>
 
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step3Notes}
-                            onChange={(_, value) => setStep3Notes(value)}
-                            isDisabled={isDisabled || !isSolicitationClosed}
+                        <StepNotesForm
+                            notes={step3Notes}
+                            setNotes={setStep3Notes}
+                            onSave={() => handleSaveNotes(stepThreeData?.id)}
+                            isDisabled={isDisabled}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -368,7 +368,16 @@ const ProcurementTrackerStepThree = ({
                         />
                         <div style={{ gridColumn: "1 / -1" }}>
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step3NotesLabel}</dd>
+                            <StepNotesEditor
+                                notes={step3Notes}
+                                setNotes={setStep3Notes}
+                                resetNotes={resetStep3Notes}
+                                notesLabel={step3NotesLabel}
+                                savedNotes={stepThreeData?.notes}
+                                stepId={stepThreeData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>

@@ -49,6 +49,37 @@ def test_post_user_min_params(auth_client, loaded_db, test_admin_user, app_ctx):
     loaded_db.commit()
 
 
+def test_post_user_read_only_combined_with_other_role_rejected(auth_client, loaded_db, test_admin_user, app_ctx):
+    """The READ_ONLY role cannot be combined with any other role."""
+    response = auth_client.post(
+        url_for("api.users-group"),
+        json={
+            "email": "new_read_only_user@example.com",
+            "roles": ["READ_ONLY", "SYSTEM_OWNER"],
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_post_user_read_only_alone_allowed(auth_client, loaded_db, test_admin_user, app_ctx):
+    """The READ_ONLY role on its own is valid."""
+    response = auth_client.post(
+        url_for("api.users-group"),
+        json={
+            "email": "new_read_only_user@example.com",
+            "roles": ["READ_ONLY"],
+        },
+    )
+    assert response.status_code == 202
+    response_data = response.json
+    assert [role["name"] for role in response_data["roles"]] == ["READ_ONLY"]
+
+    # Clean up
+    new_user = loaded_db.get(User, response_data["id"])
+    loaded_db.delete(new_user)
+    loaded_db.commit()
+
+
 def test_post_user_max_params(auth_client, loaded_db, test_admin_user, app_ctx):
     response = auth_client.post(
         url_for("api.users-group"),
