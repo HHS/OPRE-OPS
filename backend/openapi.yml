@@ -9075,6 +9075,15 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementData:
       allOf:
@@ -9236,6 +9245,15 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementResponse:
       allOf:
