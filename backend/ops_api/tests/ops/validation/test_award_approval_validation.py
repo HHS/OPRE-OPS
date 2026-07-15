@@ -121,7 +121,7 @@ class TestAwardApprovalResponseAuthorizationRule:
 
 
 class TestAwardApprovalResponseValidationRule:
-    """Validates award approval response state: must be requested, must not be already processed."""
+    """Validates award approval response state: must be APPROVED, must be requested, must not be already processed."""
 
     rule = AwardApprovalResponseValidationRule()
 
@@ -132,13 +132,22 @@ class TestAwardApprovalResponseValidationRule:
 
     def test_passes_when_approval_status_not_updated(self):
         step = _make_award_step()
-        ctx = _make_context(updated_fields={"reviewer_notes": "notes"})
+        ctx = _make_context(updated_fields={"obligated_date": "2026-07-15"})
         self.rule.validate(step, ctx)
 
     def test_passes_when_requested_and_pending(self):
         step = _make_award_step(approval_requested=True, approval_status=None)
         ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
         self.rule.validate(step, ctx)  # Should not raise
+
+    def test_raises_when_declining(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_award_step(approval_requested=True, approval_status=None)
+        ctx = _make_context(updated_fields={"approval_status": "DECLINED"})
+        with pytest.raises(ValidationError) as exc_info:
+            self.rule.validate(step, ctx)
+        assert "APPROVED" in str(exc_info.value.validation_errors)
 
     def test_raises_when_approval_not_requested(self):
         from ops_api.ops.services.ops_service import ValidationError
@@ -153,8 +162,9 @@ class TestAwardApprovalResponseValidationRule:
 
         step = _make_award_step(approval_requested=True, approval_status="APPROVED")
         ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError) as exc_info:
             self.rule.validate(step, ctx)
+        assert "already been approved" in str(exc_info.value.validation_errors)
 
 
 # ---------------------------------------------------------------------------
@@ -195,13 +205,7 @@ class TestNoUpdatingCompletedProcurementStepRuleAwardCarveOut:
 
     def test_passes_for_completed_award_step_with_approval_fields(self):
         step = _make_completed_award_step()
-        ctx = _make_context(
-            updated_fields={
-                "approval_status": "APPROVED",
-                "reviewer_notes": "Looks good.",
-                "obligated_date": "2026-07-01",
-            }
-        )
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "obligated_date": "2026-07-01"})
         self.rule.validate(step, ctx)  # Should not raise
 
     def test_raises_for_completed_award_step_with_non_approval_field(self):
@@ -219,6 +223,20 @@ class TestNoUpdatingCompletedProcurementStepRuleAwardCarveOut:
         ctx = _make_context(updated_fields={"approval_status": "APPROVED", "status": "IN_PROGRESS"})
         with pytest.raises(ValidationError):
             self.rule.validate(step, ctx)
+
+    def test_raises_for_completed_award_step_with_reviewer_notes_only(self):
+        # reviewer_notes was removed from AWARD_APPROVAL_FIELDS (awards can't be declined)
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_completed_award_step()
+        ctx = _make_context(updated_fields={"reviewer_notes": "some notes"})
+        with pytest.raises(ValidationError):
+            self.rule.validate(step, ctx)
+
+    def test_passes_for_completed_award_step_with_obligated_date_only(self):
+        step = _make_completed_award_step()
+        ctx = _make_context(updated_fields={"obligated_date": "2026-07-15"})
+        self.rule.validate(step, ctx)  # Should not raise
 
     def test_raises_for_completed_non_award_step_with_approval_fields(self):
         from ops_api.ops.services.ops_service import ValidationError

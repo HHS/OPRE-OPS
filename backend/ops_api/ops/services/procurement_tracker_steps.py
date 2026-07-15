@@ -1130,6 +1130,13 @@ class ProcurementTrackerStepService:
                 )
             logger.debug(f"Created {len(recipient_ids)} award approved notifications")
 
+            # Dismiss the original "Award Approval Request" notifications now that BT has responded
+            self._dismiss_notifications_by_title(
+                AwardNotificationTitle.APPROVAL_REQUEST,
+                step.id,
+                "award approval request notifications after BT approval",
+            )
+
     def _get_budget_team_user_ids(self) -> list[int]:
         """
         Get user IDs of all BUDGET_TEAM members.

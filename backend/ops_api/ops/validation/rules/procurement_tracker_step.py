@@ -124,7 +124,7 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
 
     # Fields that are still editable after a step has been completed.
     EDITABLE_AFTER_COMPLETION = frozenset({"notes"})
-    AWARD_APPROVAL_FIELDS = frozenset({"approval_status", "reviewer_notes", "obligated_date"})
+    AWARD_APPROVAL_FIELDS = frozenset({"approval_status", "obligated_date"})
 
     @property
     def name(self) -> str:
@@ -402,8 +402,15 @@ class AwardAgreementDataRequiredRule(ValidationRule):
         if agreement.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
             return
 
-        # Validate Vendor exists (use defensive getattr for polymorphic agreement types)
-        vendor_id = getattr(agreement, "vendor_id", None)
+        # Validate Vendor exists — check the step's award_vendor_id first (set in this PATCH),
+        # then fall back to the agreement's vendor_id (set via agreement edit).
+        # The vendor is entered on the step form and lives on the step until Budget Team approval
+        # writes it through to the agreement, so checking only agreement.vendor_id misses it.
+        vendor_id = (
+            context.updated_fields.get("vendor_id")
+            or getattr(procurement_tracker_step, "award_vendor_id", None)
+            or getattr(agreement, "vendor_id", None)
+        )
         if not vendor_id:
             raise ValidationError(
                 {"vendor": "Vendor is required for CONTRACT and AA agreements before completing the AWARD step."}
@@ -852,6 +859,9 @@ class AwardApprovalResponseValidationRule(ValidationRule):
             raise ValidationError(
                 {"approval_status": "Cannot respond to an award approval request that has not been submitted."}
             )
+
+        if context.updated_fields["approval_status"] != "APPROVED":
+            raise ValidationError({"approval_status": "Award approvals can only be set to APPROVED."})
 
         current_status = procurement_tracker_step.award_approval_status
         if current_status == "APPROVED":
