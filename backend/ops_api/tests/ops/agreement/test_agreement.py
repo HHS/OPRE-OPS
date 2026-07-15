@@ -318,6 +318,41 @@ def test_agreements_serialization(auth_client, loaded_db, test_project, test_can
     assert delete_agreement_response.status_code == 200
 
 
+def test_grant_agreement_grant_details_round_trip(auth_client, loaded_db, test_project, app_ctx):
+    """Grant Details fields (#5926) round-trip through POST/GET /agreements.
+
+    Also confirms alternate_project_officer_id (reused as Project Specialist for GRANT)
+    round-trips exactly as it already does for CONTRACT — no new schema field involved.
+    """
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": "GRANT",
+            "name": "GRANT DETAILS TEST",
+            "description": "test grant details",
+            "project_id": test_project.id,
+            "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
+            "nofo_number": "NOFO-2026-01",
+            "aln_number": "93.600",
+            "funding_period_months": 18,
+        },
+    )
+    assert response.status_code == 201
+    grant_id = response.json["id"]
+
+    get_response = auth_client.get(url_for("api.agreements-item", id=grant_id))
+    assert get_response.status_code == 200
+    assert get_response.json["nofo_number"] == "NOFO-2026-01"
+    assert get_response.json["aln_number"] == "93.600"
+    assert get_response.json["funding_period_months"] == 18
+    # Project Specialist reuses alternate_project_officer_id
+    assert get_response.json["alternate_project_officer_id"] == 501
+
+    delete_response = auth_client.delete(url_for("api.agreements-item", id=grant_id))
+    assert delete_response.status_code == 200
+
+
 def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db, app_ctx):
     """Test that is_awarded is properly serialized in GET /agreements/{id} endpoint."""
     # Test 1: Contract agreement with no procurement actions (should be False)
