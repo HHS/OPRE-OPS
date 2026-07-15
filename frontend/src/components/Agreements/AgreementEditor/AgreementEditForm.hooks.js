@@ -664,12 +664,14 @@ const useAgreementEditForm = (
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
         } else if (value === AGREEMENT_TYPES.GRANT) {
+            suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
             setContractType(null);
             setServiceReqType(null);
             changeSelectedProductServiceCode(null);
             setAgreementReason(null);
             setAgreementVendor(null);
+            setAgreementNotes(null);
             changeSelectedProjectOfficer(null);
             changeSelectedAlternateProjectOfficer(null);
             dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });

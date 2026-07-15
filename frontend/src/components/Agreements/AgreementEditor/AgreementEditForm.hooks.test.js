@@ -582,6 +582,7 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         const setServiceReqTypeMock = vi.fn();
         const setAgreementReasonMock = vi.fn();
         const setAgreementVendorMock = vi.fn();
+        const setAgreementNotesMock = vi.fn();
         const setAgreementTypeMock = vi.fn();
         const setSelectedProductServiceCodeMock = vi.fn();
         const setSelectedProjectOfficerMock = vi.fn();
@@ -592,6 +593,7 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
             if (key === "service_requirement_type") return setServiceReqTypeMock;
             if (key === "agreement_reason") return setAgreementReasonMock;
             if (key === "vendor") return setAgreementVendorMock;
+            if (key === "notes") return setAgreementNotesMock;
             if (key === "agreement_type") return setAgreementTypeMock;
             return vi.fn();
         });
@@ -614,6 +616,10 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         expect(setServiceReqTypeMock).toHaveBeenCalledWith(null);
         expect(setAgreementReasonMock).toHaveBeenCalledWith(null);
         expect(setAgreementVendorMock).toHaveBeenCalledWith(null);
+        expect(setAgreementNotesMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProductServiceCodeMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProjectOfficerMock).toHaveBeenCalledWith(null);
+        expect(setSelectedAlternateProjectOfficerMock).toHaveBeenCalledWith(null);
         expect(dispatchMock).toHaveBeenCalledWith({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });

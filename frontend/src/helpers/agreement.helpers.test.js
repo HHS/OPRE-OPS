@@ -433,9 +433,9 @@ describe("getProcurementShopFees", () => {
 });
 
 describe("isNotDevelopedYet", () => {
-    it("returns true for GRANT agreement type", () => {
+    it("returns false for GRANT agreement type (grants are now creatable)", () => {
         const result = isNotDevelopedYet(AgreementType.GRANT);
-        expect(result).toBe(true);
+        expect(result).toBe(false);
     });
 
     it("returns true for DIRECT_OBLIGATION agreement type", () => {

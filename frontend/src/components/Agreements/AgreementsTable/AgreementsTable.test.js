@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AgreementsTable from "./AgreementsTable";
 import { configureStore } from "@reduxjs/toolkit";
@@ -135,7 +135,10 @@ it("does not render contract-only expanded fields for a GRANT agreement row", ()
         </Provider>
     );
 
-    // Contract-only column headers should not appear in the grant row
+    // Expand the grant row so ExpandedData is actually rendered
+    fireEvent.click(screen.getByTestId("expand-row"));
+
+    // Contract-only fields must be absent even in the expanded state
     expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
     expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
     expect(screen.queryByText("Award Type")).not.toBeInTheDocument();

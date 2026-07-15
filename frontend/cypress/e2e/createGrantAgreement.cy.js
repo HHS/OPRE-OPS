@@ -49,7 +49,7 @@ it("can create a Grant agreement", () => {
 
     // Save the draft
     cy.get("[data-cy='save-draft-btn']").click();
-    cy.wait("@postAgreement").its("response.statusCode").should("eq", 200);
+    cy.wait("@postAgreement").its("response.statusCode").should("eq", 201);
 
     // Should show success alert and redirect to /agreements
     cy.get("[data-cy='alert']").should("contain", "Agreement Draft Saved");

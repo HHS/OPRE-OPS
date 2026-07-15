@@ -150,11 +150,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
 export const isNotDevelopedYet = (agreementType) => {
-    if (
-        agreementType === AgreementType.GRANT ||
-        agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
-    ) {
+    if (agreementType === AgreementType.DIRECT_OBLIGATION || agreementType === AgreementType.IAA) {
         return true;
     }
 
