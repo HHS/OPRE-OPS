@@ -9,7 +9,8 @@ const validGrantData = {
     agreement_type: "GRANT",
     "agreement-type-filter": "GRANT",
     name: "My Grant",
-    project_id: 5
+    project_id: 5,
+    nofo_number: "NOFO-123"
 };
 
 const validContractData = {
@@ -27,9 +28,19 @@ const validContractData = {
 };
 
 describe("AgreementEditFormSuite — GRANT", () => {
-    it("passes with only the 4 required grant fields", () => {
+    it("passes with only the required grant fields (name, project_id, nofo_number)", () => {
         const result = suite.run(validGrantData);
         expect(result.hasErrors()).toBe(false);
+    });
+
+    it("fails when nofo_number is blank", () => {
+        const result = suite.run({ ...validGrantData, nofo_number: "" });
+        expect(result.hasErrors("nofo_number")).toBe(true);
+    });
+
+    it("passes nofo_number when provided", () => {
+        const result = suite.run(validGrantData);
+        expect(result.hasErrors("nofo_number")).toBe(false);
     });
 
     it("passes even when contract-only fields are missing", () => {
@@ -75,6 +86,11 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
             service_requirement_type: "-Select Service Requirement Type-"
         });
         expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("does not require nofo_number for contracts", () => {
+        const result = suite.run(validContractData);
+        expect(result.hasErrors("nofo_number")).toBe(false);
     });
 });
 

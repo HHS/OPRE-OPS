@@ -31,7 +31,13 @@ it("can create a Grant agreement", () => {
     cy.get("#service_requirement_type").should("not.exist");
     cy.get("#product_service_code_id").should("not.exist");
     cy.get("#agreement_reason").should("not.exist");
-    cy.get("#project-officer-combobox-input").should("not.exist");
+
+    // Grant Details fields should be visible
+    cy.get("#nofo_number").should("exist");
+    cy.get("#funding_period_months").should("exist");
+    cy.get("#aln_number").should("exist");
+    // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
+    cy.get("#project-officer-combobox-input").should("exist");
 
     // Continue button should not be visible for grants in wizard mode
     cy.get("[data-cy='continue-btn']").should("not.exist");
@@ -39,12 +45,20 @@ it("can create a Grant agreement", () => {
     // Save Draft should still be disabled (no title yet)
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
-    // Enter required grant fields
+    // Enter Title/Nickname/Description (from #5925) — Save Draft still disabled without NOFO Number
     cy.get("#name").type("E2E Grant Agreement Test");
     cy.get("#nick_name").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
+    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
-    // Save Draft should now be enabled
+    // NOFO Number is now required to enable Save Draft
+    cy.get("#nofo_number").type("NOFO-2026-01");
+
+    // Optionally fill the remaining Grant Details fields
+    cy.get("#funding_period_months").type("18");
+    cy.get("#aln_number").type("93.600");
+
+    // Save Draft should now be enabled once NOFO Number is present
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
     // Save the draft
