@@ -148,9 +148,9 @@ export default function useRequestAwardApproval(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel? Your changes will not be saved.",
-                actionButtonText: "Yes, Cancel",
-                secondaryButtonText: "Continue Editing",
+                heading: "Are you sure you want to cancel your award request? Your progress will not be saved.",
+                actionButtonText: "Cancel Award",
+                secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
                     flushSync(() => {
@@ -251,9 +251,9 @@ export default function useRequestAwardApproval(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your changes will not be saved.",
-            actionButtonText: "Yes, Cancel",
-            secondaryButtonText: "Continue Editing",
+            heading: "Are you sure you want to cancel your award request? Your progress will not be saved.",
+            actionButtonText: "Cancel Award",
+            secondaryButtonText: "Continue editing",
             handleConfirm: () => {
                 setShowModal(false);
                 setIsNavigating(true);

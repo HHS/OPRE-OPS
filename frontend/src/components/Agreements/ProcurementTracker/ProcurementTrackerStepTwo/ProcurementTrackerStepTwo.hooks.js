@@ -16,7 +16,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
  * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepTwo(
+    stepTwoData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
     const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
@@ -75,6 +79,19 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         resetNotes: resetStep2Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreSolicitationPackageFinalized ||
+        draftSolicitationDate ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step2DateCompleted ||
+        revisedTargetDate ||
+        step2Notes.trim() !== (stepTwoData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
@@ -177,6 +194,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setStep2DateCompleted("");
         resetStep2Notes(stepTwoData?.notes ?? "");
         setRevisedTargetDate("");
+        suite.reset();
     };
 
     const cancelModalStep2 = () => {
@@ -225,6 +243,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         cancelModalStep2,
         isPastDue,
         revisedTargetDate,
-        setRevisedTargetDate
+        setRevisedTargetDate,
+        hasChanges
     };
 }

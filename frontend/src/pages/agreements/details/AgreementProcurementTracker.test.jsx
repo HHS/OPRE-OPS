@@ -13,6 +13,15 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetUsersQuery: vi.fn()
 }));
 
+// Mock the navigation blocker hook so tests don't need a data router
+vi.mock("../../../hooks/useUnsavedChangesBlocker.hooks", () => ({
+    default: () => ({
+        showBlockerModal: false,
+        setShowBlockerModal: vi.fn(),
+        blockerModalProps: {}
+    })
+}));
+
 // Mock DebugCode component
 vi.mock("../../../components/DebugCode", () => ({
     default: () => <div data-testid="debug-code">Debug Code</div>

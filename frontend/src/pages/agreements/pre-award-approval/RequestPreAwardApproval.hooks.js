@@ -173,9 +173,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel? Your changes will not be saved.",
-                actionButtonText: "Yes, Cancel",
-                secondaryButtonText: "Continue Editing",
+                heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+                actionButtonText: "Cancel Pre-Award",
+                secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
                     flushSync(() => {
@@ -287,9 +287,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your changes will not be saved.",
-            actionButtonText: "Yes, Cancel",
-            secondaryButtonText: "Continue Editing",
+            heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+            actionButtonText: "Cancel Pre-Award",
+            secondaryButtonText: "Continue editing",
             handleConfirm: () => {
                 setShowModal(false);
                 setIsNavigating(true);

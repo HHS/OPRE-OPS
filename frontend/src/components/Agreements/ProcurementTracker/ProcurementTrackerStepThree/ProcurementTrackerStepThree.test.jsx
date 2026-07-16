@@ -1494,8 +1494,12 @@ describe("ProcurementTrackerStepThree", () => {
             // Verify component renders without errors with new props
             expect(screen.getByRole("button", { name: /complete step 3/i })).toBeInTheDocument();
 
-            // Verify the hook is called with handleSetCompletedStepNumber
-            expect(useProcurementTrackerStepThree).toHaveBeenCalledWith(mockStepData, mockHandleSetCompletedStepNumber);
+            // Verify the hook is called with handleSetCompletedStepNumber (third arg is onDirtyChange, optional)
+            expect(useProcurementTrackerStepThree).toHaveBeenCalledWith(
+                mockStepData,
+                mockHandleSetCompletedStepNumber,
+                undefined
+            );
         });
 
         it("cancel button is disabled when isDisabled is true", () => {

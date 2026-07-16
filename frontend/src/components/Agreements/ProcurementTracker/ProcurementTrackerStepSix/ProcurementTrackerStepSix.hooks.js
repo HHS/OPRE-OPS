@@ -19,7 +19,11 @@ const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at 
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepSix(
+    stepSixData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
         () => stepSixData?.approval_requested ?? false
     );
@@ -66,6 +70,17 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         resetNotes: resetStepSixNotes,
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isAwardCheckboxChecked ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        stepSixDateCompleted ||
+        stepSixNotes.trim() !== (stepSixData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step six, updating the procurement tracker step with the new date.
@@ -154,9 +169,9 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
      */
     const cancelModalStepSix = () => {
         setModalProps({
-            heading: "Are you sure you want to cancel Step 6?",
-            actionButtonText: "Cancel Step 6",
-            secondaryButtonText: "Continue Step 6",
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 cancelStepSix();
             }
@@ -191,6 +206,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         stepSixNotesLabel,
         MemoizedDatePicker,
         runValidate,
-        validatorRes
+        validatorRes,
+        hasChanges
     };
 }

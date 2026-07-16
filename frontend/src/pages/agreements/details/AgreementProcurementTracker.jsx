@@ -10,6 +10,8 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -33,6 +35,19 @@ const AgreementProcurementTracker = ({ agreement }) => {
     ];
     const [completedStepNumber, setCompletedStepNumber] = React.useState(null);
     const completedStepRef = React.useRef(null);
+
+    // Navigate-away guard: fires when the user has entered input in the active step
+    // but tries to navigate elsewhere without completing it.
+    // MUST be declared before any early returns (Rules of Hooks).
+    const [isActiveStepDirty, setIsActiveStepDirty] = React.useState(false);
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged: isActiveStepDirty,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in the procurement tracker. If you leave without completing the current step, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     const handleSetCompletedStepNumber = (stepNumber) => {
         setCompletedStepNumber(stepNumber);
@@ -79,6 +94,15 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const displayTracker = activeTracker || completedTracker;
     const hasActiveTracker = !!activeTracker;
     const hasCompletedTracker = !!completedTracker;
+
+    // When the tracker transitions from active to completed, no step is the active step
+    // any more, so nothing will report onDirtyChange(false). Reset explicitly to prevent
+    // a spurious navigate-away modal on the now-read-only completed tracker.
+    React.useEffect(() => {
+        if (!hasActiveTracker) {
+            setIsActiveStepDirty(false);
+        }
+    }, [hasActiveTracker]);
 
     // Use displayTracker for step data (shows completed tracker data after final step completion)
     const stepOneData = displayTracker?.steps.find((step) => step.step_number === 1);
@@ -132,6 +156,18 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     return (
         <>
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
+                />
+            )}
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">Procurement Tracker</h2>
             </div>
@@ -173,6 +209,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -184,6 +221,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -205,6 +243,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isActiveStep={isActiveStep}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
@@ -226,6 +265,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_4 && step.step_number === 4 && (
@@ -249,6 +289,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_5 && step.step_number === 5 && (
@@ -274,6 +315,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
+                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
                             />
                         )}
                     </StepBuilderAccordion>

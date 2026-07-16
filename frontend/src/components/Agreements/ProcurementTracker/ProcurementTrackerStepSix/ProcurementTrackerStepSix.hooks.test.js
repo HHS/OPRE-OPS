@@ -774,9 +774,11 @@ describe("useProcurementTrackerStepSix", () => {
                 result.current.cancelModalStepSix();
             });
 
-            expect(result.current.modalProps.heading).toBe("Are you sure you want to cancel Step 6?");
-            expect(result.current.modalProps.actionButtonText).toBe("Cancel Step 6");
-            expect(result.current.modalProps.secondaryButtonText).toBe("Continue Step 6");
+            expect(result.current.modalProps.heading).toBe(
+                "Are you sure you want to cancel this task? Your input will not be saved."
+            );
+            expect(result.current.modalProps.actionButtonText).toBe("Cancel Task");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Continue Editing");
         });
 
         it("modalProps handleConfirm calls cancelStepSix", () => {

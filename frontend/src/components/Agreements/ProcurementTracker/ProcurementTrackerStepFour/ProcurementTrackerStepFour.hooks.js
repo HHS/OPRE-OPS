@@ -17,7 +17,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerEvaluationStep | undefined} stepFourData - The data for step four of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepFour(
+    stepFourData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isEvaluationComplete, setIsEvaluationComplete] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
@@ -55,6 +59,17 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         resetNotes: resetStep4Notes,
         handleSaveNotes
     } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isEvaluationComplete ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step4DateCompleted ||
+        step4Notes.trim() !== (stepFourData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step four, updating the procurement tracker step with the new date.
@@ -126,6 +141,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         setTargetCompletionDate("");
         setStep4DateCompleted("");
         resetStep4Notes(stepFourData?.notes ?? "");
+        suite.reset();
     };
 
     const cancelModalStep4 = () => {
@@ -167,6 +183,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep4
+        cancelModalStep4,
+        hasChanges
     };
 }

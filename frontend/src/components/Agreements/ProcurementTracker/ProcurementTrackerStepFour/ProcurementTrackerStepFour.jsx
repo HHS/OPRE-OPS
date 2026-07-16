@@ -37,6 +37,7 @@ const ProcurementTrackerStepFour = ({
     isActiveStep,
     authorizedUsers,
     handleSetCompletedStepNumber,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -65,7 +66,7 @@ const ProcurementTrackerStepFour = ({
         cancelModalStep4,
         handleSaveNotes,
         handleStepFourComplete
-    } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
