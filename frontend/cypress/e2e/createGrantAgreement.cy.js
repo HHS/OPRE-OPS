@@ -41,7 +41,7 @@ it("can create a Grant agreement", () => {
 
     // Enter required grant fields
     cy.get("#name").type("E2E Grant Agreement Test");
-    cy.get("#nick_name").type("GRANT-TEST");
+    cy.get("#nickname").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
 
     // Save Draft should now be enabled
