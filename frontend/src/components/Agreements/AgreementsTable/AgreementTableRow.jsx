@@ -10,6 +10,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
+import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
     areAllBudgetLinesInStatus,
     getAgreementContractNumber,
@@ -147,7 +148,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     the AGREEMENT_TYPES constant because this file already uses the string form elsewhere
                     (e.g. isNotDevelopedYet) and adding another import for a one-liner guard would be noisy.
                     QUESTION FOR REVIEW: should we import AGREEMENT_TYPES.GRANT here for consistency? */}
-                {agreement?.agreement_type !== "GRANT" && (
+                {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
                     <>
                         <dl
                             className="font-12px"
