@@ -47,7 +47,7 @@ it("can create a Grant agreement", () => {
 
     // Enter Title/Nickname/Description (from #5925) — Save Draft still disabled without NOFO Number
     cy.get("#name").type("E2E Grant Agreement Test");
-    cy.get("#nick_name").type("GRANT-TEST");
+    cy.get("#nickname").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
