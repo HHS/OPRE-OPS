@@ -360,7 +360,7 @@ export const RequestPreAwardApproval = () => {
                                 : hasApprovalBeenRequested
                                   ? "Pre-Award approval has already been requested"
                                   : hasBLIInReview
-                                    ? "Cannot request approval while budget lines have pending change requests"
+                                    ? "You cannot request pre-award approval until all change requests are resolved."
                                     : ""
                         }
                     >
