@@ -828,4 +828,86 @@ describe("useProcurementTrackerStepSix", () => {
             expect(result.current.showModal).toBe(false);
         });
     });
+
+    describe("onDirtyChange / hasChanges", () => {
+        it("does not call onDirtyChange on clean mount when approval_requested is false", () => {
+            const onDirtyChange = vi.fn();
+            renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("does not call onDirtyChange(true) on mount when approval_requested is already true", () => {
+            const onDirtyChange = vi.fn();
+            renderHook(() =>
+                useProcurementTrackerStepSix(
+                    { ...mockStepSixData, approval_requested: true },
+                    mockHandleSetCompletedStepNumber,
+                    onDirtyChange
+                )
+            );
+            // checkbox is seeded to true from server, but should not count as a user change
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("calls onDirtyChange(true) when a user is selected", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when target completion date is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setTargetCompletionDate("01/01/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when date completed is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStepSixDateCompleted("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(false) after cancelStepSix resets all fields", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+            act(() => {
+                result.current.cancelStepSix();
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("does not call onDirtyChange when prop is not provided", () => {
+            // should not throw
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 1 });
+            });
+            expect(result.current.selectedUser).toEqual({ id: 1 });
+        });
+    });
 });

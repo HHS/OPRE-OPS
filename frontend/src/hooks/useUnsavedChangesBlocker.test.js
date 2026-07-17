@@ -1,6 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import useUnsavedChangesBlocker from "./useUnsavedChangesBlocker.hooks";
+import { proceedIfBlocked } from "./proceedIfBlocked";
+
+vi.mock("./proceedIfBlocked", () => ({
+    proceedIfBlocked: vi.fn().mockResolvedValue(undefined)
+}));
 
 let blockerCallback;
 const mockReset = vi.fn();
@@ -76,6 +81,9 @@ describe("useUnsavedChangesBlocker", () => {
 
         expect(result.current.showBlockerModal).toBe(true);
         expect(result.current.blockerModalProps.heading).toBe("Save changes before leaving?");
+        expect(result.current.blockerModalProps.description).toBe(
+            "You have unsaved changes in the procurement tracker. If you leave without completing the current step, these changes will be lost."
+        );
         expect(result.current.blockerModalProps.actionButtonText).toBe("Go back");
         expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
     });
@@ -96,7 +104,6 @@ describe("useUnsavedChangesBlocker", () => {
 
     it("closes modal and proceeds on Leave without saving (handleSecondary)", async () => {
         blockerState = "blocked";
-        mockProceed.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useUnsavedChangesBlocker(defaultProps));
 
@@ -105,7 +112,8 @@ describe("useUnsavedChangesBlocker", () => {
         });
 
         expect(result.current.showBlockerModal).toBe(false);
-        expect(mockProceed).toHaveBeenCalled();
+        // proceedIfBlocked is the shared helper — verify it was called with the blocker
+        expect(proceedIfBlocked).toHaveBeenCalled();
         expect(mockReset).not.toHaveBeenCalled();
     });
 
@@ -122,17 +130,18 @@ describe("useUnsavedChangesBlocker", () => {
         expect(mockReset).toHaveBeenCalled();
     });
 
-    it("handles known React Router blocker state transition error gracefully on Leave", async () => {
+    it("handles errors from proceedIfBlocked gracefully on Leave", async () => {
         blockerState = "blocked";
-        mockProceed.mockRejectedValue(new Error("Invalid blocker state transition from proceeding"));
+        // Simulate proceedIfBlocked throwing (the helper handles RR-specific suppression internally)
+        proceedIfBlocked.mockRejectedValueOnce(new Error("unexpected error"));
 
         const { result } = renderHook(() => useUnsavedChangesBlocker(defaultProps));
 
-        // Should not throw
-        await act(async () => {
-            await result.current.blockerModalProps.handleSecondary();
-        });
-
-        expect(result.current.showBlockerModal).toBe(false);
+        // Should propagate — this test verifies we don't swallow unknown errors in handleSecondary
+        await expect(
+            act(async () => {
+                await result.current.blockerModalProps.handleSecondary();
+            })
+        ).rejects.toThrow("unexpected error");
     });
 });

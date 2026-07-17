@@ -71,8 +71,10 @@ export default function useProcurementTrackerStepSix(
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
+    // Compare isAwardCheckboxChecked against the server-persisted value so that a
+    // form that already has approval_requested=true does not falsely report dirty on mount.
     const hasChanges = Boolean(
-        isAwardCheckboxChecked ||
+        isAwardCheckboxChecked !== (stepSixData?.approval_requested ?? false) ||
         selectedUser?.id ||
         targetCompletionDate ||
         stepSixDateCompleted ||

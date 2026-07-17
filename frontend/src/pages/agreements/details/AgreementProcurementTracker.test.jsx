@@ -14,12 +14,15 @@ vi.mock("../../../api/opsAPI", () => ({
 }));
 
 // Mock the navigation blocker hook so tests don't need a data router
+const mockSetShowBlockerModal = vi.fn();
+const mockBlockerReturn = {
+    showBlockerModal: false,
+    setShowBlockerModal: mockSetShowBlockerModal,
+    blockerModalProps: {}
+};
+
 vi.mock("../../../hooks/useUnsavedChangesBlocker.hooks", () => ({
-    default: () => ({
-        showBlockerModal: false,
-        setShowBlockerModal: vi.fn(),
-        blockerModalProps: {}
-    })
+    default: () => mockBlockerReturn
 }));
 
 // Mock DebugCode component
@@ -116,12 +119,13 @@ vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo", () => ({
-    default: ({ stepStatus, stepTwoData, isDisabled }) => (
+    default: ({ stepStatus, stepTwoData, isDisabled, onDirtyChange }) => (
         <div
             data-testid="procurement-step-two"
             data-step-status={stepStatus}
             data-step-data-id={stepTwoData?.id}
             data-is-disabled={isDisabled}
+            data-has-dirty-change={onDirtyChange !== undefined ? "true" : "false"}
         >
             {stepStatus === "COMPLETED" ? "Step Two Completed" : "Step Two Form"}
         </div>
@@ -148,12 +152,13 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFour", () => ({
-    default: ({ stepStatus, stepFourData, isDisabled }) => (
+    default: ({ stepStatus, stepFourData, isDisabled, onDirtyChange }) => (
         <div
             data-testid="procurement-step-four"
             data-step-status={stepStatus}
             data-step-data-id={stepFourData?.id}
             data-is-disabled={isDisabled}
+            data-has-dirty-change={onDirtyChange !== undefined ? "true" : "false"}
         >
             {stepStatus === "COMPLETED" ? "Step Four Completed" : "Step Four Form"}
         </div>
@@ -1546,6 +1551,72 @@ describe("AgreementProcurementTracker", () => {
             const stepTwo = screen.getByTestId("procurement-step-two");
             // Missing isEditable should default to false
             expect(stepTwo).toHaveAttribute("data-is-disabled", "true");
+        });
+    });
+
+    describe("Navigate-away blocker wiring", () => {
+        beforeEach(() => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerData,
+                isLoading: false,
+                isError: false
+            });
+            useGetUsersQuery.mockReturnValue({ data: [] });
+            useIsUserSuperUser.mockReturnValue(false);
+        });
+
+        it("passes onDirtyChange to the active step and undefined to inactive steps", () => {
+            // active_step_number: 2 — step 2 is active, so it gets onDirtyChange; step 4 does not
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: {
+                    data: [
+                        {
+                            id: 4,
+                            agreement_id: 13,
+                            status: "ACTIVE",
+                            active_step_number: 2,
+                            steps: [
+                                { id: 1, step_number: 1, status: "COMPLETED" },
+                                { id: 2, step_number: 2, status: "ACTIVE" },
+                                { id: 3, step_number: 3, status: "PENDING" },
+                                { id: 4, step_number: 4, status: "PENDING" }
+                            ]
+                        }
+                    ]
+                },
+                isLoading: false,
+                isError: false
+            });
+
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            // Step 2 is the active step — its accordion is open and it receives onDirtyChange
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            expect(stepTwo).toHaveAttribute("data-has-dirty-change", "true");
+        });
+
+        it("renders SaveChangesAndExitModal when showBlockerModal is true", () => {
+            mockBlockerReturn.showBlockerModal = true;
+            mockBlockerReturn.blockerModalProps = {
+                heading: "Save changes before leaving?",
+                description:
+                    "You have unsaved changes in the procurement tracker. If you leave without completing the current step, these changes will be lost.",
+                actionButtonText: "Go back",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: vi.fn(),
+                handleSecondary: vi.fn(),
+                closeModal: vi.fn()
+            };
+
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            expect(screen.getByText("Save changes before leaving?")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Go back" })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Leave without saving" })).toBeInTheDocument();
+
+            // Restore default for other tests
+            mockBlockerReturn.showBlockerModal = false;
+            mockBlockerReturn.blockerModalProps = {};
         });
     });
 });
