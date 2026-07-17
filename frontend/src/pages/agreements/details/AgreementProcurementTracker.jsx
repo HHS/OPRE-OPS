@@ -209,7 +209,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -221,7 +221,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={isStepDisabled}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -243,7 +243,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isActiveStep={isActiveStep}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
@@ -265,7 +265,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={isActiveStep}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_4 && step.step_number === 4 && (
@@ -289,7 +289,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_5 && step.step_number === 5 && (
@@ -315,7 +315,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
-                                onDirtyChange={isActiveStep ? setIsActiveStepDirty : undefined}
+                                onDirtyChange={setIsActiveStepDirty}
                             />
                         )}
                     </StepBuilderAccordion>

@@ -1565,8 +1565,7 @@ describe("AgreementProcurementTracker", () => {
             useIsUserSuperUser.mockReturnValue(false);
         });
 
-        it("passes onDirtyChange to the active step and undefined to inactive steps", () => {
-            // active_step_number: 2 — step 2 is active, so it gets onDirtyChange; step 4 does not
+        it("passes onDirtyChange to all rendered steps", () => {
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
                 data: {
                     data: [
@@ -1590,7 +1589,7 @@ describe("AgreementProcurementTracker", () => {
 
             renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
-            // Step 2 is the active step — its accordion is open and it receives onDirtyChange
+            // All rendered steps receive onDirtyChange so any step with user input can report dirty state
             const stepTwo = screen.getByTestId("procurement-step-two");
             expect(stepTwo).toHaveAttribute("data-has-dirty-change", "true");
         });
