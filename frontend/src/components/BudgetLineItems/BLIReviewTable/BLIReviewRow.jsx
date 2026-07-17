@@ -58,12 +58,14 @@ const BLIReviewRow = ({
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
 
-    // Services component has no column in this table; surface its absence as a row-level error
-    // class so the user can locate the offending BLI when errorStatuses-mode is active.
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
+    // Row-level error class for a missing services component. Only used in selection-gated
+    // mode (Review Agreement) where highlighting the whole row is correct. In errorStatuses
+    // mode (pre-award), table-item-error on the <tr> would cascade color:#b50909 to every
+    // child <td> including cells with valid data — use cell-level errors only there.
     const missingServicesComponentClass =
-        showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
+        !statusScopedErrors && showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
 
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
