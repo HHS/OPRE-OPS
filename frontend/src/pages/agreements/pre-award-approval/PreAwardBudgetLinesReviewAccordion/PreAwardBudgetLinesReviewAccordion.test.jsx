@@ -14,8 +14,11 @@ vi.mock("../../../../components/Agreements/AgreementBLIAccordion", () => ({
 }));
 
 vi.mock("../../../../components/BudgetLineItems/BLIReviewTable", () => ({
-    default: ({ budgetLines }) => (
-        <div data-testid="bli-review-table">
+    default: ({ budgetLines, errorStatuses }) => (
+        <div
+            data-testid="bli-review-table"
+            data-error-statuses={errorStatuses ? JSON.stringify(errorStatuses) : undefined}
+        >
             {budgetLines.map((bli) => (
                 <div key={bli.id}>{bli.id}</div>
             ))}
@@ -147,6 +150,32 @@ describe("BudgetLinesReviewAccordion", () => {
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
+    });
+
+    it("passes errorStatuses to BLI tables when showBudgetLineErrors is true", () => {
+        render(
+            <BudgetLinesReviewAccordion
+                {...defaultProps}
+                showBudgetLineErrors={true}
+            />
+        );
+
+        const tables = screen.getAllByTestId("bli-review-table");
+        tables.forEach((table) => {
+            expect(table).toHaveAttribute("data-error-statuses");
+            const statuses = JSON.parse(table.getAttribute("data-error-statuses"));
+            expect(statuses).toContain("PLANNED");
+            expect(statuses).toContain("IN_EXECUTION");
+        });
+    });
+
+    it("does not pass errorStatuses to BLI tables when showBudgetLineErrors is false (default)", () => {
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+
+        const tables = screen.getAllByTestId("bli-review-table");
+        tables.forEach((table) => {
+            expect(table).not.toHaveAttribute("data-error-statuses");
+        });
     });
 
     it("handles null grouped budget lines", () => {
