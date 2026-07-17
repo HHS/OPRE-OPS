@@ -107,6 +107,7 @@ export default function useProcurementTrackerStepTwo(
                 stepId,
                 data: payload
             }).unwrap();
+            setTargetCompletionDate("");
             console.log("Procurement Tracker Step 2 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 2", error);

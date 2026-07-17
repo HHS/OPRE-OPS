@@ -119,6 +119,8 @@ export default function useProcurementTrackerStepThree(
                 stepId,
                 data: payload
             }).unwrap();
+            setSolicitationPeriodStartDate("");
+            setSolicitationPeriodEndDate("");
             console.log("Procurement Tracker Step 3 solicitation dates updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 3 solicitation dates", error);
