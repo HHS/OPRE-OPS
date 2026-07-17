@@ -13,7 +13,10 @@ from ops_api.ops.schemas.agreements import (
     AgreementData,
     AgreementRequestSchema,
     ContractAgreementData,
+    ContractAgreementResponse,
     GrantAgreementData,
+    GrantAgreementResponse,
+    GrantListAgreementResponse,
 )
 from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema, SimpleAgreementSchema
 from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
@@ -432,6 +435,62 @@ class TestAgreementDataNestedFields:
         # Should default to empty arrays
         assert result.get("budget_line_items", []) == []
         assert result.get("services_components", []) == []
+
+
+class TestGrantAgreementDataNestedGrantNumbers:
+    """Test that grant_numbers is scoped to Grant-specific schemas only (§1.13's correction)."""
+
+    def test_grant_agreement_data_has_grant_numbers_field(self):
+        schema = GrantAgreementData()
+        assert "grant_numbers" in schema.fields
+
+    def test_contract_agreement_data_does_not_have_grant_numbers_field(self):
+        """The shared AgreementData base must NOT carry grant_numbers — it would leak
+        into every non-grant agreement type's request schema."""
+        schema = ContractAgreementData()
+        assert "grant_numbers" not in schema.fields
+
+    def test_grant_agreement_data_loads_nested_grant_numbers(self):
+        schema = GrantAgreementData()
+        data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "grant_numbers": [
+                {"ref": "grant-1", "number": 1, "description": "First grant number"},
+            ],
+        }
+        result = schema.load(data)
+        assert len(result["grant_numbers"]) == 1
+        assert result["grant_numbers"][0]["ref"] == "grant-1"
+        assert result["grant_numbers"][0]["number"] == 1
+
+    def test_grant_agreement_data_allows_empty_grant_numbers(self):
+        schema = GrantAgreementData()
+        data = {"name": "Test Grant", "agreement_type": "GRANT", "grant_numbers": []}
+        result = schema.load(data)
+        assert result["grant_numbers"] == []
+
+    def test_grant_agreement_data_allows_omitted_grant_numbers(self):
+        schema = GrantAgreementData()
+        data = {"name": "Test Grant", "agreement_type": "GRANT"}
+        result = schema.load(data)
+        assert result.get("grant_numbers", []) == []
+
+    def test_grant_agreement_response_dumps_grant_numbers(self):
+        schema = GrantAgreementResponse()
+        assert "grant_numbers" in schema.fields
+        assert schema.fields["grant_numbers"].dump_only is True
+
+    def test_grant_list_agreement_response_dumps_grant_numbers(self):
+        schema = GrantListAgreementResponse()
+        assert "grant_numbers" in schema.fields
+        assert schema.fields["grant_numbers"].dump_only is True
+
+    def test_contract_agreement_response_does_not_have_grant_numbers_field(self):
+        """Regression test at the schema level, complementing the round-trip test in
+        tests/ops/grant_numbers/test_grant_number.py."""
+        schema = ContractAgreementResponse()
+        assert "grant_numbers" not in schema.fields
 
 
 class TestSimpleAgreementSchema:

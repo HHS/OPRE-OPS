@@ -108,7 +108,7 @@ const AgreementEditForm = ({
         vendorDisabled,
         immutableFields,
         isAgreementAA,
-        isGrant, // REVIEW: NEW — destructured from hook; used to hide contract block and Continue button
+        isGrant,
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,
@@ -741,24 +741,16 @@ const AgreementEditForm = ({
                                 Save Draft
                             </button>
                         )}
-                        {/* REVIEW: NEW — hides Continue in wizard mode for grants.
-                            Continue advances to Step 3 (budget lines, out of scope for this slice)
-                            and does NOT persist a new agreement, so reaching it without a Save Draft
-                            would lose the grant. In non-wizard (edit/review) mode Continue renders
-                            as "Save Changes" and must still be available, so the gate is
-                            !(isGrant && isWizardMode) rather than just !isGrant. */}
-                        {!(isGrant && isWizardMode) && (
-                            <button
-                                type="button"
-                                id="continue"
-                                className="usa-button"
-                                onClick={handleContinue}
-                                disabled={shouldDisableBtn}
-                                data-cy="continue-btn"
-                            >
-                                {isWizardMode ? "Continue" : "Save Changes"}
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            id="continue"
+                            className="usa-button"
+                            onClick={handleContinue}
+                            disabled={shouldDisableBtn}
+                            data-cy="continue-btn"
+                        >
+                            {isWizardMode ? "Continue" : "Save Changes"}
+                        </button>
                     </div>
                 </div>
             )}

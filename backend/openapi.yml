@@ -4843,6 +4843,157 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
+  /grant-numbers/:
+    get:
+      tags:
+        - Grant Numbers
+      operationId: getGrantNumbers
+      description: Get Grant Numbers
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantNumbers"
+    post:
+      tags:
+        - Grant Numbers
+      operationId: createGrantNumber
+      summary: Create a new Grant Number
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequestPost"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /grant-numbers/{id}:
+    get:
+      tags:
+        - Grant Numbers
+      operationId: getGrantNumberById
+      description: Get Grant Number by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantNumber"
+    put:
+      tags:
+        - Grant Numbers
+      operationId: putGrantNumber
+      summary: Update a Grant Number (Over-write)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Grant Numbers
+      operationId: patchGrantNumber
+      summary: Update a Grant Number (Merge)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+        - Grant Numbers
+      operationId: deleteGrantNumber
+      summary: Delete a Grant Number
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /change-requests/:
     description: ChangeRequests collection endpoint
     get:
@@ -7768,6 +7919,75 @@ components:
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
+    GrantNumbers:
+      description: OPS List of Grant Numbers
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/GrantNumber"
+    GrantNumber:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        agreement_id:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
+        description:
+          type: string
+        display_title:
+          type: string
+        display_name:
+          type: string
+        period_start:
+          type: string
+          example: "2023-05-06"
+        period_end:
+          type: string
+          example: "2023-06-30"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    GrantNumberRequest:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
+        description:
+          type: string
+        display_title:
+          type: string
+        display_name:
+          type: string
+        period_start:
+          type: string
+          example: "2023-05-06"
+        period_end:
+          type: string
+          example: "2023-06-30"
+      required:
+        - agreement_id
+        - number
+    GrantNumberRequestPost:
+      allOf:
+        - $ref: "#/components/schemas/GrantNumberRequest"
     AgreementEditBundleRequest:
       type: object
       description: |
@@ -7778,9 +7998,9 @@ components:
           description: |
             Agreement-level fields to update (partial). Validated against the
             per-agreement-type schema, keyed off the existing agreement's type.
-            Nested `services_components` / `budget_line_items` arrays are rejected —
-            send those at the top level of the bundle so the orchestrator can
-            apply create / update / delete atomically.
+            Nested `services_components` / `grant_numbers` / `budget_line_items` arrays
+            are rejected — send those at the top level of the bundle so the
+            orchestrator can apply create / update / delete atomically.
           oneOf:
             - $ref: "#/components/schemas/AgreementData"
             - $ref: "#/components/schemas/ContractAgreementData"
@@ -7824,6 +8044,43 @@ components:
             delete:
               type: array
               description: IDs of services components to delete.
+              items:
+                type: integer
+        grant_numbers:
+          type: object
+          description: Grant number create / update / delete buckets (grant agreements only).
+          properties:
+            create:
+              type: array
+              description: |
+                Grant numbers to create. Each item may include a `ref` string,
+                reserved for a future grant budget-line-item feature to reference
+                the newly-created grant number; not consumed anywhere yet.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/GrantNumberRequest"
+                  - type: object
+                    properties:
+                      ref:
+                        type: string
+                        description: |
+                          Optional client-supplied identifier resolved to the
+                          new grant number's id within this bundle.
+            update:
+              type: array
+              description: Grant numbers to update. Each item must include `id`.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/GrantNumberRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+            delete:
+              type: array
+              description: IDs of grant numbers to delete.
               items:
                 type: integer
         budget_line_items:
@@ -9084,6 +9341,14 @@ components:
             funding_period_months:
               type: integer
               nullable: true
+            grant_numbers:
+              type: array
+              description: |
+                Optional array of grant numbers to create atomically with the agreement.
+                Grant-only — not present on other agreement types. All items created in
+                a single transaction - if any fails, all are rolled back.
+              items:
+                $ref: "#/components/schemas/NestedGrantNumberData"
 
     DirectAgreementData:
       allOf:
@@ -9254,6 +9519,11 @@ components:
             funding_period_months:
               type: integer
               nullable: true
+            grant_numbers:
+              type: array
+              description: Grant numbers associated with this agreement. Grant-only.
+              items:
+                $ref: "#/components/schemas/GrantNumber"
 
     DirectAgreementResponse:
       allOf:
@@ -9496,6 +9766,39 @@ components:
           type: string
           format: date
           description: End date of the period
+          nullable: true
+
+    NestedGrantNumberData:
+      type: object
+      description: |
+        Grant number data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds 'ref' field, reserved for
+        a future grant budget-line-item feature; not consumed anywhere yet.
+      required:
+        - number
+      properties:
+        ref:
+          type: string
+          description: |
+            Temporary reference identifier for this grant number.
+            If not provided, the array index (as a string) will be used.
+          nullable: true
+        number:
+          type: integer
+          description: Sequence number of the grant number
+        description:
+          type: string
+          description: Description of the grant number
+          nullable: true
+        period_start:
+          type: string
+          format: date
+          description: Period of performance start date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          description: Period of performance end date
           nullable: true
 
 
