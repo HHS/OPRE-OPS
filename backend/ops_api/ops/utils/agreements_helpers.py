@@ -113,8 +113,19 @@ def get_division_directors_for_agreement(
     - List of division director IDs
     - List of deputy division director IDs
     associated with the agreement.
+
+    Director resolution uses only PLANNED and IN_EXECUTION BLIs — those are the BLIs
+    being submitted for pre-award approval and the COR is assumed to have assigned the
+    correct CAN (and therefore the correct division) to them.
     """
-    agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
+    from models.budget_line_items import BudgetLineItemStatus
+
+    validatable_statuses = {BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION}
+    agreement_cans = [
+        bli.can
+        for bli in agreement.budget_line_items
+        if bli.can and bli.status in validatable_statuses
+    ]
     agreement_divisions = {can.portfolio.division for can in agreement_cans if can.portfolio and can.portfolio.division}
 
     division_directors = [
