@@ -474,7 +474,7 @@ describe("RequestPreAwardApproval", () => {
     });
 
     describe("BLI error styling", () => {
-        it("passes showBudgetLineErrors={true} to BudgetLinesReviewAccordion", () => {
+        it("passes showBudgetLineErrors={true} when no BLI is in review", () => {
             // Regression guard: if showBudgetLineErrors is accidentally dropped from the
             // BudgetLinesReviewAccordion call site, this test fails — exactly the regression
             // that occurred in the style: prettier format commit.
@@ -482,6 +482,41 @@ describe("RequestPreAwardApproval", () => {
 
             const accordion = screen.getByTestId("budget-lines-review-accordion");
             expect(accordion).toHaveAttribute("data-show-budget-line-errors", "true");
+        });
+
+        it("passes showBudgetLineErrors={false} when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "false");
+        });
+    });
+
+    describe("Edit button with pending change requests", () => {
+        it("disables Edit button when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+        });
+
+        it("hides the error banner when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true,
+                isAlertActive: true,
+                pageErrors: { "project-officer": ["Required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
         });
     });
 });

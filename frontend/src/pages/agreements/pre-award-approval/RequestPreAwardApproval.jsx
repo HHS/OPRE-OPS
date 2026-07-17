@@ -63,7 +63,8 @@ export const RequestPreAwardApproval = () => {
     } = useRequestPreAwardApproval(agreementId);
 
     const isAgreementEditable = agreement?._meta?.isEditable;
-    const hasValidationErrors = isAlertActive && Object.keys(pageErrors).length > 0 && isStep4Completed;
+    const hasValidationErrors =
+        isAlertActive && Object.keys(pageErrors).length > 0 && isStep4Completed && !hasBLIInReview;
     const isAgreementInvalid = Boolean(agreementValidationResults && !agreementValidationResults.isValid());
     const cn = agreementValidationResults
         ? classnames(agreementValidationResults, {
@@ -197,7 +198,7 @@ export const RequestPreAwardApproval = () => {
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
                 executingTotal={executingTotal}
-                showBudgetLineErrors={true}
+                showBudgetLineErrors={!hasBLIInReview}
             />
 
             {/* Upload Final Consensus Memo */}
@@ -323,12 +324,18 @@ export const RequestPreAwardApproval = () => {
                     type="button"
                     className="usa-button usa-button--outline margin-right-2"
                     data-cy="edit-agreement-btn"
-                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
+                    title={
+                        hasBLIInReview
+                            ? "Cannot edit while budget lines have pending change requests"
+                            : !isAgreementEditable
+                              ? "Agreement is not editable"
+                              : ""
+                    }
                     onClick={() => {
                         const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
                         navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
                     }}
-                    disabled={!isAgreementEditable}
+                    disabled={!isAgreementEditable || hasBLIInReview}
                 >
                     Edit
                 </button>
