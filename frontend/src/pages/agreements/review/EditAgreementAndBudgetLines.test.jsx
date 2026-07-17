@@ -98,12 +98,27 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
     return { default: MockAgreementEditForm };
 });
 
+// simulateFinancialChange is set by tests to trigger onFinancialChangeStateChange.
+let simulateFinancialChange = false;
+
 vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
     const { useEffect } = await vi.importActual("react");
-    function MockCreateBLIsAndSCs({ hideFooterButtons, hideWizardChrome, isReviewMode, bundleSliceRef }) {
+    function MockCreateBLIsAndSCs({
+        hideFooterButtons,
+        hideWizardChrome,
+        isReviewMode,
+        bundleSliceRef,
+        onFinancialChangeStateChange
+    }) {
         useEffect(() => {
             if (bundleSliceRef) {
                 bundleSliceRef.current = { getSlice: () => blisSlice };
+            }
+        });
+        // Report financial change state whenever simulateFinancialChange changes.
+        useEffect(() => {
+            if (onFinancialChangeStateChange) {
+                onFinancialChangeStateChange(simulateFinancialChange);
             }
         });
         return (
@@ -148,6 +163,7 @@ describe("EditAgreementAndBudgetLines", () => {
         navigateMock.mockReset();
         updateBundleMock.mockReset();
         nextBundleResult = { resolveWith: { ok: true } };
+        simulateFinancialChange = false;
         agreementSlice = { name: "Edited Agreement" };
         blisSlice = {
             services_components: { create: [], update: [], delete: [] },
@@ -261,5 +277,55 @@ describe("EditAgreementAndBudgetLines", () => {
         mockAgreementResult = { data: undefined, error: null, isLoading: true };
         renderPage();
         expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    describe("financial-approval modal (DD-approval for PLANNED/IN_EXECUTION BLI edits)", () => {
+        it("saves directly without modal when there are no financial-snapshot changes", async () => {
+            // simulateFinancialChange is false by default — no PLANNED/IN_EXECUTION financial edits
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            expect(
+                screen.queryByText("Budget changes require approval from your Division Director.")
+            ).not.toBeInTheDocument();
+        });
+
+        it("shows DD-approval modal instead of saving when CreateBLIsAndSCs reports financial changes", async () => {
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            // Modal should appear; bundle mutation should NOT have fired yet
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+
+        it("saves after the user confirms in the DD-approval modal", async () => {
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            const sendBtn = await screen.findByRole("button", { name: "Send to Approval" });
+            fireEvent.click(sendBtn);
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        });
+
+        it("dismisses the modal without saving when the user clicks Continue Editing", async () => {
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await screen.findByText(
+                "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+            );
+            fireEvent.click(screen.getByRole("button", { name: "Continue Editing" }));
+            expect(updateBundleMock).not.toHaveBeenCalled();
+            expect(
+                screen.queryByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).not.toBeInTheDocument();
+        });
     });
 });

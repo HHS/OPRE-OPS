@@ -85,6 +85,12 @@ const EditAgreementAndBudgetLines = () => {
     });
     const [showProcurementShopModal, setShowProcurementShopModal] = useState(false);
 
+    // Financial-snapshot change-request state pushed up by CreateBLIsAndSCs.
+    // When true, editing PLANNED / IN_EXECUTION BLI financials (amount, CAN, date) will
+    // route through a change request — confirm before sending to the Division Director.
+    const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
+    const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
+
     const {
         data: agreement,
         error: errorAgreement,
@@ -187,6 +193,12 @@ const EditAgreementAndBudgetLines = () => {
             setShowProcurementShopModal(true);
             return;
         }
+        // Financial-snapshot changes (amount, CAN, obligate-by date) on PLANNED / IN_EXECUTION
+        // BLIs route through a change request and require Division Director approval.
+        if (requiresFinancialApproval) {
+            setShowFinancialApprovalModal(true);
+            return;
+        }
         fireBundleSave();
     };
 
@@ -251,6 +263,15 @@ const EditAgreementAndBudgetLines = () => {
                         handleConfirm={fireBundleSave}
                     />
                 )}
+                {showFinancialApprovalModal && (
+                    <ConfirmationModal
+                        heading="Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                        actionButtonText="Send to Approval"
+                        secondaryButtonText="Continue Editing"
+                        setShowModal={setShowFinancialApprovalModal}
+                        handleConfirm={fireBundleSave}
+                    />
+                )}
                 <AgreementEditForm
                     isReviewMode={true}
                     isAgreementAwarded={isAgreementAwarded}
@@ -275,6 +296,7 @@ const EditAgreementAndBudgetLines = () => {
                     hideWizardChrome={true}
                     onValidityChange={setIsBudgetLinesValid}
                     bundleSliceRef={blisSliceRef}
+                    onFinancialChangeStateChange={setRequiresFinancialApproval}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button
