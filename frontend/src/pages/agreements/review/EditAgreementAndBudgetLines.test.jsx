@@ -80,14 +80,26 @@ let blisSlice = {
     budget_line_items: { create: [], update: [], delete: [] }
 };
 
+// simulateProcurementShopChange is set by tests to trigger onProcurementShopChangeStateChange.
+let simulateProcurementShopChange = false;
+
 vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", async () => {
     const { useEffect } = await vi.importActual("react");
-    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, bundleSliceRef }) {
+    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, bundleSliceRef, onProcurementShopChangeStateChange }) {
         useEffect(() => {
             if (bundleSliceRef) {
                 bundleSliceRef.current = { getSlice: () => agreementSlice };
             }
         });
+        useEffect(() => {
+            if (onProcurementShopChangeStateChange) {
+                onProcurementShopChangeStateChange(
+                    simulateProcurementShopChange
+                        ? { shouldRequestChange: true, oldProcurementShop: { id: 1 }, newProcurementShop: { id: 2 } }
+                        : { shouldRequestChange: false, oldProcurementShop: null, newProcurementShop: null }
+                );
+            }
+        }, [onProcurementShopChangeStateChange]);
         return (
             <div data-testid="agreement-edit-form">
                 <span data-testid="agreement-edit-form-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -115,12 +127,12 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
                 bundleSliceRef.current = { getSlice: () => blisSlice };
             }
         });
-        // Report financial change state whenever simulateFinancialChange changes.
+        // Report financial change state; dependency array mirrors the real component.
         useEffect(() => {
             if (onFinancialChangeStateChange) {
                 onFinancialChangeStateChange(simulateFinancialChange);
             }
-        });
+        }, [onFinancialChangeStateChange]);
         return (
             <div data-testid="create-blis-and-scs">
                 <span data-testid="blis-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -164,6 +176,7 @@ describe("EditAgreementAndBudgetLines", () => {
         updateBundleMock.mockReset();
         nextBundleResult = { resolveWith: { ok: true } };
         simulateFinancialChange = false;
+        simulateProcurementShopChange = false;
         agreementSlice = { name: "Edited Agreement" };
         blisSlice = {
             services_components: { create: [], update: [], delete: [] },
@@ -326,6 +339,31 @@ describe("EditAgreementAndBudgetLines", () => {
                     "Budget changes require approval from your Division Director. Do you want to send it to approval?"
                 )
             ).not.toBeInTheDocument();
+        });
+
+        it("shows the modal when both procurement-shop and financial changes are pending", async () => {
+            simulateProcurementShopChange = true;
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+
+        it("shows the modal when only a procurement-shop change is pending", async () => {
+            simulateProcurementShopChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
         });
     });
 });

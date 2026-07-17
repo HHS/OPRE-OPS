@@ -1005,6 +1005,7 @@ const useCreateBLIsAndSCs = (
     const hasFinancialSnapshotChanges = tempBudgetLines.some(
         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
     );
+    const requiresFinancialApproval = !isSuperUser && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);
 
@@ -1122,7 +1123,8 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        requiresFinancialApproval
     };
 };
 

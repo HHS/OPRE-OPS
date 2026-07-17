@@ -518,5 +518,17 @@ describe("RequestPreAwardApproval", () => {
 
             expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
         });
+
+        it("shows Services Component in error banner when a BLI is missing an SC", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { services_component: ["Services Component is required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+            expect(screen.getByText("Services Component")).toBeInTheDocument();
+        });
     });
 });

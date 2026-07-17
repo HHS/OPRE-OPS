@@ -83,11 +83,8 @@ const EditAgreementAndBudgetLines = () => {
         oldProcurementShop: null,
         newProcurementShop: null
     });
-    const [showProcurementShopModal, setShowProcurementShopModal] = useState(false);
-
-    // Financial-snapshot change-request state pushed up by CreateBLIsAndSCs.
-    // When true, editing PLANNED / IN_EXECUTION BLI financials (amount, CAN, date) will
-    // route through a change request — confirm before sending to the Division Director.
+    // Financial-snapshot and procurement-shop changes both route through change requests
+    // requiring Division Director approval — one modal covers both cases.
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
@@ -187,15 +184,9 @@ const EditAgreementAndBudgetLines = () => {
 
     const handlePageSave = () => {
         if (isSaving) return;
-        // Procurement-shop changes on agreements with planned BLIs route through
-        // a change request — confirm before sending it to the Division Director.
-        if (procurementShopChangeState.shouldRequestChange) {
-            setShowProcurementShopModal(true);
-            return;
-        }
-        // Financial-snapshot changes (amount, CAN, obligate-by date) on PLANNED / IN_EXECUTION
-        // BLIs route through a change request and require Division Director approval.
-        if (requiresFinancialApproval) {
+        // Both procurement-shop and BLI financial changes route through change requests that
+        // need Division Director approval — show one confirmation covering either case.
+        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
             setShowFinancialApprovalModal(true);
             return;
         }
@@ -254,15 +245,6 @@ const EditAgreementAndBudgetLines = () => {
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
-                {showProcurementShopModal && (
-                    <ConfirmationModal
-                        heading="Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?"
-                        actionButtonText="Send to Approval"
-                        secondaryButtonText="Continue Editing"
-                        setShowModal={setShowProcurementShopModal}
-                        handleConfirm={fireBundleSave}
-                    />
-                )}
                 {showFinancialApprovalModal && (
                     <ConfirmationModal
                         heading="Budget changes require approval from your Division Director. Do you want to send it to approval?"

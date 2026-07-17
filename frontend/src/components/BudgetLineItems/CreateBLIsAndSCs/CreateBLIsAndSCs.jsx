@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -116,7 +115,8 @@ export const CreateBLIsAndSCs = ({
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
-        setServicesComponentNumber
+        setServicesComponentNumber,
+        requiresFinancialApproval
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -166,13 +166,6 @@ export const CreateBLIsAndSCs = ({
         }
     }, [onValidityChange, isBLIsValid]);
 
-    // Notify the parent when the current BLI edits contain financial-snapshot changes that
-    // require Division Director approval. Mirrors the branch in handleSave (hooks.js:951):
-    // only PLANNED / IN_EXECUTION BLI financial edits (amount, CAN, obligate-by date) trigger
-    // this; super users are excluded because they save directly without a change request.
-    const isSuperUser = useSelector((state) => state.auth.activeUser?.is_superuser ?? false);
-    const requiresFinancialApproval =
-        !isSuperUser && tempBudgetLines.some((bli) => bli.financialSnapshotChanged === true);
     useEffect(() => {
         if (onFinancialChangeStateChange) {
             onFinancialChangeStateChange(requiresFinancialApproval);
