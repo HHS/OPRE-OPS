@@ -326,6 +326,7 @@ export const cleanAgreementForApi = (data) => {
         "requesting_agency",
         "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
         "services_components",
+        "grant_numbers",
         "created_by",
         "created_on",
         "updated_by",
