@@ -79,7 +79,7 @@
         "prettier": "3.9.5",
         "redux-mock-store": "1.5.5",
         "sass-loader": "17.0.0",
-        "semantic-release": "25.0.7",
+        "semantic-release": "25.0.8",
         "esbuild": "0.28.1",
         "vite": "8.1.5",
         "vite-plugin-eslint": "1.8.1",
