@@ -121,11 +121,7 @@ def get_division_directors_for_agreement(
     from models.budget_line_items import BudgetLineItemStatus
 
     validatable_statuses = {BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION}
-    agreement_cans = [
-        bli.can
-        for bli in agreement.budget_line_items
-        if bli.can and bli.status in validatable_statuses
-    ]
+    agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can and bli.status in validatable_statuses]
     agreement_divisions = {can.portfolio.division for can in agreement_cans if can.portfolio and can.portfolio.division}
 
     division_directors = [

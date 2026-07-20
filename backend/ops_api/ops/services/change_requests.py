@@ -5,6 +5,7 @@ from typing import Any, Union
 
 from flask import current_app
 from flask_jwt_extended import current_user
+from loguru import logger
 from marshmallow.experimental.context import Context
 
 from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
@@ -67,6 +68,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if commit:
             self.db_session.commit()
             self.notify_division_reviewers(change_request)
+        else:
+            self.db_session.flush()  # assigns the DB-sequence id without committing
 
         return change_request
 
@@ -214,7 +217,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
             # Use the managing_division_id directly from the change request
             if change_request.managing_division_id is None:
-                raise ValueError("BudgetLineItemChangeRequest must have a managing_division_id set.")
+                logger.warning(
+                    f"BudgetLineItemChangeRequest {change_request.id} has no managing_division_id — "
+                    "no director notification sent."
+                )
+                return
 
             division: Division = self.db_session.get(Division, change_request.managing_division_id)
             if not division:
@@ -300,6 +307,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 }
 
                 managing_division = get_division_for_budget_line_item(bli_id)
+
+                # If the BLI has no CAN yet (null can_id in DB) but we're changing it,
+                # resolve the division from the incoming can_id so the director is notified.
+                if managing_division is None and change_data.get("can_id"):
+                    from models import CAN
+
+                    new_can = self.db_session.get(CAN, change_data["can_id"])
+                    if new_can and new_can.portfolio and new_can.portfolio.division:
+                        managing_division = new_can.portfolio.division
 
                 change_request_data = {
                     "budget_line_item_id": bli_id,

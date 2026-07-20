@@ -70,9 +70,11 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
     });
 
     test("Budget Line Obligate By Date must be in the future", () => {
-        const today = new Date().valueOf();
-        const dateNeeded = new Date(budgetLine.date_needed ?? null);
-        enforce(dateNeeded.getTime()).greaterThan(today);
+        const today = new Date();
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const d = new Date(budgetLine.date_needed ?? null);
+        const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        enforce(dateOnly.getTime()).greaterThanOrEquals(todayOnly.getTime());
     });
 });
 

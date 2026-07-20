@@ -85,7 +85,12 @@ let simulateProcurementShopChange = false;
 
 vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", async () => {
     const { useEffect } = await vi.importActual("react");
-    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, bundleSliceRef, onProcurementShopChangeStateChange }) {
+    function MockAgreementEditForm({
+        hideFooterButtons,
+        isReviewMode,
+        bundleSliceRef,
+        onProcurementShopChangeStateChange
+    }) {
         useEffect(() => {
             if (bundleSliceRef) {
                 bundleSliceRef.current = { getSlice: () => agreementSlice };

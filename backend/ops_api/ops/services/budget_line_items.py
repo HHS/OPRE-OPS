@@ -855,7 +855,7 @@ class BudgetLineItemService:
                 raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
 
             # Validate that date_needed is not in the past for non-superusers
-            if not is_super_user(current_user, current_app) and final_date_needed <= today:
+            if not is_super_user(current_user, current_app) and final_date_needed < today:
                 raise ValidationError(
                     {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
                 )

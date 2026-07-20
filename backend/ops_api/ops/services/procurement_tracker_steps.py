@@ -557,7 +557,6 @@ class ProcurementTrackerStepService:
         approval_request_transitioned = new_approval_requested and (
             old_approval_requested is None or old_approval_requested is False
         )
-
         if approval_request_transitioned:
             recipient_ids = self._get_approval_reviewers(agreement)
 

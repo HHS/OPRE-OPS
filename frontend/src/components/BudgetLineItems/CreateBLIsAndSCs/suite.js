@@ -13,9 +13,13 @@ const suite = create((data) => {
             enforce(item.amount).greaterThan(0);
         });
         test(`Budget line item (${item.id})`, "Need by date must be in the future", () => {
-            const today = new Date().valueOf();
-            const dateNeeded = new Date(item.date_needed).valueOf();
-            enforce(dateNeeded).greaterThan(today);
+            // Compare date-only (no time) to avoid UTC-vs-local false failures where
+            // "2026-07-18" parsed as UTC midnight falls before the current local time.
+            const today = new Date();
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const d = new Date(item.date_needed);
+            const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            enforce(dateOnly.getTime()).greaterThanOrEquals(todayOnly.getTime());
         });
     });
 });
