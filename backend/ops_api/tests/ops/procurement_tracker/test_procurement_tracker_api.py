@@ -18,20 +18,20 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert "steps" in data
     assert len(data["steps"]) == 6
 
-    # Verify step 1 is ACQUISITION_PLANNING COMPLETED (tracker advanced to step 5 for pre-award testing)
+    # Verify step 1 is ACQUISITION_PLANNING PENDING (steps 1-3 are pending; step 4 is completed)
     step_1 = data["steps"][0]
     assert step_1["step_number"] == 1
     assert step_1["step_type"] == "ACQUISITION_PLANNING"
-    assert step_1["status"] == "COMPLETED"
+    assert step_1["status"] == "PENDING"
     assert "task_completed_by" in step_1
     assert "date_completed" in step_1
     assert "notes" in step_1
 
-    # Verify step 2 is PRE_SOLICITATION COMPLETED
+    # Verify step 2 is PRE_SOLICITATION PENDING
     step_2 = data["steps"][1]
     assert step_2["step_number"] == 2
     assert step_2["step_type"] == "PRE_SOLICITATION"
-    assert step_2["status"] == "COMPLETED"
+    assert step_2["status"] == "PENDING"
     assert "task_completed_by" in step_2
     assert "date_completed" in step_2
     assert "notes" in step_2

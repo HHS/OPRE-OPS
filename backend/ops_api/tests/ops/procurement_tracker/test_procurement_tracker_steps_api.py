@@ -50,7 +50,7 @@ def test_get_procurement_tracker_step_by_id(auth_client, app_ctx, loaded_db):
     data = response.json
     assert data["procurement_tracker_id"] == 1
     assert data["step_number"] == 1
-    assert data["status"] == "COMPLETED"
+    assert data["status"] == "PENDING"
     assert data["step_type"] == "ACQUISITION_PLANNING"
     assert data["step_class"] == "default_step"
     assert data["task_completed_by"] is None
