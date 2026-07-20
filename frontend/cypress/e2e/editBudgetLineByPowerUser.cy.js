@@ -196,7 +196,11 @@ describe("Power User tests", () => {
             });
     });
 
-    it("can edit a GRANT agreement budget lines", () => {
+    // REVIEW: Remove skip when BLIs are reimplemented for GRANT agreements (OPS-5928)
+    // Skipped: GRANT agreements only show a static "Add Budget Lines" empty-state placeholder
+    // on this page as of OPS-5927 — the functional grant budget-line form is out of scope until
+    // OPS-5928 (https://github.com/HHS/OPRE-OPS/issues/5928). Re-enable once that ships.
+    it.skip("can edit a GRANT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
