@@ -4,6 +4,7 @@ import classnames from "vest/classnames";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
@@ -11,6 +12,7 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
@@ -61,6 +63,9 @@ export const RequestPreAwardApproval = () => {
         isAlertActive,
         setIsAlertActive
     } = useRequestPreAwardApproval(agreementId);
+
+    const pendingChangeRequests = useChangeRequestsForAgreement(agreementId);
+    const [isChangesAlertVisible, setIsChangesAlertVisible] = React.useState(true);
 
     const isAgreementEditable = agreement?._meta?.isEditable;
     const hasValidationErrors =
@@ -160,12 +165,11 @@ export const RequestPreAwardApproval = () => {
             )}
 
             {hasBLIInReview && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Budget Line In Review"
-                    message="One or more budget lines have pending change requests that are currently in review. You cannot request pre-award approval until all change requests are resolved."
-                    isClosable={false}
-                    headingLevel={2}
+                <AgreementChangesAlert
+                    changeRequests={pendingChangeRequests}
+                    isAlertVisible={isChangesAlertVisible}
+                    setIsAlertVisible={setIsChangesAlertVisible}
+                    message="There are changes pending approval from your Division Director. After they are approved, you can continue your request for Pre-Award Approval."
                 />
             )}
 
@@ -341,7 +345,7 @@ export const RequestPreAwardApproval = () => {
                 </button>
                 {isStep4Completed && (isAgreementInvalid || hasBLIError) ? (
                     <DisabledButtonWithTooltip
-                        label="In order to send this agreement to approval, click edit to update the required information."
+                        label="Errors must be resolved before you can send to approval"
                         tooltipPosition="top"
                         dataCy="send-to-approval-btn"
                     >

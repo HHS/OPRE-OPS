@@ -21,6 +21,10 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
     default: () => requestPreAwardApprovalHookMock()
 }));
 
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForAgreement: () => []
+}));
+
 vi.mock("../../../App", () => ({
     __esModule: true,
     default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
@@ -263,9 +267,9 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Budget Line In Review")).toBeInTheDocument();
+        expect(screen.getByText("Changes In Review")).toBeInTheDocument();
         expect(
-            screen.getByText(/One or more budget lines have pending change requests that are currently in review/)
+            screen.getByText(/After they are approved, you can continue your request for Pre-Award Approval/)
         ).toBeInTheDocument();
     });
 
