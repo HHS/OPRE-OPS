@@ -150,11 +150,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
 export const isNotDevelopedYet = (agreementType) => {
-    if (
-        agreementType === AgreementType.GRANT ||
-        agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
-    ) {
+    if (agreementType === AgreementType.DIRECT_OBLIGATION || agreementType === AgreementType.IAA) {
         return true;
     }
 
@@ -287,7 +283,13 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.NickName,
         AgreementFields.SpecialTopic,
         AgreementFields.Methodologies
-    ])
+    ]),
+    // REVIEW: NEW — GRANT entry. Gates Description and Nickname on the details view.
+    // Both AgreementFields keys already existed; no enum changes needed.
+    // isFieldVisible(GRANT, ProcurementShop) → false, so the MetaAccordion gate works automatically.
+    // isFieldVisible(GRANT, ContractNumber) → false, which the existing test at line 235 already asserts.
+    // Title and the "Grant" type label render via always-on blocks in AgreementDetailsView and are not in this set.
+    [AgreementType.GRANT]: new Set([AgreementFields.DescriptionAndNotes, AgreementFields.NickName])
     // Add new AgreementTypes here
 };
 
