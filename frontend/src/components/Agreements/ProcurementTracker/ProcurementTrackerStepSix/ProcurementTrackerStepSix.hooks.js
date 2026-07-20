@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAwardStep} ProcurementTrackerAwardStep
@@ -25,7 +26,6 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
-    const [stepSixNotes, setStepSixNotes] = React.useState("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -59,6 +59,13 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: stepSixNotes,
+        setNotes: setStepSixNotes,
+        resetNotes: resetStepSixNotes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step six, updating the procurement tracker step with the new date.
@@ -138,7 +145,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
-        setStepSixNotes("");
+        resetStepSixNotes(stepSixData?.notes ?? "");
         setShowModal(false);
     };
 
@@ -158,6 +165,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     };
 
     return {
+        handleSaveNotes,
         isAwardCheckboxChecked,
         setIsAwardCheckboxChecked,
         selectedUser,
@@ -168,6 +176,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        resetStepSixNotes,
         isSubmitting,
         showModal,
         setShowModal,

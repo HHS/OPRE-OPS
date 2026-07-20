@@ -706,34 +706,17 @@ describe("AgreementProcurementTracker", () => {
             expect(dateInputAfter).not.toBeDisabled();
         });
 
-        it("enables TextArea when checkbox is checked", () => {
+        it("TextArea is enabled regardless of checkbox state", () => {
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
                 data: mockTrackerWithSteps,
                 isLoading: false,
                 isError: false
             });
 
-            const { rerender } = renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
-            const checkbox = screen.getByRole("checkbox");
             const textarea = screen.getByTestId("textarea-input");
-
-            expect(textarea).toBeDisabled();
-
-            fireEvent.click(checkbox);
-
-            // Force a re-render to pick up state changes
-            rerender(
-                <Provider store={setupStore()}>
-                    <MemoryRouter>
-                        <AgreementProcurementTracker agreement={mockAgreement} />
-                    </MemoryRouter>
-                </Provider>
-            );
-
-            // After clicking checkbox, textarea should be enabled
-            const textareaAfter = screen.getByTestId("textarea-input");
-            expect(textareaAfter).not.toBeDisabled();
+            expect(textarea).not.toBeDisabled();
         });
 
         it("renders Cancel and Complete Step 1 buttons", () => {
