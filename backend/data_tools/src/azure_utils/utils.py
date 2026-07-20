@@ -142,3 +142,37 @@ def get_blob(container_client: ContainerClient, blob_name: str) -> bytes:
     bytes_data = container_client.download_blob(blob_name).readall()
     logger.info(f"Downloaded {len(bytes_data)} bytes.")
     return bytes_data
+
+
+def upload_blob(
+    account_url: str,
+    container_name: str,
+    blob_name: str,
+    data: bytes,
+    client_id: str = MI_CLIENT_ID,
+) -> None:
+    """
+    Upload a blob to Azure Blob Storage using Managed Identity (or RBAC when no client ID is set).
+
+    Mirrors ``get_csv_using_mi_or_rbac``: the client is built inline from ``DefaultAzureCredential``
+    inside a context manager so it is closed after the upload. Requires the identity to have write
+    access (e.g. ``Storage Blob Data Contributor``) on the target container.
+
+    :param account_url: The storage account URL, e.g. "https://<account>.blob.core.windows.net".
+    :param container_name: The name of the container to upload to.
+    :param blob_name: The full blob name (may include a prefix, e.g. "reports/usage-metrics.csv").
+    :param data: The blob contents as bytes.
+    :param client_id: The client ID to use for Managed Identity.
+    """
+    logger.info(f"Uploading blob {blob_name!r} to container {container_name!r} at {account_url}.")
+
+    if client_id is None:
+        logger.warning("No client ID provided. Using RBAC.")
+        credential = DefaultAzureCredential()
+    else:
+        credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+
+    with BlobServiceClient(account_url, credential=credential) as blob_service_client:
+        container_client = blob_service_client.get_container_client(container=container_name)
+        container_client.upload_blob(name=blob_name, data=data, overwrite=True)
+        logger.info(f"Uploaded {len(data)} bytes to {blob_name!r}.")

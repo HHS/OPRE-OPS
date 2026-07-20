@@ -63,3 +63,24 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
 
         return cutoff_days
+
+    @property
+    def usage_metrics_storage_account_url(self) -> str | None:
+        url = os.getenv("USAGE_METRICS_STORAGE_ACCOUNT_URL")
+
+        if not url:
+            raise ValueError("Missing environment variable for USAGE_METRICS_STORAGE_ACCOUNT_URL.")
+
+        return url
+
+    @property
+    def usage_metrics_container_name(self) -> str:
+        return os.getenv("USAGE_METRICS_CONTAINER_NAME", "data")
+
+    @property
+    def usage_metrics_report_prefix(self) -> str:
+        return os.getenv("USAGE_METRICS_REPORT_PREFIX", "reports")
+
+    @property
+    def usage_metrics_lookback_days(self) -> str:
+        return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "7")

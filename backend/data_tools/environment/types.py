@@ -57,3 +57,40 @@ class DataToolsConfig(Protocol):
         """
         Returns the number of days after which the user sessions should be deleted.
         """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_storage_account_url(self) -> str | None:
+        """
+        Returns the Azure Blob Storage account URL that the usage metrics report is uploaded to,
+        e.g. "https://<account>.blob.core.windows.net". Returns None when the environment writes
+        the report to the local file system instead of Blob storage.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_container_name(self) -> str:
+        """
+        Returns the name of the Blob container the usage metrics report is uploaded to.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_report_prefix(self) -> str:
+        """
+        Returns the blob-name prefix (folder) the usage metrics report is written under,
+        e.g. "reports".
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_lookback_days(self) -> str:
+        """
+        Returns the number of days of activity the usage metrics report covers (the reporting
+        window). Only ops_event rows created within this many days of the run are aggregated,
+        so the report is scoped to a period rather than re-reading the entire audit log.
+        """
