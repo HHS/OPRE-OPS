@@ -206,6 +206,63 @@ Typical variables (used by configs and scripts):
 - **LOG_LEVEL**: Logging level (default `INFO`).
 - **ENV**: Passed to scripts (e.g. `local` vs non-local) for connection and schema behavior.
 
+## Scheduled Usage Metrics Report (OPS-4148)
+
+A weekly Container App Job aggregates `ops_event` activity into a per-day x division x role usage
+CSV and uploads it to Blob storage for the UX team. Code: `src/usage_metrics/utils.py`; wrapper:
+`scripts/usage_metrics.sh`; create script: `scripts/azure/create_usage_metrics_job.sh`.
+
+Unlike the local-test `create_container_app_job.sh`, the real staging jobs (verified live) are
+configured as: **public** `ghcr.io` image (no registry creds), DB password via container-app
+**secret**, and Blob access through the shared user-assigned MI **`storageAccountUser`** (which
+already holds `Storage Blob Data Contributor` on the storage account). The create script matches
+this. Note staging jobs report `identity.type: None` on themselves — they rely on that shared MI.
+
+### Verified staging values
+
+| Thing | Value |
+|---|---|
+| Resource group | `opre-ops-stg-app-rg` |
+| Container App Environment | `opre-ops-stg-app-cae` |
+| User-assigned MI (Blob write) | `storageAccountUser` |
+| Storage account URL | `https://opreopsstgappsa.blob.core.windows.net` |
+| Blob container | `data` (default; report lands under `reports/`) |
+| DB host / db / user | `opre-ops-stg-db-pg-server.postgres.database.azure.com` / `postgres` / `ops` |
+| DB password | `pgpassword` secret on the existing staging jobs (not in this repo) |
+| Report blobs | `reports/usage-metrics-latest.csv`, `reports/usage-metrics-<date>.csv` |
+
+### Enable on staging (one-time creation)
+
+```bash
+export PGUSER=ops
+export PGHOST=opre-ops-stg-db-pg-server.postgres.database.azure.com
+export PGPORT=5432
+export PGDATABASE=postgres
+export PGPASSWORD='<ops DB password — the pgpassword secret on the other jobs>'
+export USAGE_METRICS_STORAGE_ACCOUNT_URL="https://opreopsstgappsa.blob.core.windows.net"
+
+./scripts/azure/create_usage_metrics_job.sh opre-ops-stg-app-rg storageAccountUser opre-ops-stg-app-cae
+```
+
+Container name and report prefix default to `data` / `reports`; override with
+`USAGE_METRICS_CONTAINER_NAME` / `USAGE_METRICS_REPORT_PREFIX` if needed.
+
+### Test-fire and verify (don't wait for the Monday cron)
+
+```bash
+az containerapp job start -n usage-metrics-job -g opre-ops-stg-app-rg
+az containerapp job execution list -n usage-metrics-job -g opre-ops-stg-app-rg -o table
+```
+
+Then confirm a CSV appears at `data/reports/usage-metrics-latest.csv`. The UX team needs read
+access to that container (SAS link or `Storage Blob Data Reader`) to retrieve it.
+
+### Ongoing image updates
+
+`.github/workflows/stg_be_build_and_deploy.yml` updates `usage-metrics-job` to the new image on
+each merge to `main` (guarded with `|| echo ... skipping` so it's a no-op until the job exists).
+The cron is `50 4 * * 1` (04:50 UTC Monday = Sunday night US Central) — Azure cron is UTC-only.
+
 ## Integration with ops_api and Docker
 
 - **ops_api** tests and app use the same `models` and same DB schema; `data_tools` fills the DB (initial_data + import_test_data or load_data).

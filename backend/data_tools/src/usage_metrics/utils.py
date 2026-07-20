@@ -61,9 +61,6 @@ logger.remove()
 logger.add(
     sys.stdout, format=format, level="INFO", filter=lambda record: ("SafeUserSchema not found" not in record["message"])
 )
-logger.add(
-    sys.stderr, format=format, level="INFO", filter=lambda record: ("SafeUserSchema not found" not in record["message"])
-)
 
 UNKNOWN = "UNKNOWN"
 
@@ -95,7 +92,10 @@ ACTIVE_USER_EVENT_TYPES = frozenset(
 
 # Event types that map to a single count column. deactivated_users is handled separately
 # because it depends on the UPDATE_USER payload, not just the event type.
+# LOGIN_ATTEMPT maps to "logins" here because only SUCCESS rows reach aggregation, so every
+# LOGIN_ATTEMPT that gets counted is a completed login.
 EVENT_TYPE_TO_METRIC = {
+    OpsEventType.LOGIN_ATTEMPT: "logins",
     OpsEventType.LOGOUT: "logouts",
     OpsEventType.IDLE_LOGOUT: "idle_logouts",
     OpsEventType.CREATE_USER: "new_users",
@@ -213,13 +213,9 @@ def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, st
         for role in attribution["roles"]:
             key = (date_iso, attribution["division"], role)
 
-            if event.event_type == OpsEventType.LOGIN_ATTEMPT:
-                # Only SUCCESS rows reach here, so every LOGIN_ATTEMPT is a completed login.
-                counts[key]["logins"] += 1
-            else:
-                metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
-                if metric is not None:
-                    counts[key][metric] += 1
+            metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
+            if metric is not None:
+                counts[key][metric] += 1
 
             if is_deactivating_update(event):
                 counts[key]["deactivated_users"] += 1
