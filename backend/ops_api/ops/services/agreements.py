@@ -182,14 +182,13 @@ class AgreementsService(OpsService[Agreement]):
             self.db_session.add(agreement)
             self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
 
-            # STEP 2: Create services components FIRST (so BLIs can reference them)
+            # STEP 2: Create services components and grant numbers FIRST (so BLIs can
+            # reference them via services_component_ref / grant_number_ref).
             sc_ref_map, sc_count = self._create_services_components(agreement.id, services_components_data)
+            gn_ref_map, gn_count = self._create_grant_numbers(agreement.id, grant_numbers_data)
 
-            # STEP 3: Create budget line items, resolving services_component_ref
-            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map)
-
-            # STEP 3b: Create grant numbers (grant-only; empty list for non-grant agreement types)
-            _, gn_count = self._create_grant_numbers(agreement.id, grant_numbers_data)
+            # STEP 3: Create budget line items, resolving services_component_ref / grant_number_ref
+            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map, gn_ref_map)
 
             # STEP 4: Commit the entire transaction
             self.db_session.commit()
@@ -315,6 +314,7 @@ class AgreementsService(OpsService[Agreement]):
         agreement: Agreement,
         budget_line_items_data: list[dict[str, Any]],
         sc_ref_map: dict[str, int],
+        gn_ref_map: dict[str, int] | None = None,
     ) -> int:
         """
         Create budget line items for an agreement.
@@ -323,14 +323,16 @@ class AgreementsService(OpsService[Agreement]):
             agreement: The agreement to associate with budget line items
             budget_line_items_data: List of budget line item data dictionaries
             sc_ref_map: Map of services component references to IDs for resolution
+            gn_ref_map: Map of grant number references to IDs for resolution (grant BLIs)
 
         Returns:
             Number of budget line items created
 
         Raises:
-            ValidationError: If services_component_ref is invalid
+            ValidationError: If services_component_ref or grant_number_ref is invalid
             ResourceNotFoundError: If referenced CAN doesn't exist
         """
+        gn_ref_map = gn_ref_map or {}
         bli_count = 0
 
         for bli_data in budget_line_items_data:
@@ -351,6 +353,25 @@ class AgreementsService(OpsService[Agreement]):
                 logger.debug(
                     f"Resolved services_component_ref {services_component_ref!r} "
                     f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                )
+
+            # Resolve grant_number_ref to grant_number_id (grant BLIs; if provided and not None)
+            grant_number_ref = bli_data.pop("grant_number_ref", None)
+            if grant_number_ref is not None:
+                if grant_number_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {grant_number_ref!r}. "
+                                f"No grant number with that reference exists in the request. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                bli_data["grant_number_id"] = gn_ref_map[grant_number_ref]
+                logger.debug(
+                    f"Resolved grant_number_ref {grant_number_ref!r} "
+                    f"to grant_number_id={gn_ref_map[grant_number_ref]!r}"
                 )
 
             # Set agreement_id on the budget line item

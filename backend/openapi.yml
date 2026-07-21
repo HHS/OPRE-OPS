@@ -7343,6 +7343,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7431,6 +7435,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7663,6 +7671,10 @@ components:
           example: 1
         services_component_id:
           type: integer
+          example: 1
+        grant_number_id:
+          type: integer
+          nullable: true
           example: 1
         requestor_notes:
           description: optional notes added to a Change Request when a POST is made that creates a CR
@@ -9724,6 +9736,19 @@ components:
             Matches the 'ref' field in the services_components array.
             If the services component has no 'ref', use its array index as a string ("0", "1", etc.).
             Cannot be used with services_component_id.
+          nullable: true
+        grant_number_id:
+          type: integer
+          description: |
+            Reference to an existing grant number by database ID (grant budget line items).
+            Cannot be used with grant_number_ref, or with any services component link.
+          nullable: true
+        grant_number_ref:
+          type: string
+          description: |
+            Reference to a grant number being created in the same request.
+            Matches the 'ref' field in the grant_numbers array.
+            Cannot be used with grant_number_id, or with any services component link.
           nullable: true
         comments:
           type: string

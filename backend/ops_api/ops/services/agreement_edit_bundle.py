@@ -113,22 +113,22 @@ class AgreementEditBundleService:
             # 3. SC updates
             result.services_components_updated = self._update_services_components(sc_payload.get("update", []) or [])
 
-            # 3b. Grant number creates/updates. No BLI linkage this slice (grant BLIs are
-            #     #5928), so unlike SC there's no ref map to thread through BLI creates.
-            _, created_gn_count = self._create_grant_numbers(agreement_id, gn_payload.get("create", []) or [])
+            # 3b. Grant number creates/updates. Flush creates to populate IDs so later BLI
+            #     creates/updates can resolve grant_number_ref → new grant number ids.
+            gn_ref_map, created_gn_count = self._create_grant_numbers(agreement_id, gn_payload.get("create", []) or [])
             result.grant_numbers_created = created_gn_count
             result.grant_numbers_updated = self._update_grant_numbers(gn_payload.get("update", []) or [])
 
-            # 4. BLI creates (resolves services_component_ref using sc_ref_map)
+            # 4. BLI creates (resolves services_component_ref / grant_number_ref)
             result.budget_line_items_created = self._create_budget_line_items(
-                agreement, bli_payload.get("create", []) or [], sc_ref_map
+                agreement, bli_payload.get("create", []) or [], sc_ref_map, gn_ref_map
             )
 
             # 5. BLI updates — may produce change requests; collected for post-commit notify.
-            #    Pass the same sc_ref_map so an existing BLI reassigned to a not-yet-persisted
-            #    (in-bundle) SC can be linked via services_component_ref → new SC id.
+            #    Pass the same sc_ref_map / gn_ref_map so an existing BLI reassigned to a
+            #    not-yet-persisted (in-bundle) SC or grant number can be linked via ref → new id.
             updated_count, change_request_ids = self._update_budget_line_items(
-                bli_payload.get("update", []) or [], sc_ref_map
+                bli_payload.get("update", []) or [], sc_ref_map, gn_ref_map
             )
             result.budget_line_items_updated = updated_count
             result.change_request_ids.extend(change_request_ids)
@@ -137,7 +137,7 @@ class AgreementEditBundleService:
             # 6. BLI deletes (before SC deletes — BLIs reference SCs)
             result.budget_line_items_deleted = self._delete_budget_line_items(bli_payload.get("delete", []) or [])
 
-            # 7. SC deletes and grant number deletes (no BLI linkage for grant numbers this slice)
+            # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
             result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
             result.grant_numbers_deleted = self._delete_grant_numbers(gn_payload.get("delete", []) or [])
 
@@ -259,10 +259,15 @@ class AgreementEditBundleService:
     # ------------------------------------------------------------------
 
     def _create_budget_line_items(
-        self, agreement: Agreement, items: list[dict[str, Any]], sc_ref_map: dict[str, int]
+        self,
+        agreement: Agreement,
+        items: list[dict[str, Any]],
+        sc_ref_map: dict[str, int],
+        gn_ref_map: dict[str, int] | None = None,
     ) -> int:
         # NestedBudgetLineItemRequestSchema converts string enums (status) to enum
-        # values and supports services_component_ref. agreement_id is set by us.
+        # values and supports services_component_ref / grant_number_ref. agreement_id is set by us.
+        gn_ref_map = gn_ref_map or {}
         bli_create_schema = NestedBudgetLineItemRequestSchema()
         for bli_data in items:
             loaded = bli_create_schema.load(bli_data, unknown=EXCLUDE)
@@ -280,13 +285,26 @@ class AgreementEditBundleService:
                         }
                     )
                 loaded["services_component_id"] = sc_ref_map[services_component_ref]
+            grant_number_ref = loaded.pop("grant_number_ref", None)
+            if grant_number_ref is not None:
+                if grant_number_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {grant_number_ref!r}. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                loaded["grant_number_id"] = gn_ref_map[grant_number_ref]
             loaded["agreement_id"] = agreement.id
             self._blis.create(loaded, commit=False)
         return len(items)
 
     def _update_budget_line_items(
-        self, items: list[dict[str, Any]], sc_ref_map: dict[str, int]
+        self, items: list[dict[str, Any]], sc_ref_map: dict[str, int], gn_ref_map: dict[str, int] | None = None
     ) -> tuple[int, list[int]]:
+        gn_ref_map = gn_ref_map or {}
         change_request_ids: list[int] = []
         patch_schema = PATCHRequestBodySchema(partial=True)
         for bli_data in items:
@@ -294,8 +312,8 @@ class AgreementEditBundleService:
             if bli_id is None:
                 raise ValidationError({"budget_line_items.update": "Each item requires an 'id'."})
             data_for_load = {k: v for k, v in bli_data.items() if k != "id"}
-            # Resolve services_component_ref → new SC id before delegating. The PATCH schema
-            # uses unknown=EXCLUDE and would otherwise drop ref silently.
+            # Resolve services_component_ref / grant_number_ref → new id before delegating. The
+            # PATCH schema uses unknown=EXCLUDE and would otherwise drop ref silently.
             sc_ref = data_for_load.pop("services_component_ref", None)
             if sc_ref is not None:
                 if sc_ref not in sc_ref_map:
@@ -308,6 +326,18 @@ class AgreementEditBundleService:
                         }
                     )
                 data_for_load["services_component_id"] = sc_ref_map[sc_ref]
+            gn_ref = data_for_load.pop("grant_number_ref", None)
+            if gn_ref is not None:
+                if gn_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {gn_ref!r}. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                data_for_load["grant_number_id"] = gn_ref_map[gn_ref]
             loaded = patch_schema.load(data_for_load, unknown=EXCLUDE, partial=True)
             # The BLI service reads `request.json` and `schema.load(...)`; we synthesize
             # a request-like object with the per-BLI body so the service can run unchanged.
