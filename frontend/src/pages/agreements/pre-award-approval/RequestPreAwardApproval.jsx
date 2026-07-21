@@ -343,7 +343,7 @@ export const RequestPreAwardApproval = () => {
                 >
                     Edit
                 </button>
-                {isStep4Completed && (isAgreementInvalid || hasBLIError) ? (
+                {isStep4Completed && !hasBLIInReview && (isAgreementInvalid || hasBLIError) ? (
                     <DisabledButtonWithTooltip
                         label="Errors must be resolved before you can send to approval"
                         tooltipPosition="top"
@@ -364,7 +364,7 @@ export const RequestPreAwardApproval = () => {
                                 : hasApprovalBeenRequested
                                   ? "Pre-Award approval has already been requested"
                                   : hasBLIInReview
-                                    ? "You cannot request pre-award approval until all change requests are resolved."
+                                    ? "Pending changes must be approved or declined before you can send to approval"
                                     : ""
                         }
                     >

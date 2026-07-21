@@ -5,6 +5,7 @@ import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../help
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     expandedRowBGColor,
@@ -60,6 +61,9 @@ const BLIReviewRow = ({
 
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
+
+    // Tooltip for BLIs with pending change requests (in_review=true)
+    const inReviewTooltip = useChangeRequestsForTooltip(budgetLine, "This budget line has pending edits:");
     // Row-level error class for a missing services component. Only used in selection-gated
     // mode (Review Agreement) where highlighting the whole row is correct. In errorStatuses
     // mode (pre-award), table-item-error on the <tr> would cascade color:#b50909 to every
@@ -232,6 +236,7 @@ const BLIReviewRow = ({
                         <TableTag
                             status={budgetLine?.status}
                             inReview={budgetLine?.in_review}
+                            lockedMessage={inReviewTooltip}
                         />
                     )}
                 </td>
