@@ -162,12 +162,12 @@ paths:
                     type: array
                     items:
                       oneOf:
-                        - $ref: "#/components/schemas/AgreementResponse"
-                        - $ref: "#/components/schemas/ContractAgreementResponse"
-                        - $ref: "#/components/schemas/GrantAgreementResponse"
-                        - $ref: "#/components/schemas/DirectAgreementResponse"
-                        - $ref: "#/components/schemas/IaaAgreementResponse"
-                        - $ref: "#/components/schemas/AaAgreementResponse"
+                        - $ref: "#/components/schemas/AgreementListResponse"
+                        - $ref: "#/components/schemas/ContractListAgreementResponse"
+                        - $ref: "#/components/schemas/GrantListAgreementResponse"
+                        - $ref: "#/components/schemas/DirectListAgreementResponse"
+                        - $ref: "#/components/schemas/IaaListAgreementResponse"
+                        - $ref: "#/components/schemas/AaListAgreementResponse"
                   count:
                     type: integer
                     description: Total number of agreements matching the query
@@ -9075,6 +9075,15 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementData:
       allOf:
@@ -9191,6 +9200,71 @@ components:
             - division_directors
             - team_leaders
 
+    AgreementListResponse:
+      description: |
+        Base schema used in GET /agreements (list endpoint). Slimmer than AgreementResponse -
+        omits detail-only fields (division_directors, team_leaders, in_review,
+        change_requests_in_review, authorized_user_ids, special_topic) and uses an
+        optimized budget_line_items shape for list-view performance.
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            id:
+              type: integer
+            project:
+              $ref: "#/components/schemas/Project"
+            product_service_code:
+              $ref: "#/components/schemas/ProductServiceCode"
+            budget_line_items:
+              type: array
+              nullable: true
+              items:
+                type: object
+                description: Optimized BudgetLineItem fields for list responses
+                properties:
+                  id:
+                    type: integer
+                  amount:
+                    type: number
+                    format: float
+                  fees:
+                    type: number
+                    format: float
+                  status:
+                    type: string
+                  is_obe:
+                    type: boolean
+                  fiscal_year:
+                    type: integer
+            procurement_shop:
+              $ref: "#/components/schemas/ProcurementShop"
+            display_name:
+              type: string
+            is_awarded:
+              type: boolean
+              nullable: true
+            award_type:
+              type: string
+              nullable: true
+              enum:
+                - NEW
+                - CONTINUING
+            created_by:
+              $ref: "#/components/parameters/created_by"
+            updated_by:
+              $ref: "#/components/parameters/updated_by"
+            created_on:
+              $ref: "#/components/parameters/created_on"
+            updated_on:
+              $ref: "#/components/parameters/updated_on"
+            _meta:
+              $ref: "#/components/schemas/MetaSchema"
+          required:
+            - id
+            - display_name
+            - _meta
+
     ContractAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -9229,6 +9303,41 @@ components:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
 
+    ContractListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            contract_number:
+              type: string
+            vendor_id:
+              type: integer
+            vendor:
+              type: string
+            delivered_status:
+              type: boolean
+              default: false
+            contract_type:
+              type: string
+            service_requirement_type:
+              type: string
+            support_contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamMembers"
+            task_order_number:
+              type: string
+            po_number:
+              type: string
+            acquisition_type:
+              type: string
+            contract_category:
+              type: string
+            psc_contract_specialist:
+              type: string
+            cotr_id:
+              type: integer
+
     GrantAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -9236,14 +9345,54 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
+
+    GrantListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            foa:
+              type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
 
+    DirectListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+
     IaaAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            iaa:
+              type: string
+          required:
+            - iaa
+
+    IaaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
         - type: object
           properties:
             iaa:
@@ -9282,6 +9431,19 @@ components:
             is_awarded:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
+          required:
+            - requesting_agency
+            - servicing_agency
+
+    AaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/ContractListAgreementResponse"
+        - type: object
+          properties:
+            requesting_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+            servicing_agency:
+              $ref: "#/components/schemas/AgreementAgency"
           required:
             - requesting_agency
             - servicing_agency

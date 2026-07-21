@@ -95,6 +95,12 @@ const AgreementEditForm = ({
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumber,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumber,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
@@ -419,6 +425,92 @@ const AgreementEditForm = ({
                     )}
                 </>
             )}
+            {/* REVIEW: NEW — Grant Details block (#5926). Sits above the contract block, matching the
+                design's order (Agreement Details → Grant Details). FPO reuses project_officer_id and
+                Project Specialist reuses alternate_project_officer_id (relabeled at the display layer). */}
+            {isGrant && (
+                <>
+                    <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
+                    <p>
+                        Please complete the information below for this grant. You can enter this information now or come
+                        back and edit the information later.
+                    </p>
+                    <Input
+                        name="nofo_number"
+                        label="NOFO Number"
+                        messages={res.getErrors("nofo_number")}
+                        className={cn("nofo_number")}
+                        isRequired={true}
+                        value={nofoNumber || ""}
+                        onChange={(name, value) => {
+                            setNofoNumber(value);
+                            runValidate(name, value);
+                        }}
+                    />
+                    {/* Grant Funding Period — numeric input, unit "months". No stepper component exists
+                        yet (see plan step 8); ships as a plain Input with digit-only filtering. */}
+                    <Input
+                        name="funding_period_months"
+                        label="Grant Funding Period (months)"
+                        value={fundingPeriodMonths ?? ""}
+                        onChange={(name, value) => {
+                            if (/^[0-9]*$/.test(value)) {
+                                setFundingPeriodMonths(value === "" ? null : Number(value));
+                            }
+                        }}
+                    />
+                    <Input
+                        name="aln_number"
+                        label="ALN Number"
+                        value={alnNumber || ""}
+                        onChange={(name, value) => setAlnNumber(value)}
+                    />
+                    <div className="display-flex margin-top-3">
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            messages={res.getErrors("project_officer")}
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("projectOfficer", agreementType)}
+                        />
+                        {/* Project Specialist reuses the existing Alternate Project Officer field/state/handler,
+                            relabeled — NOT a new field. */}
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            className="margin-left-4"
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
+                        />
+                    </div>
+                    <div className="margin-top-3 width-card-lg">
+                        <TeamMemberComboBox
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            selectedTeamMembers={selectedTeamMembers}
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedTeamMembers={setSelectedTeamMembers}
+                            overrideStyles={{ width: "15em" }}
+                        />
+                    </div>
+                    <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
+                    <TeamMemberList
+                        selectedTeamMembers={selectedTeamMembers}
+                        removeTeamMember={removeTeamMember}
+                    />
+                    <TextArea
+                        name="agreementNotes"
+                        label="Notes (optional)"
+                        maxLength={500}
+                        messages={res.getErrors("agreementNotes")}
+                        className={cn("agreementNotes")}
+                        value={agreementNotes || ""}
+                        onChange={(name, value) => setAgreementNotes(value)}
+                    />
+                </>
+            )}
             {/* REVIEW: NEW — wraps ContractTypeSelect through Notes TextArea (the entire contract-only
                 control block). When Grant is selected none of these render, so the form shows only
                 the 4 grant fields: type filter Select, Title Input, Nickname Input, Description TextArea.
@@ -597,7 +689,7 @@ const AgreementEditForm = ({
                             className="margin-left-4"
                             legendClassname="usa-label margin-top-0 margin-bottom-1"
                             overrideStyles={{ width: "15em" }}
-                            label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
+                            label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
                         />
                     </div>
                     <div className="margin-top-3 width-card-lg">

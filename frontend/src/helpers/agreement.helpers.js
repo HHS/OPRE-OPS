@@ -289,7 +289,13 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     // isFieldVisible(GRANT, ProcurementShop) → false, so the MetaAccordion gate works automatically.
     // isFieldVisible(GRANT, ContractNumber) → false, which the existing test at line 235 already asserts.
     // Title and the "Grant" type label render via always-on blocks in AgreementDetailsView and are not in this set.
-    [AgreementType.GRANT]: new Set([AgreementFields.DescriptionAndNotes, AgreementFields.NickName])
+    [AgreementType.GRANT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.NickName,
+        AgreementFields.NofoNumber,
+        AgreementFields.AlnNumber,
+        AgreementFields.GrantFundingPeriod
+    ])
     // Add new AgreementTypes here
 };
 

@@ -32,6 +32,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { AgreementType } from "../agreements.constants";
 import { useIsUserSuperUser, useIsUserReadOnly } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
@@ -70,12 +71,16 @@ const AgreementBudgetLines = ({
         agreement?.id
     );
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
+    // Editing is not yet supported for grant agreements, so the Edit and Request BL Status Change buttons are disabled for them.
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
 
     // Pre-award or award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
     const isAgreementEditable = !isPreAwardInReview && !isAwardInReview && (isSuperUser || canRegularUserEdit);
+    // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
+    const canRequestStatusChange = isAgreementEditable && !isGrant;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -85,6 +90,8 @@ const AgreementBudgetLines = ({
 
     const toolTipLabel = () => {
         switch (true) {
+            case isGrant:
+                return "Editing is not yet available for grant agreements.";
             case isAgreementNotDeveloped:
                 return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case isPreAwardInReview:
@@ -186,6 +193,7 @@ const AgreementBudgetLines = ({
                         setIsEditMode={setIsEditMode}
                         isEditable={isAgreementEditable}
                         isPreAwardInReview={isPreAwardInReview}
+                        isGrant={isGrant}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard
@@ -312,7 +320,7 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && !isReadOnly && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {isAgreementEditable ? (
+                    {canRequestStatusChange ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}

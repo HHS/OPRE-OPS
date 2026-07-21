@@ -162,6 +162,72 @@ describe("AgreementDetailsView", () => {
         });
     });
 
+    describe("GRANT details fields", () => {
+        const grantAgreement = {
+            ...agreement,
+            agreement_type: "GRANT",
+            nofo_number: "NOFO-2026-01",
+            aln_number: "93.600",
+            funding_period_months: 18
+        };
+        const mockAlternateProjectOfficer = {
+            id: 2,
+            full_name: "Jane Specialist",
+            email: "jane.specialist@example.com"
+        };
+
+        it("renders NOFO Number, ALN Number, and Grant Funding Period for grants", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.getByText("NOFO Number")).toBeInTheDocument();
+            expect(screen.getByText("NOFO-2026-01")).toBeInTheDocument();
+            expect(screen.getByText("ALN Number")).toBeInTheDocument();
+            expect(screen.getByText("93.600")).toBeInTheDocument();
+            expect(screen.getByText("Grant Funding Period")).toBeInTheDocument();
+            expect(screen.getByText("18 months")).toBeInTheDocument();
+        });
+
+        it("labels the PO/Alt-PO block as Federal Project Officer / Project Specialist", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.getByText("Federal Project Officer")).toBeInTheDocument();
+            expect(screen.getByText("Project Specialist")).toBeInTheDocument();
+            expect(screen.getByText("Jane Specialist")).toBeInTheDocument();
+            // Must NOT use the "Alternate ..." wording for grants
+            expect(screen.queryByText("Alternate Federal Project Officer")).not.toBeInTheDocument();
+            expect(screen.queryByText("Alternate Project Officer")).not.toBeInTheDocument();
+        });
+
+        it("does not render grant-only fields for contracts", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={{ ...agreement, agreement_type: "CONTRACT" }}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={null}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.queryByText("NOFO Number")).not.toBeInTheDocument();
+            expect(screen.queryByText("ALN Number")).not.toBeInTheDocument();
+            expect(screen.queryByText("Grant Funding Period")).not.toBeInTheDocument();
+        });
+    });
+
     it("should handle null agreement gracefully", () => {
         render(
             <AgreementDetailsView

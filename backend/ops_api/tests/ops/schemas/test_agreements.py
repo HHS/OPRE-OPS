@@ -306,6 +306,40 @@ class TestAgreementDataNestedFields:
         assert "budget_line_items" in schema.fields
         assert "services_components" in schema.fields
 
+    def test_grant_agreement_data_has_grant_details_fields(self):
+        """Test that GrantAgreementData exposes the Grant Details fields (#5926)."""
+        schema = GrantAgreementData()
+        for field_name in ("nofo_number", "aln_number", "funding_period_months"):
+            assert field_name in schema.fields
+            assert schema.fields[field_name].allow_none is True
+
+    def test_grant_agreement_data_loads_grant_details_fields(self):
+        """Test that GrantAgreementData loads/dumps the new Grant Details fields, including None."""
+        schema = GrantAgreementData()
+        data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "nofo_number": "NOFO-2026-01",
+            "aln_number": "93.600",
+            "funding_period_months": 18,
+        }
+        result = schema.load(data)
+        assert result["nofo_number"] == "NOFO-2026-01"
+        assert result["aln_number"] == "93.600"
+        assert result["funding_period_months"] == 18
+
+        none_data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "nofo_number": None,
+            "aln_number": None,
+            "funding_period_months": None,
+        }
+        none_result = schema.load(none_data)
+        assert none_result["nofo_number"] is None
+        assert none_result["aln_number"] is None
+        assert none_result["funding_period_months"] is None
+
     def test_contract_agreement_loads_with_nested_budget_line_items(self):
         """Test that ContractAgreementData loads with nested budget line items."""
         schema = ContractAgreementData()

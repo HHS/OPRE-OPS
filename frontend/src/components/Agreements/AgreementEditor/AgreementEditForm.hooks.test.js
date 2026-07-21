@@ -624,6 +624,40 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });
     });
+
+    it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
+        const setNofoNumberMock = vi.fn();
+        const setAlnNumberMock = vi.fn();
+        const setFundingPeriodMonthsMock = vi.fn();
+        const setSelectedAlternateProjectOfficerMock = vi.fn();
+        const setAlternateProjectOfficerIdMock = vi.fn();
+
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "nofo_number") return setNofoNumberMock;
+            if (key === "aln_number") return setAlnNumberMock;
+            if (key === "funding_period_months") return setFundingPeriodMonthsMock;
+            if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
+            return vi.fn();
+        });
+        useSetStateMock.mockImplementation((key) => {
+            if (key === "selected_alternate_project_officer") return setSelectedAlternateProjectOfficerMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "GRANT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("CONTRACT");
+        });
+
+        expect(setNofoNumberMock).toHaveBeenCalledWith(null);
+        expect(setAlnNumberMock).toHaveBeenCalledWith(null);
+        expect(setFundingPeriodMonthsMock).toHaveBeenCalledWith(null);
+        // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
+        expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
+        expect(setAlternateProjectOfficerIdMock).not.toHaveBeenCalled();
+    });
 });
 
 describe("useAgreementEditForm - runValidate project_officer validation", () => {
