@@ -288,7 +288,7 @@ describe("Procurement Tracker Step 2", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-2-date-completed").should("be.disabled");
-                cy.get("#notes").should("be.disabled");
+                cy.get("#notes").should("not.be.disabled");
                 cy.get("#step-2-draft-solicitation-date").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
@@ -635,7 +635,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-3-date-completed").should("be.disabled");
-                cy.get("#notes").should("be.disabled");
+                cy.get("#notes").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
             }
@@ -932,7 +932,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-5-date-completed").should("be.disabled");
-                cy.get("#notes").should("be.disabled");
+                cy.get("#notes").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
             }

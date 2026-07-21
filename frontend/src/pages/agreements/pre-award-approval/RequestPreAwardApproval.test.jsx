@@ -74,6 +74,16 @@ vi.mock("../../../components/UI/PageHeader", () => ({
     )
 }));
 
+// Expose showBudgetLineErrors via data attribute so caller-level tests can assert the prop is passed
+vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
+    BudgetLinesReviewAccordion: (/** @type {{ showBudgetLineErrors?: boolean }} */ { showBudgetLineErrors }) => (
+        <div
+            data-testid="budget-lines-review-accordion"
+            data-show-budget-line-errors={String(showBudgetLineErrors ?? false)}
+        />
+    )
+}));
+
 const baseHookResult = () => ({
     agreement: { name: "Test Agreement", id: 1, _meta: { isEditable: true } },
     isLoading: false,
@@ -141,7 +151,7 @@ describe("RequestPreAwardApproval", () => {
         render(<RequestPreAwardApproval />);
 
         expect(screen.getByTestId("meta-accordion")).toBeInTheDocument();
-        expect(screen.getByTestId("bli-accordion")).toBeInTheDocument();
+        expect(screen.getByTestId("budget-lines-review-accordion")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
@@ -460,6 +470,18 @@ describe("RequestPreAwardApproval", () => {
             render(<RequestPreAwardApproval />);
 
             expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+        });
+    });
+
+    describe("BLI error styling", () => {
+        it("passes showBudgetLineErrors={true} to BudgetLinesReviewAccordion", () => {
+            // Regression guard: if showBudgetLineErrors is accidentally dropped from the
+            // BudgetLinesReviewAccordion call site, this test fails — exactly the regression
+            // that occurred in the style: prettier format commit.
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "true");
         });
     });
 });

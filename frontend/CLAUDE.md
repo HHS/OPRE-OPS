@@ -40,6 +40,8 @@ bun run test:ui                  # Run tests with UI
 
 **Important**: 90% code coverage is required. Tests are co-located with components (`.test.jsx` files).
 
+Before adding a test, see [docs/TESTING.md](../docs/TESTING.md#decision-matrix-which-test-type-should-i-use) for the unit vs. integration vs. component vs. E2E decision matrix and [When NOT to Write Tests](../docs/TESTING.md#when-not-to-write-tests).
+
 ### E2E Tests
 
 E2E tests use Cypress and require the Docker stack to be running. Use the `/e2e-tests` skill for running, monitoring, and fixing E2E tests.

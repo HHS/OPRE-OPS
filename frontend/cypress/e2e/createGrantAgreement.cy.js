@@ -39,6 +39,13 @@ it("can create a Grant agreement", () => {
     // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
     cy.get("#project-officer-combobox-input").should("exist");
 
+    // Grant Details fields should be visible
+    cy.get("#nofo_number").should("exist");
+    cy.get("#funding_period_months").should("exist");
+    cy.get("#aln_number").should("exist");
+    // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
+    cy.get("#project-officer-combobox-input").should("exist");
+
     // Continue button should exist but stay disabled for grants until NOFO Number is present
     cy.get("[data-cy='continue-btn']").should("exist").and("be.disabled");
 
@@ -50,7 +57,13 @@ it("can create a Grant agreement", () => {
     cy.get("#nickname").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
+
+    // NOFO Number is now required to enable Save Draft
+    cy.get("#nofo_number").type("NOFO-2026-01");
+
+    // Optionally fill the remaining Grant Details fields
+    cy.get("#funding_period_months").type("18");
+    cy.get("#aln_number").type("93.600");
 
     // NOFO Number is now required to enable Save Draft and Continue
     cy.get("#nofo_number").type("NOFO-2026-01");

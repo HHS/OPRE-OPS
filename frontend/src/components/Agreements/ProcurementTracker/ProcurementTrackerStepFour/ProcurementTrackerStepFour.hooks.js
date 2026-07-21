@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerEvaluationStep} ProcurementTrackerEvaluationStep
@@ -21,7 +22,6 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step4DateCompleted, setStep4DateCompleted] = React.useState("");
-    const [step4Notes, setStep4Notes] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -48,6 +48,13 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step4Notes,
+        setNotes: setStep4Notes,
+        resetNotes: resetStep4Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step four, updating the procurement tracker step with the new date.
@@ -118,7 +125,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep4DateCompleted("");
-        setStep4Notes("");
+        resetStep4Notes(stepFourData?.notes ?? "");
     };
 
     const cancelModalStep4 = () => {
@@ -135,6 +142,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
 
     return {
         cancelStepFour,
+        handleSaveNotes,
         isEvaluationComplete,
         setIsEvaluationComplete,
         selectedUser,
@@ -148,6 +156,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         step4TargetCompletionDateLabel,
         step4Notes,
         setStep4Notes,
+        resetStep4Notes,
         step4NotesLabel,
         runValidate,
         validatorRes,

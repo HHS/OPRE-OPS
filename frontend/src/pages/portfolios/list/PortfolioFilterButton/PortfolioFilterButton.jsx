@@ -93,6 +93,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                usePrefetchedOptions={true}
             />
         </fieldset>,
         <fieldset

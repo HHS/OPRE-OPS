@@ -113,6 +113,69 @@ describe("AgreementBudgetLines", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
+    describe("Grant agreements", () => {
+        // A real super user so the Edit/Request buttons render (regular users would hide them entirely)
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const renderAgreement = (agreement) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={agreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("disables the Edit button for a grant agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
+
+            // The clickable Edit button (a real <button>) is replaced by the disabled span variant
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.getByText("Edit")).toBeInTheDocument();
+        });
+
+        test("disables the Request BL Status Change button for a grant agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
+
+            const requestButton = screen.getByText("Request BL Status Change");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+            expect(screen.queryByRole("link", { name: "Request BL Status Change" })).not.toBeInTheDocument();
+        });
+
+        test("keeps the Edit and Request BL Status Change buttons enabled for a contract agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "CONTRACT" });
+
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+
+            const requestLink = screen.getByRole("link", { name: "Request BL Status Change" });
+            expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+    });
+
     test("shows the grouped table skeleton while services components are loading", () => {
         useGetServicesComponentsListQueryMock.mockReturnValue({
             data: undefined,
