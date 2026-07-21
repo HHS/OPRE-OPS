@@ -160,7 +160,7 @@ describe("Procurement Tracker Step 2", () => {
                 cy.contains("Notes").should("exist");
                 cy.contains("Target Completion Date").should("exist");
                 cy.contains("Draft Solicitation Date").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -205,7 +205,7 @@ describe("Procurement Tracker Step 2", () => {
         cy.get("body").then(($body) => {
             const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-2-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
@@ -494,7 +494,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
                 cy.contains("Notes").should("exist");
                 cy.contains("Solicitation Period - Start").should("exist");
                 cy.contains("Solicitation Period - End").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -539,7 +539,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.get("body").then(($body) => {
             const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-3-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
@@ -792,7 +792,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 cy.contains("Date Completed").should("exist");
                 cy.contains("Notes").should("exist");
                 cy.contains("Target Completion Date").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -837,7 +837,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.get("body").then(($body) => {
             const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-5-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");

@@ -57,6 +57,15 @@ export const openTrackerStep = (stepNumber) => {
         6: /6 of 6/i
     };
 
+    // Close all other open steps first so only the target step is expanded.
+    // This prevents checkbox labels from other open steps polluting page-level assertions.
+    cy.get("button.usa-accordion__button[aria-expanded='true']").each(($btn) => {
+        const text = $btn.text();
+        if (!stepRegexMap[stepNumber].test(text)) {
+            cy.wrap($btn).click();
+        }
+    });
+
     cy.contains("button", stepRegexMap[stepNumber]).then(($button) => {
         if ($button.attr("aria-expanded") === "false") {
             cy.wrap($button).click();
