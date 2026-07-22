@@ -19,7 +19,7 @@ const suite = create((data) => {
             const today = new Date();
             const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const [y, mo, d] = (item.date_needed ?? "").split("-").map(Number);
-            const dateOnly = (isNaN(y) || isNaN(mo) || isNaN(d)) ? new Date(0) : new Date(y, mo - 1, d);
+            const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
             enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
         });
     });
