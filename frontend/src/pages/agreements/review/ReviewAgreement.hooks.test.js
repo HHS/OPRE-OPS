@@ -10,6 +10,8 @@ const useGetAgreementByIdQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateBudgetLineItemMutationMock = vi.fn();
 const getUserFullNameFromIdMock = vi.fn();
+// Stable module-level reference so the grantNumbers decoration effect doesn't loop.
+const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -22,6 +24,9 @@ vi.mock("react-router-dom", async (importOriginal) => {
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: (...args) => useGetAgreementByIdQueryMock(...args),
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    // Stable reference — returning a fresh object each call would make the decoration
+    // effect (which lists grantNumbers in its deps) re-run every render → infinite loop.
+    useGetGrantNumbersListQuery: () => EMPTY_GRANT_NUMBERS_RESULT,
     useUpdateBudgetLineItemMutation: (...args) => useUpdateBudgetLineItemMutationMock(...args)
 }));
 

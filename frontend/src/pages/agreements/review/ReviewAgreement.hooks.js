@@ -2,10 +2,12 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { AgreementType } from "../agreements.constants";
+import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
@@ -48,10 +50,14 @@ const useReviewAgreement = (agreementId) => {
         skip: !agreementId
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement });
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
-    const groupedBudgetLinesByServicesComponent = budgetLines
-        ? groupByServicesComponent(budgetLines, servicesComponents)
-        : [];
+    const groupedBudgetLinesByServicesComponent = !budgetLines
+        ? []
+        : isGrant
+          ? groupByGrantNumber(budgetLines, grantNumbers ?? [])
+          : groupByServicesComponent(budgetLines, servicesComponents);
 
     // NOTE: convert page errors about budget lines object into an array of objects
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
@@ -114,8 +120,8 @@ const useReviewAgreement = (agreementId) => {
     const isAgreementAwarded = agreement?.is_awarded;
 
     React.useEffect(() => {
-        // Add guard clause
-        if (!agreement?.budget_line_items || !servicesComponents) {
+        // Add guard clause — grants have no services components, so gate only on the required list per type.
+        if (!agreement?.budget_line_items || (isGrant ? !grantNumbers : !servicesComponents)) {
             return;
         }
 
@@ -125,6 +131,16 @@ const useReviewAgreement = (agreementId) => {
                 : null) ?? [];
 
         newBudgetLines = newBudgetLines.map((bli) => {
+            if (isGrant) {
+                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
+                return {
+                    ...bli,
+                    grant_number_number: grantNumberNumber,
+                    selected: false, // for use in the BLI table
+                    actionable: false // based on action accordion
+                };
+            }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
             const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
@@ -140,7 +156,7 @@ const useReviewAgreement = (agreementId) => {
         });
 
         setBudgetLines(newBudgetLines);
-    }, [agreement, servicesComponents]);
+    }, [agreement, servicesComponents, grantNumbers, isGrant]);
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -353,7 +369,9 @@ const useReviewAgreement = (agreementId) => {
 
         setBudgetLines((prevBudgetLines) => {
             const updatedLines = prevBudgetLines.map((bli) => {
-                if (bli.actionable && bli.services_component_number === servicesComponentNumber) {
+                // For grants the group key is the grant number; otherwise the services component.
+                const bliGroupKey = isGrant ? bli.grant_number_number : bli.services_component_number;
+                if (bli.actionable && bliGroupKey === servicesComponentNumber) {
                     return {
                         ...bli,
                         selected: !toggleStates[servicesComponentNumber]
@@ -420,6 +438,8 @@ const useReviewAgreement = (agreementId) => {
         notes,
         setNotes,
         servicesComponents,
+        grantNumbers,
+        isGrant,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
         hasBLIError,

@@ -8,6 +8,7 @@ import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
@@ -36,6 +37,7 @@ const ApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
+        isGrant,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
@@ -126,6 +128,7 @@ const ApproveAgreement = () => {
                         <BeforeApprovalContent
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
+                            isGrant={isGrant}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -133,6 +136,7 @@ const ApproveAgreement = () => {
                         <AfterApprovalContent
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
+                            isGrant={isGrant}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -237,9 +241,29 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
+    ({ groupedBudgetLinesByServicesComponent, servicesComponents, isGrant, changeRequestType, urlChangeToStatus }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group, index) => {
+                if (isGrant) {
+                    return (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                        >
+                            {group.budgetLines.length > 0 ? (
+                                <BLIDiffTable
+                                    budgetLines={group.budgetLines}
+                                    changeType={changeRequestType}
+                                    statusChangeTo={urlChangeToStatus}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this grant number yet.
+                                </p>
+                            )}
+                        </GrantNumberAccordion>
+                    );
+                }
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;
@@ -275,9 +299,35 @@ const BeforeApprovalContent = React.memo(
 BeforeApprovalContent.displayName = "BeforeApprovalContent";
 
 const AfterApprovalContent = React.memo(
-    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
+    ({
+        groupedUpdatedBudgetLinesByServicesComponent,
+        servicesComponents,
+        isGrant,
+        changeRequestType,
+        urlChangeToStatus
+    }) => (
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group, index) => {
+                if (isGrant) {
+                    return (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                        >
+                            {group.budgetLines.length > 0 ? (
+                                <BLIDiffTable
+                                    budgetLines={group.budgetLines}
+                                    changeType={changeRequestType}
+                                    statusChangeTo={urlChangeToStatus}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this grant number yet.
+                                </p>
+                            )}
+                        </GrantNumberAccordion>
+                    );
+                }
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;

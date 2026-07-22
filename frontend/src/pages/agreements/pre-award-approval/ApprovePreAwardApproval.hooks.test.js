@@ -9,6 +9,7 @@ import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetServicesComponentsListQuery: vi.fn(),
+    useGetGrantNumbersListQuery: vi.fn(),
     useUpdateProcurementTrackerStepMutation: vi.fn(),
     useGetDocumentsByAgreementIdQuery: vi.fn(),
     useGetProcurementTrackersByAgreementIdQuery: vi.fn()
@@ -25,6 +26,7 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
     groupByServicesComponent: vi.fn(),
+    groupByGrantNumber: vi.fn(),
     budgetLinesTotal: vi.fn()
 }));
 
@@ -40,13 +42,14 @@ vi.mock("react-router-dom", async () => {
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
+    useGetGrantNumbersListQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { groupByGrantNumber, groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 
 // Helper to create test store with auth state
 const createTestStore = (authState = {}) => {
@@ -119,6 +122,8 @@ describe("useApprovePreAwardApproval", () => {
             data: []
         });
 
+        useGetGrantNumbersListQuery.mockReturnValue({ data: [] });
+
         useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
 
         useGetDocumentsByAgreementIdQuery.mockReturnValue({
@@ -136,6 +141,8 @@ describe("useApprovePreAwardApproval", () => {
         });
 
         groupByServicesComponent.mockReturnValue([]);
+
+        groupByGrantNumber.mockReturnValue([]);
 
         budgetLinesTotal.mockReturnValue(0);
     });

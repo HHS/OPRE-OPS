@@ -14,6 +14,7 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetLinesTable/BudgetLinesTableLoading";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
+import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
@@ -24,6 +25,7 @@ import {
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
+    groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import {
@@ -156,6 +158,11 @@ const AgreementBudgetLines = ({
                 : null) ?? [];
 
         return newTempBudgetLines.map((bli) => {
+            if (isGrant) {
+                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
+                return { ...bli, grant_number_number: grantNumberNumber };
+            }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
             const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
@@ -163,9 +170,10 @@ const AgreementBudgetLines = ({
                 : `${serviceComponentNumber}`;
             return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
         });
-    }, [agreement?.budget_line_items, servicesComponents]);
+    }, [agreement?.budget_line_items, servicesComponents, grantNumbers, isGrant]);
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
+    const groupedBudgetLinesByGrantNumber = groupByGrantNumber(budgetLines, grantNumbers ?? []);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
@@ -282,6 +290,30 @@ const AgreementBudgetLines = ({
             {!isEditMode && isServicesComponentsLoading && <BudgetLinesTableLoading />}
 
             {!isEditMode &&
+                isGrant &&
+                groupedBudgetLinesByGrantNumber.length > 0 &&
+                groupedBudgetLinesByGrantNumber.map((group, index) => (
+                    <GrantNumberAccordion
+                        key={`${group.grantNumberNumber}-${index}`}
+                        grantNumberNumber={group.grantNumberNumber}
+                    >
+                        {group.budgetLines.length > 0 ? (
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                isAgreementAwarded={isAgreementAwarded}
+                                readOnly={true}
+                                isEditable={agreement?._meta.isEditable}
+                            />
+                        ) : (
+                            <p className="text-center margin-y-7">
+                                You have not added any budget lines to this grant number yet.
+                            </p>
+                        )}
+                    </GrantNumberAccordion>
+                ))}
+
+            {!isEditMode &&
+                !isGrant &&
                 !isServicesComponentsLoading &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
@@ -317,9 +349,13 @@ const AgreementBudgetLines = ({
                     );
                 })}
 
-            {!isEditMode && !isServicesComponentsLoading && groupedBudgetLinesByServicesComponent.length === 0 && (
-                <p className="text-center">You have not added any Budget Lines yet.</p>
-            )}
+            {!isEditMode &&
+                !isServicesComponentsLoading &&
+                (isGrant
+                    ? groupedBudgetLinesByGrantNumber.length === 0
+                    : groupedBudgetLinesByServicesComponent.length === 0) && (
+                    <p className="text-center">You have not added any Budget Lines yet.</p>
+                )}
 
             {!isEditMode && !isReadOnly && (
                 <div className="grid-row flex-justify-end margin-top-1">

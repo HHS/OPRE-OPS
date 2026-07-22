@@ -8,6 +8,7 @@ import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetServicesComponentsListQuery: vi.fn(),
+    useGetGrantNumbersListQuery: vi.fn(() => ({ data: [] })),
     useGetDocumentsByAgreementIdQuery: vi.fn(),
     useGetProcurementTrackersByAgreementIdQuery: vi.fn(),
     useUpdateProcurementTrackerStepMutation: vi.fn(),

@@ -150,6 +150,7 @@ export const codesToDisplayText = {
         amount: "Amount",
         can: "CAN",
         services_component: "Services Component",
+        grant_number: "Grant Number",
         date_needed: "Obligate By Date"
     },
     classNameLabels: {
@@ -191,7 +192,8 @@ export const codesToDisplayText = {
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
-        services_component: "Services Component"
+        services_component: "Services Component",
+        grant_number: "Grant Number"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
