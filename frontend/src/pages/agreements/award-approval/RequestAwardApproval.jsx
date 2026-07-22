@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -57,6 +57,13 @@ export const RequestAwardApproval = () => {
     const { setAlert } = useAlert();
 
     const [selectedBudgetLineId, setSelectedBudgetLineId] = useState(null);
+    const clinSelectorRef = useRef(null);
+
+    useEffect(() => {
+        if (selectedBudgetLineId && clinSelectorRef.current) {
+            clinSelectorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [selectedBudgetLineId]);
 
     const handleAddCLIN = (clinNumber) => {
         if (!selectedBudgetLineId) return;
@@ -87,6 +94,7 @@ export const RequestAwardApproval = () => {
         submitError,
         isSubmitting,
         hasApprovalBeenRequested,
+        isApprovalApproved,
         hasBLIInReview,
         isStep5Completed,
         projectOfficerName,
@@ -218,12 +226,14 @@ export const RequestAwardApproval = () => {
                     </div>
                 )}
                 {selectedBudgetLineId && (
-                    <CLINSelector
-                        key={selectedBudgetLineId}
-                        budgetLineId={selectedBudgetLineId}
-                        onAddCLIN={handleAddCLIN}
-                        currentClinNumber={clinAssignments[selectedBudgetLineId]}
-                    />
+                    <div ref={clinSelectorRef}>
+                        <CLINSelector
+                            key={selectedBudgetLineId}
+                            budgetLineId={selectedBudgetLineId}
+                            onAddCLIN={handleAddCLIN}
+                            currentClinNumber={clinAssignments[selectedBudgetLineId]}
+                        />
+                    </div>
                 )}
                 {groupedBudgetLinesByServicesComponent &&
                     groupedBudgetLinesByServicesComponent.length > 0 &&
@@ -335,9 +345,9 @@ export const RequestAwardApproval = () => {
                 </fieldset>
             </Accordion>
 
-            {/* Award Information */}
+            {/* Current Award Information */}
             <Accordion
-                heading="Award Information"
+                heading="Current Award Information"
                 level={3}
                 isClosed={false}
                 dataCy="award-information-accordion"
@@ -385,6 +395,7 @@ export const RequestAwardApproval = () => {
                             <CurrencyInput
                                 name="awardAmount"
                                 label="Award Amount"
+                                prefix="$"
                                 value={awardAmount}
                                 onChange={(_name, value) => {
                                     setAwardAmount(value);
@@ -464,6 +475,7 @@ export const RequestAwardApproval = () => {
                     disabled={
                         isSubmitting ||
                         hasApprovalBeenRequested ||
+                        isApprovalApproved ||
                         hasBLIInReview ||
                         !isStep5Completed ||
                         validationResult.hasErrors() ||

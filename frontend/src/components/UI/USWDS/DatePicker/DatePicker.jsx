@@ -91,6 +91,21 @@ function DatePicker({
         }
     }, [messages.length]);
 
+    // Sync disabled state to the cloned input and calendar button when isDisabled prop changes
+    // USWDS clones elements at mount, so we must imperatively sync the disabled attribute
+    useEffect(() => {
+        if (!inputRef.current || !datePickerRef.current) return;
+
+        // Update the cloned input
+        inputRef.current.disabled = isDisabled;
+
+        // Update the calendar toggle button
+        const toggleButton = datePickerRef.current.querySelector(".usa-date-picker__button");
+        if (toggleButton) {
+            toggleButton.disabled = isDisabled;
+        }
+    }, [isDisabled]);
+
     const datePickerAttributes = {
         ...(minDate && { "data-min-date": getDateString(minDate) }),
         ...(maxDate && { "data-max-date": getDateString(maxDate) })

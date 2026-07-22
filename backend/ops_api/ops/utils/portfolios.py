@@ -109,6 +109,20 @@ def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, s
     return sum([bli.total for bli in blis if bli.total and bli.fiscal_year == fiscal_year]) or Decimal(0)
 
 
+def _get_budget_line_item_total_by_statuses(
+    portfolio_id: int, fiscal_year: int, statuses: list[BudgetLineItemStatus]
+) -> Decimal:
+    stmt = (
+        select(BudgetLineItem)
+        .join(CAN)
+        .where(and_(CAN.portfolio_id == portfolio_id, BudgetLineItem.status.in_(statuses)))
+    )
+
+    blis = current_app.db_session.execute(stmt).scalars().all()
+
+    return sum([bli.total for bli in blis if bli.total and bli.fiscal_year == fiscal_year]) or Decimal(0)
+
+
 def get_total_funding(
     portfolio: Portfolio,
     fiscal_year: int,
@@ -135,10 +149,10 @@ def get_total_funding(
         status=BudgetLineItemStatus.DRAFT,
     )
 
-    planned_funding = _get_budget_line_item_total_by_status(
+    planned_funding = _get_budget_line_item_total_by_statuses(
         portfolio_id=portfolio.id,
         fiscal_year=fiscal_year,
-        status=BudgetLineItemStatus.PLANNED,
+        statuses=[BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD],
     )
 
     obligated_funding = _get_budget_line_item_total_by_status(

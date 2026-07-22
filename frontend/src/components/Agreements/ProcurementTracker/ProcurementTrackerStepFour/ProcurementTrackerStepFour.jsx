@@ -1,9 +1,10 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -50,6 +51,7 @@ const ProcurementTrackerStepFour = ({
         setStep4DateCompleted,
         step4Notes,
         setStep4Notes,
+        resetStep4Notes,
         step4NotesLabel,
         runValidate,
         validatorRes,
@@ -61,6 +63,7 @@ const ProcurementTrackerStepFour = ({
         setShowModal,
         modalProps,
         cancelModalStep4,
+        handleSaveNotes,
         handleStepFourComplete
     } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber);
 
@@ -234,14 +237,11 @@ const ProcurementTrackerStepFour = ({
                                 isDisabled={isEvaluationFieldsDisabled}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step4Notes}
-                            onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep4Notes(value)}
-                            isDisabled={isEvaluationFieldsDisabled}
+                        <StepNotesForm
+                            notes={step4Notes}
+                            setNotes={setStep4Notes}
+                            onSave={() => handleSaveNotes(stepFourData?.id)}
+                            isDisabled={isDisabled}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -306,7 +306,16 @@ const ProcurementTrackerStepFour = ({
                         />
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step4NotesLabel || "None"}</dd>
+                            <StepNotesEditor
+                                notes={step4Notes}
+                                setNotes={setStep4Notes}
+                                resetNotes={resetStep4Notes}
+                                notesLabel={step4NotesLabel}
+                                savedNotes={stepFourData?.notes}
+                                stepId={stepFourData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>

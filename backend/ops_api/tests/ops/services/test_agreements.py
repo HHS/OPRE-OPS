@@ -1614,7 +1614,7 @@ class TestComputeProcurementOverview:
         result = _compute_procurement_overview([], fiscal_year=2025)
         assert result["total_amount"] == 0.0
         assert result["total_agreements"] == 0
-        assert len(result["status_data"]) == 3
+        assert len(result["status_data"]) == 4  # PLANNED, PLANNED_MOD, IN_EXECUTION, OBLIGATED
 
     def test_single_planned_bli(self):
         from decimal import Decimal

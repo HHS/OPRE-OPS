@@ -5,6 +5,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import HorizontalStackedBar from "../../UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import styles from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.module.scss";
+import { getActivePortfolioTagTextColor } from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.helpers";
 import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers";
 
 /**
@@ -57,6 +58,7 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                         >
                             {chartData.map((item) => {
                                 const isActive = activeId === item.id;
+                                const activeTextColor = getActivePortfolioTagTextColor(item.abbreviation);
                                 return (
                                     <div
                                         key={item.id}
@@ -80,7 +82,10 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                                             style={{
                                                 padding: "0.25rem 0.5rem",
                                                 borderRadius: "0.25rem",
-                                                fontSize: "12px"
+                                                fontSize: "12px",
+                                                ...(isActive
+                                                    ? { backgroundColor: item.color, color: activeTextColor }
+                                                    : {})
                                             }}
                                         >
                                             {item.percent}%

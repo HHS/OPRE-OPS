@@ -191,6 +191,11 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
             aa.id = existing_aa.id
             aa.created_on = existing_aa.created_on
             aa.created_by = existing_aa.created_by
+            # Preserve fields the CSV does not carry so the upsert does not null them out
+            aa.awarding_entity_id = existing_aa.awarding_entity_id
+            aa.product_service_code_id = existing_aa.product_service_code_id
+            aa.project_officer_id = existing_aa.project_officer_id
+            aa.alternate_project_officer_id = existing_aa.alternate_project_officer_id
 
             updates = generate_agreement_events_update(
                 existing_aa.to_dict(),
@@ -225,10 +230,7 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
 
         session.merge(aa)
         session.flush()
-        # Set Dry Run true so that we don't commit at the end of the function
-        # This allows us to rollback the session if dry_run is enabled or not commit changes
-        # if something errors after this point
-        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=False)
         session.commit()
 
         # Refresh aa to ensure we have the ID (important!)
@@ -253,6 +255,71 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
                     session.commit()
 
                     session.add(new_budget_line_item)
+
+            # Repoint COR/FPO, alternate, nick_name, SRT, procurement shop, agreement reason, and PSC ID from the existin agreement
+            aa.project_officer_id = existing_agreement.project_officer_id
+            aa.alternate_project_officer_id = existing_agreement.alternate_project_officer_id
+            aa.awarding_entity_id = existing_agreement.awarding_entity_id
+            aa.product_service_code_id = existing_agreement.product_service_code_id
+            aa.nick_name = existing_agreement.nick_name
+            aa.service_requirement_type = existing_agreement.service_requirement_type
+            aa.agreement_reason = existing_agreement.agreement_reason
+
+            # Repoint CLINs to the new AA so they survive the agreement delete
+            # (clin.agreement_id has ondelete=CASCADE, so otherwise they'd be deleted).
+            clins = session.execute(select(CLIN).where(CLIN.agreement_id == existing_agreement.id)).scalars().all()
+            for clin in clins:
+                clin.agreement_id = aa.id
+            session.commit()
+
+            # Repoint procurement actions/trackers to the new AA so they survive the delete
+            # (both have agreement_id under cascade="all, delete"; deleting the old agreement
+            # would cascade-delete them and violate procurement_tracker -> procurement_action FK).
+            proc_actions = (
+                session.execute(
+                    select(ProcurementAction).where(ProcurementAction.agreement_id == existing_agreement.id)
+                )
+                .scalars()
+                .all()
+            )
+            for proc_action in proc_actions:
+                proc_action.agreement_id = aa.id
+            proc_trackers = (
+                session.execute(
+                    select(ProcurementTracker).where(ProcurementTracker.agreement_id == existing_agreement.id)
+                )
+                .scalars()
+                .all()
+            )
+            for proc_tracker in proc_trackers:
+                proc_tracker.agreement_id = aa.id
+            session.commit()
+
+            # Repoint agreement history to the new AA so it stays associated after the delete
+            # (agreement_id has ondelete=SET NULL; agreement_id_record is a durable audit int).
+            history_records = (
+                session.execute(
+                    select(AgreementHistory).where(AgreementHistory.agreement_id_record == existing_agreement.id)
+                )
+                .scalars()
+                .all()
+            )
+            for history_record in history_records:
+                history_record.agreement_id = aa.id
+                history_record.agreement_id_record = aa.id
+
+            # Repoint team-member associations to the new AA so the links survive the delete
+            # (agreement_team_members rows are otherwise removed with the old agreement).
+            team_member_rows = (
+                session.execute(
+                    select(AgreementTeamMembers).where(AgreementTeamMembers.agreement_id == existing_agreement.id)
+                )
+                .scalars()
+                .all()
+            )
+            for team_member_row in team_member_rows:
+                team_member_row.agreement_id = aa.id
+            session.commit()
 
             logger.info(f"Removing existing agreement {existing_agreement.name} with ID {existing_agreement.id}")
             session.delete(existing_agreement)

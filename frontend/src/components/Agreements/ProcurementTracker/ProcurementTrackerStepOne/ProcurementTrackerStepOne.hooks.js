@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAcquisitionPlanningStep} ProcurementTrackerAcquisitionPlanningStep
@@ -20,7 +21,6 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
-    const [step1Notes, setStep1Notes] = React.useState("");
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -40,6 +40,13 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step1Notes,
+        setNotes: setStep1Notes,
+        resetNotes: resetStep1Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
 
     const handleStep1Complete = async (stepId) => {
         const payload = {
@@ -69,7 +76,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         setIsPreSolicitationPackageSent(false);
         setSelectedUser({});
         setStep1DateCompleted("");
-        setStep1Notes("");
+        resetStep1Notes(stepOneData?.notes ?? "");
         suite.reset();
     };
     const cancelModalStep1 = () => {
@@ -97,7 +104,9 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         MemoizedDatePicker,
         step1Notes,
         setStep1Notes,
+        resetStep1Notes,
         handleStep1Complete,
+        handleSaveNotes,
         cancelModalStep1,
         disableStep1Buttons,
         step1CompletedByUserName,

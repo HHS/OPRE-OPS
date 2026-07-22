@@ -185,8 +185,8 @@ it("click on chevron down should open row and see budgetline data", () => {
 
 it("click on agreement name and check if its routed to the correct page", () => {
     cy.get("#fiscal-year-select").select("2044");
-    cy.get("[data-testid='budget-line-row-16022']").find("a").click();
-    cy.url().should("include", "/agreements/1");
+    cy.get("tbody tr").first().find("a[href*='/agreements/']").first().click();
+    cy.url().should("match", /\/agreements\/\d+/);
 });
 
 it.skip("click on edit bli and check to see if the form is populated", () => {

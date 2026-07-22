@@ -110,6 +110,7 @@ export const useReportingPageData = () => {
         setSelectedFiscalYear,
         filters,
         setFilters,
+        allPortfolios,
         totalFunding,
         totalSpending,
         portfoliosWithFunding,

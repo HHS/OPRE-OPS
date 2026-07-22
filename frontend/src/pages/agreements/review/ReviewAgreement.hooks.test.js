@@ -181,8 +181,9 @@ describe("useReviewAgreement", () => {
         });
 
         expect(result.current.pageErrors).toHaveProperty("cor");
-        expect(result.current.pageErrors).toHaveProperty("Budget Line Amount");
-        expect(result.current.pageErrors).toHaveProperty("Budget Line CAN");
+        // BLI error keys are normalized in validateBudgetLineItem
+        expect(result.current.pageErrors).toHaveProperty("amount");
+        expect(result.current.pageErrors).toHaveProperty("can");
         expect(result.current.hasBLIError).toBe(true);
         expect(result.current.isSubmissionReady).toBe(true);
     });

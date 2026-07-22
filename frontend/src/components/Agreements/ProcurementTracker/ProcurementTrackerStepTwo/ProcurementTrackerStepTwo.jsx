@@ -1,10 +1,11 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import SimpleAlert from "../../../UI/Alert/SimpleAlert";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -53,6 +54,7 @@ const ProcurementTrackerStepTwo = ({
         setStep2DateCompleted,
         step2Notes,
         setStep2Notes,
+        resetStep2Notes,
         step2NotesLabel,
         runValidate,
         validatorRes,
@@ -65,6 +67,7 @@ const ProcurementTrackerStepTwo = ({
         setShowModal,
         modalProps,
         cancelModalStep2,
+        handleSaveNotes,
         handleStepTwoComplete,
         step2DraftSolicitationDateLabel,
         isPastDue,
@@ -283,14 +286,11 @@ const ProcurementTrackerStepTwo = ({
                                 isDisabled={isPackageFinalizedFieldsDisabled}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step2Notes}
-                            onChange={(_, value) => setStep2Notes(value)}
-                            isDisabled={isPackageFinalizedFieldsDisabled}
+                        <StepNotesForm
+                            notes={step2Notes}
+                            setNotes={setStep2Notes}
+                            onSave={() => handleSaveNotes(stepTwoData?.id)}
+                            isDisabled={isDisabled}
                         />
                         <p
                             className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
@@ -381,7 +381,16 @@ const ProcurementTrackerStepTwo = ({
                         </div>
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                            <StepNotesEditor
+                                notes={step2Notes}
+                                setNotes={setStep2Notes}
+                                resetNotes={resetStep2Notes}
+                                notesLabel={step2NotesLabel}
+                                savedNotes={stepTwoData?.notes}
+                                stepId={stepTwoData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>

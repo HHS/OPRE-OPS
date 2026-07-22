@@ -45,7 +45,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 }));
 
 vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
-    PreAwardBudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
+    BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
@@ -138,11 +138,12 @@ describe("ReviewBudgetTeamRequisition", () => {
         },
         isLoading: false,
         allBudgetLines: [],
+        executingBudgetLines: [],
         executingTotal: 50000,
         projectOfficerName: "John Doe",
         alternateProjectOfficerName: "Jane Smith",
         servicesComponents: [],
-        groupedBudgetLinesByServicesComponent: [],
+        groupedExecutingBudgetLinesByServicesComponent: [],
         preAwardMemoDocuments: [],
         requestorNotes: "Submitter notes here",
         reviewerNotes: "Division Director notes here",
@@ -241,7 +242,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             const requisitionInput = screen.getByLabelText("Requisition #");
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             const attestationCheckbox = screen.getByRole("checkbox");
 
             expect(requisitionInput).toBeDisabled();
@@ -279,7 +280,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
-            expect(screen.getByLabelText(/Requisition Date/)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Requisition Approval Date/)).toBeInTheDocument();
         });
 
         it("should render attestation checkbox", () => {
@@ -351,7 +352,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             await user.type(dateInput, "2026-05-12");
 
             expect(mockSetRequisitionDate).toHaveBeenCalled();

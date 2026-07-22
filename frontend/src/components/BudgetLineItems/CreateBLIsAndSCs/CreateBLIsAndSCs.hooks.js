@@ -110,6 +110,29 @@ const useCreateBLIsAndSCs = (
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
 
+    // Snapshot the page-suite result in state. The suites are module-level singletons
+    // read during render (here and in BudgetLinesForm), so a stale result from a prior
+    // session/agreement can be painted before the reset effect below fires. Storing the
+    // result in state lets the effect call setState after reset(), which schedules a
+    // re-render with clean validation instead of relying on an incidental re-render. (issue #5894)
+    const [pageSuiteResult, setPageSuiteResult] = React.useState(() => suite.get());
+
+    // Reset validation suites on mount and unmount so stale results from a
+    // previous agreement or user session never paint errors on a fresh form. (issue #5894)
+    React.useEffect(() => {
+        suite.reset();
+        budgetFormSuite.reset();
+        datePickerSuite.reset();
+        // Force a re-render with the freshly-cleared state so the render-time reads
+        // (this hook's `res` and BudgetLinesForm's datePickerSuite.get()) repaint clean.
+        setPageSuiteResult(suite.get());
+        return () => {
+            suite.reset();
+            budgetFormSuite.reset();
+            datePickerSuite.reset();
+        };
+    }, []);
+
     // Derive the effective SC window from all services components (saved and unsaved).
     // All SCs (saved or unsaved) carry period_start/period_end in YYYY-MM-DD format.
     // Unsaved SCs also have popStartDate/popEndDate (MM/DD/YYYY) from the form, but
@@ -157,11 +180,14 @@ const useCreateBLIsAndSCs = (
     }, [tempBudgetLines, servicesComponents]);
 
     // Validation
+    // Review mode re-runs the suite every render against the current budget lines.
+    // Non-review mode reads the state-backed snapshot so a mount-time reset() repaints
+    // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
         ? suite.run({
               budgetLines: tempBudgetLines
           })
-        : suite.get();
+        : pageSuiteResult;
     const pageErrors = res.getErrors();
     // Filter page errors to only include "Budget line item" errors and consolidate into single message
     const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));

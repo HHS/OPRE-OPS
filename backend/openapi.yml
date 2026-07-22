@@ -162,12 +162,12 @@ paths:
                     type: array
                     items:
                       oneOf:
-                        - $ref: "#/components/schemas/AgreementResponse"
-                        - $ref: "#/components/schemas/ContractAgreementResponse"
-                        - $ref: "#/components/schemas/GrantAgreementResponse"
-                        - $ref: "#/components/schemas/DirectAgreementResponse"
-                        - $ref: "#/components/schemas/IaaAgreementResponse"
-                        - $ref: "#/components/schemas/AaAgreementResponse"
+                        - $ref: "#/components/schemas/AgreementListResponse"
+                        - $ref: "#/components/schemas/ContractListAgreementResponse"
+                        - $ref: "#/components/schemas/GrantListAgreementResponse"
+                        - $ref: "#/components/schemas/DirectListAgreementResponse"
+                        - $ref: "#/components/schemas/IaaListAgreementResponse"
+                        - $ref: "#/components/schemas/AaListAgreementResponse"
                   count:
                     type: integer
                     description: Total number of agreements matching the query
@@ -8552,6 +8552,90 @@ components:
               type: string
               nullable: true
               description: Notes from the approver (max 150 characters, required when declining)
+    ProcurementTrackerAwardStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Award step with vendor, contract, and award information fields
+          properties:
+            target_completion_date:
+              type: string
+              format: date
+              nullable: true
+              description: Target date for completing award activities. Must be current date or future date.
+            task_completed_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who completed this step
+            date_completed:
+              type: string
+              format: date
+              nullable: true
+              description: Date when this step was completed. Must be current date or past date.
+            notes:
+              type: string
+              nullable: true
+              description: Additional notes about this step
+            approval_requested:
+              type: boolean
+              nullable: true
+              description: Whether award approval has been requested
+            approval_requested_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when award approval was requested
+            approval_requested_by:
+              type: integer
+              nullable: true
+              description: User ID of the COR who requested award approval
+            requestor_notes:
+              type: string
+              nullable: true
+              description: Notes from the COR requesting approval (max 150 characters)
+            approval_status:
+              type: string
+              nullable: true
+              enum:
+                - PENDING
+                - APPROVED
+                - DECLINED
+              description: Current status of the award approval request
+            approval_responded_by:
+              type: integer
+              nullable: true
+              description: User ID of the Budget Team member who responded
+            approval_responded_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when the award approval was responded to
+            reviewer_notes:
+              type: string
+              nullable: true
+              description: Notes from the Budget Team reviewer (max 150 characters)
+            vendor_id:
+              type: integer
+              nullable: true
+              description: ID of the vendor awarded the contract
+            vendor:
+              type: object
+              nullable: true
+              description: Vendor details (id, name, duns, vendor_type)
+            contract_number:
+              type: string
+              nullable: true
+              description: Contract number from the signed award
+            award_amount:
+              type: number
+              format: float
+              nullable: true
+              description: Total awarded contract amount
+            award_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date the contract was awarded
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -8623,6 +8707,31 @@ components:
           description: >-
             Notes from the approver for PRE_AWARD steps (max 150 characters).
             Required when approval_status is DECLINED.
+        vendor_id:
+          type: integer
+          nullable: true
+          description: Vendor ID for AWARD steps (OPS-1640)
+        contract_number:
+          type: string
+          nullable: true
+          description: Contract number for AWARD steps (OPS-1640, max 100 characters)
+        award_amount:
+          type: number
+          format: float
+          nullable: true
+          description: Total awarded contract amount for AWARD steps (OPS-1640)
+        award_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date the contract was awarded for AWARD steps (OPS-1640)
+        obligated_date:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Obligated date entered by Budget Team on award approval (OPS-2280).
+            Used to set date_needed on obligated BLIs and the ProcurementAction obligated date.
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.
@@ -8993,6 +9102,15 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementData:
       allOf:
@@ -9109,6 +9227,71 @@ components:
             - division_directors
             - team_leaders
 
+    AgreementListResponse:
+      description: |
+        Base schema used in GET /agreements (list endpoint). Slimmer than AgreementResponse -
+        omits detail-only fields (division_directors, team_leaders, in_review,
+        change_requests_in_review, authorized_user_ids, special_topic) and uses an
+        optimized budget_line_items shape for list-view performance.
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            id:
+              type: integer
+            project:
+              $ref: "#/components/schemas/Project"
+            product_service_code:
+              $ref: "#/components/schemas/ProductServiceCode"
+            budget_line_items:
+              type: array
+              nullable: true
+              items:
+                type: object
+                description: Optimized BudgetLineItem fields for list responses
+                properties:
+                  id:
+                    type: integer
+                  amount:
+                    type: number
+                    format: float
+                  fees:
+                    type: number
+                    format: float
+                  status:
+                    type: string
+                  is_obe:
+                    type: boolean
+                  fiscal_year:
+                    type: integer
+            procurement_shop:
+              $ref: "#/components/schemas/ProcurementShop"
+            display_name:
+              type: string
+            is_awarded:
+              type: boolean
+              nullable: true
+            award_type:
+              type: string
+              nullable: true
+              enum:
+                - NEW
+                - CONTINUING
+            created_by:
+              $ref: "#/components/parameters/created_by"
+            updated_by:
+              $ref: "#/components/parameters/updated_by"
+            created_on:
+              $ref: "#/components/parameters/created_on"
+            updated_on:
+              $ref: "#/components/parameters/updated_on"
+            _meta:
+              $ref: "#/components/schemas/MetaSchema"
+          required:
+            - id
+            - display_name
+            - _meta
+
     ContractAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -9147,6 +9330,41 @@ components:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
 
+    ContractListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            contract_number:
+              type: string
+            vendor_id:
+              type: integer
+            vendor:
+              type: string
+            delivered_status:
+              type: boolean
+              default: false
+            contract_type:
+              type: string
+            service_requirement_type:
+              type: string
+            support_contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamMembers"
+            task_order_number:
+              type: string
+            po_number:
+              type: string
+            acquisition_type:
+              type: string
+            contract_category:
+              type: string
+            psc_contract_specialist:
+              type: string
+            cotr_id:
+              type: integer
+
     GrantAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -9154,14 +9372,54 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
+
+    GrantListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            foa:
+              type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
 
+    DirectListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+
     IaaAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            iaa:
+              type: string
+          required:
+            - iaa
+
+    IaaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
         - type: object
           properties:
             iaa:
@@ -9200,6 +9458,19 @@ components:
             is_awarded:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
+          required:
+            - requesting_agency
+            - servicing_agency
+
+    AaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/ContractListAgreementResponse"
+        - type: object
+          properties:
+            requesting_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+            servicing_agency:
+              $ref: "#/components/schemas/AgreementAgency"
           required:
             - requesting_agency
             - servicing_agency
@@ -9335,7 +9606,7 @@ components:
           description: CAN (Contract Account Number) ID
         status:
           type: string
-          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED]
+          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED, PLANNED_MOD]
           description: Status of the budget line item
         date_needed:
           type: string

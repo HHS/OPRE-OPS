@@ -281,16 +281,18 @@ def mock_portfolio():
 @patch("ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000)
 @patch("ops_api.ops.utils.portfolios._get_carry_forward_total", return_value=5000)
 @patch("ops_api.ops.utils.portfolios._get_new_funding_total", return_value=5000)
+@patch("ops_api.ops.utils.portfolios._get_budget_line_item_total_by_statuses", return_value=30000)
 @patch(
     "ops_api.ops.utils.portfolios._get_budget_line_item_total_by_status",
     side_effect=lambda portfolio_id, fiscal_year, status: {
         BudgetLineItemStatus.DRAFT: 10000,
-        BudgetLineItemStatus.PLANNED: 30000,
         BudgetLineItemStatus.OBLIGATED: 20000,
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
+def test_get_total_funding_all_values(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 100000
@@ -306,11 +308,14 @@ def test_get_total_funding_all_values(mock_total_funding, mock_carry_forward, mo
 @patch("ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=0)
 @patch("ops_api.ops.utils.portfolios._get_carry_forward_total", return_value=0)
 @patch("ops_api.ops.utils.portfolios._get_new_funding_total", return_value=0)
+@patch("ops_api.ops.utils.portfolios._get_budget_line_item_total_by_statuses", return_value=0)
 @patch(
     "ops_api.ops.utils.portfolios._get_budget_line_item_total_by_status",
     side_effect=lambda portfolio_id, fiscal_year, status: 0,
 )
-def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
+def test_get_total_funding_zero_values(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["total_funding"]["amount"] == 0
@@ -326,16 +331,18 @@ def test_get_total_funding_zero_values(mock_total_funding, mock_carry_forward, m
 @patch("ops_api.ops.utils.portfolios._get_total_fiscal_year_funding", return_value=100000)
 @patch("ops_api.ops.utils.portfolios._get_carry_forward_total", return_value=10000)
 @patch("ops_api.ops.utils.portfolios._get_new_funding_total", return_value=90000)
+@patch("ops_api.ops.utils.portfolios._get_budget_line_item_total_by_statuses", return_value=20000)
 @patch(
     "ops_api.ops.utils.portfolios._get_budget_line_item_total_by_status",
     side_effect=lambda portfolio_id, fiscal_year, status: {
         BudgetLineItemStatus.DRAFT: 10000,
-        BudgetLineItemStatus.PLANNED: 20000,
         BudgetLineItemStatus.OBLIGATED: 15000,
         BudgetLineItemStatus.IN_EXECUTION: 5000,
     }.get(status),
 )
-def test_get_total_funding_percentage(mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_portfolio):
+def test_get_total_funding_percentage(
+    mock_total_funding, mock_carry_forward, mock_budget_line_items, mock_statuses, mock_portfolio
+):
     result = get_total_funding(mock_portfolio, 2025)
 
     assert result["draft_funding"]["percent"] == "10.0"

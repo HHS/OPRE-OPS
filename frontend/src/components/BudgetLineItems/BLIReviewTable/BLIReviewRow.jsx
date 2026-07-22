@@ -34,6 +34,7 @@ import React, { memo } from "react";
  * @property {Function} [onAddCLINClick] - Callback when "+ CLIN" button is clicked with budgetLine.id
  * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
  * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
+ * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  */
 
 /**
@@ -50,8 +51,20 @@ const BLIReviewRow = ({
     readOnly = false,
     onAddCLINClick = () => {},
     showCLINColumn = false,
-    clinAssignments = {}
+    clinAssignments = {},
+    errorStatuses
 }) => {
+    // When errorStatuses is provided, inline errors only apply to rows whose status is in the list.
+    // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
+    const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
+
+    // Services component has no column in this table; surface its absence as a row-level error
+    // class so the user can locate the offending BLI when errorStatuses-mode is active.
+    const statusScopedErrors = Array.isArray(errorStatuses);
+    const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
+    const missingServicesComponentClass =
+        showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
+
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -151,11 +164,14 @@ const BLIReviewRow = ({
     };
 
     const TableRowData = (() => {
+        // showCellErrors and statusScopedErrors are computed at the component level
+        // (above the IIFE) so they are also available for the row className.
+
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
-        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)}`;
-        const dateNeededClasses = budgetLine.selected ? dateErrorClasses : "";
+        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)}`;
+        const dateNeededClasses = showCellErrors ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
 
@@ -171,18 +187,18 @@ const BLIReviewRow = ({
               : (budgetLine?.clin?.number ?? NO_DATA);
 
         // Only apply error styling to non-Draft BLIs with missing CLIN
-        const clinErrorClasses = !isDraftStatus ? `${addErrorClassIfNotFound(clinNumber, isReviewMode)}` : "";
+        const clinErrorClasses = !isDraftStatus ? `${addErrorClassIfNotFound(clinNumber, rowInReviewMode)}` : "";
         // For CLIN column, show error in review mode regardless of selection (Award Approval page)
         // For other columns, only show error when selected (Review Agreement page)
-        const clinClasses = isReviewMode ? clinErrorClasses : budgetLine.selected ? clinErrorClasses : "";
+        const clinClasses = rowInReviewMode ? clinErrorClasses : budgetLine.selected ? clinErrorClasses : "";
 
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
-        const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)}`;
-        const canNumberClasses = budgetLine.selected ? canNumberErrorClasses : "";
+        const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;
+        const canNumberClasses = showCellErrors ? canNumberErrorClasses : "";
 
         const amount = budgetLine?.amount ?? 0;
-        const amountErrorClasses = `${addErrorClassIfNotFound(amount, isReviewMode)}`;
-        const amountClasses = budgetLine.selected ? amountErrorClasses : "";
+        const amountErrorClasses = `${addErrorClassIfNotFound(amount, rowInReviewMode)}`;
+        const amountClasses = showCellErrors ? amountErrorClasses : "";
 
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
@@ -264,7 +280,7 @@ const BLIReviewRow = ({
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
-                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
+                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""} ${missingServicesComponentClass}`.trim()}
             />
         </>
     );

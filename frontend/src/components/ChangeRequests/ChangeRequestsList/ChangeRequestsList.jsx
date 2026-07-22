@@ -4,16 +4,19 @@ import { useSelector } from "react-redux";
 import {
     useGetChangeRequestsListQuery,
     useGetPendingPreAwardApprovalsQuery,
-    useGetPendingBudgetRequisitionsQuery
+    useGetPendingBudgetRequisitionsQuery,
+    useGetPendingAwardApprovalsQuery
 } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
+import AwardReviewCard from "../AwardReviewCard";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
 /** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep */
+/** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerAwardStep} ProcurementTrackerAwardStep */
 
 const BLI_STATUS_IN_EXECUTION = "IN_EXECUTION";
 const PAGE_SIZE = 10;
@@ -56,6 +59,13 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isError: errorBudgetRequisitions
     } = useGetPendingBudgetRequisitionsQuery(undefined, { refetchOnMountOrArgChange: true });
 
+    // Fetch pending award approvals
+    const {
+        data: awardApprovals,
+        isLoading: loadingAwardApprovals,
+        isError: errorAwardApprovals
+    } = useGetPendingAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
+
     const calculateExecutingTotal = (budgetLineItems = []) => {
         return budgetLineItems
             .filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION)
@@ -75,6 +85,11 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return new Date(Math.min(...dates)).toISOString().split("T")[0];
     };
 
+    const taggedAwardApprovals = (awardApprovals ?? []).map((/** @type {ProcurementTrackerAwardStep} */ step) => ({
+        _type: "award",
+        _sortDate: step.approval_requested_date ?? "",
+        item: step
+    }));
     const taggedBudgetRequisitions = (budgetRequisitions ?? []).map(
         (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
             _type: "budgetRequisition",
@@ -99,7 +114,12 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return cards;
     });
 
-    const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort((a, b) =>
+    const allItems = [
+        ...taggedBudgetRequisitions,
+        ...taggedPreAwardApprovals,
+        ...taggedAwardApprovals,
+        ...taggedChangeRequests
+    ].sort((a, b) =>
         b._sortDate > a._sortDate
             ? 1
             : b._sortDate < a._sortDate
@@ -116,10 +136,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
 
     // Handle navigation to error page in useEffect to avoid setState during render
     React.useEffect(() => {
-        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
+        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions || errorAwardApprovals) {
             navigate("/error");
         }
-    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, navigate]);
+    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, errorAwardApprovals, navigate]);
 
     // Clamp currentPage when allItems shrinks (e.g. after approving an item reduces totalPages)
     useEffect(() => {
@@ -128,10 +148,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         }
     }, [currentPage, totalPages]);
 
-    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions) {
+    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions || loadingAwardApprovals) {
         return <h1>Loading...</h1>;
     }
-    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
+    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions || errorAwardApprovals) {
         return null;
     }
 
@@ -178,6 +198,18 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             }
                             agreementTotal={item.procurement_tracker?.agreement?.agreement_total ?? 0}
                             requestorNotes={item.requestor_notes}
+                        />
+                    );
+                }
+                if (_type === "award") {
+                    return (
+                        <AwardReviewCard
+                            key={`award-${item.id}`}
+                            agreementId={item.procurement_tracker?.agreement?.id}
+                            requestorId={item.approval_requested_by ?? undefined}
+                            requestDate={item.approval_requested_date ?? undefined}
+                            awardAmount={item.award_amount ?? undefined}
+                            awardDate={item.award_date ?? undefined}
                         />
                     );
                 }

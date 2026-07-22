@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -56,7 +57,9 @@ const ProcurementTrackerStepSix = ({
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        resetStepSixNotes,
         stepSixNotesLabel,
+        isSubmitting,
         runValidate,
         validatorRes,
         stepSixDateCompletedLabel,
@@ -67,13 +70,16 @@ const ProcurementTrackerStepSix = ({
         setShowModal,
         modalProps,
         cancelModalStepSix,
+        handleSaveNotes,
         handleStepSixComplete
     } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
 
     // Disabled flags for form controls
     const isApprovalRequested =
         stepSixData?.approval_requested &&
-        (stepSixData?.approval_status == null || stepSixData?.approval_status === "PENDING");
+        (stepSixData?.approval_status === null ||
+            stepSixData?.approval_status === undefined ||
+            stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
     const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !stepSixData?.approval_requested;
@@ -257,15 +263,12 @@ const ProcurementTrackerStepSix = ({
                             </div>
 
                             {/* Notes */}
-                            <TextArea
-                                name="notes-step-6"
-                                label="Notes (optional)"
-                                className="margin-top-2"
-                                value={stepSixNotes}
-                                onChange={/** @param {any} _ @param {any} value */ (_, value) => setStepSixNotes(value)}
-                                isDisabled={isAwardFieldsDisabled}
-                                maxLength={750}
-                                data-cy="notes-step-6"
+                            <StepNotesForm
+                                textAreaName="notes-step-6"
+                                notes={stepSixNotes}
+                                setNotes={setStepSixNotes}
+                                onSave={() => handleSaveNotes(stepSixData?.id)}
+                                isDisabled={isDisabled}
                             />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
@@ -284,6 +287,7 @@ const ProcurementTrackerStepSix = ({
                                     onClick={() => handleStepSixComplete(stepSixData?.id)}
                                     disabled={
                                         isDisabled ||
+                                        isSubmitting ||
                                         validatorRes.hasErrors("dateCompleted") ||
                                         validatorRes.hasErrors("users") ||
                                         !selectedUser ||
@@ -292,7 +296,7 @@ const ProcurementTrackerStepSix = ({
                                     }
                                     data-cy="complete-step-6"
                                 >
-                                    Complete Step 6
+                                    {isSubmitting ? "Completing..." : "Complete Step 6"}
                                 </button>
                             </div>
                         </fieldset>
@@ -301,21 +305,62 @@ const ProcurementTrackerStepSix = ({
 
             {/* State 3: Completed Non-ReadOnly View */}
             {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
-                <div className="display-flex flex-align-center">
-                    <FontAwesomeIcon
-                        icon={faCircleCheck}
-                        className="text-green margin-right-1"
-                        size="lg"
-                    />
-                    <span>
-                        Completed by {stepSixCompletedByUserName || "Unknown"} on{" "}
-                        {stepSixDateCompletedLabel || "Unknown"}
-                    </span>
-                    {stepSixNotesLabel && (
-                        <div className="margin-left-2">
-                            <strong>Notes:</strong> {stepSixNotesLabel}
+                <div>
+                    <p>
+                        Once you receive the signed award, please send it to the Budget Team and click Request Award
+                        Approval below. During this process you will add CLINs, and update the Vendor and Vendor Type.
+                        The budget team will review everything has been entered correctly before changing the agreement
+                        to Awarded in OPS.
+                    </p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            Award received and uploaded. CLINs entered and Award Approval requested.
+                        </p>
+                    </div>
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={stepSixTargetCompletionDateLabel || "None"}
+                            />
                         </div>
-                    )}
+                        <TermTag
+                            term="Completed By"
+                            description={stepSixCompletedByUserName || "Unknown"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={stepSixDateCompletedLabel || "Unknown"}
+                        />
+                        {stepSixData?.approval_status && (
+                            <TermTag
+                                term="Award Approval Status"
+                                description={stepSixData.approval_status}
+                                className="margin-left-4"
+                            />
+                        )}
+                        <div className="margin-top-2">
+                            <dt className="margin-0 text-base-dark font-12px">Notes</dt>
+                            <StepNotesEditor
+                                notes={stepSixNotes}
+                                setNotes={setStepSixNotes}
+                                resetNotes={resetStepSixNotes}
+                                notesLabel={stepSixNotesLabel}
+                                savedNotes={stepSixData?.notes}
+                                stepId={stepSixData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                                textAreaName="notes-step-6"
+                            />
+                        </div>
+                    </dl>
                 </div>
             )}
         </>

@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreSolicitationStep} ProcurementTrackerPreSolicitationStep
@@ -21,7 +22,6 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const [selectedUser, setSelectedUser] = React.useState({});
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
-    const [step2Notes, setStep2Notes] = React.useState("");
     const [revisedTargetDate, setRevisedTargetDate] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -68,6 +68,13 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step2Notes,
+        setNotes: setStep2Notes,
+        resetNotes: resetStep2Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
@@ -168,7 +175,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setSelectedUser({});
         setTargetCompletionDate("");
         setStep2DateCompleted("");
-        setStep2Notes("");
+        resetStep2Notes(stepTwoData?.notes ?? "");
         setRevisedTargetDate("");
     };
 
@@ -186,6 +193,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
 
     return {
         cancelStepTwo,
+        handleSaveNotes,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,
@@ -202,6 +210,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2TargetCompletionDateLabel,
         step2Notes,
         setStep2Notes,
+        resetStep2Notes,
         step2NotesLabel,
         runValidate,
         validatorRes,

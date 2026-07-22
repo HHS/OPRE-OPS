@@ -8,3 +8,10 @@ class PreAwardNotificationTitle:
     APPROVAL_DECLINED = "Pre-Award Approval Declined"
     REQUISITION_APPROVED = "Pre-Award Requisition Approved"
     BUDGET_TEAM_REVIEW_REQUIRED = "Budget Team Requisition Review Required"
+
+
+class AwardNotificationTitle:
+    """Notification titles for award approval process."""
+
+    APPROVAL_REQUEST = "Award Approval Request"
+    APPROVED = "Award Approved"

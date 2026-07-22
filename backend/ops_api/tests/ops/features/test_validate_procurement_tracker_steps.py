@@ -101,7 +101,7 @@ def test_validate_updating_procurement_tracker_step_with_valid_status(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "When no presolicitation package is sent to proc shop, the request is valid with unfilled request",
+    "Cannot complete acquisition planning step without required fields",
 )
 def test_validate_updating_procurement_tracker_step_without_presolicitation_package(): ...
 
@@ -111,6 +111,13 @@ def test_validate_updating_procurement_tracker_step_without_presolicitation_pack
     "Cannot update completed procurement tracker step",
 )
 def test_cannot_update_completed_procurement_tracker_step(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Can update only the notes on a completed procurement tracker step",
+)
+def test_can_update_notes_only_on_completed_procurement_tracker_step(): ...
 
 
 @scenario(
@@ -590,6 +597,11 @@ def have_valid_completed_procurement_step(context):
     context["request_body"] = data
 
 
+@when("I have a notes-only update for the completed step")
+def have_notes_only_update_for_completed_step(context):
+    context["request_body"] = {"notes": "Adding a note after completion."}
+
+
 @when("I have a procurement step with a non-existent user in the task_completed_by step")
 def have_procurement_step_with_nonexistent_user(context):
     data = {
@@ -934,6 +946,17 @@ def check_user_association_error_message(context, setup_and_teardown):
 def check_invalid_status_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 400
+
+
+@then("I should get a message that the notes were updated successfully")
+def check_notes_only_update_success(context, loaded_db, setup_and_teardown):
+    response = context["response_patch"]
+    assert response.status_code == 200, response.get_json()
+
+    json_data = response.get_json()
+    assert json_data["notes"] == "Adding a note after completion."
+    # The step should remain completed after a notes-only update.
+    assert json_data["status"] == ProcurementTrackerStepStatus.COMPLETED.name
 
 
 @then("I should get a resource not found error")
