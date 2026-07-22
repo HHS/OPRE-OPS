@@ -5,7 +5,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import ServicesComponent
-from models.budget_line_items import BudgetLineItemStatus
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -88,8 +87,6 @@ class ServicesComponentService:
 
         new_sc = ServicesComponent(**create_request)
 
-        self._validate_bli_pop_window_for_create(create_request)
-
         try:
             self.db_session.add(new_sc)
             if commit:
@@ -131,16 +128,6 @@ class ServicesComponentService:
         if "agreement_id" in updated_fields and services_component.agreement_id != updated_fields.get("agreement_id"):
             raise ValidationError({"agreement_id": ["Agreement ID cannot be changed"]})
 
-        period_start_changing = (
-            "period_start" in updated_fields and updated_fields["period_start"] != services_component.period_start
-        )
-        period_end_changing = (
-            "period_end" in updated_fields and updated_fields["period_end"] != services_component.period_end
-        )
-
-        if period_start_changing or period_end_changing:
-            self._validate_bli_pop_window(services_component, updated_fields)
-
         updated_fields["id"] = obj_id  # Ensure ID is included for update
 
         updated_service_component = ServicesComponent(**updated_fields)
@@ -177,117 +164,6 @@ class ServicesComponentService:
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
-
-    def _validate_bli_pop_window_for_create(self, create_request: dict[str, Any]) -> None:
-        """
-        Validate that all non-draft BLIs on the agreement fall within the window
-        defined by the new SC being created, combined with any existing SCs.
-
-        Raises:
-            ValidationError: if any non-draft BLI would fall outside the resulting window.
-        """
-        from models import Agreement
-
-        agreement_id = create_request.get("agreement_id")
-        if not agreement_id:
-            return
-
-        agreement = self.db_session.get(Agreement, agreement_id)
-        if not agreement:
-            return
-
-        new_start = create_request.get("period_start")
-        new_end = create_request.get("period_end")
-
-        all_starts = [sc.period_start for sc in agreement.services_components if sc.period_start]
-        all_ends = [sc.period_end for sc in agreement.services_components if sc.period_end]
-        if new_start:
-            all_starts.append(new_start)
-        if new_end:
-            all_ends.append(new_end)
-
-        window_start = min(all_starts) if all_starts else None
-        window_end = max(all_ends) if all_ends else None
-
-        non_draft_blis = [
-            bli
-            for bli in agreement.budget_line_items
-            if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed is not None
-        ]
-
-        if not non_draft_blis or (window_start is None and window_end is None):
-            return
-
-        affected = [
-            bli
-            for bli in non_draft_blis
-            if (window_start and bli.date_needed < window_start) or (window_end and bli.date_needed > window_end)
-        ]
-
-        if affected:
-            affected_ids = ", ".join(str(bli.id) for bli in affected)
-            raise ValidationError(
-                {
-                    "period_start": [
-                        f"Budget Line Items {affected_ids} fall outside the updated Period of Performance window."
-                    ]
-                }
-            )
-
-    def _validate_bli_pop_window(self, services_component: ServicesComponent, updated_fields: dict[str, Any]) -> None:
-        """
-        Validate that all non-draft BLIs on the agreement still fall within the SC PoP window
-        after applying the proposed period_start / period_end changes.
-
-        The window is the union of all SC periods on the agreement, with the SC being updated
-        replaced by its proposed new dates.
-
-        Raises:
-            ValidationError: listing the affected BLI IDs if any would fall outside the window.
-        """
-        agreement = services_component.agreement
-
-        new_start = updated_fields.get("period_start", services_component.period_start)
-        new_end = updated_fields.get("period_end", services_component.period_end)
-
-        # Build the overall window across all SCs, substituting the proposed dates for this SC.
-        all_starts = []
-        all_ends = []
-        for sc in agreement.services_components:
-            start = new_start if sc.id == services_component.id else sc.period_start
-            end = new_end if sc.id == services_component.id else sc.period_end
-            if start:
-                all_starts.append(start)
-            if end:
-                all_ends.append(end)
-
-        window_start = min(all_starts) if all_starts else None
-        window_end = max(all_ends) if all_ends else None
-
-        non_draft_blis = [
-            bli
-            for bli in agreement.budget_line_items
-            if bli.status != BudgetLineItemStatus.DRAFT and bli.date_needed is not None
-        ]
-
-        if not non_draft_blis or (window_start is None and window_end is None):
-            return
-
-        affected = [
-            bli
-            for bli in non_draft_blis
-            if (window_start and bli.date_needed < window_start) or (window_end and bli.date_needed > window_end)
-        ]
-
-        if affected:
-            affected_ids = ", ".join(str(bli.id) for bli in affected)
-            raise ValidationError(
-                {
-                    "period_start": [
-                        f"Budget Line Items {affected_ids} fall outside the updated Period of Performance window."
-                    ]
-                }
-            )
 
     def _sc_associated_with_agreement(self, obj_id: int) -> bool:
         """
