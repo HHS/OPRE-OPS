@@ -5,6 +5,7 @@ import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/Agreement
 import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
 import GrantNumbers from "../../GrantNumbers";
+import GrantNumberAccordion from "../../GrantNumbers/GrantNumberAccordion";
 import ServicesComponents from "../../ServicesComponents";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
@@ -99,6 +100,7 @@ export const CreateBLIsAndSCs = ({
         enteredDescription,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedBudgetLinesByGrantNumber,
         res,
         feesForCards,
         subTotalForCards,
@@ -115,7 +117,9 @@ export const CreateBLIsAndSCs = ({
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
-        setServicesComponentNumber
+        setServicesComponentNumber,
+        grantNumberNumber,
+        setGrantNumberNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -194,6 +198,24 @@ export const CreateBLIsAndSCs = ({
                         return { id: sc.id, ...clean };
                     });
 
+                // Grant numbers, mirroring the SC create/update buckets. Defined before the BLI
+                // link resolution so new grant BLIs can reference an in-bundle grant number's ref.
+                const newGns = grantNumbers
+                    .filter((gn) => !("created_on" in gn))
+                    .map((gn) => {
+                        const ref = gn.display_title ?? String(gn.number ?? "");
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { ...clean, ref };
+                    });
+                const changedGns = grantNumbers
+                    .filter((gn) => "created_on" in gn && gn.has_changed)
+                    .map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { id: gn.id, ...clean };
+                    });
+
                 // For BLIs we need to resolve the SC link. New BLIs carry only
                 // `services_component_number`; the link is either:
                 //   - an existing persisted SC (use services_component_id directly), or
@@ -228,24 +250,56 @@ export const CreateBLIsAndSCs = ({
                     return out;
                 };
 
+                // Grant analog of the SC link resolution above. A grant BLI carries
+                // grant_number_number in editor state; resolve it to either a persisted
+                // grant number's id or a not-yet-persisted (in-bundle) grant number's ref.
+                const existingGnByNumber = new Map(
+                    grantNumbers.filter((gn) => "created_on" in gn).map((gn) => [gn.number, gn])
+                );
+                const newGnByNumber = new Map(newGns.map((gn) => [gn.number, gn]));
+
+                const linkBliToGrantNumber = (bli) => {
+                    if (bli.grant_number_number == null) return {};
+                    const existingGn = existingGnByNumber.get(bli.grant_number_number);
+                    if (existingGn) {
+                        return { grant_number_id: existingGn.id };
+                    }
+                    const newGn = newGnByNumber.get(bli.grant_number_number);
+                    if (newGn) {
+                        return { grant_number_ref: newGn.ref };
+                    }
+                    return {};
+                };
+
+                // Drop a stale grant_number_id when emitting a ref, mirroring applyScLink.
+                const applyGnLink = (cleaned, link) => {
+                    const out = { ...cleaned, ...link };
+                    if ("grant_number_ref" in link) {
+                        delete out.grant_number_id;
+                    }
+                    return out;
+                };
+
+                // For grant agreements, link BLIs to grant numbers; otherwise to services components.
+                const applyBliLink = (cleaned, bli) =>
+                    isGrant ? applyGnLink(cleaned, linkBliToGrantNumber(bli)) : applyScLink(cleaned, linkBliToSc(bli));
+
                 const newBlis = tempBudgetLines
                     .filter((bli) => !("created_on" in bli))
                     .map((bli) => {
-                        const link = linkBliToSc(bli);
                         const { data: cleaned } = cleanBudgetLineItemForApi(bli);
-                        return applyScLink(cleaned, link);
+                        return applyBliLink(cleaned, bli);
                     });
 
                 // For the dirty check we compare cleaned-vs-cleaned so the UI-only
-                // decorations (services_component_number, serviceComponentGroupingLabel,
-                // fees, _meta, etc.) don't make every existing BLI look "changed".
-                // Apply linkBliToSc to updates as well so an existing BLI moved onto an
-                // in-bundle (newly-created) SC carries services_component_ref.
+                // decorations (services_component_number, grant_number_number,
+                // serviceComponentGroupingLabel, fees, _meta, etc.) don't make every existing
+                // BLI look "changed". Apply the link to updates as well so an existing BLI moved
+                // onto an in-bundle (newly-created) SC/grant number carries the appropriate ref.
                 const updatedBlis = tempBudgetLines
                     .filter((bli) => "created_on" in bli)
                     .map((bli) => {
                         const baseline = budgetLines.find((b) => b.id === bli.id);
-                        const link = linkBliToSc(bli);
                         const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
@@ -253,27 +307,9 @@ export const CreateBLIsAndSCs = ({
                                 return null;
                             }
                         }
-                        return { id, ...applyScLink(cleaned, link) };
+                        return { id, ...applyBliLink(cleaned, bli) };
                     })
                     .filter(Boolean);
-
-                // Grant numbers, mirroring the SC create/update buckets above. Simpler than
-                // SC — no BLI linkage this slice, so no ref/id resolution is needed here.
-                const newGns = grantNumbers
-                    .filter((gn) => !("created_on" in gn))
-                    .map((gn) => {
-                        const ref = gn.display_title ?? String(gn.number ?? "");
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
-                        return { ...clean, ref };
-                    });
-                const changedGns = grantNumbers
-                    .filter((gn) => "created_on" in gn && gn.has_changed)
-                    .map((gn) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
-                        return { id: gn.id, ...clean };
-                    });
 
                 return {
                     services_components: {
@@ -429,10 +465,13 @@ export const CreateBLIsAndSCs = ({
                 </>
             )}
 
-            {isAgreementWorkflowOrCanEditBudgetLines && !isGrant && (
+            {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
                     servicesComponentNumber={servicesComponentNumber}
+                    grantNumberNumber={grantNumberNumber}
+                    setGrantNumberNumber={setGrantNumberNumber}
+                    isGrant={isGrant}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
@@ -468,9 +507,25 @@ export const CreateBLIsAndSCs = ({
             )}
 
             {isGrant ? (
-                // Grant budget lines are #5928 — this slice only shows the empty-state
-                // placeholder for the "Add Budget Lines" section on grants.
-                <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+                groupedBudgetLinesByGrantNumber.length > 0 ? (
+                    groupedBudgetLinesByGrantNumber.map((group, index) => (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                isReviewMode={isReviewMode}
+                            />
+                        </GrantNumberAccordion>
+                    ))
+                ) : (
+                    <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+                )
             ) : groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel

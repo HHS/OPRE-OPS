@@ -139,6 +139,43 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
     });
 
+    describe("Grant Variant (isGrant=true)", () => {
+        const getValidGrantData = () => ({
+            grantNumberNumber: 1,
+            selectedCan: { id: 1, number: "G123456" },
+            enteredAmount: 1000,
+            needByDate: getFutureDate()
+        });
+
+        it("should validate the grant number select and pass with valid data", () => {
+            const result = suite.run(getValidGrantData(), false, true);
+
+            expect(result.hasErrors()).toBe(false);
+            expect(result.getErrors("allGrantNumberSelect")).toHaveLength(0);
+        });
+
+        it("should require the grant number select when missing", () => {
+            const result = suite.run({ ...getValidGrantData(), grantNumberNumber: 0 }, false, true);
+
+            expect(result.hasErrors()).toBe(true);
+            expect(result.getErrors("allGrantNumberSelect")).toContain("This is required information");
+        });
+
+        it("should NOT register the services component group in grant mode", () => {
+            // grantNumberNumber valid but servicesComponentNumber null: no SC error should appear
+            const result = suite.run(getValidGrantData(), false, true);
+
+            expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
+        });
+
+        it("should NOT register the grant number group in contract mode", () => {
+            // valid contract data, grantNumberNumber absent: no grant error should appear
+            const result = suite.run(getValidData(), false, false);
+
+            expect(result.getErrors("allGrantNumberSelect")).toHaveLength(0);
+        });
+    });
+
     describe("Edge Cases", () => {
         it("should handle undefined userRoles parameter", () => {
             const result = suite.run(getValidData(), undefined);

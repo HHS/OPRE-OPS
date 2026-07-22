@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
+import AllGrantNumberSelect from "../../GrantNumbers/AllGrantNumberSelect";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
@@ -16,6 +17,9 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {Function} props.setSelectedCan - A function to set the selected CAN.
  * @param {number | null} props.servicesComponentNumber - The selected services component number.
  * @param {Function} props.setServicesComponentNumber - A function to set the selected services component number.
+ * @param {number | null} [props.grantNumberNumber] - The selected grant number (grant agreements).
+ * @param {Function} [props.setGrantNumberNumber] - A function to set the selected grant number.
+ * @param {boolean} [props.isGrant] - Whether the agreement is a grant (renders the grant-number select instead of the services-component select).
  * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {Function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {string | null} props.enteredDescription - The entered budget line description.
@@ -39,6 +43,9 @@ export const BudgetLinesForm = ({
     setSelectedCan,
     servicesComponentNumber,
     setServicesComponentNumber,
+    grantNumberNumber,
+    setGrantNumberNumber = () => {},
+    isGrant = false,
     enteredAmount,
     setEnteredAmount,
     enteredDescription,
@@ -70,11 +77,13 @@ export const BudgetLinesForm = ({
             const validationResult = budgetFormSuite.run(
                 {
                     servicesComponentNumber,
+                    grantNumberNumber,
                     selectedCan,
                     enteredAmount,
                     needByDate
                 },
-                isSuperUser
+                isSuperUser,
+                isGrant
             );
 
             const budgetCn = classnames(validationResult, {
@@ -83,7 +92,7 @@ export const BudgetLinesForm = ({
                 warning: "warning"
             });
 
-            scCn = budgetCn("allServicesComponentSelect");
+            scCn = isGrant ? budgetCn("allGrantNumberSelect") : budgetCn("allServicesComponentSelect");
             canCn = budgetCn("selectedCan");
             enteredAmountCn = budgetCn("enteredAmount");
             needByDateCn = budgetCn("needByDate");
@@ -102,12 +111,14 @@ export const BudgetLinesForm = ({
         budgetFormSuite.run(
             {
                 servicesComponentNumber,
+                grantNumberNumber,
                 selectedCan,
                 enteredAmount,
                 needByDate,
                 ...{ [name]: value }
             },
-            isSuperUser
+            isSuperUser,
+            isGrant
         );
     };
 
@@ -131,18 +142,33 @@ export const BudgetLinesForm = ({
                 <div className="grid-row grid-gap flex-align-end">
                     <div className="grid-col-6">
                         <div className="usa-form-group">
-                            <AllServicesComponentSelect
-                                messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
-                                className={scCn}
-                                value={servicesComponentNumber || ""}
-                                onChange={(name, value) => {
-                                    if (isReviewMode) {
-                                        validateBudgetForm("servicesComponentNumber", +value);
-                                    }
+                            {isGrant ? (
+                                <AllGrantNumberSelect
+                                    messages={budgetFormSuite.getErrors("allGrantNumberSelect")}
+                                    className={scCn}
+                                    value={grantNumberNumber || ""}
+                                    onChange={(name, value) => {
+                                        if (isReviewMode) {
+                                            validateBudgetForm("grantNumberNumber", +value);
+                                        }
 
-                                    setServicesComponentNumber(+value);
-                                }}
-                            />
+                                        setGrantNumberNumber(+value);
+                                    }}
+                                />
+                            ) : (
+                                <AllServicesComponentSelect
+                                    messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
+                                    className={scCn}
+                                    value={servicesComponentNumber || ""}
+                                    onChange={(name, value) => {
+                                        if (isReviewMode) {
+                                            validateBudgetForm("servicesComponentNumber", +value);
+                                        }
+
+                                        setServicesComponentNumber(+value);
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
                     <div className="grid-col-6">

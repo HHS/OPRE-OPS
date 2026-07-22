@@ -1,6 +1,6 @@
 import { create, test, enforce, group, mode, Modes } from "vest";
 
-const suite = create((data, isSuperUser = false) => {
+const suite = create((data, isSuperUser = false, isGrant = false) => {
     mode(Modes.ALL); // Set execution mode to ALL
 
     // skip all validations if user is a super user
@@ -8,11 +8,23 @@ const suite = create((data, isSuperUser = false) => {
         return;
     }
 
-    group("allServicesComponentSelect", () => {
-        test("allServicesComponentSelect", "This is required information", () => {
-            enforce(data.servicesComponentNumber).isNumeric().greaterThan(0);
+    // Only register the select group that applies to the current agreement type.
+    // Registering just one group means vest drops the other group's prior result on
+    // each run, so the inactive select never leaves a stale "required" error that
+    // would permanently disable the Add button (bidirectional skip). See plan §12.
+    if (isGrant) {
+        group("allGrantNumberSelect", () => {
+            test("allGrantNumberSelect", "This is required information", () => {
+                enforce(data.grantNumberNumber).isNotNullish().greaterThan(0);
+            });
         });
-    });
+    } else {
+        group("allServicesComponentSelect", () => {
+            test("allServicesComponentSelect", "This is required information", () => {
+                enforce(data.servicesComponentNumber).isNumeric().greaterThan(0);
+            });
+        });
+    }
 
     group("selectedCan", () => {
         test("selectedCan", "This is required information", () => {
