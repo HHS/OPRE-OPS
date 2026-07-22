@@ -9,6 +9,7 @@ from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_active_
 from ops_api.ops.utils.users import is_user_admin
 
 READ_ONLY_ROLE = "READ_ONLY"
+SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
 
 
 def resolve_roles(session: Session, role_names: list[str]) -> list[Role]:
@@ -93,16 +94,19 @@ def get_users(session: Session, **kwargs) -> list[User]:
 
     :param session: The database session.
     :param exclude_read_only: Whether to exclude read-only users.
+    :param exclude_system_admin: Whether to exclude the System Admin ETL user.
     :param **kwargs: The criteria to filter the users by.
     :return: The users that match the criteria.
 
     Business Rules:
     - Users with READ_ONLY role are excluded from the response
+    - The System Admin ETL user can optionally be excluded from the response
 
     """
     stmt = select(User)
 
     exclude_read_only = kwargs.pop("exclude_read_only", False)
+    exclude_system_admin = kwargs.pop("exclude_system_admin", False)
 
     for key, value in kwargs.items():
         if key == "roles":
@@ -112,6 +116,9 @@ def get_users(session: Session, **kwargs) -> list[User]:
 
     if exclude_read_only:
         stmt = stmt.where(~User.roles.any(Role.name == READ_ONLY_ROLE))
+
+    if exclude_system_admin:
+        stmt = stmt.where(User.email != SYSTEM_ADMIN_EMAIL)
 
     stmt = stmt.order_by(User.id)
 

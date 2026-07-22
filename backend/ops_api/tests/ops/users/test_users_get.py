@@ -175,6 +175,16 @@ def test_get_all_users(auth_client, loaded_db, app_ctx):
     assert read_only_user.id not in user_ids, "READ_ONLY user should be filtered from response"
 
 
+def test_get_all_users_exclude_system_admin(auth_client, loaded_db, app_ctx):
+    response_filtered = auth_client.get(url_for("api.users-group", exclude_system_admin=True))
+    assert response_filtered.status_code == 200
+    user_ids = [user["id"] for user in response_filtered.json]
+    system_admin_user = loaded_db.get(User, 526)  # System Admin
+    assert system_admin_user is not None, "System Admin user should exist in database"
+    assert system_admin_user.email == "system.admin@email.com"
+    assert system_admin_user.id not in user_ids, "System Admin user should be filtered from response"
+
+
 def test_get_all_users_by_id(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.users-group", id=500))
     assert response.status_code == 200
