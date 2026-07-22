@@ -180,6 +180,23 @@ def test_delete_draft_bli_is_immediate(budget_team_auth_client, loaded_db, delet
         _cleanup_bli(loaded_db, bli_id, sc)
 
 
+@pytest.mark.parametrize("status", [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION])
+def test_super_user_delete_bypasses_change_request(
+    power_user_auth_client, loaded_db, deletable_agreement, test_can, status, app_ctx
+):
+    """A super user deleting a PLANNED/IN_EXECUTION BLI hard-deletes it immediately (200), skipping
+    the change-request approval flow that a non-super-user would be routed through."""
+    bli, sc = _make_bli(loaded_db, deletable_agreement, test_can, status)
+    bli_id = bli.id
+    try:
+        response = power_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+        assert response.status_code == 200
+        assert loaded_db.get(ContractBudgetLineItem, bli_id) is None
+        assert loaded_db.query(BudgetLineItemChangeRequest).filter_by(budget_line_item_id=bli_id).count() == 0
+    finally:
+        _cleanup_bli(loaded_db, bli_id, sc)
+
+
 def test_delete_executing_bli_blocked_at_pre_award(
     budget_team_auth_client, loaded_db, deletable_agreement, test_can, make_tracker_at_step, app_ctx
 ):
