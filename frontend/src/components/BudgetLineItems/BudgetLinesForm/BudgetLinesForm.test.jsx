@@ -398,7 +398,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
     });
 
-    describe("PoP boundary validation — DRAFT BLI", () => {
+    describe("PoP boundary validation — DRAFT BLI is exempt", () => {
         // SC window: opens 30 days out, closes 120 days out.
         const SC_START = isoFromToday(30);
         const SC_END = isoFromToday(120);
@@ -417,7 +417,7 @@ describe("BudgetLinesForm Validation Integration", () => {
             scEndDate: SC_END
         };
 
-        it("shows PoP error when date is before scStartDate", () => {
+        it("does not show PoP error when date is before scStartDate", () => {
             render(
                 <Provider store={regularUserStore}>
                     <BudgetLinesForm
@@ -428,10 +428,10 @@ describe("BudgetLinesForm Validation Integration", () => {
             );
             const datePicker = screen.getByTestId("date-picker");
             const messages = JSON.parse(datePicker.getAttribute("data-messages"));
-            expect(messages).toContain(POP_ERROR);
+            expect(messages).not.toContain(POP_ERROR);
         });
 
-        it("shows PoP error when date is after scEndDate", () => {
+        it("does not show PoP error when date is after scEndDate", () => {
             render(
                 <Provider store={regularUserStore}>
                     <BudgetLinesForm
@@ -442,7 +442,7 @@ describe("BudgetLinesForm Validation Integration", () => {
             );
             const datePicker = screen.getByTestId("date-picker");
             const messages = JSON.parse(datePicker.getAttribute("data-messages"));
-            expect(messages).toContain(POP_ERROR);
+            expect(messages).not.toContain(POP_ERROR);
         });
 
         it("does not show PoP error when date equals scStartDate exactly", () => {

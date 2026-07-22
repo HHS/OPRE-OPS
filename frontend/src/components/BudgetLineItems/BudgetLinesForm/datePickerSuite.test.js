@@ -113,6 +113,32 @@ describe("datePickerSuite — invalid date format", () => {
     });
 });
 
+describe("datePickerSuite — DRAFT budget line is exempt from the PoP rule", () => {
+    it("does not error when the date is before scStartDate on a DRAFT budget line", () => {
+        const result = suite.run(
+            { needByDate: screenFromToday(15), scStartDate: SC_START, scEndDate: SC_END, isDraft: true },
+            false
+        );
+        expect(result.getErrors("needByDate")).not.toContain(POP_ERROR);
+    });
+
+    it("does not error when the date is after scEndDate on a DRAFT budget line", () => {
+        const result = suite.run(
+            { needByDate: screenFromToday(130), scStartDate: SC_START, scEndDate: SC_END, isDraft: true },
+            false
+        );
+        expect(result.getErrors("needByDate")).not.toContain(POP_ERROR);
+    });
+
+    it("still errors on a non-DRAFT budget line with the same out-of-window date", () => {
+        const result = suite.run(
+            { needByDate: screenFromToday(130), scStartDate: SC_START, scEndDate: SC_END, isDraft: false },
+            false
+        );
+        expect(result.getErrors("needByDate")).toContain(POP_ERROR);
+    });
+});
+
 describe("datePickerSuite — superuser bypass", () => {
     it("suppresses all errors including PoP when isSuperUser is true", () => {
         suite.run({ needByDate: screenFromToday(130), scStartDate: SC_START, scEndDate: SC_END }, true);

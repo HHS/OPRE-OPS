@@ -67,7 +67,7 @@ export const BudgetLinesForm = ({
     // reflects unsaved service components without waiting for a user interaction.
     const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
     React.useEffect(() => {
-        datePickerSuite.run({ needByDate, scStartDate, scEndDate }, isSuperUser);
+        datePickerSuite.run({ needByDate, scStartDate, scEndDate, isDraft: !isBudgetLineNotDraft }, isSuperUser);
         forceUpdate();
     }, [scStartDate, scEndDate, needByDate, isSuperUser, isBudgetLineNotDraft, datePickerSuite]);
 
@@ -107,7 +107,8 @@ export const BudgetLinesForm = ({
                 {
                     needByDate,
                     scStartDate,
-                    scEndDate
+                    scEndDate,
+                    isDraft: true
                 },
                 isSuperUser
             );
@@ -133,6 +134,7 @@ export const BudgetLinesForm = ({
                 needByDate,
                 scStartDate,
                 scEndDate,
+                isDraft: !isBudgetLineNotDraft,
                 ...{ [name]: value }
             },
             isSuperUser
