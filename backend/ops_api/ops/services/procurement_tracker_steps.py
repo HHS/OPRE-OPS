@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Select, and_, func, select
+from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from models import (
@@ -24,8 +24,9 @@ from models import (
     ProcurementTrackerStepType,
     User,
 )
+from models.budget_line_items import BudgetLineItemStatus
 from models.utils import generate_events_update
-from ops_api.ops.services.notification_constants import PreAwardNotificationTitle
+from ops_api.ops.services.notification_constants import AwardNotificationTitle, PreAwardNotificationTitle
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.validation.procurement_tracker_steps_validator import ProcurementTrackerStepsValidator
 
@@ -83,11 +84,29 @@ class ProcurementTrackerStepService:
         Raises:
             ResourceNotFoundError: If procurement tracker step doesn't exist
         """
+        # Use with_polymorphic to enable loading of subclass relationships
+        from sqlalchemy.orm import with_polymorphic
+
+        poly = with_polymorphic(ProcurementTrackerStep, [DefaultProcurementTrackerStep])
+
         stmt = (
-            select(ProcurementTrackerStep)
-            .where(ProcurementTrackerStep.id == id)
+            select(poly)
+            .where(poly.id == id)
             .options(
-                selectinload(ProcurementTrackerStep.procurement_tracker),
+                selectinload(poly.procurement_tracker),
+                # Load all user relationships that may be serialized
+                selectinload(poly.DefaultProcurementTrackerStep.acquisition_planning_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.evaluation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requisition_approved_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_vendor),
             )
         )
         step = self.db_session.scalar(stmt)
@@ -129,6 +148,9 @@ class ProcurementTrackerStepService:
         old_approval_requested = step.pre_award_approval_requested
         old_approval_status = step.pre_award_approval_status
         old_requisition_approved_by = step.pre_award_requisition_approved_by
+        # AWARD step captures (OPS-2280)
+        old_award_approval_requested = step.award_approval_requested
+        old_award_approval_status = step.award_approval_status
         # Map API field names to model field names for step-specific fields
         field_mapping = {
             "acquisition_planning": {
@@ -174,6 +196,25 @@ class ProcurementTrackerStepService:
                 "requisition_date": "pre_award_requisition_date",
                 # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED
             },
+            "award": {
+                "task_completed_by": "award_task_completed_by",
+                "date_completed": "award_date_completed",
+                "notes": "award_notes",
+                "target_completion_date": "award_target_completion_date",
+                "approval_requested": "award_approval_requested",
+                "approval_requested_date": "award_approval_requested_date",
+                "approval_requested_by": "award_approval_requested_by",
+                "requestor_notes": "award_requestor_notes",
+                "approval_status": "award_approval_status",
+                "approval_responded_by": "award_approval_responded_by",
+                "approval_responded_date": "award_approval_responded_date",
+                "reviewer_notes": "award_approval_reviewer_notes",
+                # OPS-1640: Award vendor and contract information fields
+                "vendor_id": "award_vendor_id",
+                "contract_number": "award_contract_number",
+                "award_amount": "award_amount",
+                "award_date": "award_date",
+            },
         }
 
         if step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
@@ -186,6 +227,8 @@ class ProcurementTrackerStepService:
             active_mapping = field_mapping["evaluation"]
         elif step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             active_mapping = field_mapping["pre_award"]
+        elif step.step_type == ProcurementTrackerStepType.AWARD:
+            active_mapping = field_mapping["award"]
         else:
             active_mapping = {}
 
@@ -213,25 +256,32 @@ class ProcurementTrackerStepService:
 
         # Always set approval_requested_by to current user when approval is requested
         # This is server-controlled and never accepted from the client
-        if data.get("approval_requested") is True:
-            # Clear previous response fields to allow new review cycle (e.g., after decline)
-            step.pre_award_approval_status = None
-            step.pre_award_approval_responded_by = None
-            step.pre_award_approval_responded_date = None
-            step.pre_award_approval_reviewer_notes = None
-            logger.debug("Cleared previous approval response fields for new request")
+        # Determine field prefix based on step type
+        approval_prefix = None
+        if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            approval_prefix = "pre_award_"
+        elif step.step_type == ProcurementTrackerStepType.AWARD:
+            approval_prefix = "award_"
 
-            step.pre_award_approval_requested_by = current_user.id
-            logger.debug(f"Set pre_award_approval_requested_by = {current_user.id} (server-controlled)")
+        if approval_prefix and data.get("approval_requested") is True:
+            # Clear previous response fields to allow new review cycle (e.g., after decline)
+            setattr(step, f"{approval_prefix}approval_status", None)
+            setattr(step, f"{approval_prefix}approval_responded_by", None)
+            setattr(step, f"{approval_prefix}approval_responded_date", None)
+            setattr(step, f"{approval_prefix}approval_reviewer_notes", None)
+            logger.debug(f"Cleared previous {approval_prefix}approval response fields for new request")
+
+            setattr(step, f"{approval_prefix}approval_requested_by", current_user.id)
+            logger.debug(f"Set {approval_prefix}approval_requested_by = {current_user.id} (server-controlled)")
 
         # Always set approval_responded_by and date when approval_status is set
         # These are server-controlled and never accepted from the client
-        if data.get("approval_status") in ["APPROVED", "DECLINED"]:
-            step.pre_award_approval_responded_by = current_user.id
-            step.pre_award_approval_responded_date = date.today()
+        if approval_prefix and data.get("approval_status") in ["APPROVED", "DECLINED"]:
+            setattr(step, f"{approval_prefix}approval_responded_by", current_user.id)
+            setattr(step, f"{approval_prefix}approval_responded_date", date.today())
             logger.debug(
-                f"Set pre_award_approval_responded_by = {current_user.id}, "
-                f"pre_award_approval_responded_date = {date.today()} (server-controlled)"
+                f"Set {approval_prefix}approval_responded_by = {current_user.id}, "
+                f"{approval_prefix}approval_responded_date = {date.today()} (server-controlled)"
             )
 
         # Handle COMPLETED status
@@ -250,9 +300,48 @@ class ProcurementTrackerStepService:
             old_requisition_approved_by=old_requisition_approved_by,
         )
 
+        # Handle award-specific side effects (OPS-2280)
+        if step.step_type == ProcurementTrackerStepType.AWARD:
+            obligated_date = data.get("obligated_date")
+            new_award_status = data.get("approval_status")
+            self._handle_award_approval(step, new_award_status, obligated_date, current_user)
+            self._handle_award_approval_notifications(
+                step=step,
+                data=data,
+                current_user=current_user,
+                old_award_approval_requested=old_award_approval_requested,
+                old_award_approval_status=old_award_approval_status,
+            )
+
         # Commit once after all operations (atomic transaction)
         self.db_session.commit()
-        self.db_session.refresh(step)
+
+        # Re-fetch with all relationships loaded using with_polymorphic
+        from sqlalchemy.orm import with_polymorphic
+
+        poly = with_polymorphic(ProcurementTrackerStep, [DefaultProcurementTrackerStep])
+
+        stmt_reload = (
+            select(poly)
+            .where(poly.id == step.id)
+            .options(
+                selectinload(poly.procurement_tracker),
+                # Load all user relationships that may be serialized
+                selectinload(poly.DefaultProcurementTrackerStep.acquisition_planning_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.evaluation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requisition_approved_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_vendor),
+            )
+        )
+        step = self.db_session.scalar(stmt_reload)
 
         logger.debug(f"Successfully updated procurement tracker step {id}")
 
@@ -298,9 +387,26 @@ class ProcurementTrackerStepService:
                 if procurement_tracker.procurement_action:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
                     if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
-                        procurement_action.status = ProcurementActionStatus.AWARDED
-                        procurement_action.date_awarded_obligated = date.today()
-                        logger.debug(f"Set procurement action status to AWARDED and award_date to {date.today()}")
+                        # Only mark AWARDED on step completion if Budget Team has already approved
+                        # (award_approval_status == "APPROVED"). If approval is still pending,
+                        # the agreement will be awarded when Budget Team approves via _handle_award_approval.
+                        if procurement_action.status == ProcurementActionStatus.AWARDED:
+                            logger.debug(
+                                "Procurement action already AWARDED by budget team approval — skipping on step completion"
+                            )
+                        elif (
+                            isinstance(step, DefaultProcurementTrackerStep) and step.award_approval_status == "APPROVED"
+                        ):
+                            procurement_action.status = ProcurementActionStatus.AWARDED
+                            if procurement_action.date_awarded_obligated is None:
+                                procurement_action.date_awarded_obligated = date.today()
+                                logger.debug(
+                                    f"Set procurement action status to AWARDED and award_date to {date.today()}"
+                                )
+                        else:
+                            logger.debug(
+                                "Skipping AWARDED status on step completion — award approval not yet granted by Budget Team"
+                            )
 
             # Create UPDATE_PROCUREMENT_TRACKER event if tracker was modified
             if tracker_modified:
@@ -653,20 +759,25 @@ class ProcurementTrackerStepService:
         """
         from sqlalchemy import and_, update
 
-        from models import PreAwardApprovalNotification
+        from models import AwardApprovalNotification, PreAwardApprovalNotification
 
-        dismiss_result = self.db_session.execute(
-            update(PreAwardApprovalNotification)
-            .where(
-                and_(
-                    PreAwardApprovalNotification.title == title,
-                    PreAwardApprovalNotification.is_read.is_(False),
-                    PreAwardApprovalNotification.procurement_tracker_step_id == step_id,
+        # Dismiss from whichever notification table holds records with this title + step
+        for notification_model in (PreAwardApprovalNotification, AwardApprovalNotification):
+            dismiss_result = self.db_session.execute(
+                update(notification_model)
+                .where(
+                    and_(
+                        notification_model.title == title,
+                        notification_model.is_read.is_(False),
+                        notification_model.procurement_tracker_step_id == step_id,
+                    )
                 )
+                .values(is_read=True)
             )
-            .values(is_read=True)
-        )
-        logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} {log_message}")
+            if dismiss_result.rowcount:
+                logger.debug(
+                    f"Auto-dismissed {dismiss_result.rowcount} {log_message} from {notification_model.__name__}"
+                )
 
     def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
@@ -880,6 +991,226 @@ class ProcurementTrackerStepService:
                 )
             )
             .order_by(DefaultProcurementTrackerStep.pre_award_approval_responded_date.desc())
+        )
+
+        return list(self.db_session.scalars(stmt).all())
+
+    def _handle_award_approval(self, step, approval_status, obligated_date, current_user):
+        """
+        Apply BLI transitions and mark procurement action AWARDED when award is approved.
+
+        When approval_status == "APPROVED":
+        - IN_EXECUTION BLIs → OBLIGATED (and set date_needed to obligated_date if provided)
+        - PLANNED BLIs → PLANNED_MOD
+        - Sets procurement_action.date_awarded_obligated if not already set
+        - Marks procurement_action status as AWARDED
+
+        Args:
+            step: The ProcurementTrackerStep being updated
+            approval_status: The new award approval status string
+            obligated_date: Optional date to set on IN_EXECUTION BLIs
+            current_user: User making the update
+        """
+        if approval_status != "APPROVED":
+            return
+
+        agreement = step.procurement_tracker.agreement
+        for bli in agreement.budget_line_items:
+            if bli.status == BudgetLineItemStatus.IN_EXECUTION:
+                bli.status = BudgetLineItemStatus.OBLIGATED
+                if obligated_date is not None:
+                    bli.date_needed = obligated_date
+                logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
+            elif bli.status == BudgetLineItemStatus.PLANNED:
+                bli.status = BudgetLineItemStatus.PLANNED_MOD
+                logger.debug(f"Transitioned BLI {bli.id} PLANNED → PLANNED_MOD")
+
+        # Set procurement action date and status if applicable
+        if step.procurement_tracker.procurement_action:
+            procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
+            if procurement_action:
+                if procurement_action.date_awarded_obligated is None:
+                    procurement_action.date_awarded_obligated = obligated_date or date.today()
+                    logger.debug(
+                        f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
+                    )
+                procurement_action.status = ProcurementActionStatus.AWARDED
+                logger.debug("Marked procurement action as AWARDED via award approval")
+
+    def _handle_award_approval_notifications(
+        self,
+        step,
+        data,
+        current_user,
+        old_award_approval_requested=None,
+        old_award_approval_status=None,
+    ):
+        """
+        Send notifications when award approval is requested or approved.
+
+        Case 1 (approval requested): sends notification to BT users.
+        Case 2 (approved): sends notification to broader team (requester + POs + team members + BT).
+
+        Args:
+            step: The updated procurement tracker step
+            data: The update data
+            current_user: User making the update
+            old_award_approval_requested: Previous value of award_approval_requested before update
+            old_award_approval_status: Previous value of award_approval_status before update
+        """
+        from models import NotificationType
+        from ops_api.ops.services.notifications import NotificationService
+
+        notification_service = NotificationService(self.db_session)
+        agreement = step.procurement_tracker.agreement
+
+        # Case 1: Award approval was just requested — notify Budget Team
+        new_award_approval_requested = data.get("approval_requested") is True and step.award_approval_requested
+        award_request_transitioned = new_award_approval_requested and (
+            old_award_approval_requested is None or old_award_approval_requested is False
+        )
+
+        if award_request_transitioned:
+            budget_team_ids = self._get_budget_team_user_ids()
+
+            fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
+            review_url = f"{fe_url}/agreements/{agreement.id}/review-award"
+
+            for recipient_id in budget_team_ids:
+                notification_service.create(
+                    {
+                        "title": AwardNotificationTitle.APPROVAL_REQUEST,
+                        "message": (
+                            f"An award approval has been requested for Agreement {agreement.display_name}. "
+                            f"Please review and respond.\n\n[Review Request]({review_url})"
+                        ),
+                        "is_read": False,
+                        "recipient_id": recipient_id,
+                        "notification_type": NotificationType.AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
+                    },
+                    commit=False,
+                )
+            logger.debug(f"Created {len(budget_team_ids)} award approval request notifications for Budget Team")
+
+        # Case 2: Award was approved — notify requester + broader team
+        new_award_status = data.get("approval_status")
+        award_approved_transitioned = new_award_status == "APPROVED" and old_award_approval_status in (
+            None,
+            "PENDING",
+        )
+
+        if award_approved_transitioned:
+            recipient_ids = self._get_award_approval_notification_recipients(agreement, step)
+
+            for recipient_id in recipient_ids:
+                notification_service.create(
+                    {
+                        "title": AwardNotificationTitle.APPROVED,
+                        "message": (
+                            f"The award for Agreement {agreement.display_name} has been approved by "
+                            f"{current_user.full_name}."
+                        ),
+                        "is_read": False,
+                        "recipient_id": recipient_id,
+                        "notification_type": NotificationType.AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
+                    },
+                    commit=False,
+                )
+            logger.debug(f"Created {len(recipient_ids)} award approved notifications")
+
+    def _get_budget_team_user_ids(self) -> list[int]:
+        """
+        Get user IDs of all BUDGET_TEAM members.
+
+        Returns:
+            List of user IDs with the BUDGET_TEAM role
+        """
+        from models.users import Role
+
+        budget_team_query = select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM")
+        return list(self.db_session.execute(budget_team_query).scalars().all())
+
+    def _get_award_approval_notification_recipients(self, agreement, step) -> set[int]:
+        """
+        Build recipient set from requester + project officers + team members + Budget Team.
+
+        Args:
+            agreement: The agreement associated with the step
+            step: The ProcurementTrackerStep
+
+        Returns:
+            Set of user IDs to notify
+        """
+        recipient_ids = set()
+
+        # Include the original requester
+        if step.award_approval_requested_by:
+            recipient_ids.add(step.award_approval_requested_by)
+
+        # Include project officers
+        if agreement.project_officer_id:
+            recipient_ids.add(agreement.project_officer_id)
+        if agreement.alternate_project_officer_id:
+            recipient_ids.add(agreement.alternate_project_officer_id)
+
+        # Include team members
+        for member in agreement.team_members or []:
+            recipient_ids.add(member.id)
+
+        # Include all Budget Team members
+        budget_team_ids = self._get_budget_team_user_ids()
+        recipient_ids.update(budget_team_ids)
+
+        return recipient_ids
+
+    def get_pending_award_approvals_for_user(self, user_id: int) -> list[ProcurementTrackerStep]:
+        """
+        Get all pending award approval requests that a user can review.
+
+        Returns steps where:
+        - award_approval_requested = True
+        - award_approval_status is None or PENDING
+        - User has BUDGET_TEAM or SYSTEM_OWNER role
+
+        Args:
+            user_id: The user ID to check permissions for
+
+        Returns:
+            List of ProcurementTrackerStep objects with pending award approvals
+        """
+        user = self.db_session.get(User, user_id)
+        if not user:
+            return []
+
+        user_role_names = [role.name for role in user.roles]
+
+        # Only BUDGET_TEAM and SYSTEM_OWNER members see these
+        if "BUDGET_TEAM" not in user_role_names and "SYSTEM_OWNER" not in user_role_names:
+            return []
+
+        from models import ProcurementTracker
+
+        stmt = (
+            select(DefaultProcurementTrackerStep)
+            .join(DefaultProcurementTrackerStep.procurement_tracker)
+            .join(ProcurementTracker.agreement)
+            .options(
+                selectinload(DefaultProcurementTrackerStep.procurement_tracker).selectinload(
+                    ProcurementTracker.agreement
+                ),
+            )
+            .where(
+                and_(
+                    DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.AWARD,
+                    DefaultProcurementTrackerStep.award_approval_requested.is_(True),
+                    or_(
+                        DefaultProcurementTrackerStep.award_approval_status.is_(None),
+                        DefaultProcurementTrackerStep.award_approval_status == "PENDING",
+                    ),
+                )
+            )
         )
 
         return list(self.db_session.scalars(stmt).all())

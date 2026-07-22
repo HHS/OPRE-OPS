@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 
 // Mock child components
 vi.mock("../../../../components/Agreements/AgreementBLIAccordion", () => ({
@@ -14,8 +14,11 @@ vi.mock("../../../../components/Agreements/AgreementBLIAccordion", () => ({
 }));
 
 vi.mock("../../../../components/BudgetLineItems/BLIReviewTable", () => ({
-    default: ({ budgetLines }) => (
-        <div data-testid="bli-review-table">
+    default: ({ budgetLines, errorStatuses }) => (
+        <div
+            data-testid="bli-review-table"
+            data-error-statuses={errorStatuses ? JSON.stringify(errorStatuses) : undefined}
+        >
             {budgetLines.map((bli) => (
                 <div key={bli.id}>{bli.id}</div>
             ))}
@@ -45,7 +48,7 @@ vi.mock("../../../../helpers/servicesComponent.helpers", () => ({
     findPeriodStart: vi.fn()
 }));
 
-describe("PreAwardBudgetLinesReviewAccordion", () => {
+describe("BudgetLinesReviewAccordion", () => {
     const mockAgreement = {
         id: 1,
         name: "Test Agreement",
@@ -84,13 +87,13 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
     };
 
     it("renders the budget lines accordion with correct title", () => {
-        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(screen.getByText("Review Budget Lines")).toBeInTheDocument();
     });
 
     it("displays standard instructions text", () => {
-        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(
             screen.getByText(
@@ -100,14 +103,14 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
     });
 
     it("renders services component accordions for grouped budget lines", () => {
-        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
 
         const serviceComponents = screen.getAllByTestId("services-component-accordion");
         expect(serviceComponents).toHaveLength(2);
     });
 
     it("renders BLI review tables for each service component", () => {
-        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
 
         const reviewTables = screen.getAllByTestId("bli-review-table");
         expect(reviewTables).toHaveLength(2);
@@ -125,13 +128,13 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
             ]
         };
 
-        render(<PreAwardBudgetLinesReviewAccordion {...propsWithEmptyGroup} />);
+        render(<BudgetLinesReviewAccordion {...propsWithEmptyGroup} />);
 
         expect(screen.getByText("No budget lines in this services component.")).toBeInTheDocument();
     });
 
     it("renders the executing total accordion", () => {
-        render(<PreAwardBudgetLinesReviewAccordion {...defaultProps} />);
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
 
         expect(screen.getByTestId("review-executing-total-accordion")).toBeInTheDocument();
         expect(screen.getByText(/Executing Total: \$100000/)).toBeInTheDocument();
@@ -143,10 +146,36 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
             groupedBudgetLines: []
         };
 
-        render(<PreAwardBudgetLinesReviewAccordion {...propsWithEmptyGroups} />);
+        render(<BudgetLinesReviewAccordion {...propsWithEmptyGroups} />);
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
+    });
+
+    it("passes errorStatuses to BLI tables when showBudgetLineErrors is true", () => {
+        render(
+            <BudgetLinesReviewAccordion
+                {...defaultProps}
+                showBudgetLineErrors={true}
+            />
+        );
+
+        const tables = screen.getAllByTestId("bli-review-table");
+        tables.forEach((table) => {
+            expect(table).toHaveAttribute("data-error-statuses");
+            const statuses = JSON.parse(table.getAttribute("data-error-statuses"));
+            expect(statuses).toContain("PLANNED");
+            expect(statuses).toContain("IN_EXECUTION");
+        });
+    });
+
+    it("does not pass errorStatuses to BLI tables when showBudgetLineErrors is false (default)", () => {
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+
+        const tables = screen.getAllByTestId("bli-review-table");
+        tables.forEach((table) => {
+            expect(table).not.toHaveAttribute("data-error-statuses");
+        });
     });
 
     it("handles null grouped budget lines", () => {
@@ -155,7 +184,7 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
             groupedBudgetLines: null
         };
 
-        render(<PreAwardBudgetLinesReviewAccordion {...propsWithNullGroups} />);
+        render(<BudgetLinesReviewAccordion {...propsWithNullGroups} />);
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
@@ -173,7 +202,7 @@ describe("PreAwardBudgetLinesReviewAccordion", () => {
             ]
         };
 
-        render(<PreAwardBudgetLinesReviewAccordion {...propsWithLabel} />);
+        render(<BudgetLinesReviewAccordion {...propsWithLabel} />);
 
         const serviceComponents = screen.getAllByTestId("services-component-accordion");
         expect(serviceComponents).toHaveLength(1);

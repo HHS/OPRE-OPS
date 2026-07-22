@@ -40,6 +40,8 @@ def convert_BLI_status_name_to_pretty_string(status_name):
         return BudgetLineItemStatus.IN_EXECUTION.__str__()
     elif status_name == "OBLIGATED":
         return BudgetLineItemStatus.OBLIGATED.__str__()
+    elif status_name == "PLANNED_MOD":
+        return BudgetLineItemStatus.PLANNED_MOD.__str__()
     else:
         return BudgetLineItemStatus.DRAFT.__str__()
 

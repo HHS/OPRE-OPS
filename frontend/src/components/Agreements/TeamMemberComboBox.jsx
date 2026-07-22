@@ -62,10 +62,13 @@ export const TeamMemberComboBox = ({
 
     /** @param {SafeUser} user */
     const handleChange = (user) => {
-        setSelectedTeamMember(user);
         if (!_.isEmpty(user)) {
             setSelectedTeamMembers(user);
         }
+        // Reset the local selection so the dropdown does not display the
+        // last-picked user as a "current value" — the picked user lives in the
+        // parent list, not in this combobox.
+        setSelectedTeamMember({});
     };
 
     return (

@@ -20,13 +20,12 @@ from models import (
     ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
+    DefaultProcurementTracker,
     DefaultProcurementTrackerStep,
     ProcurementShop,
     ProcurementShopFee,
-    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
-    ProcurementTrackerType,
     ProductServiceCode,
     Project,
     ServiceRequirementType,
@@ -3117,9 +3116,8 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award step in review
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )
@@ -3156,9 +3154,8 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award step NOT in review
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )
@@ -3197,9 +3194,8 @@ def test_cannot_update_bli_when_pre_award_pending(auth_client, loaded_db, app_ct
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award pending
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )
@@ -3240,9 +3236,8 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award declined
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )
@@ -3283,9 +3278,8 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award approved but awaiting requisition
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )
@@ -3323,9 +3317,8 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award fully approved
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=503,
     )

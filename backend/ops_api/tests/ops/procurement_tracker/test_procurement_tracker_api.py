@@ -258,14 +258,16 @@ def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     assert "solicitation_period_start_date" not in pre_award_step
     assert "solicitation_period_end_date" not in pre_award_step
 
-    # AWARD step should NOT have extra fields
+    # AWARD step should have extra fields (OPS-1640: Award step implementation)
     award_step = steps[5]
     assert award_step["step_type"] == "AWARD"
-    assert "task_completed_by" not in award_step
-    assert "date_completed" not in award_step
-    assert "notes" not in award_step
+    assert "task_completed_by" in award_step
+    assert "date_completed" in award_step
+    assert "notes" in award_step
+    assert "target_completion_date" in award_step
+    assert "approval_requested" in award_step
+    assert "approval_status" in award_step
     assert "draft_solicitation_date" not in award_step
-    assert "target_completion_date" not in award_step
     assert "solicitation_period_start_date" not in award_step
     assert "solicitation_period_end_date" not in award_step
 

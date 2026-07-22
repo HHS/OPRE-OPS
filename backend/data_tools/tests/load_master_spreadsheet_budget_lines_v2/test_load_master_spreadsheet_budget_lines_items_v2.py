@@ -21,6 +21,8 @@ from models import (
     AABudgetLineItem,
     Agreement,
     AgreementAgency,
+    AgreementHistory,
+    AgreementHistoryType,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -221,6 +223,7 @@ def clean_up_db(session):
     session.execute(text("DELETE FROM role"))
     session.execute(text("DELETE FROM role_version"))
 
+    session.execute(text("DELETE FROM agreement_history"))
     session.execute(text("DELETE FROM ops_event"))
     session.execute(text("DELETE FROM ops_event_version"))
 
@@ -324,6 +327,13 @@ def test_create_model(db_with_data_v2):
     assert history_records[0].event_type == OpsDBHistoryType.NEW
     assert history_records[0].row_key == str(bli_model.id)
 
+    # Check AgreementHistory record was created by the trigger
+    agreement_history = db_with_data_v2.execute(
+        select(AgreementHistory).where(AgreementHistory.budget_line_id_record == bli_model.id)
+    ).scalar_one_or_none()
+    assert agreement_history is not None
+    assert agreement_history.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED
+
     # Cleanup
     db_with_data_v2.delete(bli_model)
     db_with_data_v2.commit()
@@ -403,6 +413,18 @@ def test_create_models_upsert(db_with_data_v2):
     assert bli.versions[0].status == BudgetLineItemStatus.IN_EXECUTION
     assert bli.versions[0].date_needed == date(2025, 2, 17)
     assert bli.versions[0].proc_shop_fee_percentage == Decimal("0.01500")
+
+    # Check AgreementHistory record was created by the trigger
+    agreement_history_rows = (
+        db_with_data_v2.execute(
+            select(AgreementHistory)
+            .where(AgreementHistory.budget_line_id_record == bli.id)
+            .where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(agreement_history_rows) > 0
 
     # Cleanup
     db_with_data_v2.delete(bli)

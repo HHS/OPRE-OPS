@@ -10,7 +10,11 @@ import {
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import {
+    buildProcurementShopChangeAlert,
+    cleanAgreementForApi,
+    formatTeamMember
+} from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -87,6 +91,10 @@ const useAgreementEditForm = (
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
     const setRequestingAgency = useUpdateAgreement("requesting_agency");
     const setServicingAgency = useUpdateAgreement("servicing_agency");
+    // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
+    const setNofoNumber = useUpdateAgreement("nofo_number");
+    const setAlnNumber = useUpdateAgreement("aln_number");
+    const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -111,6 +119,20 @@ const useAgreementEditForm = (
         selected_project_officer: selectedProjectOfficer,
         selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
+
+    // Capture the original agreement identity once at mount. The reducer mutates
+    // agreement.name/nick_name/agreement_type as the user types, so comparing
+    // against `agreement?.name` would treat the typed-in duplicate as "the
+    // current row" and suppress the conflict. We need the pre-edit baseline.
+    const originalAgreementRef = React.useRef(null);
+    if (originalAgreementRef.current === null && agreement?.id) {
+        originalAgreementRef.current = {
+            id: agreement.id,
+            name: agreement.name,
+            nick_name: agreement.nick_name,
+            agreement_type: agreement.agreement_type
+        };
+    }
     const {
         notes: agreementNotes,
         vendor: agreementVendor,
@@ -127,6 +149,9 @@ const useAgreementEditForm = (
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
+        nofo_number: nofoNumber,
+        aln_number: alnNumber,
+        funding_period_months: fundingPeriodMonths,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
@@ -238,12 +263,15 @@ const useAgreementEditForm = (
                 const totalMatches = result?.count ?? 0;
                 // The current agreement (in edit mode) is itself in the result set when its
                 // saved value still matches the input. Treat that one row as not a conflict.
+                // Compare against the original (pre-edit) values, not the live reducer state,
+                // since `agreement.name` / `nick_name` get mutated as the user types.
+                const original = originalAgreementRef.current;
                 const currentMatchesInput =
-                    !!agreement?.id &&
+                    !!original?.id &&
                     (field === "name"
-                        ? agreement?.agreement_type === agreementType &&
-                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
-                        : agreement?.nick_name === trimmed);
+                        ? original.agreement_type === agreementType &&
+                          (original.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : original.nick_name === trimmed);
                 const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
                 setUniquenessErrors((prev) => ({
                     ...prev,
@@ -255,14 +283,7 @@ const useAgreementEditForm = (
                 return false;
             }
         },
-        [
-            agreement?.id,
-            agreement?.agreement_type,
-            agreement?.name,
-            agreement?.nick_name,
-            agreementType,
-            triggerGetAgreements
-        ]
+        [agreementType, triggerGetAgreements]
     );
 
     const checkUniqueOnBlur = React.useMemo(
@@ -285,13 +306,20 @@ const useAgreementEditForm = (
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    // REVIEW: NEW — mirrors the isAgreementAA pattern directly above.
+    // Consumed by AgreementEditForm.jsx to hide contract controls and by shouldDisableBtn (indirectly,
+    // via the suite's isGrant guards letting the button enable with only name + project_id).
+    const isGrant = agreementType === AGREEMENT_TYPES.GRANT;
     const shouldDisableBtn =
         !agreementTitle ||
         !agreement?.project_id ||
         !agreementType ||
         res.hasErrors() ||
         hasUniquenessErrors ||
-        (isAgreementAA && (!servicingAgency || !requestingAgency));
+        (isAgreementAA && (!servicingAgency || !requestingAgency)) ||
+        // NOFO Number is the grant-equivalent hard requirement to Title — enforced both here
+        // (explicit check, mirroring !agreementTitle) and via the Vest suite's nofo_number test.
+        (isGrant && !nofoNumber);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -353,7 +381,12 @@ const useAgreementEditForm = (
     };
 
     const saveAgreement = React.useCallback(
-        async (redirectUrl = null, skipChangeCheck = false) => {
+        async (
+            redirectUrl = null,
+            skipChangeCheck = false,
+            suppressErrorAlert = false,
+            suppressSuccessAlert = false
+        ) => {
             const data = {
                 ...agreement,
                 team_members: selectedTeamMembers.map((team_member) => {
@@ -372,48 +405,37 @@ const useAgreementEditForm = (
                 try {
                     const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (shouldRequestChange) {
-                        const oldTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            procurementShop?.fee_percentage ?? 0
-                        );
-                        const newTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            selectedProcurementShop?.fee_percentage ?? 0
-                        );
-                        const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                        const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                        const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-
-                        setAlert({
-                            type: "success",
-                            heading: "Changes Sent to Approval",
-                            message:
-                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                `<strong>Pending Changes:</strong>\n` +
-                                `<ul><li>${procurementShopChanges}</li>` +
-                                `<li>${feeRateChanges}</li>` +
-                                `<li>${feeTotalChanges}</li></ul>`,
-                            redirectUrl: redirectUrl
-                        });
-                    } else {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Updated",
-                            message: `The agreement ${agreement.name} has been successfully updated.`,
-                            redirectUrl: redirectUrl
-                        });
+                    if (!suppressSuccessAlert) {
+                        if (shouldRequestChange) {
+                            setAlert(
+                                buildProcurementShopChangeAlert({
+                                    budgetLines: agreement?.budget_line_items ?? [],
+                                    oldProcurementShop: procurementShop,
+                                    newProcurementShop: selectedProcurementShop,
+                                    redirectUrl
+                                })
+                            );
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Updated",
+                                message: `The agreement ${agreement.name} has been successfully updated.`,
+                                redirectUrl: redirectUrl
+                            });
+                        }
+                        scrollToTop();
                     }
-                    scrollToTop();
                     return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while saving the agreement.",
-                        redirectUrl: "/error"
-                    });
+                    if (!suppressErrorAlert) {
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                            redirectUrl: "/error"
+                        });
+                    }
                     // Don't call scrollToTop on error - let the redirect happen
                     throw rejected; // Re-throw to prevent further execution
                 }
@@ -457,7 +479,7 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
-    const verifyUniquenessBeforeSubmit = async () => {
+    const verifyUniquenessBeforeSubmit = React.useCallback(async () => {
         checkUniqueOnBlur.cancel();
         const [nameConflict, nickNameConflict] = await Promise.all([
             runUniqueCheck("name", agreementTitle),
@@ -466,7 +488,7 @@ const useAgreementEditForm = (
         if (nameConflict) return "name";
         if (nickNameConflict) return "nickname";
         return null;
-    };
+    }, [checkUniqueOnBlur, runUniqueCheck, agreementTitle, agreementNickName]);
 
     const handleContinue = async () => {
         const conflictFieldId = await verifyUniquenessBeforeSubmit();
@@ -521,7 +543,14 @@ const useAgreementEditForm = (
         }
 
         try {
-            const result = await saveAgreement();
+            // Bypass the navigation blocker: saving a draft is an intentional, saved exit,
+            // so the "You have unsaved changes" modal must not appear. Note that
+            // setHasAgreementChanged(false) only resets the parent's copy — the blocker's
+            // hasChanged is bound to the local useHasStateChanged(agreement) value, which
+            // stays true here. Navigation is deferred to the success alert's redirectUrl so a
+            // re-render propagates isCancelling before useBlocker re-evaluates.
+            setIsCancelling(true);
+            const result = await saveAgreement("/agreements");
             if (result === false && !agreement.id) {
                 const data = {
                     ...agreement,
@@ -537,12 +566,16 @@ const useAgreementEditForm = (
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
-                    message: `The agreement ${agreement.name} has been successfully created.`
+                    message: `The agreement ${agreement.name} has been successfully created.`,
+                    redirectUrl: "/agreements"
                 });
                 scrollToTop();
+            } else if (result === false) {
+                // Existing agreement with no changes to save: saveAgreement set no alert and
+                // hasChanged is false, so the blocker is inactive — navigate directly.
+                navigate("/agreements");
             }
             setHasAgreementChanged(false);
-            navigate("/agreements");
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
             if (!agreement.id) {
@@ -628,18 +661,51 @@ const useAgreementEditForm = (
         return "Disabled";
     };
 
+    // REVIEW: CHANGED — added GRANT branch that clears all contract-only state.
+    // This is payload hygiene: if a user selects Contract, starts typing, then switches to Grant,
+    // the stale contract values (contract_type, vendor, PO, etc.) would otherwise be sent to the API.
+    // The suite guards already prevent those fields from blocking Submit, but the payload would still
+    // contain junk. Clearing here ensures a clean 4-field payload (name, nick_name, description,
+    // agreement_type + project_id) regardless of prior user interaction.
+    // Note: team_members uses UPDATE_AGREEMENT (not a dedicated SET_TEAM_MEMBERS) because the reducer
+    // only has ADD_TEAM_MEMBER and REMOVE_TEAM_MEMBER; UPDATE_AGREEMENT sets the key directly.
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
+            clearGrantOnlyFields();
         } else if (value === AGREEMENT_TYPES.GRANT) {
+            suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
+            setContractType(null);
+            setServiceReqType(null);
+            changeSelectedProductServiceCode(null);
+            setAgreementReason(null);
+            setAgreementVendor(null);
+            setAgreementNotes(null);
+            changeSelectedProjectOfficer(null);
+            changeSelectedAlternateProjectOfficer(null);
+            dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
+            dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
+            dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
+            clearGrantOnlyFields();
         }
+    };
+
+    // Clear Grant-only fields (NOFO/ALN/Funding Period) when switching AWAY from GRANT.
+    // Deliberately does NOT clear alternate_project_officer_id / Project Specialist: that column
+    // is shared with Contracts (their Alternate PO/Alt-COR), so a value present when switching
+    // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
+    const clearGrantOnlyFields = () => {
+        setNofoNumber(null);
+        setAlnNumber(null);
+        setFundingPeriodMonths(null);
     };
 
     return {
@@ -668,6 +734,12 @@ const useAgreementEditForm = (
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumber,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumber,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
@@ -675,6 +747,7 @@ const useAgreementEditForm = (
         vendorDisabled,
         immutableFields,
         isAgreementAA,
+        isGrant, // REVIEW: NEW — added to return so AgreementEditForm.jsx can destructure it
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,
@@ -697,6 +770,8 @@ const useAgreementEditForm = (
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,
+        procurementShop,
+        shouldRequestChange,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,
@@ -713,6 +788,7 @@ const useAgreementEditForm = (
         setShowBlockerModal,
         blockerModalProps,
         saveAgreement,
+        verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes,
         isLoadingProjects
     };

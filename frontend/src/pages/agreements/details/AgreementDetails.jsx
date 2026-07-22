@@ -1,5 +1,6 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
 
@@ -16,6 +17,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
+ * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -28,12 +30,15 @@ const AgreementDetails = ({
     isAgreementNotDeveloped,
     isAgreementAwarded = false,
     hasAgreementChanged = false,
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
+    // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     return (
         <article>
@@ -45,6 +50,8 @@ const AgreementDetails = ({
                 isEditable={isEditable}
                 hasUnsavedChanges={hasAgreementChanged}
                 isPreAwardInReview={isPreAwardInReview}
+                isAwardInReview={isAwardInReview}
+                isGrant={isGrant}
             />
 
             {isEditMode && isEditable ? (

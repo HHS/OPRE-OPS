@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -15,11 +16,13 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  *   agreement: any,
  *   isLoading: boolean,
  *   allBudgetLines: any[],
+ *   executingBudgetLines: any[],
  *   executingTotal: number,
  *   projectOfficerName: string,
  *   alternateProjectOfficerName: string,
  *   servicesComponents: any[],
  *   groupedBudgetLinesByServicesComponent: any[],
+ *   groupedExecutingBudgetLinesByServicesComponent: any[],
  *   preAwardMemoDocuments: any[],
  *   requestorNotes: string,
  *   reviewerNotes: string,
@@ -59,6 +62,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -73,11 +77,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         agreement,
         isLoading,
         allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
         preAwardRequestorName,
@@ -119,6 +124,49 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
     };
 
+    /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
+    }, [requisitionNumber, requisitionDate, attestationChecked]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                description: "",
+                actionButtonText: "Yes, Cancel Task",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
+                    blocker.proceed?.();
+                },
+                handleSecondary: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
+
     // Approve handler
     const handleApprove = async () => {
         if (!step5?.id) {
@@ -152,12 +200,17 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                         }
                     }).unwrap();
 
+                    // Allow navigation after successful approval
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
                         message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
                     });
                     scrollToTop();
+                    // Use flushSync to ensure state update completes before navigation
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
                     navigate("/agreements?filter=change-requests");
                 } catch (error) {
                     setSubmitError(
@@ -213,6 +266,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 data
             }).unwrap();
 
+            // Allow navigation after successful save
             // Success: Show success message and redirect
             setAlert({
                 type: "success",
@@ -220,6 +274,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 message: "Requisition information has been saved. You can return later to complete the approval."
             });
             scrollToTop();
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate("/agreements?filter=change-requests");
 
             setIsSubmitting(false);
@@ -233,15 +291,21 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel?",
-            description: "Any information you have entered will be discarded.",
-            actionButtonText: "Continue Editing",
-            secondaryButtonText: "Discard Changes",
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            description: "",
+            actionButtonText: "Yes, Cancel Task",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                setShowModal(false);
+                flushSync(() => {
+                    setIsNavigating(true);
+                });
+                navigate("/agreements?filter=change-requests");
             },
             handleSecondary: () => {
-                navigate("/agreements?filter=change-requests");
+                setShowModal(false);
+            },
+            closeModal: () => {
+                setShowModal(false);
             }
         });
     };
@@ -251,11 +315,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         agreement,
         isLoading,
         allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
         reviewerNotes,

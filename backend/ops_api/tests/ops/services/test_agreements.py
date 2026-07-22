@@ -216,7 +216,8 @@ def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_ser
             "requested_change_diff": {"awarding_entity_id": {"new": 7, "old": 1}},
             "created_by": 99,
             "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-        }
+        },
+        commit=True,
     )
     assert result == 101
 
@@ -1613,7 +1614,7 @@ class TestComputeProcurementOverview:
         result = _compute_procurement_overview([], fiscal_year=2025)
         assert result["total_amount"] == 0.0
         assert result["total_agreements"] == 0
-        assert len(result["status_data"]) == 3
+        assert len(result["status_data"]) == 4  # PLANNED, PLANNED_MOD, IN_EXECUTION, OBLIGATED
 
     def test_single_planned_bli(self):
         from decimal import Decimal

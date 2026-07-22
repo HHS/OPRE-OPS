@@ -31,6 +31,7 @@ export default defineConfig({
             "cypress/e2e/createAgreementWithValidations.cy.js",
             "cypress/e2e/createAAAgreement.cy.js",
             "cypress/e2e/createBLIForAgreement.cy.js",
+            "cypress/e2e/createGrantAgreement.cy.js",
             "cypress/e2e/createResearchProject.cy.js",
             "cypress/e2e/declineChangeRequestsAtAgreementLevel.cy.js",
             "cypress/e2e/editAgreement.cy.js",
@@ -57,7 +58,8 @@ export default defineConfig({
             "cypress/e2e/reportingPage.cy.js",
             "cypress/e2e/procurementDashboard.cy.js",
             "cypress/e2e/preAwardApproval.cy.js",
-            "cypress/e2e/changeRequestsPagination.cy.js"
+            "cypress/e2e/changeRequestsPagination.cy.js",
+            "cypress/e2e/requestAwardApproval.cy.js"
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage

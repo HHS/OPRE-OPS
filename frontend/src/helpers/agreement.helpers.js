@@ -150,11 +150,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
 export const isNotDevelopedYet = (agreementType) => {
-    if (
-        agreementType === AgreementType.GRANT ||
-        agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
-    ) {
+    if (agreementType === AgreementType.DIRECT_OBLIGATION || agreementType === AgreementType.IAA) {
         return true;
     }
 
@@ -287,6 +283,18 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.NickName,
         AgreementFields.SpecialTopic,
         AgreementFields.Methodologies
+    ]),
+    // REVIEW: NEW — GRANT entry. Gates Description and Nickname on the details view.
+    // Both AgreementFields keys already existed; no enum changes needed.
+    // isFieldVisible(GRANT, ProcurementShop) → false, so the MetaAccordion gate works automatically.
+    // isFieldVisible(GRANT, ContractNumber) → false, which the existing test at line 235 already asserts.
+    // Title and the "Grant" type label render via always-on blocks in AgreementDetailsView and are not in this set.
+    [AgreementType.GRANT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.NickName,
+        AgreementFields.NofoNumber,
+        AgreementFields.AlnNumber,
+        AgreementFields.GrantFundingPeriod
     ])
     // Add new AgreementTypes here
 };
@@ -388,5 +396,43 @@ export const formatTeamMember = (team_member) => {
         id: team_member.id,
         full_name: team_member.full_name,
         email: team_member.email
+    };
+};
+
+/**
+ * Build the alert payload shown when a procurement-shop change is sent to the
+ * Division Director for approval. The agreement edit form and the review-flow
+ * edit page both render this same notice; keeping it here prevents the two
+ * call sites from drifting.
+ *
+ * @param {Object} params
+ * @param {Array}  params.budgetLines - The agreement's budget line items.
+ * @param {Object} params.oldProcurementShop - The shop currently on the agreement.
+ * @param {Object} params.newProcurementShop - The shop the user has selected.
+ * @param {string} [params.redirectUrl] - Optional redirect attached to the alert.
+ * @returns {{type: string, heading: string, message: string, redirectUrl?: string}}
+ */
+export const buildProcurementShopChangeAlert = ({
+    budgetLines,
+    oldProcurementShop,
+    newProcurementShop,
+    redirectUrl
+}) => {
+    const oldTotal = calculateAgreementTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
+    const newTotal = calculateAgreementTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
+    const procurementShopChanges = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
+    const feeRateChanges = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
+    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+
+    return {
+        type: "success",
+        heading: "Changes Sent to Approval",
+        message:
+            `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+            `<strong>Pending Changes:</strong>\n` +
+            `<ul><li>${procurementShopChanges}</li>` +
+            `<li>${feeRateChanges}</li>` +
+            `<li>${feeTotalChanges}</li></ul>`,
+        ...(redirectUrl ? { redirectUrl } : {})
     };
 };

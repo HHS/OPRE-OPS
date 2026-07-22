@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -15,7 +16,7 @@ import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
-import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
+import SummaryBox from "../SummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -24,6 +25,9 @@ import TeamMemberList from "../TeamMemberList";
 import ProjectComboBox from "../../Projects/ProjectComboBox";
 import { isFieldDisabled } from "./AgreementEditForm.helpers";
 import useAgreementEditForm from "./AgreementEditForm.hooks";
+import { cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
+import { useEditAgreement } from "./AgreementEditorContext.hooks";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -40,6 +44,12 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
+ * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Save Draft / Save Changes). - optional
+ * @param {number} [props.saveTrigger] - Increment from a parent to request a save. The form runs uniqueness check then save and reports back via `onSaved`. - optional
+ * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
+ * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
+ * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
+ * @param {React.MutableRefObject<{getSlice: () => object|null}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns either `null` (no agreement-level changes) or the cleaned agreement payload, suitable for the agreement edit-bundle endpoint. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -52,7 +62,13 @@ const AgreementEditForm = ({
     selectedAgreementId,
     cancelHeading,
     isAgreementAwarded = false,
-    areAnyBudgetLinesPlanned = false
+    areAnyBudgetLinesPlanned = false,
+    hideFooterButtons = false,
+    saveTrigger,
+    onSaved,
+    onValidityChange,
+    onProcurementShopChangeStateChange,
+    bundleSliceRef
 }) => {
     const {
         cn,
@@ -79,6 +95,12 @@ const AgreementEditForm = ({
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumber,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumber,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
@@ -86,6 +108,7 @@ const AgreementEditForm = ({
         vendorDisabled,
         immutableFields,
         isAgreementAA,
+        isGrant, // REVIEW: NEW — destructured from hook; used to hide contract block and Continue button
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,
@@ -123,7 +146,11 @@ const AgreementEditForm = ({
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,
-        isLoadingProductServiceCodes
+        saveAgreement,
+        verifyUniquenessBeforeSubmit,
+        isLoadingProductServiceCodes,
+        procurementShop,
+        shouldRequestChange
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -138,6 +165,79 @@ const AgreementEditForm = ({
     );
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
+
+    // Refs let the saveTrigger effect read the latest functions without re-running
+    // every time those callbacks are recreated.
+    const saveAgreementRef = useRef(saveAgreement);
+    const verifyUniquenessRef = useRef(verifyUniquenessBeforeSubmit);
+    const onSavedRef = useRef(onSaved);
+    useEffect(() => {
+        saveAgreementRef.current = saveAgreement;
+        verifyUniquenessRef.current = verifyUniquenessBeforeSubmit;
+        onSavedRef.current = onSaved;
+    });
+
+    useEffect(() => {
+        if (!saveTrigger) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const conflictField = await verifyUniquenessRef.current?.();
+                if (cancelled) return;
+                if (conflictField) {
+                    onSavedRef.current?.({ ok: false, conflictField });
+                    return;
+                }
+                await saveAgreementRef.current?.(null, false, true, true);
+                if (!cancelled) onSavedRef.current?.({ ok: true });
+            } catch (error) {
+                if (!cancelled) onSavedRef.current?.({ ok: false, error });
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [saveTrigger]);
+
+    useEffect(() => {
+        if (onValidityChange) {
+            onValidityChange(!shouldDisableBtn);
+        }
+    }, [onValidityChange, shouldDisableBtn]);
+
+    useEffect(() => {
+        if (!onProcurementShopChangeStateChange) return;
+        onProcurementShopChangeStateChange({
+            shouldRequestChange,
+            oldProcurementShop: procurementShop,
+            newProcurementShop: selectedProcurementShop
+        });
+    }, [onProcurementShopChangeStateChange, shouldRequestChange, procurementShop, selectedProcurementShop]);
+
+    // Bundle slice export. Same payload shape that `saveAgreement` would PATCH today,
+    // but emitted as a slice the parent page can fold into a single edit-bundle PATCH.
+    // Returns null when nothing has changed so the orchestrator can skip the agreement
+    // section entirely.
+    const editorState = useEditAgreement();
+    const hasAgreementChangedForBundle = useHasStateChanged(editorState?.agreement);
+    useEffect(() => {
+        if (!bundleSliceRef) return;
+        bundleSliceRef.current = {
+            getSlice: () => {
+                const liveAgreement = editorState?.agreement;
+                if (!liveAgreement) return null;
+                if (!hasAgreementChangedForBundle) return null;
+                const data = {
+                    ...liveAgreement,
+                    team_members: (selectedTeamMembers ?? []).map(formatTeamMember),
+                    requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+                    servicing_agency_id: servicingAgency ? servicingAgency.id : null
+                };
+                const { cleanData } = cleanAgreementForApi(data);
+                return cleanData;
+            }
+        };
+    });
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
@@ -325,233 +425,343 @@ const AgreementEditForm = ({
                     )}
                 </>
             )}
-            <ContractTypeSelect
-                messages={res.getErrors("contract-type")}
-                className={`margin-top-3 ${cn("contract-type")}`}
-                value={contractType}
-                onChange={(name, value) => {
-                    setContractType(value);
-                }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ContractType,
-                    immutableFields,
-                    isSuperUser,
-                    isAgreementAwarded
-                )}
-                tooltipMsg={awardedImmutableFieldsTooltipMsg}
-            />
-            <ServiceReqTypeSelect
-                messages={res.getErrors("service_requirement_type")}
-                className={`margin-top-3 ${cn("service_requirement_type")}`}
-                isRequired={true}
-                value={serviceReqType}
-                onChange={(name, value) => {
-                    setServiceReqType(value);
-                    runValidate(name, value);
-                }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ServiceRequirementType,
-                    immutableFields,
-                    isSuperUser,
-                    isAgreementAwarded
-                )}
-                tooltipMsg={awardedImmutableFieldsTooltipMsg}
-            />
-            <ProductServiceCodeSelect
-                name="product_service_code_id"
-                label="Product Service Code"
-                messages={res.getErrors("product_service_code_id")}
-                className={cn("product_service_code_id")}
-                selectedProductServiceCode={selectedProductServiceCode || ""}
-                codes={productServiceCodes}
-                onChange={(name, value) => {
-                    changeSelectedProductServiceCode(productServiceCodes[value - 1]);
-                    if (isReviewMode) {
-                        runValidate(name, value);
-                    }
-                }}
-                isDisabled={isFieldDisabled(
-                    AgreementFields.ProductServiceCode,
-                    immutableFields,
-                    isSuperUser,
-                    isAgreementAwarded
-                )}
-                tooltipMsg={awardedImmutableFieldsTooltipMsg}
-            />
-            {selectedProductServiceCode &&
-                selectedProductServiceCode.naics &&
-                selectedProductServiceCode.support_code && (
-                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
-                )}
-            <div className="margin-top-3">
-                <ProcurementShopSelectWithFee
-                    name="procurement-shop-select"
-                    label="Procurement Shop"
-                    className={cn("procurement-shop-select")}
-                    messages={res.getErrors("procurement-shop-select")}
-                    selectedProcurementShop={selectedProcurementShop}
-                    onChangeSelectedProcurementShop={(procurementShop) => {
-                        handleOnChangeSelectedProcurementShop(procurementShop);
-                        if (isReviewMode) {
-                            runValidate("procurement-shop-select", procurementShop);
-                        }
-                    }}
-                    isDisabled={isProcurementShopDisabled}
-                    disabledMessage={disabledMessage()}
-                />
-            </div>
-            <div className="display-flex margin-top-3">
-                <AgreementReasonSelect
-                    name="agreement_reason"
-                    label="Reason for Agreement"
-                    messages={res.getErrors("agreement_reason")}
-                    className={cn("agreement_reason")}
-                    selectedAgreementReason={agreementReason}
-                    onChange={(name, value) => {
-                        setAgreementVendor(null);
-                        setAgreementReason(value);
-                        if (isReviewMode) {
+            {/* REVIEW: NEW — Grant Details block (#5926). Sits above the contract block, matching the
+                design's order (Agreement Details → Grant Details). FPO reuses project_officer_id and
+                Project Specialist reuses alternate_project_officer_id (relabeled at the display layer). */}
+            {isGrant && (
+                <>
+                    <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
+                    <p>
+                        Please complete the information below for this grant. You can enter this information now or come
+                        back and edit the information later.
+                    </p>
+                    <Input
+                        name="nofo_number"
+                        label="NOFO Number"
+                        messages={res.getErrors("nofo_number")}
+                        className={cn("nofo_number")}
+                        isRequired={true}
+                        value={nofoNumber || ""}
+                        onChange={(name, value) => {
+                            setNofoNumber(value);
                             runValidate(name, value);
-                            runValidate("vendor", null, { agreement_reason: value });
-                        }
-                    }}
-                    isDisabled={isFieldDisabled(
-                        AgreementFields.AgreementReason,
-                        immutableFields,
-                        isSuperUser,
-                        isAgreementAwarded
-                    )}
-                    tooltipMsg={awardedImmutableFieldsTooltipMsg}
-                />
-                <fieldset
-                    className={`usa-fieldset margin-top-0 margin-left-4 ${vendorDisabled && "text-disabled"}`}
-                    disabled={
-                        vendorDisabled ||
-                        isFieldDisabled(
-                            AgreementFields.AgreementReason,
+                        }}
+                    />
+                    {/* Grant Funding Period — numeric input, unit "months". No stepper component exists
+                        yet (see plan step 8); ships as a plain Input with digit-only filtering. */}
+                    <Input
+                        name="funding_period_months"
+                        label="Grant Funding Period (months)"
+                        value={fundingPeriodMonths ?? ""}
+                        onChange={(name, value) => {
+                            if (/^[0-9]*$/.test(value)) {
+                                setFundingPeriodMonths(value === "" ? null : Number(value));
+                            }
+                        }}
+                    />
+                    <Input
+                        name="aln_number"
+                        label="ALN Number"
+                        value={alnNumber || ""}
+                        onChange={(name, value) => setAlnNumber(value)}
+                    />
+                    <div className="display-flex margin-top-3">
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            messages={res.getErrors("project_officer")}
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("projectOfficer", agreementType)}
+                        />
+                        {/* Project Specialist reuses the existing Alternate Project Officer field/state/handler,
+                            relabeled — NOT a new field. */}
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            className="margin-left-4"
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
+                        />
+                    </div>
+                    <div className="margin-top-3 width-card-lg">
+                        <TeamMemberComboBox
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            selectedTeamMembers={selectedTeamMembers}
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedTeamMembers={setSelectedTeamMembers}
+                            overrideStyles={{ width: "15em" }}
+                        />
+                    </div>
+                    <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
+                    <TeamMemberList
+                        selectedTeamMembers={selectedTeamMembers}
+                        removeTeamMember={removeTeamMember}
+                    />
+                    <TextArea
+                        name="agreementNotes"
+                        label="Notes (optional)"
+                        maxLength={500}
+                        messages={res.getErrors("agreementNotes")}
+                        className={cn("agreementNotes")}
+                        value={agreementNotes || ""}
+                        onChange={(name, value) => setAgreementNotes(value)}
+                    />
+                </>
+            )}
+            {/* REVIEW: NEW — wraps ContractTypeSelect through Notes TextArea (the entire contract-only
+                control block). When Grant is selected none of these render, so the form shows only
+                the 4 grant fields: type filter Select, Title Input, Nickname Input, Description TextArea.
+                The AA controls above are already gated by selectedAgreementFilter === PARTNER / isAgreementAA
+                so they also won't appear for grants. */}
+            {!isGrant && (
+                <>
+                    <ContractTypeSelect
+                        messages={res.getErrors("contract-type")}
+                        className={`margin-top-3 ${cn("contract-type")}`}
+                        value={contractType}
+                        onChange={(name, value) => {
+                            setContractType(value);
+                            runValidate(name, value, { contract_type: value });
+                        }}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.ContractType,
                             immutableFields,
                             isSuperUser,
                             isAgreementAwarded
-                        )
-                    }
-                >
-                    <Input
-                        name="vendor"
-                        label="Vendor"
-                        messages={res.getErrors("vendor")}
-                        className={`margin-top-0 ${cn("vendor")}`}
-                        value={agreementVendor || ""}
+                        )}
+                        tooltipMsg={awardedImmutableFieldsTooltipMsg}
+                    />
+                    <ServiceReqTypeSelect
+                        messages={res.getErrors("service_requirement_type")}
+                        className={`margin-top-3 ${cn("service_requirement_type")}`}
+                        isRequired={true}
+                        value={serviceReqType}
                         onChange={(name, value) => {
-                            setAgreementVendor(value);
+                            setServiceReqType(value);
+                            runValidate(name, value);
+                        }}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.ServiceRequirementType,
+                            immutableFields,
+                            isSuperUser,
+                            isAgreementAwarded
+                        )}
+                        tooltipMsg={awardedImmutableFieldsTooltipMsg}
+                    />
+                    <ProductServiceCodeSelect
+                        name="product_service_code_id"
+                        label="Product Service Code"
+                        messages={res.getErrors("product_service_code_id")}
+                        className={cn("product_service_code_id")}
+                        selectedProductServiceCode={selectedProductServiceCode || ""}
+                        codes={productServiceCodes}
+                        onChange={(name, value) => {
+                            changeSelectedProductServiceCode(productServiceCodes[value - 1]);
                             if (isReviewMode) {
                                 runValidate(name, value);
                             }
                         }}
+                        isDisabled={isFieldDisabled(
+                            AgreementFields.ProductServiceCode,
+                            immutableFields,
+                            isSuperUser,
+                            isAgreementAwarded
+                        )}
+                        tooltipMsg={awardedImmutableFieldsTooltipMsg}
                     />
-                </fieldset>
-            </div>
-            <div
-                className="margin-top-3"
-                data-cy="research-and-special-topics"
-            >
-                <ResearchMethodologyComboBox
-                    legendClassName="usa-label"
-                    overrideStyles={{ width: "30em" }}
-                    selectedResearchMethodologies={researchMethodologies}
-                    setSelectedResearchMethodologies={setResearchMethodology}
-                />
-                <SpecialTopicComboBox
-                    legendClassName="usa-label"
-                    overrideStyles={{ width: "30em" }}
-                    selectedSpecialTopics={specialTopics}
-                    setSelectedSpecialTopics={setSpecialTopics}
-                />
-            </div>
-            <div
-                className="display-flex margin-top-3"
-                data-cy="cor-combo-boxes"
-            >
-                <ProjectOfficerComboBox
-                    selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
-                    legendClassname="usa-label margin-top-0 margin-bottom-1"
-                    messages={res.getErrors("project_officer")}
-                    onChange={(name, value) => {
-                        if (isReviewMode) {
-                            runValidate(name, value, { project_officer_id: value });
-                        }
-                    }}
-                    overrideStyles={{ width: "15em" }}
-                    label={convertCodeForDisplay("projectOfficer", agreementType)}
-                />
-                <ProjectOfficerComboBox
-                    selectedProjectOfficer={selectedAlternateProjectOfficer}
-                    setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
-                    className="margin-left-4"
-                    legendClassname="usa-label margin-top-0 margin-bottom-1"
-                    overrideStyles={{ width: "15em" }}
-                    label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
-                />
-            </div>
-            <div className="margin-top-3 width-card-lg">
-                <TeamMemberComboBox
-                    messages={res.getErrors("team-members")}
-                    legendClassname="usa-label margin-top-0 margin-bottom-1"
-                    selectedTeamMembers={selectedTeamMembers}
-                    selectedProjectOfficer={selectedProjectOfficer}
-                    selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
-                    setSelectedTeamMembers={setSelectedTeamMembers}
-                    overrideStyles={{ width: "15em" }}
-                />
-            </div>
-            <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
-            <TeamMemberList
-                selectedTeamMembers={selectedTeamMembers}
-                removeTeamMember={removeTeamMember}
-            />
-            <TextArea
-                name="agreementNotes"
-                label="Notes (optional)"
-                maxLength={500}
-                messages={res.getErrors("agreementNotes")}
-                className={cn("agreementNotes")}
-                value={agreementNotes || ""}
-                onChange={(name, value) => setAgreementNotes(value)}
-            />
-            <div className="grid-row flex-justify margin-top-8">
-                {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
-                <div>
-                    <button
-                        type="button"
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        data-cy="cancel-button"
-                        onClick={handleCancel}
+                    {selectedProductServiceCode &&
+                        selectedProductServiceCode.naics &&
+                        selectedProductServiceCode.support_code && (
+                            <SummaryBox
+                                selectedProductServiceCode={selectedProductServiceCode}
+                                width="19.5625rem"
+                                minHeight="4.375rem"
+                                className="margin-top-4"
+                            />
+                        )}
+                    <div className="margin-top-3">
+                        <ProcurementShopSelectWithFee
+                            name="procurement-shop-select"
+                            label="Procurement Shop"
+                            className={cn("procurement-shop-select")}
+                            messages={res.getErrors("procurement-shop-select")}
+                            selectedProcurementShop={selectedProcurementShop}
+                            onChangeSelectedProcurementShop={(procurementShop) => {
+                                handleOnChangeSelectedProcurementShop(procurementShop);
+                                if (isReviewMode) {
+                                    runValidate("procurement-shop-select", procurementShop);
+                                }
+                            }}
+                            isDisabled={isProcurementShopDisabled}
+                            disabledMessage={disabledMessage()}
+                        />
+                    </div>
+                    <div className="display-flex margin-top-3">
+                        <AgreementReasonSelect
+                            name="agreement_reason"
+                            label="Reason for Agreement"
+                            messages={res.getErrors("agreement_reason")}
+                            className={cn("agreement_reason")}
+                            selectedAgreementReason={agreementReason}
+                            onChange={(name, value) => {
+                                setAgreementVendor(null);
+                                setAgreementReason(value);
+                                if (isReviewMode) {
+                                    runValidate(name, value);
+                                    runValidate("vendor", null, { agreement_reason: value });
+                                }
+                            }}
+                            isDisabled={isFieldDisabled(
+                                AgreementFields.AgreementReason,
+                                immutableFields,
+                                isSuperUser,
+                                isAgreementAwarded
+                            )}
+                            tooltipMsg={awardedImmutableFieldsTooltipMsg}
+                        />
+                        <fieldset
+                            className={`usa-fieldset margin-top-0 margin-left-4 ${vendorDisabled && "text-disabled"}`}
+                            disabled={
+                                vendorDisabled ||
+                                isFieldDisabled(
+                                    AgreementFields.AgreementReason,
+                                    immutableFields,
+                                    isSuperUser,
+                                    isAgreementAwarded
+                                )
+                            }
+                        >
+                            <Input
+                                name="vendor"
+                                label="Vendor"
+                                messages={res.getErrors("vendor")}
+                                className={`margin-top-0 ${cn("vendor")}`}
+                                value={agreementVendor || ""}
+                                onChange={(name, value) => {
+                                    setAgreementVendor(value);
+                                    if (isReviewMode) {
+                                        runValidate(name, value);
+                                    }
+                                }}
+                            />
+                        </fieldset>
+                    </div>
+                    <div
+                        className="margin-top-3"
+                        data-cy="research-and-special-topics"
                     >
-                        Cancel
-                    </button>
-                    {isWizardMode && (
+                        <ResearchMethodologyComboBox
+                            legendClassName="usa-label"
+                            overrideStyles={{ width: "30em" }}
+                            selectedResearchMethodologies={researchMethodologies}
+                            setSelectedResearchMethodologies={setResearchMethodology}
+                        />
+                        <SpecialTopicComboBox
+                            legendClassName="usa-label"
+                            overrideStyles={{ width: "30em" }}
+                            selectedSpecialTopics={specialTopics}
+                            setSelectedSpecialTopics={setSpecialTopics}
+                        />
+                    </div>
+                    <div
+                        className="display-flex margin-top-3"
+                        data-cy="cor-combo-boxes"
+                    >
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            messages={res.getErrors("project_officer")}
+                            onChange={(name, value) => {
+                                if (isReviewMode) {
+                                    runValidate(name, value, { project_officer_id: value });
+                                }
+                            }}
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("projectOfficer", agreementType)}
+                        />
+                        <ProjectOfficerComboBox
+                            selectedProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
+                            className="margin-left-4"
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            overrideStyles={{ width: "15em" }}
+                            label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
+                        />
+                    </div>
+                    <div className="margin-top-3 width-card-lg">
+                        <TeamMemberComboBox
+                            legendClassname="usa-label margin-top-0 margin-bottom-1"
+                            selectedTeamMembers={selectedTeamMembers}
+                            selectedProjectOfficer={selectedProjectOfficer}
+                            selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
+                            setSelectedTeamMembers={setSelectedTeamMembers}
+                            overrideStyles={{ width: "15em" }}
+                        />
+                    </div>
+                    <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
+                    <TeamMemberList
+                        selectedTeamMembers={selectedTeamMembers}
+                        removeTeamMember={removeTeamMember}
+                    />
+                    <TextArea
+                        name="agreementNotes"
+                        label="Notes (optional)"
+                        maxLength={500}
+                        messages={res.getErrors("agreementNotes")}
+                        className={cn("agreementNotes")}
+                        value={agreementNotes || ""}
+                        onChange={(name, value) => setAgreementNotes(value)}
+                    />
+                </>
+            )}
+            {!hideFooterButtons && (
+                <div className="grid-row flex-justify margin-top-8">
+                    {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
+                    <div>
                         <button
                             type="button"
-                            className="usa-button usa-button--outline"
-                            onClick={handleDraft}
-                            disabled={!isReviewMode && shouldDisableBtn}
-                            data-cy="save-draft-btn"
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={handleCancel}
                         >
-                            Save Draft
+                            Cancel
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        id="continue"
-                        className="usa-button"
-                        onClick={handleContinue}
-                        disabled={shouldDisableBtn}
-                        data-cy="continue-btn"
-                    >
-                        {isWizardMode ? "Continue" : "Save Changes"}
-                    </button>
+                        {isWizardMode && (
+                            <button
+                                type="button"
+                                className="usa-button usa-button--outline"
+                                onClick={handleDraft}
+                                disabled={!isReviewMode && shouldDisableBtn}
+                                data-cy="save-draft-btn"
+                            >
+                                Save Draft
+                            </button>
+                        )}
+                        {/* REVIEW: NEW — hides Continue in wizard mode for grants.
+                            Continue advances to Step 3 (budget lines, out of scope for this slice)
+                            and does NOT persist a new agreement, so reaching it without a Save Draft
+                            would lose the grant. In non-wizard (edit/review) mode Continue renders
+                            as "Save Changes" and must still be available, so the gate is
+                            !(isGrant && isWizardMode) rather than just !isGrant. */}
+                        {!(isGrant && isWizardMode) && (
+                            <button
+                                type="button"
+                                id="continue"
+                                className="usa-button"
+                                onClick={handleContinue}
+                                disabled={shouldDisableBtn}
+                                data-cy="continue-btn"
+                            >
+                                {isWizardMode ? "Continue" : "Save Changes"}
+                            </button>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 };

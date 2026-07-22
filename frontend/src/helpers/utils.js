@@ -128,7 +128,8 @@ export const codesToDisplayText = {
         DRAFT: "Draft",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
-        OBLIGATED: "Obligated"
+        OBLIGATED: "Obligated",
+        PLANNED_MOD: "Planned Mod"
     },
     validation: {
         name: "Name",
@@ -145,7 +146,11 @@ export const codesToDisplayText = {
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
         "contract-type": "Contract Type",
-        "team-members": "Team Members"
+        // BLI-level validation keys (normalized from budgetLineSuite test strings)
+        amount: "Amount",
+        can: "CAN",
+        services_component: "Services Component",
+        date_needed: "Obligate By Date"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
@@ -220,10 +225,22 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Project Officer",
+        GRANT: "Federal Project Officer",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"
+    },
+    // Label for the alternate-project-officer slot. For GRANT this column is relabeled
+    // "Project Specialist" (not "Alternate Federal Project Officer") per the design. Other
+    // types keep their existing "Alternate ${...}" wording, enumerated here explicitly so the
+    // straight-lookup convertCodeForDisplay doesn't need string interpolation.
+    alternateProjectOfficer: {
+        AA: "Alternate COR",
+        CONTRACT: "Alternate COR",
+        GRANT: "Project Specialist",
+        DIRECT_OBLIGATION: "Alternate Project Officer",
+        IAA: "Alternate COR",
+        MISCELLANEOUS: "Alternate Project Officer"
     },
     agreement: {
         "AgreementType.CONTRACT": "Contract",
@@ -420,6 +437,7 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
+            case BLI_STATUS.PLANNED_MOD:
                 return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
                 return "text-brand-data-viz-bl-by-status-3";
@@ -434,6 +452,7 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
+            case BLI_STATUS.PLANNED_MOD:
                 return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
                 return "brand-data-viz-bl-by-status-3";

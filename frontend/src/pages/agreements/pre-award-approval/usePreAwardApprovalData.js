@@ -43,6 +43,13 @@ export default function usePreAwardApprovalData(agreementId) {
     // Group all budget lines by services component for display
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
+    // Group only executing budget lines by services component (used by the Budget Team
+    // Requisition Review page, which shows only the BLs included in the requisition)
+    const groupedExecutingBudgetLinesByServicesComponent = groupByServicesComponent(
+        executingBudgetLines,
+        servicesComponents || []
+    );
+
     // Get active tracker and steps from procurement tracker
     const trackers = procurementTrackersData?.data || [];
     const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
@@ -61,11 +68,13 @@ export default function usePreAwardApprovalData(agreementId) {
         agreement,
         isLoading,
         allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         activeTracker,
         step4,

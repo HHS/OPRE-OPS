@@ -4,9 +4,10 @@ export type ChangeRequest = {
     change_request_type: string;
     created_by: number;
     created_by_user: {
+        display_name?: string;
         full_name: string;
         id: number;
-    };
+    } | null;
     created_on: string;
     display_name: string;
     has_budget_change?: boolean;

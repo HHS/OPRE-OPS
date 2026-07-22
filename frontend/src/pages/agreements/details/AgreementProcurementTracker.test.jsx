@@ -159,7 +159,7 @@ vi.mock("../../../constants", () => ({
         STEP_3: true,
         STEP_4: true,
         STEP_5: false,
-        STEP_6: false
+        STEP_6: true
     }
 }));
 
@@ -489,18 +489,6 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6);
     });
 
-    it("renders debug code component when active tracker exists", () => {
-        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-            data: mockTrackerData,
-            isLoading: false,
-            isError: false
-        });
-
-        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
-
-        expect(screen.getByTestId("debug-code")).toBeInTheDocument();
-    });
-
     describe("Accordion and Step 1 Functionality", () => {
         const mockTrackerWithSteps = {
             data: [
@@ -718,34 +706,17 @@ describe("AgreementProcurementTracker", () => {
             expect(dateInputAfter).not.toBeDisabled();
         });
 
-        it("enables TextArea when checkbox is checked", () => {
+        it("TextArea is enabled regardless of checkbox state", () => {
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
                 data: mockTrackerWithSteps,
                 isLoading: false,
                 isError: false
             });
 
-            const { rerender } = renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
-            const checkbox = screen.getByRole("checkbox");
             const textarea = screen.getByTestId("textarea-input");
-
-            expect(textarea).toBeDisabled();
-
-            fireEvent.click(checkbox);
-
-            // Force a re-render to pick up state changes
-            rerender(
-                <Provider store={setupStore()}>
-                    <MemoryRouter>
-                        <AgreementProcurementTracker agreement={mockAgreement} />
-                    </MemoryRouter>
-                </Provider>
-            );
-
-            // After clicking checkbox, textarea should be enabled
-            const textareaAfter = screen.getByTestId("textarea-input");
-            expect(textareaAfter).not.toBeDisabled();
+            expect(textarea).not.toBeDisabled();
         });
 
         it("renders Cancel and Complete Step 1 buttons", () => {
@@ -950,7 +921,11 @@ describe("AgreementProcurementTracker", () => {
         it.each([
             [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation/],
             [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
-            [6, "AWARD", /Once you receive the signed award, click Request Award Approval below/]
+            [
+                6,
+                "AWARD",
+                /Once you receive the signed award, please send it to the Budget Team and click Request Award Approval below/
+            ]
         ])(
             "renders step %i instructional content when that step is active",
             (activeStepNumber, activeStepType, expectedInstructionalText) => {
@@ -991,9 +966,9 @@ describe("AgreementProcurementTracker", () => {
 
                 expect(screen.getByText(expectedInstructionalText)).toBeInTheDocument();
 
-                // Step 3 has a checkbox, other steps don't
+                // Steps 3 and 6 have checkboxes, other steps don't
                 const checkbox = screen.queryByRole("checkbox");
-                const shouldHaveCheckbox = activeStepNumber === 3;
+                const shouldHaveCheckbox = activeStepNumber === 3 || activeStepNumber === 6;
 
                 expect(checkbox !== null).toBe(shouldHaveCheckbox);
             }

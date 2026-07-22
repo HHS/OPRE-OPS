@@ -1,13 +1,18 @@
-import { useParams } from "react-router-dom";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import classnames from "vest/classnames";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 // Feature flag for upload consensus memo functionality
@@ -20,6 +25,7 @@ const ENABLE_UPLOAD_CONSENSUS_MEMO = false;
 export const RequestPreAwardApproval = () => {
     const { id } = useParams();
     const agreementId = Number(id);
+    const navigate = useNavigate();
 
     const {
         agreement,
@@ -45,8 +51,33 @@ export const RequestPreAwardApproval = () => {
         isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep4Completed
+        isStep4Completed,
+        showModal,
+        setShowModal,
+        modalProps,
+        agreementValidationResults,
+        hasBLIError,
+        pageErrors,
+        isAlertActive,
+        setIsAlertActive
     } = useRequestPreAwardApproval(agreementId);
+
+    const isAgreementEditable = agreement?._meta?.isEditable;
+    const hasValidationErrors = isAlertActive && Object.keys(pageErrors).length > 0 && isStep4Completed;
+    const isAgreementInvalid = Boolean(agreementValidationResults && !agreementValidationResults.isValid());
+    const cn = agreementValidationResults
+        ? classnames(agreementValidationResults, {
+              invalid: "usa-form-group--error",
+              valid: "success",
+              warning: "warning"
+          })
+        : undefined;
+
+    React.useEffect(() => {
+        if (hasValidationErrors) {
+            scrollToTop();
+        }
+    }, [hasValidationErrors]);
 
     // Calculate upload disabled state
     const isUploadDisabled =
@@ -73,10 +104,41 @@ export const RequestPreAwardApproval = () => {
 
     return (
         <App breadCrumbName="Request Pre-Award Approval">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
             <PageHeader
                 title="Request Pre-Award Approval"
                 subTitle={agreement?.name}
             />
+
+            {hasValidationErrors && (
+                <SimpleAlert
+                    type="error"
+                    heading="Please resolve the errors outlined below"
+                    message="In order to send this agreement to approval, click edit to update the required information."
+                    isClosable={true}
+                    setIsAlertVisible={setIsAlertActive}
+                >
+                    <ul data-cy="error-list">
+                        {Object.entries(pageErrors).map(([key]) => (
+                            <li
+                                key={key}
+                                data-cy="error-item"
+                            >
+                                {convertCodeForDisplay("validation", key)}
+                            </li>
+                        ))}
+                    </ul>
+                </SimpleAlert>
+            )}
 
             <p className="margin-y-3">
                 Review the agreement details to make sure everything looks up to date and upload the Final Consensus
@@ -121,18 +183,21 @@ export const RequestPreAwardApproval = () => {
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
+                agreementValidationResults={agreementValidationResults}
+                cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}
                 instructions="Please review the agreement details below to ensure everything is up to date."
                 changeRequestType={agreement?.change_request_type}
             />
 
             {/* Budget Lines and Executing Total */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
                 executingTotal={executingTotal}
+                showBudgetLineErrors={true}
             />
 
             {/* Upload Final Consensus Memo */}
@@ -256,21 +321,45 @@ export const RequestPreAwardApproval = () => {
                 </button>
                 <button
                     type="button"
-                    className="usa-button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}
-                    title={
-                        !isStep4Completed
-                            ? "Step 4 (Evaluation) must be completed before requesting pre-award approval"
-                            : hasApprovalBeenRequested
-                              ? "Pre-Award approval has already been requested"
-                              : hasBLIInReview
-                                ? "Cannot request approval while budget lines have pending change requests"
-                                : ""
-                    }
+                    className="usa-button usa-button--outline margin-right-2"
+                    data-cy="edit-agreement-btn"
+                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
+                    onClick={() => {
+                        const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
+                        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
+                    }}
+                    disabled={!isAgreementEditable}
                 >
-                    {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    Edit
                 </button>
+                {isStep4Completed && (isAgreementInvalid || hasBLIError) ? (
+                    <DisabledButtonWithTooltip
+                        label="In order to send this agreement to approval, click edit to update the required information."
+                        tooltipPosition="top"
+                        dataCy="send-to-approval-btn"
+                    >
+                        {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    </DisabledButtonWithTooltip>
+                ) : (
+                    <button
+                        type="button"
+                        className="usa-button"
+                        data-cy="send-to-approval-btn"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}
+                        title={
+                            !isStep4Completed
+                                ? "Step 4 (Evaluation) must be completed before requesting pre-award approval"
+                                : hasApprovalBeenRequested
+                                  ? "Pre-Award approval has already been requested"
+                                  : hasBLIInReview
+                                    ? "Cannot request approval while budget lines have pending change requests"
+                                    : ""
+                        }
+                    >
+                        {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    </button>
+                )}
             </div>
         </App>
     );

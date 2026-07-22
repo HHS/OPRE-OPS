@@ -16,6 +16,7 @@ const useSelectorMock = vi.fn();
 const useLocationMock = vi.fn();
 const hasStateChangedMock = vi.fn();
 const scrollToCenterMock = vi.fn();
+const setIsCancellingMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -59,7 +60,7 @@ vi.mock("../../../hooks/useNavigationBlocker.hooks", () => ({
         showBlockerModal: false,
         setShowBlockerModal: vi.fn(),
         blockerModalProps: {},
-        setIsCancelling: vi.fn()
+        setIsCancelling: setIsCancellingMock
     })
 }));
 
@@ -449,13 +450,18 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         });
 
         expect(addAgreementMock).toHaveBeenCalled();
+        // Bypasses the navigation blocker and defers navigation to the success alert's
+        // redirectUrl instead of calling navigate() directly, so the "unsaved changes"
+        // modal does not appear (issue #5910).
+        expect(setIsCancellingMock).toHaveBeenCalledWith(true);
         expect(setAlertMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: "success",
-                heading: "Agreement Draft Saved"
+                heading: "Agreement Draft Saved",
+                redirectUrl: "/agreements"
             })
         );
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 
     it("does NOT call addAgreement when agreement has an id (existing agreement)", async () => {
@@ -475,7 +481,17 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         });
 
         expect(addAgreementMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        // Existing draft with changes: saveAgreement("/agreements") updates it and carries the
+        // redirectUrl on its own success alert, so navigate() is not called directly.
+        expect(setIsCancellingMock).toHaveBeenCalledWith(true);
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "success",
+                heading: "Agreement Updated",
+                redirectUrl: "/agreements"
+            })
+        );
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 
     it("shows error alert when addAgreement fails", async () => {
@@ -532,6 +548,115 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
             })
         );
         expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
+    });
+});
+
+describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it("isGrant is true when agreement_type is GRANT", () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "GRANT" }));
+        const { result } = renderUseAgreementEditForm();
+        expect(result.current.isGrant).toBe(true);
+    });
+
+    it("isGrant is false when agreement_type is CONTRACT", () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+        expect(result.current.isGrant).toBe(false);
+    });
+
+    it("handleAgreementFilterChange clears contract-only state when switching to GRANT", () => {
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setContractTypeMock = vi.fn();
+        const setServiceReqTypeMock = vi.fn();
+        const setAgreementReasonMock = vi.fn();
+        const setAgreementVendorMock = vi.fn();
+        const setAgreementNotesMock = vi.fn();
+        const setAgreementTypeMock = vi.fn();
+        const setSelectedProductServiceCodeMock = vi.fn();
+        const setSelectedProjectOfficerMock = vi.fn();
+        const setSelectedAlternateProjectOfficerMock = vi.fn();
+
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "contract_type") return setContractTypeMock;
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            if (key === "agreement_reason") return setAgreementReasonMock;
+            if (key === "vendor") return setAgreementVendorMock;
+            if (key === "notes") return setAgreementNotesMock;
+            if (key === "agreement_type") return setAgreementTypeMock;
+            return vi.fn();
+        });
+        useSetStateMock.mockImplementation((key) => {
+            if (key === "selected_product_service_code") return setSelectedProductServiceCodeMock;
+            if (key === "selected_project_officer") return setSelectedProjectOfficerMock;
+            if (key === "selected_alternate_project_officer") return setSelectedAlternateProjectOfficerMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("GRANT");
+        });
+
+        expect(setAgreementTypeMock).toHaveBeenCalledWith("GRANT");
+        expect(setContractTypeMock).toHaveBeenCalledWith(null);
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith(null);
+        expect(setAgreementReasonMock).toHaveBeenCalledWith(null);
+        expect(setAgreementVendorMock).toHaveBeenCalledWith(null);
+        expect(setAgreementNotesMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProductServiceCodeMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProjectOfficerMock).toHaveBeenCalledWith(null);
+        expect(setSelectedAlternateProjectOfficerMock).toHaveBeenCalledWith(null);
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });
+    });
+
+    it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
+        const setNofoNumberMock = vi.fn();
+        const setAlnNumberMock = vi.fn();
+        const setFundingPeriodMonthsMock = vi.fn();
+        const setSelectedAlternateProjectOfficerMock = vi.fn();
+        const setAlternateProjectOfficerIdMock = vi.fn();
+
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "nofo_number") return setNofoNumberMock;
+            if (key === "aln_number") return setAlnNumberMock;
+            if (key === "funding_period_months") return setFundingPeriodMonthsMock;
+            if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
+            return vi.fn();
+        });
+        useSetStateMock.mockImplementation((key) => {
+            if (key === "selected_alternate_project_officer") return setSelectedAlternateProjectOfficerMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "GRANT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("CONTRACT");
+        });
+
+        expect(setNofoNumberMock).toHaveBeenCalledWith(null);
+        expect(setAlnNumberMock).toHaveBeenCalledWith(null);
+        expect(setFundingPeriodMonthsMock).toHaveBeenCalledWith(null);
+        // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
+        expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
+        expect(setAlternateProjectOfficerIdMock).not.toHaveBeenCalled();
     });
 });
 

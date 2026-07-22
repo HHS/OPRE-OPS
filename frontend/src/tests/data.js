@@ -50,7 +50,16 @@ export const budgetLine = {
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
     updated_on: "2024-05-27T13:56:50.363964Z",
-    _meta: { isEditable: true }
+    _meta: { isEditable: true },
+    clin_id: 1,
+    clin: {
+        id: 1,
+        number: 1,
+        name: "CLIN 1",
+        pop_start_date: "2024-01-01",
+        pop_end_date: "2024-12-31",
+        agreement_id: 1
+    }
 };
 
 export const agreement = {
@@ -97,6 +106,15 @@ export const agreement = {
             },
             services_component_id: 1,
             status: "DRAFT",
+            clin_id: 1,
+            clin: {
+                id: 1,
+                number: 1,
+                name: "CLIN 1",
+                pop_start_date: "2024-01-01",
+                pop_end_date: "2024-12-31",
+                agreement_id: 1
+            },
             on_hold: false,
             certified: false,
             closed: false,

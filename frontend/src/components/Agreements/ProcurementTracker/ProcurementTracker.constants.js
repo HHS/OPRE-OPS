@@ -46,3 +46,15 @@ export const ProcurementTrackerPreAwardApprovalStatus = {
     DECLINED: "DECLINED",
     CANCELLED: "CANCELLED"
 };
+
+/**
+ * Maximum number of characters allowed in a procurement tracker step's notes field.
+ * @type {number}
+ */
+export const STEP_NOTES_MAX_LENGTH = 750;
+
+/**
+ * Shared inline style for the notes TextArea rendered in each procurement tracker step.
+ * @type {{ height: string, minWidth: string }}
+ */
+export const STEP_NOTES_TEXTAREA_STYLE = { height: "8.5rem", minWidth: "30rem" };

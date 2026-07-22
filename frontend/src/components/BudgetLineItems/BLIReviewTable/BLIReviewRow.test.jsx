@@ -8,8 +8,17 @@ import store from "../../../store";
 import { budgetLine } from "../../../tests/data";
 import BLIReviewRow from "./BLIReviewRow";
 
+const mockUpdateBudgetLineItem = vi.fn();
+
 vi.mock("../../../api/opsAPI", () => ({
-    useGetUserByIdQuery: vi.fn()
+    useGetUserByIdQuery: vi.fn(),
+    useUpdateBudgetLineItemMutation: vi.fn(() => [mockUpdateBudgetLineItem, { isLoading: false }])
+}));
+
+vi.mock("../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn(() => ({
+        setAlert: vi.fn()
+    }))
 }));
 
 const createTestRouter = (component) => {
@@ -80,6 +89,7 @@ const renderComponent = (props = {}) => {
 describe("BLIReviewRow", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockUpdateBudgetLineItem.mockClear();
     });
 
     it("should render the row with budget line data", () => {
@@ -169,5 +179,139 @@ describe("BLIReviewRow", () => {
         await user.click(checkbox);
 
         expect(setSelectedBLIs).toHaveBeenCalledWith(defaultBudgetLine.id.toString());
+    });
+
+    describe("errorStatuses prop", () => {
+        // Target the CAN cell — it uses showCellErrors which is the new gate this prop controls.
+        const bliWithMissingCan = (status) => ({
+            ...defaultBudgetLine,
+            status,
+            can: null,
+            can_id: null,
+            selected: false // explicitly unselected, simulating the pre-award page
+        });
+
+        it("applies CAN error styling to a PLANNED row when errorStatuses includes PLANNED", () => {
+            renderComponent({
+                isReviewMode: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingCan("PLANNED")
+            });
+
+            // CAN cell shows NO_DATA ("--") with table-item-error class
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeDefined();
+        });
+
+        it("suppresses CAN error styling on a DRAFT row when errorStatuses excludes DRAFT", () => {
+            renderComponent({
+                isReviewMode: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingCan("DRAFT")
+            });
+
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
+        });
+
+        it("does NOT apply CAN error styling when errorStatuses is omitted and row is unselected (ReviewAgreement regression guard)", () => {
+            renderComponent({
+                isReviewMode: true,
+                // no errorStatuses — ReviewAgreement page behavior
+                budgetLine: bliWithMissingCan("PLANNED")
+            });
+
+            const canCells = screen.getAllByRole("cell");
+            const errorCanCell = canCells.find(
+                (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
+            );
+            expect(errorCanCell).toBeUndefined();
+        });
+    });
+
+    describe("CLIN Selector", () => {
+        // Note: Hover interaction tests are covered by E2E tests rather than unit tests
+        // because React Testing Library's hover simulation doesn't reliably trigger state updates
+
+        it("should render CLIN column with TBD when CLIN is missing and showCLINColumn is true (non-Draft)", () => {
+            const budgetLineWithoutCLIN = {
+                ...defaultBudgetLine,
+                status: "PLANNED", // Non-Draft status shows TBD
+                clin_id: null,
+                clin: null
+            };
+            renderComponent({ showCLINColumn: true, budgetLine: budgetLineWithoutCLIN });
+
+            const clinCells = screen.getAllByText("TBD");
+            expect(clinCells.length).toBeGreaterThan(0);
+            // First TBD should be in CLIN column (2nd column after checkbox)
+            expect(clinCells[0]).toBeInTheDocument();
+        });
+
+        it("should not render CLIN column when showCLINColumn is false", () => {
+            renderComponent({ showCLINColumn: false });
+
+            // CLIN column should not be present
+            expect(screen.queryByText("TBD")).not.toBeInTheDocument();
+        });
+
+        describe("Status-based CLIN display", () => {
+            it("should show 'N/A' for Draft status BLI without CLIN", () => {
+                const draftBLI = {
+                    ...defaultBudgetLine,
+                    status: "DRAFT",
+                    clin_id: null,
+                    clin: null
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    budgetLine: draftBLI
+                });
+
+                expect(screen.getByText("N/A")).toBeInTheDocument();
+            });
+
+            it("should show 'TBD' with error styling for non-Draft BLI without CLIN when selected", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: null,
+                    clin: null,
+                    selected: true // Error classes only apply when selected
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                const tbdCells = screen.getAllByText("TBD");
+                // Find the CLIN column TBD (should have error class)
+                const clinTBD = tbdCells.find((cell) => cell.classList.contains("table-item-error"));
+                expect(clinTBD).toBeInTheDocument();
+            });
+
+            it("should not show CLIN edit button on hover for Draft status", () => {
+                const draftBLI = {
+                    ...defaultBudgetLine,
+                    status: "DRAFT"
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    budgetLine: draftBLI,
+                    onAddCLINClick: vi.fn()
+                });
+
+                // Hover is tricky to test in unit tests - E2E will cover this
+                // But we can verify the button doesn't render for Draft
+                expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
+            });
+        });
     });
 });

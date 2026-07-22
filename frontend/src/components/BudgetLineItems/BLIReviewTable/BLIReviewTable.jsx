@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { useMemo } from "react";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
@@ -21,6 +21,10 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
  * @param {Number} props.servicesComponentNumber - The Number of the services component.
  * @param {string} props.action - The action of the review
+ * @param {Function} [props.onAddCLINClick] - Callback when "+ CLIN" is clicked with budgetLine.id
+ * @param {Boolean} [props.showCLINColumn] - Whether to show the CLIN column (Award page only)
+ * @param {Object} [props.clinAssignments] - Map of budgetLineId to CLIN number assignments
+ * @param {string[]} [props.errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -32,21 +36,38 @@ const AgreementBLIReviewTable = ({
     setMainToggleSelected = () => {},
     servicesComponentNumber,
     action,
-    readOnly = false
+    readOnly = false,
+    onAddCLINClick,
+    showCLINColumn = false,
+    clinAssignments = {},
+    errorStatuses
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    const sortedBudgetLines = budgetLines
-        .slice()
-        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
-        .reverse();
+    // Memoize initial sorting by creation date to avoid re-sorting on every render
+    const sortedBudgetLines = useMemo(
+        () =>
+            budgetLines
+                .slice()
+                .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+                .reverse(),
+        [budgetLines]
+    );
 
-    let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
-
-    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW);
+    // Use shallow copy instead of deep clone - useSortData doesn't mutate nested properties
+    const copiedBudgetLines = useSortData([...sortedBudgetLines], sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW);
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
     const showCheckboxes = !!setSelectedBLIs;
+
+    // Filter headers based on showCLINColumn flag
+    const tableHeaders = useMemo(() => {
+        if (showCLINColumn) {
+            return BUDGET_LINE_TABLE_HEADERS_LIST;
+        }
+        // Remove CLIN column header when showCLINColumn is false
+        return BUDGET_LINE_TABLE_HEADERS_LIST.filter((header) => header.heading !== "CLIN");
+    }, [showCLINColumn]);
 
     const firstHeadingSlot = showCheckboxes ? (
         <th>
@@ -81,7 +102,7 @@ const AgreementBLIReviewTable = ({
     return (
         <>
             <Table
-                tableHeadings={BUDGET_LINE_TABLE_HEADERS_LIST}
+                tableHeadings={tableHeaders}
                 firstHeadingSlot={firstHeadingSlot}
                 selectedHeader={sortCondition}
                 sortDescending={sortDescending}
@@ -96,6 +117,10 @@ const AgreementBLIReviewTable = ({
                         action={action}
                         showCheckbox={showCheckboxes}
                         readOnly={readOnly}
+                        onAddCLINClick={onAddCLINClick}
+                        showCLINColumn={showCLINColumn}
+                        clinAssignments={clinAssignments}
+                        errorStatuses={errorStatuses}
                     />
                 ))}
             </Table>

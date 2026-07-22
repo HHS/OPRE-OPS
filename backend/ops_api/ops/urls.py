@@ -3,6 +3,7 @@ from flask import Blueprint
 from ops_api.ops.views import (
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
+    AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
@@ -54,6 +55,7 @@ from ops_api.ops.views import (
     PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC,
+    PROCUREMENT_TRACKER_STEP_PENDING_AWARD_APPROVALS_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
@@ -72,6 +74,7 @@ from ops_api.ops.views import (
     SPECIAL_TOPICS_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
+    VENDORS_LIST_API_VIEW_FUNC,
     VERSION_API_VIEW_FUNC,
 )
 
@@ -179,6 +182,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
+        "/procurement-tracker-steps/pending-award-approvals/",
+        view_func=PROCUREMENT_TRACKER_STEP_PENDING_AWARD_APPROVALS_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/procurement-tracker-steps/<int:id>",
         view_func=PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,
     )
@@ -219,6 +226,11 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/users/",
         view_func=USERS_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/vendors/",
+        view_func=VENDORS_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule("/cans/<int:id>/history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
@@ -275,6 +287,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/spending/",
         view_func=AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/edit-bundle",
+        view_func=AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-agencies/",

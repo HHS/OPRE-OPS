@@ -14,6 +14,7 @@ Each major directory has its own `CLAUDE.md` with detailed commands, architectur
 - **`backend/ops_api/CLAUDE.md`**: Backend Flask API — commands, testing, architecture, authorization patterns
 - **`backend/data_tools/CLAUDE.md`**: ETL and data import — load_data CLI, test fixtures, environment configs
 - **`frontend/CLAUDE.md`**: React frontend — commands, testing, RTK Query, component patterns
+- **`docs/TESTING.md`**: Testing philosophy and the test-type decision matrix — consult before adding any new test, at any layer
 
 ## Data Model
 

@@ -45,7 +45,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 }));
 
 vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
-    PreAwardBudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
+    BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
@@ -94,7 +94,14 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     ) => (
         <div data-testid="modal">
             <h2>{heading}</h2>
-            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button
+                onClick={() => {
+                    setShowModal(false);
+                    handleConfirm();
+                }}
+            >
+                {actionButtonText}
+            </button>
             {handleSecondary && <button onClick={handleSecondary}>{secondaryButtonText}</button>}
             <button onClick={closeModal}>Close</button>
         </div>
@@ -131,11 +138,12 @@ describe("ReviewBudgetTeamRequisition", () => {
         },
         isLoading: false,
         allBudgetLines: [],
+        executingBudgetLines: [],
         executingTotal: 50000,
         projectOfficerName: "John Doe",
         alternateProjectOfficerName: "Jane Smith",
         servicesComponents: [],
-        groupedBudgetLinesByServicesComponent: [],
+        groupedExecutingBudgetLinesByServicesComponent: [],
         preAwardMemoDocuments: [],
         requestorNotes: "Submitter notes here",
         reviewerNotes: "Division Director notes here",
@@ -234,7 +242,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             const requisitionInput = screen.getByLabelText("Requisition #");
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             const attestationCheckbox = screen.getByRole("checkbox");
 
             expect(requisitionInput).toBeDisabled();
@@ -272,7 +280,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
-            expect(screen.getByLabelText(/Requisition Date/)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Requisition Approval Date/)).toBeInTheDocument();
         });
 
         it("should render attestation checkbox", () => {
@@ -344,7 +352,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             await user.type(dateInput, "2026-05-12");
 
             expect(mockSetRequisitionDate).toHaveBeenCalled();
@@ -476,10 +484,10 @@ describe("ReviewBudgetTeamRequisition", () => {
                 ...defaultHookReturn,
                 showModal: true,
                 modalProps: {
-                    heading: "Are you sure you want to cancel?",
-                    description: "Any information you have entered will be discarded.",
-                    actionButtonText: "Continue Editing",
-                    secondaryButtonText: "Discard Changes",
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    description: "",
+                    actionButtonText: "Yes, Cancel Task",
+                    secondaryButtonText: "Continue Editing",
                     handleConfirm: vi.fn(),
                     handleSecondary: vi.fn()
                 }
@@ -488,7 +496,9 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByTestId("modal")).toBeInTheDocument();
-            expect(screen.getByText("Are you sure you want to cancel?")).toBeInTheDocument();
+            expect(
+                screen.getByText("Are you sure you want to cancel this task? Your input will not be saved.")
+            ).toBeInTheDocument();
         });
 
         it("should disable cancel button while submitting", () => {

@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
 import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import constants from "../../../constants.js";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { setIsActive } from "../../UI/Alert/alertSlice.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal.jsx";
 import { USER_STATUS } from "./UserInfo.constants.js";
 import { useNavigate } from "react-router-dom";
+
+const READ_ONLY_ROLE = "READ_ONLY";
 
 // Move statusData outside component to prevent re-creation
 const STATUS_DATA = [
@@ -28,11 +29,19 @@ const STATUS_DATA = [
 const UserInfo = ({ user, isEditable }) => {
     const navigate = useNavigate();
     const { setAlert } = useAlert();
-    const dispatch = useDispatch();
 
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
+    const [showModal, setShowModal] = React.useState(false);
+    const [showCancelModal, setShowCancelModal] = React.useState(false);
+    // Baseline of the last-saved values. The `user` prop is a stale snapshot from the
+    // parent's selected-users state and is not re-synced after a save, so we track what
+    // was persisted here to keep the dirty check (and Cancel reset) accurate.
+    const [lastSaved, setLastSaved] = React.useState(null);
+    // Values sent in the in-flight save. Committed to `lastSaved` only once the mutation
+    // succeeds, so the dirty-check baseline never advances on a failed save.
+    const pendingSaveRef = React.useRef(null);
     /** @type {{data?: import("../../../types/PortfolioTypes.js").Division[] | undefined, error?: Object, isLoading: boolean}} */
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery({});
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -87,12 +96,17 @@ const UserInfo = ({ user, isEditable }) => {
 
     useEffect(() => {
         if (updateUserResult.isSuccess) {
+            // Advance the dirty-check baseline only now that the save has succeeded.
+            if (pendingSaveRef.current) {
+                setLastSaved(pendingSaveRef.current);
+                pendingSaveRef.current = null;
+            }
             setAlert({
                 type: "success",
                 heading: "User Updated",
                 message: "The user has been updated successfully."
             });
-            dispatch(setIsActive(true));
+            updateUserResult.reset();
         }
 
         if (updateUserResult.isError) {
@@ -101,23 +115,79 @@ const UserInfo = ({ user, isEditable }) => {
                 heading: "Error",
                 message: "An error occurred while updating the user."
             });
-            dispatch(setIsActive(true));
+            updateUserResult.reset();
         }
-    }, [updateUserResult, dispatch, setAlert]);
+    }, [updateUserResult, setAlert]);
+    // Detect unsaved edits by comparing the staged selections against the persisted values.
+    // Prefer the local last-saved baseline (updated on save) over the stale `user` prop.
+    const persistedDivision = lastSaved?.division ?? user.division ?? null;
+    const persistedStatus = lastSaved?.status ?? user.status ?? null;
+    const persistedRoleNames =
+        lastSaved?.roleNames ?? (user.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
+    const selectedRoleNames = selectedRoles.map((role) => role.name);
+    const rolesChanged =
+        persistedRoleNames.length !== selectedRoleNames.length ||
+        !persistedRoleNames.every((name) => selectedRoleNames.includes(name));
+    const divisionChanged = (selectedDivision?.id ?? null) !== persistedDivision;
+    const statusChanged = (selectedStatus?.name ?? null) !== persistedStatus;
+    const isDirty = divisionChanged || statusChanged || rolesChanged;
+
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
-        updateUser({ id: user.id, data: { division: division ? division.id : null } });
     };
 
     const handleRolesChange = (roles) => {
-        setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => role.name);
-        updateUser({ id: user.id, data: { roles: roleNames || [] } });
+        setSelectedRoles(roles ?? []);
     };
 
     const handleStatusChange = (status) => {
         setSelectedStatus(status);
-        updateUser({ id: user.id, data: { status: status ? status.name : "LOCKED" } });
+    };
+
+    const saveUser = (roleNames) => {
+        const division = selectedDivision?.id ?? null;
+        const status = selectedStatus?.name ?? "LOCKED";
+        updateUser({
+            id: user.id,
+            data: {
+                division,
+                roles: roleNames,
+                status
+            }
+        });
+        // Stage the persisted values; they become the dirty-check baseline once the
+        // mutation succeeds (see the updateUserResult effect). The `user` prop won't
+        // reflect this change.
+        pendingSaveRef.current = { division, status, roleNames };
+    };
+
+    // Read Only cannot be combined with other roles. Whenever the selection mixes Read Only
+    // with anything else, require confirmation because saving strips the other role(s). This
+    // also guards the already-Read-Only case (adding a second role), so we never rely on the
+    // backend 400. Any other change saves directly.
+    const handleSave = () => {
+        if (selectedRoleNames.includes(READ_ONLY_ROLE) && selectedRoleNames.length > 1) {
+            setShowModal(true);
+            return;
+        }
+        saveUser(selectedRoleNames);
+    };
+
+    const handleConfirmReadOnly = () => {
+        setSelectedRoles(roles?.filter((role) => role.name === READ_ONLY_ROLE) ?? []);
+        saveUser([READ_ONLY_ROLE]);
+    };
+
+    // Discard unsaved edits by resetting each field to the last-persisted value.
+    const handleCancelEdits = () => {
+        setSelectedDivision(divisions?.find((division) => division.id === persistedDivision) ?? {});
+        setSelectedStatus(STATUS_DATA.find((status) => status.name === persistedStatus) ?? {});
+        setSelectedRoles(roles?.filter((role) => persistedRoleNames.includes(role.name)) ?? []);
+    };
+
+    // Cancel prompts for confirmation so unsaved edits aren't discarded accidentally.
+    const handleCancel = () => {
+        setShowCancelModal(true);
     };
 
     if (isLoadingDivisions || isLoadingRoles) {
@@ -134,6 +204,24 @@ const UserInfo = ({ user, isEditable }) => {
 
     return (
         <div className="usa-card">
+            {showModal && (
+                <ConfirmationModal
+                    heading="Are you sure you want to change this role to Read Only? The existing role(s) associated with this user will be removed by making this change."
+                    setShowModal={setShowModal}
+                    actionButtonText="Change Role"
+                    secondaryButtonText="Cancel"
+                    handleConfirm={handleConfirmReadOnly}
+                />
+            )}
+            {showCancelModal && (
+                <ConfirmationModal
+                    heading="Are you sure you want to cancel editing? Your changes will not be saved."
+                    setShowModal={setShowCancelModal}
+                    actionButtonText="Cancel edits"
+                    secondaryButtonText="Continue editing"
+                    handleConfirm={handleCancelEdits}
+                />
+            )}
             <div className="usa-card__container">
                 <div className="usa-card__header">
                     <h1 className="usa-card__heading">{user.display_name ?? user.full_name}</h1>
@@ -210,6 +298,28 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                     </div>
+                    {isEditable && (
+                        <div className="grid-row flex-justify-end margin-top-8">
+                            <button
+                                type="button"
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                disabled={!isDirty}
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="usa-button"
+                                disabled={!isDirty}
+                                data-cy="save-btn"
+                                onClick={handleSave}
+                            >
+                                Save changes
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

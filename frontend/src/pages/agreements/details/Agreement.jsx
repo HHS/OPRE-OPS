@@ -36,6 +36,7 @@ const Agreement = () => {
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
     const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(false);
+    const [showAwardSuccessAlert, setShowAwardSuccessAlert] = useState(false);
 
     // Consume success state from navigation and clear it to prevent re-display on back/forward
     useEffect(() => {
@@ -47,17 +48,35 @@ const Agreement = () => {
                 state: {}
             });
         }
-    }, [location.state?.success, location.pathname, location.search, navigate]);
+        if (location.state?.awardApprovalSuccess) {
+            setShowAwardSuccessAlert(true);
+            // Clear location.state so alert doesn't reappear on browser back/forward navigation
+            navigate(location.pathname + location.search, {
+                replace: true,
+                state: {}
+            });
+        }
+    }, [location.state?.success, location.state?.awardApprovalSuccess, location.pathname, location.search, navigate]);
 
-    // Auto-dismiss success alert after 10 seconds
+    // Auto-dismiss success alert after 6 seconds
     useEffect(() => {
         if (showPreAwardSuccessAlert) {
             const timer = setTimeout(() => {
                 setShowPreAwardSuccessAlert(false);
-            }, 10000);
+            }, 6000);
             return () => clearTimeout(timer);
         }
     }, [showPreAwardSuccessAlert]);
+
+    // Auto-dismiss award success alert after 6 seconds
+    useEffect(() => {
+        if (showAwardSuccessAlert) {
+            const timer = setTimeout(() => {
+                setShowAwardSuccessAlert(false);
+            }, 6000);
+            return () => clearTimeout(timer);
+        }
+    }, [showAwardSuccessAlert]);
 
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
@@ -73,6 +92,7 @@ const Agreement = () => {
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
     const [isPreAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
+    const [isAwardInReviewAlertVisible, setIsAwardInReviewAlertVisible] = useState(true);
 
     // Set edit mode based on URL query parameter
     useEffect(() => {
@@ -233,6 +253,12 @@ const Agreement = () => {
             preAwardApprovalStatus === "PENDING" ||
             (preAwardApprovalStatus === "APPROVED" && !preAwardStep?.requisition_approved_by));
 
+    // Keep agreement locked when Award approval has been requested but not yet approved by Budget Team
+    const awardStep = activeTracker?.steps?.find((step) => step.step_type === "AWARD");
+    const awardApprovalStatus = awardStep?.approval_status;
+    const isAwardInReview =
+        awardStep?.approval_requested && (awardApprovalStatus == null || awardApprovalStatus === "PENDING");
+
     const isAgreementAwarded = agreement?.is_awarded;
     return (
         <App breadCrumbName={agreement?.name}>
@@ -253,6 +279,16 @@ const Agreement = () => {
                     headingLevel={2}
                 />
             )}
+            {showAwardSuccessAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Agreement Sent to Award Approval"
+                    message="This agreement has been successfully sent to the Budget Team to review. Once approved, the Executing Budget Lines will change to Obligated status and the Agreement will be Awarded."
+                    isClosable={true}
+                    setIsAlertVisible={setShowAwardSuccessAlert}
+                    headingLevel={2}
+                />
+            )}
             {!showPreAwardSuccessAlert && isPreAwardInReview && isPreAwardInReviewAlertVisible && (
                 <SimpleAlert
                     type="warning"
@@ -260,6 +296,15 @@ const Agreement = () => {
                     isClosable={true}
                     message="This agreement is In Review for Pre-Award Approval. This includes an approval from the Division Director, as well as a requisition from the Budget Team. Edits or changes cannot be made at this time."
                     setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
+                />
+            )}
+            {!showAwardSuccessAlert && isAwardInReview && isAwardInReviewAlertVisible && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Award Approval In Review"
+                    isClosable={true}
+                    message="This agreement is In Review for Award Approval. Edits or changes cannot be made at this time."
+                    setIsAlertVisible={setIsAwardInReviewAlertVisible}
                 />
             )}
             {showNonContractAlert && (
@@ -332,6 +377,7 @@ const Agreement = () => {
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
+                                isAwardInReview={isAwardInReview}
                             />
                         }
                     />
@@ -345,6 +391,7 @@ const Agreement = () => {
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
+                                isAwardInReview={isAwardInReview}
                             />
                         }
                     />

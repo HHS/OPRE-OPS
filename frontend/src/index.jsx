@@ -30,12 +30,14 @@ import ProjectsList from "./pages/projects/list/ProjectsList";
 import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
+import EditAgreementAndBudgetLines from "./pages/agreements/review/EditAgreementAndBudgetLines";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import {
     RequestPreAwardApproval,
     ApprovePreAwardApproval,
     ReviewBudgetTeamRequisition
 } from "./pages/agreements/pre-award-approval";
+import { RequestAwardApproval } from "./pages/agreements/award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
@@ -256,6 +258,23 @@ const router = createBrowserRouter(
                     path="/agreements/edit/:id/*"
                     element={<EditAgreement />}
                 />
+                {/* React Router v6 matches by specificity, not registration order — `:id/edit`
+                    wins over `:id/*` regardless of which is declared first. Keeping the
+                    specific route above the wildcard so the relationship reads top-down. */}
+                <Route
+                    path="/agreements/review/:id/edit"
+                    element={<EditAgreementAndBudgetLines />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
                 <Route
                     path="/agreements/review/:id/*"
                     element={<ReviewAgreement />}
@@ -315,6 +334,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/:id/review-budget-requisition"
                     element={<ReviewBudgetTeamRequisition />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/award-approval"
+                    element={<RequestAwardApproval />}
                     handle={{
                         crumb: () => (
                             <Link

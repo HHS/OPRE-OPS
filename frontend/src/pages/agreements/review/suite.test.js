@@ -35,7 +35,6 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("reason");
         expect(result.getErrors()).toHaveProperty("project-officer");
         expect(result.getErrors()).toHaveProperty("contract-type");
-        expect(result.getErrors()).toHaveProperty("team-members");
         expect(result.getErrors()).toHaveProperty("budget-line-items");
     });
 
@@ -90,13 +89,13 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("contract-type");
     });
 
-    it("fails if team_members is empty", () => {
+    it("passes if team_members is empty (team members are not required for approval)", () => {
         const data = { ...validData, team_members: [] };
         suite.reset();
         suite.run(data);
         const result = suite.get();
-        expect(result.isValid()).toBe(false);
-        expect(result.getErrors()).toHaveProperty("team-members");
+        expect(result.isValid()).toBe(true);
+        expect(result.getErrors()).not.toHaveProperty("team-members");
     });
 
     it("fails if budget_line_items is empty", () => {
@@ -143,41 +142,41 @@ describe("Budget Line Suite", () => {
     it("fails if amount is 0 or negative", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, amount: 0 });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Amount");
+        // Normalized key: "Budget Line Amount" → "amount"
+        expect(result.errors).toHaveProperty("amount");
     });
 
     it("fails if can_id is null", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, can_id: null });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line CAN");
+        // Normalized key: "Budget Line CAN" → "can"
+        expect(result.errors).toHaveProperty("can");
     });
 
     it("fails if can_id is 0", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, can_id: 0 });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line CAN");
+        expect(result.errors).toHaveProperty("can");
     });
 
     it("fails if services_component_id is null", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: null });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty(
-            "Budget lines need to be assigned to a services component to change their status"
-        );
+        // Normalized key: long sentence → "services_component"
+        expect(result.errors).toHaveProperty("services_component");
     });
 
     it("fails if services_component_id is 0", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: 0 });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty(
-            "Budget lines need to be assigned to a services component to change their status"
-        );
+        expect(result.errors).toHaveProperty("services_component");
     });
 
     it("fails if date_needed is blank", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: "" });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Obligate By Date");
+        // Normalized key: "Budget Line Obligate By Date" → "date_needed"
+        expect(result.errors).toHaveProperty("date_needed");
     });
 
     it("fails if date_needed is in the past", () => {
@@ -185,13 +184,15 @@ describe("Budget Line Suite", () => {
         pastDate.setDate(pastDate.getDate() - 2);
         const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: pastDate.toISOString().slice(0, 10) });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Obligate By Date must be in the future");
+        // Both date tests normalize to "date_needed"; first message wins
+        expect(result.errors).toHaveProperty("date_needed");
     });
 
     it("validates only a single field when fieldName is provided", () => {
         const result = validateBudgetLineItem({}, "Budget Line Amount");
         expect(result.isValid).toBe(false);
-        expect(Object.keys(result.errors)).toContain("Budget Line Amount");
+        // Normalized output key is "amount"
+        expect(Object.keys(result.errors)).toContain("amount");
         expect(Object.keys(result.errors).length).toBe(1);
     });
 });
@@ -216,7 +217,7 @@ describe("validateBudgetLineItems", () => {
         expect(results.length).toBe(2);
         expect(results[0].isValid).toBe(true);
         expect(results[1].isValid).toBe(false);
-        expect(results[1].errors).toHaveProperty("Budget Line Amount");
+        expect(results[1].errors).toHaveProperty("amount");
     });
 
     it("handles single object input", () => {

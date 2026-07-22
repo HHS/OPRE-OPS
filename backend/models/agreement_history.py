@@ -132,9 +132,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
                         if updated_by_system_user
-                        else f"{event_user.full_name} deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
@@ -441,14 +441,24 @@ def create_change_request_history_event(
             if old_proc_shop:
                 old_proc_shop_abbr = old_proc_shop.abbr
                 old_proc_shop_fee_total = (
-                    sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
             if new_proc_shop:
                 new_proc_shop_abbr = new_proc_shop.abbr
                 new_proc_shop_fee_total = (
-                    sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
@@ -706,7 +716,7 @@ def create_agreement_update_history_event(
                     old_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (old_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -719,7 +729,7 @@ def create_agreement_update_history_event(
                     new_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (new_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -1030,13 +1040,27 @@ def create_procurement_tracker_step_update_history_event(
     procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
 
     # Handle approval request events
+    step_type = procurement_tracker_step.get("step_type")
+
     if "approval_requested" in updates and updates["approval_requested"]["new_value"] is True:
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+        if is_award_step:
+            history_title = "Award Approval Requested"
+            history_message = (
+                f"{event_user.full_name} uploaded the signed award, entered the CLINs and award details, "
+                "and requested award approval from the Budget Team."
+            )
+        else:
+            history_title = "Pre-Award Approval Requested"
+            history_message = (
+                f"{event_user.full_name} requested pre-award approval from the Division Director."
+            )
         return AgreementHistory(
             agreement_id=procurement_tracker.agreement_id,
             agreement_id_record=procurement_tracker.agreement_id,
             ops_event_id=event.id,
-            history_title="Pre-Award Approval Requested",
-            history_message=f"{event_user.full_name} requested pre-award approval from the Division Director.",
+            history_title=history_title,
+            history_message=history_message,
             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
         )
@@ -1056,22 +1080,35 @@ def create_procurement_tracker_step_update_history_event(
             )
         requester_name = requester_user.full_name
 
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+
         if status == "APPROVED":
-            # Extract first name from full name (e.g., "Dave Director" -> "Dave")
-            name_parts = event_user.full_name.split() if event_user.full_name else []
-            approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Approved & Requisition Started"
-            history_message = (
-                f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
-                f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
-                f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
-            )
+            if is_award_step:
+                history_title = "Agreement Awarded"
+                history_message = (
+                    "The Budget Team reviewed and approved this agreement for award. "
+                    "The Executing budget lines were changed to Obligated Status."
+                )
+            else:
+                # Extract first name from full name (e.g., "Dave Director" -> "Dave")
+                name_parts = event_user.full_name.split() if event_user.full_name else []
+                approver_first_name = name_parts[0] if name_parts else "Unknown"
+                history_title = "Pre-Award Approved & Requisition Started"
+                history_message = (
+                    f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
+                    f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+                    f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
+                )
         elif status == "DECLINED":
             # Extract first name from full name (e.g., "Dave Director" -> "Dave")
             name_parts = event_user.full_name.split() if event_user.full_name else []
             approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Declined"
-            history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
+            if is_award_step:
+                history_title = "Award Declined"
+                history_message = f"{approver_first_name} declined this agreement for award as requested by {requester_name}."
+            else:
+                history_title = "Pre-Award Declined"
+                history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
         else:
             history_title = None
 

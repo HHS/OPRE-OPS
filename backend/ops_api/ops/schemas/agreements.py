@@ -113,6 +113,9 @@ class ContractAgreementData(AgreementData):
 
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_number = fields.String(allow_none=True)
+    funding_period_months = fields.Integer(allow_none=True)
 
 
 class DirectAgreementData(AgreementData):
@@ -287,10 +290,16 @@ class ContractListAgreementResponse(AgreementListResponse):
 
 class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_number = fields.String(allow_none=True)
+    funding_period_months = fields.Integer(allow_none=True)
 
 
 class GrantListAgreementResponse(AgreementListResponse):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_number = fields.String(allow_none=True)
+    funding_period_months = fields.Integer(allow_none=True)
 
 
 class DirectAgreementResponse(AgreementResponse):

@@ -69,7 +69,11 @@ class ProcurementTrackerStepItemAPI(BaseItemAPI):
             )
 
             event_meta.metadata.update(
-                {"procurement_tracker_step_updates": events_update, "procurement_tracker_step": updated_step.to_dict()}
+                {
+                    "step_id": updated_step.id,
+                    "procurement_tracker_step_updates": events_update,
+                    "procurement_tracker_step": updated_step.to_dict(),
+                }
             )
 
             # Serialize and return response
@@ -177,5 +181,36 @@ class ProcurementTrackerStepPendingRequisitionsAPI(BaseListAPI):
         # Serialize response
         response_schema = ProcurementTrackerStepResponseSchema(many=True)
         serialized_data = response_schema.dump(pending_requisitions)
+
+        return make_response_with_headers(serialized_data)
+
+
+class ProcurementTrackerStepPendingAwardApprovalsAPI(BaseListAPI):
+    """
+    GET /api/v1/procurement-tracker-steps/pending-award-approvals
+
+    List pending award approval requests for the current user.
+    """
+
+    def __init__(self, model: BaseModel = ProcurementTrackerStep):
+        super().__init__(model)
+
+    @error_simulator
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        """Get list of pending award approvals for the current user."""
+        current_user = get_current_user()
+
+        if not current_user or not hasattr(current_user, "id") or current_user.id is None:
+            return make_response_with_headers({"error": "Unable to determine current user"}, 401)
+
+        user_id = current_user.id
+        logger.debug(f"Getting pending award approvals for user {user_id}")
+        service = ProcurementTrackerStepService(current_app.db_session)
+        pending_award_approvals = service.get_pending_award_approvals_for_user(user_id)
+
+        # Serialize response
+        response_schema = ProcurementTrackerStepResponseSchema(many=True)
+        serialized_data = response_schema.dump(pending_award_approvals)
 
         return make_response_with_headers(serialized_data)

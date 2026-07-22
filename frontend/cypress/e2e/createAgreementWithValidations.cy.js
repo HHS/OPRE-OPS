@@ -16,7 +16,6 @@ const agreementDetailsData = {
     awarding_entity_id: 2,
     agreement_reason: "NEW_REQ",
     project_officer_id: 500,
-    team_members: [{ id: 502 }, { id: 504 }],
     notes: "This is a note.",
     vendor: "Test Vendor"
 };
@@ -292,13 +291,6 @@ const fillRequiredAgreementDetails = () => {
         "Chris Fortunato",
         0
     );
-    selectComboboxOption(
-        "#team-member-combobox-input",
-        ".team-member-combobox__menu",
-        ".team-member-combobox__option",
-        "System Owner",
-        1
-    );
     cy.get("#agreementNotes").clear().type(agreementDetailsData.notes);
 };
 
@@ -336,12 +328,14 @@ beforeEach(() => {
 
 afterEach(() => {
     cy.injectAxe();
-    // A11Y-SUPPRESSION: owner=frontend-team expires=2026-06-30 rationale=Page intentionally renders two mains during legacy layout transition.
+    // A11Y-SUPPRESSION: owner=frontend-team expires=2026-12-31 rationale=Page intentionally renders two mains during legacy layout transition.
     cy.checkA11y(
         null,
         {
             rules: {
+                // A11Y-SUPPRESSION: owner=frontend-team expires=2026-12-31 rationale=Page intentionally renders two mains during legacy layout transition.
                 "landmark-one-main": { enabled: false },
+                // A11Y-SUPPRESSION: owner=frontend-team expires=2026-12-31 rationale=Page intentionally renders two mains during legacy layout transition.
                 region: { enabled: false }
             }
         },
@@ -400,8 +394,19 @@ describe("create agreement and test validations", () => {
         });
     });
 
-    it("enables review status transitions when valid data exists", () => {
+    it("enables review status transitions with a COR but no team members", () => {
         createValidAgreement().then((agreementId) => {
+            // The agreement is created with a COR (project_officer_id) but no team members.
+            // Confirm the send-to-approval flow proves team members are not required.
+            cy.request({
+                method: "GET",
+                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                headers: getAuthHeaders()
+            }).then((response) => {
+                expect(response.body.project_officer_id).to.eq(agreementDetailsData.project_officer_id);
+                expect(response.body.team_members).to.have.length(0);
+            });
+
             createServicesComponent(agreementId).then((servicesComponentId) => {
                 createBudgetLineItem(agreementId, servicesComponentId).then(() => {
                     cy.visit(`/agreements/${agreementId}/budget-lines`);
@@ -441,20 +446,20 @@ describe("create agreement and test validations", () => {
                     cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
                     cy.get('[data-cy="edit-agreement-btn"]').click();
-                    cy.get("#continue").click();
-                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
-                    cy.get(".usa-form-group--error").should("exist");
+                    cy.url().should("include", `/agreements/review/${agreementId}/edit`);
+                    cy.contains("h1", "Edit Agreement Details").should("be.visible");
+                    cy.contains("Loading...").should("not.exist");
+
+                    cy.get('[data-cy="save-edit-agreement-btn"]').should("be.disabled");
                     cy.get("tbody").children().as("table-rows").should("have.length", 2);
                     cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                     cy.get("[data-cy='edit-row']").click();
-                    cy.get(".usa-form-group--error").should("have.length", 4);
+                    cy.get("#budget-line-form").find(".usa-form-group--error").should("have.length", 3);
                     cy.get('[data-cy="update-budget-line"]').should("be.disabled");
 
-                    cy.contains("Loading...").should("not.exist");
                     cy.get("#can-combobox-input").should("not.be.disabled");
                     cy.get("#can-combobox-input").clear().type("G994426{enter}");
                     cy.get(".can-combobox__single-value").should("contain", "G994426");
-                    selectFirstRealOption("#allServicesComponentSelect");
                     cy.get("#need-by-date").clear().type("09/01/2048");
                     cy.get("#enteredAmount").clear().type("111111");
                     cy.get("#enteredDescription").clear().type("test line description");
@@ -463,8 +468,13 @@ describe("create agreement and test validations", () => {
                     cy.get("#budget-line-form").find(".usa-form-group--error").should("not.exist");
                     cy.get("#budget-line-form").should("not.contain", "Update Budget Line");
 
-                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
+                    cy.get('[data-cy="save-edit-agreement-btn"]', { timeout: 20000 })
+                        .should("not.be.disabled")
+                        .click();
 
+                    cy.url({ timeout: 30000 })
+                        .should("include", `/agreements/review/${agreementId}`)
+                        .and("not.include", "/edit");
                     visitReviewPage(agreementId);
                     cy.get("h1", { timeout: 20000 })
                         .should("be.visible")

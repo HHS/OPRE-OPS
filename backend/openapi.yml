@@ -162,12 +162,12 @@ paths:
                     type: array
                     items:
                       oneOf:
-                        - $ref: "#/components/schemas/AgreementResponse"
-                        - $ref: "#/components/schemas/ContractAgreementResponse"
-                        - $ref: "#/components/schemas/GrantAgreementResponse"
-                        - $ref: "#/components/schemas/DirectAgreementResponse"
-                        - $ref: "#/components/schemas/IaaAgreementResponse"
-                        - $ref: "#/components/schemas/AaAgreementResponse"
+                        - $ref: "#/components/schemas/AgreementListResponse"
+                        - $ref: "#/components/schemas/ContractListAgreementResponse"
+                        - $ref: "#/components/schemas/GrantListAgreementResponse"
+                        - $ref: "#/components/schemas/DirectListAgreementResponse"
+                        - $ref: "#/components/schemas/IaaListAgreementResponse"
+                        - $ref: "#/components/schemas/AaListAgreementResponse"
                   count:
                     type: integer
                     description: Total number of agreements matching the query
@@ -715,6 +715,94 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found - Agreement does not exist
+  /agreements/{id}/edit-bundle:
+    patch:
+      tags:
+        - Agreements
+      operationId: patchAgreementEditBundle
+      summary: Atomically update an agreement plus its services components and budget line items
+      description: |
+        Apply an agreement-level update along with create / update / delete mutations on
+        its services components and budget line items in a single database transaction.
+        If any step fails, the entire bundle is rolled back so no partial writes survive.
+
+        Replaces the prior client-side fan-out of separate PATCH/POST/DELETE calls in the
+        review-flow edit page, which could leave the agreement in a partially-saved state.
+
+        Order of operations (within the transaction):
+          1. Agreement-level update (optional)
+          2. Services component creates (flushed first so new BLIs can reference them
+             via `services_component_ref`)
+          3. Services component updates
+          4. Budget line item creates (resolves `services_component_ref` against the
+             newly-created services components)
+          5. Budget line item updates (may produce change requests)
+          6. Budget line item deletes
+          7. Services component deletes
+
+        Any of the four top-level keys (`agreement`, `services_components`,
+        `budget_line_items`) can be omitted; an empty bundle is a no-op. Nested
+        `services_components` / `budget_line_items` arrays inside the `agreement`
+        section are rejected — they must be sent at the top level of the bundle.
+
+        Reviewer notifications for any change requests produced by BLI updates are
+        sent **after** the bundle commit succeeds. If a notification fails, the change
+        request id is returned in `failed_notification_change_request_ids` so the
+        client can surface a "saved, but the approval request didn't go out" message.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgreementEditBundleRequest"
+      responses:
+        "200":
+          description: Bundle saved successfully (no change requests produced)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementEditBundleResponse"
+        "202":
+          description: |
+            Bundle saved successfully and one or more change requests were created.
+            The change request ids are returned in `change_request_ids`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementEditBundleResponse"
+        "400":
+          description: |
+            Bad Request - The bundle payload is invalid. Common causes:
+            - Nested `services_components` / `budget_line_items` arrays inside `agreement`
+            - SC / BLI update items missing an `id`
+            - A BLI references a `services_component_ref` not present in this bundle
+            - Duplicate agreement name (case-insensitive within the same agreement type)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
+        "500":
+          description: Internal Server Error
   /agreements-filters/:
     get:
       tags:
@@ -6977,11 +7065,6 @@ components:
               example: true
       required:
         - title
-    ResearchProjects:
-      description: OPS List of Research Projects (lightweight schema)
-      type: array
-      items:
-        $ref: "#/components/schemas/ResearchProjectListItem"
     AgreementHistoryResponse:
       description: Paginated Agreement History response
       type: object
@@ -7729,6 +7812,157 @@ components:
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
+    AgreementEditBundleRequest:
+      type: object
+      description: |
+        Bundle payload for `PATCH /agreements/{id}/edit-bundle`. Any of the
+        top-level keys may be omitted; an empty bundle is a no-op.
+      properties:
+        agreement:
+          description: |
+            Agreement-level fields to update (partial). Validated against the
+            per-agreement-type schema, keyed off the existing agreement's type.
+            Nested `services_components` / `budget_line_items` arrays are rejected —
+            send those at the top level of the bundle so the orchestrator can
+            apply create / update / delete atomically.
+          oneOf:
+            - $ref: "#/components/schemas/AgreementData"
+            - $ref: "#/components/schemas/ContractAgreementData"
+            - $ref: "#/components/schemas/GrantAgreementData"
+            - $ref: "#/components/schemas/DirectAgreementData"
+            - $ref: "#/components/schemas/IaaAgreementData"
+            - $ref: "#/components/schemas/AaAgreementData"
+          nullable: true
+        services_components:
+          type: object
+          description: Services component create / update / delete buckets.
+          properties:
+            create:
+              type: array
+              description: |
+                Services components to create. Each item may include a `ref`
+                string; budget line items in the same bundle can reference the
+                newly-created SC by setting `services_component_ref` to that value.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/ServicesComponentRequest"
+                  - type: object
+                    properties:
+                      ref:
+                        type: string
+                        description: |
+                          Optional client-supplied identifier resolved to the
+                          new services component's id within this bundle.
+            update:
+              type: array
+              description: Services components to update. Each item must include `id`.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/ServicesComponentRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+            delete:
+              type: array
+              description: IDs of services components to delete.
+              items:
+                type: integer
+        budget_line_items:
+          type: object
+          description: Budget line item create / update / delete buckets.
+          properties:
+            create:
+              type: array
+              description: |
+                Budget line items to create. May set `services_component_ref` to
+                the `ref` of an SC being created in the same bundle.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItemRequest"
+                  - type: object
+                    properties:
+                      services_component_ref:
+                        type: string
+                        description: |
+                          Reference to a services component being created in the
+                          same bundle. Resolved to that SC's new id at apply time.
+            update:
+              type: array
+              description: |
+                Budget line items to update. Each item must include `id`. May set
+                `services_component_ref` to retarget the BLI to a not-yet-persisted
+                in-bundle SC.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItemRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+                      services_component_ref:
+                        type: string
+            delete:
+              type: array
+              description: IDs of budget line items to delete.
+              items:
+                type: integer
+    AgreementEditBundleResponse:
+      type: object
+      required:
+        - message
+        - id
+        - agreement_updated
+        - services_components_created
+        - services_components_updated
+        - services_components_deleted
+        - budget_line_items_created
+        - budget_line_items_updated
+        - budget_line_items_deleted
+        - change_request_ids
+        - failed_notification_change_request_ids
+      properties:
+        message:
+          type: string
+          example: "Agreement edit bundle saved"
+        id:
+          type: integer
+          description: ID of the agreement the bundle was applied to
+        agreement_updated:
+          type: boolean
+          description: Whether the agreement-level fields were updated.
+        services_components_created:
+          type: integer
+        services_components_updated:
+          type: integer
+        services_components_deleted:
+          type: integer
+        budget_line_items_created:
+          type: integer
+        budget_line_items_updated:
+          type: integer
+        budget_line_items_deleted:
+          type: integer
+        change_request_ids:
+          type: array
+          description: |
+            IDs of any change requests created by BLI updates within this bundle.
+            When non-empty the response status is 202.
+          items:
+            type: integer
+        failed_notification_change_request_ids:
+          type: array
+          description: |
+            IDs of change requests that committed successfully but whose
+            post-commit reviewer notification failed. Surfaced so the client
+            can tell the user "saved, but the approval request didn't go out —
+            please retry".
+          items:
+            type: integer
     ProcurementShop:
       type: object
       properties:
@@ -8335,6 +8569,90 @@ components:
               type: string
               nullable: true
               description: Notes from the approver (max 150 characters, required when declining)
+    ProcurementTrackerAwardStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Award step with vendor, contract, and award information fields
+          properties:
+            target_completion_date:
+              type: string
+              format: date
+              nullable: true
+              description: Target date for completing award activities. Must be current date or future date.
+            task_completed_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who completed this step
+            date_completed:
+              type: string
+              format: date
+              nullable: true
+              description: Date when this step was completed. Must be current date or past date.
+            notes:
+              type: string
+              nullable: true
+              description: Additional notes about this step
+            approval_requested:
+              type: boolean
+              nullable: true
+              description: Whether award approval has been requested
+            approval_requested_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when award approval was requested
+            approval_requested_by:
+              type: integer
+              nullable: true
+              description: User ID of the COR who requested award approval
+            requestor_notes:
+              type: string
+              nullable: true
+              description: Notes from the COR requesting approval (max 150 characters)
+            approval_status:
+              type: string
+              nullable: true
+              enum:
+                - PENDING
+                - APPROVED
+                - DECLINED
+              description: Current status of the award approval request
+            approval_responded_by:
+              type: integer
+              nullable: true
+              description: User ID of the Budget Team member who responded
+            approval_responded_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when the award approval was responded to
+            reviewer_notes:
+              type: string
+              nullable: true
+              description: Notes from the Budget Team reviewer (max 150 characters)
+            vendor_id:
+              type: integer
+              nullable: true
+              description: ID of the vendor awarded the contract
+            vendor:
+              type: object
+              nullable: true
+              description: Vendor details (id, name, duns, vendor_type)
+            contract_number:
+              type: string
+              nullable: true
+              description: Contract number from the signed award
+            award_amount:
+              type: number
+              format: float
+              nullable: true
+              description: Total awarded contract amount
+            award_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date the contract was awarded
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -8406,6 +8724,31 @@ components:
           description: >-
             Notes from the approver for PRE_AWARD steps (max 150 characters).
             Required when approval_status is DECLINED.
+        vendor_id:
+          type: integer
+          nullable: true
+          description: Vendor ID for AWARD steps (OPS-1640)
+        contract_number:
+          type: string
+          nullable: true
+          description: Contract number for AWARD steps (OPS-1640, max 100 characters)
+        award_amount:
+          type: number
+          format: float
+          nullable: true
+          description: Total awarded contract amount for AWARD steps (OPS-1640)
+        award_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date the contract was awarded for AWARD steps (OPS-1640)
+        obligated_date:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Obligated date entered by Budget Team on award approval (OPS-2280).
+            Used to set date_needed on obligated BLIs and the ProcurementAction obligated date.
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.
@@ -8789,6 +9132,15 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementData:
       allOf:
@@ -8917,6 +9269,71 @@ components:
             - division_directors
             - team_leaders
 
+    AgreementListResponse:
+      description: |
+        Base schema used in GET /agreements (list endpoint). Slimmer than AgreementResponse -
+        omits detail-only fields (division_directors, team_leaders, in_review,
+        change_requests_in_review, authorized_user_ids, special_topic) and uses an
+        optimized budget_line_items shape for list-view performance.
+      allOf:
+        - $ref: "#/components/schemas/AgreementData"
+        - type: object
+          properties:
+            id:
+              type: integer
+            project:
+              $ref: "#/components/schemas/Project"
+            product_service_code:
+              $ref: "#/components/schemas/ProductServiceCode"
+            budget_line_items:
+              type: array
+              nullable: true
+              items:
+                type: object
+                description: Optimized BudgetLineItem fields for list responses
+                properties:
+                  id:
+                    type: integer
+                  amount:
+                    type: number
+                    format: float
+                  fees:
+                    type: number
+                    format: float
+                  status:
+                    type: string
+                  is_obe:
+                    type: boolean
+                  fiscal_year:
+                    type: integer
+            procurement_shop:
+              $ref: "#/components/schemas/ProcurementShop"
+            display_name:
+              type: string
+            is_awarded:
+              type: boolean
+              nullable: true
+            award_type:
+              type: string
+              nullable: true
+              enum:
+                - NEW
+                - CONTINUING
+            created_by:
+              $ref: "#/components/parameters/created_by"
+            updated_by:
+              $ref: "#/components/parameters/updated_by"
+            created_on:
+              $ref: "#/components/parameters/created_on"
+            updated_on:
+              $ref: "#/components/parameters/updated_on"
+            _meta:
+              $ref: "#/components/schemas/MetaSchema"
+          required:
+            - id
+            - display_name
+            - _meta
+
     ContractAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -8955,6 +9372,41 @@ components:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
 
+    ContractListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            contract_number:
+              type: string
+            vendor_id:
+              type: integer
+            vendor:
+              type: string
+            delivered_status:
+              type: boolean
+              default: false
+            contract_type:
+              type: string
+            service_requirement_type:
+              type: string
+            support_contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamMembers"
+            task_order_number:
+              type: string
+            po_number:
+              type: string
+            acquisition_type:
+              type: string
+            contract_category:
+              type: string
+            psc_contract_specialist:
+              type: string
+            cotr_id:
+              type: integer
+
     GrantAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
@@ -8962,14 +9414,54 @@ components:
           properties:
             foa:
               type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
+
+    GrantListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+        - type: object
+          properties:
+            foa:
+              type: string
+            nofo_number:
+              type: string
+              nullable: true
+            aln_number:
+              type: string
+              nullable: true
+            funding_period_months:
+              type: integer
+              nullable: true
 
     DirectAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
 
+    DirectListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
+
     IaaAgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementResponse"
+        - type: object
+          properties:
+            iaa:
+              type: string
+          required:
+            - iaa
+
+    IaaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/AgreementListResponse"
         - type: object
           properties:
             iaa:
@@ -9008,6 +9500,19 @@ components:
             is_awarded:
               type: boolean
               description: Indicates whether the assisted acquisition agreement has been officially awarded.
+          required:
+            - requesting_agency
+            - servicing_agency
+
+    AaListAgreementResponse:
+      allOf:
+        - $ref: "#/components/schemas/ContractListAgreementResponse"
+        - type: object
+          properties:
+            requesting_agency:
+              $ref: "#/components/schemas/AgreementAgency"
+            servicing_agency:
+              $ref: "#/components/schemas/AgreementAgency"
           required:
             - requesting_agency
             - servicing_agency
@@ -9143,7 +9648,7 @@ components:
           description: CAN (Contract Account Number) ID
         status:
           type: string
-          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED]
+          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED, PLANNED_MOD]
           description: Status of the budget line item
         date_needed:
           type: string
@@ -9345,21 +9850,6 @@ components:
         updated_by: 1
         created_on: "2023-04-06T20:33:38.292475"
         updated_on: "2023-04-06T20:33:38.292475"
-    ResearchProjects:
-      value: |
-        [
-          {
-            "id": 1,
-            "title": "African American Child and Family Research Center",
-            "short_title": "AACFRC",
-            "description": "The National African American Child and Family Research Center, supported by a five-year OPRE grant (2021-2026), will provide national leadership and excellence by investigating the assets, needs, and experiences of the diverse population of African American families and children served (or potentially served) by ACF programs, as well as promising approaches to address economic and social inequities and, ultimately, promote social and economic well-being. The primary focus of this Center will be on childcare assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.\n\n1. Advance Research: The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program. The Center's program of research will build on the existing literature related to African American children and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.\n\n2. Build Research Capacity: The Center will build research capacity and infrastructure to conduct research relevant to ACF program and policy goals that is culturally rigorous and informed by an understanding of current and historical circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the development and expansion of the pool of researchers reflective of the communities being studied by the Center.\n\n3. Communicate Research: The Center will develop and implement a dissemination strategy that broadly and efficiently communicates findings from research conducted within and outside of the Center and increases the use of research, data, and relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees, program administrators, and communities participating in the research.\n\nThe Center is led by the Morehouse School of Medicine.\n\nThe OPRE point of contact is Megan Reid.",
-            "url": "https://acf.gov/opre/project/african-american-child-and-family-research-center",
-            "origination_date": "2022-01-01",
-            "created_on": "2023-04-06T20:33:38.292475Z",
-            "updated_on": "2023-04-06T20:33:38.292475Z",
-            "project_type": "RESEARCH"
-          }
-        ]
     AGREEMENTS:
       value: |
         [

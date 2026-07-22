@@ -29,14 +29,14 @@ def test_create_agreement_change_request(service, mock_db_session):
         mock_model = MagicMock()
         mock_get_model_class.return_value = mock_model
         mock_instance = mock_model.return_value
-        service._notify_division_reviewers = MagicMock()
+        service.notify_division_reviewers = MagicMock()
 
         result = service.create(mock_change_request_data)
 
         assert result == mock_instance
         mock_db_session.add.assert_called_once_with(mock_instance)
         mock_db_session.commit.assert_called_once()
-        service._notify_division_reviewers.assert_called_once()
+        service.notify_division_reviewers.assert_called_once()
 
 
 def test_update_change_request_authorized(service, mock_db_session):

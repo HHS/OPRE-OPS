@@ -42,8 +42,8 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
                                     requesterName={
-                                        changeRequest.created_by_user.display_name ??
-                                        changeRequest.created_by_user.full_name
+                                        changeRequest.created_by_user?.display_name ??
+                                        changeRequest.created_by_user?.full_name
                                     }
                                     requestDate={changeRequest.created_on}
                                     handleReviewChangeRequest={() => {}}

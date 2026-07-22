@@ -42,14 +42,15 @@ from models.change_requests import (
 )
 
 
-class BudgetLineItemStatus(Enum):
+class BudgetLineItemStatus(str, Enum):
     def __str__(self):
         return str(self.value)
 
-    DRAFT = "Draft"
-    PLANNED = "Planned"
-    IN_EXECUTION = "In Execution"
-    OBLIGATED = "Obligated"
+    DRAFT = "DRAFT"
+    PLANNED = "PLANNED"
+    IN_EXECUTION = "IN_EXECUTION"
+    OBLIGATED = "OBLIGATED"
+    PLANNED_MOD = "PLANNED_MOD"
 
 
 class BudgetLineSortCondition(Enum):

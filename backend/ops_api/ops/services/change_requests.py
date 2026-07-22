@@ -48,7 +48,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- CRUD Operations (Generic) ---
 
-    def create(self, create_request: dict[str, Any]) -> ChangeRequest:
+    def create(self, create_request: dict[str, Any], commit: bool = True) -> ChangeRequest:
+        """Create a change request.
+
+        When ``commit`` is False, the change request is added (and flushed to assign id)
+        but neither committed nor notified. The caller must commit and then call
+        ``notify_division_reviewers`` for each deferred change request once the bundle
+        commit succeeds. This avoids notifying reviewers about a transaction that ends up
+        rolled back.
+        """
         request_type = create_request.get("change_request_type")
         if request_type is None:
             raise ValueError("Missing 'change_request_type' in request data")
@@ -56,9 +64,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         model_class = get_model_class_by_type(request_type)
         change_request = model_class(**create_request)
         self.db_session.add(change_request)
-        self.db_session.commit()
-
-        self._notify_division_reviewers(change_request)
+        if commit:
+            self.db_session.commit()
+            self.notify_division_reviewers(change_request)
 
         return change_request
 
@@ -219,7 +227,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- Notification Handling ---
 
-    def _notify_division_reviewers(
+    def notify_division_reviewers(
         self, change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest]
     ) -> None:
         division_director_ids: set[int] = set()
@@ -295,9 +303,14 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         change_data,
         changed_budget_or_status_prop_keys,
         requestor_notes,
+        commit: bool = True,
     ) -> list[int]:
         """
         Creates one change request per changed field.
+
+        When ``commit`` is False, change requests are created without committing or
+        notifying division reviewers. Callers are responsible for committing and
+        notifying after the surrounding transaction succeeds.
         """
         change_request_ids = []
 
@@ -328,7 +341,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 }
 
-                change_request = self.create(change_request_data)
+                change_request = self.create(change_request_data, commit=commit)
                 change_request_ids.append(change_request.id)
                 cr_meta.metadata.update({"bli_id": bli_id, "change_request": change_request.to_dict()})
 

@@ -5,6 +5,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import HorizontalStackedBar from "../../UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import styles from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.module.scss";
+import { getActivePortfolioTagTextColor } from "../../Portfolios/PortfolioSummaryCards/PortfolioSummaryCards.helpers";
 import { buildPortfolioChartData } from "./ProjectFundingByPortfolioCard.helpers";
 
 /**
@@ -57,10 +58,11 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                         >
                             {chartData.map((item) => {
                                 const isActive = activeId === item.id;
+                                const activeTextColor = getActivePortfolioTagTextColor(item.abbreviation);
                                 return (
                                     <div
                                         key={item.id}
-                                        className="display-flex align-center"
+                                        className="display-flex flex-align-baseline"
                                         style={{ gap: "0.4rem", fontSize: "12px", whiteSpace: "nowrap" }}
                                         data-testid={`portfolio-legend-item-${item.abbreviation}`}
                                     >
@@ -73,7 +75,21 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                                         <span className={isActive ? "fake-bold" : ""}>
                                             {formatCurrency(item.value)}
                                         </span>
-                                        <span className={isActive ? "fake-bold" : ""}>{item.percent}%</span>
+                                        <span
+                                            className={
+                                                "bg-white text-brand-neutral-dark" + (isActive ? " fake-bold" : "")
+                                            }
+                                            style={{
+                                                padding: "0.25rem 0.5rem",
+                                                borderRadius: "0.25rem",
+                                                fontSize: "12px",
+                                                ...(isActive
+                                                    ? { backgroundColor: item.color, color: activeTextColor }
+                                                    : {})
+                                            }}
+                                        >
+                                            {item.percent}%
+                                        </span>
                                     </div>
                                 );
                             })}

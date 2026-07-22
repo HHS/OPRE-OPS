@@ -9,8 +9,6 @@ import AgreementTypeComboBox from "../../../components/Agreements/AgreementTypeC
 import AgreementNameComboBox from "../../../components/Agreements/AgreementNameComboBox/AgreementNameComboBox";
 import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodComboBox/CANActivePeriodComboBox";
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
-import { useSearchParams } from "react-router-dom";
-import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
 
@@ -21,9 +19,10 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {string|number} props.selectedFiscalYear - The current fiscal year shortcut value from the dropdown.
  * @param {boolean} props.useApproachB - Whether to use Approach B (UX requested) with "All FYs" option.
+ * @param {import("../../../types/BudgetLineTypes").Filters} [props.filterOptions] - Prefetched filter options from the page.
  * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useApproachB }) => {
+export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useApproachB, filterOptions }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -32,15 +31,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useAp
     const [agreementTypes, setAgreementTypes] = React.useState([]);
     const [agreementTitles, setAgreementTitles] = React.useState([]);
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
-    const [searchParams] = useSearchParams();
-
-    const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
-
-    /** @type {{data?: import("../../../types/BudgetLineTypes").Filters | undefined, isSuccess: boolean}} */
-    const { data: filterOptions } = useGetBudgetLineItemsFilterOptionsQuery(
-        { onlyMy: myBudgetLineItemsUrl, enableObe: false },
-        { refetchOnMountOrArgChange: true }
-    );
 
     // Fiscal year options for modal (no "All" option - empty selection means "All")
     const fiscalYearOptions = React.useMemo(() => {
@@ -182,6 +172,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useAp
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                usePrefetchedOptions={true}
             />
         </fieldset>,
         <fieldset

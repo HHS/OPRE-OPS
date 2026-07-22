@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
@@ -15,6 +16,8 @@ import {
 } from "../../../components/Agreements/Documents/Document";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
+import agreementSuite, { validateBudgetLineItems } from "./suite";
+import { VALIDATABLE_BLI_STATUSES } from "./constants";
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -29,6 +32,11 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [uploadError, setUploadError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Modal state for cancel confirmation and navigation blocking
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [addDocument] = useAddDocumentMutation();
@@ -68,6 +76,120 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
+
+    // Only PLANNED and IN_EXECUTION budget lines require pre-award validation.
+    // DRAFT lines aren't yet committed for approval; OBLIGATED lines have already
+    // completed the full award cycle and don't need pre-award checks.
+    // PLANNED_MOD lines are excluded because modifications follow a separate approval path.
+    const validatableBudgetLines = useMemo(
+        () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
+        [allBudgetLines]
+    );
+
+    const [agreementValidationResults, setAgreementValidationResults] = useState(null);
+    const [pageErrors, setPageErrors] = useState({});
+    const [isAlertActive, setIsAlertActive] = useState(false);
+
+    const bliValidationResults = useMemo(() => {
+        if (validatableBudgetLines.length === 0) return [];
+        return validateBudgetLineItems(validatableBudgetLines);
+    }, [validatableBudgetLines]);
+
+    const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
+
+    // Run agreement validation and aggregate page errors in a single effect.
+    // Aggregating from the local `result` (rather than the agreementValidationResults
+    // state) avoids a stale-read window where errors would be derived from the
+    // previous agreement's validation on the first commit after `agreement` changes.
+    useEffect(() => {
+        if (!agreement) {
+            setAgreementValidationResults(null);
+            setPageErrors({});
+            setIsAlertActive(false);
+            return undefined;
+        }
+
+        const result = agreementSuite.run({ ...agreement });
+        setAgreementValidationResults(result);
+
+        const aggregated = {};
+
+        if (result && !result.isValid()) {
+            const errors = { ...result.getErrors() };
+            // Match ReviewAgreement behavior: for CONTRACT/IAA the project officer
+            // field is labelled "COR" in the UI, so rekey the error accordingly.
+            if (
+                (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&
+                Object.prototype.hasOwnProperty.call(errors, "project-officer")
+            ) {
+                errors.cor = errors["project-officer"];
+                delete errors["project-officer"];
+            }
+            Object.assign(aggregated, errors);
+        }
+
+        if (hasBLIError) {
+            const seen = new Set();
+            bliValidationResults.forEach(({ isValid, errors }) => {
+                if (isValid) return;
+                Object.entries(errors).forEach(([fieldName, messages]) => {
+                    if (seen.has(fieldName)) return;
+                    seen.add(fieldName);
+                    aggregated[fieldName] = messages;
+                });
+            });
+        }
+
+        if (Object.keys(aggregated).length > 0) {
+            setPageErrors(aggregated);
+            setIsAlertActive(true);
+        } else {
+            setPageErrors({});
+            setIsAlertActive(false);
+        }
+
+        return () => {
+            agreementSuite.reset();
+        };
+    }, [agreement, hasBLIError, bliValidationResults]);
+
+    /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return notes.trim() !== "" || selectedFile !== null;
+    }, [notes, selectedFile]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading: "Are you sure you want to cancel? Your changes will not be saved.",
+                actionButtonText: "Yes, Cancel",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
 
     const handleFileChange = (/** @type {any} */ e) => {
         const file = e.target.files[0];
@@ -148,7 +270,11 @@ export default function useRequestPreAwardApproval(agreementId) {
                 }
             }).unwrap();
 
-            // Navigate back to procurement tracker with success message
+            // Allow navigation after successful submission
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { success: true }
             });
@@ -159,7 +285,20 @@ export default function useRequestPreAwardApproval(agreementId) {
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your changes will not be saved.",
+            actionButtonText: "Yes, Cancel",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                setShowModal(false);
+                setIsNavigating(true);
+                navigate(-1);
+            },
+            closeModal: () => {
+                setShowModal(false);
+            }
+        });
     };
 
     return {
@@ -186,6 +325,15 @@ export default function useRequestPreAwardApproval(agreementId) {
         isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep4Completed
+        isStep4Completed,
+        showModal,
+        setShowModal,
+        modalProps,
+        validatableBudgetLines,
+        agreementValidationResults,
+        hasBLIError,
+        pageErrors,
+        isAlertActive,
+        setIsAlertActive
     };
 }

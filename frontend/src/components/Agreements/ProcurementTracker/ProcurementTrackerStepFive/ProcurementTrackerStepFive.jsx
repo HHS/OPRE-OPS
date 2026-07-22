@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import Tooltip from "../../../UI/USWDS/Tooltip/Tooltip";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } from "../ProcurementTracker.constants";
@@ -57,6 +58,7 @@ const ProcurementTrackerStepFive = ({
         setStep5DateCompleted,
         step5Notes,
         setStep5Notes,
+        resetStep5Notes,
         step5NotesLabel,
         runValidate,
         validatorRes,
@@ -68,6 +70,7 @@ const ProcurementTrackerStepFive = ({
         setShowModal,
         modalProps,
         cancelModalStep5,
+        handleSaveNotes,
         handleStepFiveComplete
     } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
 
@@ -246,7 +249,7 @@ const ProcurementTrackerStepFive = ({
                                 >
                                     <button
                                         type="button"
-                                        className="usa-button"
+                                        className="usa-button usa-button--outline"
                                         onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
                                         disabled={isRequestBtnDisabled}
                                         data-cy="request-pre-award-approval-btn"
@@ -352,14 +355,11 @@ const ProcurementTrackerStepFive = ({
                                 isDisabled={isPreAwardFieldsDisabled}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step5Notes}
-                            onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep5Notes(value)}
-                            isDisabled={isPreAwardFieldsDisabled}
+                        <StepNotesForm
+                            notes={step5Notes}
+                            setNotes={setStep5Notes}
+                            onSave={() => handleSaveNotes(stepFiveData?.id)}
+                            isDisabled={isDisabled}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -433,7 +433,16 @@ const ProcurementTrackerStepFive = ({
                         />
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step5NotesLabel || "None"}</dd>
+                            <StepNotesEditor
+                                notes={step5Notes}
+                                setNotes={setStep5Notes}
+                                resetNotes={resetStep5Notes}
+                                notesLabel={step5NotesLabel}
+                                savedNotes={stepFiveData?.notes}
+                                stepId={stepFiveData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                            />
                         </div>
                     </dl>
                 </div>
