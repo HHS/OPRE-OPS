@@ -317,10 +317,24 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     if new_can and new_can.portfolio and new_can.portfolio.division:
                         managing_division = new_can.portfolio.division
 
+                if managing_division is None:
+                    # Cannot create a change request without a managing division — no director
+                    # would be able to approve or reject it, leaving the BLI permanently locked.
+                    # This happens when a PLANNED/IN_EXECUTION BLI has no CAN assigned and no
+                    # incoming can_id in the change. The COR must assign a CAN first.
+                    raise ValidationError(
+                        {
+                            "can_id": (
+                                "A CAN must be assigned to this budget line before financial changes "
+                                "can be submitted for approval."
+                            )
+                        }
+                    )
+
                 change_request_data = {
                     "budget_line_item_id": bli_id,
                     "agreement_id": budget_line_item.agreement_id,  # Can update the class to capture agreement_id
-                    "managing_division_id": (managing_division.id if managing_division else None),
+                    "managing_division_id": managing_division.id,
                     "requested_change_data": requested_change_data,
                     "requested_change_diff": requested_change_diff,
                     "requested_change_info": {"target_display_name": budget_line_item.display_name},

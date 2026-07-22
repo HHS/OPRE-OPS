@@ -1004,9 +1004,9 @@ const useCreateBLIsAndSCs = (
         ]
     );
 
-    const hasFinancialSnapshotChanges = tempBudgetLines.some(
-        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-    );
+    const hasFinancialSnapshotChanges = tempBudgetLines
+        .filter((b) => !b.in_review)
+        .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !isSuperUser && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);

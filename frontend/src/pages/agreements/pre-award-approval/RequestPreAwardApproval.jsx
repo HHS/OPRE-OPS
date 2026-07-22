@@ -66,6 +66,11 @@ export const RequestPreAwardApproval = () => {
 
     const pendingChangeRequests = useChangeRequestsForAgreement(agreementId);
     const [isChangesAlertVisible, setIsChangesAlertVisible] = React.useState(true);
+    // Re-show the alert whenever new change requests come in so a previously dismissed
+    // alert reappears if the user submits another round of edits for approval.
+    React.useEffect(() => {
+        if (hasBLIInReview) setIsChangesAlertVisible(true);
+    }, [hasBLIInReview]);
 
     const isAgreementEditable = agreement?._meta?.isEditable;
     const hasValidationErrors =
