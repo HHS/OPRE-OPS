@@ -4486,10 +4486,15 @@ paths:
       tags:
         - Budget Line Items
       operationId: deleteBudgetLineItem
-      description: Delete a budget line item
+      description: >-
+        Delete a budget line item. A DRAFT budget line item (and any delete by a super user) is
+        hard-deleted immediately and returns 200. A PLANNED or IN_EXECUTION budget line item routes
+        through an approval workflow: a deletion change request is created and 202 is returned; the
+        budget line item is deleted only once that request is approved. Deletion is blocked (400)
+        once the agreement reaches Pre-Award/Award or while the budget line item is already in review.
       responses:
         "200":
-          description: OK
+          description: OK — budget line item deleted
           content:
             application/json:
               schema:
@@ -4499,6 +4504,19 @@ paths:
                     type: string
                   id:
                     type: integer
+        "202":
+          description: Accepted — a deletion change request was created and is awaiting approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: integer
+        "400":
+          description: Bad Request
         "401":
           description: Unauthorized
         "404":
@@ -7508,6 +7526,12 @@ components:
         has_status_change:
           type: boolean
           example: false
+        has_delete_change:
+          type: boolean
+          example: false
+          description: >-
+            True when the change request is a request to delete the budget line item (carries a
+            {"delete": true} sentinel in requested_change_data). On approval the BLI is deleted.
         has_proc_shop_change:
           type: boolean
           example: false

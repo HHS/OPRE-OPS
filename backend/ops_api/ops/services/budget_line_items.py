@@ -131,9 +131,14 @@ class BudgetLineItemService:
         self.db_session.commit()
         return new_bli
 
-    def delete(self, id: int) -> None:
+    def delete(self, id: int) -> tuple[BudgetLineItem, int]:
         """
         Delete a Budget Line Item with the given id.
+
+        DRAFT BLIs (and any delete by a super user) are hard-deleted immediately and 200 is
+        returned. PLANNED and IN_EXECUTION BLIs route through an approval workflow: a deletion
+        change request is created and 202 is returned (the BLI is left intact until the request
+        is approved).
         """
         bli = self.db_session.get(BudgetLineItem, id)
 
@@ -149,9 +154,23 @@ class BudgetLineItemService:
                 "BudgetLineItem",
             )
 
-        self.db_session.delete(bli)
-        self.db_session.commit()
-        return bli
+        is_super = is_super_user(current_user, current_app)
+        if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+            self.db_session.delete(bli)
+            self.db_session.commit()
+            return bli, 200
+
+        # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
+        # shared editability gate (in_review + OBE + Pre-Award/Award step block) so the rules
+        # cannot drift from the edit path.
+        if not compute_bli_editable(bli, bli.in_review, is_super):
+            raise ValidationError(
+                {"status": "Budget Line Item is not in a deletable state."},
+            )
+
+        change_request_service = ChangeRequestService(self.db_session)
+        change_request_service.add_bli_delete_change_request(bli)
+        return bli, 202
 
     def get(self, id: int) -> BudgetLineItem:
         """

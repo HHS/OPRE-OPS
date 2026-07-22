@@ -156,7 +156,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 />
                             </>
                         )}
-                        {changeRequest.has_budget_change && (
+                        {(changeRequest.has_budget_change || changeRequest.has_delete_change) && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
