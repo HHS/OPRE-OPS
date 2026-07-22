@@ -16,10 +16,13 @@ from models import (
     ContractAgreement,
     ContractBudgetLineItem,
     DirectAgreement,
+    Division,
     GrantAgreement,
     IaaAgreement,
     ProcurementAction,
     ProcurementActionStatus,
+    User,
+    UserStatus,
 )
 from ops_api.ops.services.agreements import (
     AgreementsService,
@@ -1961,3 +1964,167 @@ class TestComputeDaysInProcurementStep:
 
         assert result == {4: {7: 10}}
         assert 2 not in result
+
+
+class TestAgreementDivisionFilter:
+    """Test suite for filtering agreements by the division of their project officer (COR).
+
+    See GH #5881. Division is derived from the ``division`` FK on the project officer's
+    ``User`` record. These fixtures create self-contained divisions/users/agreements so the
+    assertions do not depend on the shape of the seed data.
+    """
+
+    @pytest.fixture()
+    def division_filter_data(self, loaded_db):
+        """Create two divisions, a project officer in each, and agreements for each PO.
+
+        Also creates one agreement with no project officer to verify it is excluded when
+        a division filter is active.
+
+        Yields a dict with the created ids for use in assertions.
+        """
+        div_a = Division(name="Test Division A (#5881)", abbreviation="TDA5881")
+        div_b = Division(name="Test Division B (#5881)", abbreviation="TDB5881")
+        loaded_db.add_all([div_a, div_b])
+        loaded_db.flush()
+
+        po_a = User(
+            email="po-a-5881@example.com",
+            first_name="PO",
+            last_name="Alpha",
+            division=div_a.id,
+            status=UserStatus.ACTIVE,
+        )
+        po_b = User(
+            email="po-b-5881@example.com",
+            first_name="PO",
+            last_name="Bravo",
+            division=div_b.id,
+            status=UserStatus.ACTIVE,
+        )
+        loaded_db.add_all([po_a, po_b])
+        loaded_db.flush()
+
+        agreement_a = ContractAgreement(
+            name="Division Filter - Agreement A (#5881)",
+            agreement_type=AgreementType.CONTRACT,
+            project_officer_id=po_a.id,
+            awarding_entity_id=1,
+        )
+        agreement_b = ContractAgreement(
+            name="Division Filter - Agreement B (#5881)",
+            agreement_type=AgreementType.CONTRACT,
+            project_officer_id=po_b.id,
+            awarding_entity_id=2,
+        )
+        agreement_no_po = ContractAgreement(
+            name="Division Filter - Agreement No PO (#5881)",
+            agreement_type=AgreementType.CONTRACT,
+            project_officer_id=None,
+        )
+        loaded_db.add_all([agreement_a, agreement_b, agreement_no_po])
+        loaded_db.commit()
+
+        data = {
+            "div_a_id": div_a.id,
+            "div_b_id": div_b.id,
+            "agreement_a_id": agreement_a.id,
+            "agreement_b_id": agreement_b.id,
+            "agreement_no_po_id": agreement_no_po.id,
+            "awarding_entity_a": agreement_a.awarding_entity_id,
+        }
+
+        yield data
+
+        loaded_db.delete(agreement_a)
+        loaded_db.delete(agreement_b)
+        loaded_db.delete(agreement_no_po)
+        loaded_db.delete(po_a)
+        loaded_db.delete(po_b)
+        # Flush user deletes before removing divisions: User.division is a bare FK column
+        # with no ORM relationship, so SQLAlchemy cannot infer the delete ordering itself.
+        loaded_db.flush()
+        loaded_db.delete(div_a)
+        loaded_db.delete(div_b)
+        loaded_db.commit()
+
+    def test_no_division_filter_returns_all(self, loaded_db, app_ctx, division_filter_data):
+        """With no division filter, all three seeded agreements are present."""
+        service = AgreementsService(loaded_db)
+        results, _ = service.get_list([ContractAgreement], {"limit": [1000]})
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] in result_ids
+        assert division_filter_data["agreement_no_po_id"] in result_ids
+
+    def test_single_division_returns_only_matching_po(self, loaded_db, app_ctx, division_filter_data):
+        """A single division id returns only agreements whose PO is in that division."""
+        service = AgreementsService(loaded_db)
+        data = {"division": [division_filter_data["div_a_id"]], "limit": [1000]}
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] not in result_ids
+        assert division_filter_data["agreement_no_po_id"] not in result_ids
+
+    def test_multiple_divisions_returns_union(self, loaded_db, app_ctx, division_filter_data):
+        """Multiple division ids return the union (OR logic) of matching agreements."""
+        service = AgreementsService(loaded_db)
+        data = {
+            "division": [division_filter_data["div_a_id"], division_filter_data["div_b_id"]],
+            "limit": [1000],
+        }
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] in result_ids
+        assert division_filter_data["agreement_no_po_id"] not in result_ids
+
+    def test_agreement_without_project_officer_excluded(self, loaded_db, app_ctx, division_filter_data):
+        """An agreement with no project officer is excluded when a division filter is active."""
+        service = AgreementsService(loaded_db)
+        data = {
+            "division": [division_filter_data["div_a_id"], division_filter_data["div_b_id"]],
+            "limit": [1000],
+        }
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_no_po_id"] not in result_ids
+
+    def test_division_and_awarding_entity_together_is_intersection(self, loaded_db, app_ctx, division_filter_data):
+        """Division + awarding_entity_id together narrow with AND logic."""
+        service = AgreementsService(loaded_db)
+        # Division A's agreement uses awarding_entity_id 1; combining with division A keeps it.
+        data = {
+            "division": [division_filter_data["div_a_id"]],
+            "awarding_entity_id": [division_filter_data["awarding_entity_a"]],
+            "limit": [1000],
+        }
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] not in result_ids
+
+        # Division A combined with a non-matching awarding entity yields nothing for our set.
+        data_mismatch = {
+            "division": [division_filter_data["div_a_id"]],
+            "awarding_entity_id": [division_filter_data["awarding_entity_a"] + 999],
+            "limit": [1000],
+        }
+        results_mismatch, _ = service.get_list([ContractAgreement], data_mismatch)
+        mismatch_ids = {a.id for a in results_mismatch}
+        assert division_filter_data["agreement_a_id"] not in mismatch_ids
+
+    def test_unknown_division_returns_empty(self, loaded_db, app_ctx, division_filter_data):
+        """An unknown division id returns an empty result set, not an error."""
+        service = AgreementsService(loaded_db)
+        data = {"division": [999999], "limit": [1000]}
+        results, metadata = service.get_list([ContractAgreement], data)
+
+        assert results == []
+        assert metadata["count"] == 0
