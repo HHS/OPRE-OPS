@@ -62,7 +62,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     });
 
     // Fetch all users for filtering
-    const { data: allUsers } = useGetUsersQuery({ excludeReadOnlyUsers: true });
+    const { data: allUsers } = useGetUsersQuery({ excludeReadOnlyUsers: true, excludeSystemAdmin: true });
 
     // Filter users by authorized_user_ids from the agreement (shared across all steps)
     const authorizedUsers = React.useMemo(() => {

@@ -41,7 +41,7 @@ export const TeamMemberComboBox = ({
         data: users,
         error: errorUsers,
         isLoading: isLoadingUsers
-    } = useGetUsersQuery({ excludeReadOnlyUsers: true });
+    } = useGetUsersQuery({ excludeReadOnlyUsers: true, excludeSystemAdmin: true });
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
 
     if (isLoadingUsers) {

@@ -719,10 +719,13 @@ export const opsApi = createApi({
             providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
-            query: ({ excludeReadOnlyUsers } = {}) => {
+            query: ({ excludeReadOnlyUsers, excludeSystemAdmin } = {}) => {
                 const queryParams = [];
                 if (excludeReadOnlyUsers) {
                     queryParams.push("exclude_read_only=true");
+                }
+                if (excludeSystemAdmin) {
+                    queryParams.push("exclude_system_admin=true");
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/users/${queryString}`;
