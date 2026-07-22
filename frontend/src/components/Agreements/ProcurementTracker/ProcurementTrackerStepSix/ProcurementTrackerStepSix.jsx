@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -56,6 +57,7 @@ const ProcurementTrackerStepSix = ({
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        resetStepSixNotes,
         stepSixNotesLabel,
         isSubmitting,
         runValidate,
@@ -68,6 +70,7 @@ const ProcurementTrackerStepSix = ({
         setShowModal,
         modalProps,
         cancelModalStepSix,
+        handleSaveNotes,
         handleStepSixComplete
     } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
 
@@ -260,15 +263,12 @@ const ProcurementTrackerStepSix = ({
                             </div>
 
                             {/* Notes */}
-                            <TextArea
-                                name="notes-step-6"
-                                label="Notes (optional)"
-                                className="margin-top-2"
-                                value={stepSixNotes}
-                                onChange={/** @param {any} _ @param {any} value */ (_, value) => setStepSixNotes(value)}
-                                isDisabled={isAwardFieldsDisabled}
-                                maxLength={750}
-                                data-cy="notes-step-6"
+                            <StepNotesForm
+                                textAreaName="notes-step-6"
+                                notes={stepSixNotes}
+                                setNotes={setStepSixNotes}
+                                onSave={() => handleSaveNotes(stepSixData?.id)}
+                                isDisabled={isDisabled}
                             />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
@@ -346,9 +346,19 @@ const ProcurementTrackerStepSix = ({
                                 className="margin-left-4"
                             />
                         )}
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{stepSixNotesLabel || "None"}</dd>
+                        <div className="margin-top-2">
+                            <dt className="margin-0 text-base-dark font-12px">Notes</dt>
+                            <StepNotesEditor
+                                notes={stepSixNotes}
+                                setNotes={setStepSixNotes}
+                                resetNotes={resetStepSixNotes}
+                                notesLabel={stepSixNotesLabel}
+                                savedNotes={stepSixData?.notes}
+                                stepId={stepSixData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled}
+                                textAreaName="notes-step-6"
+                            />
                         </div>
                     </dl>
                 </div>

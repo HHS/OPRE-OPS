@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep
@@ -21,7 +22,6 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step5DateCompleted, setStep5DateCompleted] = React.useState("");
-    const [step5Notes, setStep5Notes] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -48,6 +48,13 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step5Notes,
+        setNotes: setStep5Notes,
+        resetNotes: resetStep5Notes,
+        handleSaveNotes
+    } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
 
     /**
      * Handles the submission of the target completion date for step five, updating the procurement tracker step with the new date.
@@ -119,7 +126,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep5DateCompleted("");
-        setStep5Notes("");
+        resetStep5Notes(stepFiveData?.notes ?? "");
     };
 
     const cancelModalStep5 = () => {
@@ -136,6 +143,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
 
     return {
         cancelStepFive,
+        handleSaveNotes,
         isPreAwardComplete,
         setIsPreAwardComplete,
         selectedUser,
@@ -149,6 +157,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         step5TargetCompletionDateLabel,
         step5Notes,
         setStep5Notes,
+        resetStep5Notes,
         step5NotesLabel,
         runValidate,
         validatorRes,

@@ -448,8 +448,8 @@ def test_update_procurement_tracker_step_creates_update_tracker_event(auth_clien
         select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
     )
 
-    # Complete the first step
-    update_data = {"status": "COMPLETED"}
+    # Complete the first step (acquisition planning step requires date_completed and task_completed_by)
+    update_data = {"status": "COMPLETED", "date_completed": date.today().isoformat(), "task_completed_by": 503}
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{first_step.id}", json=update_data)
     assert response.status_code == 200
 
