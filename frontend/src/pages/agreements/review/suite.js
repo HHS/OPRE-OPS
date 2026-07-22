@@ -60,10 +60,18 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         enforce(canId).greaterThan(0);
     });
 
-    test("Budget lines need to be assigned to a services component to change their status", () => {
-        const servicesComponentId = Number(budgetLine.services_component_id ?? 0);
-        enforce(servicesComponentId).greaterThan(0);
-    });
+    // Grant BLIs link to a grant number, not a services component; require the appropriate one.
+    if (budgetLine.agreement?.agreement_type === "GRANT") {
+        test("Budget lines need to be assigned to a grant number to change their status", () => {
+            const grantNumberId = Number(budgetLine.grant_number_id ?? 0);
+            enforce(grantNumberId).greaterThan(0);
+        });
+    } else {
+        test("Budget lines need to be assigned to a services component to change their status", () => {
+            const servicesComponentId = Number(budgetLine.services_component_id ?? 0);
+            enforce(servicesComponentId).greaterThan(0);
+        });
+    }
 
     test("Budget Line Obligate By Date", "This information is required to submit for approval", () => {
         enforce(budgetLine.date_needed).isNotBlank();
@@ -86,6 +94,7 @@ const BLI_ERROR_KEY_MAP = {
     "Budget Line Amount": "amount",
     "Budget Line CAN": "can",
     "Budget lines need to be assigned to a services component to change their status": "services_component",
+    "Budget lines need to be assigned to a grant number to change their status": "grant_number",
     "Budget Line Obligate By Date": "date_needed",
     "Budget Line Obligate By Date must be in the future": "date_needed"
 };

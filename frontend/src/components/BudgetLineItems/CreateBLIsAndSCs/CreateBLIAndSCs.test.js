@@ -134,6 +134,7 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
             feesForCards: mockFn,
             budgetLinesForCards: [],
             groupedBudgetLinesByServicesComponent: [],
+            groupedBudgetLinesByGrantNumber: [],
             isSuperUser: true, // This would come from the Redux store in the real hook
             isAgreementNotYetDeveloped,
             res: { isValid: () => true, hasErrors: () => false, getErrors: () => ({}) }

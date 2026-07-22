@@ -58,12 +58,14 @@ const BLIReviewRow = ({
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
 
-    // Services component has no column in this table; surface its absence as a row-level error
-    // class so the user can locate the offending BLI when errorStatuses-mode is active.
+    // Services component (or, for grants, grant number) has no column in this table; surface its
+    // absence as a row-level error class so the user can locate the offending BLI when
+    // errorStatuses-mode is active.
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
-    const missingServicesComponentClass =
-        showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
+    const isGrantBudgetLine = budgetLine?.agreement?.agreement_type === "GRANT";
+    const missingLink = isGrantBudgetLine ? !budgetLine?.grant_number_id : !budgetLine?.services_component_id;
+    const missingServicesComponentClass = showCellErrors && missingLink ? "table-item-error" : "";
 
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);

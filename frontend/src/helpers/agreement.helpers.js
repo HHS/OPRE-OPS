@@ -365,6 +365,9 @@ export const cleanBudgetLineItemForApi = (data) => {
     if (data.services_component_id === 0) {
         cleanData.services_component_id = null;
     }
+    if (data.grant_number_id === 0) {
+        cleanData.grant_number_id = null;
+    }
     if (cleanData.date_needed === "--") {
         cleanData.date_needed = null;
     }
@@ -383,6 +386,7 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.fees;
     delete cleanData.display_title;
     delete cleanData.services_component_number;
+    delete cleanData.grant_number_number;
     delete cleanData._meta;
     delete cleanData.tempChangeRequest;
     delete cleanData.financialSnapshot;

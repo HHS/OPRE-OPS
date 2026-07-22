@@ -39,6 +39,9 @@ export type BudgetLine = {
     services_component_id?: number;
     services_component_number?: number;
     serviceComponentGroupingLabel?: string;
+    grant_number_id?: number;
+    grant_number_number?: number; // UI-only: editor-state grant number key (analog of services_component_number)
+    grant_number_ref?: string; // UI-only: links a BLI to a not-yet-persisted grant number in a create/edit bundle
     clin_id?: number | null;
     clin?: {
         id: number;

@@ -55,6 +55,18 @@ vi.mock("../../ServicesComponents/AllServicesComponentSelect", () => ({
     )
 }));
 
+vi.mock("../../GrantNumbers/AllGrantNumberSelect", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="grant-number-select"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Grant Number Select
+        </div>
+    )
+}));
+
 vi.mock("../../UI/Form/CurrencyInput", () => ({
     default: ({ messages, className }) => (
         <div
@@ -280,6 +292,39 @@ describe("BudgetLinesForm Validation Integration", () => {
             // Should still bypass validation (no error classes)
             const canComboBox = screen.getByTestId("can-combobox");
             expect(canComboBox).not.toHaveClass("usa-form-group--error");
+        });
+    });
+
+    describe("Grant Variant (isGrant)", () => {
+        it("renders the grant number select instead of the services component select", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("grant-number-select")).toBeInTheDocument();
+            expect(screen.queryByTestId("services-component-select")).not.toBeInTheDocument();
+        });
+
+        it("applies the error class to the grant select when the grant number is missing", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={0}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("grant-number-select")).toHaveClass("usa-form-group--error");
         });
     });
 

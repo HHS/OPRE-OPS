@@ -31,6 +31,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
+ * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
  */
 
 /**
@@ -45,7 +46,8 @@ const BLIRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false
+    isBLIInCurrentWorkflow = false,
+    isGrant = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -103,15 +105,20 @@ const BLIRow = ({
             <td className={addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)}>
                 {formatCurrency(budgetLine?.amount || 0)}
             </td>
-            <td>
-                <Tooltip
-                    label={getProcurementShopFeeTooltip(budgetLine)}
-                    position="left"
-                >
-                    <span>{formatCurrency(budgetLine?.fees)}</span>
-                </Tooltip>
-            </td>
-            <td>{formatCurrency(budgetLineTotalPlusFees)}</td>
+            {/* Grants have no procurement shop, so no Fee or Total columns. */}
+            {!isGrant && (
+                <>
+                    <td>
+                        <Tooltip
+                            label={getProcurementShopFeeTooltip(budgetLine)}
+                            position="left"
+                        >
+                            <span>{formatCurrency(budgetLine?.fees)}</span>
+                        </Tooltip>
+                    </td>
+                    <td>{formatCurrency(budgetLineTotalPlusFees)}</td>
+                </>
+            )}
             <td>
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
@@ -129,7 +136,7 @@ const BLIRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={isGrant ? 7 : 9}
             className="border-top-none"
             style={expandedRowBGColor}
         >
@@ -155,10 +162,13 @@ const BLIRow = ({
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
                 </dl>
-                <dl className="grid-col-auto margin-top-0 font-12px">
-                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
-                </dl>
+                {/* Grants have no procurement shop. */}
+                {!isGrant && (
+                    <dl className="grid-col-auto margin-top-0 font-12px">
+                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                        <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
+                    </dl>
+                )}
                 <div className="grid-col display-flex flex-justify-end flex-align-end margin-bottom-1">
                     {!readOnly && changeIcons}
                 </div>

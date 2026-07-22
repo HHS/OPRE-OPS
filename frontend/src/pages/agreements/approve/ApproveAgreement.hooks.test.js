@@ -14,6 +14,8 @@ const useGetAgreementByIdQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateChangeRequestMutationMock = vi.fn();
+// Stable reference so any grantNumbers-dependent memo/effect doesn't loop.
+const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 const useGetAllCansMock = vi.fn();
 const useChangeRequestsForBudgetLinesMock = vi.fn();
 const useChangeRequestsForProcurementShopMock = vi.fn();
@@ -38,6 +40,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: (...args) => useGetAgreementByIdQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args),
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    useGetGrantNumbersListQuery: () => EMPTY_GRANT_NUMBERS_RESULT,
     useUpdateChangeRequestMutation: (...args) => useUpdateChangeRequestMutationMock(...args)
 }));
 

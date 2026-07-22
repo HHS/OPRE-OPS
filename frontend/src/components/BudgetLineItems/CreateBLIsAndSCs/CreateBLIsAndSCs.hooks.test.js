@@ -14,6 +14,9 @@ const deleteBudgetLineItemMock = vi.fn();
 const deleteServicesComponentMock = vi.fn();
 const addServicesComponentMock = vi.fn();
 const updateServicesComponentMock = vi.fn();
+const addGrantNumberMock = vi.fn();
+const updateGrantNumberMock = vi.fn();
+const deleteGrantNumberMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
@@ -51,7 +54,10 @@ vi.mock("../../../api/opsAPI", () => ({
     useDeleteBudgetLineItemMutation: () => [deleteBudgetLineItemMock],
     useDeleteServicesComponentMutation: () => [deleteServicesComponentMock],
     useAddServicesComponentMutation: () => [addServicesComponentMock],
-    useUpdateServicesComponentMutation: () => [updateServicesComponentMock]
+    useUpdateServicesComponentMutation: () => [updateServicesComponentMock],
+    useAddGrantNumberMutation: () => [addGrantNumberMock],
+    useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
+    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock]
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -67,7 +73,8 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
     BLILabel: vi.fn((bli) => `${bli?.id ?? "Unknown"}`),
     budgetLinesTotal: vi.fn((blis) => blis.reduce((sum, bli) => sum + (bli.amount ?? 0), 0)),
     getNonDRAFTBudgetLines: vi.fn((blis) => blis.filter((bli) => bli.status !== "DRAFT")),
-    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 })))
+    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 }))),
+    groupByGrantNumber: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], grantNumberNumber: 1 })))
 }));
 
 vi.mock("../../../helpers/scrollToTop.helper", () => ({

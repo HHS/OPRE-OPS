@@ -31,5 +31,19 @@ describe("ProjectAgreementSummaryCard", () => {
         const shopAbbr = screen.getByText(defaultProps.selectedProcurementShop.abbr);
 
         expect(shopAbbr).toBeInTheDocument();
+        expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
+        expect(screen.getByText("Current Fee Rate")).toBeInTheDocument();
+    });
+
+    it("hides the procurement shop and fee rate for grant agreements", () => {
+        render(
+            <ProjectAgreementSummaryCard
+                {...defaultProps}
+                isGrant={true}
+            />
+        );
+        expect(screen.getByText(defaultProps.selectedResearchProject.title)).toBeInTheDocument();
+        expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+        expect(screen.queryByText("Current Fee Rate")).not.toBeInTheDocument();
     });
 });

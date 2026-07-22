@@ -1,6 +1,7 @@
 import AgreementBLIAccordion from "../../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../../components/GrantNumbers/GrantNumberAccordion";
 import ReviewExecutingTotalAccordion from "../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import {
     findDescription,
@@ -43,6 +44,7 @@ export const BudgetLinesReviewAccordion = ({
     executingTotalInstructions = undefined,
     showBudgetLineErrors = false
 }) => {
+    const isGrant = agreement?.agreement_type === "GRANT";
     return (
         <>
             {/* Budget Lines Review */}
@@ -60,10 +62,38 @@ export const BudgetLinesReviewAccordion = ({
                     groupedBudgetLines
                         .filter(
                             (group) =>
-                                // Hide "BLs not associated with a Services Component" when empty
-                                group.serviceComponentGroupingLabel !== "0" || group.budgetLines.length > 0
+                                // Hide the "not associated" bucket (SC or grant number) when empty
+                                (isGrant
+                                    ? String(group.grantNumberNumber) !== "0"
+                                    : group.serviceComponentGroupingLabel !== "0") || group.budgetLines.length > 0
                         )
                         .map((/** @type {any} */ group, /** @type {number} */ index) => {
+                            if (isGrant) {
+                                return (
+                                    <GrantNumberAccordion
+                                        key={`${group.grantNumberNumber}-${index}`}
+                                        grantNumberNumber={group.grantNumberNumber}
+                                    >
+                                        {group.budgetLines.length > 0 ? (
+                                            <AgreementBLIReviewTable
+                                                readOnly={true}
+                                                budgetLines={group.budgetLines}
+                                                isReviewMode={true}
+                                                servicesComponentNumber={group.grantNumberNumber}
+                                                action=""
+                                                showCLINColumn={showCLINColumn}
+                                                errorStatuses={
+                                                    showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <p className="text-center margin-y-7">
+                                                No budget lines in this grant number.
+                                            </p>
+                                        )}
+                                    </GrantNumberAccordion>
+                                );
+                            }
                             const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                                 ? group.serviceComponentGroupingLabel
                                 : group.servicesComponentNumber;

@@ -6,6 +6,7 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetServicesComponentsListQuery: vi.fn(),
+    useGetGrantNumbersListQuery: vi.fn(),
     useGetDocumentsByAgreementIdQuery: vi.fn(),
     useGetProcurementTrackersByAgreementIdQuery: vi.fn()
 }));
@@ -16,17 +17,19 @@ vi.mock("../../../hooks/user.hooks", () => ({
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
     groupByServicesComponent: vi.fn(),
+    groupByGrantNumber: vi.fn(),
     budgetLinesTotal: vi.fn()
 }));
 
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
+    useGetGrantNumbersListQuery,
     useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { groupByGrantNumber, groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 
 describe("usePreAwardApprovalData", () => {
     const executingBli1 = { id: 1, status: "IN_EXECUTION" };
@@ -45,10 +48,12 @@ describe("usePreAwardApprovalData", () => {
 
         useGetAgreementByIdQuery.mockReturnValue({ data: mockAgreement, isLoading: false });
         useGetServicesComponentsListQuery.mockReturnValue({ data: [] });
+        useGetGrantNumbersListQuery.mockReturnValue({ data: [] });
         useGetDocumentsByAgreementIdQuery.mockReturnValue({ data: { documents: [] } });
         useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         groupByServicesComponent.mockReturnValue([]);
+        groupByGrantNumber.mockReturnValue([]);
         budgetLinesTotal.mockReturnValue(0);
     });
 
