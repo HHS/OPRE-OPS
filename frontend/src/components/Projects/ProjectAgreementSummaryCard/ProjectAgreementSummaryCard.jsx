@@ -13,12 +13,14 @@ import { NO_DATA } from "../../../constants";
  * @param {ResearchProject} props.selectedResearchProject The selected research project object.
  * @param {Agreement} props.selectedAgreement - The selected agreement object.
  * @param {ProcurementShop} props.selectedProcurementShop - The selected procurement shop object.
+ * @param {boolean} [props.isGrant] - Whether the agreement is a grant. Grants have no procurement shop, so the Procurement Shop and Current Fee Rate are hidden.
  * @returns {React.ReactElement} - The rendered summary card component.
  */
 export const ProjectAgreementSummaryCard = ({
     selectedResearchProject,
     selectedAgreement,
-    selectedProcurementShop
+    selectedProcurementShop,
+    isGrant = false
 }) => {
     return (
         <div
@@ -45,20 +47,23 @@ export const ProjectAgreementSummaryCard = ({
                     </>
                 )}
             </dl>
-            <dl className="display-flex margin-top-205 font-12px padding-x-3">
-                <div>
-                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0 text-semibold">{selectedProcurementShop?.abbr ?? NO_DATA}</dd>
-                </div>
-                <div className="margin-left-5">
-                    <dt className="margin-0 text-base-dark">Current Fee Rate</dt>
-                    <dd className="margin-0 text-semibold">
-                        {selectedProcurementShop?.fee_percentage
-                            ? `${selectedProcurementShop?.fee_percentage}%`
-                            : NO_DATA}
-                    </dd>
-                </div>
-            </dl>
+            {/* Grants have no procurement shop, so the shop and fee rate are omitted. */}
+            {!isGrant && (
+                <dl className="display-flex margin-top-205 font-12px padding-x-3">
+                    <div>
+                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                        <dd className="margin-0 text-semibold">{selectedProcurementShop?.abbr ?? NO_DATA}</dd>
+                    </div>
+                    <div className="margin-left-5">
+                        <dt className="margin-0 text-base-dark">Current Fee Rate</dt>
+                        <dd className="margin-0 text-semibold">
+                            {selectedProcurementShop?.fee_percentage
+                                ? `${selectedProcurementShop?.fee_percentage}%`
+                                : NO_DATA}
+                        </dd>
+                    </div>
+                </dl>
+            )}
         </div>
     );
 };

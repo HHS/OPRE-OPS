@@ -370,6 +370,7 @@ export const CreateBLIsAndSCs = ({
                                 selectedResearchProject={selectedResearchProject}
                                 selectedAgreement={selectedAgreement}
                                 selectedProcurementShop={selectedProcurementShop}
+                                isGrant={isGrant}
                             />
                         </>
                     )}

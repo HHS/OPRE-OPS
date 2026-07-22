@@ -26,6 +26,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {string} [props.tooltipMsg] - Tooltip message
+ * @param {string} [props.hint] - Hint text displayed between the label and the select field (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 const Select = ({
@@ -51,7 +52,8 @@ const Select = ({
     isRequired = false,
     isRequiredNoShow = false,
     isDisabled = false,
-    tooltipMsg = ""
+    tooltipMsg = "",
+    hint = ""
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -81,6 +83,14 @@ const Select = ({
                     isRequired={isRequired}
                     isRequiredNoShow={isRequiredNoShow}
                 />
+            )}
+            {hint && messages.length === 0 && (
+                <div
+                    className="usa-hint"
+                    id={`${name}-hint`}
+                >
+                    {hint}
+                </div>
             )}
             <div className="display-flex flex-align-center margin-top-1">
                 {isDisabled ? (

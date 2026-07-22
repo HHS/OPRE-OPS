@@ -15,6 +15,9 @@ afterEach(() => {
 it("can create a Grant agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
+    // Breadcrumb should read Home > Agreements > Create New Agreement
+    cy.get(".usa-breadcrumb").should("contain", "Agreements").and("contain", "Create New Agreement");
+
     // Step One - Select a Project
     cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
@@ -68,6 +71,14 @@ it("can create a Grant agreement", () => {
 
     // Continue to Step 3 - Grant Numbers
     cy.get("[data-cy='continue-btn']").click();
+
+    // Step 3 is labeled "Budget Lines" (not "Services Components & Budget Lines")
+    cy.get(".usa-step-indicator").should("contain", "Budget Lines").and("not.contain", "Services Components");
+
+    // Grant Numbers instruction text matches the design
+    cy.contains("Create the structure of the agreement using Grant Numbers to describe the grants within it.").should(
+        "exist"
+    );
 
     // Services Component controls should not render for grants
     cy.get("#servicesComponentSelect").should("not.exist");
