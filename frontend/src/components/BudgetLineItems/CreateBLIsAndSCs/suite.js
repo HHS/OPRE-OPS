@@ -13,13 +13,14 @@ const suite = create((data) => {
             enforce(item.amount).greaterThan(0);
         });
         test(`Budget line item (${item.id})`, "Need by date must be in the future", () => {
-            // Compare date-only (no time) to avoid UTC-vs-local false failures where
-            // "2026-07-18" parsed as UTC midnight falls before the current local time.
+            // Parse the ISO date string directly via split to avoid the UTC-midnight pitfall:
+            // new Date("YYYY-MM-DD") is UTC, and getDate() in a negative-offset timezone returns
+            // the prior local day. Splitting gives the calendar date the user intended.
             const today = new Date();
             const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const d = new Date(item.date_needed);
-            const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-            enforce(dateOnly.getTime()).greaterThanOrEquals(todayOnly.getTime());
+            const [y, mo, d] = (item.date_needed ?? "").split("-").map(Number);
+            const dateOnly = isNaN(y) ? new Date(0) : new Date(y, mo - 1, d);
+            enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
         });
     });
 });

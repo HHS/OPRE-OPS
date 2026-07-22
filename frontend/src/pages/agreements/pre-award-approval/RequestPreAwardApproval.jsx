@@ -328,18 +328,12 @@ export const RequestPreAwardApproval = () => {
                     type="button"
                     className="usa-button usa-button--outline margin-right-2"
                     data-cy="edit-agreement-btn"
-                    title={
-                        hasBLIInReview
-                            ? "Cannot edit while budget lines have pending change requests"
-                            : !isAgreementEditable
-                              ? "Agreement is not editable"
-                              : ""
-                    }
+                    title={!isAgreementEditable ? "Agreement is not editable" : ""}
                     onClick={() => {
                         const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
                         navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
                     }}
-                    disabled={!isAgreementEditable || hasBLIInReview}
+                    disabled={!isAgreementEditable}
                 >
                     Edit
                 </button>
@@ -351,21 +345,27 @@ export const RequestPreAwardApproval = () => {
                     >
                         {isSubmitting ? "Submitting..." : "Send to Approval"}
                     </DisabledButtonWithTooltip>
+                ) : hasBLIInReview ? (
+                    <DisabledButtonWithTooltip
+                        label="Pending changes must be approved or declined before you can send to approval"
+                        tooltipPosition="top"
+                        dataCy="send-to-approval-btn"
+                    >
+                        {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    </DisabledButtonWithTooltip>
                 ) : (
                     <button
                         type="button"
                         className="usa-button"
                         data-cy="send-to-approval-btn"
                         onClick={handleSubmit}
-                        disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}
+                        disabled={isSubmitting || hasApprovalBeenRequested || !isStep4Completed}
                         title={
                             !isStep4Completed
                                 ? "Step 4 (Evaluation) must be completed before requesting pre-award approval"
                                 : hasApprovalBeenRequested
                                   ? "Pre-Award approval has already been requested"
-                                  : hasBLIInReview
-                                    ? "Pending changes must be approved or declined before you can send to approval"
-                                    : ""
+                                  : ""
                         }
                     >
                         {isSubmitting ? "Submitting..." : "Send to Approval"}

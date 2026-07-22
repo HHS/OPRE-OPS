@@ -188,6 +188,22 @@ describe("Budget Line Suite", () => {
         expect(result.errors).toHaveProperty("date_needed");
     });
 
+    it("fails if date_needed is today (strictly future required)", () => {
+        const today = new Date();
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: todayISO });
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toHaveProperty("date_needed");
+    });
+
+    it("passes if date_needed is tomorrow", () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: tomorrowISO });
+        expect(result.isValid).toBe(true);
+    });
+
     it("validates only a single field when fieldName is provided", () => {
         const result = validateBudgetLineItem({}, "Budget Line Amount");
         expect(result.isValid).toBe(false);

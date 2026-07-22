@@ -255,8 +255,11 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
-        expect(submitButton).toBeDisabled();
+        // DisabledButtonWithTooltip renders an aria-disabled wrapper div + a disabled inner button.
+        // Both have role="button" with the same name; the inner <button> is the only one that is disabled.
+        const buttons = screen.getAllByRole("button", { name: /Send to Approval/i, hidden: true });
+        const disabledBtn = buttons.find((b) => b.tagName === "BUTTON");
+        expect(disabledBtn).toBeDisabled();
     });
 
     it("shows alert when BLI is in review", () => {
@@ -501,14 +504,14 @@ describe("RequestPreAwardApproval", () => {
     });
 
     describe("Edit button with pending change requests", () => {
-        it("disables Edit button when a BLI has a pending change request", () => {
+        it("keeps Edit button enabled when BLIs have pending change requests", () => {
             requestPreAwardApprovalHookMock.mockReturnValue({
                 ...baseHookResult(),
                 hasBLIInReview: true
             });
             render(<RequestPreAwardApproval />);
 
-            expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+            expect(screen.getByRole("button", { name: "Edit" })).not.toBeDisabled();
         });
 
         it("hides the error banner when a BLI has a pending change request", () => {
