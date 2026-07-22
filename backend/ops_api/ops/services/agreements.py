@@ -939,10 +939,14 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     """
     tracked_statuses = [
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.PLANNED_MOD,
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ]
+
+    # PLANNED_MOD BLIs are modifications to already-PLANNED lines, so they're grouped under PLANNED here.
+    status_bucket = {
+        BudgetLineItemStatus.PLANNED_MOD: BudgetLineItemStatus.PLANNED,
+    }
 
     amount_by_status: dict[BudgetLineItemStatus, Decimal] = {s: Decimal("0") for s in tracked_statuses}
     agreements_by_status: dict[BudgetLineItemStatus, set[int]] = {s: set() for s in tracked_statuses}
@@ -951,9 +955,10 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         for bli in agreement.budget_line_items:
             if fiscal_year is not None and bli.fiscal_year != fiscal_year:
                 continue
-            if bli.status in amount_by_status:
-                amount_by_status[bli.status] += (bli.amount or Decimal("0")) + bli.fees
-                agreements_by_status[bli.status].add(agreement.id)
+            bucket = status_bucket.get(bli.status, bli.status)
+            if bucket in amount_by_status:
+                amount_by_status[bucket] += (bli.amount or Decimal("0")) + bli.fees
+                agreements_by_status[bucket].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
     tracked_agreement_ids = set().union(*agreements_by_status.values())
