@@ -196,11 +196,7 @@ describe("Power User tests", () => {
             });
     });
 
-    // REVIEW: Remove skip when BLIs are reimplemented for GRANT agreements (OPS-5928)
-    // Skipped: GRANT agreements only show a static "Add Budget Lines" empty-state placeholder
-    // on this page as of OPS-5927 — the functional grant budget-line form is out of scope until
-    // OPS-5928 (https://github.com/HHS/OPRE-OPS/issues/5928). Re-enable once that ships.
-    it.skip("can edit a GRANT agreement budget lines", () => {
+    it("cannot edit a GRANT agreement budget lines because editing is not yet supported", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -242,58 +238,36 @@ describe("Power User tests", () => {
                     })
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        cy.get("#edit").click();
-                        cy.get("tbody").children().as("table-rows").should("have.length", 1);
-                        cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-                        cy.get("[data-cy='edit-row']").click();
-                        waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
-                        cy.get("#can-combobox-input").clear();
-                        cy.get("#can-combobox-input").type("G99MVT3{enter}");
-                        cy.get("#enteredAmount").clear();
-                        cy.get("#enteredAmount").type("2_000_000");
-                        cy.get('[data-cy="update-budget-line"]').click();
-                        cy.get('[data-cy="continue-btn"]').click();
-                        cy.get('[data-cy="alert"]').should("exist");
-                        cy.get('[data-cy="alert"]')
-                            .should(($alert) => {
-                                expect($alert).to.contain(
-                                    `The agreement ${testAgreement.display_name} has been successfully updated.`
-                                );
-                            })
-                            .then(() => {
-                                // verify the updated data is displayed in the table
-                                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                                cy.get("@table-rows")
-                                    .eq(0)
-                                    .should("contain", "$2,000,000.00")
-                                    .and("contain", "2/2/2048")
-                                    .and("contain", "G99MVT3");
+                        // Editing is not yet supported for grants: the Edit button and the
+                        // Request BL Status Change button should be disabled instead of clickable.
+                        cy.get("#edit").should("not.exist");
+                        cy.get("#edit-disabled").should("exist").and("have.attr", "aria-disabled", "true");
+                        cy.get('[data-cy="bli-continue-btn"]').should("not.exist");
+                        cy.get('[data-cy="bli-continue-btn-disabled"]')
+                            .should("exist")
+                            .and("have.attr", "aria-disabled", "true");
 
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            });
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
                     });
             });
     });
