@@ -736,9 +736,6 @@ class GrantAgreement(Agreement):
         lazy="selectin",
         cascade="all, delete",
     )
-    nofo_number: Mapped[Optional[str]] = mapped_column(String)
-    aln_number: Mapped[Optional[str]] = mapped_column(String)
-    funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
