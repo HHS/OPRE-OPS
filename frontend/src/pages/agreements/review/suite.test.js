@@ -139,8 +139,13 @@ describe("Budget Line Suite", () => {
         expect(result.errors).toEqual({});
     });
 
-    it("fails if amount is 0 or negative", () => {
+    it("passes if amount is 0 (0 is a valid amount per business rules)", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, amount: 0 });
+        expect(result.isValid).toBe(true);
+    });
+
+    it("fails if amount is null", () => {
+        const result = validateBudgetLineItem({ ...validBudgetLine, amount: null });
         expect(result.isValid).toBe(false);
         // Normalized key: "Budget Line Amount" → "amount"
         expect(result.errors).toHaveProperty("amount");
@@ -227,13 +232,13 @@ describe("validateBudgetLineItems", () => {
     };
 
     it("returns array of results for multiple budget lines", () => {
+        // amount: 0 is now valid per business rules
         const lines = [validBudgetLine, { ...validBudgetLine, id: 2, amount: 0 }];
         const results = validateBudgetLineItems(lines);
         expect(Array.isArray(results)).toBe(true);
         expect(results.length).toBe(2);
         expect(results[0].isValid).toBe(true);
-        expect(results[1].isValid).toBe(false);
-        expect(results[1].errors).toHaveProperty("amount");
+        expect(results[1].isValid).toBe(true);
     });
 
     it("handles single object input", () => {

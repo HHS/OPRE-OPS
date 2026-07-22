@@ -155,11 +155,11 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI must have an Amount (for PUT only)
 
-  Scenario: Valid Amount: Greater than 0
+  Scenario: Valid Amount: Must be set (0 is allowed, negative is not)
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
-    When I have a BLI in DRAFT status with an Amount less than or equal to 0
-    And I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)
+    When I have a BLI in DRAFT status with a negative Amount
+    And I submit a BLI to move to IN_REVIEW status (with a negative Amount)
 
     Then I should get an error message that the BLI must have an Amount greater than 0

@@ -50,9 +50,8 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         only(fieldName);
     }
 
-    test("Budget Line Amount", "Budget Line Amount must be greater than 0", () => {
-        const amount = Number(budgetLine.amount ?? 0);
-        enforce(amount).greaterThan(0);
+    test("Budget Line Amount", "This information is required to submit for approval", () => {
+        enforce(budgetLine.amount).isNotNullish().greaterThanOrEquals(0);
     });
 
     test("Budget Line CAN", "This information is required to submit for approval", () => {

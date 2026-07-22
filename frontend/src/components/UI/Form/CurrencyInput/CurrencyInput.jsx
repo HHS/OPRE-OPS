@@ -28,14 +28,15 @@ const CurrencyInput = ({
     value,
     className,
     setEnteredAmount,
-    placeholder = "$",
+    placeholder = "",
     isRequiredNoShow, // eslint-disable-line no-unused-vars -- Extracted to prevent passing to DOM
     dataCy,
     ...rest
 }) => {
     // displayValue holds the raw typed string (e.g. "5.") so a trailing
     // decimal isn't stripped before the user finishes typing the cents.
-    const [displayValue, setDisplayValue] = useState(value ?? "");
+    // Use String conversion so numeric 0 renders as "0" rather than "" (falsy).
+    const [displayValue, setDisplayValue] = useState(value != null ? String(value) : "");
     // The parent typically echoes our raw string back as a parsed number
     // (e.g. raw "5." -> float 5 -> rendered "5"). Track both forms of the
     // last-emitted value so the echo is identifiable and can be ignored,
@@ -49,7 +50,7 @@ const CurrencyInput = ({
         const isEcho = incomingStr === raw || (Number.isFinite(incomingNum) && incomingNum === float);
         if (isEcho) return;
         lastEmittedRef.current = { raw: incomingStr, float: Number.isFinite(incomingNum) ? incomingNum : NaN };
-        setDisplayValue(value ?? "");
+        setDisplayValue(value != null ? String(value) : "");
     }, [value]);
 
     return (
@@ -83,6 +84,7 @@ const CurrencyInput = ({
                 groupSeparator=","
                 decimalSeparator="."
                 decimalsLimit={2}
+                prefix="$"
                 placeholder={placeholder}
                 data-cy={dataCy}
                 onValueChange={(rawValue, _name, values) => {

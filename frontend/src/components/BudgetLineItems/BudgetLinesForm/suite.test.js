@@ -54,12 +54,19 @@ describe("BudgetLinesForm Validation Suite", () => {
             expect(result.getErrors("needByDate")).toContain("This is required information");
         });
 
-        it("should validate amount is greater than 0", () => {
+        it("should accept 0 as a valid amount (0 is allowed per business rules)", () => {
             const dataWithZeroAmount = { ...getValidData(), enteredAmount: 0 };
             const result = suite.run(dataWithZeroAmount);
 
+            expect(result.hasErrors("enteredAmount")).toBe(false);
+        });
+
+        it("should reject negative amounts", () => {
+            const dataWithNegativeAmount = { ...getValidData(), enteredAmount: -1 };
+            const result = suite.run(dataWithNegativeAmount);
+
             expect(result.hasErrors()).toBe(true);
-            expect(result.getErrors("enteredAmount")).toContain("Amount must be greater than 0");
+            expect(result.getErrors("enteredAmount")).toContain("Amount must be 0 or greater");
         });
 
         it("should validate date format", () => {

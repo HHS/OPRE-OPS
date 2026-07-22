@@ -106,7 +106,7 @@ describe("CurrencyInput", () => {
         render(<ResettableWrapper />);
         const input = screen.getByRole("textbox");
         await userEvent.type(input, "1000000");
-        expect(input).toHaveDisplayValue("1,000,000");
+        expect(input).toHaveDisplayValue("$1,000,000");
 
         await userEvent.click(screen.getByText("reset"));
         expect(input).toHaveDisplayValue("");

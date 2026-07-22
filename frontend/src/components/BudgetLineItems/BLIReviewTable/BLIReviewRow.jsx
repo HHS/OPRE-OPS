@@ -202,8 +202,10 @@ const BLIReviewRow = ({
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;
         const canNumberClasses = showCellErrors ? canNumberErrorClasses : "";
 
-        const amount = budgetLine?.amount ?? 0;
-        const amountErrorClasses = `${addErrorClassIfNotFound(amount, rowInReviewMode)}`;
+        const amount = budgetLine?.amount ?? null;
+        const amountDisplay = amount != null ? formatCurrency(amount) : NO_DATA;
+        // Use explicit null check — 0 is a valid amount and must not be flagged as missing.
+        const amountErrorClasses = rowInReviewMode && amount == null ? "table-item-error" : "";
         const amountClasses = showCellErrors ? amountErrorClasses : "";
 
         const feeValue = feeTotal || 0;
@@ -216,7 +218,7 @@ const BLIReviewRow = ({
                 <td className={dateNeededClasses}>{dateNeededFormatted}</td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
-                <td className={amountClasses}>{formatCurrency(amount)}</td>
+                <td className={amountClasses}>{amountDisplay}</td>
                 <td>{formatCurrency(feeValue)}</td>
                 <td>{formatCurrency(totalWithFees)}</td>
                 <td>

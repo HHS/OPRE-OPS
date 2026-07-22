@@ -579,7 +579,7 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
     context["services_component"] = sc
 
 
-@when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
+@when("I have a BLI in DRAFT status with a negative Amount")
 def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, test_can):
     sc = ServicesComponent(agreement_id=context["agreement"].id, number=99, optional=False)
     loaded_db.add(sc)
@@ -589,7 +589,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
-        amount=0,
+        amount=-1,
         can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
@@ -601,7 +601,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
-        amount=0,
+        amount=-1,
         can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
@@ -809,7 +809,7 @@ def submit_without_amount(bdd_client, context):
     )
 
 
-@when("I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)")
+@when("I submit a BLI to move to IN_REVIEW status (with a negative Amount)")
 def submit_amount_less_than_zero(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
@@ -1031,6 +1031,6 @@ def error_message_future_need_by_date(context, setup_and_teardown):
 @then("I should get an error message that the BLI must have an Amount greater than 0")
 def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
-    assert "Amount must be greater than 0." in context["response_put"].json["errors"]["amount"]
+    assert "Amount must be 0 or greater." in context["response_put"].json["errors"]["amount"]
     assert context["response_patch"].status_code == 400
-    assert "Amount must be greater than 0." in context["response_patch"].json["errors"]["amount"]
+    assert "Amount must be 0 or greater." in context["response_patch"].json["errors"]["amount"]
