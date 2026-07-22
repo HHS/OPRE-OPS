@@ -418,6 +418,7 @@ export const CreateBLIsAndSCs = ({
                             fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee_percentage}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
@@ -459,6 +460,7 @@ export const CreateBLIsAndSCs = ({
                             fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee_percentage}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>
@@ -520,6 +522,7 @@ export const CreateBLIsAndSCs = ({
                                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                                 isEditable={isAgreementWorkflowOrCanEditBudgetLines}
                                 isReviewMode={isReviewMode}
+                                isGrant={true}
                             />
                         </GrantNumberAccordion>
                     ))

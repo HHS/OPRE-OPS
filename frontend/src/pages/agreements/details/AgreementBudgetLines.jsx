@@ -211,6 +211,7 @@ const AgreementBudgetLines = ({
                             subtotal={agreementSubtotal}
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard
                             budgetLineItems={filteredBlis}
@@ -303,6 +304,7 @@ const AgreementBudgetLines = ({
                                 isAgreementAwarded={isAgreementAwarded}
                                 readOnly={true}
                                 isEditable={agreement?._meta.isEditable}
+                                isGrant={true}
                             />
                         ) : (
                             <p className="text-center margin-y-7">
