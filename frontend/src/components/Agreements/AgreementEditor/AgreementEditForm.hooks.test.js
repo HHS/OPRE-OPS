@@ -551,6 +551,115 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
     });
 });
 
+describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it("isGrant is true when agreement_type is GRANT", () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "GRANT" }));
+        const { result } = renderUseAgreementEditForm();
+        expect(result.current.isGrant).toBe(true);
+    });
+
+    it("isGrant is false when agreement_type is CONTRACT", () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+        expect(result.current.isGrant).toBe(false);
+    });
+
+    it("handleAgreementFilterChange clears contract-only state when switching to GRANT", () => {
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setContractTypeMock = vi.fn();
+        const setServiceReqTypeMock = vi.fn();
+        const setAgreementReasonMock = vi.fn();
+        const setAgreementVendorMock = vi.fn();
+        const setAgreementNotesMock = vi.fn();
+        const setAgreementTypeMock = vi.fn();
+        const setSelectedProductServiceCodeMock = vi.fn();
+        const setSelectedProjectOfficerMock = vi.fn();
+        const setSelectedAlternateProjectOfficerMock = vi.fn();
+
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "contract_type") return setContractTypeMock;
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            if (key === "agreement_reason") return setAgreementReasonMock;
+            if (key === "vendor") return setAgreementVendorMock;
+            if (key === "notes") return setAgreementNotesMock;
+            if (key === "agreement_type") return setAgreementTypeMock;
+            return vi.fn();
+        });
+        useSetStateMock.mockImplementation((key) => {
+            if (key === "selected_product_service_code") return setSelectedProductServiceCodeMock;
+            if (key === "selected_project_officer") return setSelectedProjectOfficerMock;
+            if (key === "selected_alternate_project_officer") return setSelectedAlternateProjectOfficerMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("GRANT");
+        });
+
+        expect(setAgreementTypeMock).toHaveBeenCalledWith("GRANT");
+        expect(setContractTypeMock).toHaveBeenCalledWith(null);
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith(null);
+        expect(setAgreementReasonMock).toHaveBeenCalledWith(null);
+        expect(setAgreementVendorMock).toHaveBeenCalledWith(null);
+        expect(setAgreementNotesMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProductServiceCodeMock).toHaveBeenCalledWith(null);
+        expect(setSelectedProjectOfficerMock).toHaveBeenCalledWith(null);
+        expect(setSelectedAlternateProjectOfficerMock).toHaveBeenCalledWith(null);
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });
+    });
+
+    it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
+        const setNofoNumberMock = vi.fn();
+        const setAlnNumberMock = vi.fn();
+        const setFundingPeriodMonthsMock = vi.fn();
+        const setSelectedAlternateProjectOfficerMock = vi.fn();
+        const setAlternateProjectOfficerIdMock = vi.fn();
+
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "nofo_number") return setNofoNumberMock;
+            if (key === "aln_number") return setAlnNumberMock;
+            if (key === "funding_period_months") return setFundingPeriodMonthsMock;
+            if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
+            return vi.fn();
+        });
+        useSetStateMock.mockImplementation((key) => {
+            if (key === "selected_alternate_project_officer") return setSelectedAlternateProjectOfficerMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "GRANT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("CONTRACT");
+        });
+
+        expect(setNofoNumberMock).toHaveBeenCalledWith(null);
+        expect(setAlnNumberMock).toHaveBeenCalledWith(null);
+        expect(setFundingPeriodMonthsMock).toHaveBeenCalledWith(null);
+        // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
+        expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
+        expect(setAlternateProjectOfficerIdMock).not.toHaveBeenCalled();
+    });
+});
+
 describe("useAgreementEditForm - runValidate project_officer validation", () => {
     beforeEach(() => {
         vi.clearAllMocks();

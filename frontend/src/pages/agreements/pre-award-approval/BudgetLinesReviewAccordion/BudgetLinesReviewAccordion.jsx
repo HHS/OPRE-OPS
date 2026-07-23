@@ -8,6 +8,7 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../../helpers/servicesComponent.helpers";
+import { VALIDATABLE_BLI_STATUSES } from "../constants";
 
 /**
  * @typedef {Object} BudgetLinesReviewAccordionProps
@@ -17,12 +18,16 @@ import {
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
- * @property {string} [executingTotalInstructions] - Custom instructions for the executing total accordion
+ * @property {string} [executingTotalInstructions] - Override instructions for the Review Executing Total section
+ * @property {boolean} [showBudgetLineErrors] - When true, inline error styling is applied to
+ *   PLANNED/IN_EXECUTION BLI cells. Omit (default false) for read-only review pages where
+ *   errors should not be highlighted.
  */
 
 /**
  * Shared component for displaying budget lines review section in pre-award approval pages.
- * Used by RequestPreAwardApproval, ApprovePreAwardApproval, and ApproveAwardApproval pages.
+ * Used by RequestPreAwardApproval (pass showBudgetLineErrors={true}),
+ * ApprovePreAwardApproval, and ReviewBudgetTeamRequisition pages.
  *
  * @component
  * @param {BudgetLinesReviewAccordionProps} props
@@ -35,7 +40,8 @@ export const BudgetLinesReviewAccordion = ({
     groupedBudgetLines,
     executingTotal,
     showCLINColumn = false,
-    executingTotalInstructions
+    executingTotalInstructions = undefined,
+    showBudgetLineErrors = false
 }) => {
     return (
         <>
@@ -81,6 +87,7 @@ export const BudgetLinesReviewAccordion = ({
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
                                             showCLINColumn={showCLINColumn}
+                                            errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">
@@ -95,7 +102,7 @@ export const BudgetLinesReviewAccordion = ({
             {/* Review Executing Total */}
             <ReviewExecutingTotalAccordion
                 executingTotal={executingTotal}
-                instructions={executingTotalInstructions}
+                {...(executingTotalInstructions !== undefined && { instructions: executingTotalInstructions })}
             />
         </>
     );

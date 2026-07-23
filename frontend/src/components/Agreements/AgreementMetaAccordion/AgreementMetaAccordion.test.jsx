@@ -210,6 +210,25 @@ describe("AgreementMetaAccordion", () => {
             expect(screen.queryByText("GRANT123")).not.toBeInTheDocument();
         });
 
+        it("should NOT show Procurement Shop for GRANT agreements", () => {
+            const grantAgreement = {
+                ...agreement,
+                agreement_type: "GRANT",
+                procurement_shop: { abbr: "PSC", fee: 0 }
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={grantAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+        });
+
         it("should NOT show contract number for non-awarded CONTRACT agreements", () => {
             const nonAwardedAgreement = {
                 ...agreement,

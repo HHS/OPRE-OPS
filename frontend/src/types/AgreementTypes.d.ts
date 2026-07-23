@@ -45,6 +45,9 @@ export type Agreement = {
     servicing_agency?: string;
     research_methodologies?: ResearchMethodology[];
     special_topics?: SpecialTopic[];
+    nofo_number?: string | null;
+    aln_number?: string | null;
+    funding_period_months?: number | null;
     sc_start_date?: string | null;
     sc_end_date?: string | null;
     agreement_subtotal?: number | string | null;

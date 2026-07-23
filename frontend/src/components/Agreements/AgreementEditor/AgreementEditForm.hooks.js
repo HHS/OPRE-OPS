@@ -91,6 +91,10 @@ const useAgreementEditForm = (
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
     const setRequestingAgency = useUpdateAgreement("requesting_agency");
     const setServicingAgency = useUpdateAgreement("servicing_agency");
+    // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
+    const setNofoNumber = useUpdateAgreement("nofo_number");
+    const setAlnNumber = useUpdateAgreement("aln_number");
+    const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -145,6 +149,9 @@ const useAgreementEditForm = (
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
+        nofo_number: nofoNumber,
+        aln_number: alnNumber,
+        funding_period_months: fundingPeriodMonths,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
@@ -299,13 +306,20 @@ const useAgreementEditForm = (
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    // REVIEW: NEW — mirrors the isAgreementAA pattern directly above.
+    // Consumed by AgreementEditForm.jsx to hide contract controls and by shouldDisableBtn (indirectly,
+    // via the suite's isGrant guards letting the button enable with only name + project_id).
+    const isGrant = agreementType === AGREEMENT_TYPES.GRANT;
     const shouldDisableBtn =
         !agreementTitle ||
         !agreement?.project_id ||
         !agreementType ||
         res.hasErrors() ||
         hasUniquenessErrors ||
-        (isAgreementAA && (!servicingAgency || !requestingAgency));
+        (isAgreementAA && (!servicingAgency || !requestingAgency)) ||
+        // NOFO Number is the grant-equivalent hard requirement to Title — enforced both here
+        // (explicit check, mirroring !agreementTitle) and via the Vest suite's nofo_number test.
+        (isGrant && !nofoNumber);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -647,18 +661,51 @@ const useAgreementEditForm = (
         return "Disabled";
     };
 
+    // REVIEW: CHANGED — added GRANT branch that clears all contract-only state.
+    // This is payload hygiene: if a user selects Contract, starts typing, then switches to Grant,
+    // the stale contract values (contract_type, vendor, PO, etc.) would otherwise be sent to the API.
+    // The suite guards already prevent those fields from blocking Submit, but the payload would still
+    // contain junk. Clearing here ensures a clean 4-field payload (name, nick_name, description,
+    // agreement_type + project_id) regardless of prior user interaction.
+    // Note: team_members uses UPDATE_AGREEMENT (not a dedicated SET_TEAM_MEMBERS) because the reducer
+    // only has ADD_TEAM_MEMBER and REMOVE_TEAM_MEMBER; UPDATE_AGREEMENT sets the key directly.
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
+            clearGrantOnlyFields();
         } else if (value === AGREEMENT_TYPES.GRANT) {
+            suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
+            setContractType(null);
+            setServiceReqType(null);
+            changeSelectedProductServiceCode(null);
+            setAgreementReason(null);
+            setAgreementVendor(null);
+            setAgreementNotes(null);
+            changeSelectedProjectOfficer(null);
+            changeSelectedAlternateProjectOfficer(null);
+            dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
+            dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
+            dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
+            clearGrantOnlyFields();
         }
+    };
+
+    // Clear Grant-only fields (NOFO/ALN/Funding Period) when switching AWAY from GRANT.
+    // Deliberately does NOT clear alternate_project_officer_id / Project Specialist: that column
+    // is shared with Contracts (their Alternate PO/Alt-COR), so a value present when switching
+    // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
+    const clearGrantOnlyFields = () => {
+        setNofoNumber(null);
+        setAlnNumber(null);
+        setFundingPeriodMonths(null);
     };
 
     return {
@@ -687,6 +734,12 @@ const useAgreementEditForm = (
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumber,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumber,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
@@ -694,6 +747,7 @@ const useAgreementEditForm = (
         vendorDisabled,
         immutableFields,
         isAgreementAA,
+        isGrant, // REVIEW: NEW — added to return so AgreementEditForm.jsx can destructure it
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,

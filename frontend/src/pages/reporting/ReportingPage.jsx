@@ -20,6 +20,7 @@ const ReportingPage = () => {
         setSelectedFiscalYear,
         filters,
         setFilters,
+        allPortfolios,
         totalFunding,
         totalSpending,
         portfoliosWithFunding,
@@ -52,6 +53,7 @@ const ReportingPage = () => {
                 <ReportingFilterButton
                     filters={filters}
                     setFilters={setFilters}
+                    portfolioOptions={allPortfolios ?? []}
                 />
             </div>
             <p className="margin-top-0 margin-bottom-4">
