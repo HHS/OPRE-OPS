@@ -26,6 +26,7 @@ from models import (
     ChangeRequestType,
     Portfolio,
     ProcurementShop,
+    ProcurementTracker,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -233,8 +234,9 @@ class BudgetLineItemService:
                     selectinload(Agreement.team_members),
                     joinedload(Agreement.project),
                     joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-                    # Needed by the editability step-check (is_agreement_in_pre_award_or_later)
-                    selectinload(Agreement.procurement_trackers),
+                    # Needed by the editability checks: is_agreement_in_pre_award_or_later walks
+                    # the trackers; is_pre_award_in_review walks tracker.steps.
+                    selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
                 ),
                 # Eager load CAN and its portfolio/division
                 selectinload(BudgetLineItem.can).options(
@@ -821,12 +823,16 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
-        if not is_bli_editable(budget_line_item):
-            raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
+        # Check the pre-award "in review" lock BEFORE the generic editability check. Both now feed
+        # is_bli_editable (compute_bli_editable includes is_pre_award_in_review as of the editability
+        # unification), so this specific, actionable message must win over the generic
+        # "not in an editable state" fallback. Super users bypass.
         if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        if not is_bli_editable(budget_line_item):
+            raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
@@ -1153,7 +1159,19 @@ def get_is_editable_meta_data(serialized_bli):
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
     is_super = is_super_user(current_user, current_app)
-    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
+    # Eager-load the agreement's procurement trackers and their steps so the editability
+    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
+    # walks tracker.steps) don't trigger per-attribute lazy-loads. Mirrors get_list and
+    # get_bli_is_editable_meta_data_for_agreements.
+    budget_line_item = current_app.db_session.get(
+        BudgetLineItem,
+        serialized_bli.get("id"),
+        options=[
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        ],
+    )
     in_review = budget_line_item.in_review if budget_line_item else False
 
     if is_budget_team:
@@ -1177,12 +1195,17 @@ def get_is_editable_meta_data(serialized_bli):
 def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
     bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
 
-    # Eager-load the agreement's procurement_trackers so the editability step-check
-    # (is_agreement_in_pre_award_or_later) does not lazy-load per BLI (consistent with get_list).
+    # Eager-load the agreement's procurement_trackers (and their steps) so the editability
+    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
+    # walks tracker.steps) do not lazy-load per BLI (consistent with get_list).
     budget_line_items = (
         current_app.db_session.query(BudgetLineItem)
         .filter(BudgetLineItem.id.in_(bli_ids))
-        .options(selectinload(BudgetLineItem.agreement).selectinload(Agreement.procurement_trackers))
+        .options(
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        )
         .all()
     )
     bli_dict = {bli.id: bli for bli in budget_line_items}

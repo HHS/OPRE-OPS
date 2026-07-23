@@ -119,19 +119,29 @@ def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> b
     if not is_super and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
         editable = False
 
+    # editing is also blocked while a Pre-Award approval request is awaiting a decision. This
+    # mirrors the write-path guard in the update service (`is_pre_award_in_review`) so the
+    # editability meta and the PATCH validation stay in lockstep — the pen icon must not be
+    # clickable when the edit would be rejected. (This can fire before the tracker reaches
+    # step 5, so it is a distinct check from `is_agreement_in_pre_award_or_later` above.)
+    if not is_super and is_pre_award_in_review(budget_line_item.agreement):
+        editable = False
+
     return editable
 
 
 def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) -> str | None:
     """Human-readable reason a BLI is locked that the frontend cannot derive on its own.
 
-    Currently only the procurement-step block, since the BLI payload carries no tracker-step
-    data. Returns None when that block does not apply.
+    Covers the procurement-step blocks, since the BLI payload carries no tracker-step data.
+    Returns None when none of those blocks apply.
     """
     if budget_line_item is None or is_super:
         return None
     if not in_review and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
         return "This budget line can't be edited because the agreement has reached Pre-Award."
+    if not in_review and is_pre_award_in_review(budget_line_item.agreement):
+        return "This budget line can't be edited while Pre-Award Approval is in review."
     return None
 
 

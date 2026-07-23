@@ -32,9 +32,8 @@ from models import (
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
-    ProcurementTracker,
+    DefaultProcurementTracker,
     ProcurementTrackerStatus,
-    ProcurementTrackerType,
     ServicesComponent,
 )
 
@@ -110,10 +109,11 @@ def make_tracker_at_step(loaded_db):
     created_ids = []
 
     def _make(agreement_id, step_number):
-        tracker = ProcurementTracker(
+        # DefaultProcurementTracker (not the now-abstract ProcurementTracker base); its
+        # polymorphic identity sets tracker_type=DEFAULT automatically.
+        tracker = DefaultProcurementTracker(
             agreement_id=agreement_id,
             status=ProcurementTrackerStatus.ACTIVE,
-            tracker_type=ProcurementTrackerType.DEFAULT,
             active_step_number=step_number,
         )
         loaded_db.add(tracker)

@@ -15,9 +15,8 @@ from models import (
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
-    ProcurementTracker,
+    DefaultProcurementTracker,
     ProcurementTrackerStatus,
-    ProcurementTrackerType,
     ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
@@ -133,10 +132,11 @@ def executing_bli(loaded_db, agreement, test_user, test_can):
 
 @given("the agreement has reached Pre-Award")
 def agreement_at_pre_award(loaded_db, agreement, bli):
-    tracker = ProcurementTracker(
+    # DefaultProcurementTracker (not the now-abstract ProcurementTracker base); its polymorphic
+    # identity sets tracker_type=DEFAULT automatically.
+    tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
         status=ProcurementTrackerStatus.ACTIVE,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         active_step_number=5,
     )
     loaded_db.add(tracker)
