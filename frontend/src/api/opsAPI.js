@@ -77,6 +77,7 @@ export const opsApi = createApi({
         "ResearchMethodologies",
         "SpecialTopics",
         "ServicesComponents",
+        "GrantNumbers",
         "ChangeRequests",
         "Divisions",
         "Documents",
@@ -1131,6 +1132,43 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
+        addGrantNumber: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/grant-numbers/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
+        }),
+        updateGrantNumber: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/grant-numbers/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
+        }),
+        getGrantNumberById: builder.query({
+            query: (id) => `/grant-numbers/${id}`,
+            providesTags: ["GrantNumbers"]
+        }),
+        getGrantNumbersList: builder.query({
+            query: (agreementId) => `/grant-numbers/?agreement_id=${agreementId}`,
+            providesTags: ["GrantNumbers"]
+        }),
+        deleteGrantNumber: builder.mutation({
+            query: (id) => ({
+                url: `/grant-numbers/${id}`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
+        }),
         getChangeRequestsList: builder.query({
             query: ({ userId, limit, offset }) => {
                 const params = new URLSearchParams();
@@ -1332,6 +1370,11 @@ export const {
     useLazyGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
+    useAddGrantNumberMutation,
+    useUpdateGrantNumberMutation,
+    useGetGrantNumberByIdQuery,
+    useGetGrantNumbersListQuery,
+    useDeleteGrantNumberMutation,
     useGetChangeRequestsListQuery,
     useUpdateChangeRequestMutation,
     useGetDivisionsQuery,

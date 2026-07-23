@@ -4,7 +4,9 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
+import GrantNumbers from "../../GrantNumbers";
 import ServicesComponents from "../../ServicesComponents";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
@@ -132,6 +134,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
+    const isGrant = selectedAgreement.agreement_type === AGREEMENT_TYPES.GRANT;
 
     const handleSaveRef = useRef(handleSave);
     const onSavedRef = useRef(onSaved);
@@ -168,6 +171,8 @@ export const CreateBLIsAndSCs = ({
     // a partial-success failure mode is impossible (one transaction, all or nothing).
     const editorState = useEditAgreement();
     const deletedServicesComponentsIds = editorState?.deleted_services_components_ids ?? [];
+    const grantNumbers = editorState?.grant_numbers ?? [];
+    const deletedGrantNumbersIds = editorState?.deleted_grant_numbers_ids ?? [];
     useEffect(() => {
         if (!bundleSliceRef) return;
         bundleSliceRef.current = {
@@ -252,11 +257,34 @@ export const CreateBLIsAndSCs = ({
                     })
                     .filter(Boolean);
 
+                // Grant numbers, mirroring the SC create/update buckets above. Simpler than
+                // SC — no BLI linkage this slice, so no ref/id resolution is needed here.
+                const newGns = grantNumbers
+                    .filter((gn) => !("created_on" in gn))
+                    .map((gn) => {
+                        const ref = gn.display_title ?? String(gn.number ?? "");
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { ...clean, ref };
+                    });
+                const changedGns = grantNumbers
+                    .filter((gn) => "created_on" in gn && gn.has_changed)
+                    .map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { id: gn.id, ...clean };
+                    });
+
                 return {
                     services_components: {
                         create: newScs,
                         update: changedScs,
                         delete: deletedServicesComponentsIds
+                    },
+                    grant_numbers: {
+                        create: newGns,
+                        update: changedGns,
+                        delete: deletedGrantNumbersIds
                     },
                     budget_line_items: {
                         create: newBlis,
@@ -309,27 +337,44 @@ export const CreateBLIsAndSCs = ({
                             />
                         </>
                     )}
-                    {isAgreementWorkflowOrCanEditBudgetLines && (
-                        <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
-                            agreementId={selectedAgreement.id}
-                            continueBtnText={continueBtnText}
-                            workflow={workflow}
-                            isReviewMode={isReviewMode}
-                            setHasUnsavedChanges={setHasUnsavedChanges}
-                            hasUnsavedChanges={hasUnsavedChanges}
-                        />
+                    {isAgreementWorkflowOrCanEditBudgetLines &&
+                        (isGrant ? (
+                            <GrantNumbers
+                                agreementId={selectedAgreement.id}
+                                continueBtnText={continueBtnText}
+                                workflow={workflow}
+                                isReviewMode={isReviewMode}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ) : (
+                            <ServicesComponents
+                                serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                                agreementId={selectedAgreement.id}
+                                continueBtnText={continueBtnText}
+                                workflow={workflow}
+                                isReviewMode={isReviewMode}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ))}
+                    {!isGrant && (
+                        <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
+                            <FormHeader
+                                heading={isReviewMode ? "Edit Budget Lines" : "Add Budget Lines"}
+                                details={
+                                    isReviewMode
+                                        ? undefined
+                                        : "Add Budget lines to each Services Component to outline how the work will be funded."
+                                }
+                            />
+                        </div>
                     )}
-                    <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
-                        <FormHeader
-                            heading={isReviewMode ? "Edit Budget Lines" : "Add Budget Lines"}
-                            details={
-                                isReviewMode
-                                    ? undefined
-                                    : "Add Budget lines to each Services Component to outline how the work will be funded."
-                            }
-                        />
-                    </div>
+                    {isGrant && (
+                        <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
+                            <FormHeader heading="Add Budget Lines" />
+                        </div>
+                    )}
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
@@ -346,16 +391,25 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
-                    {!isAgreementNotYetDeveloped && (
-                        <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
-                            agreementId={selectedAgreement.id}
-                            isEditMode={isEditMode}
-                            continueBtnText={continueBtnText}
-                            setHasUnsavedChanges={setHasUnsavedChanges}
-                            hasUnsavedChanges={hasUnsavedChanges}
-                        />
-                    )}
+                    {!isAgreementNotYetDeveloped &&
+                        (isGrant ? (
+                            <GrantNumbers
+                                agreementId={selectedAgreement.id}
+                                isEditMode={isEditMode}
+                                continueBtnText={continueBtnText}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ) : (
+                            <ServicesComponents
+                                serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                                agreementId={selectedAgreement.id}
+                                isEditMode={isEditMode}
+                                continueBtnText={continueBtnText}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ))}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
@@ -375,7 +429,7 @@ export const CreateBLIsAndSCs = ({
                 </>
             )}
 
-            {isAgreementWorkflowOrCanEditBudgetLines && (
+            {isAgreementWorkflowOrCanEditBudgetLines && !isGrant && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
                     servicesComponentNumber={servicesComponentNumber}
@@ -413,7 +467,11 @@ export const CreateBLIsAndSCs = ({
                 </div>
             )}
 
-            {groupedBudgetLinesByServicesComponent.length > 0 ? (
+            {isGrant ? (
+                // Grant budget lines are #5928 — this slice only shows the empty-state
+                // placeholder for the "Add Budget Lines" section on grants.
+                <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+            ) : groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                         ? group.serviceComponentGroupingLabel

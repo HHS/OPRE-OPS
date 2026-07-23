@@ -56,6 +56,11 @@ class OpsEventType(Enum):
     UPDATE_SERVICES_COMPONENT = auto()
     DELETE_SERVICES_COMPONENT = auto()
 
+    # Grant Number Related Events
+    CREATE_GRANT_NUMBER = auto()
+    UPDATE_GRANT_NUMBER = auto()
+    DELETE_GRANT_NUMBER = auto()
+
     # Procurement Acquisition Planning Related Events
     CREATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     UPDATE_PROCUREMENT_ACQUISITION_PLANNING = auto()

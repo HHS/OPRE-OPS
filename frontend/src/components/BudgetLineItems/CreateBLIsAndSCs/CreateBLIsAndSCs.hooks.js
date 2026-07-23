@@ -103,7 +103,8 @@ const useCreateBLIsAndSCs = (
     const {
         agreement,
         services_components: servicesComponents,
-        deleted_services_components_ids: deletedServicesComponentsIds
+        deleted_services_components_ids: deletedServicesComponentsIds,
+        grant_numbers: grantNumbers
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -880,6 +881,14 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
+                    const newGrantNumbers = grantNumbers
+                        .filter((gn) => !("created_on" in gn))
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
+                            ...gn,
+                            ref: display_title
+                        }));
+
                     const data = {
                         ...agreement,
                         team_members: (agreement.team_members ?? []).map((team_member) => {
@@ -894,7 +903,8 @@ const useCreateBLIsAndSCs = (
                     const createAgreementPayload = {
                         ...cleanData,
                         budget_line_items: cleanBudgetLines,
-                        services_components: newServicesComponents
+                        services_components: newServicesComponents,
+                        grant_numbers: newGrantNumbers
                     };
 
                     const fulfilled = await addAgreement(createAgreementPayload).unwrap();
@@ -984,6 +994,7 @@ const useCreateBLIsAndSCs = (
         },
         [
             servicesComponents,
+            grantNumbers,
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
