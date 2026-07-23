@@ -35,7 +35,7 @@
         "react-spinners": "0.17.0",
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
-        "sass": "1.101.3",
+        "sass": "1.101.6",
         "styled-components": "6.4.4",
         "vest": "6.3.2"
     },
