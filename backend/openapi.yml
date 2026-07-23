@@ -3076,6 +3076,12 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: exclude_system_admin
+          in: query
+          description: Exclude the System Admin ETL user from results
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
