@@ -10,7 +10,10 @@ const suite = create((data) => {
         test(`Budget line item (${item.id})`, "This is required information", () => {
             enforce(item.date_needed).isNotBlank();
             enforce(item.can_id).isNotNullish().greaterThan(0);
-            enforce(item.amount).isNotNullish().greaterThanOrEquals(0);
+            enforce(item.amount).isNotNullish();
+        });
+        test(`Budget line item (${item.id})`, "Amount must be 0 or greater", () => {
+            enforce(Number(item.amount ?? -1)).greaterThanOrEquals(0);
         });
         test(`Budget line item (${item.id})`, "Need by date must be in the future", () => {
             // Parse the ISO date string directly via split to avoid the UTC-midnight pitfall:

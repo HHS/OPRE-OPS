@@ -162,4 +162,4 @@ Feature: Validate "Draft" Budget Lines
     When I have a BLI in DRAFT status with a negative Amount
     And I submit a BLI to move to IN_REVIEW status (with a negative Amount)
 
-    Then I should get an error message that the BLI must have an Amount greater than 0
+    Then I should get an error message that the BLI must have an Amount 0 or greater

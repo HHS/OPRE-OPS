@@ -1028,7 +1028,7 @@ def error_message_future_need_by_date(context, setup_and_teardown):
     )
 
 
-@then("I should get an error message that the BLI must have an Amount greater than 0")
+@then("I should get an error message that the BLI must have an Amount 0 or greater")
 def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert "Amount must be 0 or greater." in context["response_put"].json["errors"]["amount"]
