@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 
 // Mock child components
 vi.mock("../../../../components/Agreements/AgreementBLIAccordion", () => ({
@@ -36,8 +36,11 @@ vi.mock("../../../../components/ServicesComponents/ServicesComponentAccordion", 
 }));
 
 vi.mock("../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
-    default: ({ executingTotal }) => (
-        <div data-testid="review-executing-total-accordion">Executing Total: ${executingTotal}</div>
+    default: ({ executingTotal, instructions }) => (
+        <div data-testid="review-executing-total-accordion">
+            Executing Total: ${executingTotal}
+            {instructions && <p data-testid="executing-total-instructions">{instructions}</p>}
+        </div>
     )
 }));
 
@@ -150,6 +153,25 @@ describe("BudgetLinesReviewAccordion", () => {
 
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.queryByTestId("services-component-accordion")).not.toBeInTheDocument();
+    });
+
+    it("passes executingTotalInstructions to ReviewExecutingTotalAccordion", () => {
+        render(
+            <BudgetLinesReviewAccordion
+                {...defaultProps}
+                executingTotalInstructions="Review the total of all budget lines in Executing Status."
+            />
+        );
+
+        expect(screen.getByTestId("executing-total-instructions")).toHaveTextContent(
+            "Review the total of all budget lines in Executing Status."
+        );
+    });
+
+    it("does not render instructions when executingTotalInstructions is not provided", () => {
+        render(<BudgetLinesReviewAccordion {...defaultProps} />);
+
+        expect(screen.queryByTestId("executing-total-instructions")).not.toBeInTheDocument();
     });
 
     it("passes errorStatuses to BLI tables when showBudgetLineErrors is true", () => {

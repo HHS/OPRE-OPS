@@ -75,7 +75,7 @@ vi.mock("../../../components/UI/PageHeader", () => ({
 }));
 
 // Expose showBudgetLineErrors via data attribute so caller-level tests can assert the prop is passed
-vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
+vi.mock("./BudgetLinesReviewAccordion", () => ({
     BudgetLinesReviewAccordion: (/** @type {{ showBudgetLineErrors?: boolean }} */ { showBudgetLineErrors }) => (
         <div
             data-testid="budget-lines-review-accordion"

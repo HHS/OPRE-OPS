@@ -118,10 +118,13 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
     """
     Validates that completed procurement tracker steps cannot be updated,
     except when the only field being updated is the notes.
+    AWARD steps are also exempt when the PATCH only contains approval-response fields, because
+    Budget Team approval happens after the COR completes (status=COMPLETED) the step.
     """
 
     # Fields that are still editable after a step has been completed.
     EDITABLE_AFTER_COMPLETION = frozenset({"notes"})
+    AWARD_APPROVAL_FIELDS = frozenset({"approval_status", "obligated_date"})
 
     @property
     def name(self) -> str:
@@ -135,6 +138,10 @@ class NoUpdatingCompletedProcurementStepRule(ValidationRule):
         updated_field_names = set(context.updated_fields.keys())
         if updated_field_names.issubset(self.EDITABLE_AFTER_COMPLETION):
             return
+
+        if procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            if updated_field_names <= self.AWARD_APPROVAL_FIELDS:
+                return
 
         raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
 
@@ -395,8 +402,15 @@ class AwardAgreementDataRequiredRule(ValidationRule):
         if agreement.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
             return
 
-        # Validate Vendor exists (use defensive getattr for polymorphic agreement types)
-        vendor_id = getattr(agreement, "vendor_id", None)
+        # Validate Vendor exists — check the step's award_vendor_id first (set in this PATCH),
+        # then fall back to the agreement's vendor_id (set via agreement edit).
+        # The vendor is entered on the step form and lives on the step until Budget Team approval
+        # writes it through to the agreement, so checking only agreement.vendor_id misses it.
+        vendor_id = (
+            context.updated_fields.get("vendor_id")
+            or getattr(procurement_tracker_step, "award_vendor_id", None)
+            or getattr(agreement, "vendor_id", None)
+        )
         if not vendor_id:
             raise ValidationError(
                 {"vendor": "Vendor is required for CONTRACT and AA agreements before completing the AWARD step."}
@@ -792,3 +806,63 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
                 raise ValidationError(
                     {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
                 )
+
+
+class AwardApprovalResponseAuthorizationRule(ValidationRule):
+    """
+    Validates that the user responding to an award approval request is authorized.
+    Only BUDGET_TEAM or SYSTEM_OWNER may respond to AWARD step approvals.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        user_id = context.user.id
+        user = context.db_session.get(User, user_id)
+        if user:
+            user_role_names = {role.name for role in user.roles}
+            if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+                return
+
+        raise AuthorizationError(
+            f"User {user_id} is not authorized to respond to award approval requests. "
+            "Only BUDGET_TEAM or SYSTEM_OWNER members may approve award requests.",
+            "ProcurementTrackerStep",
+        )
+
+
+class AwardApprovalResponseValidationRule(ValidationRule):
+    """
+    Validates that award approval responses are valid:
+    - Approval must have been requested first
+    - Cannot respond if already responded (APPROVED)
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Validation"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        if not procurement_tracker_step.award_approval_requested:
+            raise ValidationError(
+                {"approval_status": "Cannot respond to an award approval request that has not been submitted."}
+            )
+
+        if context.updated_fields["approval_status"] != "APPROVED":
+            raise ValidationError({"approval_status": "Award approvals can only be set to APPROVED."})
+
+        current_status = procurement_tracker_step.award_approval_status
+        if current_status == "APPROVED":
+            raise ValidationError({"approval_status": "This award approval request has already been approved."})

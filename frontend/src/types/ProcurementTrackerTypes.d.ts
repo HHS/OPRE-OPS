@@ -80,6 +80,12 @@ export type ProcurementTrackerAwardStep = ProcurementTrackerStep & {
     approval_responded_by?: number | null;
     approval_responded_date?: string | null;
     reviewer_notes?: string | null;
+    // Vendor and contract information (OPS-1640 / OPS-2280)
+    vendor_id?: number | null;
+    vendor?: { id: number; name: string; duns?: string | null; vendor_type?: string | null } | null;
+    contract_number?: string | null;
+    award_amount?: number | null;
+    award_date?: string | null;
 };
 
 export type ProcurementTrackerResponseStep =

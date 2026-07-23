@@ -12,7 +12,7 @@ import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledBut
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
-import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 // Feature flag for upload consensus memo functionality

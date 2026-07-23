@@ -87,7 +87,11 @@ class PreAwardApprovalNotification(Notification):
 
 
 class AwardApprovalNotification(Notification):
-    """Notification for award approval requests and responses (OPS-2280)."""
+    """Notification for award approval requests and responses (OPS-2280).
+
+    Shares the procurement_tracker_step_id column with PreAwardApprovalNotification
+    via single-table inheritance — use_existing_column=True avoids a duplicate column error.
+    """
 
     procurement_tracker_step_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("procurement_tracker_step.id", ondelete="CASCADE"),

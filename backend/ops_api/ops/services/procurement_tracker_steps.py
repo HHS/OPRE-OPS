@@ -237,8 +237,9 @@ class ProcurementTrackerStepService:
         if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             self._handle_requisition_approval(step, data, current_user)
 
-        # Pop is_draft before field update loop (request-only flag, not a model field)
+        # Pop request-only fields before field update loop (not model fields)
         data.pop("is_draft", None)
+        obligated_date = data.pop("obligated_date", None)
 
         # Update fields
         for key, value in data.items():
@@ -302,7 +303,6 @@ class ProcurementTrackerStepService:
 
         # Handle award-specific side effects (OPS-2280)
         if step.step_type == ProcurementTrackerStepType.AWARD:
-            obligated_date = data.get("obligated_date")
             new_award_status = data.get("approval_status")
             self._handle_award_approval(step, new_award_status, obligated_date, current_user)
             self._handle_award_approval_notifications(
@@ -541,6 +541,10 @@ class ProcurementTrackerStepService:
             old_approval_status: Previous value of pre_award_approval_status before update
             old_requisition_approved_by: Previous value of pre_award_requisition_approved_by before update
         """
+        # AWARD steps have their own notification handler (_handle_award_approval_notifications)
+        if step.step_type == ProcurementTrackerStepType.AWARD:
+            return
+
         from models import NotificationType
         from ops_api.ops.services.notifications import NotificationService
 
@@ -586,6 +590,11 @@ class ProcurementTrackerStepService:
             if new_approval_status == "APPROVED":
                 # DD approved - notify BUDGET_TEAM members (not requester)
                 self._notify_budget_team_for_requisition_review(step, agreement, current_user, notification_service)
+
+                # Dismiss the DD's "in review" notification now that they've responded
+                self._dismiss_notifications_by_title(
+                    PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications after DD approval"
+                )
 
             elif new_approval_status == "DECLINED":
                 # DD declined - notify requester (existing behavior)
@@ -1025,10 +1034,11 @@ class ProcurementTrackerStepService:
                 bli.status = BudgetLineItemStatus.PLANNED_MOD
                 logger.debug(f"Transitioned BLI {bli.id} PLANNED → PLANNED_MOD")
 
-        # Set procurement action date and status if applicable
+        # Set procurement action date and status — only for NEW_AWARD actions
+        # (consistent with _advance_active_step_if_needed which gates on NEW_AWARD)
         if step.procurement_tracker.procurement_action:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
-            if procurement_action:
+            if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
                 if procurement_action.date_awarded_obligated is None:
                     procurement_action.date_awarded_obligated = obligated_date or date.today()
                     logger.debug(
@@ -1119,6 +1129,13 @@ class ProcurementTrackerStepService:
                     commit=False,
                 )
             logger.debug(f"Created {len(recipient_ids)} award approved notifications")
+
+            # Dismiss the original "Award Approval Request" notifications now that BT has responded
+            self._dismiss_notifications_by_title(
+                AwardNotificationTitle.APPROVAL_REQUEST,
+                step.id,
+                "award approval request notifications after BT approval",
+            )
 
     def _get_budget_team_user_ids(self) -> list[int]:
         """

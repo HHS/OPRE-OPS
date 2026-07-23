@@ -96,6 +96,47 @@ def test_award_completion_fails_without_vendor(auth_client, app_ctx, loaded_db, 
     assert "vendor" in error_messages.lower()
 
 
+def test_award_completion_succeeds_with_vendor_on_step_only(
+    auth_client, app_ctx, loaded_db, test_procurement_tracker_with_award, test_contract_agreement
+):
+    """Test that AWARD completion passes when vendor is on the step but not the agreement.
+
+    This covers the 'New Requirement' contract case: vendor is entered in the
+    procurement tracker step 6 form (stored as award_vendor_id on the step) but
+    agreement.vendor_id is still null. The rule must check the step first.
+    """
+    vendor = Vendor(name="Test Vendor Step Only", duns="111222333")
+    loaded_db.add(vendor)
+    loaded_db.flush()
+    # Set vendor on the step only — agreement.vendor_id stays null
+    test_procurement_tracker_with_award.award_vendor_id = vendor.id
+    loaded_db.refresh(test_contract_agreement)
+    assert (
+        test_contract_agreement.vendor_id is None
+    ), "Test setup: agreement.vendor_id must be null for this bug scenario"
+
+    # Add CLIN
+    clin = CLIN(agreement_id=test_contract_agreement.id, number=1, name="Test CLIN")
+    loaded_db.add(clin)
+    loaded_db.commit()
+
+    update_data = {
+        "status": "COMPLETED",
+        "task_completed_by": 500,
+        "date_completed": date.today().isoformat(),
+    }
+
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_procurement_tracker_with_award.id}", json=update_data
+    )
+    assert response.status_code == 200
+
+    # Cleanup
+    loaded_db.delete(clin)
+    loaded_db.delete(vendor)
+    loaded_db.commit()
+
+
 def test_award_completion_fails_without_clins(
     auth_client, app_ctx, loaded_db, test_procurement_tracker_with_award, test_contract_agreement
 ):
