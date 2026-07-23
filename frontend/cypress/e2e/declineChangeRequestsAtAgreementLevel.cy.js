@@ -327,7 +327,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             });
                         // TODO: unable to delete agreement?
@@ -459,7 +459,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {

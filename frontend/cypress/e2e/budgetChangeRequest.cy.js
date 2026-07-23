@@ -223,7 +223,7 @@ describe("Budget Change Requests", () => {
                         Accept: "application/json"
                     }
                 }).then((response) => {
-                    expect(response.status).to.eq(200);
+                    expect(response.status).to.eq(202);
                 });
 
                 cy.request({
