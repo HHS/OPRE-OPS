@@ -8,7 +8,7 @@ from loguru import logger
 from marshmallow import ValidationError
 from marshmallow.experimental.context import Context
 
-from models import BaseModel, BudgetLineItem, OpsEventType
+from models import BaseModel, BudgetLineItem, BudgetLineItemStatus, OpsEventType
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -33,6 +33,11 @@ from ops_api.ops.services.budget_line_items import (
 )
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import (
+    compute_bli_editable,
+    compute_bli_is_deletable,
+    get_bli_locked_message,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_super_user
@@ -101,12 +106,26 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def delete(self, id: int) -> Response:
-        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            old_bli: BudgetLineItem = service.get(id)
-            service.delete(id)
-            meta.metadata.update({"deleted_bli": old_bli.to_dict()})
-            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        old_bli: BudgetLineItem = service.get(id)
+        old_bli_dict = old_bli.to_dict()
+
+        # Peek at how the delete will be handled so we only emit a DELETE_BLI audit event for an
+        # actual hard-delete. PLANNED/IN_EXECUTION deletions route to a change request (202) and
+        # emit their own CREATE_CHANGE_REQUEST event inside the service; emitting DELETE_BLI here
+        # would write a spurious "Budget Line Deleted" history record on mere request submission.
+        is_immediate_delete = is_super_user(current_user, current_app) or old_bli.status == BudgetLineItemStatus.DRAFT
+
+        if is_immediate_delete:
+            with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+                _, status_code = service.delete(id)
+                meta.metadata.update({"deleted_bli": old_bli_dict})
+                return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, status_code)
+
+        _, status_code = service.delete(id)
+        return make_response_with_headers(
+            {"message": "BudgetLineItem deletion submitted for approval", "id": id}, status_code
+        )
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -202,45 +221,28 @@ def _list_item_meta(
     is_super: bool,
     user_agreement_associations: dict,
 ) -> dict:
-    """Build _meta for a single BLI in the list response (pagination + isEditable)."""
+    """Build _meta for a single BLI in the list response (pagination + isEditable/isDeletable)."""
     meta = meta_schema.dump(data_for_meta)
     in_review = serialized_bli.get("in_review", False)
     if is_budget_team:
-        meta["isEditable"] = _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+        is_associated = True
     elif serialized_bli.get("agreement_id"):
         agreement_id = serialized_bli["agreement_id"]
         if agreement_id not in user_agreement_associations:
             user_agreement_associations[agreement_id] = associated_with_agreement(agreement_id)
         is_associated = user_agreement_associations[agreement_id]
-        meta["isEditable"] = is_associated and _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+    else:
+        is_associated = False
+
+    if is_associated:
+        meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
+        meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
+        meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
     else:
         meta["isEditable"] = False
+        meta["isDeletable"] = False
+        meta["lockedMessage"] = None
     return meta
-
-
-def _is_bli_editable_optimized(budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool) -> bool:
-    """
-    Optimized version of is_bli_editable that uses pre-computed in_review value
-    instead of querying the database.
-    """
-    from models import BudgetLineItemStatus
-
-    if budget_line_item is None:
-        return False
-    # Check if status is editable
-    editable = is_super or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-    ]
-
-    # Use pre-computed in_review instead of querying
-    if in_review:
-        editable = False
-
-    if not is_super and budget_line_item.is_obe:
-        editable = False
-
-    return editable
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

@@ -138,6 +138,8 @@ class MetaSchema(Schema):
     total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
     isEditable = fields.Bool(dump_default=False, required=True)
+    isDeletable = fields.Bool(dump_default=False, load_default=False, required=False)
+    lockedMessage = fields.Str(allow_none=True, dump_default=None, load_default=None, required=False)
 
 
 class QueryParametersSchema(PaginationListSchema):

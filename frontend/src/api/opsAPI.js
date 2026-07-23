@@ -456,7 +456,10 @@ export const opsApi = createApi({
                 url: `/budget-line-items/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            // Surface the HTTP status so callers can distinguish an immediate delete (200) from a
+            // deletion routed to an approval change request (202, PLANNED/IN_EXECUTION).
+            transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?project_id=${id}`,

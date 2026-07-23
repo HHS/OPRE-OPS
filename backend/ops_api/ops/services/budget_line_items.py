@@ -26,6 +26,7 @@ from models import (
     ChangeRequestType,
     Portfolio,
     ProcurementShop,
+    ProcurementTracker,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -47,7 +48,10 @@ from ops_api.ops.utils.agreements_helpers import (
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
+    compute_bli_editable,
+    compute_bli_is_deletable,
     create_budget_line_item_instance,
+    get_bli_locked_message,
     is_bli_editable,
     is_pre_award_in_review,
     update_data,
@@ -139,9 +143,18 @@ class BudgetLineItemService:
             self.db_session.flush()
         return new_bli
 
-    def delete(self, id: int, commit: bool = True) -> None:
+    def delete(self, id: int, commit: bool = True) -> tuple[BudgetLineItem, int]:
         """
         Delete a Budget Line Item with the given id.
+
+        DRAFT BLIs (and any delete by a super user) are hard-deleted immediately and 200 is
+        returned. PLANNED and IN_EXECUTION BLIs route through an approval workflow: a deletion
+        change request is created and 202 is returned (the BLI is left intact until the request
+        is approved).
+
+        ``commit=False`` is used by the atomic edit-bundle flow, which only ever hard-deletes
+        DRAFT lines and manages the surrounding transaction itself; in that mode the immediate
+        delete flushes instead of committing so the bundle stays atomic.
         """
         bli = self.db_session.get(BudgetLineItem, id)
 
@@ -157,10 +170,41 @@ class BudgetLineItemService:
                 "BudgetLineItem",
             )
 
-        self.db_session.delete(bli)
-        if commit:
-            self.db_session.commit()
-        return bli
+        is_super = is_super_user(current_user, current_app)
+        if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+            self.db_session.delete(bli)
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
+            return bli, 200
+
+        # Beyond this point the delete routes through a change request, which commits and
+        # notifies immediately. That is incompatible with a caller-owned atomic transaction
+        # (``commit=False``, e.g. the edit-bundle flow): committing here would prematurely
+        # persist the whole in-flight bundle. Fail loudly instead of silently breaking
+        # atomicity. The edit-bundle only ever hard-deletes DRAFT lines, so this is a guard
+        # against future misuse, not a path exercised today.
+        if not commit:
+            raise ValidationError(
+                {
+                    "status": "Only DRAFT budget line items can be deleted as part of an atomic edit. "
+                    "PLANNED or Executing budget lines must be deleted individually so the change "
+                    "can be routed for approval."
+                },
+            )
+
+        # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
+        # shared editability gate (in_review + OBE + Pre-Award/Award step block) so the rules
+        # cannot drift from the edit path.
+        if not compute_bli_editable(bli, bli.in_review, is_super):
+            raise ValidationError(
+                {"status": "Budget Line Item is not in a deletable state."},
+            )
+
+        change_request_service = ChangeRequestService(self.db_session)
+        change_request_service.add_bli_delete_change_request(bli)
+        return bli, 202
 
     def get(self, id: int) -> BudgetLineItem:
         """
@@ -190,6 +234,9 @@ class BudgetLineItemService:
                     selectinload(Agreement.team_members),
                     joinedload(Agreement.project),
                     joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+                    # Needed by the editability checks: is_agreement_in_pre_award_or_later walks
+                    # the trackers; is_pre_award_in_review walks tracker.steps.
+                    selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
                 ),
                 # Eager load CAN and its portfolio/division
                 selectinload(BudgetLineItem.can).options(
@@ -716,7 +763,7 @@ class BudgetLineItemService:
         raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "comments", "clin_id"}
 
     def _handle_change_requests(
         self,
@@ -776,12 +823,16 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
-        if not is_bli_editable(budget_line_item):
-            raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
+        # Check the pre-award "in review" lock BEFORE the generic editability check. Both now feed
+        # is_bli_editable (compute_bli_editable includes is_pre_award_in_review as of the editability
+        # unification), so this specific, actionable message must win over the generic
+        # "not in an editable state" fallback. Super users bypass.
         if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        if not is_bli_editable(budget_line_item):
+            raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
@@ -1102,20 +1153,39 @@ def get_is_editable_meta_data(serialized_bli):
     meta_schema = MetaSchema()
     data_for_meta = {
         "isEditable": False,
+        "isDeletable": False,
+        "lockedMessage": None,
     }
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
-    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
+    is_super = is_super_user(current_user, current_app)
+    # Eager-load the agreement's procurement trackers and their steps so the editability
+    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
+    # walks tracker.steps) don't trigger per-attribute lazy-loads. Mirrors get_list and
+    # get_bli_is_editable_meta_data_for_agreements.
+    budget_line_item = current_app.db_session.get(
+        BudgetLineItem,
+        serialized_bli.get("id"),
+        options=[
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        ],
+    )
+    in_review = budget_line_item.in_review if budget_line_item else False
 
     if is_budget_team:
         # if the user has the BUDGET_TEAM role, they can edit all budget line items
-        data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
+        is_associated = True
     elif serialized_bli.get("agreement_id"):
-        data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
-            budget_line_item
-        )
+        is_associated = bli_associated_with_agreement(serialized_bli.get("id"))
     else:
-        data_for_meta["isEditable"] = False
+        is_associated = False
+
+    if is_associated:
+        data_for_meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
+        data_for_meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
+        data_for_meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
 
     meta = meta_schema.dump(data_for_meta)
 
@@ -1125,24 +1195,45 @@ def get_is_editable_meta_data(serialized_bli):
 def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
     bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
 
-    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    # Eager-load the agreement's procurement_trackers (and their steps) so the editability
+    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
+    # walks tracker.steps) do not lazy-load per BLI (consistent with get_list).
+    budget_line_items = (
+        current_app.db_session.query(BudgetLineItem)
+        .filter(BudgetLineItem.id.in_(bli_ids))
+        .options(
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        )
+        .all()
+    )
     bli_dict = {bli.id: bli for bli in budget_line_items}
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+    is_super = is_super_user(current_user, current_app)
 
     for bli in serialized_agreement["budget_line_items"]:
         bli_id = bli.get("id")
 
         budget_line_item = bli_dict.get(bli_id)
+        in_review = budget_line_item.in_review if budget_line_item else False
 
         if is_budget_team:
-            is_editable = is_bli_editable(budget_line_item)
+            is_associated = True
         elif bli.get("agreement_id"):
-            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
+            is_associated = bli_associated_with_agreement(bli_id)
         else:
-            is_editable = False
+            is_associated = False
 
-        bli["_meta"] = {"isEditable": is_editable}
+        if is_associated:
+            bli["_meta"] = {
+                "isEditable": compute_bli_editable(budget_line_item, in_review, is_super),
+                "isDeletable": compute_bli_is_deletable(budget_line_item, in_review, is_super),
+                "lockedMessage": get_bli_locked_message(budget_line_item, in_review, is_super),
+            }
+        else:
+            bli["_meta"] = {"isEditable": False, "isDeletable": False, "lockedMessage": None}
 
 
 def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:

@@ -82,27 +82,95 @@ def create_budget_line_item_instance(agreement_type: AgreementType, data: dict[s
     return factory(**data)
 
 
-def _bli_has_editable_status(budget_line_item):
-    """A utility function that determines if a BLI has an editable status"""
-    return is_super_user(current_user, current_app) or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
-    ]
+EDITABLE_STATUSES = [
+    BudgetLineItemStatus.DRAFT,
+    BudgetLineItemStatus.PLANNED,
+    BudgetLineItemStatus.IN_EXECUTION,
+]
+
+# The PRE_AWARD step's 1-based number in the default procurement tracker (step 6 = AWARD is
+# beyond it). Matches the (5, ProcurementTrackerStepType.PRE_AWARD) entry in
+# ProcurementTracker's step_definitions. active_step_number is a plain int, so we compare to the
+# step number here rather than the ProcurementTrackerStepType enum (which is a string enum).
+PRE_AWARD_STEP_NUMBER = 5
+
+
+def is_agreement_in_pre_award_or_later(agreement) -> bool:
+    """True if the agreement has an ACTIVE procurement tracker at PRE_AWARD (step 5) or later."""
+    if not agreement or not agreement.procurement_trackers:
+        return False
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    return bool(tracker and tracker.active_step_number and tracker.active_step_number >= PRE_AWARD_STEP_NUMBER)
+
+
+def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Single source of truth for BLI editability rules (no DB queries).
+
+    Both ``is_bli_editable`` (single-item, DB-backed) and the list-meta builder
+    (pre-computed values) delegate here so the rules cannot drift apart.
+    """
+    if budget_line_item is None:
+        return False
+
+    editable = is_super or budget_line_item.status in EDITABLE_STATUSES
+
+    # if the BLI is in review or is OBE, it cannot be edited
+    if in_review:
+        editable = False
+
+    if not is_super and budget_line_item.is_obe:
+        editable = False
+
+    # editing is blocked once the agreement reaches Pre-Award (step 5) or Award (step 6)
+    if not is_super and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
+        editable = False
+
+    # editing is also blocked while a Pre-Award approval request is awaiting a decision. This
+    # mirrors the write-path guard in the update service (`is_pre_award_in_review`) so the
+    # editability meta and the PATCH validation stay in lockstep — the pen icon must not be
+    # clickable when the edit would be rejected. (This can fire before the tracker reaches
+    # step 5, so it is a distinct check from `is_agreement_in_pre_award_or_later` above.)
+    if not is_super and is_pre_award_in_review(budget_line_item.agreement):
+        editable = False
+
+    return editable
+
+
+def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) -> str | None:
+    """Human-readable reason a BLI is locked that the frontend cannot derive on its own.
+
+    Covers the procurement-step blocks, since the BLI payload carries no tracker-step data.
+    Returns None when none of those blocks apply.
+    """
+    if budget_line_item is None or is_super:
+        return None
+    if not in_review and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
+        return "This budget line can't be edited because the agreement has reached Pre-Award."
+    if not in_review and is_pre_award_in_review(budget_line_item.agreement):
+        return "This budget line can't be edited while Pre-Award Approval is in review."
+    return None
+
+
+def compute_bli_is_deletable(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Single source of truth for whether the delete control should be enabled.
+
+    A BLI is deletable whenever it is editable (DRAFT/PLANNED/IN_EXECUTION, not in review, not
+    OBE, agreement not at Pre-Award/Award), or the user is a super user. DRAFT deletes
+    immediately; PLANNED/IN_EXECUTION deletions route through an approval change request (handled
+    in the service). The delete control is therefore enabled in exactly the same cases as edit.
+    """
+    if budget_line_item is None:
+        return False
+    return compute_bli_editable(budget_line_item, in_review, is_super)
 
 
 def is_bli_editable(budget_line_item):
     """A utility function that determines if a BLI is editable"""
-    editable = _bli_has_editable_status(budget_line_item)
-
-    # if the BLI is in review or is OBE, it cannot be edited
-    if budget_line_item.in_review:
-        editable = False
-
-    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
-        editable = False
-
-    return editable
+    return compute_bli_editable(
+        budget_line_item,
+        in_review=budget_line_item.in_review,
+        is_super=is_super_user(current_user, current_app),
+    )
 
 
 def is_pre_award_in_review(agreement):

@@ -316,7 +316,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
@@ -456,7 +456,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
@@ -606,7 +606,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
@@ -752,7 +752,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {

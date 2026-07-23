@@ -59,6 +59,8 @@ export type BudgetLine = {
     // NOTE: this property may move to another endpoint
     _meta: {
         isEditable: boolean;
+        isDeletable?: boolean;
+        lockedMessage?: string | null;
         limit: number;
         number_of_pages: number;
         offset: number;

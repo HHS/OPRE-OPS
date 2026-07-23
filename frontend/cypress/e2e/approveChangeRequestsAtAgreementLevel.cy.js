@@ -230,7 +230,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
@@ -410,7 +410,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     });
                 // TODO: unable to delete agreement?
@@ -644,7 +644,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {

@@ -169,7 +169,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
@@ -289,7 +289,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             });
                         // TODO: unable to delete agreement?
@@ -431,7 +431,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
@@ -572,7 +572,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
@@ -716,7 +716,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {

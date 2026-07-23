@@ -334,6 +334,41 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        if property_changed == "delete":
+            # Deletion request: distinct history_type + BLI id handling, so it cannot fall through
+            # to the shared tail return (which would crash on the unset title/message and use the
+            # wrong history_type). Handles both request-created and reviewed (approved/declined).
+            #
+            # Resolve the requestor via the created_by column (not the created_by_user dict): on
+            # approval the BLI is cascade-deleted and the CR is detached before to_dict() runs, so
+            # the relationship-derived created_by_user is None in the event payload.
+            bli_id = change_request["budget_line_item_id"]
+            requestor_user = session.get(User, change_request["created_by"])
+            requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
+            if new_change_request:
+                title = "Budget Line Deletion Requested"
+                message = f"{requestor_name} requested to delete BL {bli_id} and it's currently In Review for approval."
+            else:
+                title = (
+                    "Budget Line Deleted" if change_request["status"] == "APPROVED" else "Budget Line Deletion Declined"
+                )
+                message = (
+                    f"{reviewer_user.full_name} {change_request_status} the deletion of BL {bli_id} "
+                    f"as requested by {requestor_name}."
+                )
+            agreement_id = change_request["agreement_id"]
+            agreement = session.get(Agreement, agreement_id)
+            return AgreementHistory(
+                agreement_id=agreement_id if agreement else None,
+                agreement_id_record=agreement_id,
+                budget_line_id=None,
+                budget_line_id_record=bli_id,
+                ops_event_id=event.id,
+                history_title=title,
+                history_message=message,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
+            )
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:

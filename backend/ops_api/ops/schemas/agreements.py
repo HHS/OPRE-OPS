@@ -35,6 +35,8 @@ class MetaSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     isEditable = fields.Bool(load_default=False, dump_default=False)
+    isDeletable = fields.Bool(load_default=False, dump_default=False)
+    lockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
     immutable_awarded_fields = fields.List(fields.String(), load_default=None, dump_default=None, required=False)
 
 
