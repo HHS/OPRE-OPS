@@ -279,9 +279,14 @@ describe("Approve Cross Division Change Requests", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    // bliId1's Draft->Planned change was approved above, so it is now
+                                    // PLANNED. Per #5819, deleting a PLANNED BLI creates a deletion
+                                    // change request (202) instead of an immediate hard delete. The
+                                    // agreement delete below still cleans it up via cascade.
+                                    expect(response.status).to.eq(202);
 
-                                    // Delete second BLI
+                                    // Delete second BLI — bliId2's status change CR was never
+                                    // approved, so it is still DRAFT and hard-deletes immediately (200).
                                     cy.request({
                                         method: "DELETE",
                                         url: `http://localhost:8080/api/v1/budget-line-items/${bliId2}`,
