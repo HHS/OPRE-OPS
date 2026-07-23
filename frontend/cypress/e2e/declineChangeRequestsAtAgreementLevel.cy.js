@@ -537,12 +537,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 }).then((response) => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
-                    const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { agreementId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ agreementId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -573,18 +572,9 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get('[data-cy="confirm-action"]').click();
                         cy.get("[data-cy='review-card']")
                             .should("exist")
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
+                            // The BLI is PLANNED with an in-review budget change request (the
+                            // approval was cancelled, not decided), so a direct DELETE is now
+                            // blocked (#5819). The agreement delete below cascade-removes it.
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
