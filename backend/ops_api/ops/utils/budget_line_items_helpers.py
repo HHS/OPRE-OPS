@@ -88,13 +88,19 @@ EDITABLE_STATUSES = [
     BudgetLineItemStatus.IN_EXECUTION,
 ]
 
+# The PRE_AWARD step's 1-based number in the default procurement tracker (step 6 = AWARD is
+# beyond it). Matches the (5, ProcurementTrackerStepType.PRE_AWARD) entry in
+# ProcurementTracker's step_definitions. active_step_number is a plain int, so we compare to the
+# step number here rather than the ProcurementTrackerStepType enum (which is a string enum).
+PRE_AWARD_STEP_NUMBER = 5
+
 
 def is_agreement_in_pre_award_or_later(agreement) -> bool:
-    """True if the agreement has an ACTIVE procurement tracker at step >= 5 (PRE_AWARD/AWARD)."""
+    """True if the agreement has an ACTIVE procurement tracker at PRE_AWARD (step 5) or later."""
     if not agreement or not agreement.procurement_trackers:
         return False
     tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
-    return bool(tracker and tracker.active_step_number and tracker.active_step_number >= 5)
+    return bool(tracker and tracker.active_step_number and tracker.active_step_number >= PRE_AWARD_STEP_NUMBER)
 
 
 def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
