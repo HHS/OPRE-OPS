@@ -83,7 +83,10 @@ const EditAgreementAndBudgetLines = () => {
         oldProcurementShop: null,
         newProcurementShop: null
     });
-    const [showProcurementShopModal, setShowProcurementShopModal] = useState(false);
+    // Financial-snapshot and procurement-shop changes both route through change requests
+    // requiring Division Director approval — one modal covers both cases.
+    const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
+    const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
     const {
         data: agreement,
@@ -181,10 +184,10 @@ const EditAgreementAndBudgetLines = () => {
 
     const handlePageSave = () => {
         if (isSaving) return;
-        // Procurement-shop changes on agreements with planned BLIs route through
-        // a change request — confirm before sending it to the Division Director.
-        if (procurementShopChangeState.shouldRequestChange) {
-            setShowProcurementShopModal(true);
+        // Both procurement-shop and BLI financial changes route through change requests that
+        // need Division Director approval — show one confirmation covering either case.
+        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
+            setShowFinancialApprovalModal(true);
             return;
         }
         fireBundleSave();
@@ -242,12 +245,12 @@ const EditAgreementAndBudgetLines = () => {
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
-                {showProcurementShopModal && (
+                {showFinancialApprovalModal && (
                     <ConfirmationModal
-                        heading="Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                        heading="Budget changes require approval from your Division Director. Do you want to send it to approval?"
                         actionButtonText="Send to Approval"
                         secondaryButtonText="Continue Editing"
-                        setShowModal={setShowProcurementShopModal}
+                        setShowModal={setShowFinancialApprovalModal}
                         handleConfirm={fireBundleSave}
                     />
                 )}
@@ -275,6 +278,7 @@ const EditAgreementAndBudgetLines = () => {
                     hideWizardChrome={true}
                     onValidityChange={setIsBudgetLinesValid}
                     bundleSliceRef={blisSliceRef}
+                    onFinancialChangeStateChange={setRequiresFinancialApproval}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button

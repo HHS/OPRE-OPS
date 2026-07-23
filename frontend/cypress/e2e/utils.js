@@ -57,11 +57,25 @@ export const openTrackerStep = (stepNumber) => {
         6: /6 of 6/i
     };
 
+    // Close all other open steps first so only the target step is expanded.
+    // This prevents text/elements from other open steps polluting page-level assertions.
+    cy.get("button.usa-accordion__button[aria-expanded='true']").each(($btn) => {
+        const text = $btn.text();
+        if (!stepRegexMap[stepNumber].test(text)) {
+            cy.wrap($btn).click();
+            // Wait for the accordion to collapse before continuing
+            cy.wrap($btn).should("have.attr", "aria-expanded", "false");
+        }
+    });
+
     cy.contains("button", stepRegexMap[stepNumber]).then(($button) => {
         if ($button.attr("aria-expanded") === "false") {
             cy.wrap($button).click();
         }
     });
+
+    // Wait for the target step to be fully expanded before returning
+    cy.contains("button", stepRegexMap[stepNumber]).should("have.attr", "aria-expanded", "true");
 };
 
 /**
@@ -71,6 +85,30 @@ export const openTrackerStep = (stepNumber) => {
 export const isStepCompleted = () => {
     return cy.get("body").then(($body) => {
         return $body.find("dl").length > 0 && $body.text().includes("Completed By");
+    });
+};
+
+/**
+ * Returns whether the currently-open accordion step shows the completed summary view.
+ * Scopes the check to the expanded accordion content so other open steps don't interfere.
+ * @param {number} stepNumber - 1-6
+ * @returns {Cypress.Chainable<boolean>}
+ */
+export const isStepContentCompleted = (stepNumber) => {
+    const stepRegexMap = {
+        1: /1 of 6/i,
+        2: /2 of 6/i,
+        3: /3 of 6/i,
+        4: /4 of 6/i,
+        5: /5 of 6/i,
+        6: /6 of 6/i
+    };
+    return cy.contains("button", stepRegexMap[stepNumber]).then(($btn) => {
+        const contentId = $btn.attr("aria-controls");
+        if (!contentId) return false;
+        return cy.get(`#${contentId}`).then(($content) => {
+            return $content.find("dl").length > 0 && $content.text().includes("Completed By");
+        });
     });
 };
 

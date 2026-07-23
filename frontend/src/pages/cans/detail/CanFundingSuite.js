@@ -4,13 +4,13 @@ const suite = create((data = {}, fieldName) => {
     only(fieldName);
 
     test("funding-received-amount", "Amount cannot exceed FY Budget", () => {
-        const fundingReceivedAmount = data["funding-received-amount"].replace(/,/g, "") || "0";
+        const fundingReceivedAmount = data["funding-received-amount"].replace(/[$,]/g, "") || "0";
 
         enforce(fundingReceivedAmount).lessThanOrEquals(data.remainingAmount);
     });
 
     test("budget-amount", "Amount must be greater than or equal to received funding", () => {
-        const budgetAmount = data["budget-amount"].replace(/,/g, "") || "0";
+        const budgetAmount = data["budget-amount"].replace(/[$,]/g, "") || "0";
 
         enforce(budgetAmount).greaterThanOrEquals(data.receivedFunding);
     });

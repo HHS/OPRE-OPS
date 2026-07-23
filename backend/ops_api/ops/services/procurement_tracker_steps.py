@@ -557,7 +557,6 @@ class ProcurementTrackerStepService:
         approval_request_transitioned = new_approval_requested and (
             old_approval_requested is None or old_approval_requested is False
         )
-
         if approval_request_transitioned:
             recipient_ids = self._get_approval_reviewers(agreement)
 
@@ -740,12 +739,13 @@ class ProcurementTrackerStepService:
             Set of user IDs authorized to review
         """
         from models import Role
-        from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
+        from ops_api.ops.utils.agreements_helpers import get_pre_award_notification_directors_for_agreement
 
         reviewer_ids = set()
 
-        # Get division directors for the agreement
-        directors, deputies = get_division_directors_for_agreement(agreement)
+        # Get division directors via PLANNED/IN_EXECUTION BLIs only — those are the BLIs
+        # being submitted for pre-award approval.
+        directors, deputies = get_pre_award_notification_directors_for_agreement(agreement)
         reviewer_ids.update(directors)
         reviewer_ids.update(deputies)
 

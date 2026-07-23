@@ -50,9 +50,11 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         only(fieldName);
     }
 
-    test("Budget Line Amount", "Budget Line Amount must be greater than 0", () => {
-        const amount = Number(budgetLine.amount ?? 0);
-        enforce(amount).greaterThan(0);
+    test("Budget Line Amount", "This information is required to submit for approval", () => {
+        enforce(budgetLine.amount).isNotNullish();
+    });
+    test("Budget Line Amount", "Amount must be 0 or greater", () => {
+        enforce(Number(budgetLine.amount ?? -1)).greaterThanOrEquals(0);
     });
 
     test("Budget Line CAN", "This information is required to submit for approval", () => {
@@ -70,9 +72,14 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
     });
 
     test("Budget Line Obligate By Date must be in the future", () => {
-        const today = new Date().valueOf();
-        const dateNeeded = new Date(budgetLine.date_needed ?? null);
-        enforce(dateNeeded.getTime()).greaterThan(today);
+        // Parse the ISO date string directly via split to avoid the UTC-midnight pitfall:
+        // new Date("YYYY-MM-DD") is UTC, and getDate() in a negative-offset timezone returns
+        // the prior local day. Splitting gives the calendar date the user intended.
+        const today = new Date();
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const [y, mo, d] = (budgetLine.date_needed ?? "").split("-").map(Number);
+        const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
+        enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
     });
 });
 

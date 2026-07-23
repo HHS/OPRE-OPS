@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { testLogin, openTrackerStep, isStepCheckboxEnabled } from "./utils";
+import { testLogin, openTrackerStep, isStepCheckboxEnabled, isStepContentCompleted } from "./utils";
 
 // Agreement 13: Used for read-only verification tests (may be in completed or pending state)
 const ACTIVE_TRACKER_AGREEMENT_ID = 13;
@@ -40,8 +40,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(1);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(1).then((completedViewVisible) => {
             if (completedViewVisible) {
                 cy.contains("Completed By").should("exist");
                 cy.contains("Date Completed").should("exist");
@@ -61,8 +60,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(1);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(1).then((completedViewVisible) => {
             if (!completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("exist");
                 return;
@@ -82,8 +80,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(1);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(1).then((completedViewVisible) => {
             if (completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("not.exist");
                 cy.get("#users-combobox-input").should("not.exist");
@@ -114,30 +111,32 @@ describe("Procurement Tracker Step 1", () => {
     });
 
     it("Only shows authorized users in Task Completed By dropdown", () => {
-        // Use a different agreement or reload to get fresh state
-        // Visit agreement details first, then navigate to procurement tracker
-        cy.visit("/agreements/13");
-
-        // Wait for page load
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist");
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').click();
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(1);
 
         // Check if Step 1 is already completed (from previous test)
-        cy.get("body").then(($body) => {
-            // If checkbox exists, test the dropdown
-            if ($body.find(".usa-checkbox__label").length > 0) {
-                // Enable the form - use first() to click only the first checkbox
-                cy.get(".usa-checkbox__label").first().click();
+        isStepContentCompleted(1).then((isCompleted) => {
+            if (!isCompleted) {
+                // Only test the dropdown when step 1 is the active step (checkbox is enabled)
+                cy.get("#step-1-checkbox").then(($checkbox) => {
+                    if ($checkbox.is(":disabled")) {
+                        cy.log("Step 1 checkbox is disabled (not the active step) - skipping user dropdown test");
+                        return;
+                    }
+                    // Enable the form - click the checkbox to enable the fields
+                    cy.get(".usa-checkbox__label").first().click();
+                    // Wait for the combobox to become enabled after checkbox click
+                    cy.get("#users-combobox-input").should("not.be.disabled");
 
-                // Open the users dropdown
-                cy.get("#users-combobox-input").click();
+                    // Open the users dropdown
+                    cy.get("#users-combobox-input").click();
 
-                // The dropdown should exist and contain options
-                cy.get(".users-combobox__menu").should("exist");
+                    // The dropdown should exist and contain options
+                    cy.get(".users-combobox__menu").should("exist");
 
-                // Amy Madigan should be in the list (she's authorized for this agreement)
-                cy.get(".users-combobox__menu").should("contain", "Amy Madigan");
+                    // Amy Madigan should be in the list (she's authorized for this agreement)
+                    cy.get(".users-combobox__menu").should("contain", "Amy Madigan");
+                });
             } else {
                 // Step 1 is already completed - verify completed state is visible
                 cy.contains("Completed By").should("exist");
@@ -152,15 +151,14 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(2).then((completedViewVisible) => {
             if (completedViewVisible) {
                 cy.contains("Completed By").should("exist");
                 cy.contains("Date Completed").should("exist");
                 cy.contains("Notes").should("exist");
                 cy.contains("Target Completion Date").should("exist");
                 cy.contains("Draft Solicitation Date").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -175,8 +173,7 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(2).then((completedViewVisible) => {
             if (!completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("exist");
                 return;
@@ -202,10 +199,9 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(2).then((completedViewVisible) => {
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-2-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
@@ -263,19 +259,21 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        cy.get("body").then(($body) => {
-            const isPending = $body.find("#step-2-checkbox").length > 0;
-            // Check if TermTag with Target Completion Date exists
-            const hasTargetDateTag = $body.find("dt:contains('Target Completion Date')").length > 0;
+        // Scope the check to the step 2 accordion content to avoid false positives
+        // from step 5 which also displays "Target Completion Date" when open.
+        cy.contains("button", /2 of 6/i).invoke("attr", "aria-controls").then((contentId) => {
+            cy.get(`#${contentId}`).then(($content) => {
+                const isPending = $content.find("#step-2-checkbox").length > 0;
+                const hasTargetDateTag = $content.find("dt").toArray().some((el) => el.textContent.includes("Target Completion Date"));
 
-            if (isPending && hasTargetDateTag) {
-                // Target date has been saved and should display as TermTag
-                cy.contains("Target Completion Date").should("exist");
-                cy.get("#target-completion-date").should("not.exist");
-                cy.get('[data-cy="target-completion-save-btn"]').should("not.exist");
-            } else {
-                cy.log("Target completion date not yet saved - skipping");
-            }
+                if (isPending && hasTargetDateTag) {
+                    cy.contains("Target Completion Date").should("exist");
+                    cy.get("#target-completion-date").should("not.exist");
+                    cy.get('[data-cy="target-completion-save-btn"]').should("not.exist");
+                } else {
+                    cy.log("Target completion date not yet saved - skipping");
+                }
+            });
         });
     });
 
@@ -486,15 +484,14 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(3);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(3).then((completedViewVisible) => {
             if (completedViewVisible) {
                 cy.contains("Completed By").should("exist");
                 cy.contains("Date Completed").should("exist");
                 cy.contains("Notes").should("exist");
                 cy.contains("Solicitation Period - Start").should("exist");
                 cy.contains("Solicitation Period - End").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -509,8 +506,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(3);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(3).then((completedViewVisible) => {
             if (!completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("exist");
                 return;
@@ -536,10 +532,9 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(3);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(3).then((completedViewVisible) => {
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-3-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
@@ -785,14 +780,13 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(5).then((completedViewVisible) => {
             if (completedViewVisible) {
                 cy.contains("Completed By").should("exist");
                 cy.contains("Date Completed").should("exist");
                 cy.contains("Notes").should("exist");
                 cy.contains("Target Completion Date").should("exist");
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
             } else {
@@ -807,8 +801,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(5).then((completedViewVisible) => {
             if (!completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("exist");
                 return;
@@ -834,10 +827,9 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
-        cy.get("body").then(($body) => {
-            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+        isStepContentCompleted(5).then((completedViewVisible) => {
             if (completedViewVisible) {
-                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-5-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
@@ -895,19 +887,20 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
-        cy.get("body").then(($body) => {
-            const isPending = $body.find("#step-5-checkbox").length > 0;
-            // Check if TermTag with Target Completion Date exists
-            const hasTargetDateTag = $body.find("dt:contains('Target Completion Date')").length > 0;
+        // Scope check to step 5 content to avoid false positives from other steps.
+        cy.contains("button", /5 of 6/i).invoke("attr", "aria-controls").then((contentId) => {
+            cy.get(`#${contentId}`).then(($content) => {
+                const isPending = $content.find("#step-5-checkbox").length > 0;
+                const hasTargetDateTag = $content.find("dt").toArray().some((el) => el.textContent.includes("Target Completion Date"));
 
-            if (isPending && hasTargetDateTag) {
-                // Target date has been saved and should display as TermTag
-                cy.contains("Target Completion Date").should("exist");
-                cy.get("#target-completion-date").should("not.exist");
-                cy.get('[data-cy="step-5-target-completion-save-btn"]').should("not.exist");
-            } else {
-                cy.log("Target completion date not yet saved - skipping");
-            }
+                if (isPending && hasTargetDateTag) {
+                    cy.contains("Target Completion Date").should("exist");
+                    cy.get("#target-completion-date").should("not.exist");
+                    cy.get('[data-cy="step-5-target-completion-save-btn"]').should("not.exist");
+                } else {
+                    cy.log("Target completion date not yet saved - skipping");
+                }
+            });
         });
     });
 
