@@ -197,7 +197,7 @@ it.skip("click on edit bli and check to see if the form is populated", () => {
     cy.get("#allServicesComponentSelect").should("have.value", "1");
     cy.get(".can-combobox__single-value").should("have.text", "G994426");
     cy.get("#need-by-date").should("have.value", "06/13/2043");
-    cy.get("#enteredAmount").should("have.value", "1,000,000");
+    cy.get("#enteredAmount").should("have.value", "$1,000,000");
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });
 // TODO: fix this test - this takes too long to run and is indicative of a performance issue

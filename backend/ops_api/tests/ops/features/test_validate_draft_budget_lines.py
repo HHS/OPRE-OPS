@@ -141,7 +141,7 @@ def test_valid_amount_request_empty(loaded_db, context): ...
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Amount: Greater than 0",
+    "Valid Amount: Must be set (0 is allowed, negative is not)",
 )
 def test_valid_amount_greater_than_zero(loaded_db, context): ...
 
