@@ -427,7 +427,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // hover over the first review card
                         cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on first button data-cy approve-agreement
-                        cy.get("[data-cy='approve-agreement']").click();
+                        cy.get("[data-cy='approve-agreement']").first().click();
                         // get h1 to have content Approval for
                         cy.get("h1").contains(/approval for budget change/i);
                         // get content in review-card
