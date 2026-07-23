@@ -56,6 +56,8 @@ export type Agreement = {
     lifetime_obligated?: number | string | null;
     fy_obligated?: number | string | null;
     award_type?: keyof typeof AWARD_TYPE_LABELS | null;
+    earliest_bli_obligate_by_date?: string | null;
+    latest_bli_obligate_by_date?: string | null;
 };
 
 type ProductServiceCode = {

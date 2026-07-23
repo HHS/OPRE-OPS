@@ -34,6 +34,7 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
+import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 
 /**
@@ -132,6 +133,20 @@ const useCreateBLIsAndSCs = (
         };
     }, []);
 
+    // Derive the effective SC window from all services components (saved and unsaved).
+    // All SCs (saved or unsaved) carry period_start/period_end in YYYY-MM-DD format.
+    // Unsaved SCs also have popStartDate/popEndDate (MM/DD/YYYY) from the form, but
+    // period_start/period_end is always populated by the time the SC is dispatched.
+    const effectiveScStartDate = React.useMemo(() => {
+        const dates = servicesComponents.map((sc) => sc.period_start).filter(Boolean);
+        return dates.length > 0 ? dates.reduce((min, d) => (d < min ? d : min)) : null;
+    }, [servicesComponents]);
+
+    const effectiveScEndDate = React.useMemo(() => {
+        const dates = servicesComponents.map((sc) => sc.period_end).filter(Boolean);
+        return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
+    }, [servicesComponents]);
+
     React.useEffect(() => {
         if (currentStep != 0) {
             setBlockerDisabledForCreateAgreement(true);
@@ -181,6 +196,7 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
+    const nonDraftBudgetLines = notDraftBLIs;
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
     /**
      * Get the total fees for the cards
@@ -1084,6 +1100,8 @@ const useCreateBLIsAndSCs = (
         budgetLines,
         budgetLinesForCards,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,
@@ -1122,7 +1140,9 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        effectiveScStartDate,
+        effectiveScEndDate
     };
 };
 

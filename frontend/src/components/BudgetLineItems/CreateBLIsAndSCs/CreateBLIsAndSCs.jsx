@@ -110,10 +110,14 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
-        setServicesComponentNumber
+        setServicesComponentNumber,
+        effectiveScStartDate,
+        effectiveScEndDate
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -318,6 +322,8 @@ export const CreateBLIsAndSCs = ({
                             isReviewMode={isReviewMode}
                             setHasUnsavedChanges={setHasUnsavedChanges}
                             hasUnsavedChanges={hasUnsavedChanges}
+                            scFormSuite={scFormSuite}
+                            nonDraftBudgetLines={nonDraftBudgetLines}
                         />
                     )}
                     <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
@@ -354,6 +360,8 @@ export const CreateBLIsAndSCs = ({
                             continueBtnText={continueBtnText}
                             setHasUnsavedChanges={setHasUnsavedChanges}
                             hasUnsavedChanges={hasUnsavedChanges}
+                            scFormSuite={scFormSuite}
+                            nonDraftBudgetLines={nonDraftBudgetLines}
                         />
                     )}
                     <AgreementBudgetLinesHeader
@@ -399,6 +407,8 @@ export const CreateBLIsAndSCs = ({
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
                     workflow={workflow}
+                    scStartDate={effectiveScStartDate}
+                    scEndDate={effectiveScEndDate}
                 />
             )}
 

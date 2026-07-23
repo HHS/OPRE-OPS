@@ -11,7 +11,13 @@ import { formatServiceComponent } from "./ServicesComponents.helpers";
  * @param {string} continueBtnText - The text to display on the "Continue" button.
 
  */
-const useServicesComponents = (agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges) => {
+const useServicesComponents = (
+    agreementId,
+    serviceRequirementType,
+    continueBtnText,
+    setHasUnsavedChanges,
+    scFormSuite
+) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
     const [showModal, setShowModal] = React.useState(false);
@@ -27,8 +33,23 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
     const dispatch = useEditAgreementDispatch();
     const { services_components: servicesComponents } = useEditAgreement() || {};
 
+    // When editing an SC, merge the live form dates into allServicesComponents so the suite
+    // always sees the current period values — context only updates after dispatch.
+    const allServicesComponentsForSuite = React.useMemo(() => {
+        if (!servicesComponents || formData.mode !== "edit") return servicesComponents ?? [];
+        return servicesComponents.map((sc) => {
+            if (sc.number !== formData.number) return sc;
+            return {
+                ...sc,
+                period_start: formatDateForApi(formData.popStartDate) ?? sc.period_start,
+                period_end: formatDateForApi(formData.popEndDate) ?? sc.period_end
+            };
+        });
+    }, [servicesComponents, formData.mode, formData.number, formData.popStartDate, formData.popEndDate]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (scFormSuite?.get()?.hasErrors()) return;
         setFormKey(Date.now());
         let formattedDisplayTitle = formatServiceComponent(formData.number, Boolean(formData.optional), serviceTypeReq);
         let newFormData = {
@@ -108,6 +129,7 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
 
     const handleCancel = (e) => {
         e.preventDefault();
+        scFormSuite?.reset();
         setFormData(initialFormData);
         setFormKey(Date.now());
     };
@@ -144,7 +166,8 @@ const useServicesComponents = (agreementId, serviceRequirementType, continueBtnT
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
+        formKey,
+        allServicesComponentsForSuite
     };
 };
 

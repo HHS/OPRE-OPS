@@ -105,18 +105,16 @@ describe("Budget Change Requests", () => {
                 cy.get("#enteredAmount").clear();
                 cy.get("#enteredAmount").type("2_222_222");
                 cy.get("#need-by-date").clear();
-                cy.get("#need-by-date").type("01/01/2048");
+                cy.get("#need-by-date").type("11/01/2044");
                 cy.get("#can-combobox-input").clear();
                 cy.get("#can-combobox-input").type("G99MVT3{enter}");
                 cy.get('[data-cy="update-budget-line"]').click();
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
-                cy.get('[data-cy="alert"]').should(($alert) => {
-                    expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
-                    expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2044 to 1/1/2048`);
-                    expect($alert).to.contain(`BL ${bliId} CAN: G994426 to G99MVT3`);
-                });
+                cy.contains(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`, { timeout: 10000 });
+                cy.contains(`BL ${bliId} Obligate By Date: 1/1/2044 to 11/1/2044`);
+                cy.contains(`BL ${bliId} CAN: G994426 to G99MVT3`);
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -138,7 +136,7 @@ describe("Budget Change Requests", () => {
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate By In Review/,
-                            `System Owner requested a budget change on BL ${bliId} from Obligate By on 01/01/2044 to 01/01/2048 and it's currently In Review for approval.`
+                            `System Owner requested a budget change on BL ${bliId} from Obligate By on 01/01/2044 to 11/01/2044 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {

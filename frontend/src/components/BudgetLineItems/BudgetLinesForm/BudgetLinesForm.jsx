@@ -1,5 +1,6 @@
 import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
@@ -32,6 +33,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
+ * @param {string | null} [props.scStartDate] - The earliest SC start date (YYYY-MM-DD) from the agreement.
+ * @param {string | null} [props.scEndDate] - The latest SC end date (YYYY-MM-DD) from the agreement.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -54,9 +57,20 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     hasUnsavedChanges,
     isBudgetLineNotDraft = false,
-    workflow
+    workflow,
+    scStartDate = null,
+    scEndDate = null
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+
+    // Re-run the suite whenever the SC window changes so the PoP boundary check
+    // reflects unsaved service components without waiting for a user interaction.
+    const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
+    React.useEffect(() => {
+        datePickerSuite.run({ needByDate, scStartDate, scEndDate, isDraft: !isBudgetLineNotDraft }, isSuperUser);
+        forceUpdate();
+    }, [scStartDate, scEndDate, needByDate, isSuperUser, isBudgetLineNotDraft, datePickerSuite]);
+
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -91,7 +105,10 @@ export const BudgetLinesForm = ({
         if (!isBudgetLineNotDraft) {
             datePickerSuite.run(
                 {
-                    needByDate
+                    needByDate,
+                    scStartDate,
+                    scEndDate,
+                    isDraft: true
                 },
                 isSuperUser
             );
@@ -115,6 +132,9 @@ export const BudgetLinesForm = ({
         datePickerSuite.run(
             {
                 needByDate,
+                scStartDate,
+                scEndDate,
+                isDraft: !isBudgetLineNotDraft,
                 ...{ [name]: value }
             },
             isSuperUser
