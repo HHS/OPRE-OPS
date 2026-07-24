@@ -5,11 +5,14 @@ import { useBlocker, useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
+    useAddGrantNumberMutation,
     useAddServicesComponentMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
     useUpdateBudgetLineItemMutation,
+    useUpdateGrantNumberMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
 import {
@@ -97,6 +100,9 @@ const useCreateBLIsAndSCs = (
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
+    const [addGrantNumber] = useAddGrantNumberMutation();
+    const [updateGrantNumber] = useUpdateGrantNumberMutation();
+    const [deleteGrantNumber] = useDeleteGrantNumberMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
@@ -104,7 +110,8 @@ const useCreateBLIsAndSCs = (
         agreement,
         services_components: servicesComponents,
         deleted_services_components_ids: deletedServicesComponentsIds,
-        grant_numbers: grantNumbers
+        grant_numbers: grantNumbers,
+        deleted_grant_numbers_ids: deletedGrantNumbersIds
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -238,12 +245,16 @@ const useCreateBLIsAndSCs = (
             const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
                 deleteServicesComponent(id).unwrap()
             );
+            const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
+                deleteGrantNumber(id).unwrap()
+            );
             const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
             );
 
             await Promise.all(blisDeletionPromises);
             await Promise.all(serviceComponentDeletionPromises);
+            await Promise.all(grantNumberDeletionPromises);
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             setAlert({
@@ -252,7 +263,15 @@ const useCreateBLIsAndSCs = (
                 message: "An error occurred while deleting budget lines. Please try again."
             });
         }
-    }, [deletedServicesComponentsIds, deletedBudgetLines, deleteServicesComponent, deleteBudgetLineItem, setAlert]);
+    }, [
+        deletedServicesComponentsIds,
+        deletedGrantNumbersIds,
+        deletedBudgetLines,
+        deleteServicesComponent,
+        deleteGrantNumber,
+        deleteBudgetLineItem,
+        setAlert
+    ]);
 
     /**
      * NOTE: 3rd useCallback in this file
@@ -930,6 +949,26 @@ const useCreateBLIsAndSCs = (
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
                     await Promise.all(serviceComponentsUpdatePromises);
 
+                    // Grant numbers, mirroring the SC create/update buckets above. No BLI linkage on
+                    // this page yet, so no ref/id resolution is needed — just create new ones and
+                    // PATCH changed ones. Deletions are handled in handleDeletions below.
+                    const newGrantNumbers = grantNumbers.filter((gn) => !("created_on" in gn));
+                    const changedGrantNumbers = grantNumbers.filter((gn) => "created_on" in gn && gn.has_changed);
+
+                    const grantNumberCreationPromises = newGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return addGrantNumber(cleanGn).unwrap();
+                    });
+                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return updateGrantNumber({ id: gn.id, data: cleanGn }).unwrap();
+                    });
+
+                    await Promise.all(grantNumberCreationPromises);
+                    await Promise.all(grantNumberUpdatePromises);
+
                     const newBudgetLineItems = tempBudgetLines.filter(
                         (budgetLineItem) => !("created_on" in budgetLineItem)
                     );
@@ -998,6 +1037,8 @@ const useCreateBLIsAndSCs = (
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
+            addGrantNumber,
+            updateGrantNumber,
             addBudgetLineItem,
             setAlert,
             isSuperUser,

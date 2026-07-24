@@ -129,6 +129,8 @@ class BudgetLineItemService:
             if not can:
                 raise ResourceNotFoundError("CAN", create_request["can_id"])
 
+        self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
+
         agreement = self.db_session.get(Agreement, agreement_id)
 
         new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
@@ -766,6 +768,22 @@ class BudgetLineItemService:
             )
         return []
 
+    def _validate_grant_number_ownership(self, grant_number_id, agreement_id):
+        """
+        Validate that a grant number referenced by a BLI exists and belongs to the BLI's agreement.
+
+        Shared by create() and update() so a cross-agreement grant_number_id cannot be attached to a
+        BLI (IDOR), and a nonexistent grant_number_id surfaces a 404 instead of a DB IntegrityError.
+        """
+        if not grant_number_id:
+            return
+
+        gn = self.db_session.get(GrantNumber, grant_number_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", grant_number_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
+
     def _validation(self, budget_line_item, updated_fields):
         """
         Validate the updated fields for a Budget Line Item.
@@ -788,11 +806,7 @@ class BudgetLineItemService:
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
 
-        grant_number_id = updated_fields.get("grant_number_id")
-        if grant_number_id:
-            gn = self.db_session.get(GrantNumber, grant_number_id)
-            if gn and gn.agreement_id != budget_line_item.agreement_id:
-                raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
+        self._validate_grant_number_ownership(updated_fields.get("grant_number_id"), budget_line_item.agreement_id)
 
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)

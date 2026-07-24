@@ -27,12 +27,6 @@ class GrantNumberItemResponse(GrantNumberSchema):
     # Currently identical to base schema
 
 
-class GrantNumberListResponse(Schema):
-    """Schema for listing multiple grant numbers."""
-
-    items = fields.List(fields.Nested(GrantNumberSchema))
-
-
 class GrantNumberCreateSchema(Schema):
     """Schema for creating a grant number."""
 
