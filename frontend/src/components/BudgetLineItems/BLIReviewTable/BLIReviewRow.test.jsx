@@ -21,6 +21,10 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
     }))
 }));
 
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForTooltip: vi.fn(() => "")
+}));
+
 const createTestRouter = (component) => {
     const routes = [
         {

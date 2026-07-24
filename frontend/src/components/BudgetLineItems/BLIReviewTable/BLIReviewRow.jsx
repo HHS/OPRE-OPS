@@ -5,6 +5,7 @@ import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../help
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     expandedRowBGColor,
@@ -58,12 +59,17 @@ const BLIReviewRow = ({
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
 
-    // Services component has no column in this table; surface its absence as a row-level error
-    // class so the user can locate the offending BLI when errorStatuses-mode is active.
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
+
+    // Tooltip for BLIs with pending change requests (in_review=true)
+    const inReviewTooltip = useChangeRequestsForTooltip(budgetLine, "This budget line has pending edits:");
+    // Row-level error class for a missing services component. Only used in selection-gated
+    // mode (Review Agreement) where highlighting the whole row is correct. In errorStatuses
+    // mode (pre-award), table-item-error on the <tr> would cascade color:#b50909 to every
+    // child <td> including cells with valid data — use cell-level errors only there.
     const missingServicesComponentClass =
-        showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
+        !statusScopedErrors && showCellErrors && !budgetLine?.services_component_id ? "table-item-error" : "";
 
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -196,8 +202,10 @@ const BLIReviewRow = ({
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;
         const canNumberClasses = showCellErrors ? canNumberErrorClasses : "";
 
-        const amount = budgetLine?.amount ?? 0;
-        const amountErrorClasses = `${addErrorClassIfNotFound(amount, rowInReviewMode)}`;
+        const amount = budgetLine?.amount ?? null;
+        const amountDisplay = amount != null ? formatCurrency(amount) : NO_DATA;
+        // Use explicit null check — 0 is a valid amount and must not be flagged as missing.
+        const amountErrorClasses = rowInReviewMode && amount == null ? "table-item-error" : "";
         const amountClasses = showCellErrors ? amountErrorClasses : "";
 
         const feeValue = feeTotal || 0;
@@ -210,7 +218,7 @@ const BLIReviewRow = ({
                 <td className={dateNeededClasses}>{dateNeededFormatted}</td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
-                <td className={amountClasses}>{formatCurrency(amount)}</td>
+                <td className={amountClasses}>{amountDisplay}</td>
                 <td>{formatCurrency(feeValue)}</td>
                 <td>{formatCurrency(totalWithFees)}</td>
                 <td>
@@ -230,6 +238,7 @@ const BLIReviewRow = ({
                         <TableTag
                             status={budgetLine?.status}
                             inReview={budgetLine?.in_review}
+                            lockedMessage={inReviewTooltip}
                         />
                     )}
                 </td>

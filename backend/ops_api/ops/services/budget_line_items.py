@@ -836,13 +836,13 @@ class BudgetLineItemService:
             ):
                 raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
 
-            # Check amount is set and greater than 0
+            # Check amount is set and non-negative (0 is valid, negative is not)
             current_amount = budget_line_item.amount
             requested_amount = updated_fields.get("amount")
             final_amount = requested_amount if requested_amount is not None else current_amount
 
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
-                raise ValidationError({"amount": "Amount must be greater than 0."})
+            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount < 0:
+                raise ValidationError({"amount": "Amount must be 0 or greater."})
 
             # Check if the date_needed is set and in the future
             today = date.today()

@@ -192,7 +192,7 @@ export const BudgetLinesForm = ({
                             label="Amount"
                             messages={budgetFormSuite.getErrors("enteredAmount")}
                             className={enteredAmountCn}
-                            value={enteredAmount || ""}
+                            value={enteredAmount ?? ""}
                             setEnteredAmount={setEnteredAmount}
                             onChange={(name, value) => {
                                 if (isReviewMode) {
