@@ -43,10 +43,11 @@ export const useProcurementDashboardFilterButton = (filters, setFilters) => {
     };
 
     const resetFilter = () => {
-        setFilters({
+        setFilters((prevState) => ({
+            ...prevState,
             procShop: [],
             division: []
-        });
+        }));
     };
 
     return {

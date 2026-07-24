@@ -163,6 +163,7 @@ describe("Procurement Dashboard - Authorized User", () => {
 
                 getAgreementCount().then((filteredCount) => {
                     expect(filteredCount).to.be.at.most(allCount);
+                    expect(filteredCount).to.be.at.least(1);
                 });
             });
         });

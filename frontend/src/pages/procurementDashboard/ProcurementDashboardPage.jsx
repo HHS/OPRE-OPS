@@ -32,7 +32,7 @@ const ProcurementDashboard = () => {
     const [filters, setFilters] = useState({ procShop: [], division: [] });
 
     const { data: procurementShops = [] } = useGetProcurementShopsQuery();
-    const { data: divisions = [] } = useGetDivisionsQuery({});
+    const { data: divisions = [] } = useGetDivisionsQuery();
 
     const { agreements, metadata, isLoading, error } = useGetAllAgreements({
         filters: {

@@ -1,4 +1,3 @@
-import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
 import { removeFilter, useTagsList } from "./ProcurementDashboardFilterTags.hooks";
@@ -14,9 +13,6 @@ import { removeFilter, useTagsList } from "./ProcurementDashboardFilterTags.hook
 const ProcurementDashboardFilterTags = ({ filters, setFilters }) => {
     const tagsList = useTagsList(filters);
 
-    const tagsListByFilter = _.groupBy(tagsList, "filter");
-    const tagsListByFilterMerged = Object.values(tagsListByFilter).flat();
-
     if (tagsList.length === 0) {
         return null;
     }
@@ -25,7 +21,7 @@ const ProcurementDashboardFilterTags = ({ filters, setFilters }) => {
         <FilterTagsWrapper>
             <FilterTags
                 removeFilter={(tag) => removeFilter(tag, setFilters)}
-                tagsList={tagsListByFilterMerged}
+                tagsList={tagsList}
             />
         </FilterTagsWrapper>
     );

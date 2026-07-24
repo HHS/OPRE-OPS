@@ -67,6 +67,9 @@ export const ProcurementDashboardFilterButton = ({
         </fieldset>
     ];
 
+    // TODO: Modal.setAppElement("#root") is duplicated here and in the inner FilterButton, and is
+    // repeated across every filter button in the app (Project, Portfolio, Agreements, BLI, CAN).
+    // Consolidate into a single canonical call in main.jsx as a global refactor.
     Modal.setAppElement("#root");
 
     return (

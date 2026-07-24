@@ -113,7 +113,13 @@ describe("ProcurementDashboardFilterButton", () => {
 
         await user.click(screen.getByRole("button", { name: /reset/i }));
 
-        expect(mockSetFilters).toHaveBeenCalledWith({ procShop: [], division: [] });
+        expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
+        const result = mockSetFilters.mock.calls.at(-1)[0]({
+            procShop: [procShopOptions[0]],
+            division: [divisionOptions[0]]
+        });
+        expect(result.procShop).toEqual([]);
+        expect(result.division).toEqual([]);
     });
 
     it("closes the modal on Apply", async () => {
