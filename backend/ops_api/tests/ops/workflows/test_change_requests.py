@@ -77,7 +77,7 @@ def test_budget_line_item_change_request(app, test_bli, app_ctx):
 
 
 def test_budget_line_item_patch_with_budgets_change_requests(
-    budget_team_auth_client,
+    basic_user_auth_client,
     division_director_auth_client,
     app,
     loaded_db,
@@ -112,7 +112,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
-    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -492,3 +492,143 @@ def test_change_request_review_auth(
     assert response.status_code == 200
 
     # delete change request
+
+
+# ---=== CAN-ID FALLBACK BRANCH COVERAGE (OPS-2280) ===---
+
+
+def test_bli_patch_can_id_fallback_resolves_division_from_incoming_can(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    When a PLANNED BLI has no CAN assigned (can_id=None) and the PATCH includes a can_id,
+    the change-request service must resolve the managing division from the *incoming* CAN
+    rather than the null DB can_id.
+
+    Expected: 202, one change request whose managing_division_id matches the incoming CAN's
+    division, and a ChangeRequestNotification sent to that division's director.
+    """
+    # Create a PLANNED BLI with no CAN
+    bli = GrantBudgetLineItem(
+        line_description="BLI with no initial CAN",
+        agreement_id=1,
+        can_id=None,
+        amount=100.00,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    # PATCH: change the amount AND assign a CAN for the first time
+    data = {"amount": 200.00, "can_id": test_can.id}
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert response.status_code == 202, response.json
+
+    resp_json = response.json
+    assert "change_requests_in_review" in resp_json
+    change_requests = resp_json["change_requests_in_review"]
+    # One CR for amount, one for can_id
+    assert len(change_requests) >= 1
+
+    # All CRs must have a non-null managing_division_id (resolved from the incoming CAN)
+    for cr in change_requests:
+        assert (
+            cr.get("managing_division_id") is not None
+        ), "managing_division_id should be resolved from the incoming CAN, not the null DB can_id"
+
+    # At least one ChangeRequestNotification sent to division 5's director (user 522, test_can → division 5)
+    cr_id = change_requests[0]["id"]
+    notification = (
+        loaded_db.query(ChangeRequestNotification)
+        .filter_by(change_request_id=cr_id, recipient_id=test_division_director.id)
+        .first()
+    )
+    assert (
+        notification is not None
+    ), "A ChangeRequestNotification must be sent to the division director resolved from the incoming CAN"
+
+
+def test_bli_patch_can_id_fallback_validation_error_when_no_can_provided(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    app_ctx,
+):
+    """
+    When a PLANNED BLI has can_id=None in the DB AND the PATCH does not include a can_id,
+    attempting a financial change must raise a 400 ValidationError with the 'can_id' message.
+    """
+    loaded_db  # ensure test data is present
+
+    # Create a PLANNED BLI with no CAN
+    bli = GrantBudgetLineItem(
+        line_description="BLI with no CAN, no can_id in PATCH",
+        agreement_id=1,
+        can_id=None,
+        amount=100.00,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    app.db_session.add(bli)
+    app.db_session.commit()
+    bli_id = bli.id
+
+    # PATCH only the amount — no can_id provided; division cannot be resolved
+    data = {"amount": 999.99}
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert response.status_code == 400, response.json
+    error_body = response.json
+    # The ValidationError must point to the 'can_id' key
+    assert "can_id" in str(error_body), f"Expected 'can_id' ValidationError but got: {error_body}"
+
+
+def test_budget_team_bli_patch_writes_directly_no_change_request(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    A Budget Team user editing a PLANNED BLI's financial fields must get a direct write
+    (HTTP 200) rather than a change request (HTTP 202).  This covers the is_budget_team()
+    bypass added in OPS-2280.
+    """
+    # Create a PLANNED BLI with a CAN (so no can_id-fallback path is hit)
+    bli = GrantBudgetLineItem(
+        line_description="BLI for budget-team direct-write test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    # Budget Team patches a financial field → should write directly, not create a CR
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 200
+    ), f"Budget Team should get a direct 200 write, not a 202 change-request. Got: {response.json}"
+    assert (
+        "change_requests_in_review" not in response.json or response.json["change_requests_in_review"] == []
+    ), "Budget Team edits must not create change requests"
+
+    # Confirm the BLI was updated in the DB
+    updated_bli = loaded_db.get(type(bli), bli_id)
+    assert float(updated_bli.amount) == 750.00
