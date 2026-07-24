@@ -20,7 +20,9 @@ const setIsEditModeMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
-    deleted_services_components_ids: []
+    deleted_services_components_ids: [],
+    grant_numbers: [],
+    deleted_grant_numbers_ids: []
 };
 
 vi.mock("react-redux", () => ({
@@ -339,7 +341,9 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_services_components_ids: []
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
         });
 
         addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 99 }) });

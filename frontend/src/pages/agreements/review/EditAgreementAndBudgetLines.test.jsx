@@ -30,6 +30,7 @@ const mockAgreement = {
 
 let mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
 const mockServicesComponentsResult = { data: [], error: null, isLoading: false };
+const mockGrantNumbersResult = { data: [], error: null, isLoading: false };
 
 // Spy + result for the new single-mutation save path. Tests can override
 // `nextBundleResult` to either resolve with a body or reject with an error.
@@ -39,6 +40,7 @@ let nextBundleResult = { resolveWith: { ok: true } };
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: () => mockAgreementResult,
     useGetServicesComponentsListQuery: () => mockServicesComponentsResult,
+    useGetGrantNumbersListQuery: () => mockGrantNumbersResult,
     useUpdateAgreementEditBundleMutation: () => [
         (...args) => {
             updateBundleMock(...args);

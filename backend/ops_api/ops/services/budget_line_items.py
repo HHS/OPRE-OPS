@@ -24,6 +24,7 @@ from models import (
     BudgetLineSortCondition,
     ChangeRequestStatus,
     ChangeRequestType,
+    GrantNumber,
     Portfolio,
     ProcurementShop,
     ServicesComponent,
@@ -787,6 +788,12 @@ class BudgetLineItemService:
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
 
+        grant_number_id = updated_fields.get("grant_number_id")
+        if grant_number_id:
+            gn = self.db_session.get(GrantNumber, grant_number_id)
+            if gn and gn.agreement_id != budget_line_item.agreement_id:
+                raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
+
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)
         can = self.db_session.get(CAN, can_id)
@@ -802,9 +809,10 @@ class BudgetLineItemService:
             and updated_fields["status"] != budget_line_item.status
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            # check required fields on budget line item
+            # check required fields on budget line item — use the instance's polymorphic
+            # class so grant BLIs require grant_number_id instead of services_component_id.
             bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
+                budget_line_item.__class__.get_required_fields_for_status_change()
                 if not is_super_user(current_user, current_app)
                 else []
             )

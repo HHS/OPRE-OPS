@@ -4,6 +4,7 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useUpdateAgreementEditBundleMutation
 } from "../../../api/opsAPI";
@@ -68,6 +69,8 @@ const EditAgreementAndBudgetLines = () => {
     // Bumped on save failure so the editor reseeds services_components from the
     // server-cached list, reverting any optimistic edits the user had in flight.
     const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
+    // Mirrors servicesComponentsReseedKey for grant numbers (grant agreements only).
+    const [grantNumbersReseedKey, setGrantNumbersReseedKey] = useState(0);
 
     // Children populate these refs with `{ getSlice }` callbacks so the page can
     // read their current edits synchronously when the user clicks Save Changes.
@@ -103,6 +106,15 @@ const EditAgreementAndBudgetLines = () => {
         skip: !isValidId
     });
 
+    const {
+        data: grantNumbers,
+        error: errorGrantNumbers,
+        isLoading: isLoadingGrantNumbers
+    } = useGetGrantNumbersListQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+        skip: !isValidId
+    });
+
     const [updateEditBundle] = useUpdateAgreementEditBundleMutation();
 
     useEffect(() => {
@@ -127,6 +139,9 @@ const EditAgreementAndBudgetLines = () => {
         const bliSlice = blisSliceRef.current?.getSlice?.() ?? {};
         if (bliSlice.services_components) {
             bundle.services_components = bliSlice.services_components;
+        }
+        if (bliSlice.grant_numbers) {
+            bundle.grant_numbers = bliSlice.grant_numbers;
         }
         if (bliSlice.budget_line_items) {
             bundle.budget_line_items = bliSlice.budget_line_items;
@@ -171,9 +186,10 @@ const EditAgreementAndBudgetLines = () => {
                 message: `An error occurred while saving. ${detail}`
             });
             // Bundle save is atomic — on failure the server state is unchanged.
-            // Reseed services_components so optimistic edits revert to the server
-            // copy, leaving the form consistent for the user to retry.
+            // Reseed services_components / grant_numbers so optimistic edits revert to the
+            // server copy, leaving the form consistent for the user to retry.
             setServicesComponentsReseedKey((key) => key + 1);
+            setGrantNumbersReseedKey((key) => key + 1);
         } finally {
             setIsSaving(false);
         }
@@ -191,12 +207,12 @@ const EditAgreementAndBudgetLines = () => {
     };
 
     useEffect(() => {
-        if (!isValidId || errorAgreement || errorServicesComponent) {
+        if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
             navigate("/error");
         }
-    }, [isValidId, errorAgreement, errorServicesComponent, navigate]);
+    }, [isValidId, errorAgreement, errorServicesComponent, errorGrantNumbers, navigate]);
 
-    if (isLoadingAgreement || isLoadingServicesComponents) {
+    if (isLoadingAgreement || isLoadingServicesComponents || isLoadingGrantNumbers) {
         return (
             <App breadCrumbName="Edit Agreement and Budget Lines">
                 <h1>Loading...</h1>
@@ -204,7 +220,7 @@ const EditAgreementAndBudgetLines = () => {
         );
     }
 
-    if (!isValidId || errorAgreement || errorServicesComponent) {
+    if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
         return null;
     }
 
@@ -240,6 +256,8 @@ const EditAgreementAndBudgetLines = () => {
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
+                grantNumbers={grantNumbers ?? []}
+                grantNumbersReseedKey={grantNumbersReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showProcurementShopModal && (
