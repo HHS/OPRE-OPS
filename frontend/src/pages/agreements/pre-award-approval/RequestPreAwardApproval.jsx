@@ -50,6 +50,7 @@ export const RequestPreAwardApproval = () => {
         submitError,
         preAwardMemoDocuments,
         isSubmitting,
+        isFetching,
         isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
@@ -109,7 +110,10 @@ export const RequestPreAwardApproval = () => {
         uploadDisabledReason = "Upload in progress...";
     }
 
-    if (isLoading) {
+    // Show loading state on initial fetch AND while refetching (e.g. after redirect from
+    // the edit page). isFetching stays true during a background refetch so we don't render
+    // stale BLI data (which would show the wrong tooltip / alert state).
+    if (isLoading || isFetching) {
         return <p>Loading...</p>;
     }
 

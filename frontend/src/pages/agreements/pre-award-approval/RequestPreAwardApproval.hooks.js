@@ -46,6 +46,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingTotal,
         projectOfficerName,
@@ -304,6 +305,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
         executingTotal, // Total calculated from executing budget lines only
         notes,
