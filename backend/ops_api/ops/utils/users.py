@@ -26,11 +26,8 @@ def is_super_user(user: User, app_context: Flask) -> bool:
     return super_user_role in user.roles
 
 
-def is_budget_team(user: User, app_context: Flask) -> bool:
-    budget_team_role = app_context.db_session.execute(
-        select(Role).where(Role.name == "BUDGET_TEAM")
-    ).scalar_one_or_none()
-    return bool(budget_team_role) and budget_team_role in user.roles
+def is_budget_team(user: User) -> bool:
+    return "BUDGET_TEAM" in (role.name for role in user.roles)
 
 
 def get_sys_user(session: Session) -> User:

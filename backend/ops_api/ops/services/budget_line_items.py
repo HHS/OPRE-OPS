@@ -539,7 +539,7 @@ class BudgetLineItemService:
         # (no change-request workflow / Division Director approval required).
         directly_editable = (
             is_super_user(current_user, current_app)
-            or is_budget_team(current_user, current_app)
+            or is_budget_team(current_user)
             or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
@@ -786,7 +786,7 @@ class BudgetLineItemService:
         # Check if the agreement's pre-award approval is in review (super users and budget team can bypass)
         if (
             not is_super_user(current_user, current_app)
-            and not is_budget_team(current_user, current_app)
+            and not is_budget_team(current_user)
             and is_pre_award_in_review(budget_line_item.agreement)
         ):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
@@ -813,7 +813,7 @@ class BudgetLineItemService:
             # check required fields on budget line item
             bli_required_fields = (
                 BudgetLineItem.get_required_fields_for_status_change()
-                if not is_super_user(current_user, current_app) and not is_budget_team(current_user, current_app)
+                if not is_super_user(current_user, current_app) and not is_budget_team(current_user)
                 else []
             )
 
@@ -865,7 +865,7 @@ class BudgetLineItemService:
             # Validate that date_needed is not in the past for non-superusers / non-budget-team
             if (
                 not is_super_user(current_user, current_app)
-                and not is_budget_team(current_user, current_app)
+                and not is_budget_team(current_user)
                 and final_date_needed <= today
             ):
                 raise ValidationError(
