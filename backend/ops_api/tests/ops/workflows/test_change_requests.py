@@ -12,10 +12,10 @@ from models import (
     ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
+    DefaultProcurementTracker,
     DefaultProcurementTrackerStep,
     Division,
     GrantBudgetLineItem,
-    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
 )
@@ -611,7 +611,7 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
     added in OPS-2280.
     """
     # Set up an active procurement tracker with a pending AWARD approval for agreement 1
-    tracker = ProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
     loaded_db.add(tracker)
     loaded_db.flush()
     award_step = DefaultProcurementTrackerStep(
@@ -650,3 +650,40 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
     # Confirm the BLI was updated in the DB
     updated_bli = loaded_db.get(type(bli), bli_id)
     assert float(updated_bli.amount) == 750.00
+
+
+def test_budget_team_bli_patch_creates_change_request_without_active_award_approval(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    A Budget Team user editing a PLANNED BLI when NO active award-approval request
+    exists must still go through the change-request workflow (HTTP 202).
+    This is the negative case: the bypass must not apply outside the award-approval flow.
+    """
+    # Agreement 1 has no procurement tracker in seed data — is_award_approval_requested returns False
+    bli = GrantBudgetLineItem(
+        line_description="BLI for budget-team no-bypass test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 202
+    ), f"Budget Team without active award approval should get a 202 change-request. Got: {response.json}"
+    assert response.json.get(
+        "change_requests_in_review"
+    ), "A change request must be created when no active award approval exists"
