@@ -535,11 +535,12 @@ class BudgetLineItemService:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
         # Determine if direct edit or change request is needed.
-        # Superusers and Budget Team members write financial changes directly
-        # (no change-request workflow / Division Director approval required).
+        # Superusers bypass the change-request workflow for all edits.
+        # Budget Team members bypass it for financial changes only — status changes still
+        # route through the DD-approval workflow.
         directly_editable = (
             is_super_user(current_user, current_app)
-            or is_budget_team(current_user)
+            or (is_budget_team(current_user) and not has_status_change)
             or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
