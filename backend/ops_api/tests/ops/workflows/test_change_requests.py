@@ -12,8 +12,12 @@ from models import (
     ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
+    DefaultProcurementTrackerStep,
     Division,
     GrantBudgetLineItem,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 from ops_api.ops.services.agreement_history import AgreementHistoryService
 
@@ -602,9 +606,23 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
 ):
     """
     A Budget Team user editing a PLANNED BLI's financial fields must get a direct write
-    (HTTP 200) rather than a change request (HTTP 202).  This covers the is_budget_team()
-    bypass added in OPS-2280.
+    (HTTP 200) rather than a change request (HTTP 202), but ONLY when the agreement has
+    an active award-approval request (step 6). This covers the is_budget_team() bypass
+    added in OPS-2280.
     """
+    # Set up an active procurement tracker with a pending AWARD approval for agreement 1
+    tracker = ProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=6,
+        step_type=ProcurementTrackerStepType.AWARD,
+        award_approval_requested=True,
+        award_approval_status=None,  # pending — not yet approved or declined
+    )
+    loaded_db.add(award_step)
+
     # Create a PLANNED BLI with a CAN (so no can_id-fallback path is hit)
     bli = GrantBudgetLineItem(
         line_description="BLI for budget-team direct-write test",

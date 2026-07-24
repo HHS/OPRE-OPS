@@ -48,6 +48,7 @@ from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
     create_budget_line_item_instance,
+    is_award_approval_requested,
     is_bli_editable,
     is_pre_award_in_review,
     update_data,
@@ -536,11 +537,17 @@ class BudgetLineItemService:
 
         # Determine if direct edit or change request is needed.
         # Superusers bypass the change-request workflow for all edits.
-        # Budget Team members bypass it for financial changes only — status changes still
-        # route through the DD-approval workflow.
+        # Budget Team members bypass it for financial changes only when the agreement has
+        # an active award-approval request (step 6) — any other context still routes
+        # through the DD-approval workflow.
+        budget_team_can_bypass = (
+            is_budget_team(current_user)
+            and not has_status_change
+            and is_award_approval_requested(budget_line_item.agreement)
+        )
         directly_editable = (
             is_super_user(current_user, current_app)
-            or (is_budget_team(current_user) and not has_status_change)
+            or budget_team_can_bypass
             or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
