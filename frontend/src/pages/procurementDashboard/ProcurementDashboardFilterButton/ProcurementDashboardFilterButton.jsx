@@ -1,6 +1,5 @@
 import Modal from "react-modal";
-import DivisionComboBox from "../../../components/UI/Form/DivisionComboBox";
-import ProcShopComboBox from "../../../components/UI/Form/ProcShopComboBox";
+import FilterComboBox from "../../../components/UI/Form/FilterComboBox";
 import FilterButton from "../../../components/UI/FilterButton";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
 import useProcurementDashboardFilterButton from "./ProcurementDashboardFilterButton.hooks";
@@ -40,10 +39,13 @@ export const ProcurementDashboardFilterButton = ({
             key="field-proc-shop"
             className={fieldStyles}
         >
-            <ProcShopComboBox
-                procShop={procShop}
-                setProcShop={setProcShop}
-                procShopOptions={procShopOptions}
+            <FilterComboBox
+                label="Procurement Shop"
+                namespace="proc-shop-combobox"
+                options={procShopOptions}
+                selected={procShop}
+                setSelected={setProcShop}
+                optionText={(shop) => shop.abbr}
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
@@ -52,10 +54,13 @@ export const ProcurementDashboardFilterButton = ({
             key="field-division"
             className={fieldStyles}
         >
-            <DivisionComboBox
-                division={division}
-                setDivision={setDivision}
-                divisionOptions={divisionOptions}
+            <FilterComboBox
+                label="Division"
+                namespace="division-combobox"
+                options={divisionOptions}
+                selected={division}
+                setSelected={setDivision}
+                optionText={(division) => division.name}
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />

@@ -3,62 +3,38 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import ProcurementDashboardFilterButton from "./ProcurementDashboardFilterButton";
 
-vi.mock("../../../components/UI/Form/ProcShopComboBox", () => ({
-    default: ({ procShop, setProcShop, procShopOptions }) => (
-        <div data-testid="proc-shop-combobox">
-            <label htmlFor="proc-shop-select">Procurement Shop</label>
+// Mocks the shared FilterComboBox as a native multi-select, keyed by namespace so the
+// two instances (proc shop / division) render distinct testids and labels.
+vi.mock("../../../components/UI/Form/FilterComboBox", () => ({
+    default: ({ label, namespace, options, selected, setSelected, optionText }) => (
+        <div data-testid={namespace}>
+            <label htmlFor={`${namespace}-select`}>{label}</label>
             <select
-                id="proc-shop-select"
+                id={`${namespace}-select`}
                 multiple
-                value={procShop.map((s) => String(s.id))}
+                value={selected.map((item) => String(item.id))}
                 onChange={(e) => {
-                    const options = Array.from(e.target.selectedOptions);
-                    setProcShop(options.map((opt) => procShopOptions.find((s) => String(s.id) === opt.value)));
+                    const chosen = Array.from(e.target.selectedOptions);
+                    setSelected(chosen.map((opt) => options.find((item) => String(item.id) === opt.value)));
                 }}
             >
-                {procShopOptions.map((s) => (
+                {options.map((item) => (
                     <option
-                        key={s.id}
-                        value={s.id}
+                        key={item.id}
+                        value={item.id}
                     >
-                        {s.abbr}
+                        {optionText(item)}
                     </option>
                 ))}
             </select>
             {/* Simulates the shared ComboBox reporting a cleared multi-select as null. */}
             <button
                 type="button"
-                data-testid="proc-shop-clear"
-                onClick={() => setProcShop(null)}
+                data-testid={`${namespace}-clear`}
+                onClick={() => setSelected(null)}
             >
                 clear
             </button>
-        </div>
-    )
-}));
-
-vi.mock("../../../components/UI/Form/DivisionComboBox", () => ({
-    default: ({ division, setDivision, divisionOptions }) => (
-        <div data-testid="division-combobox">
-            <label htmlFor="division-select">Division</label>
-            <select
-                id="division-select"
-                multiple
-                value={division.map((d) => String(d.id))}
-                onChange={(e) => {
-                    const options = Array.from(e.target.selectedOptions);
-                    setDivision(options.map((opt) => divisionOptions.find((d) => String(d.id) === opt.value)));
-                }}
-            >
-                {divisionOptions.map((d) => (
-                    <option
-                        key={d.id}
-                        value={d.id}
-                    >
-                        {d.name}
-                    </option>
-                ))}
-            </select>
         </div>
     )
 }));
@@ -162,7 +138,7 @@ describe("ProcurementDashboardFilterButton", () => {
         expect(await screen.findByTestId("modal")).toBeInTheDocument();
 
         // Simulate the shared ComboBox reporting a cleared multi-select as null.
-        await user.click(screen.getByTestId("proc-shop-clear"));
+        await user.click(screen.getByTestId("proc-shop-combobox-clear"));
         await user.click(screen.getByRole("button", { name: /apply/i }));
 
         const result = mockSetFilters.mock.calls.at(-1)[0]({ procShop: [procShopOptions[0]], division: [] });

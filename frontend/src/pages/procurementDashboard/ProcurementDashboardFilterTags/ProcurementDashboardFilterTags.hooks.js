@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useMemo } from "react";
 
 /**
  * @typedef {import('../ProcurementDashboardFilterTypes').Filters} Filters
@@ -12,42 +12,37 @@ import { useState, useEffect, useCallback } from "react";
  */
 
 /**
- * Custom hook for managing the Procurement Dashboard filter tags list.
+ * Builds the tags for a single filter's selected items. Returns an empty array when the
+ * value is not a populated array.
+ * @param {any[]} items - The selected items for the filter.
+ * @param {keyof Filters} filterKey
+ * @param {(item: any) => string} getTagText
+ * @returns {Tag[]}
+ */
+const buildTags = (items, filterKey, getTagText) =>
+    Array.isArray(items)
+        ? items.map((item) => ({
+              tagText: getTagText(item),
+              filter: filterKey,
+              id: item.id
+          }))
+        : [];
+
+/**
+ * Custom hook for deriving the Procurement Dashboard filter tags list. The list is
+ * fully derived from the filters, so it is computed synchronously with useMemo rather
+ * than mirrored into state via effects.
  * @param {Filters} filters
  * @returns {Tag[]}
  */
-export const useTagsList = (filters) => {
-    const [tagsList, setTagsList] = useState([]);
-
-    /**
-     * @param {keyof Filters} filterKey
-     * @param {(item: any) => string} getTagText
-     */
-    const updateTags = useCallback(
-        (filterKey, getTagText) => {
-            if (Array.isArray(filters[filterKey])) {
-                const selectedTags = filters[filterKey].map((item) => ({
-                    tagText: getTagText(item),
-                    filter: filterKey,
-                    id: item.id
-                }));
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterKey), ...selectedTags]);
-            } else {
-                setTagsList((prevState) => prevState.filter((t) => t.filter !== filterKey));
-            }
-        },
-        [filters]
+export const useTagsList = ({ procShop, division }) => {
+    return useMemo(
+        () => [
+            ...buildTags(procShop, "procShop", (shop) => shop.abbr),
+            ...buildTags(division, "division", (item) => item.name)
+        ],
+        [procShop, division]
     );
-
-    useEffect(() => {
-        updateTags("procShop", (shop) => shop.abbr);
-    }, [filters.procShop, updateTags]);
-
-    useEffect(() => {
-        updateTags("division", (division) => division.name);
-    }, [filters.division, updateTags]);
-
-    return tagsList;
 };
 
 /**
