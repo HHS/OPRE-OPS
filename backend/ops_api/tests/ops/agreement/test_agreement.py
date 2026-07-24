@@ -604,6 +604,44 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db, app_ctx):
     assert all(item[key] == value for item in response.json["data"] if key in item)
 
 
+def test_agreements_with_division_filter(auth_client, loaded_db, app_ctx):
+    """GET /agreements/?division=N returns only agreements whose project officer is in that division.
+
+    Derives an existing (division, project officer, agreement) triple from the seed data so the
+    assertion does not depend on specific ids. Skips if no such triple exists.
+    """
+    # Find an agreement with a project officer whose User has a division set.
+    row = loaded_db.execute(
+        select(Agreement.id, User.division)
+        .join(User, Agreement.project_officer_id == User.id)
+        .where(User.division.isnot(None))
+        .limit(1)
+    ).first()
+    if row is None:
+        pytest.skip("No seeded agreement with a project officer that has a division")
+    _, division_id = row
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"division": division_id, "limit": 50})
+    assert response.status_code == 200
+
+    # The filtered set is non-empty (at least the triple we found) and every returned
+    # agreement's project officer belongs to the requested division. Page size is capped at
+    # 50, so we assert correctness of the returned rows rather than presence of a specific id.
+    assert len(response.json["data"]) > 0
+    for item in response.json["data"]:
+        po_id = item.get("project_officer_id")
+        assert po_id is not None
+        po = loaded_db.get(User, po_id)
+        assert po.division == division_id
+
+
+def test_agreements_with_unknown_division_returns_empty(auth_client, app_ctx):
+    """An unknown division id returns an empty result set, not an error."""
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"division": 999999})
+    assert response.status_code == 200
+    assert response.json["data"] == []
+
+
 def test_agreements_with_only_my_filter(division_director_auth_client, app_ctx):
     query_dict = {"only_my": True}
     response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)

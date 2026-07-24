@@ -3,13 +3,14 @@ import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
 import TablePageLayout from "../../components/Layouts/TablePageLayout";
-import { useGetProcurementShopsQuery } from "../../api/opsAPI";
+import { useGetDivisionsQuery, useGetProcurementShopsQuery } from "../../api/opsAPI";
 import { useGetAllProcurementTrackers } from "../../hooks/useGetAllProcurementTrackers";
 import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
-import ProcShopFilter from "./summary/ProcShopFilter";
+import ProcurementDashboardFilterButton from "./ProcurementDashboardFilterButton";
+import ProcurementDashboardFilterTags from "./ProcurementDashboardFilterTags";
 import ProcurementDashboardTabs from "./summary/ProcurementDashboardTabs";
 import ProcurementSummaryCards from "./summary/ProcurementSummaryCards";
 import ProcurementDetails from "./details/ProcurementDetails";
@@ -28,28 +29,18 @@ const ProcurementDashboard = () => {
     const filterParam = new URLSearchParams(search).get("filter");
     const awardTypeFilter = FILTER_TO_AWARD_TYPE[filterParam] ?? null;
 
-    const [selectedProcShop, setSelectedProcShop] = useState("all");
+    const [filters, setFilters] = useState({ procShop: [], division: [] });
 
     const { data: procurementShops = [] } = useGetProcurementShopsQuery();
-
-    const procShopIdMap = useMemo(() => {
-        const map = {};
-        for (const shop of procurementShops) {
-            map[shop.abbr] = shop.id;
-        }
-        return map;
-    }, [procurementShops]);
-
-    const procShopOptions = useMemo(() => procurementShops.map((s) => s.abbr).sort(), [procurementShops]);
-
-    const selectedProcShopId = selectedProcShop !== "all" ? procShopIdMap[selectedProcShop] : null;
+    const { data: divisions = [] } = useGetDivisionsQuery();
 
     const { agreements, metadata, isLoading, error } = useGetAllAgreements({
         filters: {
             fiscalYear: [CURRENT_FISCAL_YEAR],
             includeProcurement: true,
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
-            ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
+            ...(filters.procShop?.length ? { awardingEntityId: filters.procShop.map((s) => s.id) } : {}),
+            ...(filters.division?.length ? { division: filters.division.map((d) => d.id) } : {})
         }
     });
 
@@ -140,28 +131,40 @@ const ProcurementDashboard = () => {
                 subtitle="Procurement Summary"
                 details={`This is a summary of all agreements currently in procurement for FY ${CURRENT_FISCAL_YEAR}.`}
                 TabsSection={<ProcurementDashboardTabs />}
-                FYSelect={
-                    <ProcShopFilter
-                        value={selectedProcShop}
-                        onChange={setSelectedProcShop}
-                        options={procShopOptions}
-                    />
-                }
                 FilterButton={
-                    <button
-                        style={{ fontSize: "16px" }}
-                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                        data-cy="procurement-export"
-                        onClick={handleExport}
-                    >
-                        <svg
-                            className="height-2 width-2 margin-right-05"
-                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
-                        >
-                            <use href={`${icons}#save_alt`}></use>
-                        </svg>
-                        <span>Export</span>
-                    </button>
+                    <div className="display-flex">
+                        <div>
+                            <button
+                                type="button"
+                                style={{ fontSize: "16px" }}
+                                className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                data-cy="procurement-export"
+                                onClick={handleExport}
+                            >
+                                <svg
+                                    className="height-2 width-2 margin-right-05"
+                                    style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                >
+                                    <use href={`${icons}#save_alt`}></use>
+                                </svg>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                        <div className="margin-left-205">
+                            <ProcurementDashboardFilterButton
+                                filters={filters}
+                                setFilters={setFilters}
+                                procShopOptions={procurementShops}
+                                divisionOptions={divisions}
+                            />
+                        </div>
+                    </div>
+                }
+                FilterTags={
+                    <ProcurementDashboardFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
                 }
                 SummaryCardsSection={
                     <ProcurementSummaryCards

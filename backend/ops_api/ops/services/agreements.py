@@ -67,6 +67,7 @@ class AgreementFilters:
     agreement_type: Optional[list[str]] = None
     delivered_status: Optional[list[str]] = None
     awarding_entity_id: Optional[list[int]] = None
+    division: Optional[list[int]] = None
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
@@ -95,6 +96,7 @@ class AgreementFilters:
             agreement_type=data.get("agreement_type", []),
             delivered_status=data.get("delivered_status", []),
             awarding_entity_id=data.get("awarding_entity_id", []),
+            division=data.get("division", []),
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
@@ -1160,6 +1162,13 @@ def _apply_agreement_filters(
         values = data.get(filter_key, [])
         if values:
             query = query.where(column.in_(values))
+
+    # Filter by the division of the agreement's project officer (COR).
+    # Uses a subquery join through User because division lives on the User model,
+    # not the agreement. This naturally excludes agreements with no project officer.
+    divisions = data.get("division", [])
+    if divisions:
+        query = query.where(agreement_cls.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
 
     # Apply name filter with partial or exact matching based on exact_match flag
     # Use OR logic so multiple names return agreements matching ANY of them

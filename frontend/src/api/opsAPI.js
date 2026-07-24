@@ -101,6 +101,7 @@ export const opsApi = createApi({
                     contractNumber,
                     awardType,
                     awardingEntityId,
+                    division,
                     includeProcurement
                 },
                 onlyMy,
@@ -148,6 +149,9 @@ export const opsApi = createApi({
                 }
                 if (awardingEntityId) {
                     awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
+                }
+                if (division) {
+                    division.forEach((id) => queryParams.push(`division=${id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
