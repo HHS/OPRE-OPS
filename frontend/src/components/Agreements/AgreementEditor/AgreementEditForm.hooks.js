@@ -19,6 +19,7 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
@@ -205,7 +206,11 @@ const useAgreementEditForm = (
     }, [agreementType]);
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
-    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Superusers and Budget Team members bypass the procurement-shop change-request workflow.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
+    const shouldRequestChange =
+        hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded && !canEditDirectly;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {

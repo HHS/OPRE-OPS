@@ -52,7 +52,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     is_pre_award_in_review,
     update_data,
 )
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 @dataclass
@@ -534,9 +534,13 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-        # Determine if direct edit or change request is needed
-        directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed.
+        # Superusers and Budget Team members write financial changes directly
+        # (no change-request workflow / Division Director approval required).
+        directly_editable = (
+            is_super_user(current_user, current_app)
+            or is_budget_team(current_user, current_app)
+            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
@@ -779,8 +783,12 @@ class BudgetLineItemService:
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
-        if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
+        # Check if the agreement's pre-award approval is in review (super users and budget team can bypass)
+        if (
+            not is_super_user(current_user, current_app)
+            and not is_budget_team(current_user, current_app)
+            and is_pre_award_in_review(budget_line_item.agreement)
+        ):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
@@ -805,7 +813,7 @@ class BudgetLineItemService:
             # check required fields on budget line item
             bli_required_fields = (
                 BudgetLineItem.get_required_fields_for_status_change()
-                if not is_super_user(current_user, current_app)
+                if not is_super_user(current_user, current_app) and not is_budget_team(current_user, current_app)
                 else []
             )
 
@@ -854,8 +862,12 @@ class BudgetLineItemService:
             if final_date_needed is None:
                 raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
 
-            # Validate that date_needed is not in the past for non-superusers
-            if not is_super_user(current_user, current_app) and final_date_needed <= today:
+            # Validate that date_needed is not in the past for non-superusers / non-budget-team
+            if (
+                not is_super_user(current_user, current_app)
+                and not is_budget_team(current_user, current_app)
+                and final_date_needed <= today
+            ):
                 raise ValidationError(
                     {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
                 )
