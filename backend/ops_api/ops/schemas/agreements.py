@@ -151,6 +151,7 @@ class AgreementRequestSchema(PaginationListSchema):
     agreement_type = fields.List(fields.String(), required=False)
     delivered_status = fields.List(fields.String(), required=False)
     awarding_entity_id = fields.List(fields.Integer(), required=False)
+    division = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
     nick_name = fields.List(fields.String(), required=False)
