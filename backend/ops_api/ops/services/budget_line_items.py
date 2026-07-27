@@ -719,7 +719,7 @@ class BudgetLineItemService:
         raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "clin_id"}
 
     def _handle_change_requests(
         self,

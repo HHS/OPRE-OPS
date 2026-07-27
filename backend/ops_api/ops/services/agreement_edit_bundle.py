@@ -17,7 +17,7 @@ from loguru import logger
 from marshmallow import EXCLUDE
 from sqlalchemy.exc import IntegrityError
 
-from models import Agreement
+from models import Agreement, GrantNumber
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
@@ -117,7 +117,7 @@ class AgreementEditBundleService:
             #     creates/updates can resolve grant_number_ref → new grant number ids.
             gn_ref_map, created_gn_count = self._create_grant_numbers(agreement_id, gn_payload.get("create", []) or [])
             result.grant_numbers_created = created_gn_count
-            result.grant_numbers_updated = self._update_grant_numbers(gn_payload.get("update", []) or [])
+            result.grant_numbers_updated = self._update_grant_numbers(agreement_id, gn_payload.get("update", []) or [])
 
             # 4. BLI creates (resolves services_component_ref / grant_number_ref)
             result.budget_line_items_created = self._create_budget_line_items(
@@ -139,7 +139,7 @@ class AgreementEditBundleService:
 
             # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
             result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
-            result.grant_numbers_deleted = self._delete_grant_numbers(gn_payload.get("delete", []) or [])
+            result.grant_numbers_deleted = self._delete_grant_numbers(agreement_id, gn_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
             self.db_session.commit()
@@ -238,19 +238,35 @@ class AgreementEditBundleService:
             gn_ref_map[temp_ref] = new_gn.id
         return gn_ref_map, len(items)
 
-    def _update_grant_numbers(self, items: list[dict[str, Any]]) -> int:
+    def _assert_gn_belongs_to_agreement(self, gn_id: int, agreement_id: int) -> None:
+        """Reject a grant number id that belongs to a different agreement than the bundle target.
+
+        ``GrantNumberService`` only checks the user has access to the grant number's own parent
+        agreement — not that the parent matches this bundle's ``agreement_id``. Without this guard a
+        user with access to two agreements could submit a bundle for Agreement A carrying a grant
+        number id from Agreement B and mutate it (IDOR).
+        """
+        gn = self.db_session.get(GrantNumber, gn_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", gn_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_numbers": "Grant Number does not belong to the Agreement."})
+
+    def _update_grant_numbers(self, agreement_id: int, items: list[dict[str, Any]]) -> int:
         gn_update_schema = GrantNumberUpdateSchema()
         for gn_data in items:
             gn_id = gn_data.get("id")
             if gn_id is None:
                 raise ValidationError({"grant_numbers.update": "Each item requires an 'id'."})
+            self._assert_gn_belongs_to_agreement(gn_id, agreement_id)
             data_to_load = {k: v for k, v in gn_data.items() if k != "id"}
             loaded = gn_update_schema.load(data_to_load, unknown=EXCLUDE, partial=True)
             self._grant_numbers.update(gn_id, loaded, commit=False)
         return len(items)
 
-    def _delete_grant_numbers(self, ids: list[int]) -> int:
+    def _delete_grant_numbers(self, agreement_id: int, ids: list[int]) -> int:
         for gn_id in ids:
+            self._assert_gn_belongs_to_agreement(gn_id, agreement_id)
             self._grant_numbers.delete(gn_id, commit=False)
         return len(ids)
 
