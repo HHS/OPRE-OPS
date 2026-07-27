@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ProcurementDashboard from "./ProcurementDashboardPage";
 import { opsApi } from "../../api/opsAPI";
+import sessionUIReducer from "../../sessionUISlice";
 
 const mockUseGetAllAgreements = vi.fn();
 const mockUseGetProcurementShopsQuery = vi.fn();
@@ -56,7 +57,7 @@ vi.mock("./summary/ProcurementDashboardTabs", () => ({
 
 function renderWithProviders(ui, { route = "/procurement-dashboard" } = {}) {
     const store = configureStore({
-        reducer: { [opsApi.reducerPath]: opsApi.reducer },
+        reducer: { [opsApi.reducerPath]: opsApi.reducer, sessionUI: sessionUIReducer },
         middleware: (gDM) => gDM().concat(opsApi.middleware)
     });
     return render(

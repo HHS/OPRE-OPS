@@ -1,6 +1,7 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
 import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 
 export const useBudgetLinesList = () => {
     const [searchParams] = useSearchParams();
@@ -13,16 +14,10 @@ export const useBudgetLinesList = () => {
     // Memoize helpers to avoid unnecessary re-renders
     const fyHelpers = React.useMemo(() => getFiscalYearHelpers(useApproachB), [useApproachB]);
 
-    // Initialize with approach-specific initial state
-    const [filters, setFilters] = React.useState(() => ({
-        fiscalYears: fyHelpers.getInitialState(),
-        portfolios: [],
-        bliStatus: [],
-        budgetRange: null,
-        agreementTypes: [],
-        agreementTitles: [],
-        canActivePeriods: []
-    }));
+    // Filters persist across client-side navigation via the session slice. The
+    // fiscalYears default (null) matches fyHelpers.getInitialState() for both
+    // A/B approaches, so the derived helpers stay here, out of the slice.
+    const { filters, setFilters } = useListFilters("budgetLines");
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",

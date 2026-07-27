@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ProjectsList from "./ProjectsList";
 import { opsApi } from "../../../api/opsAPI";
+import sessionUIReducer from "../../../sessionUISlice";
 
 const mockNavigate = vi.fn();
 const mockUseGetProjectsQuery = vi.fn();
@@ -69,6 +70,7 @@ describe("ProjectsList", () => {
         mockStore = configureStore({
             reducer: {
                 [opsApi.reducerPath]: opsApi.reducer,
+                sessionUI: sessionUIReducer,
                 auth: () => ({
                     isLoggedIn: true,
                     activeUser: { id: 1, roles: [] }

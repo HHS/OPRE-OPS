@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetPortfoliosQuery, useGetPortfolioFundingSummaryBatchQuery } from "../../../api/opsAPI";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { filterMyPortfolios } from "./PortfolioList.helpers";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 
 /**
  * Custom hook for managing portfolio list state and data fetching
@@ -22,13 +22,10 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
 
     // Simple state initialization with defaults
     const tabFromUrl = searchParams.get("tab") || "all";
-    const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice (see useListFilters).
+    const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("portfolios");
     const [activeTab, setActiveTab] = useState(tabFromUrl);
-    const [filters, setFilters] = useState({
-        portfolios: [],
-        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-        availablePct: []
-    });
 
     const fiscalYear = Number(selectedFiscalYear);
 
@@ -36,18 +33,12 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const unfilteredBudgetRangeRef = useRef(null);
     const prevFiscalYearRef = useRef(selectedFiscalYear);
 
-    // Reset filters and cached budget range when fiscal year changes
+    // When the fiscal year actually changes, the persisted filters are reset by
+    // `changeFiscalYear` (in the slice); here we only drop the cached slider
+    // range so it recomputes from the new fiscal year's data. Guarded by a ref so
+    // it no-ops on remount with an unchanged (persisted) fiscal year.
     useEffect(() => {
         if (prevFiscalYearRef.current !== selectedFiscalYear) {
-            // Reset all filters including budget range
-            setFilters((prev) => ({
-                ...prev,
-                portfolios: [],
-                budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-                availablePct: []
-            }));
-
-            // Reset cached budget range so it recalculates from new fiscal year data
             unfilteredBudgetRangeRef.current = null;
             prevFiscalYearRef.current = selectedFiscalYear;
         }
@@ -161,7 +152,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     return {
         // State
         selectedFiscalYear,
-        setSelectedFiscalYear,
+        setSelectedFiscalYear: changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,
