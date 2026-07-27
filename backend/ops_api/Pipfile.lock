@@ -1085,11 +1085,11 @@
         },
         "typeguard": {
             "hashes": [
-                "sha256:5a16dcac23502039299c97c8941651bc33d7ea8cc4b2f7d6bbb1b528f6eea423",
-                "sha256:fcf9de18bd945cdb4c7b996e12b4c51ce83f92f191314a6d7cf1739586ec98cf"
+                "sha256:79878165bb86f2cf5d41d159a0ff1792a796cf496882d2fe1b1c6c7049b9cdd7",
+                "sha256:e7414f09111317de3e335de92cd397c5c0ca00b1cc1676de12e1d444a79b3f21"
             ],
-            "markers": "python_version >= '3.9'",
-            "version": "==4.5.2"
+            "markers": "python_version >= '3.10'",
+            "version": "==4.6.0"
         },
         "typing-extensions": {
             "hashes": [
@@ -2693,11 +2693,11 @@
         },
         "prompt-toolkit": {
             "hashes": [
-                "sha256:28cde192929c8e7321de85de1ddbe736f1375148b02f2e17edd840042b1be855",
-                "sha256:9aac639a3bbd33284347de5ad8d68ecc044b91a762dc39b7c21095fcd6a19955"
+                "sha256:01c0891d7f9237d5e339f7d3e42cdae80b7534abb1c7c0e3352efba6231492f2",
+                "sha256:9ec8a0ad96d5c56148b3f914aa79c1564c3fde5d2e6b876e7bc327e353cf8fa6"
             ],
-            "markers": "python_version >= '3.8'",
-            "version": "==3.0.52"
+            "markers": "python_version >= '3.10'",
+            "version": "==3.0.53"
         },
         "propcache": {
             "hashes": [
