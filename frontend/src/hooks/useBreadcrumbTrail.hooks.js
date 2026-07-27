@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { setTrail } from "../sessionUISlice";
-import { buildTrail } from "../helpers/breadcrumb.helpers";
 
 /**
  * Returns a click handler that records the breadcrumb trail for a destination
@@ -18,7 +17,7 @@ export const useSetBreadcrumbTrail = () => {
     const dispatch = useDispatch();
     return useCallback(
         ({ targetPath, ancestors = [] }) => {
-            dispatch(setTrail(buildTrail({ targetPath, parentAncestors: ancestors })));
+            dispatch(setTrail({ targetPath, ancestors: [...ancestors] }));
         },
         [dispatch]
     );
