@@ -149,7 +149,7 @@ const EditAgreementAndBudgetLines = () => {
         setIsSaving(true);
         try {
             const bundle = buildBundle();
-            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
+            const result = await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
@@ -161,6 +161,16 @@ const EditAgreementAndBudgetLines = () => {
                         redirectUrl: returnTo
                     })
                 );
+            } else if (result?.change_request_ids?.length) {
+                // Backend created change requests (e.g. budget team outside award-approval context) —
+                // edits are pending DD approval, not applied immediately.
+                setAlert({
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl: returnTo
+                });
             } else {
                 setAlert({
                     type: "success",
