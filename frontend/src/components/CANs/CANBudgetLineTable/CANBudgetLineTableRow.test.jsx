@@ -3,6 +3,7 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import { formatDateNeeded } from "../../../helpers/utils";
 import { Provider } from "react-redux";
 import store from "../../../store";
+import { setupStore } from "../../../store";
 import { budgetLine } from "../../../tests/data";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom"; // Add this import
@@ -98,5 +99,43 @@ describe("CANBudgetLineTableRow", () => {
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // amount
         expect(screen.getByText("$50.00")).toBeInTheDocument(); // fee
+    });
+
+    test("records the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
+        // Ancestry as it would arrive under the Portfolio spending tab:
+        // Portfolios > Portfolio A > CAN 1
+        const ancestry = [
+            { label: "Portfolios", to: "/portfolios" },
+            { label: "Portfolio A", to: "/portfolios/5" },
+            { label: "CAN 1", to: "/cans/1" }
+        ];
+        const testStore = setupStore();
+        render(
+            <Provider store={testStore}>
+                <BrowserRouter>
+                    <CANBudgetLineTableRow
+                        budgetLine={mockBudgetLine}
+                        blId={mockBudgetLine.id}
+                        agreementName="TBD"
+                        obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                        fiscalYear={mockBudgetLine.fiscal_year}
+                        amount={mockBudgetLine.amount}
+                        percentOfCAN={3}
+                        status={mockBudgetLine.status}
+                        inReview={mockBudgetLine.in_review}
+                        creatorId={mockBudgetLine.created_by}
+                        creationDate={mockBudgetLine.created_on}
+                        description={mockBudgetLine.line_description}
+                        ancestry={ancestry}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await userEvent.click(screen.getByRole("link"));
+
+        const trail = testStore.getState().sessionUI.navContext.trail;
+        expect(trail.targetPath).toBe(`/agreements/${mockBudgetLine.agreement.id}`);
+        expect(trail.ancestors).toEqual(ancestry);
     });
 });

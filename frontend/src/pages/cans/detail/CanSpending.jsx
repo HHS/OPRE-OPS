@@ -29,6 +29,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {number} obligatedFunding
  * @property {number} totalFunding
  * @property {boolean} [isTableLoading]
+ * @property {import("../../../sessionUISlice").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to the budget-line table's agreement links.
  */
 
 /**
@@ -47,7 +48,8 @@ const CanSpending = ({
     inDraftFunding,
     obligatedFunding,
     totalFunding,
-    isTableLoading = false
+    isTableLoading = false,
+    ancestry = []
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
 
@@ -113,6 +115,7 @@ const CanSpending = ({
                     budgetLines={budgetLines}
                     totalFunding={totalFunding}
                     fiscalYear={fiscalYear}
+                    ancestry={ancestry}
                 />
             )}
         </article>

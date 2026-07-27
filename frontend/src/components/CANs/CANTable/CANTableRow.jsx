@@ -3,6 +3,8 @@ import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * CanTableRow component of CANTable
@@ -22,6 +24,8 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const canPath = `/cans/${canId}`;
 
     return (
         <tr>
@@ -31,7 +35,8 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                     position="right"
                 >
                     <Link
-                        to={`/cans/${canId}`}
+                        to={canPath}
+                        onClick={() => setBreadcrumbTrail({ targetPath: canPath, ancestors: [LIST_CRUMBS.cans] })}
                         className="text-ink text-no-underline"
                     >
                         {name}
