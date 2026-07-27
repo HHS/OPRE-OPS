@@ -12,6 +12,7 @@ import {
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import store from "../../../store";
+import { logout } from "../../../components/Auth/authSlice";
 import AgreementsList from "./AgreementsList";
 
 // Mock the API hooks
@@ -166,6 +167,9 @@ afterEach(() => {
     const root = document.createElement("div");
     root.setAttribute("id", "root");
     document.body.appendChild(root);
+    // Filters/FY now persist in the shared session slice; reset it between tests
+    // so persisted selections don't leak across test cases (logout resets it).
+    store.dispatch(logout());
 });
 
 describe("AgreementsList - Pagination", () => {

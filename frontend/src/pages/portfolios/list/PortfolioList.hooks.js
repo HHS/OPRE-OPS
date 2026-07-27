@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetPortfoliosQuery, useGetPortfolioFundingSummaryBatchQuery } from "../../../api/opsAPI";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { filterMyPortfolios } from "./PortfolioList.helpers";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 
 /**
  * Custom hook for managing portfolio list state and data fetching
@@ -22,13 +22,10 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
 
     // Simple state initialization with defaults
     const tabFromUrl = searchParams.get("tab") || "all";
-    const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice (see useListFilters).
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("portfolios");
     const [activeTab, setActiveTab] = useState(tabFromUrl);
-    const [filters, setFilters] = useState({
-        portfolios: [],
-        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-        availablePct: []
-    });
 
     const fiscalYear = Number(selectedFiscalYear);
 
@@ -51,7 +48,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
             unfilteredBudgetRangeRef.current = null;
             prevFiscalYearRef.current = selectedFiscalYear;
         }
-    }, [selectedFiscalYear]);
+    }, [selectedFiscalYear, setFilters]);
 
     // Prepare filter parameters for API call
     const portfolioIds = Array.isArray(filters.portfolios) ? filters.portfolios.map((p) => p.id) : [];

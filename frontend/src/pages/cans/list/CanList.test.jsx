@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { renderWithProviders } from "../../../test-utils";
 import CanList from "./CanList";
 import { useGetCanFilterOptionsQuery, useGetCansFundingQuery, useGetCansQuery } from "../../../api/opsAPI";
 
@@ -107,14 +108,14 @@ describe("CanList", () => {
             isFetching: false
         });
 
-        render(<CanList />);
+        renderWithProviders(<CanList />);
 
         expect(screen.getByRole("table", { name: "Loading CANs" })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: "CAN" })).toBeInTheDocument();
     });
 
     it("renders the CAN table once data has loaded", () => {
-        render(<CanList />);
+        renderWithProviders(<CanList />);
 
         expect(screen.getByTestId("can-table")).toBeInTheDocument();
         expect(screen.getByTestId("can-summary-cards")).toBeInTheDocument();
@@ -123,7 +124,7 @@ describe("CanList", () => {
     it("sends empty fiscalYear array when 'All' is selected, resulting in no fiscal_year query param", async () => {
         const user = userEvent.setup();
 
-        render(<CanList />);
+        renderWithProviders(<CanList />);
 
         // Initially, should call with current fiscal year as array
         expect(useGetCansQuery).toHaveBeenCalledWith(

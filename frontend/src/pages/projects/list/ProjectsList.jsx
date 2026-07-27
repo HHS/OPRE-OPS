@@ -12,7 +12,7 @@ import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
@@ -27,18 +27,13 @@ const ProjectsList = () => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
     const [getAllProjectsTrigger] = useLazyGetProjectsQuery();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(PROJECT_SORT_CODES.TITLE, false);
-    const [filters, setFilters] = React.useState({
-        fiscalYear: [],
-        portfolio: [],
-        projectSearch: [],
-        agreementSearch: [],
-        projectType: []
-    });
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice (see useListFilters).
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("projects");
 
     const { data: projectFilterOptions, isLoading: isLoadingProjectFilterOptions } = useGetProjectsFilterOptionsQuery();
 
