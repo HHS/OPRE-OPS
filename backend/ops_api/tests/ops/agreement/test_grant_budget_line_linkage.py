@@ -174,6 +174,52 @@ def test_cross_agreement_grant_number_rejected(auth_client, bundle_grant, loaded
     assert response.status_code == 400
 
 
+def test_cross_agreement_grant_number_rejected_on_bli_create(
+    auth_client, bundle_grant, loaded_db, test_admin_user, app_ctx
+):
+    """IDOR guard: POST /budget-line-items cannot attach a grant number from another agreement."""
+    other_grant = GrantAgreement(
+        agreement_type=AgreementType.GRANT,
+        name="Other-Grant-For-Create-Cross-Check",
+        project_officer_id=test_admin_user.id,
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(other_grant)
+    loaded_db.flush()
+    foreign_gn = GrantNumber(agreement_id=other_grant.id, number=99, description="Foreign create")
+    loaded_db.add(foreign_gn)
+    loaded_db.commit()
+
+    response = auth_client.post(
+        "/api/v1/budget-line-items/",
+        json={
+            "agreement_id": bundle_grant.id,
+            "grant_number_id": foreign_gn.id,
+            "line_description": "Cross-agreement create attempt",
+            "amount": 12345.00,
+            "can_id": 500,
+            "status": "DRAFT",
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_nonexistent_grant_number_rejected_on_bli_create(auth_client, bundle_grant, loaded_db, app_ctx):
+    """A nonexistent grant_number_id surfaces a 404, not a DB IntegrityError (500)."""
+    response = auth_client.post(
+        "/api/v1/budget-line-items/",
+        json={
+            "agreement_id": bundle_grant.id,
+            "grant_number_id": 999999999,
+            "line_description": "Nonexistent GN create attempt",
+            "amount": 12345.00,
+            "can_id": 500,
+            "status": "DRAFT",
+        },
+    )
+    assert response.status_code == 404
+
+
 # ---------------------------------------------------------------------------
 # Model-level: status-change required fields are polymorphic (no DB needed)
 # ---------------------------------------------------------------------------

@@ -204,6 +204,29 @@ def test_grant_numbers_patch(auth_client, loaded_db, test_grant_number, app_ctx)
     assert gn.period_end == datetime.date(2054, 7, 15)
 
 
+def test_grant_numbers_partial_patch_preserves_omitted_fields(auth_client, loaded_db, test_grant_number, app_ctx):
+    """A partial PATCH must only change the fields it sends, leaving omitted columns intact.
+
+    Regression for the merge-on-transient-instance bug that NULLed period_start/period_end
+    whenever they were absent from the PATCH body.
+    """
+    gn_id = test_grant_number.id
+
+    response = auth_client.patch(
+        url_for("api.grant-number-item", id=gn_id),
+        json={"description": "Only the description changed"},
+    )
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    gn = loaded_db.get(GrantNumber, gn_id)
+    assert gn.description == "Only the description changed"
+    # Omitted fields must be untouched, not NULLed.
+    assert gn.number == 12
+    assert gn.period_start == datetime.date(2025, 6, 13)
+    assert gn.period_end == datetime.date(2028, 6, 13)
+
+
 def test_grant_numbers_put(auth_client, loaded_db, test_grant_number, app_ctx):
     gn_id = test_grant_number.id
 

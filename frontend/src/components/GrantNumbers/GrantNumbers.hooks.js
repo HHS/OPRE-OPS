@@ -21,7 +21,7 @@ const useGrantNumbers = (agreementId, continueBtnText, setHasUnsavedChanges) => 
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
-    const { grant_numbers: grantNumbers } = useEditAgreement() || {};
+    const { grant_numbers: grantNumbers = [] } = useEditAgreement() || {};
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -131,7 +131,6 @@ const useGrantNumbers = (agreementId, continueBtnText, setHasUnsavedChanges) => 
         setShowModal,
         modalProps,
         setModalProps,
-        setAlert,
         handleSubmit,
         handleDelete,
         handleCancel,
