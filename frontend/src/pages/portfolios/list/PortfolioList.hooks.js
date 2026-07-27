@@ -24,7 +24,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const tabFromUrl = searchParams.get("tab") || "all";
     // Filters + selected fiscal year persist across client-side navigation via
     // the session slice (see useListFilters).
-    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("portfolios");
+    const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("portfolios");
     const [activeTab, setActiveTab] = useState(tabFromUrl);
 
     const fiscalYear = Number(selectedFiscalYear);
@@ -33,22 +33,16 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const unfilteredBudgetRangeRef = useRef(null);
     const prevFiscalYearRef = useRef(selectedFiscalYear);
 
-    // Reset filters and cached budget range when fiscal year changes
+    // When the fiscal year actually changes, the persisted filters are reset by
+    // `changeFiscalYear` (in the slice); here we only drop the cached slider
+    // range so it recomputes from the new fiscal year's data. Guarded by a ref so
+    // it no-ops on remount with an unchanged (persisted) fiscal year.
     useEffect(() => {
         if (prevFiscalYearRef.current !== selectedFiscalYear) {
-            // Reset all filters including budget range
-            setFilters((prev) => ({
-                ...prev,
-                portfolios: [],
-                budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-                availablePct: []
-            }));
-
-            // Reset cached budget range so it recalculates from new fiscal year data
             unfilteredBudgetRangeRef.current = null;
             prevFiscalYearRef.current = selectedFiscalYear;
         }
-    }, [selectedFiscalYear, setFilters]);
+    }, [selectedFiscalYear]);
 
     // Prepare filter parameters for API call
     const portfolioIds = Array.isArray(filters.portfolios) ? filters.portfolios.map((p) => p.id) : [];
@@ -158,7 +152,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     return {
         // State
         selectedFiscalYear,
-        setSelectedFiscalYear,
+        setSelectedFiscalYear: changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,

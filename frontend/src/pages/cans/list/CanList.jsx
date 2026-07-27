@@ -28,7 +28,7 @@ const CanList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     // Filters + selected fiscal year persist across client-side navigation via
     // the session slice (see useListFilters).
-    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("cans");
+    const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("cans");
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
 
@@ -191,7 +191,7 @@ const CanList = () => {
                 FYSelect={
                     <CANFiscalYearSelect
                         fiscalYear={fiscalYear}
-                        setSelectedFiscalYear={setSelectedFiscalYear}
+                        setSelectedFiscalYear={changeFiscalYear}
                     />
                 }
                 FilterTags={

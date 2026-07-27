@@ -26,7 +26,6 @@ import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { useListFilters } from "../../../hooks/useListFilters.hooks";
-import { listFilterDefaults } from "../../../sessionUISlice";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, formatDate, getCurrentFiscalYear } from "../../../helpers/utils";
@@ -51,7 +50,8 @@ const AgreementsList = () => {
     // Filters + selected fiscal year persist across client-side navigation via
     // the session slice, so returning to this list (e.g. via breadcrumb) keeps
     // the user's selections applied.
-    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("agreements");
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear, changeFiscalYear } =
+        useListFilters("agreements");
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
@@ -140,8 +140,7 @@ const AgreementsList = () => {
 
     // Handle fiscal year change - clear filters when changing fiscal year selection
     const handleChangeFiscalYear = (newValue) => {
-        setFilters({ ...listFilterDefaults.agreements.filters });
-        setSelectedFiscalYear(newValue);
+        changeFiscalYear(newValue);
     };
 
     const [trigger] = useLazyGetUserQuery();

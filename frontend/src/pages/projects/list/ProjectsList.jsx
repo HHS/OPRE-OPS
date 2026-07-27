@@ -33,7 +33,7 @@ const ProjectsList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(PROJECT_SORT_CODES.TITLE, false);
     // Filters + selected fiscal year persist across client-side navigation via
     // the session slice (see useListFilters).
-    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("projects");
+    const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("projects");
 
     const { data: projectFilterOptions, isLoading: isLoadingProjectFilterOptions } = useGetProjectsFilterOptionsQuery();
 
@@ -71,8 +71,7 @@ const ProjectsList = () => {
     }, [isError, navigate]);
 
     const handleChangeFiscalYear = (newValue) => {
-        setSelectedFiscalYear(newValue);
-        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+        changeFiscalYear(newValue);
     };
 
     const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;

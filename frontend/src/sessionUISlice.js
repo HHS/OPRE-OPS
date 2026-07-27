@@ -99,20 +99,24 @@ const listFilterDefaults = {
 };
 
 /**
- * Build the initial listFilters state from the per-page defaults. Deep-cloned
- * so the exported defaults are never mutated by Immer.
+ * Build a fresh per-page state entry from its default. Deep-clones `filters`
+ * so the exported defaults are never mutated (by Immer freezing or otherwise),
+ * and includes `selectedFiscalYear` only for pages that have a page-level FY.
+ * Single source of truth for both initial-state construction and reset.
+ * @param {{filters: Object, selectedFiscalYear?: string|number}} def
+ * @returns {{filters: Object, selectedFiscalYear?: string|number}}
+ */
+const buildPageState = (def) => ({
+    filters: structuredClone(def.filters),
+    ...("selectedFiscalYear" in def ? { selectedFiscalYear: def.selectedFiscalYear } : {})
+});
+
+/**
+ * Build the initial listFilters state from the per-page defaults.
  * @returns {Record<string, {filters: Object, selectedFiscalYear?: string|number}>}
  */
 const buildListFiltersInitialState = () =>
-    Object.fromEntries(
-        Object.entries(listFilterDefaults).map(([page, def]) => [
-            page,
-            {
-                filters: structuredClone(def.filters),
-                ...("selectedFiscalYear" in def ? { selectedFiscalYear: def.selectedFiscalYear } : {})
-            }
-        ])
-    );
+    Object.fromEntries(Object.entries(listFilterDefaults).map(([page, def]) => [page, buildPageState(def)]));
 
 const initialState = {
     navContext: {
@@ -172,10 +176,7 @@ const sessionUISlice = createSlice({
             const { page } = action.payload;
             const def = listFilterDefaults[page];
             if (!def) return;
-            state.listFilters[page] = {
-                filters: structuredClone(def.filters),
-                ...("selectedFiscalYear" in def ? { selectedFiscalYear: def.selectedFiscalYear } : {})
-            };
+            state.listFilters[page] = buildPageState(def);
         }
     },
     extraReducers: (builder) => {

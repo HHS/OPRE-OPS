@@ -59,13 +59,16 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
             budget[0] === fyBudgetRange[0] &&
             budget[1] === fyBudgetRange[1];
         if (isFullRange) {
+            // Full range === no budget filter: clear any previously-applied budget
+            // (setting [] rather than omitting it, so a persisted budget is removed).
             setFilters((prevState) => {
                 return {
                     ...prevState,
                     activePeriod: activePeriod,
                     transfer: transfer,
                     portfolio: portfolio,
-                    can: can
+                    can: can,
+                    budget: []
                 };
             });
         } else {
