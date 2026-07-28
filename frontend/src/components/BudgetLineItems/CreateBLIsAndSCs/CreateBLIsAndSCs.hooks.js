@@ -185,7 +185,9 @@ const useCreateBLIsAndSCs = (
     // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
         ? suite.run({
-              budgetLines: tempBudgetLines
+              // Exclude in-review BLIs from validation — they are locked (not editable) and
+              // won't be included in the save payload, so their TBD fields should not block saving.
+              budgetLines: tempBudgetLines.filter((bli) => !bli.in_review)
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();
@@ -1018,9 +1020,10 @@ const useCreateBLIsAndSCs = (
         ]
     );
 
-    const hasFinancialSnapshotChanges = tempBudgetLines.some(
-        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-    );
+    const hasFinancialSnapshotChanges = tempBudgetLines
+        .filter((b) => !b.in_review)
+        .some((b) => b.financialSnapshotChanged);
+    const requiresFinancialApproval = !isSuperUser && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);
 
@@ -1141,6 +1144,7 @@ const useCreateBLIsAndSCs = (
         tempBudgetLines,
         totalsForCards,
         isAgreementNotYetDeveloped,
+        requiresFinancialApproval,
         effectiveScStartDate,
         effectiveScEndDate
     };

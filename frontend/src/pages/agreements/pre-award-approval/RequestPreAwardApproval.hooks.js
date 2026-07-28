@@ -71,7 +71,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Disable editing when pending OR approved, but allow re-request when declined
     const hasApprovalBeenRequested = (isApprovalPending || isApprovalApproved) && !isApprovalDeclined;
 
-    // Check if any BLI is in review status
+    // True when ANY BLI has a pending change request — blocks submission and shows the alert.
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed

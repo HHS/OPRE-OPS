@@ -400,7 +400,7 @@ it("allows entering a decimal budget line amount", () => {
 
     // The decimal value should be accepted and retained by the input.
     // No cleanup needed — the test stops before submitting, so no agreement is created.
-    cy.get("#enteredAmount").should("have.value", "500.75");
+    cy.get("#enteredAmount").should("have.value", "$500.75");
 });
 
 it("can save a draft agreement from step 2", () => {

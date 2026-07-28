@@ -217,10 +217,8 @@ def test_approval_transitions_are_idempotent(auth_client, test_pre_award_step, l
 def test_approval_response_auto_dismisses_in_review_notifications(auth_client, test_pre_award_step, loaded_db):
     """Test that approval response auto-dismisses 'in review' notifications for reviewers.
 
-    NOTE: OPS-1639 changed the flow so DD approval sends to Budget Team, not auto-dismisses reviewer notifications.
-    Reviewer notifications are only created for Division Directors and SYSTEM_OWNER users (Budget Team excluded).
-    When DD approves, new notifications go to Budget Team, but the original 'Pre-Award Approval Request'
-    notifications to DDs remain unread (they are not auto-dismissed).
+    When DD approves, 'Pre-Award Approval Request' notifications to DDs are dismissed so they don't see
+    a stale 'please review' prompt in their bell icon after they've already acted.
     """
     # Step 1: Request approval - creates "in review" notifications for reviewers (DD/SYSTEM_OWNER only)
     update_data = {
@@ -245,7 +243,7 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     # Store the notification IDs to verify later
     reviewer_notification_ids = [n.id for n in in_review_notifications]
 
-    # Step 2: Approve request - sends notification to Budget Team (not auto-dismiss)
+    # Step 2: Approve request
     update_data = {
         "approval_status": "APPROVED",
         "reviewer_notes": "Looks good, approved",
@@ -256,14 +254,12 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     )
     assert response.status_code == 200
 
-    # Step 3: Verify "Pre-Award Approval Request" notifications remain (NOT auto-dismissed)
-    # OPS-1639: DD approval creates NEW notifications for Budget Team but does NOT dismiss original DD notifications
+    # Step 3: Verify "Pre-Award Approval Request" notifications are dismissed after DD approves
+    # so the DD no longer sees a stale "please review" prompt in their bell icon
+    loaded_db.expire_all()
     for notification_id in reviewer_notification_ids:
         notification = loaded_db.get(Notification, notification_id)
-        # These notifications should remain unread - they are NOT auto-dismissed in OPS-1639 flow
-        assert (
-            not notification.is_read
-        ), f"Notification {notification_id} should remain unread (OPS-1639: DD approval sends to Budget Team, does not auto-dismiss DD notifications)"
+        assert notification.is_read, f"Notification {notification_id} should be dismissed after DD approves"
 
 
 def test_approval_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -466,3 +462,70 @@ def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award
     assert "\\`\\`\\`" in notification.message, "Triple backticks should be escaped"
     # Verify the markdown after triple backticks is also escaped
     assert "\\*\\*This should NOT render as bold\\*\\*" in notification.message, "Asterisks should be escaped"
+
+
+def test_award_approval_dismisses_request_notifications_after_bt_approves(budget_team_auth_client, loaded_db):
+    """Test that BT approval dismisses the 'Award Approval Request' notifications sent in Case 1.
+
+    Without this, BT members end up with a stale 'please review' notification sitting
+    alongside the new 'Award Approved' notification after they've already acted.
+    """
+    tracker = loaded_db.get(ProcurementTracker, 1)
+
+    award_step = DefaultProcurementTrackerStep(
+        procurement_tracker=tracker,
+        step_number=997,
+        step_type=ProcurementTrackerStepType.AWARD,
+        status=ProcurementTrackerStepStatus.ACTIVE,
+        award_approval_requested=False,
+        award_approval_status=None,
+    )
+    loaded_db.add(award_step)
+    loaded_db.commit()
+    loaded_db.refresh(award_step)
+
+    try:
+        # Step 1: Request award approval — sends "Award Approval Request" to BT
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{award_step.id}",
+            json={
+                "approval_requested": True,
+                "approval_requested_date": date.today().isoformat(),
+                "requestor_notes": "Ready for award approval",
+            },
+        )
+        assert response.status_code == 200
+
+        # Verify "Award Approval Request" notifications were created
+        request_notifications = loaded_db.scalars(
+            select(Notification)
+            .where(Notification.title == "Award Approval Request")
+            .where(Notification.is_read.is_(False))
+        ).all()
+        assert len(request_notifications) > 0, "Should have unread Award Approval Request notifications"
+        request_notification_ids = [n.id for n in request_notifications]
+
+        # Step 2: BT approves — should dismiss "Award Approval Request" notifications
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{award_step.id}",
+            json={"approval_status": "APPROVED"},
+        )
+        assert response.status_code == 200
+
+        # Step 3: Verify the request notifications are now dismissed
+        loaded_db.expire_all()
+        for notification_id in request_notification_ids:
+            notification = loaded_db.get(Notification, notification_id)
+            assert notification.is_read, f"Notification {notification_id} should be dismissed after BT approves"
+
+    finally:
+        loaded_db.rollback()
+        try:
+            from models.procurement_tracker import ProcurementTrackerStep
+
+            step = loaded_db.get(ProcurementTrackerStep, award_step.id)
+            if step:
+                loaded_db.delete(step)
+                loaded_db.commit()
+        except Exception:
+            loaded_db.rollback()

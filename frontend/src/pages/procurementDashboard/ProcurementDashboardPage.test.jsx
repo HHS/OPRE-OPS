@@ -9,6 +9,7 @@ import { opsApi } from "../../api/opsAPI";
 
 const mockUseGetAllAgreements = vi.fn();
 const mockUseGetProcurementShopsQuery = vi.fn();
+const mockUseGetDivisionsQuery = vi.fn();
 const mockUseGetAllProcurementTrackers = vi.fn();
 const mockExportMultiSheetToXlsx = vi.fn();
 
@@ -24,7 +25,8 @@ vi.mock("../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../api/opsAPI");
     return {
         ...actual,
-        useGetProcurementShopsQuery: () => mockUseGetProcurementShopsQuery()
+        useGetProcurementShopsQuery: () => mockUseGetProcurementShopsQuery(),
+        useGetDivisionsQuery: () => mockUseGetDivisionsQuery()
     };
 });
 
@@ -52,26 +54,6 @@ vi.mock("./summary/ProcurementDashboardTabs", () => ({
     default: () => <div data-testid="dashboard-tabs" />
 }));
 
-vi.mock("./summary/ProcShopFilter", () => ({
-    default: ({ value, onChange, options }) => (
-        <select
-            data-testid="proc-shop-filter"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-        >
-            <option value="all">All</option>
-            {options.map((o) => (
-                <option
-                    key={o}
-                    value={o}
-                >
-                    {o}
-                </option>
-            ))}
-        </select>
-    )
-}));
-
 function renderWithProviders(ui, { route = "/procurement-dashboard" } = {}) {
     const store = configureStore({
         reducer: { [opsApi.reducerPath]: opsApi.reducer },
@@ -88,6 +70,7 @@ describe("ProcurementDashboardPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseGetProcurementShopsQuery.mockReturnValue({ data: [{ id: 1, abbr: "GCS" }] });
+        mockUseGetDivisionsQuery.mockReturnValue({ data: [{ id: 1, name: "Division of Data and Improvement" }] });
         mockUseGetAllAgreements.mockReturnValue({
             agreements: [
                 {
@@ -126,7 +109,71 @@ describe("ProcurementDashboardPage", () => {
         renderWithProviders(<ProcurementDashboard />);
         expect(screen.getByTestId("summary-cards")).toBeInTheDocument();
         expect(screen.getByTestId("dashboard-tabs")).toBeInTheDocument();
-        expect(screen.getByTestId("proc-shop-filter")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /Filters/i })).toBeInTheDocument();
+    });
+
+    it("passes no proc-shop or division filter to the query by default", () => {
+        renderWithProviders(<ProcurementDashboard />);
+        const params = mockUseGetAllAgreements.mock.calls[0][0];
+        expect(params.filters.awardingEntityId).toBeUndefined();
+        expect(params.filters.division).toBeUndefined();
+        expect(params.filters.includeProcurement).toBe(true);
+    });
+
+    it("applies a division filter to the query when a division is selected", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<ProcurementDashboard />);
+
+        // Open the filter modal and select the seeded division.
+        await user.click(screen.getByRole("button", { name: /Filters/i }));
+        const divisionInput = screen.getByLabelText("Division");
+        await user.click(divisionInput);
+        await user.type(divisionInput, "Division of Data");
+        await user.keyboard("{Enter}");
+        await user.click(screen.getByRole("button", { name: "Apply" }));
+
+        // The most recent render's filters should include the division id.
+        const lastCall = mockUseGetAllAgreements.mock.calls.at(-1)[0];
+        expect(lastCall.filters.division).toEqual([1]);
+    });
+
+    it("renders a filter tag and removing it clears the division filter", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<ProcurementDashboard />);
+
+        await user.click(screen.getByRole("button", { name: /Filters/i }));
+        const divisionInput = screen.getByLabelText("Division");
+        await user.click(divisionInput);
+        await user.type(divisionInput, "Division of Data");
+        await user.keyboard("{Enter}");
+        await user.click(screen.getByRole("button", { name: "Apply" }));
+
+        // A tag for the selected division is shown.
+        expect(screen.getByText("Filters Applied:")).toBeInTheDocument();
+        expect(screen.getByText("Division of Data and Improvement")).toBeInTheDocument();
+
+        // Removing the tag clears the division filter from the query.
+        await user.click(screen.getByRole("button", { name: "Remove Division of Data and Improvement filter" }));
+        const lastCall = mockUseGetAllAgreements.mock.calls.at(-1)[0];
+        expect(lastCall.filters.division).toBeUndefined();
+    });
+
+    it("renders an empty state without error when no agreements match", () => {
+        mockUseGetAllAgreements.mockReturnValue({
+            agreements: [],
+            metadata: { procurement_overview: null, procurement_step_summary: null },
+            isLoading: false,
+            error: null
+        });
+        mockUseGetAllProcurementTrackers.mockReturnValue({
+            procurementTrackers: [],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        renderWithProviders(<ProcurementDashboard />);
+        expect(screen.getByText("Procurement Dashboard")).toBeInTheDocument();
     });
 
     it("renders export button", () => {

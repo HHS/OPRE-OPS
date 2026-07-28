@@ -81,6 +81,18 @@ paths:
           style: form
           explode: true
         - in: query
+          name: division
+          description: >
+            Filter agreements by the division id(s) of their project officer (COR).
+            Multiple values are combined with OR logic. Agreements without a project
+            officer are excluded when this filter is active.
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
           name: name
           schema:
             type: array
