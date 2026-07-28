@@ -2,6 +2,7 @@ import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
 import { ChangeRequest } from "./ChangeRequestsTypes";
+import { GrantNumber } from "./GrantNumbers";
 import { AgreementType, AWARD_TYPE_LABELS } from "../pages/agreements/agreements.constants";
 
 export type Agreement = {
@@ -48,6 +49,7 @@ export type Agreement = {
     nofo_number?: string | null;
     aln_number?: string | null;
     funding_period_months?: number | null;
+    grant_numbers?: GrantNumber[];
     sc_start_date?: string | null;
     sc_end_date?: string | null;
     agreement_subtotal?: number | string | null;
