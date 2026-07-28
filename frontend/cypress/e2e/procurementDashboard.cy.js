@@ -104,50 +104,67 @@ describe("Procurement Dashboard - Authorized User", () => {
         });
     });
 
-    describe("Proc Shop Filter", () => {
-        it("renders the proc shop dropdown with All option", () => {
-            cy.get("#proc-shop-select").should("be.visible");
-            cy.get("#proc-shop-select").find("option").first().should("have.text", "All");
+    describe("Filters", () => {
+        it("renders the filter modal with Procurement Shop and Division comboboxes", () => {
+            cy.get("button").contains("Filter").click();
+            cy.get(".proc-shop-combobox__control").should("be.visible");
+            cy.get(".division-combobox__control").should("be.visible");
         });
 
-        it("populates the dropdown with procurement shop abbreviations", () => {
-            cy.get("#proc-shop-select").find("option").should("have.length.greaterThan", 1);
+        it("populates the procurement shop combobox with options", () => {
+            cy.get("button").contains("Filter").click();
+            cy.get(".proc-shop-combobox__control").click();
+            cy.get(".proc-shop-combobox__menu").find(".proc-shop-combobox__option").should("have.length.at.least", 1);
         });
 
         it("filters agreements by procurement shop when selecting a specific shop", () => {
             getAgreementCount().then((allCount) => {
-                // Select the second option (first non-"All" shop)
-                cy.get("#proc-shop-select")
-                    .find("option")
-                    .eq(1)
-                    .invoke("val")
-                    .then((shopValue) => {
-                        cy.get("#proc-shop-select").select(shopValue);
-                        getAgreementCount().then((filteredCount) => {
-                            expect(filteredCount).to.be.at.most(allCount);
-                            expect(filteredCount).to.be.at.least(1);
-                        });
-                    });
+                // Open the filter modal and select the first procurement shop option
+                cy.get("button").contains("Filter").click();
+                cy.get(".proc-shop-combobox__control").click();
+                cy.get(".proc-shop-combobox__menu").find(".proc-shop-combobox__option").first().click();
+
+                // Apply the filter
+                cy.get("button").contains("Apply").click();
+
+                getAgreementCount().then((filteredCount) => {
+                    expect(filteredCount).to.be.at.most(allCount);
+                    expect(filteredCount).to.be.at.least(1);
+                });
             });
         });
 
-        it("returns to all agreements when selecting All", () => {
+        it("returns to all agreements when the filter is reset", () => {
             getAgreementCount().then((allCount) => {
                 // Filter to a specific shop
-                cy.get("#proc-shop-select")
-                    .find("option")
-                    .eq(1)
-                    .invoke("val")
-                    .then((shopValue) => {
-                        cy.get("#proc-shop-select").select(shopValue);
+                cy.get("button").contains("Filter").click();
+                cy.get(".proc-shop-combobox__control").click();
+                cy.get(".proc-shop-combobox__menu").find(".proc-shop-combobox__option").first().click();
+                cy.get("button").contains("Apply").click();
 
-                        // Reset to all
-                        cy.get("#proc-shop-select").select("All");
-                        cy.get("[data-cy='procurement-overview-total-agreements']").should(
-                            "contain",
-                            `${allCount} agreements`
-                        );
-                    });
+                // Reset the filter back to all
+                cy.get("button").contains("Filter").click();
+                cy.get("button").contains("Reset").click();
+                cy.get("button").contains("Apply").click();
+
+                cy.get("[data-cy='procurement-overview-total-agreements']").should("contain", `${allCount} agreements`);
+            });
+        });
+
+        it("filters agreements by division when selecting a specific division", () => {
+            getAgreementCount().then((allCount) => {
+                // Open the filter modal and select the first division option
+                cy.get("button").contains("Filter").click();
+                cy.get(".division-combobox__control").click();
+                cy.get(".division-combobox__menu").find(".division-combobox__option").first().click();
+
+                // Apply the filter
+                cy.get("button").contains("Apply").click();
+
+                getAgreementCount().then((filteredCount) => {
+                    expect(filteredCount).to.be.at.most(allCount);
+                    expect(filteredCount).to.be.at.least(1);
+                });
             });
         });
     });

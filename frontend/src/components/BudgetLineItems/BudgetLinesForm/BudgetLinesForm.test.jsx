@@ -163,12 +163,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that validation error classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("usa-form-group--error");
-            expect(servicesSelect).toHaveClass("usa-form-group--error");
+            expect(servicesFormGroup).toHaveClass("usa-form-group--error");
             expect(currencyInput).toHaveClass("usa-form-group--error");
             expect(datePicker).toHaveClass("usa-form-group--error");
         });
@@ -184,12 +184,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that success classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("success");
-            expect(servicesSelect).toHaveClass("success");
+            expect(servicesFormGroup).toHaveClass("success");
             expect(currencyInput).toHaveClass("success");
             expect(datePicker).toHaveClass("success");
         });

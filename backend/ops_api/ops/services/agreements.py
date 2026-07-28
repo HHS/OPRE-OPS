@@ -68,6 +68,7 @@ class AgreementFilters:
     agreement_type: Optional[list[str]] = None
     delivered_status: Optional[list[str]] = None
     awarding_entity_id: Optional[list[int]] = None
+    division: Optional[list[int]] = None
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
@@ -96,6 +97,7 @@ class AgreementFilters:
             agreement_type=data.get("agreement_type", []),
             delivered_status=data.get("delivered_status", []),
             awarding_entity_id=data.get("awarding_entity_id", []),
+            division=data.get("division", []),
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
@@ -1006,10 +1008,14 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     """
     tracked_statuses = [
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.PLANNED_MOD,
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ]
+
+    # PLANNED_MOD BLIs are modifications to already-PLANNED lines, so they're grouped under PLANNED here.
+    status_bucket = {
+        BudgetLineItemStatus.PLANNED_MOD: BudgetLineItemStatus.PLANNED,
+    }
 
     amount_by_status: dict[BudgetLineItemStatus, Decimal] = {s: Decimal("0") for s in tracked_statuses}
     agreements_by_status: dict[BudgetLineItemStatus, set[int]] = {s: set() for s in tracked_statuses}
@@ -1018,9 +1024,10 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         for bli in agreement.budget_line_items:
             if fiscal_year is not None and bli.fiscal_year != fiscal_year:
                 continue
-            if bli.status in amount_by_status:
-                amount_by_status[bli.status] += (bli.amount or Decimal("0")) + bli.fees
-                agreements_by_status[bli.status].add(agreement.id)
+            bucket = status_bucket.get(bli.status, bli.status)
+            if bucket in amount_by_status:
+                amount_by_status[bucket] += (bli.amount or Decimal("0")) + bli.fees
+                agreements_by_status[bucket].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
     tracked_agreement_ids = set().union(*agreements_by_status.values())
@@ -1227,6 +1234,13 @@ def _apply_agreement_filters(
         values = data.get(filter_key, [])
         if values:
             query = query.where(column.in_(values))
+
+    # Filter by the division of the agreement's project officer (COR).
+    # Uses a subquery join through User because division lives on the User model,
+    # not the agreement. This naturally excludes agreements with no project officer.
+    divisions = data.get("division", [])
+    if divisions:
+        query = query.where(agreement_cls.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
 
     # Apply name filter with partial or exact matching based on exact_match flag
     # Use OR logic so multiple names return agreements matching ANY of them

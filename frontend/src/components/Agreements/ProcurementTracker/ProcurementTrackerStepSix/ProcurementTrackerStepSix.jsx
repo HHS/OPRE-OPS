@@ -346,8 +346,8 @@ const ProcurementTrackerStepSix = ({
                                 className="margin-left-4"
                             />
                         )}
-                        <div className="margin-top-2">
-                            <dt className="margin-0 text-base-dark font-12px">Notes</dt>
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                             <StepNotesEditor
                                 notes={stepSixNotes}
                                 setNotes={setStepSixNotes}

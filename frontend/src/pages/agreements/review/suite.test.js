@@ -139,8 +139,13 @@ describe("Budget Line Suite", () => {
         expect(result.errors).toEqual({});
     });
 
-    it("fails if amount is 0 or negative", () => {
+    it("passes if amount is 0 (0 is a valid amount per business rules)", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, amount: 0 });
+        expect(result.isValid).toBe(true);
+    });
+
+    it("fails if amount is null", () => {
+        const result = validateBudgetLineItem({ ...validBudgetLine, amount: null });
         expect(result.isValid).toBe(false);
         // Normalized key: "Budget Line Amount" → "amount"
         expect(result.errors).toHaveProperty("amount");
@@ -188,6 +193,22 @@ describe("Budget Line Suite", () => {
         expect(result.errors).toHaveProperty("date_needed");
     });
 
+    it("fails if date_needed is today (strictly future required)", () => {
+        const today = new Date();
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: todayISO });
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toHaveProperty("date_needed");
+    });
+
+    it("passes if date_needed is tomorrow", () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: tomorrowISO });
+        expect(result.isValid).toBe(true);
+    });
+
     it("validates only a single field when fieldName is provided", () => {
         const result = validateBudgetLineItem({}, "Budget Line Amount");
         expect(result.isValid).toBe(false);
@@ -211,13 +232,13 @@ describe("validateBudgetLineItems", () => {
     };
 
     it("returns array of results for multiple budget lines", () => {
+        // amount: 0 is now valid per business rules
         const lines = [validBudgetLine, { ...validBudgetLine, id: 2, amount: 0 }];
         const results = validateBudgetLineItems(lines);
         expect(Array.isArray(results)).toBe(true);
         expect(results.length).toBe(2);
         expect(results[0].isValid).toBe(true);
-        expect(results[1].isValid).toBe(false);
-        expect(results[1].errors).toHaveProperty("amount");
+        expect(results[1].isValid).toBe(true);
     });
 
     it("handles single object input", () => {
