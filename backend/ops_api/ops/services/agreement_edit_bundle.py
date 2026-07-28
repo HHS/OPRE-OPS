@@ -26,6 +26,10 @@ from ops_api.ops.schemas.budget_line_items import (
     NestedBudgetLineItemRequestSchema,
     PATCHRequestBodySchema,
 )
+from ops_api.ops.schemas.grant_number import (
+    GrantNumberUpdateSchema,
+    NestedGrantNumberRequestSchema,
+)
 from ops_api.ops.schemas.services_component import (
     NestedServicesComponentRequestSchema,
     ServicesComponentUpdateSchema,
@@ -33,6 +37,7 @@ from ops_api.ops.schemas.services_component import (
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.budget_line_items import BudgetLineItemService
 from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.grant_number import GrantNumberService
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.services_component import ServicesComponentService
 from ops_api.ops.utils.agreements_helpers import is_agreement_name_unique_violation
@@ -46,6 +51,9 @@ class BundleResult:
     services_components_created: int = 0
     services_components_updated: int = 0
     services_components_deleted: int = 0
+    grant_numbers_created: int = 0
+    grant_numbers_updated: int = 0
+    grant_numbers_deleted: int = 0
     budget_line_items_created: int = 0
     budget_line_items_updated: int = 0
     budget_line_items_deleted: int = 0
@@ -64,6 +72,7 @@ class AgreementEditBundleService:
         self.db_session = db_session
         self._agreements = AgreementsService(db_session)
         self._scs = ServicesComponentService(db_session)
+        self._grant_numbers = GrantNumberService(db_session)
         self._blis = BudgetLineItemService(db_session)
         self._change_requests = ChangeRequestService(db_session)
 
@@ -91,6 +100,7 @@ class AgreementEditBundleService:
                 result.agreement_updated = True
 
             sc_payload = payload.get("services_components") or {}
+            gn_payload = payload.get("grant_numbers") or {}
             bli_payload = payload.get("budget_line_items") or {}
 
             # 2. SC creates → flush to populate IDs so later BLI creates can resolve
@@ -102,6 +112,12 @@ class AgreementEditBundleService:
 
             # 3. SC updates
             result.services_components_updated = self._update_services_components(sc_payload.get("update", []) or [])
+
+            # 3b. Grant number creates/updates. No BLI linkage this slice (grant BLIs are
+            #     #5928), so unlike SC there's no ref map to thread through BLI creates.
+            _, created_gn_count = self._create_grant_numbers(agreement_id, gn_payload.get("create", []) or [])
+            result.grant_numbers_created = created_gn_count
+            result.grant_numbers_updated = self._update_grant_numbers(gn_payload.get("update", []) or [])
 
             # 4. BLI creates (resolves services_component_ref using sc_ref_map)
             result.budget_line_items_created = self._create_budget_line_items(
@@ -121,8 +137,9 @@ class AgreementEditBundleService:
             # 6. BLI deletes (before SC deletes — BLIs reference SCs)
             result.budget_line_items_deleted = self._delete_budget_line_items(bli_payload.get("delete", []) or [])
 
-            # 7. SC deletes
+            # 7. SC deletes and grant number deletes (no BLI linkage for grant numbers this slice)
             result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
+            result.grant_numbers_deleted = self._delete_grant_numbers(gn_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
             self.db_session.commit()
@@ -165,12 +182,13 @@ class AgreementEditBundleService:
 
     def _apply_agreement_update(self, agreement: Agreement, agreement_data: dict[str, Any]) -> None:
         schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(agreement.agreement_type)()
-        # Nested SC / BLI arrays are rejected by the bundle request schema, but the
-        # per-type dataclass schema may still emit them under default values — drop
+        # Nested SC / grant number / BLI arrays are rejected by the bundle request schema,
+        # but the per-type dataclass schema may still emit them under default values — drop
         # them after loading so they can't leak into the agreement update.
         loaded = schema.load(agreement_data, unknown=EXCLUDE, partial=True)
         loaded.pop("budget_line_items", None)
         loaded.pop("services_components", None)
+        loaded.pop("grant_numbers", None)
         loaded["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement.agreement_type)
         self._agreements.update(agreement.id, loaded, partial=True, commit=False)
 
@@ -203,6 +221,37 @@ class AgreementEditBundleService:
     def _delete_services_components(self, ids: list[int]) -> int:
         for sc_id in ids:
             self._scs.delete(sc_id, commit=False)
+        return len(ids)
+
+    # ------------------------------------------------------------------
+    # Grant Numbers
+    # ------------------------------------------------------------------
+
+    def _create_grant_numbers(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
+        gn_ref_map: dict[str, int] = {}
+        gn_create_schema = NestedGrantNumberRequestSchema()
+        for idx, gn_data in enumerate(items):
+            loaded = gn_create_schema.load(gn_data, unknown=EXCLUDE)
+            temp_ref = loaded.pop("ref", None) or str(idx)
+            loaded["agreement_id"] = agreement_id
+            new_gn = self._grant_numbers.create(loaded, commit=False)
+            gn_ref_map[temp_ref] = new_gn.id
+        return gn_ref_map, len(items)
+
+    def _update_grant_numbers(self, items: list[dict[str, Any]]) -> int:
+        gn_update_schema = GrantNumberUpdateSchema()
+        for gn_data in items:
+            gn_id = gn_data.get("id")
+            if gn_id is None:
+                raise ValidationError({"grant_numbers.update": "Each item requires an 'id'."})
+            data_to_load = {k: v for k, v in gn_data.items() if k != "id"}
+            loaded = gn_update_schema.load(data_to_load, unknown=EXCLUDE, partial=True)
+            self._grant_numbers.update(gn_id, loaded, commit=False)
+        return len(items)
+
+    def _delete_grant_numbers(self, ids: list[int]) -> int:
+        for gn_id in ids:
+            self._grant_numbers.delete(gn_id, commit=False)
         return len(ids)
 
     # ------------------------------------------------------------------
