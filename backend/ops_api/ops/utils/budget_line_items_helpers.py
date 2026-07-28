@@ -169,9 +169,7 @@ def is_award_approval_requested(agreement) -> bool:
     # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
     # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
     for tracker in agreement.procurement_trackers:
-        award_step = next(
-            (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None
-        )
+        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
         if not award_step or not award_step.award_approval_requested:
             continue
 
