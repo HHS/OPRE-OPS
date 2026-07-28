@@ -5,7 +5,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -263,11 +262,15 @@ const ProcurementTrackerStepSix = ({
                             </div>
 
                             {/* Notes */}
-                            <StepNotesForm
+                            <StepNotesEditor
                                 textAreaName="notes-step-6"
                                 notes={stepSixNotes}
                                 setNotes={setStepSixNotes}
-                                onSave={() => handleSaveNotes(stepSixData?.id)}
+                                resetNotes={resetStepSixNotes}
+                                notesLabel={stepSixNotesLabel}
+                                savedNotes={stepSixData?.notes}
+                                stepId={stepSixData?.id}
+                                onSave={handleSaveNotes}
                                 isDisabled={isDisabled}
                             />
 
@@ -347,7 +350,6 @@ const ProcurementTrackerStepSix = ({
                             />
                         )}
                         <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                             <StepNotesEditor
                                 notes={stepSixNotes}
                                 setNotes={setStepSixNotes}
@@ -358,6 +360,7 @@ const ProcurementTrackerStepSix = ({
                                 onSave={handleSaveNotes}
                                 isDisabled={isDisabled}
                                 textAreaName="notes-step-6"
+                                startInReadMode
                             />
                         </div>
                     </dl>

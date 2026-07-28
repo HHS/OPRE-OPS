@@ -898,6 +898,8 @@ describe("ProcurementTrackerStepSix", () => {
         });
 
         it("clicking Save Notes calls handleSaveNotes with stepSixData.id", () => {
+            useProcurementTrackerStepSix.mockReturnValue({ ...defaultHookReturn, stepSixNotes: "A note" });
+
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
             const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
@@ -962,9 +964,10 @@ describe("ProcurementTrackerStepSix", () => {
             fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
             expect(screen.getByTestId("text-area")).toBeInTheDocument();
 
-            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
 
             expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(mockResetStepSixNotes).toHaveBeenCalledWith("Existing notes");
             expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
             expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
         });

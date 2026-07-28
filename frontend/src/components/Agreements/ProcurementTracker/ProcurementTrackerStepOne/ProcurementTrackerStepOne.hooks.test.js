@@ -204,7 +204,7 @@ describe("useProcurementTrackerStepOne", () => {
                 });
             });
 
-            it("triggers a success alert on successful save", async () => {
+            it("does not trigger a success alert on successful save", async () => {
                 const mockSetAlert = vi.fn();
                 useAlert.mockReturnValue({ setAlert: mockSetAlert });
 
@@ -216,12 +216,8 @@ describe("useProcurementTrackerStepOne", () => {
                     await result.current.handleSaveNotes(1);
                 });
 
-                expect(mockSetAlert).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        type: "success",
-                        heading: "Notes Saved"
-                    })
-                );
+                // The tracker never shows success toasts — the UI flips to read mode instead.
+                expect(mockSetAlert).not.toHaveBeenCalled();
             });
 
             it("triggers an error alert when the API call fails", async () => {

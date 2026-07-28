@@ -43,7 +43,7 @@ describe("useSaveNotes", () => {
         expect(Object.keys(mockPatchStep.mock.calls[0][0].data)).toEqual(["notes"]);
     });
 
-    it("triggers a success alert and resolves true on a successful save", async () => {
+    it("resolves true on a successful save without showing a success alert", async () => {
         mockUnwrap.mockResolvedValue({ success: true });
         const { result } = renderHook(() => useSaveNotes(mockPatchStep, "Some notes", mockSetAlert));
 
@@ -53,12 +53,8 @@ describe("useSaveNotes", () => {
         });
 
         expect(saved).toBe(true);
-        expect(mockSetAlert).toHaveBeenCalledWith(
-            expect.objectContaining({
-                type: "success",
-                heading: "Notes Saved"
-            })
-        );
+        // The tracker never shows success toasts — the UI flips to read mode instead.
+        expect(mockSetAlert).not.toHaveBeenCalled();
     });
 
     it("triggers an error alert and resolves false when the API call fails", async () => {

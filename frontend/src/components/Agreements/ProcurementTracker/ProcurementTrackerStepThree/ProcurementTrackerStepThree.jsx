@@ -4,7 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -286,10 +285,14 @@ const ProcurementTrackerStepThree = ({
                             />
                         </div>
 
-                        <StepNotesForm
+                        <StepNotesEditor
                             notes={step3Notes}
                             setNotes={setStep3Notes}
-                            onSave={() => handleSaveNotes(stepThreeData?.id)}
+                            resetNotes={resetStep3Notes}
+                            notesLabel={step3NotesLabel}
+                            savedNotes={stepThreeData?.notes}
+                            stepId={stepThreeData?.id}
+                            onSave={handleSaveNotes}
                             isDisabled={isDisabled}
                         />
 
@@ -367,7 +370,6 @@ const ProcurementTrackerStepThree = ({
                             description={step3DateCompletedLabel ?? undefined}
                         />
                         <div style={{ gridColumn: "1 / -1" }}>
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                             <StepNotesEditor
                                 notes={step3Notes}
                                 setNotes={setStep3Notes}
@@ -377,6 +379,7 @@ const ProcurementTrackerStepThree = ({
                                 stepId={stepThreeData?.id}
                                 onSave={handleSaveNotes}
                                 isDisabled={isDisabled}
+                                startInReadMode
                             />
                         </div>
                     </dl>

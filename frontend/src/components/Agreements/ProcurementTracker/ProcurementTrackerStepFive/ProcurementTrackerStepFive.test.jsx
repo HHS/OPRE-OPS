@@ -1700,6 +1700,11 @@ describe("ProcurementTrackerStepFive", () => {
         });
 
         it("clicking Save Notes calls handleSaveNotes with stepFiveData.id", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                step5Notes: "A note"
+            });
+
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
@@ -1805,9 +1810,10 @@ describe("ProcurementTrackerStepFive", () => {
             fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
             expect(screen.getByTestId("text-area")).toBeInTheDocument();
 
-            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
 
             expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(mockResetStep5Notes).toHaveBeenCalledWith("Existing notes");
             expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
             expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
         });

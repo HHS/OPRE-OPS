@@ -4,7 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -237,10 +236,14 @@ const ProcurementTrackerStepFour = ({
                                 isDisabled={isEvaluationFieldsDisabled}
                             />
                         </div>
-                        <StepNotesForm
+                        <StepNotesEditor
                             notes={step4Notes}
                             setNotes={setStep4Notes}
-                            onSave={() => handleSaveNotes(stepFourData?.id)}
+                            resetNotes={resetStep4Notes}
+                            notesLabel={step4NotesLabel}
+                            savedNotes={stepFourData?.notes}
+                            stepId={stepFourData?.id}
+                            onSave={handleSaveNotes}
                             isDisabled={isDisabled}
                         />
 
@@ -305,7 +308,6 @@ const ProcurementTrackerStepFour = ({
                             description={step4DateCompletedLabel}
                         />
                         <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                             <StepNotesEditor
                                 notes={step4Notes}
                                 setNotes={setStep4Notes}
@@ -315,6 +317,7 @@ const ProcurementTrackerStepFour = ({
                                 stepId={stepFourData?.id}
                                 onSave={handleSaveNotes}
                                 isDisabled={isDisabled}
+                                startInReadMode
                             />
                         </div>
                     </dl>

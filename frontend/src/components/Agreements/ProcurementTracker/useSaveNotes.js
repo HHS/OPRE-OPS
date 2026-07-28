@@ -66,11 +66,8 @@ export default function useSaveNotes(patchStep, serverNotes, setAlert) {
             // The save succeeded, so the server value now matches the field.
             // Allow future server updates to sync in again.
             isDirtyRef.current = false;
-            setAlert({
-                type: "success",
-                heading: "Notes Saved",
-                message: "Your notes have been saved."
-            });
+            // No success alert: the tracker never shows success toasts. The UI
+            // instead flips the notes field from input mode to read mode.
             return true;
         } catch (error) {
             console.error("Failed to save notes", error);
