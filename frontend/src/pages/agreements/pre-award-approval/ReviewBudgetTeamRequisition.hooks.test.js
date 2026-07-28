@@ -286,6 +286,46 @@ describe("useReviewBudgetTeamRequisition", () => {
                 });
             });
         });
+
+        it("should save draft with both fields empty", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await result.current.handleSaveDraft();
+
+            await waitFor(() => {
+                expect(mockUpdateProcurementTrackerStep).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: {
+                        is_draft: true,
+                        requisition_number: null,
+                        requisition_date: null
+                    }
+                });
+            });
+        });
     });
 
     describe("handleApprove", () => {
