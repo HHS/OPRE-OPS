@@ -17,6 +17,7 @@ import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -59,6 +60,11 @@ const EditAgreementAndBudgetLines = () => {
     );
     const { setAlert } = useAlert();
 
+    // Budget Team direct-edit bypass only applies when editing from the award-approval
+    // review page (step 6). Detect this from the returnTo URL so the modal is suppressed
+    // only in that specific context, matching the backend's is_award_approval_requested check.
+    const isAwardApprovalContext = returnTo.includes("/review-award");
+
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
     const [includeDrafts, setIncludeDrafts] = useState(true);
@@ -85,6 +91,7 @@ const EditAgreementAndBudgetLines = () => {
     });
     // Financial-snapshot and procurement-shop changes both route through change requests
     // requiring Division Director approval — one modal covers both cases.
+    const isBudgetTeam = useIsUserBudgetTeam();
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
@@ -142,7 +149,7 @@ const EditAgreementAndBudgetLines = () => {
         setIsSaving(true);
         try {
             const bundle = buildBundle();
-            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
+            const result = await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
@@ -154,6 +161,16 @@ const EditAgreementAndBudgetLines = () => {
                         redirectUrl: returnTo
                     })
                 );
+            } else if (result?.change_request_ids?.length) {
+                // Backend created change requests (e.g. budget team outside award-approval context) —
+                // edits are pending DD approval, not applied immediately.
+                setAlert({
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl: returnTo
+                });
             } else {
                 setAlert({
                     type: "success",
@@ -186,7 +203,10 @@ const EditAgreementAndBudgetLines = () => {
         if (isSaving) return;
         // Both procurement-shop and BLI financial changes route through change requests that
         // need Division Director approval — show one confirmation covering either case.
-        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
+        // Budget team bypasses the modal only when editing from the award-approval review page
+        // (step 6), matching the backend's is_award_approval_requested condition.
+        const budgetTeamBypasses = isBudgetTeam && isAwardApprovalContext;
+        if (!budgetTeamBypasses && (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval)) {
             setShowFinancialApprovalModal(true);
             return;
         }

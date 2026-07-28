@@ -15,8 +15,15 @@ import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/bud
  * @returns {Object} - Shared data and computed values
  */
 export default function usePreAwardApprovalData(agreementId) {
-    // Fetch data
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
+    // Fetch data — refetchOnMountOrArgChange ensures fresh BLI state (e.g. in_review) is
+    // loaded when the page is revisited after an edit, preventing stale tooltips/alerts.
+    const {
+        data: agreement,
+        isLoading,
+        isFetching
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
+    });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
     const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
     const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
@@ -72,6 +79,7 @@ export default function usePreAwardApprovalData(agreementId) {
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
