@@ -456,6 +456,13 @@ class Agreement(BaseModel):
     def in_review(self) -> bool:
         return self.change_requests_in_review is not None
 
+    @property
+    def is_award_approval_requested(self) -> bool:
+        # Local import avoids a circular import: the ops_api utils layer imports models.
+        from ops_api.ops.utils.budget_line_items_helpers import is_award_approval_requested
+
+        return is_award_approval_requested(self)
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
