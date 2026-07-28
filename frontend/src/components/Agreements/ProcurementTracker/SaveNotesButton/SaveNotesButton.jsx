@@ -28,7 +28,7 @@ const SaveNotesButton = ({ onClick, isDisabled = false }) => (
         <FontAwesomeIcon
             icon={faCheck}
             size="2x"
-            className="text-primary height-2 width-2 cursor-pointer"
+            className={`height-2 width-2 ${isDisabled ? "text-disabled" : "text-primary cursor-pointer"}`}
         />
         Save Notes
     </button>
