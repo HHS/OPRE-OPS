@@ -825,9 +825,7 @@ def test_post_pre_award_lock_blocks_regular_user(
     bli = _make_planned_bli(loaded_db, test_can, test_division_director)
     loaded_db.commit()
 
-    response = basic_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
-    )
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
     assert response.status_code == 400, f"Should be blocked after full pre-award approval. Got: {response.json}"
     assert "Pre-Award Approval" in response.json.get("status", "")
 
@@ -840,7 +838,9 @@ def test_post_pre_award_lock_allows_clin_only_for_any_user(
     test_can,
     app_ctx,
 ):
-    """Any authorized user can update clin_id after pre-award is fully approved."""
+    """Any authorized user can update clin_id after pre-award is fully approved — CLIN assignment
+    is part of the award workflow (COR assigns CLINs before submitting for award approval)."""
+    # Add basic user (521) as team member so they pass the association check
     agreement = app.db_session.get(Agreement, 1)
     basic_user = app.db_session.get(User, 521)
     agreement.team_members.append(basic_user)
@@ -894,8 +894,6 @@ def test_post_pre_award_lock_allows_budget_team(
     bli = _make_planned_bli(loaded_db, test_can, test_division_director)
     loaded_db.commit()
 
-    response = budget_team_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
-    )
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
     # Budget team is not blocked — goes through change-request workflow (202)
     assert response.status_code == 202, f"Budget team should get 202 change-request. Got: {response.json}"

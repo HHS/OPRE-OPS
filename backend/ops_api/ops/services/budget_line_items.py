@@ -823,14 +823,13 @@ class BudgetLineItemService:
         # Exceptions:
         #   - Superusers bypass unconditionally (checked above)
         #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
-        #   - COR (project officer or alternate PO) may update clin_id only
+        #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
+        #     the award workflow (COR assigns CLINs before submitting for award approval)
         if not is_super_user(current_user, current_app) and not is_budget_team(current_user):
-            agreement = budget_line_item.agreement
-            is_cor = current_user.id in (agreement.project_officer_id, agreement.alternate_project_officer_id)
             # updated_fields also contains internal keys ("request", "schema") — strip those for the check
             edit_keys = {k for k in updated_fields if k not in ("request", "schema")}
             clin_only_edit = edit_keys <= {"clin_id"}
-            if not (is_cor and clin_only_edit) and is_post_pre_award_locked(agreement):
+            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
                 raise ValidationError(
                     {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
                 )
