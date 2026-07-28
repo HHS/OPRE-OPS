@@ -92,19 +92,16 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
 
-    // Load saved draft values when step5 data arrives
+    // Load saved draft values when step5 data arrives — always set both fields
+    // so stale empty state can't overwrite previously-saved values before this effect fires
     useEffect(() => {
         if (step5) {
-            if (step5.requisition_number) {
-                setRequisitionNumber(step5.requisition_number);
-            }
+            setRequisitionNumber(step5.requisition_number || "");
             if (step5.requisition_date) {
-                // Backend always sends YYYY-MM-DD format
-                // Convert to display format (MM/DD/YYYY) for the DatePicker
                 const displayDate = formatDateForScreen(step5.requisition_date);
-                if (displayDate) {
-                    setRequisitionDate(displayDate);
-                }
+                setRequisitionDate(displayDate || "");
+            } else {
+                setRequisitionDate("");
             }
         }
     }, [step5]);
@@ -224,6 +221,13 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Save Draft handler (partial save without approval)
     const handleSaveDraft = async () => {
+        const nothingToSave = !requisitionNumber.trim() && !requisitionDate.trim();
+        const noPriorValues = !step5?.requisition_number && !step5?.requisition_date;
+        if (nothingToSave && noPriorValues) {
+            setSubmitError("Enter a Requisition # or Date to save a draft.");
+            return;
+        }
+
         if (!step5?.id) {
             setSubmitError("Unable to save: procurement tracker step not found");
             return;

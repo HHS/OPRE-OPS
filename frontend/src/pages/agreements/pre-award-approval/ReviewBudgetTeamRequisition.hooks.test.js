@@ -287,7 +287,7 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
-        it("should save draft with both fields empty", async () => {
+        it("should block save when both fields empty and no prior values", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({});
             mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
 
@@ -312,6 +312,54 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
 
             const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await result.current.handleSaveDraft();
+
+            await waitFor(() => {
+                expect(result.current.submitError).toBe("Enter a Requisition # or Date to save a draft.");
+                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+            });
+        });
+
+        it("should allow saving with both fields empty when prior values exist (clears them)", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: "REQ-001",
+                    requisition_date: "2026-05-21",
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            // Wait for useEffect to populate fields from step5
+            await waitFor(() => {
+                expect(result.current.requisitionNumber).toBe("REQ-001");
+            });
+
+            // Clear both fields
+            result.current.setRequisitionNumber("");
+            result.current.setRequisitionDate("");
+
+            await waitFor(() => {
+                expect(result.current.requisitionNumber).toBe("");
+                expect(result.current.requisitionDate).toBe("");
+            });
 
             await result.current.handleSaveDraft();
 
