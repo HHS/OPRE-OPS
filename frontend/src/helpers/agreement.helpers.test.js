@@ -645,4 +645,24 @@ describe("cleanAgreementForApi", () => {
         const { cleanData } = cleanAgreementForApi(data);
         expect(cleanData.nick_name).toBeNull();
     });
+
+    it("strips grant_numbers from the cleaned payload", () => {
+        const data = {
+            id: 1,
+            name: "Test Grant",
+            grant_numbers: [{ id: 10, number: 1, display_title: "Grant 1" }]
+        };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData).not.toHaveProperty("grant_numbers");
+    });
+
+    it("strips services_components from the cleaned payload", () => {
+        const data = {
+            id: 1,
+            name: "Test Contract",
+            services_components: [{ id: 10, number: 1, display_title: "SC 1" }]
+        };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData).not.toHaveProperty("services_components");
+    });
 });

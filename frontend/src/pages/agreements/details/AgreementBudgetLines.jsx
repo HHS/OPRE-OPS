@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
@@ -70,6 +71,7 @@ const AgreementBudgetLines = ({
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     // Editing is not yet supported for grant agreements, so the Edit and Request BL Status Change buttons are disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
@@ -252,6 +254,7 @@ const AgreementBudgetLines = ({
                     projectOfficer={""}
                     alternateProjectOfficer={""}
                     servicesComponents={servicesComponents}
+                    grantNumbers={grantNumbers ?? []}
                 >
                     <CreateBLIsAndSCs
                         selectedAgreement={agreement}
