@@ -8536,7 +8536,7 @@ components:
             reviewer_notes:
               type: string
               nullable: true
-              description: Notes from the approver (max 150 characters, required when declining)
+              description: Notes from the approver (optional, max 150 characters)
     ProcurementTrackerAwardStep:
       allOf:
         - $ref: "#/components/schemas/ProcurementTrackerStep"
@@ -10344,8 +10344,8 @@ components:
       description: >-
         Example PATCH request body for approvers to respond to a pre-award
         approval request. The approval_status field must be either APPROVED
-        or DECLINED. The reviewer_notes field is optional when approving
-        but required when declining (max 150 characters). Server-controlled
+        or DECLINED. The reviewer_notes field is optional for both
+        approving and declining (max 150 characters). Server-controlled
         fields (approval_responded_by, approval_responded_date) are set
         automatically from the current user and timestamp.
       value:
