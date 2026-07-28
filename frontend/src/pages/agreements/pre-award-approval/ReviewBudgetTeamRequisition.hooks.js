@@ -224,12 +224,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Save Draft handler (partial save without approval)
     const handleSaveDraft = async () => {
-        // Validate at least one field is filled
-        if (!requisitionNumber.trim() && !requisitionDate.trim()) {
-            setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
-            return;
-        }
-
         if (!step5?.id) {
             setSubmitError("Unable to save: procurement tracker step not found");
             return;
@@ -239,27 +233,23 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setSubmitError("");
 
         try {
-            // Build request data - only include fields with values
-            /** @type {Record<string, any>} */
-            const data = {
-                is_draft: true
-            };
-
-            // Only send requisition_number if it has a value
-            if (requisitionNumber.trim()) {
-                data.requisition_number = requisitionNumber;
-            }
-
-            // Only send requisition_date if it has a value and it's valid
+            // Validate date format if a date was entered
+            let formattedDate = null;
             if (requisitionDate.trim()) {
-                const formattedDate = formatDateForApi(requisitionDate);
+                formattedDate = formatDateForApi(requisitionDate);
                 if (formattedDate === null) {
                     setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
                     setIsSubmitting(false);
                     return;
                 }
-                data.requisition_date = formattedDate;
             }
+
+            /** @type {Record<string, any>} */
+            const data = {
+                is_draft: true,
+                requisition_number: requisitionNumber.trim() || null,
+                requisition_date: formattedDate
+            };
 
             await updateProcurementTrackerStep({
                 stepId: step5.id,
@@ -342,6 +332,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
 
         // Handlers
         handleApprove,

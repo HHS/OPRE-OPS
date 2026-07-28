@@ -240,7 +240,7 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
-        it("should only send fields that have values", async () => {
+        it("should send null for empty fields to allow clearing saved values", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({});
             mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
 
@@ -280,8 +280,8 @@ describe("useReviewBudgetTeamRequisition", () => {
                     stepId: 1,
                     data: {
                         is_draft: true,
-                        requisition_number: "REQ-12345"
-                        // requisition_date should NOT be in the payload
+                        requisition_number: "REQ-12345",
+                        requisition_date: null
                     }
                 });
             });
