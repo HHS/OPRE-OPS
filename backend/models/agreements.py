@@ -463,6 +463,12 @@ class Agreement(BaseModel):
 
         return is_award_approval_requested(self)
 
+    @property
+    def is_post_pre_award_locked(self) -> bool:
+        from ops_api.ops.utils.budget_line_items_helpers import is_post_pre_award_locked
+
+        return is_post_pre_award_locked(self)
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]

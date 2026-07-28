@@ -182,6 +182,42 @@ def is_award_approval_requested(agreement) -> bool:
     return False
 
 
+def is_post_pre_award_locked(agreement) -> bool:
+    """
+    Check if the agreement is in the post-pre-award locked state.
+
+    Returns True once pre-award has been fully approved (DD approved + Budget Team
+    submitted requisition). BLI editing is locked from this point on permanently.
+
+    Exceptions (handled by callers):
+    - Superusers bypass unconditionally
+    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - COR (project officer / alternate PO) can still update clin_id only
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is fully approved and BLIs should be locked.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    for tracker in agreement.procurement_trackers:
+        pre_award_step = next(
+            (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+        )
+        if not pre_award_step:
+            continue
+        if (
+            pre_award_step.pre_award_approval_status == "APPROVED"
+            and pre_award_step.pre_award_requisition_approved_by is not None
+        ):
+            return True
+
+    return False
+
+
 def bli_associated_with_agreement(id: int) -> bool:
     """
     In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the

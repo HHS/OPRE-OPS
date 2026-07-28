@@ -768,3 +768,134 @@ def test_budget_team_bli_patch_writes_directly_when_tracker_not_active(
 
     updated_bli = loaded_db.get(type(bli), bli_id)
     assert float(updated_bli.amount) == 750.00
+
+
+# --- Post-pre-award lock tests ---
+
+
+def _setup_fully_approved_pre_award(loaded_db):
+    """Helper: create a procurement tracker with a fully approved PRE_AWARD step on agreement 1."""
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=5,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=500,  # approved by user 500
+    )
+    loaded_db.add(pre_award_step)
+    return tracker, pre_award_step
+
+
+def _make_planned_bli(loaded_db, test_can, test_division_director):
+    """Helper: create a PLANNED BLI on agreement 1."""
+    bli = ContractBudgetLineItem(
+        line_description="BLI for post-pre-award lock test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2032, 2, 2),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    return bli
+
+
+def test_post_pre_award_lock_blocks_regular_user(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Regular users cannot edit BLIs once pre-award is fully approved."""
+    # Add basic user (521) as team member so they pass the association check
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
+    )
+    assert response.status_code == 400, f"Should be blocked after full pre-award approval. Got: {response.json}"
+    assert "Pre-Award Approval" in response.json.get("status", "")
+
+
+def test_post_pre_award_lock_allows_clin_only_for_any_user(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Any authorized user can update clin_id after pre-award is fully approved."""
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1}
+    )
+    assert response.status_code == 200, f"clin_id update should be allowed for any user. Got: {response.json}"
+
+
+def test_post_pre_award_lock_blocks_non_clin_edit_for_regular_user(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Regular users cannot edit financial fields (only clin_id is allowed) after pre-award approval."""
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
+    )
+    assert response.status_code == 400, f"Financial edit should be blocked. Got: {response.json}"
+    assert "Pre-Award Approval" in response.json.get("status", "")
+
+
+def test_post_pre_award_lock_allows_budget_team(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Budget team can still edit BLIs after pre-award approval (routes through change-request)."""
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
+    )
+    # Budget team is not blocked — goes through change-request workflow (202)
+    assert response.status_code == 202, f"Budget team should get 202 change-request. Got: {response.json}"

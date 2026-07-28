@@ -51,6 +51,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     create_budget_line_item_instance,
     is_award_approval_requested,
     is_bli_editable,
+    is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
 )
@@ -817,6 +818,22 @@ class BudgetLineItemService:
             and is_pre_award_in_review(budget_line_item.agreement)
         ):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        # Block edits after pre-award is fully approved (DD approved + requisition submitted).
+        # Exceptions:
+        #   - Superusers bypass unconditionally (checked above)
+        #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
+        #   - COR (project officer or alternate PO) may update clin_id only
+        if not is_super_user(current_user, current_app) and not is_budget_team(current_user):
+            agreement = budget_line_item.agreement
+            is_cor = current_user.id in (agreement.project_officer_id, agreement.alternate_project_officer_id)
+            # updated_fields also contains internal keys ("request", "schema") — strip those for the check
+            edit_keys = {k for k in updated_fields if k not in ("request", "schema")}
+            clin_only_edit = edit_keys <= {"clin_id"}
+            if not (is_cor and clin_only_edit) and is_post_pre_award_locked(agreement):
+                raise ValidationError(
+                    {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
+                )
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:

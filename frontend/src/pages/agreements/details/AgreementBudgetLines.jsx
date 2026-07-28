@@ -52,6 +52,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
+ * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -62,7 +63,8 @@ const AgreementBudgetLines = ({
     isAgreementNotDeveloped,
     isAgreementAwarded,
     isPreAwardInReview = false,
-    isAwardInReview = false
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
@@ -81,8 +83,9 @@ const AgreementBudgetLines = ({
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
 
-    // Pre-award or award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
-    const isAgreementEditable = !isPreAwardInReview && !isAwardInReview && (isSuperUser || canRegularUserEdit);
+    // Pre-award, award in review, or post-pre-award lock blocks everyone except superusers
+    const isAgreementEditable =
+        !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
     // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
     const canRequestStatusChange = isAgreementEditable && !isGrant;
     const filters = { agreementIds: [agreement?.id] };
@@ -102,6 +105,8 @@ const AgreementBudgetLines = ({
                 return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
             case isAwardInReview:
                 return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+            case isPostPreAwardLocked:
+                return "This agreement has completed Pre-Award Approval. Edits cannot be made at this time.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
