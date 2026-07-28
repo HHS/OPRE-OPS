@@ -807,7 +807,12 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.getByText("January 15, 2024")).toBeInTheDocument();
         });
 
-        it("displays notes from step1NotesLabel with correct styling", () => {
+        it("displays the saved notes in read mode with correct styling", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Test notes"
+            });
+
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"

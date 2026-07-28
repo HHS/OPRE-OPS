@@ -412,6 +412,7 @@ describe("ProcurementTrackerStepFour", () => {
         it("renders notes when provided", () => {
             useProcurementTrackerStepFour.mockReturnValue({
                 ...defaultHookReturn,
+                step4Notes: "Vendor selected after evaluation",
                 step4NotesLabel: "Vendor selected after evaluation"
             });
 

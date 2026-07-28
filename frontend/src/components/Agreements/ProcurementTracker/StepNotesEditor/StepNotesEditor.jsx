@@ -3,14 +3,13 @@ import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TextArea from "../../../UI/Form/TextArea";
 import SaveNotesButton from "../SaveNotesButton/SaveNotesButton";
-import { STEP_NOTES_MAX_LENGTH, STEP_NOTES_TEXTAREA_STYLE } from "../ProcurementTracker.constants";
+import { STEP_NOTES_MAX_LENGTH, STEP_NOTES_TEXTAREA_STYLE, STEP_NOTES_WIDTH } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {Object} StepNotesEditorProps
  * @property {string} notes - The current notes value bound to the TextArea.
  * @property {(value: string) => void} setNotes - Setter for the notes value (marks the field dirty).
  * @property {(value: string) => void} resetNotes - Resets the notes value and clears the dirty flag; used by Cancel to discard unsaved edits.
- * @property {string} [notesLabel] - The persisted notes to display in read-only mode.
  * @property {string} [savedNotes] - The last-saved notes value; when present the editor starts in read mode, and Cancel restores it.
  * @property {number} [stepId] - The ID of the procurement tracker step being edited.
  * @property {(stepId: number | undefined) => Promise<boolean>} onSave - Save handler; should resolve `true` on success so edit mode only exits when the save succeeds.
@@ -24,13 +23,17 @@ import { STEP_NOTES_MAX_LENGTH, STEP_NOTES_TEXTAREA_STYLE } from "../Procurement
  * step regardless of status (PENDING/ACTIVE/COMPLETED).
  *
  * Renders an input mode (a "Notes (optional)" TextArea with "Cancel" and "Save
- * Notes" buttons) and a read mode (the persisted note text with an inline "Edit
- * Notes" pencil at the end of the content). Clicking "Save Notes" always flips the
- * field from input mode to read mode, so the interaction is identical across every
- * step. Edit mode only exits when `onSave` resolves truthy, so a failed save keeps
+ * Notes" buttons) and a read mode (the persisted note text with an "Edit Notes"
+ * pencil below it). A successful save flips the field from input mode to read
+ * mode. Edit mode only exits when `onSave` resolves truthy, so a failed save keeps
  * the user's edits visible. "Cancel" discards unsaved edits (restoring the last
- * saved value via `resetNotes`) and returns to read mode. The Save button is
- * disabled until the field has non-whitespace input (per the Figma spec).
+ * saved value via `resetNotes`) and returns to read mode.
+ *
+ * Saving rules:
+ * - A first-time note (no `savedNotes`) can't be saved until the field has
+ *   non-whitespace input, and Save disables until then (per the Figma spec).
+ * - Once a note has been saved, the user may clear it and save the empty value;
+ *   read mode then shows "None".
  *
  * An active step with no saved note starts in input mode so the user can add one;
  * a completed step (`startInReadMode`) always starts in read mode, showing "None"
@@ -44,7 +47,6 @@ const StepNotesEditor = ({
     notes,
     setNotes,
     resetNotes,
-    notesLabel,
     savedNotes,
     stepId,
     onSave,
@@ -76,7 +78,11 @@ const StepNotesEditor = ({
                     textAreaStyle={STEP_NOTES_TEXTAREA_STYLE}
                     isDisabled={isDisabled}
                 />
-                <div className="display-flex flex-justify-end">
+                {/* margin-top-neg-205 (-1.25rem) lifts the button row up onto the
+                    character-count ("N left") line so the gap above the buttons matches
+                    the gap the "remaining characters" hint has from the textarea,
+                    rather than sitting a full row lower. */}
+                <div className="display-flex flex-justify-end margin-top-neg-205">
                     {canReturnToReadMode && (
                         <button
                             type="button"
@@ -98,37 +104,47 @@ const StepNotesEditor = ({
                                 setIsEditingNotes(false);
                             }
                         }}
-                        isDisabled={isDisabled || !notes.trim()}
+                        // Disable Save only for a first-time, empty entry. Once a note
+                        // has been saved the user may clear it and save the empty value.
+                        isDisabled={isDisabled || (!hasSavedNote && !notes.trim())}
                     />
                 </div>
             </div>
         );
     }
 
-    // Prefer the live field value: right after a save it holds the just-saved
-    // text, while `notesLabel` (the server value) can lag until the refetch lands.
-    const displayedNotes = notes || notesLabel;
+    // `notes` is the source of truth for read mode: useSaveNotes seeds it from the
+    // server value, holds the just-saved text, and re-syncs from the server while
+    // the field is clean. Trimming matches what was persisted (the save sends
+    // `notes.trim()`), so an existing note cleared to empty shows "None" immediately
+    // instead of flashing the stale server value before the refetch lands.
+    const displayedNotes = notes.trim();
 
     // Self-contained <dl> (matching the sibling TermTag components) so the
     // "Notes" label stays associated with its value as a term/description pair,
     // and the markup is valid in both the active-step fieldset and the
-    // completed-step <dl> layout. The Edit Notes button sits inline at the end
-    // of the note text, right-aligned regardless of length (per Figma).
+    // completed-step <dl> layout. The note text and its Edit Notes button both
+    // live inside the <dd> (flow content) so the button stays a valid <dl>
+    // descendant; the block note text pushes the button onto its own line below.
     return (
-        <dl className="font-12px">
+        <dl>
             <dt className="margin-0 text-base-dark margin-top-3">Notes</dt>
-            <dd className="margin-0 margin-top-1 display-flex flex-align-center">
-                <span className="margin-right-2">{displayedNotes || "None"}</span>
+            <dd className="margin-0 margin-top-1">
+                <div
+                    className="wrap-text"
+                    style={{ maxWidth: STEP_NOTES_WIDTH }}
+                >
+                    {displayedNotes || "None"}
+                </div>
                 <button
                     type="button"
-                    className="usa-button usa-button--unstyled flex-shrink-0"
+                    className="usa-button usa-button--unstyled margin-top-1"
                     data-cy="edit-notes-button"
                     onClick={() => setIsEditingNotes(true)}
                     disabled={isDisabled}
                 >
                     <FontAwesomeIcon
                         icon={faPen}
-                        className="margin-right-1"
                         aria-hidden="true"
                     />
                     Edit Notes

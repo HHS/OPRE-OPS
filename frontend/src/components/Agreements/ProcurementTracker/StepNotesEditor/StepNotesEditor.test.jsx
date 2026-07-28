@@ -18,7 +18,6 @@ const renderEditor = (props = {}) => {
             notes={props.notes ?? "Existing notes"}
             setNotes={setNotes}
             resetNotes={resetNotes}
-            notesLabel={props.notesLabel ?? "Existing notes"}
             savedNotes={props.savedNotes ?? "Existing notes"}
             stepId={props.stepId ?? 42}
             onSave={onSave}
@@ -36,19 +35,28 @@ describe("StepNotesEditor", () => {
     });
 
     it("renders the notes value and an Edit Notes button in read mode when a note is saved", () => {
-        renderEditor({ notes: "Some saved notes", notesLabel: "Some saved notes", savedNotes: "Some saved notes" });
+        renderEditor({ notes: "Some saved notes", savedNotes: "Some saved notes" });
 
         expect(screen.getByText("Some saved notes")).toBeInTheDocument();
         expect(editNotesBtn()).toBeInTheDocument();
         expect(saveNotesBtn()).not.toBeInTheDocument();
     });
 
-    it("shows the freshly-saved value (notes) in read mode even if the server label still lags", () => {
-        // After a save the live `notes` holds the new text while `notesLabel`
-        // (server value) can still be stale until the refetch lands.
-        renderEditor({ notes: "new text", notesLabel: "old text", savedNotes: "old text", startInReadMode: true });
+    it("shows the live notes value in read mode (the source of truth for display)", () => {
+        // `notes` is authoritative: useSaveNotes holds the just-saved text, so read
+        // mode never depends on a lagging server value.
+        renderEditor({ notes: "new text", savedNotes: "old text", startInReadMode: true });
 
         expect(screen.getByText("new text")).toBeInTheDocument();
+        expect(screen.queryByText("old text")).not.toBeInTheDocument();
+    });
+
+    it("shows 'None' in read mode when an existing note was cleared to empty", () => {
+        // After clearing a saved note and saving, the live `notes` is empty. Read
+        // mode must show "None" immediately, not the stale saved value.
+        renderEditor({ notes: "", savedNotes: "old text", startInReadMode: true });
+
+        expect(screen.getByText("None")).toBeInTheDocument();
         expect(screen.queryByText("old text")).not.toBeInTheDocument();
     });
 
@@ -80,9 +88,9 @@ describe("StepNotesEditor", () => {
         expect(editNotesBtn()).toBeInTheDocument();
     });
 
-    it("falls back to 'None' when there is a saved note flag but no label", () => {
+    it("falls back to 'None' in forced read mode when the note is empty", () => {
         // startInReadMode forces read mode (e.g. a completed step with no note).
-        renderEditor({ notesLabel: "", notes: "", savedNotes: "", startInReadMode: true });
+        renderEditor({ notes: "", savedNotes: "", startInReadMode: true });
 
         expect(screen.getByText("None")).toBeInTheDocument();
         expect(editNotesBtn()).toBeInTheDocument();
@@ -96,7 +104,7 @@ describe("StepNotesEditor", () => {
     });
 
     it("starts in read mode when startInReadMode is set even with a saved note", () => {
-        renderEditor({ notesLabel: "Saved", savedNotes: "Saved", startInReadMode: true });
+        renderEditor({ notes: "Saved", savedNotes: "Saved", startInReadMode: true });
 
         expect(editNotesBtn()).toBeInTheDocument();
         expect(saveNotesBtn()).not.toBeInTheDocument();
@@ -120,6 +128,31 @@ describe("StepNotesEditor", () => {
         renderEditor({ notes: "A note", savedNotes: "" });
 
         expect(saveNotesBtn()).toBeEnabled();
+    });
+
+    it("enables Save Notes when an existing saved note is cleared to empty (empty save allowed)", () => {
+        // A note was previously saved (savedNotes) but the field is now empty —
+        // the user is allowed to clear it and save the empty value. Enter edit
+        // mode via Edit Notes since a saved note starts in read mode.
+        renderEditor({ notes: "", savedNotes: "Existing notes" });
+
+        fireEvent.click(editNotesBtn());
+
+        expect(saveNotesBtn()).toBeEnabled();
+    });
+
+    it("flips to read mode showing 'None' after saving an existing note cleared to empty", async () => {
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "", savedNotes: "Existing notes" });
+
+        fireEvent.click(editNotesBtn());
+        fireEvent.click(saveNotesBtn());
+
+        expect(onSave).toHaveBeenCalled();
+        // Saving empty returns to read mode showing "None", not the open textarea.
+        await waitFor(() => expect(saveNotesBtn()).not.toBeInTheDocument());
+        expect(editNotesBtn()).toBeInTheDocument();
+        expect(screen.getByText("None")).toBeInTheDocument();
     });
 
     it("calls onSave with the stepId and flips to read mode when the save succeeds", async () => {

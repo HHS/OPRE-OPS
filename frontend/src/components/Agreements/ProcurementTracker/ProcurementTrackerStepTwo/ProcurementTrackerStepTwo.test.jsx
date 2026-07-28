@@ -829,6 +829,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
         useProcurementTrackerStepTwo.mockReturnValue({
             ...defaultHookReturn,
+            step2Notes: "Test notes for step two",
             step2NotesLabel: "Test notes for step two"
         });
 

@@ -1120,6 +1120,7 @@ describe("ProcurementTrackerStepThree", () => {
 
         useProcurementTrackerStepThree.mockReturnValue({
             ...defaultHookReturn,
+            step3Notes: "Test notes for step three",
             step3NotesLabel: "Test notes for step three"
         });
 
