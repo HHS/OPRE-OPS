@@ -163,6 +163,7 @@ describe("ReviewBudgetTeamRequisition", () => {
         submitError: "",
         setSubmitError: vi.fn(),
         handleApprove: vi.fn(),
+        handleSaveDraft: vi.fn(),
         handleCancel: vi.fn(),
         isFormValid: vi.fn(() => false),
         hasPermission: true,
