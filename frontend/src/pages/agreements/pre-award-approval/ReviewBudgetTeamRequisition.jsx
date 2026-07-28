@@ -93,7 +93,9 @@ export const ReviewBudgetTeamRequisition = () => {
                     heading="Submission Error"
                     message={submitError}
                     isClosable={true}
-                    setIsAlertVisible={(visible) => { if (!visible) setSubmitError(""); }}
+                    setIsAlertVisible={(visible) => {
+                        if (!visible) setSubmitError("");
+                    }}
                     headingLevel={2}
                 />
             )}
