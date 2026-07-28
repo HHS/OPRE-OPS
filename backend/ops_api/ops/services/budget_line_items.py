@@ -826,8 +826,12 @@ class BudgetLineItemService:
         #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
         #     the award workflow (COR assigns CLINs before submitting for award approval)
         if not is_super_user(current_user, current_app) and not is_budget_team(current_user):
-            # updated_fields also contains internal keys ("request", "schema") — strip those for the check
-            edit_keys = {k for k in updated_fields if k not in ("request", "schema")}
+            # Use the raw request JSON to determine what the caller actually sent.
+            # updated_fields contains Marshmallow load_default values for all schema fields
+            # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
+            # so it cannot reliably tell us which fields the caller intended to change.
+            request_obj = updated_fields.get("request")
+            edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
             clin_only_edit = edit_keys <= {"clin_id"}
             if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
                 raise ValidationError(
