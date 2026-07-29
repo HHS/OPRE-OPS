@@ -5,11 +5,14 @@ import { useBlocker, useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
+    useAddGrantNumberMutation,
     useAddServicesComponentMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
     useUpdateBudgetLineItemMutation,
+    useUpdateGrantNumberMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
 import {
@@ -30,7 +33,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
-import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
@@ -97,17 +100,26 @@ const useCreateBLIsAndSCs = (
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
+    const [addGrantNumber] = useAddGrantNumberMutation();
+    const [updateGrantNumber] = useUpdateGrantNumberMutation();
+    const [deleteGrantNumber] = useDeleteGrantNumberMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
     const {
         agreement,
         services_components: servicesComponents,
-        deleted_services_components_ids: deletedServicesComponentsIds
+        deleted_services_components_ids: deletedServicesComponentsIds,
+        grant_numbers: grantNumbers,
+        deleted_grant_numbers_ids: deletedGrantNumbersIds
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Budget Team members write financial changes directly (no change-request workflow),
+    // matching the backend's is_budget_team() bypass in budget_line_items.py.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
     // read during render (here and in BudgetLinesForm), so a stale result from a prior
@@ -170,7 +182,9 @@ const useCreateBLIsAndSCs = (
     // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
         ? suite.run({
-              budgetLines: tempBudgetLines
+              // Exclude in-review BLIs from validation — they are locked (not editable) and
+              // won't be included in the save payload, so their TBD fields should not block saving.
+              budgetLines: tempBudgetLines.filter((bli) => !bli.in_review)
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();
@@ -237,12 +251,16 @@ const useCreateBLIsAndSCs = (
             const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
                 deleteServicesComponent(id).unwrap()
             );
+            const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
+                deleteGrantNumber(id).unwrap()
+            );
             const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
             );
 
             await Promise.all(blisDeletionPromises);
             await Promise.all(serviceComponentDeletionPromises);
+            await Promise.all(grantNumberDeletionPromises);
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             setAlert({
@@ -251,7 +269,15 @@ const useCreateBLIsAndSCs = (
                 message: "An error occurred while deleting budget lines. Please try again."
             });
         }
-    }, [deletedServicesComponentsIds, deletedBudgetLines, deleteServicesComponent, deleteBudgetLineItem, setAlert]);
+    }, [
+        deletedServicesComponentsIds,
+        deletedGrantNumbersIds,
+        deletedBudgetLines,
+        deleteServicesComponent,
+        deleteGrantNumber,
+        deleteBudgetLineItem,
+        setAlert
+    ]);
 
     /**
      * NOTE: 3rd useCallback in this file
@@ -478,7 +504,7 @@ const useCreateBLIsAndSCs = (
             const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
             if (continueOverRide) {
                 continueOverRide();
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) {
                 setAlert({
                     type: "success",
                     heading: "Changes Sent to Approval",
@@ -500,7 +526,7 @@ const useCreateBLIsAndSCs = (
         [
             tempBudgetLines,
             continueOverRide,
-            isSuperUser,
+            canEditDirectly,
             setAlert,
             selectedAgreement?.id,
             selectedAgreement?.display_name,
@@ -880,6 +906,14 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
+                    const newGrantNumbers = grantNumbers
+                        .filter((gn) => !("created_on" in gn))
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
+                            ...gn,
+                            ref: display_title
+                        }));
+
                     const data = {
                         ...agreement,
                         team_members: (agreement.team_members ?? []).map((team_member) => {
@@ -894,7 +928,8 @@ const useCreateBLIsAndSCs = (
                     const createAgreementPayload = {
                         ...cleanData,
                         budget_line_items: cleanBudgetLines,
-                        services_components: newServicesComponents
+                        services_components: newServicesComponents,
+                        grant_numbers: newGrantNumbers
                     };
 
                     const fulfilled = await addAgreement(createAgreementPayload).unwrap();
@@ -919,6 +954,26 @@ const useCreateBLIsAndSCs = (
 
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
                     await Promise.all(serviceComponentsUpdatePromises);
+
+                    // Grant numbers, mirroring the SC create/update buckets above. No BLI linkage on
+                    // this page yet, so no ref/id resolution is needed — just create new ones and
+                    // PATCH changed ones. Deletions are handled in handleDeletions below.
+                    const newGrantNumbers = grantNumbers.filter((gn) => !("created_on" in gn));
+                    const changedGrantNumbers = grantNumbers.filter((gn) => "created_on" in gn && gn.has_changed);
+
+                    const grantNumberCreationPromises = newGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return addGrantNumber(cleanGn).unwrap();
+                    });
+                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return updateGrantNumber({ id: gn.id, data: cleanGn }).unwrap();
+                    });
+
+                    await Promise.all(grantNumberCreationPromises);
+                    await Promise.all(grantNumberUpdatePromises);
 
                     const newBudgetLineItems = tempBudgetLines.filter(
                         (budgetLineItem) => !("created_on" in budgetLineItem)
@@ -948,9 +1003,9 @@ const useCreateBLIsAndSCs = (
                         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
                     );
 
-                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && !savedViaModal) {
+                    if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
                         await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
-                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && savedViaModal) {
+                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
                         await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
@@ -984,12 +1039,15 @@ const useCreateBLIsAndSCs = (
         },
         [
             servicesComponents,
+            grantNumbers,
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
+            addGrantNumber,
+            updateGrantNumber,
             addBudgetLineItem,
             setAlert,
-            isSuperUser,
+            canEditDirectly,
             handleFinancialSnapshotChanges,
             handleFinancialSnapshotChangesViaBlocker,
             handleRegularUpdates,
@@ -1002,9 +1060,10 @@ const useCreateBLIsAndSCs = (
         ]
     );
 
-    const hasFinancialSnapshotChanges = tempBudgetLines.some(
-        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-    );
+    const hasFinancialSnapshotChanges = tempBudgetLines
+        .filter((b) => !b.in_review)
+        .some((b) => b.financialSnapshotChanged);
+    const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);
 
@@ -1122,7 +1181,8 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        requiresFinancialApproval
     };
 };
 

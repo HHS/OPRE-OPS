@@ -32,6 +32,9 @@ def test_grant_agreement(loaded_db, test_admin_user):
         product_service_code_id=1,
         project_officer_id=test_admin_user.id,
         awarding_entity_id=1,
+        nofo_number="NOFO-2026-01",
+        aln_number="93.600",
+        funding_period_months=18,
     )
     loaded_db.add(grant)
     loaded_db.commit()

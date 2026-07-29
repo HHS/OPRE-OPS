@@ -13,6 +13,7 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {boolean} [props.isEditMode] - Whether the edit mode is on.
  * @param {Function} [props.setIsEditMode] - The function to set the edit mode.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
+ * @param {boolean} [props.isGrant] - Whether the agreement is a grant (editing not yet supported).
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementBudgetLinesHeader = ({
@@ -23,8 +24,14 @@ export const AgreementBudgetLinesHeader = ({
     isEditable,
     isEditMode = false,
     setIsEditMode = () => {},
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isGrant = false
 }) => {
+    // Editing is disabled when pre-award is in review, or when the agreement is a grant (grant editing is not yet supported).
+    const isEditDisabled = isPreAwardInReview || isGrant;
+    const editDisabledTooltipLabel = isGrant
+        ? "Editing is not yet available for grant agreements."
+        : "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -52,7 +59,7 @@ export const AgreementBudgetLinesHeader = ({
                     </button>
 
                     {/* ENABLED EDIT BUTTON */}
-                    {!isEditMode && isEditable && !isPreAwardInReview && (
+                    {!isEditMode && isEditable && !isEditDisabled && (
                         <button
                             type="button"
                             id="edit"
@@ -71,9 +78,9 @@ export const AgreementBudgetLinesHeader = ({
                         </button>
                     )}
                     {/* DISABLED EDIT BUTTON */}
-                    {!isEditMode && isEditable && isPreAwardInReview && (
+                    {!isEditMode && isEditable && isEditDisabled && (
                         <Tooltip
-                            label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                            label={editDisabledTooltipLabel}
                             className="display-flex flex-align-baseline"
                         >
                             <span

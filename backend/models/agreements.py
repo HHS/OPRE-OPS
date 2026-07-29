@@ -715,7 +715,6 @@ class ContractAgreement(Agreement):
         ]
 
 
-# TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
@@ -726,6 +725,17 @@ class GrantAgreement(Agreement):
     total_funding: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
     number_of_years: Mapped[Optional[int]] = mapped_column(Integer)
     number_of_grants: Mapped[Optional[int]] = mapped_column(Integer)
+    nofo_number: Mapped[Optional[str]] = mapped_column(String)
+    aln_number: Mapped[Optional[str]] = mapped_column(String)
+    funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
+
+    grant_numbers: Mapped[list["GrantNumber"]] = relationship(
+        "GrantNumber",
+        primaryjoin="GrantAgreement.id == foreign(GrantNumber.agreement_id)",
+        back_populates="agreement",
+        lazy="selectin",
+        cascade="all, delete",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,

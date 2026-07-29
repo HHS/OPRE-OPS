@@ -9,6 +9,7 @@ import {
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
+import { NO_DATA } from "../../../constants";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -100,8 +101,8 @@ const BLIRow = ({
             <td className={addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)}>
                 {isBudgetLineObe ? "None" : canLabel(budgetLine)}
             </td>
-            <td className={addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)}>
-                {formatCurrency(budgetLine?.amount || 0)}
+            <td className={isReviewMode && budgetLine?.amount == null ? "table-item-error" : ""}>
+                {budgetLine?.amount != null ? formatCurrency(budgetLine.amount) : NO_DATA}
             </td>
             <td>
                 <Tooltip

@@ -3,7 +3,7 @@ import FilterButton from "../../components/UI/FilterButton/FilterButton";
 import PortfoliosComboBox from "../../components/Portfolios/PortfoliosComboBox";
 import { FILTER_MODAL_FULL_WIDTH } from "../../constants";
 
-const ReportingFilterButton = ({ filters, setFilters }) => {
+const ReportingFilterButton = ({ filters, setFilters, portfolioOptions = [] }) => {
     const [portfolios, setPortfolios] = React.useState([]);
 
     React.useEffect(() => {
@@ -31,11 +31,13 @@ const ReportingFilterButton = ({ filters, setFilters }) => {
             className={fieldStyles}
         >
             <PortfoliosComboBox
+                portfolioOptions={portfolioOptions}
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
                 defaultString="All Portfolios"
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                usePrefetchedOptions={true}
             />
         </fieldset>
     ];

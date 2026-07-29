@@ -554,6 +554,30 @@ class GrantBudgetLineItem(BudgetLineItem):
     committed_date: Mapped[Optional[date]] = mapped_column(Date)
     fa_signed_date: Mapped[Optional[date]] = mapped_column(Date)
 
+    # A grant number is the grant BLI's analog of a Contract BLI's services component.
+    # It lives on this subclass (not the base) because it only applies to grant BLIs;
+    # services_component_id sits on the base for legacy reasons.
+    grant_number_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("grant_number.id", ondelete="SET NULL"),
+    )
+    grant_number: Mapped[Optional["GrantNumber"]] = relationship(
+        "GrantNumber", backref="budget_line_items", passive_deletes=True
+    )
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> list[str]:
+        """
+        Grant BLIs require a grant number (not a services component) to change status.
+        """
+        return [
+            "date_needed",
+            "can_id",
+            "amount",
+            "agreement_id",
+            "grant_number_id",
+        ]
+
 
 class DirectObligationBudgetLineItem(BudgetLineItem):
     """

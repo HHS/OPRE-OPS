@@ -4,6 +4,7 @@ import configureStore from "redux-mock-store";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import {
     useGetBudgetLineItemsQuery,
+    useGetBudgetLineItemsFilterOptionsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
     useLazyGetServicesComponentByIdQuery
@@ -143,6 +144,7 @@ describe("BudgetLineItemList", () => {
         useLazyGetBudgetLineItemsQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
         useLazyGetPortfolioByIdQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
         useLazyGetServicesComponentByIdQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
+        useGetBudgetLineItemsFilterOptionsQuery.mockReturnValue({ data: undefined });
 
         // Default mock for useBudgetLinesList hook
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({

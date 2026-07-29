@@ -3,8 +3,13 @@ import { describe, it, expect, vi } from "vitest";
 import ReportingFilterButton from "./ReportingFilterButton";
 
 vi.mock("../../components/Portfolios/PortfoliosComboBox", () => ({
-    default: ({ selectedPortfolios, defaultString }) => (
-        <div data-testid="portfolios-combobox">{selectedPortfolios.length > 0 ? "Selected" : defaultString}</div>
+    default: ({ selectedPortfolios, defaultString, usePrefetchedOptions }) => (
+        <div
+            data-testid="portfolios-combobox"
+            data-prefetched={usePrefetchedOptions}
+        >
+            {selectedPortfolios.length > 0 ? "Selected" : defaultString}
+        </div>
     )
 }));
 

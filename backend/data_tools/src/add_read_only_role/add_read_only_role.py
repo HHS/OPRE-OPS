@@ -29,6 +29,7 @@ def add_read_only_role(session: Session) -> None:
         "GET_AGREEMENT",
         "GET_BUDGET_LINE_ITEM",
         "GET_SERVICES_COMPONENT",
+        "GET_GRANT_NUMBER",
         "GET_BLI_PACKAGE",
         "GET_CAN",
         "GET_DIVISION",

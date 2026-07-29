@@ -113,8 +113,38 @@ def get_division_directors_for_agreement(
     - List of division director IDs
     - List of deputy division director IDs
     associated with the agreement.
+
+    Uses all BLIs (regardless of status) so that permission checks and
+    general director resolution work even when BLIs are still in DRAFT.
+    For pre-award notification routing (which should only consider the BLIs
+    being approved), use get_pre_award_notification_directors_for_agreement.
     """
     agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can]
+    agreement_divisions = {can.portfolio.division for can in agreement_cans if can.portfolio and can.portfolio.division}
+
+    division_directors = [
+        division.division_director_id for division in agreement_divisions if division.division_director_id
+    ]
+    deputy_division_directors = [
+        division.deputy_division_director_id for division in agreement_divisions if division.deputy_division_director_id
+    ]
+    return division_directors, deputy_division_directors
+
+
+def get_pre_award_notification_directors_for_agreement(
+    agreement: Agreement,
+) -> tuple[list[int], list[int]]:
+    """
+    Returns division director IDs for pre-award approval notifications.
+
+    Only considers PLANNED and IN_EXECUTION BLIs — those are the BLIs being
+    submitted for pre-award approval. The COR is assumed to have assigned the
+    correct CAN (and therefore the correct division) to them before submitting.
+    """
+    from models.budget_line_items import BudgetLineItemStatus
+
+    validatable_statuses = {BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION}
+    agreement_cans = [bli.can for bli in agreement.budget_line_items if bli.can and bli.status in validatable_statuses]
     agreement_divisions = {can.portfolio.division for can in agreement_cans if can.portfolio and can.portfolio.division}
 
     division_directors = [

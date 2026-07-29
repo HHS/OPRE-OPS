@@ -57,6 +57,13 @@ const baseHookState = {
     selectedProcurementShop: null,
     selectedProjectOfficer: null,
     selectedAlternateProjectOfficer: null,
+    isGrant: false,
+    nofoNumber: "",
+    alnNumber: "",
+    fundingPeriodMonths: null,
+    setNofoNumber: vi.fn(),
+    setAlnNumber: vi.fn(),
+    setFundingPeriodMonths: vi.fn(),
     showModal: false,
     setShowModal: vi.fn(),
     modalProps: {},
@@ -264,5 +271,43 @@ describe("AgreementEditForm Project field", () => {
         );
 
         await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ ok: false, error }));
+    });
+
+    it("renders the Grant Details block when isGrant is true", () => {
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            isWizardMode: true,
+            isGrant: true,
+            agreementType: "GRANT",
+            selectedAgreementFilter: "GRANT"
+        });
+
+        render(
+            <AgreementEditForm
+                isEditMode={true}
+                setIsEditMode={vi.fn()}
+            />
+        );
+
+        expect(screen.getByText("Grant Details")).toBeInTheDocument();
+    });
+
+    it("does not render the Grant Details block for non-grant agreements", () => {
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            isWizardMode: true,
+            isGrant: false,
+            agreementType: "CONTRACT",
+            selectedAgreementFilter: "CONTRACT"
+        });
+
+        render(
+            <AgreementEditForm
+                isEditMode={true}
+                setIsEditMode={vi.fn()}
+            />
+        );
+
+        expect(screen.queryByText("Grant Details")).not.toBeInTheDocument();
     });
 });

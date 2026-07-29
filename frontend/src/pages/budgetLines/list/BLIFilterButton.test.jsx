@@ -1,12 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
 import BLIFilterButton from "./BLIFilterButton";
-
-vi.mock("../../../api/opsAPI");
-vi.mock("react-router-dom", () => ({
-    useSearchParams: () => [new URLSearchParams()]
-}));
 
 // Mock child components
 vi.mock("../../../components/UI/FilterButton/FilterButton", () => ({
@@ -129,9 +123,6 @@ describe("BLIFilterButton", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        useGetBudgetLineItemsFilterOptionsQuery.mockReturnValue({
-            data: mockFilterOptions
-        });
     });
 
     it("renders filter button component", () => {
@@ -140,6 +131,7 @@ describe("BLIFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -167,6 +159,7 @@ describe("BLIFilterButton", () => {
                     filters={filtersWithNullish}
                     setFilters={mockSetFilters}
                     selectedFiscalYear={2024}
+                    filterOptions={mockFilterOptions}
                 />
             );
         }).not.toThrow();
@@ -191,6 +184,7 @@ describe("BLIFilterButton", () => {
                     filters={allNullFilters}
                     setFilters={mockSetFilters}
                     selectedFiscalYear={2024}
+                    filterOptions={mockFilterOptions}
                 />
             );
         }).not.toThrow();
@@ -204,6 +198,7 @@ describe("BLIFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -221,6 +216,7 @@ describe("BLIFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -243,6 +239,7 @@ describe("BLIFilterButton", () => {
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -266,6 +263,7 @@ describe("BLIFilterButton", () => {
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
                 useApproachB={false}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -294,6 +292,7 @@ describe("BLIFilterButton", () => {
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
                 useApproachB={true}
+                filterOptions={mockFilterOptions}
             />
         );
 
@@ -315,34 +314,25 @@ describe("BLIFilterButton", () => {
     });
 
     it("handles missing filter options data", () => {
-        useGetBudgetLineItemsFilterOptionsQuery.mockReturnValue({
-            data: undefined
-        });
-
         expect(() => {
             render(
                 <BLIFilterButton
                     filters={defaultFilters}
                     setFilters={mockSetFilters}
                     selectedFiscalYear={2024}
+                    filterOptions={undefined}
                 />
             );
         }).not.toThrow();
     });
 
     it("includes selectedFiscalYear in options when not in filterOptions", () => {
-        useGetBudgetLineItemsFilterOptionsQuery.mockReturnValue({
-            data: {
-                ...mockFilterOptions,
-                fiscal_years: [2023, 2025] // 2024 is not in the list
-            }
-        });
-
         render(
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                filterOptions={{ ...mockFilterOptions, fiscal_years: [2023, 2025] }}
             />
         );
 

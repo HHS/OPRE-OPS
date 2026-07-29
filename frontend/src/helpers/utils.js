@@ -224,10 +224,22 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Project Officer",
+        GRANT: "Federal Project Officer",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"
+    },
+    // Label for the alternate-project-officer slot. For GRANT this column is relabeled
+    // "Project Specialist" (not "Alternate Federal Project Officer") per the design. Other
+    // types keep their existing "Alternate ${...}" wording, enumerated here explicitly so the
+    // straight-lookup convertCodeForDisplay doesn't need string interpolation.
+    alternateProjectOfficer: {
+        AA: "Alternate COR",
+        CONTRACT: "Alternate COR",
+        GRANT: "Project Specialist",
+        DIRECT_OBLIGATION: "Alternate Project Officer",
+        IAA: "Alternate COR",
+        MISCELLANEOUS: "Alternate Project Officer"
     },
     agreement: {
         "AgreementType.CONTRACT": "Contract",

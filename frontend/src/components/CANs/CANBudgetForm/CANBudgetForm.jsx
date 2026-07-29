@@ -52,7 +52,7 @@ const CANBudgetForm = ({
                         clearValidationError("budget-amount");
                     }}
                     setEnteredAmount={setBudgetAmount}
-                    value={budgetAmount || ""}
+                    value={budgetAmount ?? ""}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
                     onBlur={(e) => {
