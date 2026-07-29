@@ -210,9 +210,19 @@ Typical variables (used by configs and scripts):
 
 ## Scheduled Usage Metrics Report (OPS-4148)
 
-A weekly Container App Job aggregates `ops_event` activity into a per-day x division x role usage
-CSV and uploads it to Blob storage for the UX team. Code: `src/usage_metrics/utils.py`; wrapper:
-`scripts/usage_metrics.sh`; create script: `scripts/azure/create_usage_metrics_job.sh`.
+A weekly Container App Job aggregates `ops_event` activity and uploads it to Blob storage for the
+UX team in two formats each run: a per-day x division x role **CSV**, and a two-sheet **`.xlsx`**
+whose "Aggregate" sheet mirrors the CSV and whose "Per-user" sheet lists each named user who
+signed in during the reporting window (`name, email, division, roles, sign_in_count,
+last_sign_in_utc`). Code: `src/usage_metrics/utils.py`; wrapper: `scripts/usage_metrics.sh`;
+create script: `scripts/azure/create_usage_metrics_job.sh`.
+
+**Privacy note:** the per-user sheet names individual users (an approved #4148 requirement change
+that reverses the original counts-only posture); it excludes IP addresses. Grant read access to
+`reports/` with the awareness that the `.xlsx` contains named user data. `sign_in_count` is a
+count of successful login events (each `/auth/login/` creates a fresh session), so a user who
+idle-logs-out and re-authenticates repeatedly shows a higher count than one who stays active via
+token refresh — it measures "how many times they had to sign in," not distinct active days.
 
 Unlike the local-test `create_container_app_job.sh`, the real staging jobs (verified live) are
 configured as: **public** `ghcr.io` image (no registry creds), DB password via container-app
@@ -231,7 +241,7 @@ this. Note staging jobs report `identity.type: None` on themselves — they rely
 | Blob container | `data` (default; report lands under `reports/`) |
 | DB host / db / user | `opre-ops-stg-db-pg-server.postgres.database.azure.com` / `postgres` / `ops` |
 | DB password | `pgpassword` secret on the existing staging jobs (not in this repo) |
-| Report blobs | `reports/usage-metrics-latest.csv`, `reports/usage-metrics-<date>.csv` |
+| Report blobs | `reports/usage-metrics-latest.{csv,xlsx}`, `reports/usage-metrics-<date>.{csv,xlsx}` (four blobs/run; `.xlsx` uploaded with the spreadsheet MIME type) |
 
 ### Enable on staging (one-time creation)
 
@@ -256,8 +266,9 @@ az containerapp job start -n usage-metrics-job -g opre-ops-stg-app-rg
 az containerapp job execution list -n usage-metrics-job -g opre-ops-stg-app-rg -o table
 ```
 
-Then confirm a CSV appears at `data/reports/usage-metrics-latest.csv`. The UX team needs read
-access to that container (SAS link or `Storage Blob Data Reader`) to retrieve it.
+Then confirm the report appears at `data/reports/usage-metrics-latest.csv` and
+`data/reports/usage-metrics-latest.xlsx` (the `.xlsx` is the one with the per-user sheet). The UX
+team needs read access to that container (SAS link or `Storage Blob Data Reader`) to retrieve it.
 
 ### Ongoing image updates
 

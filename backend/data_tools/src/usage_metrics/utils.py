@@ -1,8 +1,15 @@
 """Usage metrics report job.
 
-Aggregates existing activity data from ``ops_event`` into a per-day x division x role
-usage report (counts only -- no per-user rows, no IP addresses) and uploads it to Azure
-Blob Storage for the UX team.
+Aggregates existing activity data from ``ops_event`` into a usage report and uploads it to
+Azure Blob Storage for the UX team. The report is delivered as both a CSV (per-day x division
+x role counts) and a two-sheet ``.xlsx`` -- an "Aggregate" sheet (the same counts) plus a
+"Per-user" sheet listing each named user who signed in during the reporting window along with
+their sign-in count and last sign-in. **No IP addresses** are included in either output.
+
+Note: the "Per-user" sheet names individual users, which reverses the counts-only/no-named-rows
+posture of the initial CSV. This was an explicit, approved requirement change (#4148) -- the
+report now contains named user data, so read access to the ``reports/`` prefix must be granted
+with that in mind.
 
 Follows the ``cleanup_user_sessions`` template: ``__main__`` -> ``get_config(ENV)`` ->
 ``init_db_from_config`` -> run, with loguru logging.
@@ -36,11 +43,12 @@ import csv
 import io
 import os
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
 import sqlalchemy
 from loguru import logger
+from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -122,12 +130,23 @@ METRIC_COLUMNS = [
 ]
 CSV_COLUMNS = ["date", "division", "role"] + METRIC_COLUMNS
 
+# Per-user sheet columns. ``last_sign_in_utc`` is explicitly labelled UTC because created_on is a
+# naive timestamp stored in UTC; it is rendered as an ISO-8601 string so spreadsheet apps do not
+# reinterpret it in the viewer's locale. ``roles`` is a joined string here (one row per user),
+# unlike the aggregate sheet which fans out one row per role.
+USER_SHEET_COLUMNS = ["name", "email", "division", "roles", "sign_in_count", "last_sign_in_utc"]
+
+# MIME type so a browser downloading the .xlsx via a SAS link saves it correctly rather than
+# treating it as application/octet-stream.
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 
 def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
-    """Build a ``user_id -> {division, roles}`` lookup for actor attribution.
+    """Build a ``user_id -> {division, roles, email, full_name}`` lookup for actor attribution.
 
     Division resolves to the division ``name`` (or ``UNKNOWN`` when a user has no division);
-    roles is a tuple of role names (or ``(UNKNOWN,)`` when a user has none).
+    roles is a tuple of role names (or ``(UNKNOWN,)`` when a user has none). ``email`` and
+    ``full_name`` are carried for the per-user sheet (may be ``None`` when unset on the user).
     """
     division_names = {d.id: d.name for d in session.execute(select(Division)).scalars().all()}
 
@@ -137,7 +156,12 @@ def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
     for user in users:
         division = division_names.get(user.division, UNKNOWN) if user.division is not None else UNKNOWN
         roles = tuple(role.name for role in user.roles) or (UNKNOWN,)
-        lookup[user.id] = {"division": division, "roles": roles}
+        lookup[user.id] = {
+            "division": division,
+            "roles": roles,
+            "email": user.email,
+            "full_name": user.full_name,
+        }
     return lookup
 
 
@@ -230,6 +254,90 @@ def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, st
     return counts
 
 
+def aggregate_user_sign_ins(session: Session, lookback_days: int) -> list[dict]:
+    """Aggregate successful sign-ins into one row per user for the "Per-user" sheet.
+
+    A sign-in is a ``LOGIN_ATTEMPT`` row with ``event_status == SUCCESS`` inside the reporting
+    window (same UTC-naive cutoff and window as :func:`aggregate_events`). One completed login
+    (one ``/auth/login/`` POST) writes exactly one such row and creates one new ``UserSession``
+    (the login flow always deactivates prior sessions and creates a fresh one), so counting these
+    rows is a faithful count of sign-in sessions -- i.e. how many times the user had to sign in.
+
+    Counting is keyed on the resolved actor id ONLY (never fanned out per role, unlike the
+    aggregate sheet), so a user holding multiple roles is counted once per login, not once per
+    role. Users with no successful login in the window are absent from the result.
+
+    Name/email/division/roles come from the live ``ops_user`` row; when a user id is no longer in
+    that table (e.g. hard-deleted after signing in) they fall back to the ``event_details['user']``
+    snapshot captured at login time, so the row still renders rather than going blank.
+
+    Returns a list of dicts (keyed by :data:`USER_SHEET_COLUMNS`), sorted by division then name.
+    """
+    user_lookup = build_user_attribution_lookup(session)
+
+    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+    stmt = select(OpsEvent).where(
+        OpsEvent.created_on >= cutoff,
+        OpsEvent.event_status == OpsEventStatus.SUCCESS,
+        OpsEvent.event_type == OpsEventType.LOGIN_ATTEMPT,
+    )
+    events = session.execute(stmt).scalars().all()
+
+    # Per actor: sign-in count, most recent sign-in, and the login-time identity snapshot (used
+    # only as a fallback when the actor is no longer in the live user table).
+    counts: Counter[int] = Counter()
+    last_sign_in: dict[int, datetime] = {}
+    snapshots: dict[int, dict] = {}
+
+    skipped = 0
+    for event in events:
+        if event.created_on is None:
+            continue
+        actor_id = resolve_actor_id(event)
+        if actor_id is None:
+            skipped += 1
+            continue
+        counts[actor_id] += 1
+        if actor_id not in last_sign_in or event.created_on > last_sign_in[actor_id]:
+            last_sign_in[actor_id] = event.created_on
+        details = event.event_details or {}
+        user_snapshot = details.get("user") if isinstance(details, dict) else None
+        if isinstance(user_snapshot, dict):
+            snapshots[actor_id] = user_snapshot
+
+    if skipped:
+        logger.info(f"Skipped {skipped:,} successful login row(s) with no resolvable actor id.")
+
+    rows: list[dict] = []
+    for actor_id, count in counts.items():
+        attribution = user_lookup.get(actor_id)
+        snapshot = snapshots.get(actor_id, {})
+        if attribution is not None:
+            name = attribution["full_name"] or snapshot.get("full_name")
+            email = attribution["email"] or snapshot.get("email")
+            division = attribution["division"]
+            roles = ", ".join(attribution["roles"])
+        else:
+            # Actor no longer in the live user table -- use the login-time snapshot.
+            name = snapshot.get("full_name")
+            email = snapshot.get("email")
+            division = UNKNOWN
+            roles = UNKNOWN
+        rows.append(
+            {
+                "name": name,
+                "email": email,
+                "division": division,
+                "roles": roles,
+                "sign_in_count": count,
+                "last_sign_in_utc": last_sign_in[actor_id].isoformat(),
+            }
+        )
+
+    rows.sort(key=lambda r: ((r["division"] or ""), (r["name"] or ""), (r["email"] or "")))
+    return rows
+
+
 def build_csv(counts: dict[tuple[str, str, str], dict[str, int]]) -> str:
     """Render aggregated counts to a CSV string (one row per date x division x role)."""
     buffer = io.StringIO()
@@ -251,6 +359,32 @@ def generate_report_csv(session: Session, lookback_days: int) -> str:
     return build_csv(counts)
 
 
+def build_workbook(counts: dict[tuple[str, str, str], dict[str, int]], user_rows: list[dict]) -> bytes:
+    """Render the aggregate counts and per-user sign-ins into a two-sheet ``.xlsx`` (as bytes).
+
+    Sheet "Aggregate" mirrors :func:`build_csv` (one row per date x division x role). Sheet
+    "Per-user" lists one row per user who signed in during the window. Written with openpyxl
+    directly (no pandas) to keep the job's memory footprint small.
+    """
+    wb = Workbook()
+
+    aggregate_sheet = wb.active
+    aggregate_sheet.title = "Aggregate"
+    aggregate_sheet.append(CSV_COLUMNS)
+    for date_iso, division, role in sorted(counts.keys()):
+        bucket = counts[(date_iso, division, role)]
+        aggregate_sheet.append([date_iso, division, role] + [bucket[metric] for metric in METRIC_COLUMNS])
+
+    user_sheet = wb.create_sheet("Per-user")
+    user_sheet.append(USER_SHEET_COLUMNS)
+    for row in user_rows:
+        user_sheet.append([row[column] for column in USER_SHEET_COLUMNS])
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
+
+
 def parse_lookback_days(lookback_days: str) -> int:
     """Validate and convert the configured lookback-days value to an int."""
     try:
@@ -262,34 +396,52 @@ def parse_lookback_days(lookback_days: str) -> int:
 def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> str:
     """Generate the usage report and deliver it (Blob upload or local file).
 
-    When ``usage_metrics_storage_account_url`` is set (remote/azure), the CSV is uploaded to
-    Blob storage as both a dated file (trend history) and ``usage-metrics-latest.csv`` (a stable
-    link). Otherwise (local/dev/pytest) it is written to the working directory for inspection.
+    Produces two formats each run: the per-day x division x role **CSV** (unchanged) and a
+    two-sheet **.xlsx** that adds the per-user sign-in sheet. When
+    ``usage_metrics_storage_account_url`` is set (remote/azure), each format is uploaded to Blob
+    storage as both a dated file (trend history) and a ``-latest`` file (a stable link) -- four
+    blobs total. Otherwise (local/dev/pytest) both are written to the working directory.
 
     Returns the generated CSV string.
     """
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
     with Session(conn) as session:
-        csv_string = generate_report_csv(session, lookback_days)
+        # Aggregate each view once and feed both renderers; the CSV and the workbook's "Aggregate"
+        # sheet share the same counts, so re-scanning ops_event for each would be wasted work.
+        counts = aggregate_events(session, lookback_days)
+        user_rows = aggregate_user_sign_ins(session, lookback_days)
+    logger.info(
+        f"Aggregated into {len(counts):,} date x division x role row(s) and "
+        f"{len(user_rows):,} per-user sign-in row(s)."
+    )
+    csv_string = build_csv(counts)
+    workbook_bytes = build_workbook(counts, user_rows)
 
     today = datetime.now(timezone.utc).date().isoformat()
     prefix = config.usage_metrics_report_prefix
-    dated_blob = f"{prefix}/usage-metrics-{today}.csv"
-    latest_blob = f"{prefix}/usage-metrics-latest.csv"
+    dated_csv_blob = f"{prefix}/usage-metrics-{today}.csv"
+    latest_csv_blob = f"{prefix}/usage-metrics-latest.csv"
+    dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
+    latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
 
     account_url = config.usage_metrics_storage_account_url
     if account_url:
         container = config.usage_metrics_container_name
-        data = csv_string.encode("utf-8")
+        csv_data = csv_string.encode("utf-8")
         logger.info(f"Uploading usage report to {account_url}/{container}.")
-        upload_blob(account_url, container, dated_blob, data)
-        upload_blob(account_url, container, latest_blob, data)
-        logger.info(f"Uploaded usage report to {dated_blob} and {latest_blob}.")
+        upload_blob(account_url, container, dated_csv_blob, csv_data)
+        upload_blob(account_url, container, latest_csv_blob, csv_data)
+        upload_blob(account_url, container, dated_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
+        upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
+        logger.info(f"Uploaded usage report CSV ({latest_csv_blob}) and workbook ({latest_xlsx_blob}).")
     else:
-        local_path = f"usage-metrics-{today}.csv"
-        with open(local_path, "w", newline="") as f:
+        local_csv_path = f"usage-metrics-{today}.csv"
+        with open(local_csv_path, "w", newline="") as f:
             f.write(csv_string)
-        logger.info(f"No storage account configured; wrote usage report to {local_path}.")
+        local_xlsx_path = f"usage-metrics-{today}.xlsx"
+        with open(local_xlsx_path, "wb") as f:
+            f.write(workbook_bytes)
+        logger.info(f"No storage account configured; wrote usage report to {local_csv_path} and {local_xlsx_path}.")
 
     return csv_string
 

@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from azure.storage.blob import BlobServiceClient, ContainerClient
+from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
 from loguru import logger
 
 from data_tools.environment.pytest import PytestConfig
@@ -150,6 +150,7 @@ def upload_blob(
     blob_name: str,
     data: bytes,
     client_id: str = MI_CLIENT_ID,
+    content_type: str | None = None,
 ) -> None:
     """
     Upload a blob to Azure Blob Storage using Managed Identity (or RBAC when no client ID is set).
@@ -163,6 +164,8 @@ def upload_blob(
     :param blob_name: The full blob name (may include a prefix, e.g. "reports/usage-metrics.csv").
     :param data: The blob contents as bytes.
     :param client_id: The client ID to use for Managed Identity.
+    :param content_type: Optional MIME type recorded as the blob's Content-Type so browsers
+        downloading it (e.g. via a SAS link) save it correctly. When None, Azure defaults apply.
     """
     logger.info(f"Uploading blob {blob_name!r} to container {container_name!r} at {account_url}.")
 
@@ -172,7 +175,8 @@ def upload_blob(
     else:
         credential = DefaultAzureCredential(managed_identity_client_id=client_id)
 
+    content_settings = ContentSettings(content_type=content_type) if content_type else None
     with BlobServiceClient(account_url, credential=credential) as blob_service_client:
         container_client = blob_service_client.get_container_client(container=container_name)
-        container_client.upload_blob(name=blob_name, data=data, overwrite=True)
+        container_client.upload_blob(name=blob_name, data=data, overwrite=True, content_settings=content_settings)
         logger.info(f"Uploaded {len(data)} bytes to {blob_name!r}.")

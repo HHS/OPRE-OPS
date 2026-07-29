@@ -4,11 +4,15 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
+from openpyxl import load_workbook
 from sqlalchemy import text
 
 from data_tools.src.usage_metrics.utils import (
+    METRIC_COLUMNS,
     aggregate_events,
+    aggregate_user_sign_ins,
     build_csv,
+    build_workbook,
     generate_report_csv,
     is_deactivating_update,
     parse_lookback_days,
@@ -190,8 +194,24 @@ def seeded_db(loaded_db):
     loaded_db.commit()
 
     role = loaded_db.get(Role, 900)
-    user_a = User(id=9001, email="a@example.com", division=900, status=UserStatus.ACTIVE, roles=[role])
-    user_b = User(id=9002, email="b@example.com", division=900, status=UserStatus.ACTIVE, roles=[role])
+    user_a = User(
+        id=9001,
+        email="a@example.com",
+        first_name="Ada",
+        last_name="Aardvark",
+        division=900,
+        status=UserStatus.ACTIVE,
+        roles=[role],
+    )
+    user_b = User(
+        id=9002,
+        email="b@example.com",
+        first_name="Ben",
+        last_name="Bison",
+        division=900,
+        status=UserStatus.ACTIVE,
+        roles=[role],
+    )
     loaded_db.add_all([user_a, user_b])
     loaded_db.commit()
 
@@ -309,7 +329,7 @@ def test_generate_report_csv_produces_rows(seeded_db):
 
 
 def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
-    """When a storage account URL is configured, both dated and latest blobs are uploaded."""
+    """When a storage account URL is configured, both CSV and .xlsx (dated + latest) are uploaded."""
     db, _, _ = seeded_db
     upload_mock = mocker.patch("data_tools.src.usage_metrics.utils.upload_blob")
 
@@ -324,7 +344,122 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
 
     run_usage_metrics(conn, config)
 
-    assert upload_mock.call_count == 2
+    # Four uploads: dated + latest, for each of CSV and .xlsx.
+    assert upload_mock.call_count == 4
     blob_names = {call.args[2] for call in upload_mock.call_args_list}
-    assert any(name.startswith("reports/usage-metrics-") and name.endswith(".csv") for name in blob_names)
     assert "reports/usage-metrics-latest.csv" in blob_names
+    assert "reports/usage-metrics-latest.xlsx" in blob_names
+    assert any(name.startswith("reports/usage-metrics-") and name.endswith(".csv") for name in blob_names)
+    assert any(name.startswith("reports/usage-metrics-") and name.endswith(".xlsx") for name in blob_names)
+
+    # The .xlsx uploads carry the spreadsheet MIME type; the CSVs do not.
+    xlsx_calls = [c for c in upload_mock.call_args_list if c.args[2].endswith(".xlsx")]
+    assert xlsx_calls and all(
+        c.kwargs.get("content_type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        for c in xlsx_calls
+    )
+    csv_calls = [c for c in upload_mock.call_args_list if c.args[2].endswith(".csv")]
+    assert all(c.kwargs.get("content_type") is None for c in csv_calls)
+
+
+# ---------------------------------------------------------------------------
+# Per-user sign-in aggregation and workbook.
+# ---------------------------------------------------------------------------
+
+
+def test_aggregate_user_sign_ins_counts_per_user_not_per_role(seeded_db, loaded_db):
+    """sign_in_count is keyed on the actor only, so a multi-role user is not double-counted."""
+    db, _, _ = seeded_db
+
+    # Give user_b (9002) a second role; the login count must stay per-user, not fan out per role.
+    second_role = Role(id=901, name="reviewer")
+    db.merge(second_role)
+    db.commit()
+    user_b = db.get(User, 9002)
+    user_b.roles.append(db.get(Role, 901))
+    db.commit()
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    # user_a (9001) already has one login on day1 from the fixture; add a later one on day2.
+    later = now - timedelta(days=1)
+    extra_a = _event(OpsEventType.LOGIN_ATTEMPT, created_by=None, event_details={"user": {"id": 9001}})
+    extra_a.created_on = later
+    # user_b (9002, two roles) has a single login.
+    login_b = _event(OpsEventType.LOGIN_ATTEMPT, created_by=None, event_details={"user": {"id": 9002}})
+    login_b.created_on = now - timedelta(days=2)
+    db.add_all([extra_a, login_b])
+    db.commit()
+
+    rows = aggregate_user_sign_ins(db, LOOKBACK_DAYS)
+    by_email = {r["email"]: r for r in rows}
+
+    assert by_email["a@example.com"]["sign_in_count"] == 2
+    assert by_email["a@example.com"]["name"] == "Ada Aardvark"
+    assert by_email["a@example.com"]["last_sign_in_utc"] == later.isoformat()
+
+    # Two roles, but a single login -> count 1, and both roles joined in one column.
+    assert by_email["b@example.com"]["sign_in_count"] == 1
+    assert set(by_email["b@example.com"]["roles"].split(", ")) == {"analyst", "reviewer"}
+
+
+def test_aggregate_user_sign_ins_excludes_failed_and_out_of_window(seeded_db):
+    """Only SUCCESS logins inside the window are counted; a 1-day window excludes the seeded rows."""
+    db, _, _ = seeded_db
+    # The fixture seeds one SUCCESS login (9001) and one FAILED login, both ~3 days old.
+    assert aggregate_user_sign_ins(db, LOOKBACK_DAYS) and all(
+        r["sign_in_count"] >= 1 for r in aggregate_user_sign_ins(db, LOOKBACK_DAYS)
+    )
+    # The FAILED login is never counted (only user_a appears).
+    emails = {r["email"] for r in aggregate_user_sign_ins(db, LOOKBACK_DAYS)}
+    assert emails == {"a@example.com"}
+    # A window that predates the seeded events yields no rows.
+    assert aggregate_user_sign_ins(db, 1) == []
+
+
+def test_aggregate_user_sign_ins_falls_back_to_event_details_for_unknown_user(seeded_db):
+    """A login by a user id absent from the live table renders from the event_details snapshot."""
+    db, _, _ = seeded_db
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    ghost = _event(
+        OpsEventType.LOGIN_ATTEMPT,
+        created_by=None,
+        event_details={"user": {"id": 99999, "email": "ghost@example.com", "full_name": "Ghost User"}},
+    )
+    ghost.created_on = now - timedelta(days=1)
+    db.add(ghost)
+    db.commit()
+
+    rows = aggregate_user_sign_ins(db, LOOKBACK_DAYS)
+    ghost_row = next(r for r in rows if r["email"] == "ghost@example.com")
+    assert ghost_row["name"] == "Ghost User"
+    assert ghost_row["division"] == "UNKNOWN"
+    assert ghost_row["roles"] == "UNKNOWN"
+    assert ghost_row["sign_in_count"] == 1
+
+
+def test_build_workbook_has_two_sheets_with_expected_columns():
+    counts = {
+        ("2026-07-06", "OD", "role_a"): {metric: 1 for metric in METRIC_COLUMNS},
+    }
+    user_rows = [
+        {
+            "name": "Ada Aardvark",
+            "email": "a@example.com",
+            "division": "OD",
+            "roles": "analyst",
+            "sign_in_count": 3,
+            "last_sign_in_utc": "2026-07-06T12:00:00",
+        }
+    ]
+    workbook_bytes = build_workbook(counts, user_rows)
+    wb = load_workbook(io.BytesIO(workbook_bytes))
+
+    assert wb.sheetnames == ["Aggregate", "Per-user"]
+
+    agg = wb["Aggregate"]
+    assert [c.value for c in agg[1]][:3] == ["date", "division", "role"]
+    assert [c.value for c in agg[2]][:3] == ["2026-07-06", "OD", "role_a"]
+
+    users = wb["Per-user"]
+    assert [c.value for c in users[1]] == ["name", "email", "division", "roles", "sign_in_count", "last_sign_in_utc"]
+    assert [c.value for c in users[2]] == ["Ada Aardvark", "a@example.com", "OD", "analyst", 3, "2026-07-06T12:00:00"]
