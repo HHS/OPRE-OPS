@@ -13,10 +13,10 @@ from models import (
     ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
+    ContractBudgetLineItem,
     DefaultProcurementTracker,
     DefaultProcurementTrackerStep,
     Division,
-    GrantBudgetLineItem,
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
     User,
@@ -108,8 +108,10 @@ def test_budget_line_item_patch_with_budgets_change_requests(
 
     #  create PLANNED BLI with a valid future date so required-field validation passes.
     #  Use a date different from the patch target (2032-02-02) so patching date_needed creates a CR.
-    bli = GrantBudgetLineItem(
-        line_description="Grant Expenditure GA999",
+    #  Agreement 1 is a contract agreement, so use ContractBudgetLineItem (grant BLIs now require
+    #  grant_number_id for status changes and would fail validation on this agreement).
+    bli = ContractBudgetLineItem(
+        line_description="SC1",
         agreement_id=1,
         can_id=test_can.id,
         amount=111.11,
@@ -347,8 +349,8 @@ def test_budget_line_item_patch_with_status_change_requests(
     prev_hist_count = len(response.json["data"])
 
     #  create DRAFT BLI with missing required fields
-    bli = GrantBudgetLineItem(
-        line_description="Grant Expenditure GA999",
+    bli = ContractBudgetLineItem(
+        line_description="SC1",
         agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_division_director.id,
@@ -537,7 +539,7 @@ def test_bli_patch_can_id_fallback_resolves_division_from_incoming_can(
         app.db_session.flush()
 
     # Create a PLANNED BLI with no CAN but a valid future date
-    bli = GrantBudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="BLI with no initial CAN",
         agreement_id=1,
         can_id=None,
@@ -599,7 +601,7 @@ def test_bli_patch_can_id_fallback_validation_error_when_no_can_provided(
         app.db_session.flush()
 
     # Create a PLANNED BLI with no CAN but a valid future date
-    bli = GrantBudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="BLI with no CAN, no can_id in PATCH",
         agreement_id=1,
         can_id=None,
@@ -649,7 +651,7 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
     loaded_db.add(award_step)
 
     # Create a PLANNED BLI with a CAN and a valid future date
-    bli = GrantBudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="BLI for budget-team direct-write test",
         agreement_id=1,
         can_id=test_can.id,
@@ -690,7 +692,7 @@ def test_budget_team_bli_patch_creates_change_request_without_active_award_appro
     This is the negative case: the bypass must not apply outside the award-approval flow.
     """
     # Agreement 1 has no procurement tracker in seed data — is_award_approval_requested returns False
-    bli = GrantBudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="BLI for budget-team no-bypass test",
         agreement_id=1,
         can_id=test_can.id,

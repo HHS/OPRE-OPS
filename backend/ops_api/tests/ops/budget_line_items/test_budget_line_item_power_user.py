@@ -1072,6 +1072,59 @@ def test_planned_bli_can_update_services_component_without_change_request(
     loaded_db.commit()
 
 
+def test_planned_grant_bli_can_update_grant_number_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_grant,
+    app_ctx,
+):
+    """A PLANNED grant BLI can have its grant_number_id changed directly, without a change request.
+
+    Regression for grant_number_id being absent from ALWAYS_DIRECT_EDIT_FIELDS — the grant-BLI
+    analog of the services_component_id direct-edit path. Without the fix the update is silently
+    dropped (neither applied directly nor captured as a change request).
+    """
+    from models import GrantNumber
+
+    agreement = test_grant
+
+    gn1 = GrantNumber(agreement_id=agreement.id, number=1, description="GN1")
+    gn2 = GrantNumber(agreement_id=agreement.id, number=2, description="GN2")
+    loaded_db.add_all([gn1, gn2])
+    loaded_db.commit()
+
+    bli = GrantBudgetLineItem(
+        line_description="Planned grant BLI for GN update test",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+        amount=1000.00,
+        grant_number_id=gn1.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"grant_number_id": gn2.id},
+    )
+
+    assert response.status_code == 200, "PLANNED grant BLI grant_number_id update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.grant_number_id == gn2.id, "grant_number_id should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for grant_number_id update"
+
+    loaded_db.delete(bli)
+    loaded_db.delete(gn1)
+    loaded_db.delete(gn2)
+    loaded_db.commit()
+
+
 def test_planned_bli_can_update_line_description_without_change_request(
     auth_client,
     loaded_db,
