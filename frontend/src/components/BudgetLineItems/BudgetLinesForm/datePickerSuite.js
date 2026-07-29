@@ -28,7 +28,7 @@ const suite = create((data = {}, isSuperUser) => {
         DATE_FORMAT_REGEX.test(data.needByDate) &&
         (data.scStartDate || data.scEndDate)
     ) {
-        test("needByDate", "Date must fall within the agreement's period of performance", () => {
+        test("needByDate", "Date must fit within the agreement's start and end dates.", () => {
             const [month, day, year] = data.needByDate.split("/");
             const enteredDateStr = `${year}-${month}-${day}`;
             enforce(

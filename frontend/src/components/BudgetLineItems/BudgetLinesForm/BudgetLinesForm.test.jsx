@@ -8,7 +8,7 @@ import suite from "./suite";
 import datePickerSuite from "./datePickerSuite";
 import { USER_ROLES } from "../../Users/User.constants";
 
-const POP_ERROR = "Date must fall within the agreement's period of performance";
+const POP_ERROR = "Date must fit within the agreement's start and end dates.";
 
 // Returns YYYY-MM-DD n days from today.
 const isoFromToday = (n) => {
