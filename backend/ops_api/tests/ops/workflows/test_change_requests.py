@@ -545,7 +545,7 @@ def test_bli_patch_can_id_fallback_resolves_division_from_incoming_can(
         can_id=None,
         amount=100.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -657,7 +657,7 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -698,7 +698,7 @@ def test_budget_team_bli_patch_creates_change_request_without_active_award_appro
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
