@@ -743,7 +743,9 @@ def test_budget_team_bli_patch_writes_directly_when_tracker_not_active(
     )
     loaded_db.add(award_step)
 
-    bli = GrantBudgetLineItem(
+    # Agreement 1 is a contract agreement, so use ContractBudgetLineItem (grant BLIs now require
+    # grant_number_id for status changes and would fail validation on this agreement).
+    bli = ContractBudgetLineItem(
         line_description="BLI for budget-team bypass with non-active tracker",
         agreement_id=1,
         can_id=test_can.id,

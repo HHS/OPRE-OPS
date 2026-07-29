@@ -56,7 +56,9 @@ function GrantNumberForm({
     });
 
     const heading = isEditMode || isReviewMode ? "Edit Grant Numbers" : "Create Grant Numbers";
-    const details = isReviewMode ? undefined : "Add a placeholder Grant Number until the award is finalized.";
+    const details = isReviewMode
+        ? undefined
+        : "Create the structure of the agreement using Grant Numbers to describe the grants within it.  After you outline the Grant Numbers, you will add Budget Lines to fund them.";
 
     return (
         <form
@@ -103,8 +105,8 @@ function GrantNumberForm({
                                 value={formData?.number || ""}
                                 options={optionsWithSelected}
                                 isRequired={true}
+                                hint="Placeholder grant # until award"
                             />
-                            <p className="usa-hint margin-top-1">Placeholder grant # until award</p>
                         </div>
                     </div>
                     <DateRangePickerWrapper

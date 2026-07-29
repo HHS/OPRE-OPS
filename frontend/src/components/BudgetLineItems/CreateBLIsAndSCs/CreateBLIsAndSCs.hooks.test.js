@@ -73,7 +73,8 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
     BLILabel: vi.fn((bli) => `${bli?.id ?? "Unknown"}`),
     budgetLinesTotal: vi.fn((blis) => blis.reduce((sum, bli) => sum + (bli.amount ?? 0), 0)),
     getNonDRAFTBudgetLines: vi.fn((blis) => blis.filter((bli) => bli.status !== "DRAFT")),
-    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 })))
+    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 }))),
+    groupByGrantNumber: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], grantNumberNumber: 1 })))
 }));
 
 vi.mock("../../../helpers/scrollToTop.helper", () => ({
@@ -547,5 +548,58 @@ describe("useCreateBLIsAndSCs", () => {
 
         // Removed grant number deleted.
         expect(deleteGrantNumberMock).toHaveBeenCalledWith(99);
+    });
+
+    it("surfaces an error instead of silently saving a grant BLI whose grant number can't be resolved", async () => {
+        // Grant agreement with a persisted BLI that references a grant number (number 7) which is
+        // no longer present in the editor's grant_numbers list (deleted mid-edit / stale page data).
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        addBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        // Inject a NEW grant BLI (no created_on) carrying a grant_number_number that no persisted
+        // grant number resolves to. This routes through addGrantNumberIdToBLI during creation.
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 100,
+                grant_number_number: 7,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+
+        // The link resolution throws before any BLI is written, so the user sees an error alert
+        // rather than a BLI silently saved with grant_number_id: null.
+        expect(addBudgetLineItemMock).not.toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 });

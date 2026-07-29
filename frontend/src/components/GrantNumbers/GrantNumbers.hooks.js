@@ -75,6 +75,7 @@ const useGrantNumbers = (agreementId, continueBtnText, setHasUnsavedChanges) => 
      */
     const handleDelete = (number) => {
         const index = grantNumbers.findIndex((item) => item.number === number);
+        if (index === -1) return;
         const selectedGrantNumber = grantNumbers[index];
 
         setShowModal(true);
@@ -110,6 +111,7 @@ const useGrantNumbers = (agreementId, continueBtnText, setHasUnsavedChanges) => 
     const setFormDataById = (number) => {
         setFormKey(Date.now());
         const index = grantNumbers.findIndex((item) => item.number === number);
+        if (index === -1) return;
         const popStartDate = formatDateForScreen(grantNumbers[index].period_start);
         const popEndDate = formatDateForScreen(grantNumbers[index].period_end);
         const newFormData = {

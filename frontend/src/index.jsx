@@ -253,6 +253,16 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/create"
                     element={<CreateAgreement />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
                 />
                 <Route
                     path="/agreements/edit/:id/*"
