@@ -141,11 +141,13 @@ export const BudgetLinesForm = ({
             <div className="grid-col-8">
                 <div className="grid-row grid-gap flex-align-end">
                     <div className="grid-col-6">
-                        <div className="usa-form-group">
+                        <div
+                            className={`usa-form-group ${scCn || ""}`}
+                            data-testid="services-component-form-group"
+                        >
                             {isGrant ? (
                                 <AllGrantNumberSelect
                                     messages={budgetFormSuite.getErrors("allGrantNumberSelect")}
-                                    className={scCn}
                                     value={grantNumberNumber || ""}
                                     onChange={(name, value) => {
                                         if (isReviewMode) {
@@ -158,7 +160,6 @@ export const BudgetLinesForm = ({
                             ) : (
                                 <AllServicesComponentSelect
                                     messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
-                                    className={scCn}
                                     value={servicesComponentNumber || ""}
                                     onChange={(name, value) => {
                                         if (isReviewMode) {

@@ -324,7 +324,7 @@ describe("BudgetLinesForm Validation Integration", () => {
                 </Provider>
             );
 
-            expect(screen.getByTestId("grant-number-select")).toHaveClass("usa-form-group--error");
+            expect(screen.getByTestId("services-component-form-group")).toHaveClass("usa-form-group--error");
         });
     });
 
