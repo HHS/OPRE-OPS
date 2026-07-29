@@ -714,3 +714,57 @@ def test_budget_team_bli_patch_creates_change_request_without_active_award_appro
     assert response.json.get(
         "change_requests_in_review"
     ), "A change request must be created when no active award approval exists"
+
+
+def test_budget_team_bli_patch_writes_directly_when_tracker_not_active(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    The bypass must apply even when the procurement tracker status is not ACTIVE
+    (e.g. COMPLETED), as long as the AWARD step has a pending approval request.
+    Regression test for the ACTIVE-filter removal in is_award_approval_requested.
+    """
+    # Use a COMPLETED tracker — previously this would have caused is_award_approval_requested
+    # to return False and the bypass to silently fail.
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.COMPLETED)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=6,
+        step_type=ProcurementTrackerStepType.AWARD,
+        award_approval_requested=True,
+        award_approval_status=None,  # pending — not yet approved or declined
+    )
+    loaded_db.add(award_step)
+
+    # Agreement 1 is a contract agreement, so use ContractBudgetLineItem (grant BLIs now require
+    # grant_number_id for status changes and would fail validation on this agreement).
+    bli = ContractBudgetLineItem(
+        line_description="BLI for budget-team bypass with non-active tracker",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2032, 2, 2),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 200
+    ), f"Budget Team bypass should work even when tracker is COMPLETED. Got: {response.json}"
+    assert not response.json.get("change_requests_in_review"), "No change request should be created"
+
+    updated_bli = loaded_db.get(type(bli), bli_id)
+    assert float(updated_bli.amount) == 750.00

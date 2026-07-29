@@ -165,20 +165,21 @@ def is_award_approval_requested(agreement) -> bool:
     if not agreement or not agreement.procurement_trackers:
         return False
 
-    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
-    if not tracker:
-        return False
+    # Check every tracker for a pending AWARD step. The tracker status is intentionally
+    # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
+    # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
+    for tracker in agreement.procurement_trackers:
+        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        if not award_step or not award_step.award_approval_requested:
+            continue
 
-    award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        # Terminal states — approval process complete
+        if award_step.award_approval_status in ("APPROVED", "DECLINED"):
+            continue
 
-    if not award_step or not award_step.award_approval_requested:
-        return False
+        return True
 
-    # Terminal states — approval process complete
-    if award_step.award_approval_status in ("APPROVED", "DECLINED"):
-        return False
-
-    return True
+    return False
 
 
 def bli_associated_with_agreement(id: int) -> bool:

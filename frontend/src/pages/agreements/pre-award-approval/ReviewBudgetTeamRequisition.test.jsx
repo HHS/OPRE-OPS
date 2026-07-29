@@ -161,7 +161,9 @@ describe("ReviewBudgetTeamRequisition", () => {
         modalProps: {},
         isSubmitting: false,
         submitError: "",
+        setSubmitError: vi.fn(),
         handleApprove: vi.fn(),
+        handleSaveDraft: vi.fn(),
         handleCancel: vi.fn(),
         isFormValid: vi.fn(() => false),
         hasPermission: true,
@@ -536,6 +538,23 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.queryByText("Submission Error")).not.toBeInTheDocument();
+        });
+
+        it("should clear submit error when dismiss button is clicked", async () => {
+            const user = userEvent.setup();
+            const mockSetSubmitError = vi.fn();
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                submitError: "Failed to submit requisition",
+                setSubmitError: mockSetSubmitError
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            const closeButton = screen.getByLabelText("close");
+            await user.click(closeButton);
+
+            expect(mockSetSubmitError).toHaveBeenCalledWith("");
         });
     });
 

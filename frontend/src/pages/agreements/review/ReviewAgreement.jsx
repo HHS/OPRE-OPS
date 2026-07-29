@@ -9,6 +9,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -48,6 +49,7 @@ export const ReviewAgreement = () => {
         setNotes,
         action,
         servicesComponents,
+        isGrant,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
         hasBLIError,
@@ -197,6 +199,40 @@ export const ReviewAgreement = () => {
                 )}
                 {groupedBudgetLinesByServicesComponent.length > 0 &&
                     groupedBudgetLinesByServicesComponent.map((group, index) => {
+                        // For grants, the group key is the grant number; render a GrantNumberAccordion
+                        // with the plain grant-number BLI table (no SC metadata / requirement type).
+                        if (isGrant) {
+                            const groupKey = group.grantNumberNumber;
+                            return (
+                                <GrantNumberAccordion
+                                    key={`${groupKey}-${index}`}
+                                    grantNumberNumber={groupKey}
+                                >
+                                    {group.budgetLines.length > 0 ? (
+                                        <AgreementBLIReviewTable
+                                            readOnly={false}
+                                            budgetLines={group.budgetLines}
+                                            isReviewMode={true}
+                                            setSelectedBLIs={handleSelectBLI}
+                                            toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(groupKey)}
+                                            mainToggleSelected={toggleStates[groupKey] || false}
+                                            setMainToggleSelected={(newState) =>
+                                                setToggleStates((prev) => ({
+                                                    ...prev,
+                                                    [groupKey]: newState
+                                                }))
+                                            }
+                                            servicesComponentNumber={groupKey}
+                                            action={action}
+                                        />
+                                    ) : (
+                                        <p className="text-center margin-y-7">
+                                            You have not added any budget lines to this grant number yet.
+                                        </p>
+                                    )}
+                                </GrantNumberAccordion>
+                            );
+                        }
                         const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                             ? group.serviceComponentGroupingLabel
                             : group.servicesComponentNumber;
