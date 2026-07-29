@@ -30,7 +30,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
-import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
@@ -124,11 +124,16 @@ const useCreateBLIsAndSCs = (
     const {
         agreement,
         services_components: servicesComponents,
-        deleted_services_components_ids: deletedServicesComponentsIds
+        deleted_services_components_ids: deletedServicesComponentsIds,
+        grant_numbers: grantNumbers
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Budget Team members write financial changes directly (no change-request workflow),
+    // matching the backend's is_budget_team() bypass in budget_line_items.py.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
     // read during render (here and in BudgetLinesForm), so a stale result from a prior
@@ -191,7 +196,9 @@ const useCreateBLIsAndSCs = (
     // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
         ? suite.run({
-              budgetLines: tempBudgetLines
+              // Exclude in-review BLIs from validation — they are locked (not editable) and
+              // won't be included in the save payload, so their TBD fields should not block saving.
+              budgetLines: tempBudgetLines.filter((bli) => !bli.in_review)
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();
@@ -501,6 +508,11 @@ const useCreateBLIsAndSCs = (
             // deleting immediately, so a save containing any of them was "sent to approval" too — even
             // when there were no financial-snapshot edits. Deleted lines are already out of
             // tempBudgetLines, so this signal is derived from deletedBudgetLines separately.
+            // Financial edits write directly for super users AND budget team (canEditDirectly);
+            // only other users route them to approval. Deletions are different: the backend hard-
+            // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
+            // line STILL routes to a change request — hence the deletion signal gates on super-user
+            // only (via isDeletionRoutedToApproval), not canEditDirectly.
             const deletionsRoutedToApproval = deletedBudgetLines.filter((bl) =>
                 isDeletionRoutedToApproval(bl, isSuperUser)
             );
@@ -508,7 +520,7 @@ const useCreateBLIsAndSCs = (
                 .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
                 .join("\n");
             const anyChangeSentToApproval =
-                (isThereAnyBLIsFinancialSnapshotChanged || deletionsRoutedToApproval.length > 0) && !isSuperUser;
+                (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
             const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
             if (continueOverRide) {
                 continueOverRide();
@@ -535,6 +547,7 @@ const useCreateBLIsAndSCs = (
             tempBudgetLines,
             deletedBudgetLines,
             continueOverRide,
+            canEditDirectly,
             isSuperUser,
             setAlert,
             selectedAgreement?.id,
@@ -920,6 +933,14 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
+                    const newGrantNumbers = grantNumbers
+                        .filter((gn) => !("created_on" in gn))
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
+                            ...gn,
+                            ref: display_title
+                        }));
+
                     const data = {
                         ...agreement,
                         team_members: (agreement.team_members ?? []).map((team_member) => {
@@ -934,7 +955,8 @@ const useCreateBLIsAndSCs = (
                     const createAgreementPayload = {
                         ...cleanData,
                         budget_line_items: cleanBudgetLines,
-                        services_components: newServicesComponents
+                        services_components: newServicesComponents,
+                        grant_numbers: newGrantNumbers
                     };
 
                     const fulfilled = await addAgreement(createAgreementPayload).unwrap();
@@ -988,9 +1010,9 @@ const useCreateBLIsAndSCs = (
                         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
                     );
 
-                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && !savedViaModal) {
+                    if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
                         await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
-                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && savedViaModal) {
+                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
                         await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
@@ -1024,12 +1046,13 @@ const useCreateBLIsAndSCs = (
         },
         [
             servicesComponents,
+            grantNumbers,
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
             addBudgetLineItem,
             setAlert,
-            isSuperUser,
+            canEditDirectly,
             handleFinancialSnapshotChanges,
             handleFinancialSnapshotChangesViaBlocker,
             handleRegularUpdates,
@@ -1042,9 +1065,10 @@ const useCreateBLIsAndSCs = (
         ]
     );
 
-    const hasFinancialSnapshotChanges = tempBudgetLines.some(
-        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-    );
+    const hasFinancialSnapshotChanges = tempBudgetLines
+        .filter((b) => !b.in_review)
+        .some((b) => b.financialSnapshotChanged);
+    const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);
 
@@ -1162,7 +1186,8 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         tempBudgetLines,
         totalsForCards,
-        isAgreementNotYetDeveloped
+        isAgreementNotYetDeveloped,
+        requiresFinancialApproval
     };
 };
 

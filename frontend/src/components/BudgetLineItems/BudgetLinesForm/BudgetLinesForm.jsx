@@ -130,10 +130,12 @@ export const BudgetLinesForm = ({
             <div className="grid-col-8">
                 <div className="grid-row grid-gap flex-align-end">
                     <div className="grid-col-6">
-                        <div className="usa-form-group">
+                        <div
+                            className={`usa-form-group ${scCn || ""}`}
+                            data-testid="services-component-form-group"
+                        >
                             <AllServicesComponentSelect
                                 messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
-                                className={scCn}
                                 value={servicesComponentNumber || ""}
                                 onChange={(name, value) => {
                                     if (isReviewMode) {
@@ -192,7 +194,7 @@ export const BudgetLinesForm = ({
                             label="Amount"
                             messages={budgetFormSuite.getErrors("enteredAmount")}
                             className={enteredAmountCn}
-                            value={enteredAmount || ""}
+                            value={enteredAmount ?? ""}
                             setEnteredAmount={setEnteredAmount}
                             onChange={(name, value) => {
                                 if (isReviewMode) {

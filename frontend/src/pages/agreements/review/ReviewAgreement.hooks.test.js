@@ -156,7 +156,7 @@ describe("useReviewAgreement", () => {
                 budget_line_items: [
                     {
                         id: 101,
-                        amount: 0,
+                        amount: null,
                         can_id: "",
                         services_component_id: "",
                         date_needed: "",

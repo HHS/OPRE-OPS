@@ -31,6 +31,8 @@ from ops_api.ops.views import (
     DIVISIONS_LIST_API_VIEW_FUNC,
     DOCUMENT_ITEM_API_VIEW_FUNC,
     DOCUMENT_LIST_API_VIEW_FUNC,
+    GRANT_NUMBER_ITEM_API_VIEW_FUNC,
+    GRANT_NUMBER_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
     LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
@@ -330,6 +332,14 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/services-components/",
         view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/grant-numbers/<int:id>",
+        view_func=GRANT_NUMBER_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/grant-numbers/",
+        view_func=GRANT_NUMBER_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/procurement-actions/<int:id>",

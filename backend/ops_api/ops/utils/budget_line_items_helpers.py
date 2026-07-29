@@ -217,6 +217,38 @@ def is_pre_award_in_review(agreement):
     return True
 
 
+def is_award_approval_requested(agreement) -> bool:
+    """
+    Check if the agreement's award approval (step 6) has been requested and is pending.
+
+    Returns True when a budget team user's BLI financial edits should bypass the
+    change-request workflow — i.e. the agreement is in the award-approval review flow.
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if award approval has been requested and is not yet resolved.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    if not tracker:
+        return False
+
+    award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+
+    if not award_step or not award_step.award_approval_requested:
+        return False
+
+    # Terminal states — approval process complete
+    if award_step.award_approval_status in ("APPROVED", "DECLINED"):
+        return False
+
+    return True
+
+
 def bli_associated_with_agreement(id: int) -> bool:
     """
     In order to edit a budget line or agreement, the budget line must be associated with an Agreement, and the

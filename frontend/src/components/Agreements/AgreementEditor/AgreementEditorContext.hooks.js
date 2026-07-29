@@ -40,7 +40,9 @@ export const defaultState = {
     selected_alternate_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
     services_components: [],
-    deleted_services_components_ids: []
+    deleted_services_components_ids: [],
+    grant_numbers: [],
+    deleted_grant_numbers_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -131,6 +133,36 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 services_components: action.payload ?? [],
                 deleted_services_components_ids: []
+            };
+        }
+        case "ADD_GRANT_NUMBER": {
+            return {
+                ...state,
+                grant_numbers: [...state.grant_numbers, action.payload]
+            };
+        }
+        case "UPDATE_GRANT_NUMBER": {
+            return {
+                ...state,
+                grant_numbers: state.grant_numbers.map((gn) =>
+                    gn.number === action.payload.number ? action.payload : gn
+                )
+            };
+        }
+        case "DELETE_GRANT_NUMBER": {
+            return {
+                ...state,
+                grant_numbers: state.grant_numbers.filter((gn) => gn.number !== action.payload.number),
+                deleted_grant_numbers_ids: action.payload.id
+                    ? [...state.deleted_grant_numbers_ids, action.payload.id]
+                    : [...state.deleted_grant_numbers_ids]
+            };
+        }
+        case "RESEED_GRANT_NUMBERS": {
+            return {
+                ...state,
+                grant_numbers: action.payload ?? [],
+                deleted_grant_numbers_ids: []
             };
         }
         case "SET_RESEARCH_METHODOLOGIES": {

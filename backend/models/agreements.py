@@ -729,6 +729,14 @@ class GrantAgreement(Agreement):
     aln_number: Mapped[Optional[str]] = mapped_column(String)
     funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
 
+    grant_numbers: Mapped[list["GrantNumber"]] = relationship(
+        "GrantNumber",
+        primaryjoin="GrantAgreement.id == foreign(GrantNumber.agreement_id)",
+        back_populates="agreement",
+        lazy="selectin",
+        cascade="all, delete",
+    )
+
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
     }

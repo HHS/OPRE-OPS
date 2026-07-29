@@ -52,11 +52,12 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     compute_bli_is_deletable,
     create_budget_line_item_instance,
     get_bli_locked_message,
+    is_award_approval_requested,
     is_bli_editable,
     is_pre_award_in_review,
     update_data,
 )
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 @dataclass
@@ -581,9 +582,20 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-        # Determine if direct edit or change request is needed
-        directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed.
+        # Superusers bypass the change-request workflow for all edits.
+        # Budget Team members bypass it for financial changes only when the agreement has
+        # an active award-approval request (step 6) — any other context still routes
+        # through the DD-approval workflow.
+        budget_team_can_bypass = (
+            is_budget_team(current_user)
+            and not has_status_change
+            and is_award_approval_requested(budget_line_item.agreement)
+        )
+        directly_editable = (
+            is_super_user(current_user, current_app)
+            or budget_team_can_bypass
+            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
@@ -827,8 +839,12 @@ class BudgetLineItemService:
         # Check the pre-award "in review" lock BEFORE the generic editability check. Both now feed
         # is_bli_editable (compute_bli_editable includes is_pre_award_in_review as of the editability
         # unification), so this specific, actionable message must win over the generic
-        # "not in an editable state" fallback. Super users bypass.
-        if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
+        # "not in an editable state" fallback. Super users and budget team bypass (they write directly).
+        if (
+            not is_super_user(current_user, current_app)
+            and not is_budget_team(current_user)
+            and is_pre_award_in_review(budget_line_item.agreement)
+        ):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         if not is_bli_editable(budget_line_item):
@@ -887,13 +903,13 @@ class BudgetLineItemService:
             ):
                 raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
 
-            # Check amount is set and greater than 0
+            # Check amount is set and non-negative (0 is valid, negative is not)
             current_amount = budget_line_item.amount
             requested_amount = updated_fields.get("amount")
             final_amount = requested_amount if requested_amount is not None else current_amount
 
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
-                raise ValidationError({"amount": "Amount must be greater than 0."})
+            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount < 0:
+                raise ValidationError({"amount": "Amount must be 0 or greater."})
 
             # Check if the date_needed is set and in the future
             today = date.today()
