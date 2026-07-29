@@ -854,7 +854,7 @@ def test_post_pre_award_lock_allows_clin_only_for_any_user(
     assert response.status_code == 200, f"clin_id update should be allowed for any user. Got: {response.json}"
 
 
-def test_post_pre_award_lock_blocks_non_clin_edit_for_regular_user(
+def test_post_pre_award_lock_blocks_mixed_clin_and_financial_edit(
     basic_user_auth_client,
     app,
     loaded_db,
@@ -862,7 +862,8 @@ def test_post_pre_award_lock_blocks_non_clin_edit_for_regular_user(
     test_can,
     app_ctx,
 ):
-    """Regular users cannot edit financial fields (only clin_id is allowed) after pre-award approval."""
+    """A payload containing clin_id AND a financial field is blocked — the clin-only exception
+    is exact and cannot be used as a loophole to sneak through financial changes."""
     agreement = app.db_session.get(Agreement, 1)
     basic_user = app.db_session.get(User, 521)
     agreement.team_members.append(basic_user)
@@ -872,8 +873,10 @@ def test_post_pre_award_lock_blocks_non_clin_edit_for_regular_user(
     bli = _make_planned_bli(loaded_db, test_can, test_division_director)
     loaded_db.commit()
 
-    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
-    assert response.status_code == 400, f"Financial edit should be blocked. Got: {response.json}"
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1, "amount": 750.00}
+    )
+    assert response.status_code == 400, f"Mixed clin+financial edit should be blocked. Got: {response.json}"
     assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
 
 
