@@ -41,6 +41,7 @@ export type Agreement = {
     updated_on?: Date;
     vendor?: string;
     in_review?: boolean;
+    is_award_approval_requested?: boolean;
     change_requests_in_review?: ChangeRequest[];
     requesting_agency?: string;
     servicing_agency?: string;

@@ -61,11 +61,6 @@ const EditAgreementAndBudgetLines = () => {
     );
     const { setAlert } = useAlert();
 
-    // Budget Team direct-edit bypass only applies when editing from the award-approval
-    // review page (step 6). Detect this from the returnTo URL so the modal is suppressed
-    // only in that specific context, matching the backend's is_award_approval_requested check.
-    const isAwardApprovalContext = returnTo.includes("/review-award");
-
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
     const [includeDrafts, setIncludeDrafts] = useState(true);
@@ -106,6 +101,12 @@ const EditAgreementAndBudgetLines = () => {
         refetchOnMountOrArgChange: true,
         skip: !isValidId
     });
+
+    // Budget Team direct-edit bypass applies when the agreement has a pending award
+    // approval (step 6). Read the backend-derived flag so this stays in sync with the
+    // server's is_award_approval_requested check (single source of truth) rather than
+    // inferring context from the returnTo URL.
+    const isAwardApprovalContext = agreement?.is_award_approval_requested === true;
 
     const {
         data: servicesComponents,
