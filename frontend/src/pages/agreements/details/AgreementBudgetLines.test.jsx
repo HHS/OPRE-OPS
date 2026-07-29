@@ -446,6 +446,18 @@ describe("AgreementBudgetLines", () => {
     });
 
     describe("post-pre-award lock", () => {
+        const regularUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
         const superUserStore = configureStore({
             reducer: {
                 auth: () => ({
@@ -484,21 +496,21 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("Edit button is hidden when isPostPreAwardLocked is true", () => {
-            renderWith(superUserStore);
+        test("Edit button is hidden for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
             expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
             expect(screen.queryByText("Edit")).not.toBeInTheDocument();
         });
 
-        test("Request BL Status Change button is disabled when isPostPreAwardLocked is true", () => {
-            renderWith(superUserStore);
+        test("Request BL Status Change button is disabled for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
             const requestButton = screen.getByText("Request BL Status Change");
             expect(requestButton).toHaveAttribute("aria-disabled", "true");
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
         });
 
-        test("super user can edit when isPostPreAwardLocked is false", () => {
-            renderWith(superUserStore, { isPostPreAwardLocked: false });
+        test("super user can still edit when isPostPreAwardLocked is true", () => {
+            renderWith(superUserStore);
             expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
         });
     });

@@ -83,9 +83,9 @@ const AgreementBudgetLines = ({
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
 
-    // Pre-award, award in review, or post-pre-award lock blocks everyone except superusers
+    // Superusers bypass all locks; regular users are blocked by pre-award, award review, or post-pre-award lock
     const isAgreementEditable =
-        !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
+        isSuperUser || (!isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && canRegularUserEdit);
     // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
     const canRequestStatusChange = isAgreementEditable && !isGrant;
     const filters = { agreementIds: [agreement?.id] };
@@ -106,7 +106,7 @@ const AgreementBudgetLines = ({
             case isAwardInReview:
                 return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
             case isPostPreAwardLocked:
-                return "This agreement has completed Pre-Award Approval. Edits cannot be made at this time.";
+                return "This agreement has completed Pre-Award Approval and is locked from further edits.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:

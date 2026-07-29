@@ -3349,8 +3349,8 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
 
     response = auth_client.patch(url, json=data)
 
-    # Should succeed (200 if DRAFT, 202 if change request created)
-    assert response.status_code in [200, 202]
-    loaded_db.refresh(bli)
-    if response.status_code == 200:
-        assert bli.amount != original_amount
+    # After full pre-award approval, non-superuser edits are blocked (new business rule OPS-2280).
+    # auth_client is SYSTEM_OWNER (not SUPER_USER role), so it hits the post-pre-award lock.
+    assert response.status_code == 400
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
+    _ = original_amount  # unused but kept for context

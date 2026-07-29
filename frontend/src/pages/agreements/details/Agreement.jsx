@@ -257,8 +257,9 @@ const Agreement = () => {
     // Use the backend-derived field so this stays correct regardless of tracker status.
     const isAwardInReview = agreement?.is_award_approval_requested === true;
 
-    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted)
-    const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
+    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted).
+    // Superusers bypass the lock unconditionally so downstream UI shows them as editable.
+    const isPostPreAwardLocked = !isSuperUser && agreement?.is_post_pre_award_locked === true;
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (

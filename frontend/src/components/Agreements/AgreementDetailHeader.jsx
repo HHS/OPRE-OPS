@@ -42,8 +42,7 @@ export const AgreementDetailHeader = ({
         editDisabledTooltipLabel =
             "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
     } else {
-        editDisabledTooltipLabel =
-            "This agreement has completed Pre-Award Approval. Edits cannot be made at this time.";
+        editDisabledTooltipLabel = "This agreement has completed Pre-Award Approval and is locked from further edits.";
     }
     return (
         <>

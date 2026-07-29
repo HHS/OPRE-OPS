@@ -827,7 +827,7 @@ def test_post_pre_award_lock_blocks_regular_user(
 
     response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
     assert response.status_code == 400, f"Should be blocked after full pre-award approval. Got: {response.json}"
-    assert "Pre-Award Approval" in response.json.get("status", "")
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
 
 
 def test_post_pre_award_lock_allows_clin_only_for_any_user(
@@ -850,9 +850,7 @@ def test_post_pre_award_lock_allows_clin_only_for_any_user(
     bli = _make_planned_bli(loaded_db, test_can, test_division_director)
     loaded_db.commit()
 
-    response = basic_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1}
-    )
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1})
     assert response.status_code == 200, f"clin_id update should be allowed for any user. Got: {response.json}"
 
 
@@ -874,11 +872,9 @@ def test_post_pre_award_lock_blocks_non_clin_edit_for_regular_user(
     bli = _make_planned_bli(loaded_db, test_can, test_division_director)
     loaded_db.commit()
 
-    response = basic_user_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00}
-    )
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
     assert response.status_code == 400, f"Financial edit should be blocked. Got: {response.json}"
-    assert "Pre-Award Approval" in response.json.get("status", "")
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
 
 
 def test_post_pre_award_lock_allows_budget_team(
