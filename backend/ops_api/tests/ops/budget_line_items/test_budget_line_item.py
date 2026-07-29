@@ -3309,8 +3309,8 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
     assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
 
 
-def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
-    """Test that BLI can be updated when pre-award is fully approved (including requisition)"""
+def test_cannot_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award is fully approved — the lock applies to all users (OPS-2280)"""
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15004)
     agreement = loaded_db.get(Agreement, bli.agreement_id)

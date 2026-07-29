@@ -190,9 +190,8 @@ def is_post_pre_award_locked(agreement) -> bool:
     submitted requisition). BLI editing is locked from this point on permanently.
 
     Exceptions (handled by callers):
-    - Superusers bypass unconditionally
     - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
-    - COR (project officer / alternate PO) can still update clin_id only
+    - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
 
     Args:
         agreement: Agreement object to check

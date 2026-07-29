@@ -38,7 +38,11 @@ const AgreementDetails = ({
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
+    const isEditable =
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
     // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
