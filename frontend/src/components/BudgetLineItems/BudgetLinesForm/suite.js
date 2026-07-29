@@ -43,8 +43,8 @@ const suite = create((data, isSuperUser = false, isGrant = false) => {
         test("enteredAmount", "This is required information", () => {
             enforce(data.enteredAmount).isNumeric();
         });
-        test("enteredAmount", "Amount must be greater than 0", () => {
-            enforce(data.enteredAmount).greaterThan(0);
+        test("enteredAmount", "Amount must be 0 or greater", () => {
+            enforce(data.enteredAmount).greaterThanOrEquals(0);
         });
     });
 

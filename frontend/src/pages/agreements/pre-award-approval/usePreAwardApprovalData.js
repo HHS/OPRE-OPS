@@ -17,8 +17,15 @@ import { groupByGrantNumber, groupByServicesComponent, budgetLinesTotal } from "
  * @returns {Object} - Shared data and computed values
  */
 export default function usePreAwardApprovalData(agreementId) {
-    // Fetch data
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
+    // Fetch data — refetchOnMountOrArgChange ensures fresh BLI state (e.g. in_review) is
+    // loaded when the page is revisited after an edit, preventing stale tooltips/alerts.
+    const {
+        data: agreement,
+        isLoading,
+        isFetching
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
+    });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreementId, { skip: !agreementId });
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
@@ -62,13 +69,18 @@ export default function usePreAwardApprovalData(agreementId) {
         ? groupByGrantNumber(decorateForGrant(executingBudgetLines), grantNumbers ?? [])
         : groupByServicesComponent(executingBudgetLines, servicesComponents || []);
 
-    // Get active tracker and steps from procurement tracker
+    // Get active tracker and steps — include COMPLETED trackers so award approval data
+    // remains visible after step 6 is completed (tracker moves to COMPLETED at that point)
     const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
+    const activeTracker =
+        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE") ||
+        trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "COMPLETED");
     const step4 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
+    const step6 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 6);
 
     const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
+    const awardRequestorName = useGetUserFullNameFromId(step6?.approval_requested_by);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
@@ -79,6 +91,7 @@ export default function usePreAwardApprovalData(agreementId) {
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -92,6 +105,9 @@ export default function usePreAwardApprovalData(agreementId) {
         step4,
         step5,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate: step5?.approval_requested_date
+        preAwardApprovalRequestedDate: step5?.approval_requested_date,
+        step6,
+        requestorName: awardRequestorName,
+        requestorDate: step6?.approval_requested_date
     };
 }

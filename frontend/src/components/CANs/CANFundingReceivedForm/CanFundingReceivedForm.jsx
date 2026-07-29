@@ -60,7 +60,7 @@ const CANFundingReceivedForm = ({
                         runValidate("funding-received-amount", e.target.value);
                     }}
                     setEnteredAmount={setReceivedFundingAmount}
-                    value={receivedFundingAmount || ""}
+                    value={receivedFundingAmount ?? ""}
                     messages={res.getErrors("funding-received-amount")}
                     className={`${cn("funding-received-amount")} margin-top-0`}
                 />

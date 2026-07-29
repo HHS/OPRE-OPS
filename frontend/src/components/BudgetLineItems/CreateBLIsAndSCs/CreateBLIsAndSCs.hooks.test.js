@@ -97,7 +97,8 @@ vi.mock("../../../hooks/useGetAllCans", () => ({
 }));
 
 vi.mock("../../../hooks/user.hooks", () => ({
-    useGetLoggedInUserFullName: () => "Reviewer User"
+    useGetLoggedInUserFullName: () => "Reviewer User",
+    useIsUserBudgetTeam: () => false
 }));
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);

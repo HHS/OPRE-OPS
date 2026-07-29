@@ -53,6 +53,7 @@ class GrantNumberItemAPI(BaseItemAPI):
                 grant_number.agreement_id,
                 grant_number.updated_by,
             )
+            updates["gn_display_name"] = grant_number.display_name
 
             meta.metadata.update({"grant_number_updates": updates})
             schema = GrantNumberItemResponse()
@@ -82,6 +83,7 @@ class GrantNumberItemAPI(BaseItemAPI):
                 gn_for_update.agreement_id,
                 gn_for_update.updated_by,
             )
+            updates["gn_display_name"] = gn_for_update.display_name
 
             meta.metadata.update({"grant_number_updates": updates})
 
