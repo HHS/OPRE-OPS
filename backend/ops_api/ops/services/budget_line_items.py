@@ -48,11 +48,12 @@ from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
     create_budget_line_item_instance,
+    is_award_approval_requested,
     is_bli_editable,
     is_pre_award_in_review,
     update_data,
 )
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 @dataclass
@@ -534,9 +535,20 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-        # Determine if direct edit or change request is needed
-        directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed.
+        # Superusers bypass the change-request workflow for all edits.
+        # Budget Team members bypass it for financial changes only when the agreement has
+        # an active award-approval request (step 6) — any other context still routes
+        # through the DD-approval workflow.
+        budget_team_can_bypass = (
+            is_budget_team(current_user)
+            and not has_status_change
+            and is_award_approval_requested(budget_line_item.agreement)
+        )
+        directly_editable = (
+            is_super_user(current_user, current_app)
+            or budget_team_can_bypass
+            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
@@ -779,8 +791,12 @@ class BudgetLineItemService:
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
-        if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
+        # Check if the agreement's pre-award approval is in review (super users and budget team can bypass)
+        if (
+            not is_super_user(current_user, current_app)
+            and not is_budget_team(current_user)
+            and is_pre_award_in_review(budget_line_item.agreement)
+        ):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))

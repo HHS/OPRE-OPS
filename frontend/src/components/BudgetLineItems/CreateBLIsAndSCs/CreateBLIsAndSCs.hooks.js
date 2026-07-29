@@ -30,7 +30,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
-import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
@@ -104,11 +104,16 @@ const useCreateBLIsAndSCs = (
     const {
         agreement,
         services_components: servicesComponents,
-        deleted_services_components_ids: deletedServicesComponentsIds
+        deleted_services_components_ids: deletedServicesComponentsIds,
+        grant_numbers: grantNumbers
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Budget Team members write financial changes directly (no change-request workflow),
+    // matching the backend's is_budget_team() bypass in budget_line_items.py.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
     // read during render (here and in BudgetLinesForm), so a stale result from a prior
@@ -496,7 +501,7 @@ const useCreateBLIsAndSCs = (
             const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
             if (continueOverRide) {
                 continueOverRide();
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser) {
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) {
                 setAlert({
                     type: "success",
                     heading: "Changes Sent to Approval",
@@ -518,7 +523,7 @@ const useCreateBLIsAndSCs = (
         [
             tempBudgetLines,
             continueOverRide,
-            isSuperUser,
+            canEditDirectly,
             setAlert,
             selectedAgreement?.id,
             selectedAgreement?.display_name,
@@ -898,6 +903,14 @@ const useCreateBLIsAndSCs = (
                             };
                         });
 
+                    const newGrantNumbers = grantNumbers
+                        .filter((gn) => !("created_on" in gn))
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
+                            ...gn,
+                            ref: display_title
+                        }));
+
                     const data = {
                         ...agreement,
                         team_members: (agreement.team_members ?? []).map((team_member) => {
@@ -912,7 +925,8 @@ const useCreateBLIsAndSCs = (
                     const createAgreementPayload = {
                         ...cleanData,
                         budget_line_items: cleanBudgetLines,
-                        services_components: newServicesComponents
+                        services_components: newServicesComponents,
+                        grant_numbers: newGrantNumbers
                     };
 
                     const fulfilled = await addAgreement(createAgreementPayload).unwrap();
@@ -966,9 +980,9 @@ const useCreateBLIsAndSCs = (
                         (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
                     );
 
-                    if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && !savedViaModal) {
+                    if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
                         await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
-                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !isSuperUser && savedViaModal) {
+                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
                         await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
                     } else {
                         await handleRegularUpdates(existingBudgetLineItemsWithIds);
@@ -1002,12 +1016,13 @@ const useCreateBLIsAndSCs = (
         },
         [
             servicesComponents,
+            grantNumbers,
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
             addBudgetLineItem,
             setAlert,
-            isSuperUser,
+            canEditDirectly,
             handleFinancialSnapshotChanges,
             handleFinancialSnapshotChangesViaBlocker,
             handleRegularUpdates,
@@ -1023,7 +1038,7 @@ const useCreateBLIsAndSCs = (
     const hasFinancialSnapshotChanges = tempBudgetLines
         .filter((b) => !b.in_review)
         .some((b) => b.financialSnapshotChanged);
-    const requiresFinancialApproval = !isSuperUser && hasFinancialSnapshotChanges;
+    const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
     const handleSaveRef = React.useRef(handleSave);
 

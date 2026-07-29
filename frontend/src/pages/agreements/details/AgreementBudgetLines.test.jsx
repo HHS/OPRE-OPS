@@ -11,10 +11,12 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
 const useGetServicesComponentsListQueryMock = vi.fn();
+const useGetGrantNumbersListQueryMock = vi.fn();
 
 // Mock the hooks and API calls
 vi.mock("../../../api/opsAPI", () => ({
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    useGetGrantNumbersListQuery: (...args) => useGetGrantNumbersListQueryMock(...args),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
@@ -39,6 +41,10 @@ afterEach(() => {
 
 beforeEach(() => {
     useGetServicesComponentsListQueryMock.mockReturnValue({
+        data: [],
+        isLoading: false
+    });
+    useGetGrantNumbersListQueryMock.mockReturnValue({
         data: [],
         isLoading: false
     });

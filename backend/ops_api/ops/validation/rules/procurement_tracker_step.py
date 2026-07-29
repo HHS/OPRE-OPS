@@ -769,7 +769,6 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
     Validates that approval responses are valid:
     - Can only respond if approval has been requested
     - Cannot respond if already responded
-    - Reviewer notes required when declining
     """
 
     @property
@@ -799,13 +798,6 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
             raise ValidationError(
                 {"approval_status": f"This approval request has already been {current_approval_status.lower()}."}
             )
-
-        # Require reviewer notes when declining
-        if updated_fields["approval_status"] == "DECLINED":
-            if not updated_fields.get("reviewer_notes") or not updated_fields["reviewer_notes"].strip():
-                raise ValidationError(
-                    {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
-                )
 
 
 class AwardApprovalResponseAuthorizationRule(ValidationRule):

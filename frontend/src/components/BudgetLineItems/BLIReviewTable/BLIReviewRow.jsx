@@ -50,7 +50,7 @@ const BLIReviewRow = ({
     action,
     showCheckbox = true,
     readOnly = false,
-    onAddCLINClick = () => {},
+    onAddCLINClick = undefined,
     showCLINColumn = false,
     clinAssignments = {},
     errorStatuses
