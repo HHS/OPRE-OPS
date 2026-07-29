@@ -509,9 +509,10 @@ describe("AgreementBudgetLines", () => {
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
         });
 
-        test("super user can still edit when isPostPreAwardLocked is true", () => {
+        test("super user is also locked when isPostPreAwardLocked is true", () => {
             renderWith(superUserStore);
-            expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
         });
     });
 });

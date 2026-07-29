@@ -811,21 +811,16 @@ class BudgetLineItemService:
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users and budget team can bypass)
-        if (
-            not is_super_user(current_user, current_app)
-            and not is_budget_team(current_user)
-            and is_pre_award_in_review(budget_line_item.agreement)
-        ):
+        # Block edits while pre-award approval is in flight (budget team can bypass)
+        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         # Block edits after pre-award is fully approved (DD approved + requisition submitted).
         # Exceptions:
-        #   - Superusers bypass unconditionally (checked above)
         #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
         #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
         #     the award workflow (COR assigns CLINs before submitting for award approval)
-        if not is_super_user(current_user, current_app) and not is_budget_team(current_user):
+        if not is_budget_team(current_user):
             # Use the raw request JSON to determine what the caller actually sent.
             # updated_fields contains Marshmallow load_default values for all schema fields
             # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
