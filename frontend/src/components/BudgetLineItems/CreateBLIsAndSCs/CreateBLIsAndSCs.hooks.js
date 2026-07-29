@@ -658,7 +658,7 @@ const useCreateBLIsAndSCs = (
                 ? { grant_number_number: grantNumberNumber }
                 : {
                       services_component_number: servicesComponentNumber,
-                      serviceComponentGroupingLabel: servicesComponentNumber.toString()
+                      serviceComponentGroupingLabel: (servicesComponentNumber ?? 0).toString()
                   }),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
