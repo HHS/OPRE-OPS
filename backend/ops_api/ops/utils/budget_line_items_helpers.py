@@ -203,19 +203,23 @@ def is_post_pre_award_locked(agreement) -> bool:
     if not agreement or not agreement.procurement_trackers:
         return False
 
-    for tracker in agreement.procurement_trackers:
-        pre_award_step = next(
-            (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
-        )
-        if not pre_award_step:
-            continue
-        if (
-            pre_award_step.pre_award_approval_status == "APPROVED"
-            and pre_award_step.pre_award_requisition_approved_by is not None
-        ):
-            return True
+    # Scope to the active tracker only — consistent with is_pre_award_in_review and
+    # is_award_approval_requested, and prevents a completed tracker from a prior
+    # procurement cycle permanently locking BLIs on a new active cycle.
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    if not tracker:
+        return False
 
-    return False
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
+    if not pre_award_step:
+        return False
+
+    return (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    )
 
 
 def bli_associated_with_agreement(id: int) -> bool:

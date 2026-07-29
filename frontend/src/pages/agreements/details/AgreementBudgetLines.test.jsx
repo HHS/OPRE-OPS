@@ -444,4 +444,62 @@ describe("AgreementBudgetLines", () => {
         // Should render the component for super users even with restrictions
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
+
+    describe("post-pre-award lock", () => {
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+        const defaultProps = {
+            agreement: { ...mockAgreement, _meta: { isEditable: true } },
+            isEditMode: false,
+            setIsEditMode: vi.fn(),
+            isAgreementNotDeveloped: false,
+            isAgreementAwarded: false,
+            isPreAwardInReview: false,
+            isAwardInReview: false,
+            isPostPreAwardLocked: true
+        };
+        const renderWith = (store, props = {}) =>
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("Edit button is hidden when isPostPreAwardLocked is true", () => {
+            renderWith(superUserStore);
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("Request BL Status Change button is disabled when isPostPreAwardLocked is true", () => {
+            renderWith(superUserStore);
+            const requestButton = screen.getByText("Request BL Status Change");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+        });
+
+        test("super user can edit when isPostPreAwardLocked is false", () => {
+            renderWith(superUserStore, { isPostPreAwardLocked: false });
+            expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+        });
+    });
 });
