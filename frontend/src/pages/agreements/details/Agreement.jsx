@@ -253,11 +253,9 @@ const Agreement = () => {
             preAwardApprovalStatus === "PENDING" ||
             (preAwardApprovalStatus === "APPROVED" && !preAwardStep?.requisition_approved_by));
 
-    // Keep agreement locked when Award approval has been requested but not yet approved by Budget Team
-    const awardStep = activeTracker?.steps?.find((step) => step.step_type === "AWARD");
-    const awardApprovalStatus = awardStep?.approval_status;
-    const isAwardInReview =
-        awardStep?.approval_requested && (awardApprovalStatus == null || awardApprovalStatus === "PENDING");
+    // Keep agreement locked when Award approval has been requested but not yet approved by Budget Team.
+    // Use the backend-derived field so this stays correct regardless of tracker status.
+    const isAwardInReview = agreement?.is_award_approval_requested === true;
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (
