@@ -124,16 +124,22 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
     };
 
+    const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
     // Validate date format on change — only show error when something is entered but invalid
-    const handleDateChange = useCallback((/** @param {any} e */ e) => {
-        const value = e.target.value;
-        setRequisitionDate(value);
-        if (value.trim() !== "" && formatDateForApi(value) === null) {
-            setRequisitionDateError(["Date must be MM/DD/YYYY"]);
-        } else {
-            setRequisitionDateError([]);
-        }
-    }, []);
+    const handleDateChange = useCallback(
+        (/** @param {any} e */ e) => {
+            const value = e.target.value;
+            setRequisitionDate(value);
+            if (value.trim() !== "" && !DATE_FORMAT_REGEX.test(value)) {
+                setRequisitionDateError(["Date must be MM/DD/YYYY"]);
+            } else {
+                setRequisitionDateError([]);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
 
     /**
      * Track if any changes have been made to the form

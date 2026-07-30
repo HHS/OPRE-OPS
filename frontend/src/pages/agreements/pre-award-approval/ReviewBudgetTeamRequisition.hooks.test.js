@@ -595,6 +595,14 @@ describe("useReviewBudgetTeamRequisition", () => {
                 });
             });
 
+            it("sets requisitionDateError for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                });
+            });
+
             it("clears requisitionDateError when value becomes valid", async () => {
                 const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
                 result.current.handleDateChange({ target: { value: "not-a-date" } });
