@@ -11,6 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
+import AwardApprovalAlert from "../../../components/Agreements/AwardApprovalAlert/AwardApprovalAlert";
 import PreAwardApprovalAlert from "../../../components/Agreements/PreAwardApprovalAlert/PreAwardApprovalAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
@@ -49,6 +50,7 @@ const Agreement = () => {
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
     const [isPreAwardAlertVisible] = useState(true);
+    const [isAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
     const [isAwardInReviewAlertVisible, setIsAwardInReviewAlertVisible] = useState(true);
 
@@ -265,6 +267,10 @@ const Agreement = () => {
                     <PreAwardApprovalAlert
                         notifications={user_agreement_notifications}
                         isVisible={isPreAwardAlertVisible}
+                    />
+                    <AwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={isAwardAlertVisible}
                     />
                 </>
             )}
