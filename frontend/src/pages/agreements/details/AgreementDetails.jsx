@@ -18,6 +18,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
+ * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -31,12 +32,21 @@ const AgreementDetails = ({
     isAgreementAwarded = false,
     hasAgreementChanged = false,
     isPreAwardInReview = false,
-    isAwardInReview = false
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
+    // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
+    // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
+    // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
+    // states, the form should not be reachable via URL params either.
+    const isEditable =
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
     // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
@@ -51,6 +61,7 @@ const AgreementDetails = ({
                 hasUnsavedChanges={hasAgreementChanged}
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
+                isPostPreAwardLocked={isPostPreAwardLocked}
                 isGrant={isGrant}
             />
 

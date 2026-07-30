@@ -261,6 +261,9 @@ const Agreement = () => {
     // Use the backend-derived field so this stays correct regardless of tracker status.
     const isAwardInReview = agreement?.is_award_approval_requested === true;
 
+    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted)
+    const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
+
     const isAgreementAwarded = agreement?.is_awarded;
     return (
         <App breadCrumbName={agreement?.name}>
@@ -380,6 +383,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />
@@ -394,6 +398,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />

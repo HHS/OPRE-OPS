@@ -42,6 +42,7 @@ export type Agreement = {
     vendor?: string;
     in_review?: boolean;
     is_award_approval_requested?: boolean;
+    is_post_pre_award_locked?: boolean;
     change_requests_in_review?: ChangeRequest[];
     requesting_agency?: string;
     servicing_agency?: string;
