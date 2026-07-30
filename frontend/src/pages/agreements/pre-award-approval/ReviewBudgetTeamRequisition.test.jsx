@@ -62,13 +62,14 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
-    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint }) => (
+    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint, messages = [] }) => (
         <div data-testid={`date-picker-${name}`}>
             <label htmlFor={id}>
                 {label}
                 {isRequired && " *"}
             </label>
-            {hint && <div className="usa-hint">{hint}</div>}
+            {messages.length > 0 && <span className="usa-error-message">{messages[0]}</span>}
+            {hint && messages.length === 0 && <div className="usa-hint">{hint}</div>}
             <input
                 id={id}
                 name={name}
@@ -529,6 +530,28 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             expect(screen.getByText("Submission Error")).toBeInTheDocument();
             expect(screen.getByText("Failed to submit requisition")).toBeInTheDocument();
+        });
+
+        it("should display date error message on the date field when requisitionDateError is set", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: ["Date must be MM/DD/YYYY"]
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
+        });
+
+        it("should not display date error message when requisitionDateError is empty", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: []
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.queryByText("Date must be MM/DD/YYYY")).not.toBeInTheDocument();
         });
 
         it("should not display error alert when submitError is empty", () => {
