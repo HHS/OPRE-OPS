@@ -92,19 +92,16 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
 
-    // Load saved draft values when step5 data arrives
+    // Load saved draft values when step5 data arrives — always set both fields
+    // so stale empty state can't overwrite previously-saved values before this effect fires
     useEffect(() => {
         if (step5) {
-            if (step5.requisition_number) {
-                setRequisitionNumber(step5.requisition_number);
-            }
+            setRequisitionNumber(step5.requisition_number || "");
             if (step5.requisition_date) {
-                // Backend always sends YYYY-MM-DD format
-                // Convert to display format (MM/DD/YYYY) for the DatePicker
                 const displayDate = formatDateForScreen(step5.requisition_date);
-                if (displayDate) {
-                    setRequisitionDate(displayDate);
-                }
+                setRequisitionDate(displayDate || "");
+            } else {
+                setRequisitionDate("");
             }
         }
     }, [step5]);
@@ -224,9 +221,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Save Draft handler (partial save without approval)
     const handleSaveDraft = async () => {
-        // Validate at least one field is filled
-        if (!requisitionNumber.trim() && !requisitionDate.trim()) {
-            setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
+        const nothingToSave = !requisitionNumber.trim() && !requisitionDate.trim();
+        const noPriorValues = !step5?.requisition_number && !step5?.requisition_date;
+        if (nothingToSave && noPriorValues) {
+            setSubmitError("Enter a Requisition # or Date to save a draft.");
             return;
         }
 
@@ -239,27 +237,23 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setSubmitError("");
 
         try {
-            // Build request data - only include fields with values
-            /** @type {Record<string, any>} */
-            const data = {
-                is_draft: true
-            };
-
-            // Only send requisition_number if it has a value
-            if (requisitionNumber.trim()) {
-                data.requisition_number = requisitionNumber;
-            }
-
-            // Only send requisition_date if it has a value and it's valid
+            // Validate date format if a date was entered
+            let formattedDate = null;
             if (requisitionDate.trim()) {
-                const formattedDate = formatDateForApi(requisitionDate);
+                formattedDate = formatDateForApi(requisitionDate);
                 if (formattedDate === null) {
                     setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
                     setIsSubmitting(false);
                     return;
                 }
-                data.requisition_date = formattedDate;
             }
+
+            /** @type {Record<string, any>} */
+            const data = {
+                is_draft: true,
+                requisition_number: requisitionNumber.trim() || null,
+                requisition_date: formattedDate
+            };
 
             await updateProcurementTrackerStep({
                 stepId: step5.id,
@@ -342,6 +336,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
 
         // Handlers
         handleApprove,

@@ -3,7 +3,7 @@ import datetime
 import pytest
 from flask import url_for
 
-from models import AgreementType, GrantAgreement, GrantNumber, User
+from models import AgreementHistory, AgreementHistoryType, AgreementType, GrantAgreement, GrantNumber, User
 
 
 def test_grant_number_retrieve(loaded_db, app_ctx):
@@ -202,6 +202,29 @@ def test_grant_numbers_patch(auth_client, loaded_db, test_grant_number, app_ctx)
     assert gn.number == patch_data["number"]
     assert gn.period_start is None
     assert gn.period_end == datetime.date(2054, 7, 15)
+
+
+def test_grant_numbers_partial_patch_preserves_omitted_fields(auth_client, loaded_db, test_grant_number, app_ctx):
+    """A partial PATCH must only change the fields it sends, leaving omitted columns intact.
+
+    Regression for the merge-on-transient-instance bug that NULLed period_start/period_end
+    whenever they were absent from the PATCH body.
+    """
+    gn_id = test_grant_number.id
+
+    response = auth_client.patch(
+        url_for("api.grant-number-item", id=gn_id),
+        json={"description": "Only the description changed"},
+    )
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    gn = loaded_db.get(GrantNumber, gn_id)
+    assert gn.description == "Only the description changed"
+    # Omitted fields must be untouched, not NULLed.
+    assert gn.number == 12
+    assert gn.period_start == datetime.date(2025, 6, 13)
+    assert gn.period_end == datetime.date(2028, 6, 13)
 
 
 def test_grant_numbers_put(auth_client, loaded_db, test_grant_number, app_ctx):
@@ -641,4 +664,179 @@ def test_agreement_edit_bundle_grant_numbers_rollback_on_failure(auth_client, lo
 
     loaded_db.delete(existing_gn)
     loaded_db.delete(ga)
+    loaded_db.commit()
+
+
+def _grant_number_history(loaded_db, agreement_id):
+    return (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.agreement_id == agreement_id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+
+def test_grant_number_create_writes_agreement_history(auth_client, loaded_db, test_project, app_ctx):
+    """CREATE_GRANT_NUMBER must produce a GRANT_NUMBER_CREATED AgreementHistory row.
+
+    Regression for the missing MessageBus subscriber / history case branches — grant number
+    mutations previously emitted events that nothing consumed, so no audit trail was written.
+    """
+    ga = GrantAgreement(
+        name="Grant-history-create-test",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ga)
+    loaded_db.commit()
+    ga_id = ga.id
+
+    response = auth_client.post(
+        url_for("api.grant-number-group"),
+        json={"agreement_id": ga_id, "number": 1, "description": "History create"},
+    )
+    assert response.status_code == 201
+    gn_id = response.json["id"]
+
+    history = _grant_number_history(loaded_db, ga_id)
+    created = [h for h in history if h.history_type == AgreementHistoryType.GRANT_NUMBER_CREATED]
+    assert len(created) == 1
+    assert created[0].history_title == "New Grant Number Added"
+    assert "Grant 1" in created[0].history_message
+
+    loaded_db.query(AgreementHistory).where(AgreementHistory.agreement_id == ga_id).delete()
+    loaded_db.delete(loaded_db.get(GrantNumber, gn_id))
+    loaded_db.delete(ga)
+    loaded_db.commit()
+
+
+def test_grant_number_update_writes_agreement_history(auth_client, loaded_db, test_project, app_ctx):
+    """UPDATE_GRANT_NUMBER must produce GRANT_NUMBER_UPDATED history rows describing each change."""
+    ga = GrantAgreement(
+        name="Grant-history-update-test",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ga)
+    loaded_db.commit()
+    ga_id = ga.id
+
+    gn = GrantNumber(
+        agreement_id=ga_id,
+        number=1,
+        description="Original",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    loaded_db.add(gn)
+    loaded_db.commit()
+    gn_id = gn.id
+    loaded_db.query(AgreementHistory).where(AgreementHistory.agreement_id == ga_id).delete()
+    loaded_db.commit()
+
+    response = auth_client.patch(
+        url_for("api.grant-number-item", id=gn_id),
+        json={"description": "Updated description"},
+    )
+    assert response.status_code == 200
+
+    history = _grant_number_history(loaded_db, ga_id)
+    updated = [h for h in history if h.history_type == AgreementHistoryType.GRANT_NUMBER_UPDATED]
+    assert len(updated) == 1
+    assert updated[0].history_title == "Change to Grant Number"
+    assert "description" in updated[0].history_message
+    assert "Grant 1" in updated[0].history_message
+
+    loaded_db.query(AgreementHistory).where(AgreementHistory.agreement_id == ga_id).delete()
+    loaded_db.delete(loaded_db.get(GrantNumber, gn_id))
+    loaded_db.delete(ga)
+    loaded_db.commit()
+
+
+def test_grant_number_delete_writes_agreement_history(auth_client, loaded_db, test_project, app_ctx):
+    """DELETE_GRANT_NUMBER must produce a GRANT_NUMBER_DELETED history row."""
+    ga = GrantAgreement(
+        name="Grant-history-delete-test",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ga)
+    loaded_db.commit()
+    ga_id = ga.id
+
+    gn = GrantNumber(agreement_id=ga_id, number=1, description="To delete")
+    loaded_db.add(gn)
+    loaded_db.commit()
+    gn_id = gn.id
+    loaded_db.query(AgreementHistory).where(AgreementHistory.agreement_id == ga_id).delete()
+    loaded_db.commit()
+
+    response = auth_client.delete(url_for("api.grant-number-item", id=gn_id))
+    assert response.status_code == 200
+
+    history = _grant_number_history(loaded_db, ga_id)
+    deleted = [h for h in history if h.history_type == AgreementHistoryType.GRANT_NUMBER_DELETED]
+    assert len(deleted) == 1
+    assert deleted[0].history_title == "Grant Number Deleted"
+    assert "Grant 1" in deleted[0].history_message
+
+    loaded_db.query(AgreementHistory).where(AgreementHistory.agreement_id == ga_id).delete()
+    loaded_db.delete(ga)
+    loaded_db.commit()
+
+
+def test_agreement_edit_bundle_rejects_cross_agreement_grant_number_update(
+    auth_client, loaded_db, test_project, app_ctx
+):
+    """A bundle for Agreement A must not mutate a grant number that belongs to Agreement B (IDOR).
+
+    ``GrantNumberService`` only checks the user can access the grant number's own parent agreement,
+    not that the parent matches the bundle target — the bundle must guard this itself.
+    """
+    ga_a = GrantAgreement(
+        name="Grant-idor-bundle-target-A",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    ga_b = GrantAgreement(
+        name="Grant-idor-bundle-other-B",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add_all([ga_a, ga_b])
+    loaded_db.commit()
+
+    gn_b = GrantNumber(agreement_id=ga_b.id, number=1, description="Belongs to B")
+    loaded_db.add(gn_b)
+    loaded_db.commit()
+    gn_b_id = gn_b.id
+
+    # Update path: bundle targets A but references B's grant number.
+    update_resp = auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=ga_a.id),
+        json={"grant_numbers": {"update": [{"id": gn_b_id, "description": "Hijacked"}]}},
+    )
+    assert update_resp.status_code == 400
+
+    # Delete path: same cross-agreement reference.
+    delete_resp = auth_client.patch(
+        url_for("api.agreements-edit-bundle", id=ga_a.id),
+        json={"grant_numbers": {"delete": [gn_b_id]}},
+    )
+    assert delete_resp.status_code == 400
+
+    # B's grant number is untouched.
+    loaded_db.expire_all()
+    unchanged = loaded_db.get(GrantNumber, gn_b_id)
+    assert unchanged is not None
+    assert unchanged.description == "Belongs to B"
+
+    loaded_db.delete(unchanged)
+    loaded_db.delete(ga_a)
+    loaded_db.delete(ga_b)
     loaded_db.commit()

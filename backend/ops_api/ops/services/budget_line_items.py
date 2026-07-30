@@ -24,6 +24,7 @@ from models import (
     BudgetLineSortCondition,
     ChangeRequestStatus,
     ChangeRequestType,
+    GrantNumber,
     Portfolio,
     ProcurementShop,
     ProcurementTracker,
@@ -132,6 +133,8 @@ class BudgetLineItemService:
             can = self.db_session.get(CAN, create_request["can_id"])
             if not can:
                 raise ResourceNotFoundError("CAN", create_request["can_id"])
+
+        self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
 
         agreement = self.db_session.get(Agreement, agreement_id)
 
@@ -775,7 +778,7 @@ class BudgetLineItemService:
         raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "comments", "clin_id"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "comments", "clin_id"}
 
     def _handle_change_requests(
         self,
@@ -824,6 +827,22 @@ class BudgetLineItemService:
             )
         return []
 
+    def _validate_grant_number_ownership(self, grant_number_id, agreement_id):
+        """
+        Validate that a grant number referenced by a BLI exists and belongs to the BLI's agreement.
+
+        Shared by create() and update() so a cross-agreement grant_number_id cannot be attached to a
+        BLI (IDOR), and a nonexistent grant_number_id surfaces a 404 instead of a DB IntegrityError.
+        """
+        if not grant_number_id:
+            return
+
+        gn = self.db_session.get(GrantNumber, grant_number_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", grant_number_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
+
     def _validation(self, budget_line_item, updated_fields):
         """
         Validate the updated fields for a Budget Line Item.
@@ -854,6 +873,8 @@ class BudgetLineItemService:
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
 
+        self._validate_grant_number_ownership(updated_fields.get("grant_number_id"), budget_line_item.agreement_id)
+
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)
         can = self.db_session.get(CAN, can_id)
@@ -869,9 +890,10 @@ class BudgetLineItemService:
             and updated_fields["status"] != budget_line_item.status
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            # check required fields on budget line item
+            # check required fields on budget line item — use the instance's polymorphic
+            # class so grant BLIs require grant_number_id instead of services_component_id.
             bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
+                budget_line_item.__class__.get_required_fields_for_status_change()
                 if not is_super_user(current_user, current_app)
                 else []
             )

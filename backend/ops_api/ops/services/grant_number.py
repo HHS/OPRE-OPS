@@ -121,18 +121,17 @@ class GrantNumberService:
         if not grant_number:
             raise ResourceNotFoundError("GrantNumber", obj_id)
 
-        if "id" in updated_fields and obj_id != updated_fields.get("id"):
-            raise ValidationError({"id": ["ID cannot be changed"]})
+        self._validate_immutable_fields(obj_id, grant_number, updated_fields)
 
-        if "agreement_id" in updated_fields and grant_number.agreement_id != updated_fields.get("agreement_id"):
-            raise ValidationError({"agreement_id": ["Agreement ID cannot be changed"]})
-
-        updated_fields["id"] = obj_id  # Ensure ID is included for update
-
-        updated_grant_number = GrantNumber(**updated_fields)
+        # Apply only the fields present in the request onto the persisted row. Building a transient
+        # GrantNumber(**updated_fields) and merging it would copy None onto every column absent from a
+        # partial PATCH (description, period_start, period_end), wiping stored values.
+        for key, value in updated_fields.items():
+            if key == "id":
+                continue
+            setattr(grant_number, key, value)
 
         try:
-            self.db_session.merge(updated_grant_number)
             if commit:
                 self.db_session.commit()
             else:
@@ -144,7 +143,16 @@ class GrantNumberService:
                 {"number": ["A Grant Number with this number already exists for this agreement."]}
             ) from e
 
-        return updated_grant_number, 200
+        return grant_number, 200
+
+    @staticmethod
+    def _validate_immutable_fields(obj_id: int, grant_number: GrantNumber, updated_fields: dict[str, Any]) -> None:
+        """Reject changes to fields that cannot be modified on an existing grant number."""
+        if "id" in updated_fields and obj_id != updated_fields.get("id"):
+            raise ValidationError({"id": ["ID cannot be changed"]})
+
+        if "agreement_id" in updated_fields and grant_number.agreement_id != updated_fields.get("agreement_id"):
+            raise ValidationError({"agreement_id": ["Agreement ID cannot be changed"]})
 
     def delete(self, obj_id: int, commit: bool = True) -> None:
         """

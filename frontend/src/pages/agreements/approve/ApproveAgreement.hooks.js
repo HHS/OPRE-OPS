@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetProcurementShopsQuery,
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation
@@ -11,7 +12,8 @@ import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { AgreementType } from "../agreements.constants";
+import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
@@ -107,6 +109,8 @@ const useApproveAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement });
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const { data: procurementShops } = useGetProcurementShopsQuery({});
 
     const budgetLinesInReview =
@@ -317,6 +321,11 @@ const useApproveAgreement = () => {
                       false // isAfterApproval = false
                   );
                   beforeApprovalBudgetLines.forEach((bli) => {
+                      if (isGrant) {
+                          const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                          bli.grant_number_number = budgetLineGrantNumber?.number ?? 0;
+                          return;
+                      }
                       const budgetLineServicesComponent = servicesComponents?.find(
                           (sc) => sc.id === bli.services_component_id
                       );
@@ -327,9 +336,11 @@ const useApproveAgreement = () => {
                       bli.services_component_number = budgetLineScNumber ?? 0;
                       bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
                   });
-                  const groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-                      ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
-                      : [];
+                  const groupedBeforeApprovalBudgetLinesByServicesComponent = !beforeApprovalBudgetLines
+                      ? []
+                      : isGrant
+                        ? groupByGrantNumber(beforeApprovalBudgetLines, grantNumbers ?? [])
+                        : groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents);
 
                   // For "After Approval" view - show updated state
                   const approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
@@ -340,6 +351,11 @@ const useApproveAgreement = () => {
                       true // isAfterApproval = true
                   );
                   approvedBudgetLinesPreview.forEach((bli) => {
+                      if (isGrant) {
+                          const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                          bli.grant_number_number = budgetLineGrantNumber?.number ?? 0;
+                          return;
+                      }
                       const budgetLineServicesComponent = servicesComponents?.find(
                           (sc) => sc.id === bli.services_component_id
                       );
@@ -350,9 +366,11 @@ const useApproveAgreement = () => {
                       bli.services_component_number = budgetLineScNumber ?? 0;
                       bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
                   });
-                  const groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-                      ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
-                      : [];
+                  const groupedUpdatedBudgetLinesByServicesComponent = !approvedBudgetLinesPreview
+                      ? []
+                      : isGrant
+                        ? groupByGrantNumber(approvedBudgetLinesPreview, grantNumbers ?? [])
+                        : groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents);
 
                   return {
                       groupedBeforeApprovalBudgetLinesByServicesComponent,
@@ -549,6 +567,7 @@ const useApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
+        isGrant,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,

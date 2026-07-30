@@ -5,11 +5,14 @@ import { useBlocker, useNavigate } from "react-router-dom";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
+    useAddGrantNumberMutation,
     useAddServicesComponentMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
     useUpdateBudgetLineItemMutation,
+    useUpdateGrantNumberMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
 import {
@@ -24,8 +27,10 @@ import {
     BLILabel,
     budgetLinesTotal,
     getNonDRAFTBudgetLines,
+    groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -96,6 +101,9 @@ const useCreateBLIsAndSCs = (
     const [modalProps, setModalProps] = React.useState({});
     const [showSaveChangesModal, setShowSaveChangesModal] = React.useState(false);
     const [servicesComponentNumber, setServicesComponentNumber] = React.useState(null);
+    // Grant analog of servicesComponentNumber. Kept as a separate state pair so the two
+    // linkage paths never cross-contaminate when the form switches type. See plan §9.
+    const [grantNumberNumber, setGrantNumberNumber] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
     const [needByDate, setNeedByDate] = React.useState(null);
@@ -104,6 +112,7 @@ const useCreateBLIsAndSCs = (
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
+    const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const navigate = useNavigate();
@@ -118,14 +127,19 @@ const useCreateBLIsAndSCs = (
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
+    const [addGrantNumber] = useAddGrantNumberMutation();
+    const [updateGrantNumber] = useUpdateGrantNumberMutation();
+    const [deleteGrantNumber] = useDeleteGrantNumberMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { cans } = useGetAllCans();
     const isAgreementNotYetDeveloped = isNotDevelopedYet(selectedAgreement.agreement_type);
+    const isGrant = selectedAgreement.agreement_type === AGREEMENT_TYPES.GRANT;
     const {
         agreement,
         services_components: servicesComponents,
         deleted_services_components_ids: deletedServicesComponentsIds,
-        grant_numbers: grantNumbers
+        grant_numbers: grantNumbers,
+        deleted_grant_numbers_ids: deletedGrantNumbersIds
     } = useEditAgreement();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -174,6 +188,14 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
         newTempBudgetLines = newTempBudgetLines.map((bli) => {
+            if (isGrant) {
+                // For grants, decorate the baseline with grant_number_number (mirror of the
+                // SC decoration below) so the dirty-check compares like-with-like and persisted
+                // grant BLIs group under the correct grant number after reload. See plan §9/§10.
+                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
+                return { ...bli, grant_number_number: grantNumberNumber };
+            }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
             const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
@@ -189,6 +211,10 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines, servicesComponents]);
+
+    React.useEffect(() => {
+        setGroupedBudgetLinesByGrantNumber(groupByGrantNumber(tempBudgetLines, grantNumbers));
+    }, [tempBudgetLines, grantNumbers]);
 
     // Validation
     // Review mode re-runs the suite every render against the current budget lines.
@@ -265,12 +291,17 @@ const useCreateBLIsAndSCs = (
             const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
                 deleteServicesComponent(id).unwrap()
             );
+            const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
+                deleteGrantNumber(id).unwrap()
+            );
             const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
                 deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
             );
 
+            // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.
             await Promise.all(blisDeletionPromises);
             await Promise.all(serviceComponentDeletionPromises);
+            await Promise.all(grantNumberDeletionPromises);
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             setAlert({
@@ -279,7 +310,15 @@ const useCreateBLIsAndSCs = (
                 message: "An error occurred while deleting budget lines. Please try again."
             });
         }
-    }, [deletedServicesComponentsIds, deletedBudgetLines, deleteServicesComponent, deleteBudgetLineItem, setAlert]);
+    }, [
+        deletedServicesComponentsIds,
+        deletedGrantNumbersIds,
+        deletedBudgetLines,
+        deleteServicesComponent,
+        deleteGrantNumber,
+        deleteBudgetLineItem,
+        setAlert
+    ]);
 
     /**
      * NOTE: 3rd useCallback in this file
@@ -370,6 +409,7 @@ const useCreateBLIsAndSCs = (
     const resetForm = React.useCallback(() => {
         setIsEditing(false);
         setServicesComponentNumber(null);
+        setGrantNumberNumber(null);
         setSelectedCan(null);
         setEnteredAmount(null);
         setNeedByDate(null);
@@ -567,6 +607,7 @@ const useCreateBLIsAndSCs = (
         const newBudgetLine = {
             id: cryptoRandomString({ length: 10 }),
             services_component_number: servicesComponentNumber,
+            grant_number_number: grantNumberNumber,
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -658,8 +699,14 @@ const useCreateBLIsAndSCs = (
 
         const payload = {
             ...currentBudgetLine,
-            services_component_number: servicesComponentNumber,
-            serviceComponentGroupingLabel: servicesComponentNumber.toString(),
+            // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
+            // rewrite the BLI as "SC 0" and break grouping). For contracts, keep the SC fields.
+            ...(isGrant
+                ? { grant_number_number: grantNumberNumber }
+                : {
+                      services_component_number: servicesComponentNumber,
+                      serviceComponentGroupingLabel: (servicesComponentNumber ?? 0).toString()
+                  }),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
             can: selectedCan || null,
@@ -775,6 +822,32 @@ const useCreateBLIsAndSCs = (
     };
 
     /**
+     * Grant analog of addServiceComponentIdToBLI. Resolves grant_number_id by matching the
+     * editor-state grant_number_number against the (possibly just-created) grant numbers and
+     * strips the UI-only key. See plan §9/§11.
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLineItem
+     * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} createdGrantNumbers
+     */
+    const addGrantNumberIdToBLI = (budgetLineItem, createdGrantNumbers) => {
+        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
+        // A BLI that carries a grant_number_number the lookup can't resolve (its grant number was
+        // deleted mid-edit, or page data is stale) would otherwise be saved with grant_number_id:
+        // null, silently dropping the linkage. Fail loudly so handleSave's catch surfaces an error
+        // instead of corrupting data. A null/undefined grant_number_number is left as-is: an
+        // unassigned grant number is legitimate for a draft grant BLI.
+        if (budgetLineItem.grant_number_number != null && !matchGrantNumber) {
+            throw new Error(
+                `Unable to link budget line to grant number ${budgetLineItem.grant_number_number}. It may have been removed — please try again.`
+            );
+        }
+        return {
+            ...budgetLineItem,
+            grant_number_id: matchGrantNumber?.id ?? null,
+            grant_number_number: undefined // Remove this property immutably
+        };
+    };
+
+    /**
      * Set the budget line for editing by its ID
      * @param {number} budgetLineId - The ID of the budget line to edit
      * @returns {void}
@@ -785,6 +858,7 @@ const useCreateBLIsAndSCs = (
         if (index !== -1) {
             const {
                 services_component_number: serviceComponentNumber,
+                grant_number_number: grantNumberNumberForEdit,
                 line_description,
                 can,
                 amount,
@@ -793,6 +867,7 @@ const useCreateBLIsAndSCs = (
             const dateForScreen = formatDateForScreen(date_needed);
             setBudgetLineBeingEdited(index);
             setServicesComponentNumber(serviceComponentNumber);
+            setGrantNumberNumber(grantNumberNumberForEdit);
             setSelectedCan(can);
             setEnteredAmount(amount);
             setNeedByDate(dateForScreen);
@@ -814,6 +889,8 @@ const useCreateBLIsAndSCs = (
         const {
             services_component_id,
             services_component_number,
+            grant_number_id,
+            grant_number_number,
             line_description,
             can_id,
             can,
@@ -826,6 +903,8 @@ const useCreateBLIsAndSCs = (
             id: cryptoRandomString({ length: 10 }),
             services_component_id,
             services_component_number,
+            grant_number_id,
+            grant_number_number,
             line_description,
             can_id,
             can,
@@ -916,9 +995,30 @@ const useCreateBLIsAndSCs = (
                             ref: display_title
                         }));
 
+                    const newGrantNumbers = grantNumbers
+                        .filter((gn) => !("created_on" in gn))
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
+                            ...gn,
+                            ref: display_title
+                        }));
+
                     const newBudgetLineItems = tempBudgetLines
                         .filter((budgetLineItem) => !("created_on" in budgetLineItem))
                         .map((bli) => {
+                            if (isGrant) {
+                                // Link the new grant BLI to a not-yet-persisted grant number by ref.
+                                const matchedGrantNumber = newGrantNumbers.find(
+                                    (gn) => gn.number === bli.grant_number_number
+                                );
+                                // eslint-disable-next-line no-unused-vars
+                                const { grant_number_number, ...bliWithoutGnNumber } = bli;
+                                return {
+                                    ...bliWithoutGnNumber,
+                                    grant_number_ref: matchedGrantNumber?.ref ?? null
+                                };
+                            }
+
                             const matchedServiceComponent = newServicesComponents.find(
                                 (sc) => sc.number === bli.services_component_number
                             );
@@ -932,14 +1032,6 @@ const useCreateBLIsAndSCs = (
                                 services_component_ref: matchedServiceComponent?.ref ?? null
                             };
                         });
-
-                    const newGrantNumbers = grantNumbers
-                        .filter((gn) => !("created_on" in gn))
-                        // eslint-disable-next-line no-unused-vars
-                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
-                            ...gn,
-                            ref: display_title
-                        }));
 
                     const data = {
                         ...agreement,
@@ -982,6 +1074,26 @@ const useCreateBLIsAndSCs = (
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
                     await Promise.all(serviceComponentsUpdatePromises);
 
+                    // Grant numbers, mirroring the SC create/update above. They must be persisted
+                    // BEFORE the BLIs so grant BLIs can resolve grant_number_id. See plan §11.
+                    const newGrantNumbers = grantNumbers.filter((gn) => !("created_on" in gn));
+                    const existingGrantNumbers = grantNumbers.filter((gn) => "created_on" in gn);
+                    const changedGrantNumbers = existingGrantNumbers.filter((gn) => gn.has_changed);
+
+                    const grantNumberCreationPromises = newGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return addGrantNumber(cleanGn).unwrap();
+                    });
+                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
+                        return updateGrantNumber({ id: gn.id, data: cleanGn }).unwrap();
+                    });
+
+                    const createdGrantNumbers = await Promise.all(grantNumberCreationPromises);
+                    await Promise.all(grantNumberUpdatePromises);
+
                     const newBudgetLineItems = tempBudgetLines.filter(
                         (budgetLineItem) => !("created_on" in budgetLineItem)
                     );
@@ -989,13 +1101,18 @@ const useCreateBLIsAndSCs = (
                         (budgetLineItem) => "created_on" in budgetLineItem
                     );
                     const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
+                    const allGrantNumbers = [...createdGrantNumbers, ...existingGrantNumbers];
 
-                    const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) =>
-                        addServiceComponentIdToBLI(newBLI, allServicesComponents)
-                    );
+                    // Grant BLIs link via grant_number_id; contract/other BLIs via services_component_id.
+                    const addLinkToBLI = (bli) =>
+                        isGrant
+                            ? addGrantNumberIdToBLI(bli, allGrantNumbers)
+                            : addServiceComponentIdToBLI(bli, allServicesComponents);
+
+                    const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) => addLinkToBLI(newBLI));
 
                     const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
-                        addServiceComponentIdToBLI(existingBLI, allServicesComponents)
+                        addLinkToBLI(existingBLI)
                     );
                     // Create new budget line items
                     const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
@@ -1047,9 +1164,12 @@ const useCreateBLIsAndSCs = (
         [
             servicesComponents,
             grantNumbers,
+            isGrant,
             tempBudgetLines,
             addServicesComponent,
             updateServicesComponent,
+            addGrantNumber,
+            updateGrantNumber,
             addBudgetLineItem,
             setAlert,
             canEditDirectly,
@@ -1153,6 +1273,8 @@ const useCreateBLIsAndSCs = (
         enteredDescription,
         feesForCards,
         groupedBudgetLinesByServicesComponent,
+        groupedBudgetLinesByGrantNumber,
+        grantNumbers,
         handleAddBLI,
         handleCancel,
         handleDeleteBudgetLine,
@@ -1173,6 +1295,8 @@ const useCreateBLIsAndSCs = (
         selectedCan,
         servicesComponents,
         servicesComponentNumber,
+        grantNumberNumber,
+        setGrantNumberNumber,
         setEnteredAmount,
         setEnteredDescription,
         setModalProps,
