@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -8,6 +8,8 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+
+const MemoizedDatePicker = React.memo(DatePicker);
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -32,6 +34,8 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  *   setRequisitionNumber: (value: string) => void,
  *   requisitionDate: string,
  *   setRequisitionDate: (value: string) => void,
+ *   handleDateChange: (e: any) => void,
+ *   requisitionDateError: string[],
  *   attestationChecked: boolean,
  *   setAttestationChecked: (value: boolean) => void,
  *   MemoizedDatePicker,
@@ -63,8 +67,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [isNavigating, setIsNavigating] = useState(false);
-
-    const MemoizedDatePicker = React.memo(DatePicker);
+    const [requisitionDateError, setRequisitionDateError] = useState([]);
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -120,6 +123,17 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         const formattedDate = formatDateForApi(requisitionDate);
         return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
     };
+
+    // Validate date format on change — only show error when something is entered but invalid
+    const handleDateChange = useCallback((/** @param {any} e */ e) => {
+        const value = e.target.value;
+        setRequisitionDate(value);
+        if (value.trim() !== "" && formatDateForApi(value) === null) {
+            setRequisitionDateError(["Date must be MM/DD/YYYY"]);
+        } else {
+            setRequisitionDateError([]);
+        }
+    }, []);
 
     /**
      * Track if any changes have been made to the form
@@ -326,6 +340,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setRequisitionNumber,
         requisitionDate,
         setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,

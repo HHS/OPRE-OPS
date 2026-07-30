@@ -153,6 +153,8 @@ describe("ReviewBudgetTeamRequisition", () => {
         setRequisitionNumber: vi.fn(),
         requisitionDate: "",
         setRequisitionDate: vi.fn(),
+        handleDateChange: vi.fn(),
+        requisitionDateError: [],
         attestationChecked: false,
         setAttestationChecked: vi.fn(),
         MemoizedDatePicker,
@@ -343,13 +345,13 @@ describe("ReviewBudgetTeamRequisition", () => {
             expect(mockSetRequisitionNumber).toHaveBeenCalled();
         });
 
-        it("should call setRequisitionDate when date changes", async () => {
+        it("should call handleDateChange when date changes", async () => {
             const user = userEvent.setup();
-            const mockSetRequisitionDate = vi.fn();
+            const mockHandleDateChange = vi.fn();
 
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
-                setRequisitionDate: mockSetRequisitionDate
+                handleDateChange: mockHandleDateChange
             });
 
             render(<ReviewBudgetTeamRequisition />);
@@ -357,7 +359,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             await user.type(dateInput, "2026-05-12");
 
-            expect(mockSetRequisitionDate).toHaveBeenCalled();
+            expect(mockHandleDateChange).toHaveBeenCalled();
         });
 
         it("should call setAttestationChecked when checkbox is clicked", async () => {
