@@ -3341,15 +3341,14 @@ def test_cannot_update_bli_when_pre_award_fully_approved(auth_client, loaded_db,
     bli.status = BudgetLineItemStatus.PLANNED
     loaded_db.commit()
 
-    original_amount = bli.amount
-
     # Attempt to update the BLI
     data = {"amount": 555555.55}
     url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
-    # After full pre-award approval, all users are blocked — including superusers (new business rule OPS-2280)
+    # After full pre-award approval all users are blocked (OPS-2280).
+    # Note: auth_client is user 503 (SYSTEM_OWNER), not SUPER_USER — is_super_user() checks
+    # for the SUPER_USER role specifically, so SYSTEM_OWNER is not exempt from the lock.
     assert response.status_code == 400
     assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
-    _ = original_amount  # unused but kept for context

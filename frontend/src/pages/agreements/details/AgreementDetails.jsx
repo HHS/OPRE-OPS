@@ -38,6 +38,10 @@ const AgreementDetails = ({
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
+    // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
+    // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
+    // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
+    // states, the form should not be reachable via URL params either.
     const isEditable =
         !isPreAwardInReview &&
         !isAwardInReview &&
