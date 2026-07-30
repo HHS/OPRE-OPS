@@ -69,7 +69,7 @@ export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_3: true,
     STEP_4: true,
     STEP_5: true,
-    STEP_6: process.env.NODE_ENV !== "production"
+    STEP_6: true
 };
 
 export default constants;
