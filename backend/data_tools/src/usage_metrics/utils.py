@@ -1,15 +1,15 @@
 """Usage metrics report job.
 
 Aggregates existing activity data from ``ops_event`` into a usage report and uploads it to
-Azure Blob Storage for the UX team. The report is delivered as both a CSV (per-day x division
-x role counts) and a two-sheet ``.xlsx`` -- an "Aggregate" sheet (the same counts) plus a
-"Per-user" sheet listing each named user who signed in during the reporting window along with
-their sign-in count and last sign-in. **No IP addresses** are included in either output.
+Azure Blob Storage for the UX team. The report is delivered as a two-sheet ``.xlsx`` -- an
+"Aggregate" sheet (per-day x division x role counts) plus a "Per-user" sheet listing each named
+user who signed in during the reporting window along with their sign-in count and last sign-in.
+**No IP addresses** are included in either sheet.
 
 Note: the "Per-user" sheet names individual users, which reverses the counts-only/no-named-rows
-posture of the initial CSV. This was an explicit, approved requirement change (#4148) -- the
-report now contains named user data, so read access to the ``reports/`` prefix must be granted
-with that in mind.
+posture originally scoped for this report. This was an explicit, approved requirement change
+(#4148) -- the report now contains named user data, so read access to the ``reports/`` prefix
+must be granted with that in mind.
 
 Follows the ``cleanup_user_sessions`` template: ``__main__`` -> ``get_config(ENV)`` ->
 ``init_db_from_config`` -> run, with loguru logging.
@@ -21,7 +21,7 @@ Attribution / counting notes (see the #4148 plan for the full rationale):
   whose ``event_status`` is not SUCCESS are skipped entirely.
 - **Reporting window.** Only rows whose ``created_on`` falls within the configured lookback
   window are aggregated, so the report is scoped to a period and does not re-read the whole
-  append-only audit log on every run (bounded memory/runtime and a period-scoped CSV).
+  append-only audit log on every run (bounded memory/runtime and a period-scoped report).
 - **Day bucketing / timezone.** ``created_on`` is a naive ``TIMESTAMP`` populated by
   ``func.now()``; its wall-clock reflects the database session timezone at write time, which is
   UTC for this deployment (the standard for the app's Postgres). Bucketing therefore uses
@@ -39,7 +39,6 @@ Attribution / counting notes (see the #4148 plan for the full rationale):
   in the report rather than resolved to a single "primary" role.
 """
 
-import csv
 import io
 import os
 import sys
@@ -115,7 +114,7 @@ EVENT_TYPE_TO_METRIC = {
     OpsEventType.CREATE_PROJECT: "projects_created",
 }
 
-# Ordered CSV columns. Count metrics come after the breakdown dimensions.
+# Ordered metric columns. Count metrics come after the breakdown dimensions on the Aggregate sheet.
 METRIC_COLUMNS = [
     "active_users",
     "logins",
@@ -128,7 +127,7 @@ METRIC_COLUMNS = [
     "blis_created",
     "projects_created",
 ]
-CSV_COLUMNS = ["date", "division", "role"] + METRIC_COLUMNS
+AGGREGATE_COLUMNS = ["date", "division", "role"] + METRIC_COLUMNS
 
 # Per-user sheet columns. ``last_sign_in_utc`` is explicitly labelled UTC because created_on is a
 # naive timestamp stored in UTC; it is rendered as an ISO-8601 string so spreadsheet apps do not
@@ -338,39 +337,18 @@ def aggregate_user_sign_ins(session: Session, lookback_days: int) -> list[dict]:
     return rows
 
 
-def build_csv(counts: dict[tuple[str, str, str], dict[str, int]]) -> str:
-    """Render aggregated counts to a CSV string (one row per date x division x role)."""
-    buffer = io.StringIO()
-    writer = csv.DictWriter(buffer, fieldnames=CSV_COLUMNS)
-    writer.writeheader()
-
-    for date_iso, division, role in sorted(counts.keys()):
-        row = {"date": date_iso, "division": division, "role": role}
-        row.update(counts[(date_iso, division, role)])
-        writer.writerow(row)
-
-    return buffer.getvalue()
-
-
-def generate_report_csv(session: Session, lookback_days: int) -> str:
-    """Aggregate events within the reporting window and return the usage report as a CSV string."""
-    counts = aggregate_events(session, lookback_days)
-    logger.info(f"Aggregated into {len(counts):,} date x division x role row(s).")
-    return build_csv(counts)
-
-
 def build_workbook(counts: dict[tuple[str, str, str], dict[str, int]], user_rows: list[dict]) -> bytes:
     """Render the aggregate counts and per-user sign-ins into a two-sheet ``.xlsx`` (as bytes).
 
-    Sheet "Aggregate" mirrors :func:`build_csv` (one row per date x division x role). Sheet
-    "Per-user" lists one row per user who signed in during the window. Written with openpyxl
-    directly (no pandas) to keep the job's memory footprint small.
+    Sheet "Aggregate" holds one row per date x division x role. Sheet "Per-user" lists one row
+    per user who signed in during the window. Written with openpyxl directly (no pandas) to keep
+    the job's memory footprint small.
     """
     wb = Workbook()
 
     aggregate_sheet = wb.active
     aggregate_sheet.title = "Aggregate"
-    aggregate_sheet.append(CSV_COLUMNS)
+    aggregate_sheet.append(AGGREGATE_COLUMNS)
     for date_iso, division, role in sorted(counts.keys()):
         bucket = counts[(date_iso, division, role)]
         aggregate_sheet.append([date_iso, division, role] + [bucket[metric] for metric in METRIC_COLUMNS])
@@ -393,57 +371,46 @@ def parse_lookback_days(lookback_days: str) -> int:
         raise ValueError(f"Invalid usage_metrics_lookback_days value: {lookback_days!r}. Must be an integer.") from e
 
 
-def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> str:
+def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes:
     """Generate the usage report and deliver it (Blob upload or local file).
 
-    Produces two formats each run: the per-day x division x role **CSV** (unchanged) and a
-    two-sheet **.xlsx** that adds the per-user sign-in sheet. When
-    ``usage_metrics_storage_account_url`` is set (remote/azure), each format is uploaded to Blob
-    storage as both a dated file (trend history) and a ``-latest`` file (a stable link) -- four
-    blobs total. Otherwise (local/dev/pytest) both are written to the working directory.
+    Produces a single two-sheet **.xlsx** each run: an "Aggregate" sheet (per-day x division x
+    role counts) and a "Per-user" sign-in sheet. When ``usage_metrics_storage_account_url`` is set
+    (remote/azure), the workbook is uploaded to Blob storage as both a dated file (trend history)
+    and a ``-latest`` file (a stable link) -- two blobs total. Otherwise (local/dev/pytest) it is
+    written to the working directory.
 
-    Returns the generated CSV string.
+    Returns the generated workbook bytes.
     """
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
     with Session(conn) as session:
-        # Aggregate each view once and feed both renderers; the CSV and the workbook's "Aggregate"
-        # sheet share the same counts, so re-scanning ops_event for each would be wasted work.
         counts = aggregate_events(session, lookback_days)
         user_rows = aggregate_user_sign_ins(session, lookback_days)
     logger.info(
         f"Aggregated into {len(counts):,} date x division x role row(s) and "
         f"{len(user_rows):,} per-user sign-in row(s)."
     )
-    csv_string = build_csv(counts)
     workbook_bytes = build_workbook(counts, user_rows)
 
     today = datetime.now(timezone.utc).date().isoformat()
     prefix = config.usage_metrics_report_prefix
-    dated_csv_blob = f"{prefix}/usage-metrics-{today}.csv"
-    latest_csv_blob = f"{prefix}/usage-metrics-latest.csv"
     dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
     latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
 
     account_url = config.usage_metrics_storage_account_url
     if account_url:
         container = config.usage_metrics_container_name
-        csv_data = csv_string.encode("utf-8")
         logger.info(f"Uploading usage report to {account_url}/{container}.")
-        upload_blob(account_url, container, dated_csv_blob, csv_data)
-        upload_blob(account_url, container, latest_csv_blob, csv_data)
         upload_blob(account_url, container, dated_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
-        logger.info(f"Uploaded usage report CSV ({latest_csv_blob}) and workbook ({latest_xlsx_blob}).")
+        logger.info(f"Uploaded usage report workbook ({latest_xlsx_blob}).")
     else:
-        local_csv_path = f"usage-metrics-{today}.csv"
-        with open(local_csv_path, "w", newline="") as f:
-            f.write(csv_string)
         local_xlsx_path = f"usage-metrics-{today}.xlsx"
         with open(local_xlsx_path, "wb") as f:
             f.write(workbook_bytes)
-        logger.info(f"No storage account configured; wrote usage report to {local_csv_path} and {local_xlsx_path}.")
+        logger.info(f"No storage account configured; wrote usage report to {local_xlsx_path}.")
 
-    return csv_string
+    return workbook_bytes
 
 
 if __name__ == "__main__":

@@ -73,7 +73,13 @@ az containerapp job create \
   --memory 0.5Gi \
   --trigger-type Schedule \
   --cron-expression "50 4 * * 1" \
-  --args "/bin/ash, -c, ./data_tools/scripts/usage_metrics.sh" \
+  # NOTE: --args must be passed as SEPARATE tokens, not one comma-quoted string. A single string
+  # like "/bin/ash, -c, ./script.sh" is stored by az as ONE argument, so the container tries to
+  # exec a program literally named "/bin/ash, -c, ..." and dies with exit 128 (StartError) before
+  # producing any logs. We invoke /bin/sh with the script path directly (sh runs the file), which
+  # also avoids az's --args parser rejecting the leading-dash "-c" token. This mirrors the
+  # Dockerfile CMD ["/bin/sh", "-c", "./data_tools/scripts/..."] used by the other data-tools jobs.
+  --args "/bin/sh" "./data_tools/scripts/usage_metrics.sh" \
   --parallelism 1 \
   --replica-timeout 1800 \
   --replica-retry-limit 1 \

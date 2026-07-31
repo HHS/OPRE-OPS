@@ -1,4 +1,3 @@
-import csv
 import io
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
@@ -11,9 +10,7 @@ from data_tools.src.usage_metrics.utils import (
     METRIC_COLUMNS,
     aggregate_events,
     aggregate_user_sign_ins,
-    build_csv,
     build_workbook,
-    generate_report_csv,
     is_deactivating_update,
     parse_lookback_days,
     resolve_actor_id,
@@ -108,68 +105,6 @@ def test_parse_lookback_days_valid():
 def test_parse_lookback_days_invalid_raises():
     with pytest.raises(ValueError):
         parse_lookback_days("not-a-number")
-
-
-# ---------------------------------------------------------------------------
-# build_csv shape.
-# ---------------------------------------------------------------------------
-
-
-def test_build_csv_header_and_sorted_rows():
-    counts = {
-        ("2026-07-06", "OD", "role_a"): {
-            "active_users": 2,
-            "logins": 3,
-            "logouts": 1,
-            "idle_logouts": 0,
-            "new_users": 0,
-            "deactivated_users": 0,
-            "agreements_edited": 4,
-            "agreements_viewed": 5,
-            "blis_created": 1,
-            "projects_created": 0,
-        },
-        ("2026-07-05", "DFCD", "role_b"): {
-            "active_users": 1,
-            "logins": 1,
-            "logouts": 0,
-            "idle_logouts": 1,
-            "new_users": 1,
-            "deactivated_users": 1,
-            "agreements_edited": 0,
-            "agreements_viewed": 0,
-            "blis_created": 0,
-            "projects_created": 2,
-        },
-    }
-    result = build_csv(counts)
-    rows = list(csv.DictReader(io.StringIO(result)))
-
-    assert rows[0]["date"] == "2026-07-05"  # sorted ascending
-    assert rows[1]["date"] == "2026-07-06"
-    assert rows[0]["division"] == "DFCD"
-    assert rows[0]["role"] == "role_b"
-    assert rows[1]["agreements_viewed"] == "5"
-    # Columns present and ordered.
-    header = result.splitlines()[0]
-    expected_header = ",".join(
-        [
-            "date",
-            "division",
-            "role",
-            "active_users",
-            "logins",
-            "logouts",
-            "idle_logouts",
-            "new_users",
-            "deactivated_users",
-            "agreements_edited",
-            "agreements_viewed",
-            "blis_created",
-            "projects_created",
-        ]
-    )
-    assert header == expected_header
 
 
 # ---------------------------------------------------------------------------
@@ -319,17 +254,8 @@ def test_utc_day_bucketing_boundary(loaded_db):
         loaded_db.commit()
 
 
-def test_generate_report_csv_produces_rows(seeded_db):
-    db, day1_iso, _ = seeded_db
-    result = generate_report_csv(db, LOOKBACK_DAYS)
-    rows = list(csv.DictReader(io.StringIO(result)))
-    day1 = next(r for r in rows if r["date"] == day1_iso and r["division"] == "Test Division")
-    assert day1["active_users"] == "2"
-    assert day1["agreements_viewed"] == "2"
-
-
 def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
-    """When a storage account URL is configured, both CSV and .xlsx (dated + latest) are uploaded."""
+    """When a storage account URL is configured, the .xlsx (dated + latest) is uploaded."""
     db, _, _ = seeded_db
     upload_mock = mocker.patch("data_tools.src.usage_metrics.utils.upload_blob")
 
@@ -344,22 +270,20 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
 
     run_usage_metrics(conn, config)
 
-    # Four uploads: dated + latest, for each of CSV and .xlsx.
-    assert upload_mock.call_count == 4
+    # Two uploads: dated + latest .xlsx (no CSV).
+    assert upload_mock.call_count == 2
     blob_names = {call.args[2] for call in upload_mock.call_args_list}
-    assert "reports/usage-metrics-latest.csv" in blob_names
     assert "reports/usage-metrics-latest.xlsx" in blob_names
-    assert any(name.startswith("reports/usage-metrics-") and name.endswith(".csv") for name in blob_names)
     assert any(name.startswith("reports/usage-metrics-") and name.endswith(".xlsx") for name in blob_names)
+    # No CSV is produced any more.
+    assert not any(name.endswith(".csv") for name in blob_names)
 
-    # The .xlsx uploads carry the spreadsheet MIME type; the CSVs do not.
-    xlsx_calls = [c for c in upload_mock.call_args_list if c.args[2].endswith(".xlsx")]
-    assert xlsx_calls and all(
-        c.kwargs.get("content_type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        for c in xlsx_calls
+    # Every upload is an .xlsx carrying the spreadsheet MIME type.
+    assert all(
+        c.args[2].endswith(".xlsx")
+        and c.kwargs.get("content_type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        for c in upload_mock.call_args_list
     )
-    csv_calls = [c for c in upload_mock.call_args_list if c.args[2].endswith(".csv")]
-    assert all(c.kwargs.get("content_type") is None for c in csv_calls)
 
 
 # ---------------------------------------------------------------------------
