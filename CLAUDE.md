@@ -90,6 +90,9 @@ Uses **Conventional Commits** enforced by commitlint.
 - Always use conventional commit format (commitlint will reject non-conforming commits)
 - Check recent commits with `git log --oneline -5` to match repository style
 - Include ticket numbers in branch names (e.g., `OPS-4927/feature-name`), not in commit messages
+- **Single line only, under 100 characters** — no multiline body, no blank lines
+- **No trailers** — no `Co-Authored-By`, no `Signed-off-by`, nothing after the subject line
+- Always commit with `git commit -m "type: description"` — never HEREDOC (multiline fails commitlint)
 
 ## Pre-commit Hooks
 
