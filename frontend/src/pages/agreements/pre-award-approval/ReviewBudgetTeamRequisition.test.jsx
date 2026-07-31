@@ -97,7 +97,6 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
             <h2>{heading}</h2>
             <button
                 onClick={() => {
-                    setShowModal(false);
                     handleConfirm();
                 }}
             >

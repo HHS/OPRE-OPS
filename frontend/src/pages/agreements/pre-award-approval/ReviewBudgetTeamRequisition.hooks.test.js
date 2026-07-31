@@ -599,7 +599,29 @@ describe("useReviewBudgetTeamRequisition", () => {
                 const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
                 result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
                 await waitFor(() => {
+                    // Error shown in UI
                     expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                    // Approve button must also be disabled — isFormValid must return false
+                    expect(result.current.isFormValid()).toBe(false);
+                });
+            });
+
+            it("blocks handleSaveDraft for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const mockUnwrap = vi.fn().mockResolvedValue({});
+                useUpdateProcurementTrackerStepMutation.mockReturnValue([
+                    vi.fn().mockReturnValue({ unwrap: mockUnwrap }),
+                    {}
+                ]);
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => expect(result.current.requisitionDate).toBe("qq/qq/qq"));
+
+                await result.current.handleSaveDraft();
+
+                await waitFor(() => {
+                    expect(result.current.submitError).toBe("Invalid date format. Please use MM/DD/YYYY format.");
+                    expect(mockUnwrap).not.toHaveBeenCalled();
                 });
             });
 
