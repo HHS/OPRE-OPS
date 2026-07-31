@@ -49,8 +49,6 @@ const Agreement = () => {
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
-    const [isPreAwardAlertVisible] = useState(true);
-    const [isAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
     const [isAwardInReviewAlertVisible, setIsAwardInReviewAlertVisible] = useState(true);
 
@@ -273,11 +271,11 @@ const Agreement = () => {
                     />
                     <PreAwardApprovalAlert
                         notifications={user_agreement_notifications}
-                        isVisible={isPreAwardAlertVisible}
+                        isVisible={true}
                     />
                     <AwardApprovalAlert
                         notifications={user_agreement_notifications}
-                        isVisible={isAwardAlertVisible}
+                        isVisible={true}
                     />
                 </>
             )}

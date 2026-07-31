@@ -152,6 +152,17 @@ navigate("/agreements");
 
 Import from `src/helpers/scrollToTop.helper`. Do NOT call `scrollToTop()` on error paths.
 
+**Exception — `redirectUrl`:** this rule assumes the handler calls `navigate()` itself. If instead you pass `redirectUrl` to `setAlert(...)`, `Alert.jsx` calls `navigate(redirectUrl)` immediately (the 6s timer only controls the alert's auto-dismiss, not navigation timing), and the destination page already scrolls to top on mount via `useScrollToTop` in `App.jsx`. In that case, calling `scrollToTop()` in the handler is a no-op — omit it.
+
+```javascript
+// CORRECT — redirectUrl navigates immediately; destination page scrolls itself
+setAlert({ type: "success", heading: "Saved", message: "...", redirectUrl: "/agreements" });
+
+// INCORRECT — scrollToTop() here has no observable effect
+setAlert({ type: "success", heading: "Saved", message: "...", redirectUrl: "/agreements" });
+scrollToTop();
+```
+
 ## Numeric Display Conventions
 
 ### Fee Percentage Storage

@@ -7,7 +7,6 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
-import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
 const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -139,7 +138,6 @@ export default function useApproveAwardApproval(agreementId) {
                         message: `Agreement "${agreement?.display_name}" has been successfully approved for Award.`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
-                    scrollToTop();
                 } catch (error) {
                     setSubmitError(/** @type {any} */ (error)?.data?.error || "Failed to approve award");
                     setIsSubmitting(false);
