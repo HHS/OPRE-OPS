@@ -11,6 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
+import AwardApprovalAlert from "../../../components/Agreements/AwardApprovalAlert/AwardApprovalAlert";
 import PreAwardApprovalAlert from "../../../components/Agreements/PreAwardApprovalAlert/PreAwardApprovalAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
@@ -35,48 +36,6 @@ const Agreement = () => {
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
-    const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(false);
-    const [showAwardSuccessAlert, setShowAwardSuccessAlert] = useState(false);
-
-    // Consume success state from navigation and clear it to prevent re-display on back/forward
-    useEffect(() => {
-        if (location.state?.success) {
-            setShowPreAwardSuccessAlert(true);
-            // Clear location.state so alert doesn't reappear on browser back/forward navigation
-            navigate(location.pathname + location.search, {
-                replace: true,
-                state: {}
-            });
-        }
-        if (location.state?.awardApprovalSuccess) {
-            setShowAwardSuccessAlert(true);
-            // Clear location.state so alert doesn't reappear on browser back/forward navigation
-            navigate(location.pathname + location.search, {
-                replace: true,
-                state: {}
-            });
-        }
-    }, [location.state?.success, location.state?.awardApprovalSuccess, location.pathname, location.search, navigate]);
-
-    // Auto-dismiss success alert after 6 seconds
-    useEffect(() => {
-        if (showPreAwardSuccessAlert) {
-            const timer = setTimeout(() => {
-                setShowPreAwardSuccessAlert(false);
-            }, 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [showPreAwardSuccessAlert]);
-
-    // Auto-dismiss award success alert after 6 seconds
-    useEffect(() => {
-        if (showAwardSuccessAlert) {
-            const timer = setTimeout(() => {
-                setShowAwardSuccessAlert(false);
-            }, 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [showAwardSuccessAlert]);
 
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
@@ -90,7 +49,6 @@ const Agreement = () => {
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
-    const [isPreAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
     const [isAwardInReviewAlertVisible, setIsAwardInReviewAlertVisible] = useState(true);
 
@@ -139,8 +97,12 @@ const Agreement = () => {
         user_agreement_notifications = query_response.data;
     }
 
-    // Query procurement tracker to check for pre-award approval status
+    // Query procurement tracker to check for pre-award approval status.
+    // Refetch on mount so the "In Review" banner reflects fresh tracker state after a
+    // Division Director approves/declines (e.g. when the COR reopens the page). Without this,
+    // a stale cached tracker can keep the banner visible even though the decline persisted.
     const { data: procurementTrackers } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
         skip: !agreementId
     });
 
@@ -257,6 +219,9 @@ const Agreement = () => {
     // Use the backend-derived field so this stays correct regardless of tracker status.
     const isAwardInReview = agreement?.is_award_approval_requested === true;
 
+    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted)
+    const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
+
     const isAgreementAwarded = agreement?.is_awarded;
     return (
         <App breadCrumbName={agreement?.name}>
@@ -267,27 +232,7 @@ const Agreement = () => {
                     setIsAlertVisible={setIsAlertVisible}
                 />
             )}
-            {showPreAwardSuccessAlert && (
-                <SimpleAlert
-                    type="success"
-                    heading="Agreement Sent to Pre-Award Approval"
-                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, the Budget Team will submit the requisition, and then you can upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
-                    isClosable={true}
-                    setIsAlertVisible={setShowPreAwardSuccessAlert}
-                    headingLevel={2}
-                />
-            )}
-            {showAwardSuccessAlert && (
-                <SimpleAlert
-                    type="success"
-                    heading="Agreement Sent to Award Approval"
-                    message="This agreement has been successfully sent to the Budget Team to review. Once approved, the Executing Budget Lines will change to Obligated status and the Agreement will be Awarded."
-                    isClosable={true}
-                    setIsAlertVisible={setShowAwardSuccessAlert}
-                    headingLevel={2}
-                />
-            )}
-            {!showPreAwardSuccessAlert && isPreAwardInReview && isPreAwardInReviewAlertVisible && (
+            {isPreAwardInReview && isPreAwardInReviewAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="Pre-Award Approval In Review"
@@ -296,7 +241,7 @@ const Agreement = () => {
                     setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
                 />
             )}
-            {!showAwardSuccessAlert && isAwardInReview && isAwardInReviewAlertVisible && (
+            {isAwardInReview && isAwardInReviewAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="Award Approval In Review"
@@ -326,7 +271,11 @@ const Agreement = () => {
                     />
                     <PreAwardApprovalAlert
                         notifications={user_agreement_notifications}
-                        isVisible={isPreAwardAlertVisible}
+                        isVisible={true}
+                    />
+                    <AwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={true}
                     />
                 </>
             )}
@@ -376,6 +325,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />
@@ -390,6 +340,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />
