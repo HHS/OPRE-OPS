@@ -272,9 +272,52 @@ workbook with the Aggregate and Per-user sheets). The UX team needs read access 
 
 ### Ongoing image updates
 
-`.github/workflows/stg_be_build_and_deploy.yml` updates `usage-metrics-job` to the new image on
-each merge to `main` (guarded with `|| echo ... skipping` so it's a no-op until the job exists).
-The cron is `50 4 * * 1` (04:50 UTC Monday = Sunday night US Central) — Azure cron is UTC-only.
+`.github/workflows/stg_be_build_and_deploy.yml` (staging) and `prod_be_build_and_deploy.yml`
+(production) both update `usage-metrics-job` to the new image on deploy — guarded with
+`|| echo ... skipping` so each is a no-op until that environment's job is created. Staging redeploys
+automatically on merge to `main`; production is a manual `workflow_dispatch`. The cron is
+`50 4 * * 1` (04:50 UTC Monday = Sunday night US Central) — Azure cron is UTC-only.
+
+### Enable on production (one-time creation)
+
+Production lives in a **separate subscription** (`opre-ops-services-prod`) from dev/staging
+(`opre-ops-services-sdlc`); target it with `--subscription opre-ops-services-prod` or
+`az account set`. The layout mirrors staging exactly. Prerequisites: PR #5960 merged to `main`
+**and** the prod BE deploy (`prod_be_build_and_deploy.yml`) run at least once so the `prod`-tagged
+`ops-data-tools` image contains this code.
+
+Verified production values (read-only inspection, 2026-07-31):
+
+| Thing | Value |
+|---|---|
+| Subscription | `opre-ops-services-prod` |
+| Resource group | `opre-ops-prod-app-rg` |
+| Container App Environment | `opre-ops-prod-app-cae` |
+| User-assigned MI (Blob write) | `storageAccountUser` |
+| Storage account URL | `https://opreopsprodappsa.blob.core.windows.net` |
+| Blob container | `data` (default; report lands under `reports/`) |
+| DB host / db / user | `opre-ops-prod-db-pg-server.postgres.database.azure.com` / `postgres` / `ops` |
+| DB password | `pgpassword` secret on the existing prod jobs (not in this repo) |
+
+```bash
+az account set --subscription opre-ops-services-prod
+
+export IMAGE_TAG=prod   # or a specific prod SHA
+export PGUSER=ops
+export PGHOST=opre-ops-prod-db-pg-server.postgres.database.azure.com
+export PGPORT=5432
+export PGDATABASE=postgres
+export PGPASSWORD='<ops DB password — the pgpassword secret on the other prod jobs>'
+export USAGE_METRICS_STORAGE_ACCOUNT_URL="https://opreopsprodappsa.blob.core.windows.net"
+
+./scripts/azure/create_usage_metrics_job.sh opre-ops-prod-app-rg storageAccountUser opre-ops-prod-app-cae
+
+# test-fire without waiting for the Monday cron:
+az containerapp job start -n usage-metrics-job -g opre-ops-prod-app-rg
+```
+
+Then confirm `data/reports/usage-metrics-latest.xlsx` appears in `opreopsprodappsa`. The prod
+storage holds **real** named-user data — grant `reports/` read access only to intended recipients.
 
 ## Integration with ops_api and Docker
 
