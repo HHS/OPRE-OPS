@@ -20,7 +20,7 @@ const Alert = ({ children }) => {
     const { heading, message, type, redirectUrl, isCloseable, isToastMessage } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
-    let waitTime = redirectUrl ? 6000 : 6000;
+    const waitTime = 6000;
 
     // Handle navigation without blocking user interactions
     useEffect(() => {

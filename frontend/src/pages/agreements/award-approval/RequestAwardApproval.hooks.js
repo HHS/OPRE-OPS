@@ -10,6 +10,7 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate, formatDateForApi } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
@@ -26,6 +27,7 @@ const MemoizedDatePicker = React.memo(DatePicker);
  */
 export default function useRequestAwardApproval(agreementId) {
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -235,8 +237,12 @@ export default function useRequestAwardApproval(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate(`/agreements/${agreementId}/procurement-tracker`, {
-                state: { awardApprovalSuccess: true }
+            setAlert({
+                type: "success",
+                heading: "Agreement Sent to Award Approval",
+                message:
+                    "This agreement has been successfully sent to the Budget Team to review. Once approved, the Executing Budget Lines will change to Obligated status and the Agreement will be Awarded.",
+                redirectUrl: `/agreements/${agreementId}/procurement-tracker`
             });
         } catch (error) {
             console.error("Failed to request award approval:", error);
