@@ -85,6 +85,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
+        isLoadingTrackers,
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
@@ -127,6 +128,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const hasChanged = useMemo(() => {
         return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
     }, [requisitionNumber, requisitionDate, attestationChecked]);
+
+    const canSaveDraft = useMemo(() => {
+        // While the tracker query is still in flight, don't assume there's nothing to save —
+        // a returning user with a prior draft would see the button flash disabled then re-enable.
+        if (isLoadingTrackers) return true;
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return hasCurrentValues || hasPriorValues;
+    }, [isLoadingTrackers, requisitionNumber, requisitionDate, step5]);
 
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
@@ -346,6 +356,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }

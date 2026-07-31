@@ -167,7 +167,8 @@ describe("ReviewBudgetTeamRequisition", () => {
         handleCancel: vi.fn(),
         isFormValid: vi.fn(() => false),
         hasPermission: true,
-        approvalAlreadyProcessed: false
+        approvalAlreadyProcessed: false,
+        canSaveDraft: true
     };
 
     beforeEach(() => {
@@ -404,6 +405,28 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             const approveButton = screen.getByRole("button", { name: /approve pre-award requisition/i });
             expect(approveButton).not.toBeDisabled();
+        });
+
+        it("should disable Save Draft button when canSaveDraft is false", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                canSaveDraft: false
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByRole("button", { name: /save draft/i })).toBeDisabled();
+        });
+
+        it("should enable Save Draft button when canSaveDraft is true", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                canSaveDraft: true
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByRole("button", { name: /save draft/i })).not.toBeDisabled();
         });
 
         it("should disable approve button while submitting", () => {
