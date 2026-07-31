@@ -30,10 +30,12 @@ export default function usePreAwardApprovalData(agreementId) {
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreementId, { skip: !agreementId });
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
-    const { data: procurementTrackersData, isLoading: isLoadingTrackers } =
-        useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+    const { data: procurementTrackersData, isLoading: isLoadingTrackers } = useGetProcurementTrackersByAgreementIdQuery(
+        agreementId,
+        {
             skip: !agreementId
-        });
+        }
+    );
 
     // Get project officer names
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
