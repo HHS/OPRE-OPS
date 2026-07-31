@@ -9448,6 +9448,12 @@ components:
                 type: string
             in_review:
               type: boolean
+            is_award_approval_requested:
+              type: boolean
+              description: Whether the agreement has a pending award approval request (step 6)
+            is_post_pre_award_locked:
+              type: boolean
+              description: Whether BLI editing is permanently locked after full pre-award approval
             authorized_user_ids:
               type: array
               items:
