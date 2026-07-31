@@ -10,6 +10,7 @@ import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
 const MemoizedDatePicker = React.memo(DatePicker);
+const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -118,28 +119,20 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
-    // Form validation
-    const isFormValid = () => {
-        const formattedDate = formatDateForApi(requisitionDate);
-        return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
-    };
-
-    const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+    // Form validation — uses the same strict regex as handleDateChange for consistency
+    const isFormValid = () =>
+        requisitionNumber.trim() !== "" && DATE_FORMAT_REGEX.test(requisitionDate) && attestationChecked;
 
     // Validate date format on change — only show error when something is entered but invalid
-    const handleDateChange = useCallback(
-        (/** @param {any} e */ e) => {
-            const value = e.target.value;
-            setRequisitionDate(value);
-            if (value.trim() !== "" && !DATE_FORMAT_REGEX.test(value)) {
-                setRequisitionDateError(["Date must be MM/DD/YYYY"]);
-            } else {
-                setRequisitionDateError([]);
-            }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
-    );
+    const handleDateChange = useCallback((/** @param {any} e */ e) => {
+        const value = e.target.value;
+        setRequisitionDate(value);
+        if (value.trim() !== "" && !DATE_FORMAT_REGEX.test(value)) {
+            setRequisitionDateError(["Date must be MM/DD/YYYY"]);
+        } else {
+            setRequisitionDateError([]);
+        }
+    }, []);
 
     /**
      * Track if any changes have been made to the form
@@ -257,15 +250,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setSubmitError("");
 
         try {
-            // Validate date format if a date was entered
+            // Validate date format if a date was entered — use strict regex consistent with handleDateChange
             let formattedDate = null;
             if (requisitionDate.trim()) {
-                formattedDate = formatDateForApi(requisitionDate);
-                if (formattedDate === null) {
+                if (!DATE_FORMAT_REGEX.test(requisitionDate)) {
                     setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
                     setIsSubmitting(false);
                     return;
                 }
+                formattedDate = formatDateForApi(requisitionDate);
             }
 
             /** @type {Record<string, any>} */
