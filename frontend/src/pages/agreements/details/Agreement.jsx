@@ -139,8 +139,12 @@ const Agreement = () => {
         user_agreement_notifications = query_response.data;
     }
 
-    // Query procurement tracker to check for pre-award approval status
+    // Query procurement tracker to check for pre-award approval status.
+    // Refetch on mount so the "In Review" banner reflects fresh tracker state after a
+    // Division Director approves/declines (e.g. when the COR reopens the page). Without this,
+    // a stale cached tracker can keep the banner visible even though the decline persisted.
     const { data: procurementTrackers } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
         skip: !agreementId
     });
 
@@ -256,6 +260,9 @@ const Agreement = () => {
     // Keep agreement locked when Award approval has been requested but not yet approved by Budget Team.
     // Use the backend-derived field so this stays correct regardless of tracker status.
     const isAwardInReview = agreement?.is_award_approval_requested === true;
+
+    // Lock BLI editing permanently once pre-award is fully approved (DD + requisition submitted)
+    const isPostPreAwardLocked = agreement?.is_post_pre_award_locked === true;
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (
@@ -376,6 +383,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />
@@ -390,6 +398,7 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                                 isPreAwardInReview={isPreAwardInReview}
                                 isAwardInReview={isAwardInReview}
+                                isPostPreAwardLocked={isPostPreAwardLocked}
                             />
                         }
                     />

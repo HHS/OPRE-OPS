@@ -18,7 +18,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     convert_BLI_status_name_to_pretty_string,
     get_bli_locked_message,
     get_division_for_budget_line_item,
-    is_agreement_in_pre_award_or_later,
+    is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
 )
@@ -56,15 +56,22 @@ class _FakeBLI:
         self.agreement = agreement if agreement is not None else _FakeAgreement()
 
 
-def _active_tracker_at(step):
-    return _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.ACTIVE, step)])
-
-
 def _pre_award_in_review_agreement(active_step_number=1):
     """An agreement whose active tracker has a PRE_AWARD step with approval requested and not yet
-    decided — i.e. ``is_pre_award_in_review`` is True. ``active_step_number`` defaults to a pre-step-5
-    value so this predicate is exercised independently of ``is_agreement_in_pre_award_or_later``."""
+    decided — i.e. ``is_pre_award_in_review`` is True."""
     step = _FakeStep(ProcurementTrackerStepType.PRE_AWARD, approval_requested=True, approval_status="PENDING")
+    return _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.ACTIVE, active_step_number, steps=[step])])
+
+
+def _post_pre_award_locked_agreement(active_step_number=1):
+    """An agreement whose active tracker has a fully-approved PRE_AWARD step (DD approved +
+    requisition approved) — i.e. ``is_post_pre_award_locked`` is True."""
+    step = _FakeStep(
+        ProcurementTrackerStepType.PRE_AWARD,
+        approval_requested=True,
+        approval_status="APPROVED",
+        requisition_approved_by=42,
+    )
     return _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.ACTIVE, active_step_number, steps=[step])])
 
 
@@ -182,36 +189,6 @@ def test_update_data_empty_dict():
 
 
 # ---------------------------------------------------------------------------
-# is_agreement_in_pre_award_or_later
-# ---------------------------------------------------------------------------
-
-
-def test_is_agreement_in_pre_award_or_later_no_agreement():
-    assert is_agreement_in_pre_award_or_later(None) is False
-
-
-def test_is_agreement_in_pre_award_or_later_no_trackers():
-    assert is_agreement_in_pre_award_or_later(_FakeAgreement([])) is False
-
-
-@pytest.mark.parametrize(
-    "step,expected",
-    [(1, False), (4, False), (5, True), (6, True)],
-)
-def test_is_agreement_in_pre_award_or_later_by_step(step, expected):
-    assert is_agreement_in_pre_award_or_later(_active_tracker_at(step)) is expected
-
-
-def test_is_agreement_in_pre_award_or_later_ignores_inactive_tracker():
-    agreement = _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.COMPLETED, 6)])
-    assert is_agreement_in_pre_award_or_later(agreement) is False
-
-
-def test_is_agreement_in_pre_award_or_later_none_step():
-    assert is_agreement_in_pre_award_or_later(_active_tracker_at(None)) is False
-
-
-# ---------------------------------------------------------------------------
 # is_pre_award_in_review — the write-path guard now mirrored into editability (R1).
 # The True path is covered via compute_bli_editable below; here we pin down the
 # terminal / not-requested branches that must NOT block editing.
@@ -268,6 +245,45 @@ def test_is_pre_award_in_review_false_without_active_tracker():
 
 
 # ---------------------------------------------------------------------------
+# is_post_pre_award_locked — the permanent lock once pre-award is fully approved
+# (DD approved + requisition approved). Mirrored into editability (OPS-2280).
+# ---------------------------------------------------------------------------
+
+
+def test_is_post_pre_award_locked_true_when_approved_and_requisition_approved():
+    step = _FakeStep(
+        ProcurementTrackerStepType.PRE_AWARD,
+        approval_requested=True,
+        approval_status="APPROVED",
+        requisition_approved_by=42,
+    )
+    assert is_post_pre_award_locked(_agreement_with_pre_award_step(step)) is True
+
+
+def test_is_post_pre_award_locked_false_when_approved_but_requisition_pending():
+    step = _FakeStep(
+        ProcurementTrackerStepType.PRE_AWARD,
+        approval_requested=True,
+        approval_status="APPROVED",
+        requisition_approved_by=None,
+    )
+    assert is_post_pre_award_locked(_agreement_with_pre_award_step(step)) is False
+
+
+def test_is_post_pre_award_locked_false_when_declined():
+    step = _FakeStep(
+        ProcurementTrackerStepType.PRE_AWARD,
+        approval_requested=True,
+        approval_status="DECLINED",
+    )
+    assert is_post_pre_award_locked(_agreement_with_pre_award_step(step)) is False
+
+
+def test_is_post_pre_award_locked_false_without_active_tracker():
+    assert is_post_pre_award_locked(_FakeAgreement([])) is False
+
+
+# ---------------------------------------------------------------------------
 # compute_bli_editable (single source of truth)
 # ---------------------------------------------------------------------------
 
@@ -302,17 +318,13 @@ def test_compute_bli_editable_obe_blocks_non_super():
     assert compute_bli_editable(bli, in_review=False, is_super=True) is True
 
 
-@pytest.mark.parametrize("step", [5, 6])
-def test_compute_bli_editable_blocked_at_pre_award_or_later(step):
-    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_active_tracker_at(step))
-    assert compute_bli_editable(bli, in_review=False, is_super=False) is False
-    # super users bypass the step block
-    assert compute_bli_editable(bli, in_review=False, is_super=True) is True
-
-
-@pytest.mark.parametrize("step", [1, 4])
-def test_compute_bli_editable_editable_before_pre_award(step):
-    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_active_tracker_at(step))
+def test_compute_bli_editable_editable_while_at_pre_award_step_not_in_review():
+    """OPS-2280: merely sitting at a pre-award tracker step no longer blocks editing. An
+    IN_EXECUTION BLI whose active tracker is at a pre-award step but is neither pre-award-in-review
+    nor post-pre-award-locked stays editable for a non-super user."""
+    step = _FakeStep(ProcurementTrackerStepType.PRE_AWARD, approval_requested=False)
+    agreement = _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.ACTIVE, 5, steps=[step])])
+    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=agreement)
     assert compute_bli_editable(bli, in_review=False, is_super=False) is True
 
 
@@ -322,13 +334,21 @@ def test_compute_bli_editable_obligated_super_can_edit():
 
 
 def test_compute_bli_editable_blocked_when_pre_award_in_review():
-    """R1 regression: the editability meta must match the write-path guard. A Pre-Award approval
-    awaiting a decision blocks edits even before the tracker reaches step 5, so the pen icon must
-    disable rather than being clickable-then-erroring on PATCH."""
+    """OPS-2280: a Pre-Award approval awaiting a decision blocks edits so the pen icon disables
+    rather than being clickable-then-erroring on PATCH. Super users are NO LONGER exempt from this
+    lock — they are blocked too."""
     bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_pre_award_in_review_agreement(active_step_number=1))
     assert compute_bli_editable(bli, in_review=False, is_super=False) is False
-    # super users bypass the pre-award-in-review block, matching the write-path bypass
-    assert compute_bli_editable(bli, in_review=False, is_super=True) is True
+    # super users are now ALSO blocked while pre-award is in review (OPS-2280)
+    assert compute_bli_editable(bli, in_review=False, is_super=True) is False
+
+
+def test_compute_bli_editable_blocked_when_post_pre_award_locked():
+    """OPS-2280: once pre-award is fully approved (DD approved + requisition approved), editing is
+    permanently locked for EVERYONE, including super users."""
+    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_post_pre_award_locked_agreement())
+    assert compute_bli_editable(bli, in_review=False, is_super=False) is False
+    assert compute_bli_editable(bli, in_review=False, is_super=True) is False
 
 
 def test_compute_bli_editable_not_blocked_when_pre_award_declined():
@@ -386,25 +406,34 @@ def test_get_bli_locked_message_none_when_editable():
     assert get_bli_locked_message(bli, in_review=False, is_super=False) is None
 
 
-def test_get_bli_locked_message_pre_award():
-    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_active_tracker_at(5))
-    msg = get_bli_locked_message(bli, in_review=False, is_super=False)
-    assert msg is not None
-    assert "Pre-Award" in msg
-
-
-def test_get_bli_locked_message_none_for_super():
-    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_active_tracker_at(5))
-    assert get_bli_locked_message(bli, in_review=False, is_super=True) is None
-
-
 def test_get_bli_locked_message_pre_award_in_review():
-    """R1: a Pre-Award approval in review yields an explanatory locked message (distinct from the
-    step-5/6 reached message) so the frontend can show why the pen is disabled."""
+    """OPS-2280: a Pre-Award approval in review yields an explanatory locked message so the
+    frontend can show why the pen is disabled."""
     bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_pre_award_in_review_agreement(active_step_number=1))
     msg = get_bli_locked_message(bli, in_review=False, is_super=False)
-    assert msg is not None
-    assert "Pre-Award Approval is in review" in msg
+    assert msg == "This budget line can't be edited while Pre-Award Approval is in review."
+
+
+def test_get_bli_locked_message_pre_award_in_review_for_super():
+    """OPS-2280: super users are no longer exempt from the pre-award locks, so they receive the
+    locked message too (the old None-for-super early return was removed)."""
+    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_pre_award_in_review_agreement(active_step_number=1))
+    msg = get_bli_locked_message(bli, in_review=False, is_super=True)
+    assert msg == "This budget line can't be edited while Pre-Award Approval is in review."
+
+
+def test_get_bli_locked_message_post_pre_award_locked():
+    """OPS-2280: once pre-award is fully approved, the message explains the permanent post-approval
+    lock. It applies to super users too."""
+    bli = _FakeBLI(BudgetLineItemStatus.IN_EXECUTION, agreement=_post_pre_award_locked_agreement())
+    assert (
+        get_bli_locked_message(bli, in_review=False, is_super=False)
+        == "This budget line can't be edited after Pre-Award Approval has been completed."
+    )
+    assert (
+        get_bli_locked_message(bli, in_review=False, is_super=True)
+        == "This budget line can't be edited after Pre-Award Approval has been completed."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -414,9 +443,11 @@ def test_get_bli_locked_message_pre_award_in_review():
 
 def test_always_direct_edit_fields_contains_expected_fields():
     # services_component_id + line_description guard PR #5816; comments was added for editable
-    # Executing BLIs (#5819); clin_id is the lazy-CLIN direct-edit field from main.
+    # Executing BLIs (#5819); clin_id is the lazy-CLIN direct-edit field; grant_number_id is the
+    # grant-BLI direct-edit field from OPS-2280 (grant numbers).
     assert BudgetLineItemService.ALWAYS_DIRECT_EDIT_FIELDS == {
         "services_component_id",
+        "grant_number_id",
         "line_description",
         "comments",
         "clin_id",

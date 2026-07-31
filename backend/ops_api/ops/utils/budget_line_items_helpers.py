@@ -88,20 +88,6 @@ EDITABLE_STATUSES = [
     BudgetLineItemStatus.IN_EXECUTION,
 ]
 
-# The PRE_AWARD step's 1-based number in the default procurement tracker (step 6 = AWARD is
-# beyond it). Matches the (5, ProcurementTrackerStepType.PRE_AWARD) entry in
-# ProcurementTracker's step_definitions. active_step_number is a plain int, so we compare to the
-# step number here rather than the ProcurementTrackerStepType enum (which is a string enum).
-PRE_AWARD_STEP_NUMBER = 5
-
-
-def is_agreement_in_pre_award_or_later(agreement) -> bool:
-    """True if the agreement has an ACTIVE procurement tracker at PRE_AWARD (step 5) or later."""
-    if not agreement or not agreement.procurement_trackers:
-        return False
-    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
-    return bool(tracker and tracker.active_step_number and tracker.active_step_number >= PRE_AWARD_STEP_NUMBER)
-
 
 def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
     """Single source of truth for BLI editability rules (no DB queries).
@@ -121,16 +107,17 @@ def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> b
     if not is_super and budget_line_item.is_obe:
         editable = False
 
-    # editing is blocked once the agreement reaches Pre-Award (step 5) or Award (step 6)
-    if not is_super and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
+    # Pre-award / post-pre-award locks (OPS-2280). These mirror the write-path guards in the update
+    # service (_validation) so the editability meta and the PATCH validation stay in lockstep — the
+    # pen icon must not be clickable when the edit would be rejected. Super users are NOT exempt from
+    # these locks (OPS-2280). Editing is allowed DURING pre-award steps; it is blocked only while a
+    # pre-award approval request is awaiting a decision, and permanently once pre-award is fully
+    # approved. (The write path additionally allows clin_id-only edits after the post-pre-award lock;
+    # that is a per-request nuance the meta can't express, so the pen shows as locked here.)
+    if is_pre_award_in_review(budget_line_item.agreement):
         editable = False
 
-    # editing is also blocked while a Pre-Award approval request is awaiting a decision. This
-    # mirrors the write-path guard in the update service (`is_pre_award_in_review`) so the
-    # editability meta and the PATCH validation stay in lockstep — the pen icon must not be
-    # clickable when the edit would be rejected. (This can fire before the tracker reaches
-    # step 5, so it is a distinct check from `is_agreement_in_pre_award_or_later` above.)
-    if not is_super and is_pre_award_in_review(budget_line_item.agreement):
+    if is_post_pre_award_locked(budget_line_item.agreement):
         editable = False
 
     return editable
@@ -139,15 +126,18 @@ def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> b
 def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) -> str | None:
     """Human-readable reason a BLI is locked that the frontend cannot derive on its own.
 
-    Covers the procurement-step blocks, since the BLI payload carries no tracker-step data.
-    Returns None when none of those blocks apply.
+    Covers the pre-award / post-pre-award locks (OPS-2280), since the BLI payload carries no
+    tracker-step data. Returns None when none of those blocks apply. Super users are NOT exempt
+    from these locks, so they receive the message too. The in-review reason is suppressed when the
+    BLI already has a change request in review (``in_review``), since that tooltip is derived
+    frontend-side from the change requests themselves.
     """
-    if budget_line_item is None or is_super:
+    if budget_line_item is None:
         return None
-    if not in_review and is_agreement_in_pre_award_or_later(budget_line_item.agreement):
-        return "This budget line can't be edited because the agreement has reached Pre-Award."
     if not in_review and is_pre_award_in_review(budget_line_item.agreement):
         return "This budget line can't be edited while Pre-Award Approval is in review."
+    if is_post_pre_award_locked(budget_line_item.agreement):
+        return "This budget line can't be edited after Pre-Award Approval has been completed."
     return None
 
 
@@ -248,6 +238,45 @@ def is_award_approval_requested(agreement) -> bool:
         return True
 
     return False
+
+
+def is_post_pre_award_locked(agreement) -> bool:
+    """
+    Check if the agreement is in the post-pre-award locked state.
+
+    Returns True once pre-award has been fully approved (DD approved + Budget Team
+    submitted requisition). BLI editing is locked from this point on permanently.
+
+    Exceptions (handled by callers):
+    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is fully approved and BLIs should be locked.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    # Scope to the active tracker only — consistent with is_pre_award_in_review and
+    # is_award_approval_requested, and prevents a completed tracker from a prior
+    # procurement cycle permanently locking BLIs on a new active cycle.
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    if not tracker:
+        return False
+
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
+    if not pre_award_step:
+        return False
+
+    return (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    )
 
 
 def bli_associated_with_agreement(id: int) -> bool:

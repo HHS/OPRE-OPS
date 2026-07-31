@@ -55,6 +55,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     get_bli_locked_message,
     is_award_approval_requested,
     is_bli_editable,
+    is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
 )
@@ -238,8 +239,8 @@ class BudgetLineItemService:
                     selectinload(Agreement.team_members),
                     joinedload(Agreement.project),
                     joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-                    # Needed by the editability checks: is_agreement_in_pre_award_or_later walks
-                    # the trackers; is_pre_award_in_review walks tracker.steps.
+                    # Needed by the editability checks: is_pre_award_in_review and
+                    # is_post_pre_award_locked walk the active tracker's steps.
                     selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
                 ),
                 # Eager load CAN and its portfolio/division
@@ -855,16 +856,31 @@ class BudgetLineItemService:
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
 
-        # Check the pre-award "in review" lock BEFORE the generic editability check. Both now feed
-        # is_bli_editable (compute_bli_editable includes is_pre_award_in_review as of the editability
-        # unification), so this specific, actionable message must win over the generic
-        # "not in an editable state" fallback. Super users and budget team bypass (they write directly).
-        if (
-            not is_super_user(current_user, current_app)
-            and not is_budget_team(current_user)
-            and is_pre_award_in_review(budget_line_item.agreement)
-        ):
+        # Pre-award / post-pre-award locks (OPS-2280). These fire the specific, actionable message
+        # BEFORE the generic is_bli_editable fallback so the user sees why editing is blocked. Both
+        # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
+        # PATCH validation stay in lockstep. Super users are NOT exempt from these locks (OPS-2280);
+        # budget team bypasses because they write directly.
+        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        # Block edits after pre-award is fully approved (DD approved + requisition submitted).
+        # Exceptions:
+        #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
+        #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
+        #     the award workflow (COR assigns CLINs before submitting for award approval)
+        if not is_budget_team(current_user):
+            # Use the raw request JSON to determine what the caller actually sent.
+            # updated_fields contains Marshmallow load_default values for all schema fields
+            # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
+            # so it cannot reliably tell us which fields the caller intended to change.
+            request_obj = updated_fields.get("request")
+            edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
+            clin_only_edit = edit_keys <= {"clin_id"}
+            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
+                raise ValidationError(
+                    {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
+                )
 
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
@@ -1198,8 +1214,8 @@ def get_is_editable_meta_data(serialized_bli):
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
     is_super = is_super_user(current_user, current_app)
     # Eager-load the agreement's procurement trackers and their steps so the editability
-    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
-    # walks tracker.steps) don't trigger per-attribute lazy-loads. Mirrors get_list and
+    # checks (is_pre_award_in_review and is_post_pre_award_locked walk tracker.steps) don't
+    # trigger per-attribute lazy-loads. Mirrors get_list and
     # get_bli_is_editable_meta_data_for_agreements.
     budget_line_item = current_app.db_session.get(
         BudgetLineItem,
@@ -1234,8 +1250,8 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
     bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
 
     # Eager-load the agreement's procurement_trackers (and their steps) so the editability
-    # checks (is_agreement_in_pre_award_or_later walks the trackers; is_pre_award_in_review
-    # walks tracker.steps) do not lazy-load per BLI (consistent with get_list).
+    # checks (is_pre_award_in_review and is_post_pre_award_locked walk tracker.steps) do not
+    # lazy-load per BLI (consistent with get_list).
     budget_line_items = (
         current_app.db_session.query(BudgetLineItem)
         .filter(BudgetLineItem.id.in_(bli_ids))
