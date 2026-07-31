@@ -6,7 +6,8 @@ Deletion eligibility now mirrors editability:
     intact until the request is approved,
   - approving a deletion request deletes the BLI and records a "Budget Line Deleted" history entry,
   - rejecting it leaves the BLI intact,
-  - deletion is blocked once the agreement reaches Pre-Award (procurement tracker step >= 5).
+  - deletion is blocked once Pre-Award is fully approved (OPS-2280 post-pre-award lock), since
+    deletability mirrors editability.
 
 The CR is a normal BUDGET_LINE_ITEM_CHANGE_REQUEST carrying a ``{"delete": true}`` sentinel, so it
 keeps marking the BLI ``in_review`` and reuses the existing review/approval/notification plumbing.
@@ -33,7 +34,9 @@ from models import (
     ContractBudgetLineItem,
     ContractType,
     DefaultProcurementTracker,
+    DefaultProcurementTrackerStep,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
     ServicesComponent,
 )
 
@@ -101,30 +104,50 @@ def _cleanup_bli(loaded_db, bli_id, sc):
 
 
 @pytest.fixture()
-def make_tracker_at_step(loaded_db):
-    """Factory that attaches an ACTIVE procurement tracker at a given step to an agreement.
+def make_pre_award(loaded_db):
+    """Factory that attaches an ACTIVE procurement tracker with a fully-approved PRE_AWARD step
+    (DD approved + requisition approved) to an agreement — i.e. ``is_post_pre_award_locked`` is True.
 
-    ProcurementTracker is a versioned model (sqlalchemy-continuum); ORM-deleting it in teardown
-    races the version bookkeeping, so we clean up with raw SQL."""
-    created_ids = []
+    ``loaded_db``'s SAVEPOINT rollback would discard these rows on its own, but the sibling
+    ``deletable_agreement`` fixture ORM-deletes its agreement in teardown, which FK-fails if the
+    tracker still references it. So we must remove the tracker/step first. ProcurementTracker/Step
+    are versioned (sqlalchemy-continuum); ORM-deleting them races the version bookkeeping, so we use
+    raw SQL. The step row is deleted before the tracker row to respect the FK; this teardown runs
+    before the agreement teardown because this fixture is requested after the BLI fixture (fixtures
+    finalize in reverse)."""
+    created_tracker_ids = []
+    created_step_ids = []
 
-    def _make(agreement_id, step_number):
+    def _make(agreement_id):
         # DefaultProcurementTracker (not the now-abstract ProcurementTracker base); its
         # polymorphic identity sets tracker_type=DEFAULT automatically.
         tracker = DefaultProcurementTracker(
             agreement_id=agreement_id,
             status=ProcurementTrackerStatus.ACTIVE,
-            active_step_number=step_number,
         )
         loaded_db.add(tracker)
+        loaded_db.flush()
+
+        step = DefaultProcurementTrackerStep(
+            procurement_tracker_id=tracker.id,
+            step_number=5,
+            step_type=ProcurementTrackerStepType.PRE_AWARD,
+            pre_award_approval_requested=True,
+            pre_award_approval_status="APPROVED",
+            pre_award_requisition_approved_by=SYSTEM_OWNER_USER_ID,
+        )
+        loaded_db.add(step)
         loaded_db.commit()
-        created_ids.append(tracker.id)
+        created_tracker_ids.append(tracker.id)
+        created_step_ids.append(step.id)
         return tracker
 
     yield _make
 
     loaded_db.rollback()
-    for tracker_id in created_ids:
+    for step_id in created_step_ids:
+        loaded_db.execute(text("DELETE FROM procurement_tracker_step WHERE id = :id"), {"id": step_id})
+    for tracker_id in created_tracker_ids:
         loaded_db.execute(text("DELETE FROM default_procurement_tracker WHERE id = :id"), {"id": tracker_id})
         loaded_db.execute(text("DELETE FROM procurement_tracker WHERE id = :id"), {"id": tracker_id})
     loaded_db.commit()
@@ -198,12 +221,13 @@ def test_super_user_delete_bypasses_change_request(
 
 
 def test_delete_executing_bli_blocked_at_pre_award(
-    budget_team_auth_client, loaded_db, deletable_agreement, test_can, make_tracker_at_step, app_ctx
+    budget_team_auth_client, loaded_db, deletable_agreement, test_can, make_pre_award, app_ctx
 ):
-    """Once the agreement reaches Pre-Award (step 5), an executing BLI can't be deleted."""
+    """Once Pre-Award is fully approved (post-pre-award lock), an executing BLI can't be deleted —
+    deletability mirrors editability (OPS-2280)."""
     bli, sc = _make_bli(loaded_db, deletable_agreement, test_can, BudgetLineItemStatus.IN_EXECUTION)
     bli_id = bli.id
-    make_tracker_at_step(deletable_agreement.id, 5)
+    make_pre_award(deletable_agreement.id)
     try:
         response = budget_team_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
         assert response.status_code == 400
@@ -231,6 +255,9 @@ def test_delete_bli_blocked_when_already_in_review(
     try:
         response = budget_team_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
         assert response.status_code == 400
+        # An in-review BLI is not editable, so the shared deletability gate rejects it — assert the
+        # specific message so this doesn't silently pass on an unrelated 400.
+        assert "not in a deletable state" in str(response.json)
         assert loaded_db.get(ContractBudgetLineItem, bli_id) is not None
     finally:
         _cleanup_bli(loaded_db, bli_id, sc)

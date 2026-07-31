@@ -20,11 +20,11 @@ Feature: Edit Executing Budget Line Item
     When I submit the budget line item
     Then I should get a message that it was sent to approval
 
-  Scenario: Editing is blocked once the agreement reaches Pre-Award
+  Scenario: Editing is blocked once Pre-Award Approval is complete
     Given I am logged in as an OPS user
     And I have a Contract Agreement as the Project Officer
     And I have a budget line item in Executing status
-    And the agreement has reached Pre-Award
+    And the agreement Pre-Award Approval is complete
     And I edit the budget line item description
     When I submit the budget line item
     Then I should get a validation error

@@ -16,10 +16,14 @@ from models import (
     ContractBudgetLineItem,
     ContractType,
     DefaultProcurementTracker,
+    DefaultProcurementTrackerStep,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
     ServicesComponent,
 )
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
+
+SYSTEM_OWNER_USER_ID = 503
 
 
 @pytest.fixture
@@ -57,7 +61,7 @@ def test_edit_executing_non_budget_direct(): ...
 def test_edit_executing_budget_routed_to_cr(): ...
 
 
-@scenario("edit_executing_budget_line.feature", "Editing is blocked once the agreement reaches Pre-Award")
+@scenario("edit_executing_budget_line.feature", "Editing is blocked once Pre-Award Approval is complete")
 def test_edit_executing_blocked_pre_award(): ...
 
 
@@ -130,23 +134,37 @@ def executing_bli(loaded_db, agreement, test_user, test_can):
     loaded_db.commit()
 
 
-@given("the agreement has reached Pre-Award")
-def agreement_at_pre_award(loaded_db, agreement, bli):
+@given("the agreement Pre-Award Approval is complete")
+def agreement_pre_award_complete(loaded_db, agreement, bli):
+    # A fully-approved PRE_AWARD step (DD approved + requisition approved) puts the agreement in the
+    # post-pre-award locked state (OPS-2280) — editing is permanently blocked from this point on.
     # DefaultProcurementTracker (not the now-abstract ProcurementTracker base); its polymorphic
     # identity sets tracker_type=DEFAULT automatically.
     tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
         status=ProcurementTrackerStatus.ACTIVE,
-        active_step_number=5,
     )
     loaded_db.add(tracker)
+    loaded_db.flush()
+    step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=5,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=SYSTEM_OWNER_USER_ID,
+    )
+    loaded_db.add(step)
     loaded_db.commit()
     tracker_id = tracker.id
+    step_id = step.id
 
     yield
 
-    # ProcurementTracker is versioned; clean up with raw SQL to avoid continuum StaleDataError.
+    # ProcurementTracker/Step are versioned; clean up with raw SQL to avoid continuum StaleDataError.
+    # Delete the step before the tracker to respect the FK.
     loaded_db.rollback()
+    loaded_db.execute(text("DELETE FROM procurement_tracker_step WHERE id = :id"), {"id": step_id})
     loaded_db.execute(text("DELETE FROM default_procurement_tracker WHERE id = :id"), {"id": tracker_id})
     loaded_db.execute(text("DELETE FROM procurement_tracker WHERE id = :id"), {"id": tracker_id})
     loaded_db.commit()

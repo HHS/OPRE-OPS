@@ -27,11 +27,11 @@ Feature: Delete a Budget Line Item as a Change Request
     Then the deletion should be sent to approval
     And the budget line item should still exist
 
-  Scenario: Deletion is blocked once the agreement reaches Pre-Award
+  Scenario: Deletion is blocked once Pre-Award Approval is complete
     Given I am logged in as an OPS user
     And I have a Contract Agreement as the Project Officer
     And I have a budget line item in Executing status
-    And the agreement has reached Pre-Award
+    And the agreement Pre-Award Approval is complete
     When I delete the budget line item
     Then I should get a validation error
 

@@ -89,11 +89,14 @@ EDITABLE_STATUSES = [
 ]
 
 
-def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
-    """Single source of truth for BLI editability rules (no DB queries).
+def compute_bli_editable_status_only(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Lock-free editability core: status + in-review + OBE only (no DB queries).
 
-    Both ``is_bli_editable`` (single-item, DB-backed) and the list-meta builder
-    (pre-computed values) delegate here so the rules cannot drift apart.
+    This is the base editability rule shared by the meta builder and the update write path.
+    It deliberately does NOT apply the pre-award / post-pre-award locks (OPS-2280): those locks
+    carry per-caller exceptions (Budget Team bypass, clin_id-only edits) that the write path
+    handles explicitly, so re-applying them here would double-block those exception cases. The
+    lock-aware view for the pen/trash meta is ``compute_bli_editable`` below.
     """
     if budget_line_item is None:
         return False
@@ -107,20 +110,34 @@ def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> b
     if not is_super and budget_line_item.is_obe:
         editable = False
 
-    # Pre-award / post-pre-award locks (OPS-2280). These mirror the write-path guards in the update
-    # service (_validation) so the editability meta and the PATCH validation stay in lockstep — the
-    # pen icon must not be clickable when the edit would be rejected. Super users are NOT exempt from
-    # these locks (OPS-2280). Editing is allowed DURING pre-award steps; it is blocked only while a
-    # pre-award approval request is awaiting a decision, and permanently once pre-award is fully
-    # approved. (The write path additionally allows clin_id-only edits after the post-pre-award lock;
-    # that is a per-request nuance the meta can't express, so the pen shows as locked here.)
+    return editable
+
+
+def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Single source of truth for the editability META (no DB queries).
+
+    The list-meta builder and single-item GET meta delegate here so the pen-icon state cannot
+    drift from the write-path rules. It layers the pre-award / post-pre-award locks (OPS-2280) on
+    top of ``compute_bli_editable_status_only``.
+
+    These locks mirror the write-path guards in the update service (_validation) so the editability
+    meta and the PATCH validation stay in lockstep — the pen icon must not be clickable when the
+    edit would be rejected. Super users are NOT exempt from these locks (OPS-2280). Editing is
+    allowed DURING pre-award steps; it is blocked only while a pre-award approval request is
+    awaiting a decision, and permanently once pre-award is fully approved. (The write path
+    additionally allows Budget Team edits and clin_id-only edits after the locks; those are
+    per-caller/per-request nuances the meta can't express, so the pen shows as locked here.)
+    """
+    if not compute_bli_editable_status_only(budget_line_item, in_review, is_super):
+        return False
+
     if is_pre_award_in_review(budget_line_item.agreement):
-        editable = False
+        return False
 
     if is_post_pre_award_locked(budget_line_item.agreement):
-        editable = False
+        return False
 
-    return editable
+    return True
 
 
 def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) -> str | None:
@@ -144,10 +161,13 @@ def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) ->
 def compute_bli_is_deletable(budget_line_item, in_review: bool, is_super: bool) -> bool:
     """Single source of truth for whether the delete control should be enabled.
 
-    A BLI is deletable whenever it is editable (DRAFT/PLANNED/IN_EXECUTION, not in review, not
-    OBE, agreement not at Pre-Award/Award), or the user is a super user. DRAFT deletes
-    immediately; PLANNED/IN_EXECUTION deletions route through an approval change request (handled
-    in the service). The delete control is therefore enabled in exactly the same cases as edit.
+    Mirrors editability exactly (delegates to ``compute_bli_editable``): a BLI is deletable when it
+    has an editable status (DRAFT/PLANNED/IN_EXECUTION), is not in review, is not OBE (unless super),
+    and its agreement's Pre-Award approval is neither in review nor fully completed. DRAFT deletes
+    immediately; PLANNED/IN_EXECUTION deletions route through an approval change request (handled in
+    the service). Note the service's ``delete`` additionally hard-deletes DRAFT lines and super-user
+    deletes ahead of this gate, so those bypass the locks even though this meta reports the control
+    as disabled — the conservative (locked-looking) direction, never clickable-then-erroring.
     """
     if budget_line_item is None:
         return False
@@ -155,8 +175,15 @@ def compute_bli_is_deletable(budget_line_item, in_review: bool, is_super: bool) 
 
 
 def is_bli_editable(budget_line_item):
-    """A utility function that determines if a BLI is editable"""
-    return compute_bli_editable(
+    """A utility function that determines if a BLI has an editable status (lock-free).
+
+    Used by the update write path (``_validation``) as the generic fallback AFTER it has already
+    applied the pre-award / post-pre-award locks with their per-caller exceptions (Budget Team
+    bypass, clin_id-only edits). It therefore intentionally uses the lock-free core so it does not
+    re-block those exception cases. The lock-aware editability used for the pen/trash meta is
+    ``compute_bli_editable``.
+    """
+    return compute_bli_editable_status_only(
         budget_line_item,
         in_review=budget_line_item.in_review,
         is_super=is_super_user(current_user, current_app),
