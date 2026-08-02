@@ -81,7 +81,7 @@
         "sass-loader": "17.0.0",
         "semantic-release": "25.0.8",
         "esbuild": "0.28.1",
-        "vite": "8.1.5",
+        "vite": "8.2.0",
         "vite-plugin-eslint": "1.8.1",
         "vite-plugin-svgr": "5.2.0",
         "vitest": "4.1.10",

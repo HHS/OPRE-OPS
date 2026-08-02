@@ -14,7 +14,7 @@ repos:
         args: [--maxkb=1000]
       - id: check-merge-conflict
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.14.0
+    rev: v2.15.0
     hooks:
       - id: hadolint
   - repo: https://github.com/pycqa/isort
