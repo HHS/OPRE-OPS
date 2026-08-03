@@ -1,7 +1,7 @@
 ---
 name: update-story
 description: Update the current story's acceptance criteria checkboxes based on recent git history, then sync the updated body back to the linked GitHub issue. Use when the user says "update story", "mark AC done", "sync story", or "update the issue".
-allowed-tools: Read, Bash
+allowed-tools: Read, Bash, Skill
 ---
 
 # Update Story
@@ -29,6 +29,8 @@ If no file matches, list all story files and ask the user which one applies:
 ```bash
 ls .claude/stories/
 ```
+
+If `.claude/stories/` is empty or doesn't exist, ask: "No story file found for this branch. Would you like to create one now?" If yes, invoke the `/init-story` skill and stop — `/update-story` will be runnable once the story file exists.
 
 Read the story file in full before proceeding.
 
