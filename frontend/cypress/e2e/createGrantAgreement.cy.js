@@ -15,6 +15,9 @@ afterEach(() => {
 it("can create a Grant agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
+    // Breadcrumb should read Home > Agreements > Create New Agreement
+    cy.get(".usa-breadcrumb").should("contain", "Agreements").and("contain", "Create New Agreement");
+
     // Step One - Select a Project
     cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
@@ -39,13 +42,6 @@ it("can create a Grant agreement", () => {
     // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
     cy.get("#project-officer-combobox-input").should("exist");
 
-    // Grant Details fields should be visible
-    cy.get("#nofo_number").should("exist");
-    cy.get("#funding_period_months").should("exist");
-    cy.get("#aln_number").should("exist");
-    // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
-    cy.get("#project-officer-combobox-input").should("exist");
-
     // Continue button should exist but stay disabled for grants until NOFO Number is present
     cy.get("[data-cy='continue-btn']").should("exist").and("be.disabled");
 
@@ -57,13 +53,7 @@ it("can create a Grant agreement", () => {
     cy.get("#nickname").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-
-    // NOFO Number is now required to enable Save Draft
-    cy.get("#nofo_number").type("NOFO-2026-01");
-
-    // Optionally fill the remaining Grant Details fields
-    cy.get("#funding_period_months").type("18");
-    cy.get("#aln_number").type("93.600");
+    cy.get("[data-cy='continue-btn']").should("be.disabled");
 
     // NOFO Number is now required to enable Save Draft and Continue
     cy.get("#nofo_number").type("NOFO-2026-01");
@@ -81,6 +71,14 @@ it("can create a Grant agreement", () => {
 
     // Continue to Step 3 - Grant Numbers
     cy.get("[data-cy='continue-btn']").click();
+
+    // Step 3 is labeled "Budget Lines" (not "Services Components & Budget Lines")
+    cy.get(".usa-step-indicator").should("contain", "Budget Lines").and("not.contain", "Services Components");
+
+    // Grant Numbers instruction text matches the design
+    cy.contains("Create the structure of the agreement using Grant Numbers to describe the grants within it.").should(
+        "exist"
+    );
 
     // Services Component controls should not render for grants
     cy.get("#servicesComponentSelect").should("not.exist");
@@ -127,8 +125,20 @@ it("can create a Grant agreement", () => {
     cy.get("[data-cy='Grant 2-grant-number-item-title']").should("not.exist");
     cy.get("[data-cy='Grant 1-grant-number-item-title']").should("exist");
 
-    // Budget Lines section should show the grant-specific empty state (BLIs are #5928)
-    cy.get("p").should("contain", "You have not added any Budget Lines yet.");
+    // Budget Lines section now renders the grant-number-driven form (#5928).
+    // The Grant Number select is the grant analog of the Services Component select.
+    cy.get("#allGrantNumberSelect").should("exist");
+
+    // Add a budget line associated with Grant 1
+    cy.get("#allGrantNumberSelect").select("1");
+    cy.get("#need-by-date").type("01/01/2044");
+    cy.get("#can-combobox-input").should("not.be.disabled");
+    cy.get("#can-combobox-input").type("G994426{enter}");
+    cy.get("#enteredAmount").type("500000");
+    cy.get("#add-budget-line").click();
+
+    // The new budget line groups under the "Grant 1" accordion
+    cy.get(".usa-accordion__heading").should("contain", "Grant 1");
 
     // Create the agreement
     cy.get("[data-cy='continue-btn']").click();
@@ -137,6 +147,13 @@ it("can create a Grant agreement", () => {
         expect(statusCode).to.equal(201);
         expect(interception.request.body.grant_numbers).to.have.length(1);
         expect(interception.request.body.grant_numbers[0]).to.include({ number: 1 });
+
+        // The budget line links to the not-yet-persisted Grant 1 via grant_number_ref
+        expect(interception.request.body.budget_line_items).to.have.length(1);
+        expect(interception.request.body.budget_line_items[0]).to.have.property("grant_number_ref");
+        expect(interception.request.body.budget_line_items[0].grant_number_ref).to.eq(
+            interception.request.body.grant_numbers[0].ref
+        );
 
         const agreementId = body.id;
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;

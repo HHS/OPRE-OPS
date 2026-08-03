@@ -3,7 +3,7 @@ import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import { BUDGET_LINE_TABLE_HEADERS, GRANT_BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
 
 /**
@@ -18,6 +18,7 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
+ * @param {Boolean} [props.isGrant] - A flag to indicate grant budget lines, which omit the Fee and Total columns (grants have no procurement shop).
  * @returns {React.ReactElement} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -29,7 +30,8 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     isAgreementAwarded = false,
     budgetLineIdsInReview = [],
-    isEditable = false
+    isEditable = false,
+    isGrant = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -52,7 +54,7 @@ const BudgetLinesTable = ({
     );
     return (
         <Table
-            tableHeadings={BUDGET_LINE_TABLE_HEADERS}
+            tableHeadings={isGrant ? GRANT_BUDGET_LINE_TABLE_HEADERS : BUDGET_LINE_TABLE_HEADERS}
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
             sortDescending={sortDescending}
@@ -69,6 +71,7 @@ const BudgetLinesTable = ({
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                     isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
+                    isGrant={isGrant}
                 />
             ))}
         </Table>

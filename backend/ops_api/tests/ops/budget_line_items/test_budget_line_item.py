@@ -3309,8 +3309,8 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
     assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
 
 
-def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
-    """Test that BLI can be updated when pre-award is fully approved (including requisition)"""
+def test_cannot_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award is fully approved — the lock applies to all users (OPS-2280)"""
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15004)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
@@ -3341,19 +3341,17 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
     bli.status = BudgetLineItemStatus.PLANNED
     loaded_db.commit()
 
-    original_amount = bli.amount
-
     # Attempt to update the BLI
     data = {"amount": 555555.55}
     url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
-    # Should succeed (200 if DRAFT, 202 if change request created)
-    assert response.status_code in [200, 202]
-    loaded_db.refresh(bli)
-    if response.status_code == 200:
-        assert bli.amount != original_amount
+    # After full pre-award approval all users are blocked (OPS-2280).
+    # Note: auth_client is user 503 (SYSTEM_OWNER), not SUPER_USER — is_super_user() checks
+    # for the SUPER_USER role specifically, so SYSTEM_OWNER is not exempt from the lock.
+    assert response.status_code == 400
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
 
 
 # ---------------------------------------------------------------------------

@@ -14,7 +14,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-frontend.sarif') != ''
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-frontend.sarif
           category: snyk-frontend
@@ -79,7 +79,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-api.sarif') != ''
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-backend-api.sarif
           category: snyk-backend-api
@@ -135,7 +135,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-data-tools.sarif') != ''
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-backend-data-tools.sarif
           category: snyk-backend-data-tools

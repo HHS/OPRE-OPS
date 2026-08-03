@@ -213,6 +213,8 @@ class AgreementResponse(FyObligatedMixin, AgreementData):
     division_directors = fields.List(fields.String(), required=True)
     team_leaders = fields.List(fields.String(), required=True)
     in_review = fields.Bool(required=True)
+    is_award_approval_requested = fields.Bool(load_default=False, dump_default=False, required=False)
+    is_post_pre_award_locked = fields.Bool(load_default=False, dump_default=False, required=False)
     change_requests_in_review = fields.Nested(
         AgreementChangeRequestResponseSchema,
         many=True,

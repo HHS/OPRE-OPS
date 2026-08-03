@@ -3088,6 +3088,12 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: exclude_system_admin
+          in: query
+          description: Exclude the System Admin ETL user from results
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -7380,6 +7386,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7468,6 +7478,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7700,6 +7714,10 @@ components:
           example: 1
         services_component_id:
           type: integer
+          example: 1
+        grant_number_id:
+          type: integer
+          nullable: true
           example: 1
         requestor_notes:
           description: optional notes added to a Change Request when a POST is made that creates a CR
@@ -9463,6 +9481,12 @@ components:
                 type: string
             in_review:
               type: boolean
+            is_award_approval_requested:
+              type: boolean
+              description: Whether the agreement has a pending award approval request (step 6)
+            is_post_pre_award_locked:
+              type: boolean
+              description: Whether BLI editing is permanently locked after full pre-award approval
             authorized_user_ids:
               type: array
               items:
@@ -9680,6 +9704,11 @@ components:
             funding_period_months:
               type: integer
               nullable: true
+            grant_numbers:
+              type: array
+              description: Grant numbers associated with this agreement. Grant-only.
+              items:
+                $ref: "#/components/schemas/GrantNumber"
 
     DirectAgreementResponse:
       allOf:
@@ -9907,6 +9936,19 @@ components:
             Matches the 'ref' field in the services_components array.
             If the services component has no 'ref', use its array index as a string ("0", "1", etc.).
             Cannot be used with services_component_id.
+          nullable: true
+        grant_number_id:
+          type: integer
+          description: |
+            Reference to an existing grant number by database ID (grant budget line items).
+            Cannot be used with grant_number_ref, or with any services component link.
+          nullable: true
+        grant_number_ref:
+          type: string
+          description: |
+            Reference to a grant number being created in the same request.
+            Matches the 'ref' field in the grant_numbers array.
+            Cannot be used with grant_number_id, or with any services component link.
           nullable: true
         comments:
           type: string

@@ -165,20 +165,60 @@ def is_award_approval_requested(agreement) -> bool:
     if not agreement or not agreement.procurement_trackers:
         return False
 
+    # Check every tracker for a pending AWARD step. The tracker status is intentionally
+    # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
+    # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
+    for tracker in agreement.procurement_trackers:
+        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        if not award_step or not award_step.award_approval_requested:
+            continue
+
+        # Terminal states — approval process complete
+        if award_step.award_approval_status in ("APPROVED", "DECLINED"):
+            continue
+
+        return True
+
+    return False
+
+
+def is_post_pre_award_locked(agreement) -> bool:
+    """
+    Check if the agreement is in the post-pre-award locked state.
+
+    Returns True once pre-award has been fully approved (DD approved + Budget Team
+    submitted requisition). BLI editing is locked from this point on permanently.
+
+    Exceptions (handled by callers):
+    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is fully approved and BLIs should be locked.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    # Scope to the active tracker only — consistent with is_pre_award_in_review and
+    # is_award_approval_requested, and prevents a completed tracker from a prior
+    # procurement cycle permanently locking BLIs on a new active cycle.
     tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
     if not tracker:
         return False
 
-    award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
-
-    if not award_step or not award_step.award_approval_requested:
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
+    if not pre_award_step:
         return False
 
-    # Terminal states — approval process complete
-    if award_step.award_approval_status in ("APPROVED", "DECLINED"):
-        return False
-
-    return True
+    return (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    )
 
 
 def bli_associated_with_agreement(id: int) -> bool:
