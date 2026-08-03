@@ -65,51 +65,101 @@ const StepNotesEditor = ({
     const canReturnToReadMode = hasSavedNote || startInReadMode;
     const [isEditingNotes, setIsEditingNotes] = React.useState(!canReturnToReadMode);
 
+    // Leaving edit mode (Save or Cancel) unmounts the focused Save Notes/Cancel
+    // button; without this the browser resets focus to <body> (WCAG 2.4.3/2.4.7).
+    // Flag the return-to-read transition and move focus onto the Edit Notes button
+    // once it renders. Guarded by the ref so the initial read-mode mount doesn't
+    // steal focus.
+    const editNotesRef = React.useRef(null);
+    const shouldRestoreFocusRef = React.useRef(false);
+    React.useEffect(() => {
+        if (!isEditingNotes && shouldRestoreFocusRef.current) {
+            shouldRestoreFocusRef.current = false;
+            editNotesRef.current?.focus();
+        }
+    }, [isEditingNotes]);
+
+    /** Return to read mode after Save/Cancel, restoring focus to Edit Notes. */
+    const returnToReadMode = () => {
+        shouldRestoreFocusRef.current = true;
+        setIsEditingNotes(false);
+    };
+
+    // Screen-reader announcement for a completed save. The visual edit→read flip
+    // is the only save-completion cue for sighted users; assistive tech gets this
+    // aria-live region instead (it replaces the removed "Notes Saved" success
+    // alert). The region is rendered persistently below so its text change is
+    // announced; entering edit mode clears it so a repeat save re-announces.
+    const [saveAnnouncement, setSaveAnnouncement] = React.useState("");
+
+    /** Enter edit mode, clearing any prior save announcement. */
+    const enterEditMode = () => {
+        setSaveAnnouncement("");
+        setIsEditingNotes(true);
+    };
+
+    // A persistent visually-hidden live region so the save announcement is spoken
+    // even as the editor swaps between the edit (<div>) and read (<dl>) subtrees.
+    const liveRegion = (
+        <span
+            className="usa-sr-only"
+            role="status"
+            aria-live="polite"
+            data-cy="notes-save-announcement"
+        >
+            {saveAnnouncement}
+        </span>
+    );
+
     if (isEditingNotes) {
         return (
-            <div className="display-table">
-                <TextArea
-                    name={textAreaName}
-                    label="Notes (optional)"
-                    className="margin-top-2"
-                    maxLength={STEP_NOTES_MAX_LENGTH}
-                    value={notes}
-                    onChange={/** @param {any} _ @param {any} value */ (_, value) => setNotes(value)}
-                    textAreaStyle={STEP_NOTES_TEXTAREA_STYLE}
-                    isDisabled={isDisabled}
-                />
-                {/* margin-top-neg-205 (-1.25rem) lifts the button row up onto the
+            <>
+                {liveRegion}
+                <div className="display-table">
+                    <TextArea
+                        name={textAreaName}
+                        label="Notes (optional)"
+                        className="margin-top-2"
+                        maxLength={STEP_NOTES_MAX_LENGTH}
+                        value={notes}
+                        onChange={/** @param {any} _ @param {any} value */ (_, value) => setNotes(value)}
+                        textAreaStyle={STEP_NOTES_TEXTAREA_STYLE}
+                        isDisabled={isDisabled}
+                    />
+                    {/* margin-top-neg-205 (-1.25rem) lifts the button row up onto the
                     character-count ("N left") line so the gap above the buttons matches
                     the gap the "remaining characters" hint has from the textarea,
                     rather than sitting a full row lower. */}
-                <div className="display-flex flex-justify-end margin-top-neg-205">
-                    {canReturnToReadMode && (
-                        <button
-                            type="button"
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-edit-notes-button"
-                            onClick={() => {
-                                resetNotes(savedNotes ?? "");
-                                setIsEditingNotes(false);
+                    <div className="display-flex flex-justify-end margin-top-neg-205">
+                        {canReturnToReadMode && (
+                            <button
+                                type="button"
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-edit-notes-button"
+                                onClick={() => {
+                                    resetNotes(savedNotes ?? "");
+                                    returnToReadMode();
+                                }}
+                                disabled={isDisabled}
+                            >
+                                Cancel
+                            </button>
+                        )}
+                        <SaveNotesButton
+                            onClick={async () => {
+                                const didSave = await onSave(stepId);
+                                if (didSave) {
+                                    setSaveAnnouncement("Notes saved.");
+                                    returnToReadMode();
+                                }
                             }}
-                            disabled={isDisabled}
-                        >
-                            Cancel
-                        </button>
-                    )}
-                    <SaveNotesButton
-                        onClick={async () => {
-                            const didSave = await onSave(stepId);
-                            if (didSave) {
-                                setIsEditingNotes(false);
-                            }
-                        }}
-                        // Disable Save only for a first-time, empty entry. Once a note
-                        // has been saved the user may clear it and save the empty value.
-                        isDisabled={isDisabled || (!hasSavedNote && !notes.trim())}
-                    />
+                            // Disable Save only for a first-time, empty entry. Once a note
+                            // has been saved the user may clear it and save the empty value.
+                            isDisabled={isDisabled || (!hasSavedNote && !notes.trim())}
+                        />
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -127,30 +177,34 @@ const StepNotesEditor = ({
     // live inside the <dd> (flow content) so the button stays a valid <dl>
     // descendant; the block note text pushes the button onto its own line below.
     return (
-        <dl>
-            <dt className="margin-0 text-base-dark margin-top-3">Notes</dt>
-            <dd className="margin-0 margin-top-1">
-                <div
-                    className="wrap-text"
-                    style={{ maxWidth: STEP_NOTES_WIDTH }}
-                >
-                    {displayedNotes || "None"}
-                </div>
-                <button
-                    type="button"
-                    className="usa-button usa-button--unstyled margin-top-1"
-                    data-cy="edit-notes-button"
-                    onClick={() => setIsEditingNotes(true)}
-                    disabled={isDisabled}
-                >
-                    <FontAwesomeIcon
-                        icon={faPen}
-                        aria-hidden="true"
-                    />
-                    Edit Notes
-                </button>
-            </dd>
-        </dl>
+        <>
+            {liveRegion}
+            <dl>
+                <dt className="margin-0 text-base-dark margin-top-3">Notes</dt>
+                <dd className="margin-0 margin-top-1">
+                    <div
+                        className="wrap-text"
+                        style={{ maxWidth: STEP_NOTES_WIDTH }}
+                    >
+                        {displayedNotes || "None"}
+                    </div>
+                    <button
+                        ref={editNotesRef}
+                        type="button"
+                        className="usa-button usa-button--unstyled margin-top-1"
+                        data-cy="edit-notes-button"
+                        onClick={enterEditMode}
+                        disabled={isDisabled}
+                    >
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            aria-hidden="true"
+                        />
+                        Edit Notes
+                    </button>
+                </dd>
+            </dl>
+        </>
     );
 };
 

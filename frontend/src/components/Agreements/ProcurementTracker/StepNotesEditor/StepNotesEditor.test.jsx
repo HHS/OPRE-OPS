@@ -178,6 +178,77 @@ describe("StepNotesEditor", () => {
         expect(editNotesBtn()).not.toBeInTheDocument();
     });
 
+    it("restores focus to the Edit Notes button after a successful save (no drop to body)", async () => {
+        // Bug 2: leaving edit mode unmounts the focused Save Notes button; focus
+        // must land on Edit Notes rather than resetting to <body> (WCAG 2.4.3/2.4.7).
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "A note", savedNotes: "Existing notes" });
+
+        fireEvent.click(editNotesBtn());
+        saveNotesBtn().focus();
+        fireEvent.click(saveNotesBtn());
+
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+        expect(editNotesBtn()).toHaveFocus();
+    });
+
+    it("restores focus to the Edit Notes button after Cancel", () => {
+        renderEditor({ savedNotes: "Original notes" });
+
+        fireEvent.click(editNotesBtn());
+        cancelBtn().focus();
+        fireEvent.click(cancelBtn());
+
+        expect(editNotesBtn()).toHaveFocus();
+    });
+
+    it("does not steal focus on the initial read-mode mount", () => {
+        renderEditor({ notes: "Saved", savedNotes: "Saved", startInReadMode: true });
+
+        // Nothing was interacted with; focus must not have jumped to Edit Notes.
+        expect(editNotesBtn()).not.toHaveFocus();
+    });
+
+    it("announces the save to assistive tech via an aria-live region after a successful save", async () => {
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "A note", savedNotes: "Existing notes" });
+
+        const announcement = screen.getByRole("status");
+        // No premature announcement before the save.
+        expect(announcement).toHaveTextContent("");
+        expect(announcement).toHaveAttribute("aria-live", "polite");
+
+        fireEvent.click(editNotesBtn());
+        fireEvent.click(saveNotesBtn());
+
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+        expect(screen.getByRole("status")).toHaveTextContent("Notes saved.");
+    });
+
+    it("clears the save announcement when re-entering edit mode so a repeat save re-announces", async () => {
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "A note", savedNotes: "Existing notes" });
+
+        fireEvent.click(editNotesBtn());
+        fireEvent.click(saveNotesBtn());
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+        expect(screen.getByRole("status")).toHaveTextContent("Notes saved.");
+
+        // Re-entering edit mode clears the region so the next save is announced anew.
+        fireEvent.click(editNotesBtn());
+        expect(screen.getByRole("status")).toHaveTextContent("");
+    });
+
+    it("does not announce a save when the save fails", async () => {
+        const onSave = vi.fn().mockResolvedValue(false);
+        renderEditor({ onSave, notes: "A note", savedNotes: "" });
+
+        fireEvent.click(saveNotesBtn());
+
+        await waitFor(() => expect(onSave).toHaveBeenCalled());
+        expect(screen.getByRole("status")).toHaveTextContent("");
+    });
+
     it("uses a custom textarea name when provided", () => {
         renderEditor({ textAreaName: "notes-step-6", notes: "", savedNotes: "" });
 

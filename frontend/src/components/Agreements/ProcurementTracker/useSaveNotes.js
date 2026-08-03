@@ -23,6 +23,11 @@ import React from "react";
 export default function useSaveNotes(patchStep, serverNotes, setAlert) {
     const [notes, setNotesState] = React.useState(serverNotes ?? "");
     const isDirtyRef = React.useRef(false);
+    // Mirrors the latest `notes` value so `handleSaveNotes` can read the value at
+    // the moment its await resolves rather than the value captured in its closure
+    // (the handler is recreated each render but its in-flight invocation is not).
+    const notesRef = React.useRef(notes);
+    notesRef.current = notes;
 
     // Sync from the server only while the field is clean, so a refetch after
     // saving (or an external update) does not overwrite in-progress edits.
@@ -57,28 +62,43 @@ export default function useSaveNotes(patchStep, serverNotes, setAlert) {
      * @param {number} stepId - The ID of the procurement tracker step being updated.
      * @returns {Promise<boolean>} `true` when the save succeeds, `false` when it fails.
      */
-    const handleSaveNotes = async (stepId) => {
-        try {
-            await patchStep({
-                stepId,
-                data: { notes: notes.trim() }
-            }).unwrap();
-            // The save succeeded, so the server value now matches the field.
-            // Allow future server updates to sync in again.
-            isDirtyRef.current = false;
-            // No success alert: the tracker never shows success toasts. The UI
-            // instead flips the notes field from input mode to read mode.
-            return true;
-        } catch (error) {
-            console.error("Failed to save notes", error);
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "There was an error saving the notes."
-            });
-            return false;
-        }
-    };
+    const handleSaveNotes = React.useCallback(
+        async (stepId) => {
+            // Snapshot what we're persisting before the round-trip, reading the live
+            // value from the ref so the stable callback isn't pinned to a stale
+            // `notes`. If the user types while the PATCH is in-flight, `setNotes`
+            // re-marks the field dirty; we must not clear that below or the
+            // invalidation refetch would re-flow the (now stale) server value and
+            // clobber those keystrokes.
+            const notesToSave = notesRef.current.trim();
+            try {
+                await patchStep({
+                    stepId,
+                    data: { notes: notesToSave }
+                }).unwrap();
+                // The save succeeded, so the server value now matches the field —
+                // but only if nothing new was typed during the round-trip. Read the
+                // live value from the ref (not a closed-over `notes`) and clear the
+                // dirty flag only when the field still holds exactly what we saved,
+                // so future server updates can sync in again without losing edits.
+                if (notesRef.current.trim() === notesToSave) {
+                    isDirtyRef.current = false;
+                }
+                // No success alert: the tracker never shows success toasts. The UI
+                // instead flips the notes field from input mode to read mode.
+                return true;
+            } catch (error) {
+                console.error("Failed to save notes", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "There was an error saving the notes."
+                });
+                return false;
+            }
+        },
+        [patchStep, setAlert]
+    );
 
     return { notes, setNotes, resetNotes, handleSaveNotes };
 }

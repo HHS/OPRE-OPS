@@ -154,6 +154,49 @@ describe("useSaveNotes", () => {
         expect(result.current.notes).toBe("External update");
     });
 
+    it("keeps keystrokes typed while the save is in-flight (does not clear the dirty flag)", async () => {
+        // Bug 1: user types during the in-flight PATCH, then the success path runs.
+        // The dirty flag must stay set so the invalidation refetch can't clobber
+        // the new keystrokes with the (now stale) server value.
+        let resolveSave;
+        mockUnwrap.mockReturnValue(
+            new Promise((resolve) => {
+                resolveSave = resolve;
+            })
+        );
+        const { result, rerender } = renderHook(
+            ({ serverNotes }) => useSaveNotes(mockPatchStep, serverNotes, mockSetAlert),
+            { initialProps: { serverNotes: "Original" } }
+        );
+
+        act(() => {
+            result.current.setNotes("First edit");
+        });
+
+        // Kick off the save (do not await yet — the PATCH is pending).
+        let savePromise;
+        act(() => {
+            savePromise = result.current.handleSaveNotes(1);
+        });
+
+        // User types more while the request is still in-flight.
+        act(() => {
+            result.current.setNotes("First edit + more");
+        });
+
+        // Save resolves; success path runs but must NOT clear the dirty flag.
+        await act(async () => {
+            resolveSave({ success: true });
+            await savePromise;
+        });
+
+        // Refetch flows the value that was actually persisted ("First edit").
+        rerender({ serverNotes: "First edit" });
+
+        // In-flight keystrokes survive.
+        expect(result.current.notes).toBe("First edit + more");
+    });
+
     it("resumes syncing from the server after a successful save clears the dirty flag", async () => {
         mockUnwrap.mockResolvedValue({ success: true });
         const { result, rerender } = renderHook(
