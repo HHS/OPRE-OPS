@@ -18,11 +18,15 @@ git rev-parse --abbrev-ref HEAD
 
 Branch naming convention is `OPS-NNNN/description` — the issue number is the digits after `OPS-`.
 
+If the branch name has no `OPS-NNNN` pattern, ask the developer: "I couldn't detect an issue number from the branch name. What is the GitHub issue number for this work?"
+
 Look for a story file in `.claude/stories/` whose frontmatter contains a matching `issue:` field:
 
 ```bash
 grep -rl "issue: <NUMBER>" .claude/stories/
 ```
+
+If multiple files match, list them and ask the developer which one to update.
 
 If no file matches, list all story files and ask the user which one applies:
 
@@ -42,41 +46,51 @@ Collect all commits on this branch since it diverged from main:
 git log main..HEAD --oneline
 ```
 
-Also read the full diff to understand what was actually implemented:
+Read the full diff to understand what was actually implemented — not just filenames:
 
 ```bash
-git diff main..HEAD --stat
+git diff main..HEAD
 ```
+
+For large diffs, use `git log -p main..HEAD` to get the full patch per commit.
 
 ## Step 3 — Update the AC checkboxes
 
-Compare the commits and diff against each unchecked AC item in the story file. Mark an item `[x]` only when you are confident the work is reflected in the git history — not speculatively.
+Compare the commits and full diff against each **unchecked** AC item in the story file.
 
-Leave items unchecked if:
-- The commit history doesn't clearly cover them
-- They are UX/manual validation items
-- They are "Definition of Done" items that require human confirmation (deploys, accessibility review, etc.)
+Rules:
+- **Never uncheck an item already marked `[x]`** — only evaluate currently unchecked items
+- Mark an item `[x]` only when you are confident the work is clearly reflected in the code diff — not speculatively based on commit messages alone
+- Leave items unchecked if the diff doesn't clearly cover them, they are UX/manual validation items, or they require human confirmation (deploys, accessibility review, etc.)
 
 Edit the story file to update the checkboxes. Do not change any other content.
 
 ## Step 4 — Sync to GitHub
 
-Fetch the current issue body from GitHub so you don't overwrite content added directly to the issue:
+Fetch the current issue body from GitHub:
 
 ```bash
 gh issue view <NUMBER> --json body -q .body
 ```
 
-Replace the Acceptance Criteria section in the issue body with the updated checkboxes from the story file. Preserve all other sections of the issue body unchanged.
+If this command fails, tell the developer what failed, show them the updated story file content, and ask them to paste the updated AC section into the GitHub issue manually. Stop here.
 
-Update the issue:
+Merge AC state carefully — do not treat the story file as the sole authority:
+- For each AC item, take the checkbox as checked (`[x]`) if it is checked in **either** the story file **or** the current GitHub issue body. This prevents overwriting boxes a PM or reviewer checked directly on GitHub.
+- Preserve all non-AC sections of the issue body exactly as fetched.
+
+To find the AC section boundary in the issue body, look for a heading matching `Acceptance Criteria` (any markdown heading level or bold format). Replace only the content between that heading and the next heading (or end of section). If no recognizable AC section header exists, append the updated AC at the end of the issue body rather than replacing — and tell the developer so they can reformat manually if needed.
+
+Write the updated body to a temp file and use `--body-file` to avoid shell quoting issues with special characters:
 
 ```bash
-gh issue edit <NUMBER> --body "$(cat <<'EOF'
-<updated body>
-EOF
-)"
+tmp=$(mktemp)
+printf '%s' "<updated body>" > "$tmp"
+gh issue edit <NUMBER> --body-file "$tmp"
+rm "$tmp"
 ```
+
+If this command fails, tell the developer what failed and show them the full updated body to paste manually.
 
 ## Step 5 — Report back
 
@@ -84,3 +98,4 @@ Tell the user:
 - Which AC items were newly checked off
 - Which items remain open and why
 - Confirm the GitHub issue was updated with a link: `https://github.com/HHS/OPRE-OPS/issues/<NUMBER>`
+- If any `gh` commands failed, clearly state that the GitHub sync did not complete and what to do next
