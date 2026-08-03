@@ -1,7 +1,7 @@
 ---
 name: update-story
 description: Update the current story's acceptance criteria checkboxes based on recent git history, then sync the updated body back to the linked GitHub issue. Use when the user says "update story", "mark AC done", "sync story", or "update the issue".
-allowed-tools: Read, Bash, Skill
+allowed-tools: Read, Write, Bash, Skill
 ---
 
 # Update Story

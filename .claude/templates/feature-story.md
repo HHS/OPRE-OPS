@@ -1,6 +1,6 @@
 ---
-issue: [GITHUB-ISSUE-NUMBER]
-branch: [BRANCH-NAME]
+issue: GITHUB-ISSUE-NUMBER
+branch: BRANCH-NAME
 ---
 
 # Feature Story Template
