@@ -5,11 +5,11 @@ from sqlalchemy.orm import Session
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from models import Role, User, UserStatus
+from models.users import SYSTEM_ADMIN_EMAIL
 from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_active_user_sessions
 from ops_api.ops.utils.users import is_user_admin
 
 READ_ONLY_ROLE = "READ_ONLY"
-SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
 
 
 def resolve_roles(session: Session, role_names: list[str]) -> list[Role]:
