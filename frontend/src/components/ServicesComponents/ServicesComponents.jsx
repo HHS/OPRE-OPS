@@ -45,9 +45,15 @@ const ServicesComponents = ({
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey,
-        allServicesComponentsForSuite
-    } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges, scFormSuite);
+        formKey
+    } = useServicesComponents(
+        agreementId,
+        serviceRequirementType,
+        continueBtnText,
+        setHasUnsavedChanges,
+        scFormSuite,
+        nonDraftBudgetLines
+    );
 
     return (
         <>
@@ -74,8 +80,6 @@ const ServicesComponents = ({
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
                 scFormSuite={scFormSuite}
-                allServicesComponentsForSuite={allServicesComponentsForSuite}
-                nonDraftBudgetLines={nonDraftBudgetLines}
             />
 
             <ServicesComponentsList

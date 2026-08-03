@@ -32,8 +32,6 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
- * @param {any[]} [props.allServicesComponentsForSuite] - All SCs with live form dates merged in, passed to the suite.
- * @param {any[]} [props.nonDraftBudgetLines] - Non-draft BLIs passed to the suite for PoP validation.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -51,9 +49,7 @@ function ServicesComponentForm({
     isReviewMode = false,
     hasUnsavedChanges,
     workflow,
-    scFormSuite,
-    allServicesComponentsForSuite = [],
-    nonDraftBudgetLines = []
+    scFormSuite
 }) {
     const [scSelectTouched, setScSelectTouched] = React.useState(false);
     React.useEffect(() => {
@@ -63,25 +59,10 @@ function ServicesComponentForm({
     React.useEffect(() => {
         if (!scFormSuite) return;
         scFormSuite.run({
-            servicesComponentSelect: formData.number,
-            mode: isEditMode ? "edit" : "add",
-            number: formData.number,
-            popStartDate: formData.popStartDate,
-            popEndDate: formData.popEndDate,
-            allServicesComponents: allServicesComponentsForSuite,
-            nonDraftBudgetLines
+            servicesComponentSelect: formData.number
         });
         forceUpdate();
-    }, [
-        formData,
-        formData.number,
-        isEditMode,
-        formData.popStartDate,
-        formData.popEndDate,
-        allServicesComponentsForSuite,
-        nonDraftBudgetLines,
-        scFormSuite
-    ]);
+    }, [formData.number, scFormSuite]);
 
     const suiteErrors = scFormSuite?.get();
 
@@ -213,7 +194,6 @@ function ServicesComponentForm({
                                         popStartDate: e.target.value
                                     }))
                                 }
-                                messages={suiteErrors?.getErrors("popStartDate") ?? []}
                             />
                         </div>
                         <div style={{ width: "275px" }}>
@@ -229,7 +209,6 @@ function ServicesComponentForm({
                                         popEndDate: e.target.value
                                     }))
                                 }
-                                messages={suiteErrors?.getErrors("popEndDate") ?? []}
                             />
                         </div>
                     </DateRangePickerWrapper>

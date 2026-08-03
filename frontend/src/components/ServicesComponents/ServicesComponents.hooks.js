@@ -4,19 +4,26 @@ import useAlert from "../../hooks/use-alert.hooks";
 import { useEditAgreement, useEditAgreementDispatch } from "../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import { initialFormData } from "./ServicesComponents.constants";
 import { formatServiceComponent } from "./ServicesComponents.helpers";
+import popValidationSuite from "./ServicesComponentForm/popValidationSuite";
+
+const POP_CONFIRMATION_MESSAGE =
+    "Changing the Period of Performance dates will alter the agreement’s start and end. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
 
 /**
  * @param {number} agreementId - The ID of the agreement.
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} serviceRequirementType - The type of service requirement.
  * @param {string} continueBtnText - The text to display on the "Continue" button.
-
+ * @param {Function} setHasUnsavedChanges - Function to mark the parent form dirty.
+ * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
+ * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
  */
 const useServicesComponents = (
     agreementId,
     serviceRequirementType,
     continueBtnText,
     setHasUnsavedChanges,
-    scFormSuite
+    scFormSuite,
+    nonDraftBudgetLines = []
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -33,6 +40,15 @@ const useServicesComponents = (
     const dispatch = useEditAgreementDispatch();
     const { services_components: servicesComponents } = useEditAgreement() || {};
 
+    // Reset the PoP validation suite on mount and unmount so a stale result from a
+    // previous agreement or SC never carries over into this session. (mirrors issue #5894)
+    React.useEffect(() => {
+        popValidationSuite.reset();
+        return () => {
+            popValidationSuite.reset();
+        };
+    }, []);
+
     // When editing an SC, merge the live form dates into allServicesComponents so the suite
     // always sees the current period values — context only updates after dispatch.
     const allServicesComponentsForSuite = React.useMemo(() => {
@@ -47,9 +63,13 @@ const useServicesComponents = (
         });
     }, [servicesComponents, formData.mode, formData.number, formData.popStartDate, formData.popEndDate]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (scFormSuite?.get()?.hasErrors()) return;
+    /**
+     * Persists the current form data (add or edit), fires the success alert, and
+     * resets the form. Runs unconditionally once the caller has decided the save
+     * should proceed — either because the PoP check passed, or because the user
+     * confirmed the "Continue with Updates" modal.
+     */
+    const performSave = () => {
         setFormKey(Date.now());
         let formattedDisplayTitle = formatServiceComponent(formData.number, Boolean(formData.optional), serviceTypeReq);
         let newFormData = {
@@ -95,6 +115,33 @@ const useServicesComponents = (
         }
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (scFormSuite?.get()?.hasErrors()) return;
+
+        const popCheck = popValidationSuite.run({
+            mode: formData.mode,
+            allServicesComponents: allServicesComponentsForSuite,
+            nonDraftBudgetLines
+        });
+
+        if (popCheck.hasErrors()) {
+            setShowModal(true);
+            setModalProps({
+                heading: POP_CONFIRMATION_MESSAGE,
+                actionButtonText: "Continue with Updates",
+                secondaryButtonText: "Cancel",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    performSave();
+                }
+            });
+            return;
+        }
+
+        performSave();
+    };
+
     /**
      *
      * @param {number} number
@@ -130,6 +177,7 @@ const useServicesComponents = (
     const handleCancel = (e) => {
         e.preventDefault();
         scFormSuite?.reset();
+        popValidationSuite.reset();
         setFormData(initialFormData);
         setFormKey(Date.now());
     };
@@ -166,8 +214,7 @@ const useServicesComponents = (
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey,
-        allServicesComponentsForSuite
+        formKey
     };
 };
 
