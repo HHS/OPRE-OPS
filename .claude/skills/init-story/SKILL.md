@@ -8,17 +8,29 @@ allowed-tools: Bash, Read, Write, Agent
 
 Create a story file for the current branch by pulling context from GitHub and asking the developer targeted questions. The file will be used by `/update-story` to track AC progress throughout development.
 
-## Step 1 — Detect the issue number
+## Step 1 — Detect the issue number and ensure a branch exists
 
-Extract the issue number from the current branch name:
+Check the current branch:
 
 ```bash
 git rev-parse --abbrev-ref HEAD
 ```
 
-Branch convention is `OPS-NNNN/description` — the issue number is the digits after `OPS-`.
+**If on `main` or any branch without an `OPS-NNNN` pattern:**
 
-If the branch name has no `OPS-NNNN` pattern, ask the developer: "What is the GitHub issue number for this work?"
+Ask the developer: "What is the GitHub issue number for this story?" Then ask: "What should the branch be called? (e.g. `OPS-NNNN/short-description`)"
+
+Once you have both answers, create and check out the branch:
+
+```bash
+git checkout -b <BRANCH-NAME>
+```
+
+If the branch already exists remotely, check it out and pull instead. If the working tree has uncommitted changes, warn the developer before switching branches.
+
+**If already on an `OPS-NNNN/description` branch:**
+
+Extract the issue number from the branch name — the digits after `OPS-`. No need to ask.
 
 ## Step 2 — Pull context from GitHub
 
