@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-frontend.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-frontend.sarif
           category: snyk-frontend
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-api.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-backend-api.sarif
           category: snyk-backend-api
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-data-tools.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@d1ba80a13dd99fba24a470575428917156a28b43 # v4
         with:
           sarif_file: snyk-backend-data-tools.sarif
           category: snyk-backend-data-tools
