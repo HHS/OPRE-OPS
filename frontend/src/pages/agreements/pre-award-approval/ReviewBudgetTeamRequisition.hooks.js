@@ -79,7 +79,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -89,10 +90,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
-        isLoadingTrackers,
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
