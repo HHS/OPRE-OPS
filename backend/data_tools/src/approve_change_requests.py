@@ -242,6 +242,7 @@ def approve_change_request(
                 f"ChangeRequest {change_request_id} — skipping."
             )
             return False
+        target.acting_change_request_id = change_request.id
         apply_change_request_data(target, change_request.requested_change_data)
     else:  # AGREEMENT_CHANGE_REQUEST
         target = session.get(Agreement, change_request.agreement_id)
@@ -251,6 +252,7 @@ def approve_change_request(
                 f"{change_request_id} — skipping."
             )
             return False
+        target.acting_change_request_id = change_request.id
         apply_change_request_data(target, change_request.requested_change_data)
 
     session.flush()
