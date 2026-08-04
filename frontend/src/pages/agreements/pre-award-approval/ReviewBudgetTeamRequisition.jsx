@@ -38,7 +38,8 @@ export const ReviewBudgetTeamRequisition = () => {
         requisitionNumber,
         setRequisitionNumber,
         requisitionDate,
-        setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -244,9 +245,9 @@ export const ReviewBudgetTeamRequisition = () => {
                             label="Requisition Approval Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
+                            onChange={handleDateChange}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
+                            messages={requisitionDateError}
                             isRequiredNoShow={true}
                         />
                     </div>
