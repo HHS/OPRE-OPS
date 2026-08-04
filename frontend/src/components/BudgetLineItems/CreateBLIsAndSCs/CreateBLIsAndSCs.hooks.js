@@ -192,8 +192,13 @@ const useCreateBLIsAndSCs = (
     }, [tempBudgetLines, servicesComponents]);
 
     React.useEffect(() => {
-        setGroupedBudgetLinesByGrantNumber(groupByGrantNumber(tempBudgetLines, grantNumbers));
-    }, [tempBudgetLines, grantNumbers]);
+        // Don't pass grantNumbers here — that would pre-populate an empty-budgetLines
+        // group for every grant number added, hiding the "no budget lines yet" message
+        // the moment a grant number exists, before any budget line is added. Mirrors the
+        // services-component grouping call above, which has the same omission for the
+        // same reason.
+        setGroupedBudgetLinesByGrantNumber(groupByGrantNumber(tempBudgetLines));
+    }, [tempBudgetLines]);
 
     // Validation
     // Review mode re-runs the suite every render against the current budget lines.
