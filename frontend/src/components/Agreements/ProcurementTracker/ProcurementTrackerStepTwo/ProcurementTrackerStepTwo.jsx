@@ -67,6 +67,7 @@ const ProcurementTrackerStepTwo = ({
         modalProps,
         cancelModalStep2,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepTwoComplete,
         step2DraftSolicitationDateLabel,
         isPastDue,
@@ -88,7 +89,8 @@ const ProcurementTrackerStepTwo = ({
         !selectedUser?.id ||
         !step2DateCompleted ||
         (!stepTwoData?.target_completion_date && !targetCompletionDate) ||
-        !stepTwoData?.id;
+        !stepTwoData?.id ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -292,7 +294,7 @@ const ProcurementTrackerStepTwo = ({
                             savedNotes={stepTwoData?.notes}
                             stepId={stepTwoData?.id}
                             onSave={handleSaveNotes}
-                            isDisabled={isDisabled}
+                            isDisabled={isDisabled || isStepPatchInFlight}
                         />
                         <p
                             className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
@@ -389,7 +391,7 @@ const ProcurementTrackerStepTwo = ({
                                 savedNotes={stepTwoData?.notes}
                                 stepId={stepTwoData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 startInReadMode
                             />
                         </div>

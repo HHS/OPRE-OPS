@@ -30,7 +30,13 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepTwoComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepTwo, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by ?? -1);
@@ -194,6 +200,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     return {
         cancelStepTwo,
         handleSaveNotes,
+        isStepPatchInFlight,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,

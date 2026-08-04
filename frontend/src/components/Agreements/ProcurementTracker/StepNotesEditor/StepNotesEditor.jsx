@@ -54,15 +54,28 @@ const StepNotesEditor = ({
     startInReadMode = false,
     textAreaName = "notes"
 }) => {
-    // Start in read mode when a note has already been saved (or when the caller
-    // forces it, e.g. a completed step); otherwise start in input mode so the
-    // user can add one. A successful save also flips to read mode.
-    const hasSavedNote = Boolean((savedNotes ?? "").trim());
-    // The editor can return to read mode when there is a saved note to show or
-    // when the caller renders read mode by default (completed steps). A fresh
-    // active step with no saved note has no read view to cancel back to, so it
-    // stays in input mode and omits Cancel.
-    const canReturnToReadMode = hasSavedNote || startInReadMode;
+    // Whether a note has ever been persisted for this step. Seeded from the
+    // server prop, then promoted locally the instant a save succeeds. It must NOT
+    // be re-derived from `savedNotes` on every render: after a first-time save the
+    // prop stays stale (still "") until the RTK Query invalidation refetch lands,
+    // and reading it directly during that window would drop the Cancel button
+    // (WCAG 2.4.3) and re-disable Save for clearing the just-saved note.
+    const [hasEverSaved, setHasEverSaved] = React.useState(Boolean((savedNotes ?? "").trim()));
+    // Promote (never demote) when a non-empty server value arrives after mount —
+    // e.g. an async data load or another user's edit — so the read-mode
+    // affordances still appear. Clearing a saved note to "" keeps `hasEverSaved`
+    // true, which is correct: an already-saved note may be saved empty.
+    React.useEffect(() => {
+        if ((savedNotes ?? "").trim()) {
+            setHasEverSaved(true);
+        }
+    }, [savedNotes]);
+
+    // The editor can return to read mode when a note has ever been saved or when
+    // the caller renders read mode by default (completed steps). A fresh active
+    // step with no saved note has no read view to cancel back to, so it stays in
+    // input mode and omits Cancel.
+    const canReturnToReadMode = hasEverSaved || startInReadMode;
     const [isEditingNotes, setIsEditingNotes] = React.useState(!canReturnToReadMode);
 
     // Leaving edit mode (Save or Cancel) unmounts the focused Save Notes/Cancel
@@ -149,13 +162,17 @@ const StepNotesEditor = ({
                             onClick={async () => {
                                 const didSave = await onSave(stepId);
                                 if (didSave) {
+                                    // Promote immediately so Cancel stays available and
+                                    // Save stays enabled for clearing this note, without
+                                    // waiting for the server prop to catch up.
+                                    setHasEverSaved(true);
                                     setSaveAnnouncement("Notes saved.");
                                     returnToReadMode();
                                 }
                             }}
                             // Disable Save only for a first-time, empty entry. Once a note
                             // has been saved the user may clear it and save the empty value.
-                            isDisabled={isDisabled || (!hasSavedNote && !notes.trim())}
+                            isDisabled={isDisabled || (!hasEverSaved && !notes.trim())}
                         />
                     </div>
                 </div>

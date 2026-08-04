@@ -155,6 +155,51 @@ describe("StepNotesEditor", () => {
         expect(screen.getByText("None")).toBeInTheDocument();
     });
 
+    it("keeps the Cancel button after a first-time save while the server prop is still stale", async () => {
+        // Bug 1: after the first save on a fresh active step, `savedNotes` stays ""
+        // until the RTK Query refetch lands. Re-entering edit mode in that window
+        // must still render Cancel so keyboard users aren't trapped (WCAG 2.4.3).
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "A note", savedNotes: "" });
+
+        // Fresh active step starts in input mode with no Cancel.
+        expect(cancelBtn()).not.toBeInTheDocument();
+
+        fireEvent.click(saveNotesBtn());
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+
+        // savedNotes is intentionally still "" (refetch not yet resolved).
+        fireEvent.click(editNotesBtn());
+        expect(cancelBtn()).toBeInTheDocument();
+    });
+
+    it("keeps Save enabled to clear a just-saved note while the server prop is still stale", async () => {
+        // Bug 2: same stale-`savedNotes` window. After the first save the user
+        // re-enters edit mode and clears the field; Save must stay enabled so the
+        // note can be cleared before the refetch promotes the prop.
+        const onSave = vi.fn().mockResolvedValue(true);
+        const { rerender } = renderEditor({ onSave, notes: "A note", savedNotes: "" });
+
+        fireEvent.click(saveNotesBtn());
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+
+        fireEvent.click(editNotesBtn());
+        // Simulate the user clearing the textarea (parent re-renders with notes="")
+        // while savedNotes is still "".
+        rerender(
+            <StepNotesEditor
+                notes=""
+                setNotes={vi.fn()}
+                resetNotes={vi.fn()}
+                savedNotes=""
+                stepId={42}
+                onSave={onSave}
+            />
+        );
+
+        expect(saveNotesBtn()).toBeEnabled();
+    });
+
     it("calls onSave with the stepId and flips to read mode when the save succeeds", async () => {
         const onSave = vi.fn().mockResolvedValue(true);
         renderEditor({ onSave, stepId: 99, notes: "A note", savedNotes: "" });

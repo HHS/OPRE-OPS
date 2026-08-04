@@ -65,6 +65,7 @@ const ProcurementTrackerStepThree = ({
         modalProps,
         cancelModalStep3,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
@@ -85,7 +86,8 @@ const ProcurementTrackerStepThree = ({
         !step3DateCompleted ||
         validatorRes.hasErrors() ||
         missingSolicitationDates ||
-        !stepThreeData?.id;
+        !stepThreeData?.id ||
+        isStepPatchInFlight;
 
     const isSolicitationDatesSaveDisabled =
         isDisabled ||
@@ -292,7 +294,7 @@ const ProcurementTrackerStepThree = ({
                             savedNotes={stepThreeData?.notes}
                             stepId={stepThreeData?.id}
                             onSave={handleSaveNotes}
-                            isDisabled={isDisabled}
+                            isDisabled={isDisabled || isStepPatchInFlight}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -376,7 +378,7 @@ const ProcurementTrackerStepThree = ({
                                 savedNotes={stepThreeData?.notes}
                                 stepId={stepThreeData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 startInReadMode
                             />
                         </div>

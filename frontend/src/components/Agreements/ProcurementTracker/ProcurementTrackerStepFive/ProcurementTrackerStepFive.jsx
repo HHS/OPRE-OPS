@@ -70,6 +70,7 @@ const ProcurementTrackerStepFive = ({
         modalProps,
         cancelModalStep5,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepFiveComplete
     } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
 
@@ -96,7 +97,8 @@ const ProcurementTrackerStepFive = ({
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
         stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED ||
-        !stepFiveData?.requisition_approved_by // Budget team must approve requisition before completing step
+        !stepFiveData?.requisition_approved_by || // Budget team must approve requisition before completing step
+        isStepPatchInFlight
     );
 
     // Calculate which specific condition is blocking the pre-award approval request
@@ -361,7 +363,7 @@ const ProcurementTrackerStepFive = ({
                             savedNotes={stepFiveData?.notes}
                             stepId={stepFiveData?.id}
                             onSave={handleSaveNotes}
-                            isDisabled={isDisabled}
+                            isDisabled={isDisabled || isStepPatchInFlight}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -441,7 +443,7 @@ const ProcurementTrackerStepFive = ({
                                 savedNotes={stepFiveData?.notes}
                                 stepId={stepFiveData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 startInReadMode
                             />
                         </div>

@@ -63,6 +63,7 @@ const ProcurementTrackerStepFour = ({
         modalProps,
         cancelModalStep4,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepFourComplete
     } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber);
 
@@ -78,7 +79,8 @@ const ProcurementTrackerStepFour = ({
         !selectedUser?.id ||
         !step4DateCompleted ||
         validatorRes.hasErrors() ||
-        !stepFourData?.id;
+        !stepFourData?.id ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -243,7 +245,7 @@ const ProcurementTrackerStepFour = ({
                             savedNotes={stepFourData?.notes}
                             stepId={stepFourData?.id}
                             onSave={handleSaveNotes}
-                            isDisabled={isDisabled}
+                            isDisabled={isDisabled || isStepPatchInFlight}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -314,7 +316,7 @@ const ProcurementTrackerStepFour = ({
                                 savedNotes={stepFourData?.notes}
                                 stepId={stepFourData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 startInReadMode
                             />
                         </div>

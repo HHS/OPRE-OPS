@@ -70,6 +70,7 @@ const ProcurementTrackerStepSix = ({
         modalProps,
         cancelModalStepSix,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepSixComplete
     } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
 
@@ -270,7 +271,7 @@ const ProcurementTrackerStepSix = ({
                                 savedNotes={stepSixData?.notes}
                                 stepId={stepSixData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                             />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
@@ -290,6 +291,7 @@ const ProcurementTrackerStepSix = ({
                                     disabled={
                                         isDisabled ||
                                         isSubmitting ||
+                                        isStepPatchInFlight ||
                                         validatorRes.hasErrors("dateCompleted") ||
                                         validatorRes.hasErrors("users") ||
                                         !selectedUser ||
@@ -356,7 +358,7 @@ const ProcurementTrackerStepSix = ({
                                 savedNotes={stepSixData?.notes}
                                 stepId={stepSixData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 textAreaName="notes-step-6"
                                 startInReadMode
                             />

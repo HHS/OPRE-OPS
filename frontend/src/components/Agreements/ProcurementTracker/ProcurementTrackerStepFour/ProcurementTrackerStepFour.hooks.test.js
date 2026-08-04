@@ -52,7 +52,7 @@ describe("useProcurementTrackerStepFour", () => {
         vi.clearAllMocks();
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateToMonthDayYear.mockReturnValue("March 15, 2024");
-        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepFour]);
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepFour, { isLoading: false }]);
         useAlert.mockReturnValue({ setAlert: mockSetAlert });
         mockPatchStepFour.mockReturnValue({
             unwrap: vi.fn().mockResolvedValue({})

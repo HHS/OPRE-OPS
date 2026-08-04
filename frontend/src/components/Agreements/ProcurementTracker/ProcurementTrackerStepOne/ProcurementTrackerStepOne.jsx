@@ -51,6 +51,7 @@ const ProcurementTrackerStepOne = ({
         step1Notes,
         handleStep1Complete,
         handleSaveNotes,
+        isStepPatchInFlight,
         cancelModalStep1,
         disableStep1Buttons,
         modalProps,
@@ -171,7 +172,7 @@ const ProcurementTrackerStepOne = ({
                             savedNotes={stepOneData?.notes}
                             stepId={stepOneData?.id}
                             onSave={handleSaveNotes}
-                            isDisabled={isDisabled}
+                            isDisabled={isDisabled || isStepPatchInFlight}
                         />
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
@@ -231,7 +232,7 @@ const ProcurementTrackerStepOne = ({
                                 savedNotes={stepOneData?.notes}
                                 stepId={stepOneData?.id}
                                 onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
+                                isDisabled={isDisabled || isStepPatchInFlight}
                                 startInReadMode
                             />
                         </div>
