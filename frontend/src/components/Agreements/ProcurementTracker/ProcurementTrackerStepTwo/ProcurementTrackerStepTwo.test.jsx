@@ -179,7 +179,8 @@ describe("ProcurementTrackerStepTwo", () => {
         revisedTargetDate: "",
         setRevisedTargetDate: mockSetRevisedTargetDate,
         handleSaveNotes: mockHandleSaveNotes,
-        handleStepTwoComplete: mockHandleStepTwoComplete
+        handleStepTwoComplete: mockHandleStepTwoComplete,
+        isStepPatchInFlight: false
     };
 
     const mockStepData = { id: 1 };
@@ -1398,6 +1399,27 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+        });
+
+        it("disables Save Notes and Complete while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                step2Notes: "A note",
+                isStepPatchInFlight: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+            expect(screen.getByRole("button", { name: /complete step 2/i })).toBeDisabled();
         });
     });
 

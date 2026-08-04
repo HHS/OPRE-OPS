@@ -116,11 +116,9 @@ const ProcurementTrackerStepSix = ({
                         tagStyle="primaryDarkTextWhiteBackground"
                         label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
                     />
-                    {stepSixNotesLabel && (
-                        <div className="margin-left-2">
-                            <strong>Notes:</strong> {stepSixNotesLabel}
-                        </div>
-                    )}
+                    <div className="margin-left-2">
+                        <strong>Notes:</strong> {stepSixNotesLabel || "None"}
+                    </div>
                 </div>
             )}
 

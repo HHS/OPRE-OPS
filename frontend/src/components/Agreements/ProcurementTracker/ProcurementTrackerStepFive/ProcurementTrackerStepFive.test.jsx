@@ -172,6 +172,7 @@ describe("ProcurementTrackerStepFive", () => {
         handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit,
         handleStepFiveComplete: mockHandleStepFiveComplete,
         handleSaveNotes: mockHandleSaveNotes,
+        isStepPatchInFlight: false,
         showModal: false,
         setShowModal: mockSetShowModal,
         modalProps: {
@@ -1648,6 +1649,28 @@ describe("ProcurementTrackerStepFive", () => {
             const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
             expect(saveNotesButton).toBeInTheDocument();
             expect(saveNotesButton).toHaveAttribute("data-cy", "save-notes-button");
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                step5Notes: "A note",
+                isStepPatchInFlight: true
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
         });
 
         it("renders existing notes from step5Notes in the TextArea", () => {

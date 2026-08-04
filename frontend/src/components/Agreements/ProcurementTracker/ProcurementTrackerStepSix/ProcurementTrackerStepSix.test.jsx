@@ -214,7 +214,8 @@ describe("ProcurementTrackerStepSix", () => {
         modalProps: {},
         cancelModalStepSix: mockCancelModalStepSix,
         handleSaveNotes: mockHandleSaveNotes,
-        handleStepSixComplete: mockHandleStepSixComplete
+        handleStepSixComplete: mockHandleStepSixComplete,
+        isStepPatchInFlight: false
     };
 
     const defaultProps = {
@@ -780,6 +781,22 @@ describe("ProcurementTrackerStepSix", () => {
 
             expect(mockHandleStepSixComplete).toHaveBeenCalledWith(6);
         });
+
+        it("disables Complete and Save Notes while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepSix.mockReturnValue({
+                ...defaultHookReturn,
+                isAwardCheckboxChecked: true,
+                selectedUser: { id: 1 },
+                stepSixDateCompleted: "02/15/2024",
+                stepSixNotes: "A note",
+                isStepPatchInFlight: true
+            });
+
+            render(<ProcurementTrackerStepSix {...defaultProps} />);
+
+            expect(screen.getByRole("button", { name: /Complete Step 6/i })).toBeDisabled();
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+        });
     });
 
     describe("Cancel Button", () => {
@@ -1004,6 +1021,25 @@ describe("ProcurementTrackerStepSix", () => {
 
             expect(screen.getByText(/Completed by John Doe/i)).toBeInTheDocument();
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+        });
+
+        it("renders the Notes row with 'None' when no note was saved so the row is not silently omitted", () => {
+            useProcurementTrackerStepSix.mockReturnValue({
+                ...defaultHookReturn,
+                stepSixCompletedByUserName: "John Doe",
+                stepSixDateCompletedLabel: "January 15, 2024",
+                stepSixNotesLabel: ""
+            });
+
+            const props = {
+                ...defaultProps,
+                stepStatus: "COMPLETED",
+                isReadOnly: true
+            };
+            render(<ProcurementTrackerStepSix {...props} />);
+
+            expect(screen.getByText("Notes:")).toBeInTheDocument();
+            expect(screen.getByText("None")).toBeInTheDocument();
         });
     });
 });

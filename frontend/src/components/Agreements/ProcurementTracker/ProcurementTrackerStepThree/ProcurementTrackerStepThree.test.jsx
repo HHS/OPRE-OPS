@@ -174,7 +174,8 @@ describe("ProcurementTrackerStepThree", () => {
         modalProps: {},
         cancelModalStep3: mockCancelModalStep3,
         handleSaveNotes: mockHandleSaveNotes,
-        handleStep3Complete: mockHandleStep3Complete
+        handleStep3Complete: mockHandleStep3Complete,
+        isStepPatchInFlight: false
     };
 
     const mockStepData = { id: 1 };
@@ -1919,6 +1920,25 @@ describe("ProcurementTrackerStepThree", () => {
 
         it("disables Save Notes until the notes field has input", () => {
             useProcurementTrackerStepThree.mockReturnValue({ ...defaultHookReturn, step3Notes: "" });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                step3Notes: "A note",
+                isStepPatchInFlight: true
+            });
 
             render(
                 <ProcurementTrackerStepThree

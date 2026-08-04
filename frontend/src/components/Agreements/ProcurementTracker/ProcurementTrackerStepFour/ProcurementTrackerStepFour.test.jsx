@@ -163,7 +163,8 @@ describe("ProcurementTrackerStepFour", () => {
             handleConfirm: vi.fn()
         },
         cancelModalStep4: mockCancelModalStep4,
-        handleSaveNotes: mockHandleSaveNotes
+        handleSaveNotes: mockHandleSaveNotes,
+        isStepPatchInFlight: false
     };
 
     const defaultProps = {
@@ -576,6 +577,18 @@ describe("ProcurementTrackerStepFour", () => {
             fireEvent.click(saveNotesButton);
 
             expect(mockHandleStepFourComplete).not.toHaveBeenCalled();
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4Notes: "A note",
+                isStepPatchInFlight: true
+            });
+
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
         });
     });
 

@@ -138,6 +138,7 @@ describe("ProcurementTrackerStepOne", () => {
         handleSaveNotes: mockHandleSaveNotes,
         cancelStep1: mockCancelStep1,
         disableStep1Buttons: true,
+        isStepPatchInFlight: false,
         step1CompletedByUserName: "John Doe",
         step1DateCompletedLabel: "January 15, 2024",
         step1NotesLabel: "Test notes",
@@ -350,6 +351,28 @@ describe("ProcurementTrackerStepOne", () => {
             // eslint-disable-next-line testing-library/no-node-access
             const textarea = screen.getByTestId("text-area").querySelector("textarea");
             expect(textarea).not.toBeDisabled();
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                disableStep1Buttons: false,
+                isStepPatchInFlight: true
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toBeDisabled();
         });
 
         it("renders existing notes from step1Notes in the TextArea after clicking Edit Notes", () => {
