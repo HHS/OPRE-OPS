@@ -40,3 +40,102 @@ describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
         expect(next.deleted_grant_numbers_ids).toEqual([]);
     });
 });
+
+describe("editAgreementReducer - budget line items", () => {
+    it("ADD_BUDGET_LINE_ITEM appends to budget_line_items", () => {
+        const state = { ...defaultState, budget_line_items: [{ id: "a", amount: 100 }] };
+
+        const next = editAgreementReducer(state, {
+            type: "ADD_BUDGET_LINE_ITEM",
+            payload: { id: "b", amount: 200 }
+        });
+
+        expect(next.budget_line_items).toEqual([
+            { id: "a", amount: 100 },
+            { id: "b", amount: 200 }
+        ]);
+    });
+
+    it("UPDATE_BUDGET_LINE_ITEM replaces the matching item by id", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [
+                { id: "a", amount: 100 },
+                { id: "b", amount: 200 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: { id: "a", amount: 999 }
+        });
+
+        expect(next.budget_line_items).toEqual([
+            { id: "a", amount: 999 },
+            { id: "b", amount: 200 }
+        ]);
+    });
+
+    it("UPDATE_BUDGET_LINE_ITEM is a no-op if no item matches the id", () => {
+        const state = { ...defaultState, budget_line_items: [{ id: "a", amount: 100 }] };
+
+        const next = editAgreementReducer(state, {
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: { id: "missing", amount: 999 }
+        });
+
+        expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
+    });
+
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the full object to deleted_budget_line_items_ids", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [
+                { id: "a", amount: 100 },
+                { id: "b", amount: 200 }
+            ],
+            deleted_budget_line_items_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_BUDGET_LINE_ITEM",
+            payload: { id: "a", amount: 100 }
+        });
+
+        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200 }]);
+        expect(next.deleted_budget_line_items_ids).toEqual([{ id: "a", amount: 100 }]);
+    });
+
+    it("RESEED_BUDGET_LINE_ITEMS replaces budget_line_items and clears deleted_budget_line_items_ids", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "a", amount: 100 }],
+            deleted_budget_line_items_ids: [{ id: "z", amount: 1 }]
+        };
+        const reseeded = [{ id: "c", amount: 300 }];
+
+        const next = editAgreementReducer(state, {
+            type: "RESEED_BUDGET_LINE_ITEMS",
+            payload: reseeded
+        });
+
+        expect(next.budget_line_items).toEqual(reseeded);
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+
+    it("RESEED_BUDGET_LINE_ITEMS defaults to [] when payload is null/undefined", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "a", amount: 100 }],
+            deleted_budget_line_items_ids: [{ id: "z", amount: 1 }]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "RESEED_BUDGET_LINE_ITEMS",
+            payload: undefined
+        });
+
+        expect(next.budget_line_items).toEqual([]);
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+});

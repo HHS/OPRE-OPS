@@ -31,7 +31,6 @@ export const defaultState = {
         special_topics: [],
         aln_numbers: []
     },
-    budget_lines: [],
     selected_agreement_id: undefined,
     selected_research_project: {},
     selected_project: {},
@@ -43,7 +42,9 @@ export const defaultState = {
     services_components: [],
     deleted_services_components_ids: [],
     grant_numbers: [],
-    deleted_grant_numbers_ids: []
+    deleted_grant_numbers_ids: [],
+    budget_line_items: [],
+    deleted_budget_line_items_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -164,6 +165,34 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 grant_numbers: action.payload ?? [],
                 deleted_grant_numbers_ids: []
+            };
+        }
+        case "ADD_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: [...state.budget_line_items, action.payload]
+            };
+        }
+        case "UPDATE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.map((bli) =>
+                    bli.id === action.payload.id ? action.payload : bli
+                )
+            };
+        }
+        case "DELETE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
+                deleted_budget_line_items_ids: [...state.deleted_budget_line_items_ids, action.payload]
+            };
+        }
+        case "RESEED_BUDGET_LINE_ITEMS": {
+            return {
+                ...state,
+                budget_line_items: action.payload ?? [],
+                deleted_budget_line_items_ids: []
             };
         }
         case "SET_RESEARCH_METHODOLOGIES": {

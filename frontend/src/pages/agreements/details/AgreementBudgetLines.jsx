@@ -269,6 +269,7 @@ const AgreementBudgetLines = ({
                     alternateProjectOfficer={""}
                     servicesComponents={servicesComponents}
                     grantNumbers={grantNumbers ?? []}
+                    budgetLines={agreement?.budget_line_items ?? []}
                 >
                     <CreateBLIsAndSCs
                         selectedAgreement={agreement}

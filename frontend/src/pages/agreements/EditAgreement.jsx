@@ -107,6 +107,7 @@ const EditAgreement = () => {
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
                 grantNumbers={grantNumbers ?? []}
+                budgetLines={agreement?.budget_line_items ?? []}
             >
                 <CreateEditAgreement budgetLines={agreement?.budget_line_items ?? []} />
             </EditAgreementProvider>
