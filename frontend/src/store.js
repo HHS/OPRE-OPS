@@ -4,6 +4,7 @@ import authSlice from "./components/Auth/authSlice";
 import userSlice from "./pages/users/detail/userSlice";
 import userEditSlice from "./pages/users/edit/userSlice";
 import alertSlice from "./components/UI/Alert/alertSlice";
+import sessionUISlice from "./sessionUISlice";
 import { opsApi, resetApiOnLogoutMiddleware } from "./api/opsAPI";
 import { githubApi } from "./api/github";
 import { opsAuthApi } from "./api/opsAuthAPI.js";
@@ -16,7 +17,8 @@ const rootReducer = combineReducers({
     auth: authSlice,
     userDetail: userSlice,
     userDetailEdit: userEditSlice,
-    alert: alertSlice
+    alert: alertSlice,
+    sessionUI: sessionUISlice
 });
 
 export const setupStore = (preloadedState = {}) => {

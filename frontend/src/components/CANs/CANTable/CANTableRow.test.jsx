@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import CANTableRow from "./CANTableRow";
-import { MemoryRouter } from "react-router-dom";
+import { renderWithProviders } from "../../../test-utils";
 
 // Mock the Tooltip component
 vi.mock("../../UI/USWDS/Tooltip", () => ({
@@ -27,14 +27,12 @@ describe("CANTableRow", () => {
     };
 
     it("renders the row with correct data", () => {
-        render(
-            <MemoryRouter>
-                <table>
-                    <tbody>
-                        <CANTableRow {...mockProps} />
-                    </tbody>
-                </table>
-            </MemoryRouter>
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow {...mockProps} />
+                </tbody>
+            </table>
         );
 
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
@@ -47,31 +45,27 @@ describe("CANTableRow", () => {
     });
 
     it("renders correct active period text for single year", () => {
-        render(
-            <MemoryRouter>
-                <table>
-                    <tbody>
-                        <CANTableRow
-                            {...mockProps}
-                            activePeriod={1}
-                        />
-                    </tbody>
-                </table>
-            </MemoryRouter>
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow
+                        {...mockProps}
+                        activePeriod={1}
+                    />
+                </tbody>
+            </table>
         );
 
         expect(screen.getByText("1 year")).toBeInTheDocument();
     });
 
     it("renders tooltip with nickname", () => {
-        render(
-            <MemoryRouter>
-                <table>
-                    <tbody>
-                        <CANTableRow {...mockProps} />
-                    </tbody>
-                </table>
-            </MemoryRouter>
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow {...mockProps} />
+                </tbody>
+            </table>
         );
 
         expect(screen.getByTestId("tooltip")).toBeInTheDocument();
@@ -79,33 +73,29 @@ describe("CANTableRow", () => {
     });
 
     it("renders TBD when totalFunding is 0", () => {
-        render(
-            <MemoryRouter>
-                <table>
-                    <tbody>
-                        <CANTableRow
-                            {...mockProps}
-                            fundingSummary={{ available_funding: 100_000, received_funding: 50_000, total_funding: 0 }}
-                        />
-                    </tbody>
-                </table>
-            </MemoryRouter>
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow
+                        {...mockProps}
+                        fundingSummary={{ available_funding: 100_000, received_funding: 50_000, total_funding: 0 }}
+                    />
+                </tbody>
+            </table>
         );
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });
 
     it("renders TBD when totalReceived is 0", () => {
-        render(
-            <MemoryRouter>
-                <table>
-                    <tbody>
-                        <CANTableRow
-                            {...mockProps}
-                            fundingSummary={{ available_funding: 100_000, received_funding: 0, total_funding: 100_000 }}
-                        />
-                    </tbody>
-                </table>
-            </MemoryRouter>
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow
+                        {...mockProps}
+                        fundingSummary={{ available_funding: 100_000, received_funding: 0, total_funding: 100_000 }}
+                    />
+                </tbody>
+            </table>
         );
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });

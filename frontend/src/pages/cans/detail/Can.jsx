@@ -1,8 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
+import { LIST_CRUMBS, resolveAncestryForChildren } from "../../../helpers/breadcrumb.helpers";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
@@ -50,6 +52,19 @@ const Can = () => {
         toggleDetailPageEditMode,
         toggleFundingPageEditMode
     } = useCan();
+
+    // Compose the ancestry that child entry-point links (CANBudgetLineTable) should
+    // record when navigating to an agreement. If the user drilled into this CAN via a
+    // known path (e.g. Portfolios > Portfolio A > CAN 1) the stored trail supplies the
+    // ancestors; otherwise fall back to the CANs list. The leaf is this CAN.
+    const { pathname } = useLocation();
+    const storedTrail = useSelector((state) => state.sessionUI?.navContext?.trail);
+    const linkAncestry = resolveAncestryForChildren({
+        trail: storedTrail,
+        pathname,
+        ownCrumb: { label: can?.display_name ?? "CAN", to: `/cans/${canId}` },
+        fallbackCrumb: LIST_CRUMBS.cans
+    });
 
     if (isLoading) {
         return <p>Loading CAN...</p>;
@@ -111,6 +126,7 @@ const Can = () => {
                             plannedFunding={plannedFunding}
                             totalFunding={totalFunding}
                             isTableLoading={isTableLoading}
+                            ancestry={linkAncestry}
                         />
                     }
                 />

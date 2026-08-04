@@ -9,7 +9,7 @@ import LineBar from "../../UI/DataViz/LineBar";
 
 const PortfolioFunding = () => {
     const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
-    const { portfolioId, newFunding, fiscalYear, carryForward, totalFunding } = useOutletContext();
+    const { portfolioId, newFunding, fiscalYear, carryForward, totalFunding, linkAncestry } = useOutletContext();
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
 
@@ -161,6 +161,7 @@ const PortfolioFunding = () => {
                             key={canId}
                             canId={canId}
                             fiscalYear={fiscalYear}
+                            ancestry={linkAncestry}
                         />
                     ))
                 )}

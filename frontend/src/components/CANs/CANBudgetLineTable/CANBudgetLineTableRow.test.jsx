@@ -1,11 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import { formatDateNeeded } from "../../../helpers/utils";
-import { Provider } from "react-redux";
-import store from "../../../store";
+import { renderWithProviders } from "../../../test-utils";
 import { budgetLine } from "../../../tests/data";
 import userEvent from "@testing-library/user-event";
-import { BrowserRouter } from "react-router-dom"; // Add this import
 
 const mockBudgetLine = {
     ...budgetLine,
@@ -33,28 +31,22 @@ const mockBudgetLine = {
 
 describe("CANBudgetLineTableRow", () => {
     test("renders table row data correctly", () => {
-        render(
-            <Provider store={store}>
-                <BrowserRouter>
-                    {" "}
-                    {/* Wrap with BrowserRouter */}
-                    <CANBudgetLineTableRow
-                        budgetLine={mockBudgetLine}
-                        blId={mockBudgetLine.id}
-                        agreementName="TBD"
-                        obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
-                        fiscalYear={mockBudgetLine.fiscal_year}
-                        amount={mockBudgetLine.amount}
-                        fee={mockBudgetLine.proc_shop_fee_percentage}
-                        percentOfCAN={3}
-                        status={mockBudgetLine.status}
-                        inReview={mockBudgetLine.in_review}
-                        creatorId={mockBudgetLine.created_by}
-                        creationDate={mockBudgetLine.created_on}
-                        procShopCode="TBD"
-                    />
-                </BrowserRouter>
-            </Provider>
+        renderWithProviders(
+            <CANBudgetLineTableRow
+                budgetLine={mockBudgetLine}
+                blId={mockBudgetLine.id}
+                agreementName="TBD"
+                obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                fiscalYear={mockBudgetLine.fiscal_year}
+                amount={mockBudgetLine.amount}
+                fee={mockBudgetLine.proc_shop_fee_percentage}
+                percentOfCAN={3}
+                status={mockBudgetLine.status}
+                inReview={mockBudgetLine.in_review}
+                creatorId={mockBudgetLine.created_by}
+                creationDate={mockBudgetLine.created_on}
+                procShopCode="TBD"
+            />
         );
 
         expect(screen.getByText("TBD")).toBeInTheDocument();
@@ -65,29 +57,23 @@ describe("CANBudgetLineTableRow", () => {
     });
 
     test("renders expanded data correctly", async () => {
-        render(
-            <Provider store={store}>
-                <BrowserRouter>
-                    {" "}
-                    {/* Wrap with BrowserRouter */}
-                    <CANBudgetLineTableRow
-                        budgetLine={mockBudgetLine}
-                        blId={mockBudgetLine.id}
-                        agreementName="TBD"
-                        obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
-                        fiscalYear={mockBudgetLine.fiscal_year}
-                        amount={mockBudgetLine.amount}
-                        fee={mockBudgetLine.proc_shop_fee_percentage}
-                        percentOfCAN={3}
-                        status={mockBudgetLine.status}
-                        inReview={mockBudgetLine.in_review}
-                        creatorId={mockBudgetLine.created_by}
-                        creationDate={mockBudgetLine.created_on}
-                        procShopCode="TBD"
-                        description={mockBudgetLine.line_description}
-                    />
-                </BrowserRouter>
-            </Provider>
+        renderWithProviders(
+            <CANBudgetLineTableRow
+                budgetLine={mockBudgetLine}
+                blId={mockBudgetLine.id}
+                agreementName="TBD"
+                obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                fiscalYear={mockBudgetLine.fiscal_year}
+                amount={mockBudgetLine.amount}
+                fee={mockBudgetLine.proc_shop_fee_percentage}
+                percentOfCAN={3}
+                status={mockBudgetLine.status}
+                inReview={mockBudgetLine.in_review}
+                creatorId={mockBudgetLine.created_by}
+                creationDate={mockBudgetLine.created_on}
+                procShopCode="TBD"
+                description={mockBudgetLine.line_description}
+            />
         );
 
         // Simulate expanding the row
@@ -98,5 +84,38 @@ describe("CANBudgetLineTableRow", () => {
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // amount
         expect(screen.getByText("$50.00")).toBeInTheDocument(); // fee
+    });
+
+    test("records the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
+        // Ancestry as it would arrive under the Portfolio spending tab:
+        // Portfolios > Portfolio A > CAN 1
+        const ancestry = [
+            { label: "Portfolios", to: "/portfolios" },
+            { label: "Portfolio A", to: "/portfolios/5" },
+            { label: "CAN 1", to: "/cans/1" }
+        ];
+        const { store } = renderWithProviders(
+            <CANBudgetLineTableRow
+                budgetLine={mockBudgetLine}
+                blId={mockBudgetLine.id}
+                agreementName="TBD"
+                obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                fiscalYear={mockBudgetLine.fiscal_year}
+                amount={mockBudgetLine.amount}
+                percentOfCAN={3}
+                status={mockBudgetLine.status}
+                inReview={mockBudgetLine.in_review}
+                creatorId={mockBudgetLine.created_by}
+                creationDate={mockBudgetLine.created_on}
+                description={mockBudgetLine.line_description}
+                ancestry={ancestry}
+            />
+        );
+
+        await userEvent.click(screen.getByRole("link"));
+
+        const trail = store.getState().sessionUI.navContext.trail;
+        expect(trail.targetPath).toBe(`/agreements/${mockBudgetLine.agreement.id}`);
+        expect(trail.ancestors).toEqual(ancestry);
     });
 });

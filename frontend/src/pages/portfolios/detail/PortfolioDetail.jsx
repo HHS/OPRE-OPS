@@ -1,6 +1,8 @@
 import React from "react";
-import { Outlet, useParams, useSearchParams } from "react-router-dom";
+import { Outlet, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import App from "../../../App";
+import { LIST_CRUMBS, resolveAncestryForChildren } from "../../../helpers/breadcrumb.helpers";
 import {
     useGetPortfolioByIdQuery,
     useGetPortfolioFundingSummaryQuery,
@@ -39,6 +41,18 @@ const PortfolioDetail = () => {
     const { data: portfolioUrl } = useGetPortfolioUrlByIdQuery(portfolioId);
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
+    // Compose the ancestry that child entry-point links (CanCard, CANBudgetLineTable)
+    // should record. A portfolio is reached directly from the Portfolios list, so its
+    // parent crumb is always the Portfolios list; the leaf is this portfolio.
+    const { pathname } = useLocation();
+    const storedTrail = useSelector((state) => state.sessionUI?.navContext?.trail);
+    const linkAncestry = resolveAncestryForChildren({
+        trail: storedTrail,
+        pathname,
+        ownCrumb: { label: portfolio?.name ?? "Portfolio", to: `/portfolios/${portfolioId}` },
+        fallbackCrumb: LIST_CRUMBS.portfolios
+    });
+
     const isLoading = portfolioIsLoading || portfolioFundingLoading;
 
     if (isLoading) {
@@ -74,7 +88,8 @@ const PortfolioDetail = () => {
                         inDraftFunding: portfolioFunding?.draft_funding?.amount ?? 0,
                         inExecutionFunding: portfolioFunding?.in_execution_funding?.amount ?? 0,
                         obligatedFunding: portfolioFunding?.obligated_funding?.amount ?? 0,
-                        plannedFunding: portfolioFunding?.planned_funding?.amount ?? 0
+                        plannedFunding: portfolioFunding?.planned_funding?.amount ?? 0,
+                        linkAncestry
                     }}
                 />
             </div>

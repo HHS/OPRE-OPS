@@ -8,6 +8,7 @@ import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * @component CanCard
@@ -15,9 +16,11 @@ import { NO_DATA } from "../../../constants";
  * @param {Object} props - The props
  * @param {number} props.canId - The CAN id
  * @param {number} props.fiscalYear - The fiscal year
+ * @param {import("../../../sessionUISlice").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry to record when navigating to the CAN (composed by the embedding page).
  * @returns {JSX.Element} - The CAN card
  */
-const CanCard = ({ canId, fiscalYear }) => {
+const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const [receivedExpectedActiveId, setReceivedExpectedActiveId] = React.useState(0);
     const [spendingAvailableActiveId, setSpendingAvailableActiveId] = React.useState(0);
 
@@ -84,6 +87,7 @@ const CanCard = ({ canId, fiscalYear }) => {
         >
             <Link
                 to={`/cans/${can.id}`}
+                onClick={() => setBreadcrumbTrail({ targetPath: `/cans/${can.id}`, ancestors: ancestry })}
                 className="text-no-underline text-ink"
             >
                 <dl className={`margin-0 ${style.leftMarginContainer}`}>

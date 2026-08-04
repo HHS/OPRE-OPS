@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import store from "../../../store";
 import CanCard from "./CanCard";
 import { useGetCanFundingQuery } from "../../../api/opsAPI";
 
@@ -62,12 +64,14 @@ describe("CanCard", () => {
 
     it("renders CanCard with correct information", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         // Check basic CAN information
@@ -96,12 +100,14 @@ describe("CanCard", () => {
 
     it("passes correct total_funding to the spending/available LineGraph", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -133,12 +139,14 @@ describe("CanCard", () => {
         });
 
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -157,12 +165,14 @@ describe("CanCard", () => {
 
     it("applies fake-bold to Received label on hover", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -178,12 +188,14 @@ describe("CanCard", () => {
 
     it("applies fake-bold to Expected label on hover", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -199,12 +211,14 @@ describe("CanCard", () => {
 
     it("applies fake-bold to Spending label on hover", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -220,12 +234,14 @@ describe("CanCard", () => {
 
     it("applies fake-bold to Available label on hover", async () => {
         render(
-            <BrowserRouter>
-                <CanCard
-                    canId={mockCan.id}
-                    fiscalYear={mockFiscalYear}
-                />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <CanCard
+                        canId={mockCan.id}
+                        fiscalYear={mockFiscalYear}
+                    />
+                </BrowserRouter>
+            </Provider>
         );
 
         await waitFor(() => {
@@ -254,12 +270,14 @@ it("displays TBD when total_funding is 0", async () => {
     });
 
     render(
-        <BrowserRouter>
-            <CanCard
-                canId={mockCan.id}
-                fiscalYear={mockFiscalYear}
-            />
-        </BrowserRouter>
+        <Provider store={store}>
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        </Provider>
     );
 
     await waitFor(() => {

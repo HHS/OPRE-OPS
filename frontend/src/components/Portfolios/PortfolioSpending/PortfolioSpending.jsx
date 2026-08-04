@@ -19,7 +19,8 @@ const PortfolioSpending = () => {
         totalFunding,
         inExecutionFunding,
         obligatedFunding,
-        plannedFunding
+        plannedFunding,
+        linkAncestry
     } = useOutletContext();
 
     const {
@@ -112,6 +113,7 @@ const PortfolioSpending = () => {
                     totalFunding={totalFunding}
                     fiscalYear={fiscalYear}
                     tableType="portfolio"
+                    ancestry={linkAncestry}
                 />
             )}
         </>
