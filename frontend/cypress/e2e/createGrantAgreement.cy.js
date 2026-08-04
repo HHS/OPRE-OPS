@@ -38,7 +38,7 @@ it("can create a Grant agreement", () => {
     // Grant Details fields should be visible
     cy.get("#nofo_number").should("exist");
     cy.get("#funding_period_months").should("exist");
-    cy.get("#aln_number").should("exist");
+    cy.get("#aln-numbers-combobox-input").should("exist");
     // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
     cy.get("#project-officer-combobox-input").should("exist");
 
@@ -61,7 +61,8 @@ it("can create a Grant agreement", () => {
     // Optionally fill the remaining Grant Details fields
     cy.get("#nofo_number").type("NOFO-2026-01");
     cy.get("#funding_period_months").type("18");
-    cy.get("#aln_number").type("93.600");
+    cy.get("#aln-numbers-combobox-input").type("1{enter}");
+    cy.get("#aln-numbers-combobox-input").type("2{enter}");
 
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");

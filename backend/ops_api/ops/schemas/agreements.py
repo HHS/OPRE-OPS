@@ -113,7 +113,7 @@ class ContractAgreementData(AgreementData):
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True, load_default=[])
     funding_period_months = fields.Integer(allow_none=True)
     # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)
     # because grant_numbers are only meaningful for GRANT agreements.
@@ -302,7 +302,7 @@ class ContractListAgreementResponse(AgreementListResponse):
 class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 
@@ -310,7 +310,7 @@ class GrantAgreementResponse(AgreementResponse):
 class GrantListAgreementResponse(AgreementListResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 

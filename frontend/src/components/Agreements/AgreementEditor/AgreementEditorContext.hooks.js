@@ -28,7 +28,8 @@ export const defaultState = {
         contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
         research_methodologies: [],
-        special_topics: []
+        special_topics: [],
+        aln_numbers: []
     },
     budget_lines: [],
     selected_agreement_id: undefined,
@@ -180,6 +181,15 @@ export function editAgreementReducer(state, action) {
                 agreement: {
                     ...state.agreement,
                     special_topics: [...action.payload]
+                }
+            };
+        }
+        case "SET_ALN_NUMBERS": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    aln_numbers: [...action.payload]
                 }
             };
         }

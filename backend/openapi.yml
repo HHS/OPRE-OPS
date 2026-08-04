@@ -9365,9 +9365,11 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
-              type: string
+            aln_numbers:
+              type: array
               nullable: true
+              items:
+                type: integer
             funding_period_months:
               type: integer
               nullable: true
@@ -9649,9 +9651,11 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
-              type: string
+            aln_numbers:
+              type: array
               nullable: true
+              items:
+                type: integer
             funding_period_months:
               type: integer
               nullable: true
@@ -9671,9 +9675,11 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
-              type: string
+            aln_numbers:
+              type: array
               nullable: true
+              items:
+                type: integer
             funding_period_months:
               type: integer
               nullable: true

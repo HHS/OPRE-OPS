@@ -94,7 +94,6 @@ const useAgreementEditForm = (
     const setServicingAgency = useUpdateAgreement("servicing_agency");
     // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
     const setNofoNumber = useUpdateAgreement("nofo_number");
-    const setAlnNumber = useUpdateAgreement("aln_number");
     const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
@@ -151,7 +150,7 @@ const useAgreementEditForm = (
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
         nofo_number: nofoNumber,
-        aln_number: alnNumber,
+        aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
@@ -379,6 +378,13 @@ const useAgreementEditForm = (
         dispatch({
             type: "SET_SPECIAL_TOPICS",
             payload: specialTopics ? specialTopics : []
+        });
+    };
+
+    const setAlnNumbers = (alnNumbers) => {
+        dispatch({
+            type: "SET_ALN_NUMBERS",
+            payload: alnNumbers ? alnNumbers : []
         });
     };
 
@@ -706,7 +712,7 @@ const useAgreementEditForm = (
     // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
     const clearGrantOnlyFields = () => {
         setNofoNumber(null);
-        setAlnNumber(null);
+        setAlnNumbers([]);
         setFundingPeriodMonths(null);
     };
 
@@ -737,10 +743,10 @@ const useAgreementEditForm = (
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
         nofoNumber,
-        alnNumber,
+        alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumber,
+        setAlnNumbers,
         setFundingPeriodMonths,
         showModal,
         setShowModal,

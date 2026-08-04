@@ -17,6 +17,7 @@ import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import SummaryBox from "../SummaryBox";
+import AlnNumbersComboBox from "../AlnNumbersComboBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -96,10 +97,10 @@ const AgreementEditForm = ({
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
         nofoNumber,
-        alnNumber,
+        alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumber,
+        setAlnNumbers,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
@@ -458,11 +459,11 @@ const AgreementEditForm = ({
                             }
                         }}
                     />
-                    <Input
-                        name="aln_number"
-                        label="ALN Number"
-                        value={alnNumber || ""}
-                        onChange={(name, value) => setAlnNumber(value)}
+                    <AlnNumbersComboBox
+                        selectedAlnNumbers={alnNumbers}
+                        setSelectedAlnNumbers={setAlnNumbers}
+                        legendClassName="usa-label margin-top-0"
+                        overrideStyles={{ width: "30em" }}
                     />
                     <div className="display-flex margin-top-3">
                         <ProjectOfficerComboBox
