@@ -418,7 +418,14 @@ export const CreateBLIsAndSCs = ({
                     )}
                     {isGrant && (
                         <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
-                            <FormHeader heading="Add Budget Lines" />
+                            <FormHeader
+                                heading="Add Budget Lines"
+                                details={
+                                    isReviewMode
+                                        ? undefined
+                                        : "Add Budget lines to each Grant Number to outline how the grant will be funded."
+                                }
+                            />
                         </div>
                     )}
                     <div className="display-flex flex-justify margin-y-2">
