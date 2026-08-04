@@ -909,5 +909,16 @@ describe("useProcurementTrackerStepSix", () => {
             });
             expect(result.current.selectedUser).toEqual({ id: 1 });
         });
+
+        it("calls onDirtyChange(true) when notes differ from server value", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(mockStepSixData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStepSixNotes("different notes");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
     });
 });

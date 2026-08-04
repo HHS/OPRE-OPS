@@ -13,6 +13,10 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetUsersQuery: vi.fn()
 }));
 
+// Declare the blocker spy with vi.hoisted() so it is available inside the vi.mock() factory,
+// which is hoisted to the top of the file above all const declarations.
+const mockUseUnsavedChangesBlocker = vi.hoisted(() => vi.fn());
+
 // Mock the navigation blocker hook so tests don't need a data router
 const mockSetShowBlockerModal = vi.fn();
 const mockBlockerReturn = {
@@ -21,9 +25,23 @@ const mockBlockerReturn = {
     blockerModalProps: {}
 };
 
+// Wire up the spy — default implementation returns mockBlockerReturn
 vi.mock("../../../hooks/useUnsavedChangesBlocker.hooks", () => ({
-    default: () => mockBlockerReturn
+    default: (...args) => mockUseUnsavedChangesBlocker(...args)
 }));
+
+// Mock SaveChangesAndExitModal so blocker modal tests work without USWDS modal plumbing.
+// The source imports it as a default import, so we export both default and named.
+vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => {
+    const Mock = ({ heading, actionButtonText, secondaryButtonText }) => (
+        <div data-testid="save-changes-modal">
+            <p>{heading}</p>
+            <button type="button">{actionButtonText}</button>
+            <button type="button">{secondaryButtonText}</button>
+        </div>
+    );
+    return { default: Mock, SaveChangesAndExitModal: Mock };
+});
 
 // Mock DebugCode component
 vi.mock("../../../components/DebugCode", () => ({
@@ -133,12 +151,13 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree", () => ({
-    default: ({ stepStatus, stepThreeData, isDisabled }) => (
+    default: ({ stepStatus, stepThreeData, isDisabled, onDirtyChange }) => (
         <div
             data-testid="procurement-step-three"
             data-step-status={stepStatus}
             data-step-data-id={stepThreeData?.id}
             data-is-disabled={String(isDisabled)}
+            data-has-dirty-change={onDirtyChange !== undefined ? "true" : "false"}
         >
             <p>
                 Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter the
@@ -165,7 +184,38 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepSix", () => ({
+    default: ({ stepStatus, isDisabled, onDirtyChange }) => (
+        <div
+            data-testid="procurement-step-six"
+            data-step-status={stepStatus}
+            data-is-disabled={isDisabled}
+            data-has-dirty-change={onDirtyChange !== undefined ? "true" : "false"}
+        >
+            {(stepStatus === "ACTIVE" || stepStatus === "PENDING") && (
+                <>
+                    <p>
+                        Once you receive the signed award, please send it to the Budget Team and click Request Award
+                        Approval below. During this process you will add CLINs, and update the Vendor and Vendor Type.
+                    </p>
+                    <input type="checkbox" />
+                </>
+            )}
+            {stepStatus === "COMPLETED" ? "Step Six Completed" : "Step Six Form"}
+            <button
+                type="button"
+                onClick={() => onDirtyChange && onDirtyChange(true)}
+                data-testid="step-six-trigger-dirty"
+            >
+                Trigger dirty
+            </button>
+        </div>
+    )
+}));
+
 // Mock constants module
+// Note: STEP_5 is false — ProcurementTrackerStepFive is never rendered in unit tests;
+// its onDirtyChange wiring is covered by E2E tests only.
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
@@ -272,6 +322,10 @@ describe("AgreementProcurementTracker", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        // Restore the blocker hook spy's default implementation after clearAllMocks resets it,
+        // and reset its call history for per-test assertions.
+        mockUseUnsavedChangesBlocker.mockImplementation(() => mockBlockerReturn);
+        mockUseUnsavedChangesBlocker.mockClear();
         // Reset console.log mock
         vi.spyOn(console, "log").mockImplementation(() => {});
         // Mock the mutation hook with default implementation
@@ -1555,9 +1609,32 @@ describe("AgreementProcurementTracker", () => {
     });
 
     describe("Navigate-away blocker wiring", () => {
+        // Tracker with active step 2 — StepTwo, StepThree, and StepSix will all be rendered
+        // (StepThree and StepSix in closed accordions; StepTwo in the open active accordion).
+        // STEP_5 is disabled in the IS_PROCUREMENT_TRACKER_READY_MAP mock, so StepFive is
+        // never rendered in unit tests; its onDirtyChange wiring is covered by E2E tests.
+        const trackerWithAllSteps = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    status: "ACTIVE",
+                    active_step_number: 2,
+                    steps: [
+                        { id: 1, step_number: 1, status: "COMPLETED" },
+                        { id: 2, step_number: 2, status: "ACTIVE" },
+                        { id: 3, step_number: 3, status: "PENDING" },
+                        { id: 4, step_number: 4, status: "PENDING" },
+                        { id: 5, step_number: 5, status: "PENDING" },
+                        { id: 6, step_number: 6, status: "PENDING" }
+                    ]
+                }
+            ]
+        };
+
         beforeEach(() => {
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-                data: mockTrackerData,
+                data: trackerWithAllSteps,
                 isLoading: false,
                 isError: false
             });
@@ -1566,32 +1643,102 @@ describe("AgreementProcurementTracker", () => {
         });
 
         it("passes onDirtyChange to all rendered steps", () => {
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            // StepTwo is in the open accordion (active step 2)
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            expect(stepTwo).toHaveAttribute("data-has-dirty-change", "true");
+
+            // Open step 3 accordion to verify StepThree also receives onDirtyChange
+            const step3Heading = screen.getByTestId("step-builder-heading-3");
+            fireEvent.click(step3Heading);
+            const stepThree = screen.getByTestId("procurement-step-three");
+            expect(stepThree).toHaveAttribute("data-has-dirty-change", "true");
+
+            // Open step 6 accordion to verify StepSix also receives onDirtyChange
+            const step6Heading = screen.getByTestId("step-builder-heading-6");
+            fireEvent.click(step6Heading);
+            const stepSix = screen.getByTestId("procurement-step-six");
+            expect(stepSix).toHaveAttribute("data-has-dirty-change", "true");
+        });
+
+        it("passes hasChanged: false to useUnsavedChangesBlocker when no step is dirty", () => {
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            // On initial render no step has reported dirty, so hasChanged must be false
+            expect(mockUseUnsavedChangesBlocker).toHaveBeenCalledWith(expect.objectContaining({ hasChanged: false }));
+        });
+
+        it("passes hasChanged: true to useUnsavedChangesBlocker when active step is dirty", async () => {
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            // Simulate the active step (StepTwo) calling onDirtyChange(true).
+            // StepTwo's mock renders a div, not a button — we find onDirtyChange by
+            // opening the step 6 accordion (StepSix mock) which exposes a "Trigger dirty" button.
+            const step6Heading = screen.getByTestId("step-builder-heading-6");
+            fireEvent.click(step6Heading);
+
+            const triggerDirty = screen.getByTestId("step-six-trigger-dirty");
+            fireEvent.click(triggerDirty);
+
+            // After onDirtyChange(true), the most recent call to useUnsavedChangesBlocker
+            // should have hasChanged: true
+            const lastCall = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(lastCall).toMatchObject({ hasChanged: true });
+        });
+
+        it("passes hasChanged: false after active tracker becomes inactive (step completed)", async () => {
+            const { rerender } = renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+
+            // Mark the step dirty via StepSix's trigger button
+            const step6Heading = screen.getByTestId("step-builder-heading-6");
+            fireEvent.click(step6Heading);
+            const triggerDirty = screen.getByTestId("step-six-trigger-dirty");
+            fireEvent.click(triggerDirty);
+
+            // Confirm it went dirty
+            const callAfterDirty = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+            expect(callAfterDirty).toMatchObject({ hasChanged: true });
+
+            // Now simulate the tracker completing (no active tracker any more)
+            const completedTrackerData = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "COMPLETED",
+                        active_step_number: null,
+                        steps: [
+                            { id: 1, step_number: 1, status: "COMPLETED" },
+                            { id: 2, step_number: 2, status: "COMPLETED" },
+                            { id: 3, step_number: 3, status: "COMPLETED" },
+                            { id: 4, step_number: 4, status: "COMPLETED" },
+                            { id: 5, step_number: 5, status: "COMPLETED" },
+                            { id: 6, step_number: 6, status: "COMPLETED" }
+                        ]
+                    }
+                ]
+            };
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-                data: {
-                    data: [
-                        {
-                            id: 4,
-                            agreement_id: 13,
-                            status: "ACTIVE",
-                            active_step_number: 2,
-                            steps: [
-                                { id: 1, step_number: 1, status: "COMPLETED" },
-                                { id: 2, step_number: 2, status: "ACTIVE" },
-                                { id: 3, step_number: 3, status: "PENDING" },
-                                { id: 4, step_number: 4, status: "PENDING" }
-                            ]
-                        }
-                    ]
-                },
+                data: completedTrackerData,
                 isLoading: false,
                 isError: false
             });
 
-            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
+            rerender(
+                <Provider store={setupStore()}>
+                    <MemoryRouter>
+                        <AgreementProcurementTracker agreement={mockAgreement} />
+                    </MemoryRouter>
+                </Provider>
+            );
 
-            // All rendered steps receive onDirtyChange so any step with user input can report dirty state
-            const stepTwo = screen.getByTestId("procurement-step-two");
-            expect(stepTwo).toHaveAttribute("data-has-dirty-change", "true");
+            // After re-render with no active tracker, the useEffect resets isActiveStepDirty
+            // to false, so the blocker should receive hasChanged: false
+            await waitFor(() => {
+                const callAfterComplete = mockUseUnsavedChangesBlocker.mock.calls.at(-1)[0];
+                expect(callAfterComplete).toMatchObject({ hasChanged: false });
+            });
         });
 
         it("renders SaveChangesAndExitModal when showBlockerModal is true", () => {

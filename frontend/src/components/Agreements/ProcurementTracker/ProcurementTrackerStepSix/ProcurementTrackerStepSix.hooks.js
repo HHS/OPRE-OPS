@@ -158,7 +158,7 @@ export default function useProcurementTrackerStepSix(
      */
     const cancelStepSix = () => {
         suite.reset(); // Clear validation state
-        setIsAwardCheckboxChecked(false);
+        setIsAwardCheckboxChecked(stepSixData?.approval_requested ?? false);
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
