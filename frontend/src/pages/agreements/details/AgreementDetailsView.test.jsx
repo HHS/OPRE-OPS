@@ -195,7 +195,7 @@ describe("AgreementDetailsView", () => {
             expect(screen.getByText("18 months")).toBeInTheDocument();
         });
 
-        it("labels the PO/Alt-PO block as Federal Project Officer / Project Specialist", () => {
+        it("labels the PO/Alt-PO block as FPO / Project Specialist", () => {
             render(
                 <AgreementDetailsView
                     agreement={grantAgreement}
@@ -205,11 +205,11 @@ describe("AgreementDetailsView", () => {
                 />
             );
 
-            expect(screen.getByText("Federal Project Officer")).toBeInTheDocument();
+            expect(screen.getByText("FPO")).toBeInTheDocument();
             expect(screen.getByText("Project Specialist")).toBeInTheDocument();
             expect(screen.getByText("Jane Specialist")).toBeInTheDocument();
             // Must NOT use the "Alternate ..." wording for grants
-            expect(screen.queryByText("Alternate Federal Project Officer")).not.toBeInTheDocument();
+            expect(screen.queryByText("Alternate FPO")).not.toBeInTheDocument();
             expect(screen.queryByText("Alternate Project Officer")).not.toBeInTheDocument();
         });
 
