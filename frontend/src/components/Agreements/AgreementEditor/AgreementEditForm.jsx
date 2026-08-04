@@ -267,28 +267,43 @@ const AgreementEditForm = ({
                     setShowModal={setShowBlockerModal}
                 />
             )}
-            <Select
-                className={cn("agreement-type-filter")}
-                label="Agreement Type"
-                messages={res.getErrors("agreement-type-filter")}
-                name="agreement-type-filter"
-                options={agreementFilterOptions}
-                onChange={(name, value) => {
-                    handleAgreementFilterChange(value);
-                    runValidate(name, value);
-                }}
-                isDisabled={isAgreementCreated}
-                value={selectedAgreementFilter || ""}
-                tooltipMsg="Agreement Type cannot be changed once an agreement is created"
-                isRequired
-            />
+            <h2 className="font-sans-lg margin-top-3">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
+            <div className="padding-top-3">
+                <Select
+                    className={cn("agreement-type-filter")}
+                    label="Agreement Type"
+                    messages={res.getErrors("agreement-type-filter")}
+                    name="agreement-type-filter"
+                    options={agreementFilterOptions}
+                    onChange={(name, value) => {
+                        handleAgreementFilterChange(value);
+                        runValidate(name, value);
+                    }}
+                    isDisabled={isAgreementCreated}
+                    value={selectedAgreementFilter || ""}
+                    tooltipMsg="Agreement Type cannot be changed once an agreement is created"
+                    isRequired
+                />
+            </div>
             {isWizardMode && (
                 <>
                     <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
                     <p className="margin-top-1">
-                        Tell us a little more about this agreement. Make sure you complete the required information in
-                        order to proceed. For everything else you can skip the parts you do not know or come back to
-                        edit the information later.
+                        {!isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. Make sure you complete the required
+                                information in order to proceed. For everything else you can skip the parts you do not
+                                know or come back to edit the information later.
+                            </span>
+                        )}
+                        {isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. For grants, the agreement title should match
+                                the NOFO name. If you don’t know it yet, enter a draft name and edit it later. Complete
+                                the required information to proceed, and skip anything you don’t know for now.
+                            </span>
+                        )}
                     </p>
                 </>
             )}
@@ -433,8 +448,9 @@ const AgreementEditForm = ({
                 <>
                     <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
                     <p>
-                        Please complete the information below for this grant. You can enter this information now or come
-                        back and edit the information later.
+                        Please complete the information below for this grant. In OPS, a grant agreement is a single NOFO
+                        number. You also can come back later to edit this information at any time or once everything is
+                        finalized.
                     </p>
                     <Input
                         name="nofo_number"
