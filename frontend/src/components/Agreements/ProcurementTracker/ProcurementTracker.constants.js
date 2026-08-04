@@ -64,8 +64,9 @@ export const STEP_NOTES_WIDTH = "664px";
 
 /**
  * Shared inline style for the notes TextArea rendered in each procurement tracker step.
- * `width`/`maxWidth` both use {@link STEP_NOTES_WIDTH}; setting `maxWidth` overrides the
- * USWDS `.usa-textarea` default `max-width` (30rem) that would otherwise clamp the field.
+ * `width`/`maxWidth` both use {@link STEP_NOTES_WIDTH}: the fixed 664px width is a design
+ * requirement, and setting `maxWidth` overrides the USWDS `.usa-textarea` default
+ * `max-width` (30rem) that would otherwise clamp the field below that width.
  * @type {{ height: string, width: string, maxWidth: string }}
  */
 export const STEP_NOTES_TEXTAREA_STYLE = {

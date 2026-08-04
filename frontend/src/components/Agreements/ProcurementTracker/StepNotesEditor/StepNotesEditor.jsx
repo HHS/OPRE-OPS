@@ -98,6 +98,14 @@ const StepNotesEditor = ({
         setIsEditingNotes(false);
     };
 
+    // The value committed as of the last time edit mode was entered. Cancel restores
+    // THIS, not the `savedNotes` prop: after a save the prop stays stale (still the
+    // pre-save server value) until the RTK Query invalidation refetch lands, so
+    // cancelling back to it would briefly revert read mode to the old note (or flash
+    // "None" for a first-time note). Seeded from the server value and refreshed each
+    // time the user (re)enters edit mode.
+    const committedNotesRef = React.useRef(savedNotes ?? "");
+
     // Screen-reader announcement for a completed save. The visual edit→read flip
     // is the only save-completion cue for sighted users; assistive tech gets this
     // aria-live region instead (it replaces the removed "Notes Saved" success
@@ -107,6 +115,9 @@ const StepNotesEditor = ({
 
     /** Enter edit mode, clearing any prior save announcement. */
     const enterEditMode = () => {
+        // Snapshot the currently committed note so Cancel can restore it without
+        // depending on the (possibly stale) `savedNotes` prop.
+        committedNotesRef.current = notes;
         setSaveAnnouncement("");
         setIsEditingNotes(true);
     };
@@ -150,7 +161,7 @@ const StepNotesEditor = ({
                                 className="usa-button usa-button--unstyled margin-right-2"
                                 data-cy="cancel-edit-notes-button"
                                 onClick={() => {
-                                    resetNotes(savedNotes ?? "");
+                                    resetNotes(committedNotesRef.current);
                                     returnToReadMode();
                                 }}
                                 disabled={isDisabled}

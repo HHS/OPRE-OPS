@@ -239,6 +239,7 @@ const ProcurementTrackerStepFour = ({
                             />
                         </div>
                         <StepNotesEditor
+                            textAreaName="notes-step-4"
                             notes={step4Notes}
                             setNotes={setStep4Notes}
                             resetNotes={resetStep4Notes}
@@ -308,19 +309,20 @@ const ProcurementTrackerStepFour = ({
                             term="Date Completed"
                             description={step4DateCompletedLabel}
                         />
-                        <div className="width-full">
-                            <StepNotesEditor
-                                notes={step4Notes}
-                                setNotes={setStep4Notes}
-                                resetNotes={resetStep4Notes}
-                                savedNotes={stepFourData?.notes}
-                                stepId={stepFourData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled || isStepPatchInFlight}
-                                startInReadMode
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-4"
+                        notes={step4Notes}
+                        setNotes={setStep4Notes}
+                        resetNotes={resetStep4Notes}
+                        savedNotes={stepFourData?.notes}
+                        stepId={stepFourData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                    />
                 </div>
             )}
         </>

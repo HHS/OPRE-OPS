@@ -348,20 +348,20 @@ const ProcurementTrackerStepSix = ({
                                 className="margin-left-4"
                             />
                         )}
-                        <div className="width-full">
-                            <StepNotesEditor
-                                notes={stepSixNotes}
-                                setNotes={setStepSixNotes}
-                                resetNotes={resetStepSixNotes}
-                                savedNotes={stepSixData?.notes}
-                                stepId={stepSixData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled || isStepPatchInFlight}
-                                textAreaName="notes-step-6"
-                                startInReadMode
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        notes={stepSixNotes}
+                        setNotes={setStepSixNotes}
+                        resetNotes={resetStepSixNotes}
+                        savedNotes={stepSixData?.notes}
+                        stepId={stepSixData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        textAreaName="notes-step-6"
+                        startInReadMode
+                    />
                 </div>
             )}
         </>

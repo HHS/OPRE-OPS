@@ -76,13 +76,22 @@ describe("StepNotesEditor", () => {
         expect(cancelBtn()).not.toBeInTheDocument();
     });
 
-    it("restores the saved notes and exits edit mode on Cancel, clearing the dirty flag via resetNotes", () => {
-        const { resetNotes, setNotes } = renderEditor({ savedNotes: "Original notes" });
+    it("restores the committed notes and exits edit mode on Cancel, clearing the dirty flag via resetNotes", () => {
+        // Cancel restores the value committed when edit mode was entered (the live
+        // `notes`), NOT the `savedNotes` prop. Here they diverge — mimicking the
+        // post-save refetch window where `savedNotes` is still the pre-save value —
+        // so cancelling must restore "Committed", not the stale "Stale server value".
+        const { resetNotes, setNotes } = renderEditor({
+            notes: "Committed",
+            savedNotes: "Stale server value",
+            startInReadMode: true
+        });
 
         fireEvent.click(editNotesBtn());
         fireEvent.click(cancelBtn());
 
-        expect(resetNotes).toHaveBeenCalledWith("Original notes");
+        expect(resetNotes).toHaveBeenCalledWith("Committed");
+        expect(resetNotes).not.toHaveBeenCalledWith("Stale server value");
         expect(setNotes).not.toHaveBeenCalled();
         expect(saveNotesBtn()).not.toBeInTheDocument();
         expect(editNotesBtn()).toBeInTheDocument();
@@ -211,9 +220,9 @@ describe("StepNotesEditor", () => {
         expect(editNotesBtn()).toBeInTheDocument();
     });
 
-    it("stays in edit mode when the save fails", async () => {
+    it("stays in edit mode and preserves the user's text when the save fails", async () => {
         const onSave = vi.fn().mockResolvedValue(false);
-        renderEditor({ onSave, notes: "A note", savedNotes: "" });
+        const { setNotes, resetNotes } = renderEditor({ onSave, notes: "A note", savedNotes: "" });
 
         fireEvent.click(saveNotesBtn());
 
@@ -221,6 +230,47 @@ describe("StepNotesEditor", () => {
         // The editor must remain in edit mode so the user's unsaved input isn't lost.
         await waitFor(() => expect(saveNotesBtn()).toBeInTheDocument());
         expect(editNotesBtn()).not.toBeInTheDocument();
+        // The failed save must not touch the notes value: the textarea keeps the
+        // user's text and neither setNotes nor resetNotes is called on the failure path.
+        // eslint-disable-next-line testing-library/no-node-access
+        expect(document.querySelector("textarea")).toHaveValue("A note");
+        expect(resetNotes).not.toHaveBeenCalled();
+        expect(setNotes).not.toHaveBeenCalled();
+    });
+
+    it("calls setNotes with the typed value as the user edits the textarea", () => {
+        const { setNotes } = renderEditor({ notes: "", savedNotes: "" });
+
+        // eslint-disable-next-line testing-library/no-node-access
+        fireEvent.change(document.querySelector("textarea"), { target: { value: "typed text" } });
+
+        expect(setNotes).toHaveBeenCalledWith("typed text");
+    });
+
+    it("restores focus to the Edit Notes button after a first-time save (savedNotes still empty)", async () => {
+        // The trickier focus path: a fresh active step has no Edit Notes button at
+        // mount (canReturnToReadMode is false), so `hasEverSaved` is promoted mid-save
+        // and the button appears for the first time. Focus must still land on it and
+        // not drop to <body>, even though savedNotes stays "" during the refetch window.
+        const onSave = vi.fn().mockResolvedValue(true);
+        renderEditor({ onSave, notes: "A note", savedNotes: "" });
+
+        saveNotesBtn().focus();
+        fireEvent.click(saveNotesBtn());
+
+        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
+        expect(editNotesBtn()).toHaveFocus();
+    });
+
+    it("disables the Save Notes button and textarea in edit mode when isDisabled is true", () => {
+        // The fresh-active-step path starts directly in edit mode, so isDisabled's
+        // effect on the edit-mode controls is reachable without clicking a (disabled)
+        // Edit Notes button.
+        renderEditor({ isDisabled: true, notes: "A note", savedNotes: "" });
+
+        expect(saveNotesBtn()).toBeDisabled();
+        // eslint-disable-next-line testing-library/no-node-access
+        expect(document.querySelector("textarea")).toBeDisabled();
     });
 
     it("restores focus to the Edit Notes button after a successful save (no drop to body)", async () => {
