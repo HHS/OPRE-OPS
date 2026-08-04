@@ -42,29 +42,26 @@ it("can create a Grant agreement", () => {
     // The FPO combobox now renders for grants (reuses ProjectOfficerComboBox)
     cy.get("#project-officer-combobox-input").should("exist");
 
-    // Continue button should exist but stay disabled for grants until NOFO Number is present
+    // Continue button should exist but stay disabled until a title is present
     cy.get("[data-cy='continue-btn']").should("exist").and("be.disabled");
 
     // Save Draft should still be disabled (no title yet)
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
 
-    // Enter Title/Nickname/Description (from #5925) — Save Draft still disabled without NOFO Number
+    // Enter Title/Nickname/Description (from #5925) — NOFO Number is optional and is not
+    // required to enable Save Draft/Continue
     cy.get("#name").type("E2E Grant Agreement Test");
     cy.get("#nickname").type("GRANT-TEST");
     cy.get("#description").type("This is a test grant agreement description.");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
 
-    // NOFO Number is now required to enable Save Draft and Continue
-    cy.get("#nofo_number").type("NOFO-2026-01");
-
-    // Optionally fill the remaining Grant Details fields
-    cy.get("#funding_period_months").type("18");
-    cy.get("#aln_number").type("93.600");
-
-    // Save Draft and Continue should now be enabled once NOFO Number is present
+    // Save Draft and Continue should be enabled once the title is present, with no NOFO Number
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
+
+    // Optionally fill the remaining Grant Details fields
+    cy.get("#nofo_number").type("NOFO-2026-01");
+    cy.get("#funding_period_months").type("18");
+    cy.get("#aln_number").type("93.600");
 
     // Select Project Officer
     cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
@@ -170,7 +167,7 @@ it("can create a Grant agreement", () => {
     });
 });
 
-it("can save a Grant agreement draft without adding grant numbers", () => {
+it("can save a Grant agreement draft without a NOFO Number or adding grant numbers", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
@@ -180,7 +177,9 @@ it("can save a Grant agreement draft without adding grant numbers", () => {
     // Step Two - Create Agreement
     cy.get("#agreement-type-filter").select("GRANT");
     cy.get("#name").type("E2E Grant Draft Save Test");
-    cy.get("#nofo_number").type("NOFO-2026-02");
+
+    // NOFO Number is optional — Save Draft is enabled without it
+    cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
 
     // Save the draft directly from Step 2, without ever visiting Step 3
     cy.get("[data-cy='save-draft-btn']").click();

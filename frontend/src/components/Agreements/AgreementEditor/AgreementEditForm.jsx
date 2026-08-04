@@ -440,7 +440,6 @@ const AgreementEditForm = ({
                         label="NOFO Number"
                         messages={res.getErrors("nofo_number")}
                         className={cn("nofo_number")}
-                        isRequired={true}
                         value={nofoNumber || ""}
                         onChange={(name, value) => {
                             setNofoNumber(value);

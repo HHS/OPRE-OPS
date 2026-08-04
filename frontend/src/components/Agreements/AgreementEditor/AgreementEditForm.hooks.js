@@ -321,10 +321,7 @@ const useAgreementEditForm = (
         !agreementType ||
         res.hasErrors() ||
         hasUniquenessErrors ||
-        (isAgreementAA && (!servicingAgency || !requestingAgency)) ||
-        // NOFO Number is the grant-equivalent hard requirement to Title — enforced both here
-        // (explicit check, mirroring !agreementTitle) and via the Vest suite's nofo_number test.
-        (isGrant && !nofoNumber);
+        (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
