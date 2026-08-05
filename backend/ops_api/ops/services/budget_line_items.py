@@ -845,10 +845,10 @@ class BudgetLineItemService:
         if can_id and not can:
             raise ResourceNotFoundError("CAN", can_id)
 
-        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields)
+        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields, self.db_session)
 
     @staticmethod
-    def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
+    def _validation_change_status_higher_than_draft(budget_line_item, updated_fields, db_session):
         if not (
             (
                 "status" in updated_fields
@@ -871,7 +871,7 @@ class BudgetLineItemService:
         if missing_fields:
             raise ValidationError({"status": "Budget Line Item is missing required fields."})
 
-        BudgetLineItemService._validate_agreement_for_status_change(budget_line_item, updated_fields)
+        BudgetLineItemService._validate_agreement_for_status_change(budget_line_item, updated_fields, db_session)
         BudgetLineItemService._validate_amount_and_date_for_status_change(budget_line_item, updated_fields)
 
         current_can_id = budget_line_item.can_id
@@ -880,23 +880,22 @@ class BudgetLineItemService:
             raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
 
     @staticmethod
-    def _validate_agreement_for_status_change(budget_line_item, updated_fields):
-        if not budget_line_item.agreement and (
-            "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
-        ):
+    def _validate_agreement_for_status_change(budget_line_item, updated_fields, db_session):
+        agreement = budget_line_item.agreement
+        if not agreement and updated_fields.get("agreement_id") is not None:
+            agreement = db_session.get(Agreement, updated_fields["agreement_id"])
+
+        if not agreement:
             raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
 
-        agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
-        missing_fields = BudgetLineItemService._get_missing_fields(
-            agreement_required_fields, budget_line_item.agreement, updated_fields
-        )
+        agreement_required_fields = agreement.__class__.get_required_fields_for_status_change()
+        missing_fields = BudgetLineItemService._get_missing_fields(agreement_required_fields, agreement, updated_fields)
         if missing_fields:
             raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
 
         if (
-            budget_line_item.agreement.agreement_reason
-            in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
-            and not budget_line_item.agreement.vendor_id
+            agreement.agreement_reason in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
+            and not agreement.vendor_id
         ):
             raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
 
