@@ -531,6 +531,7 @@ export const CreateBLIsAndSCs = ({
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={grantNumbers.length}
                         >
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}

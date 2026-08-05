@@ -303,6 +303,7 @@ const AgreementBudgetLines = ({
                     <GrantNumberAccordion
                         key={`${group.grantNumberNumber}-${index}`}
                         grantNumberNumber={group.grantNumberNumber}
+                        totalGrantNumbers={(grantNumbers ?? []).length}
                     >
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable

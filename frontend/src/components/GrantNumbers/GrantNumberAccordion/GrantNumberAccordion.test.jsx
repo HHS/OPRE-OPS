@@ -21,4 +21,28 @@ describe("GrantNumberAccordion", () => {
         );
         expect(screen.getByText("BLs not associated with a Grant Number")).toBeInTheDocument();
     });
+
+    it("renders the grant number with a total count when totalGrantNumbers is provided", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                totalGrantNumbers={2}
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.getByText("Grant 1 of 2")).toBeInTheDocument();
+    });
+
+    it("does not append a total count for the unassociated bucket even when totalGrantNumbers is provided", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={0}
+                totalGrantNumbers={2}
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.getByText("BLs not associated with a Grant Number")).toBeInTheDocument();
+    });
 });
