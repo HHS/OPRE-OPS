@@ -109,8 +109,6 @@ describe("useServicesComponents", () => {
 
     describe("PoP conflict — confirmation modal", () => {
         it("shows the confirm modal instead of saving (add mode) when a non-draft BLI falls outside the existing SCs' window", () => {
-            // In add mode the suite checks the already-persisted SCs' combined window
-            // (the new SC being added isn't merged in until after it's saved).
             useEditAgreementMock.mockReturnValue({
                 services_components: [{ id: 1, number: 1, period_start: "2025-01-01", period_end: "2025-06-30" }]
             });
@@ -136,6 +134,32 @@ describe("useServicesComponents", () => {
             expect(result.current.modalProps.heading).toBe(POP_CONFIRMATION_MESSAGE);
             expect(result.current.modalProps.actionButtonText).toBe("Continue with Updates");
             expect(result.current.modalProps.secondaryButtonText).toBe("Cancel");
+        });
+
+        it("shows the confirm modal instead of saving (add mode) when it's the first SC on the agreement and its window excludes a non-draft BLI", () => {
+            // Regression: with no existing SCs, the suite must still see the new SC being
+            // added — otherwise allServicesComponents is empty and the check silently no-ops.
+            useEditAgreementMock.mockReturnValue({ services_components: [] });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-11-01")]);
+
+            act(() => {
+                result.current.setFormData({
+                    number: 1,
+                    optional: false,
+                    description: "First SC",
+                    popStartDate: "01/01/2025",
+                    popEndDate: "06/30/2025",
+                    mode: "add"
+                });
+            });
+
+            act(() => {
+                result.current.handleSubmit({ preventDefault: vi.fn() });
+            });
+
+            expect(dispatchMock).not.toHaveBeenCalled();
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.heading).toBe(POP_CONFIRMATION_MESSAGE);
         });
 
         it("shows the confirm modal instead of saving (edit mode) when the new PoP window excludes a non-draft BLI", () => {

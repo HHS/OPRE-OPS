@@ -49,11 +49,24 @@ const useServicesComponents = (
         };
     }, []);
 
-    // When editing an SC, merge the live form dates into allServicesComponents so the suite
-    // always sees the current period values — context only updates after dispatch.
+    // Merge the live form dates into allServicesComponents so the suite always sees the
+    // current period values — context only updates after dispatch. In "edit" mode this means
+    // patching the matching SC's dates; in "add" mode the new SC doesn't exist in context yet,
+    // so it must be appended, or the suite sees only the already-saved SCs.
     const allServicesComponentsForSuite = React.useMemo(() => {
-        if (!servicesComponents || formData.mode !== "edit") return servicesComponents ?? [];
-        return servicesComponents.map((sc) => {
+        const existing = servicesComponents ?? [];
+        if (formData.mode === "add") {
+            return [
+                ...existing,
+                {
+                    number: formData.number,
+                    period_start: formatDateForApi(formData.popStartDate),
+                    period_end: formatDateForApi(formData.popEndDate)
+                }
+            ];
+        }
+        if (formData.mode !== "edit") return existing;
+        return existing.map((sc) => {
             if (sc.number !== formData.number) return sc;
             return {
                 ...sc,
