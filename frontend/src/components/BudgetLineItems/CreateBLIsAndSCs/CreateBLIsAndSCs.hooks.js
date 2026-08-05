@@ -142,6 +142,7 @@ const useCreateBLIsAndSCs = (
         suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
+        scFormSuite.reset();
         // Force a re-render with the freshly-cleared state so the render-time reads
         // (this hook's `res` and BudgetLinesForm's datePickerSuite.get()) repaint clean.
         setPageSuiteResult(suite.get());
@@ -149,6 +150,7 @@ const useCreateBLIsAndSCs = (
             suite.reset();
             budgetFormSuite.reset();
             datePickerSuite.reset();
+            scFormSuite.reset();
         };
     }, []);
 
