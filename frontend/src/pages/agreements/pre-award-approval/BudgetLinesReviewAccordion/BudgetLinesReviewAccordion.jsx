@@ -1,6 +1,7 @@
 import AgreementBLIAccordion from "../../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../../components/GrantNumbers/GrantNumberAccordion";
 import ReviewExecutingTotalAccordion from "../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import {
     findDescription,
@@ -8,6 +9,7 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../../helpers/servicesComponent.helpers";
+import { VALIDATABLE_BLI_STATUSES } from "../constants";
 
 /**
  * @typedef {Object} BudgetLinesReviewAccordionProps
@@ -18,11 +20,15 @@ import {
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
  * @property {string} [executingTotalInstructions] - Override instructions for the Review Executing Total section
+ * @property {boolean} [showBudgetLineErrors] - When true, inline error styling is applied to
+ *   PLANNED/IN_EXECUTION BLI cells. Omit (default false) for read-only review pages where
+ *   errors should not be highlighted.
  */
 
 /**
  * Shared component for displaying budget lines review section in pre-award approval pages.
- * Used by RequestPreAwardApproval, ApprovePreAwardApproval, and ApproveAwardApproval pages.
+ * Used by RequestPreAwardApproval (pass showBudgetLineErrors={true}),
+ * ApprovePreAwardApproval, and ReviewBudgetTeamRequisition pages.
  *
  * @component
  * @param {BudgetLinesReviewAccordionProps} props
@@ -35,8 +41,10 @@ export const BudgetLinesReviewAccordion = ({
     groupedBudgetLines,
     executingTotal,
     showCLINColumn = false,
-    executingTotalInstructions = undefined
+    executingTotalInstructions = undefined,
+    showBudgetLineErrors = false
 }) => {
+    const isGrant = agreement?.agreement_type === "GRANT";
     return (
         <>
             {/* Budget Lines Review */}
@@ -54,10 +62,38 @@ export const BudgetLinesReviewAccordion = ({
                     groupedBudgetLines
                         .filter(
                             (group) =>
-                                // Hide "BLs not associated with a Services Component" when empty
-                                group.serviceComponentGroupingLabel !== "0" || group.budgetLines.length > 0
+                                // Hide the "not associated" bucket (SC or grant number) when empty
+                                (isGrant
+                                    ? String(group.grantNumberNumber) !== "0"
+                                    : group.serviceComponentGroupingLabel !== "0") || group.budgetLines.length > 0
                         )
                         .map((/** @type {any} */ group, /** @type {number} */ index) => {
+                            if (isGrant) {
+                                return (
+                                    <GrantNumberAccordion
+                                        key={`${group.grantNumberNumber}-${index}`}
+                                        grantNumberNumber={group.grantNumberNumber}
+                                    >
+                                        {group.budgetLines.length > 0 ? (
+                                            <AgreementBLIReviewTable
+                                                readOnly={true}
+                                                budgetLines={group.budgetLines}
+                                                isReviewMode={true}
+                                                servicesComponentNumber={group.grantNumberNumber}
+                                                action=""
+                                                showCLINColumn={showCLINColumn}
+                                                errorStatuses={
+                                                    showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <p className="text-center margin-y-7">
+                                                No budget lines in this grant number.
+                                            </p>
+                                        )}
+                                    </GrantNumberAccordion>
+                                );
+                            }
                             const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                                 ? group.serviceComponentGroupingLabel
                                 : group.servicesComponentNumber;
@@ -81,6 +117,7 @@ export const BudgetLinesReviewAccordion = ({
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
                                             showCLINColumn={showCLINColumn}
+                                            errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">

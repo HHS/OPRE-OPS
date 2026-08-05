@@ -16,6 +16,8 @@ let modifiedInitialState = { ...initialState };
  *   `services_components` in context from the current `servicesComponents` prop. Use this to revert
  *   optimistic edits after a save failure. Avoid bumping it on routine prop changes (e.g. RTK Query
  *   tag invalidation after a successful save) — that would wipe in-progress edits.
+ * @param {Array} [props.grantNumbers] - The list of grant numbers associated with the agreement (grants only).
+ * @param {number} [props.grantNumbersReseedKey] - Mirrors `servicesComponentsReseedKey` for grant numbers.
  * @param {React.ReactNode} props.children - The child components.
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
@@ -25,6 +27,8 @@ export function EditAgreementProvider({
     alternateProjectOfficer,
     servicesComponents,
     servicesComponentsReseedKey = 0,
+    grantNumbers,
+    grantNumbersReseedKey = 0,
     children
 }) {
     if (agreement) {
@@ -33,6 +37,7 @@ export function EditAgreementProvider({
         modifiedInitialState.selected_product_service_code = agreement.product_service_code;
         modifiedInitialState.selected_procurement_shop = agreement.procurement_shop;
         modifiedInitialState.services_components = servicesComponents || [];
+        modifiedInitialState.grant_numbers = grantNumbers || [];
         if (projectOfficer) {
             modifiedInitialState.selected_project_officer = projectOfficer;
         }
@@ -65,6 +70,21 @@ export function EditAgreementProvider({
         }
         dispatch({ type: "RESEED_SERVICES_COMPONENTS", payload: servicesComponentsRef.current ?? [] });
     }, [servicesComponentsReseedKey]);
+
+    // Mirrors the services_components reseed pattern above, for grant numbers.
+    const grantNumbersRef = useRef(grantNumbers);
+    useEffect(() => {
+        grantNumbersRef.current = grantNumbers;
+    }, [grantNumbers]);
+
+    const isFirstGrantNumbersReseed = useRef(true);
+    useEffect(() => {
+        if (isFirstGrantNumbersReseed.current) {
+            isFirstGrantNumbersReseed.current = false;
+            return;
+        }
+        dispatch({ type: "RESEED_GRANT_NUMBERS", payload: grantNumbersRef.current ?? [] });
+    }, [grantNumbersReseedKey]);
 
     return (
         <AgreementEditorContext.Provider value={state}>

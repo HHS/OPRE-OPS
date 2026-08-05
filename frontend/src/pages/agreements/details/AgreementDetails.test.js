@@ -495,6 +495,70 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
+    test("disables the Edit button for grant agreements", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+        mockIntersectionObserver();
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{ ...agreement, agreement_type: "GRANT" }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // The disabled Edit variant is rendered instead of the clickable button
+        const editButton = screen.getByRole("button", { name: /Edit/i });
+        expect(editButton).toHaveAttribute("aria-disabled", "true");
+        expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
+    });
+
+    test("enables the Edit button for non-grant agreements", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+        mockIntersectionObserver();
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={agreement}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        // The clickable Edit button is rendered for a CONTRACT agreement
+        const editButton = screen.getByRole("button", { name: /Edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+        expect(editButton).not.toHaveAttribute("data-cy", "edit-disabled");
+    });
+
     test("renders awarded agreement with contract number", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;

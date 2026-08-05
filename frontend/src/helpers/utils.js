@@ -150,6 +150,7 @@ export const codesToDisplayText = {
         amount: "Amount",
         can: "CAN",
         services_component: "Services Component",
+        grant_number: "Grant Number",
         date_needed: "Obligate By Date"
     },
     classNameLabels: {
@@ -191,7 +192,8 @@ export const codesToDisplayText = {
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
-        services_component: "Services Component"
+        services_component: "Services Component",
+        grant_number: "Grant Number"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
@@ -224,10 +226,22 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Project Officer",
+        GRANT: "Federal Project Officer",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"
+    },
+    // Label for the alternate-project-officer slot. For GRANT this column is relabeled
+    // "Project Specialist" (not "Alternate Federal Project Officer") per the design. Other
+    // types keep their existing "Alternate ${...}" wording, enumerated here explicitly so the
+    // straight-lookup convertCodeForDisplay doesn't need string interpolation.
+    alternateProjectOfficer: {
+        AA: "Alternate COR",
+        CONTRACT: "Alternate COR",
+        GRANT: "Project Specialist",
+        DIRECT_OBLIGATION: "Alternate Project Officer",
+        IAA: "Alternate COR",
+        MISCELLANEOUS: "Alternate Project Officer"
     },
     agreement: {
         "AgreementType.CONTRACT": "Contract",

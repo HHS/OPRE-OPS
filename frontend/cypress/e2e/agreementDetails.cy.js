@@ -187,13 +187,14 @@ describe("agreement details", () => {
         cy.get("#toggleDraftBLIs").should("exist");
     });
 
-    it("Grants load with temp banner", () => {
+    it("Grant type agreement loads with details", () => {
         cy.visit("/agreements/3");
-        cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
-        );
-        cy.get('[data-cy="close-alert"]').click();
-        cy.get("#edit").should("not.exist");
+        cy.get("h1").contains("Grant #1: Early Care and Education Leadership Study (ExCELS)");
+        cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains(NO_DATA);
+        cy.get('[data-cy="agreement-type-tag"]').contains("Grant");
+        cy.get('[data-cy="contract-number-tag"]').should("not.exist");
+        cy.get('[data-cy="procurement-shop-tag"]').should("not.exist");
     });
 
     it("IAAs load with temp banner", () => {

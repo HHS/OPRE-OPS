@@ -69,4 +69,23 @@ describe("validateBudgetLineItems (reused)", () => {
         ]);
         expect(result[0].isValid).toBe(false);
     });
+
+    it("returns invalid for a BLI with today as date_needed (strictly future required)", () => {
+        const today = new Date();
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItems([
+            { id: 1, amount: 100, can_id: 5, services_component_id: 2, date_needed: todayISO }
+        ]);
+        expect(result[0].isValid).toBe(false);
+    });
+
+    it("returns valid for a BLI with tomorrow as date_needed", () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItems([
+            { id: 1, amount: 100, can_id: 5, services_component_id: 2, date_needed: tomorrowISO }
+        ]);
+        expect(result[0].isValid).toBe(true);
+    });
 });

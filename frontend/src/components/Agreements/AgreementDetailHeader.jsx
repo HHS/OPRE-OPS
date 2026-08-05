@@ -13,6 +13,8 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
  * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
+ * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
+ * @param {boolean} [props.isGrant] - Whether the agreement is a grant (editing not yet supported).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({
@@ -23,12 +25,25 @@ export const AgreementDetailHeader = ({
     isEditable,
     hasUnsavedChanges = false,
     isPreAwardInReview = false,
-    isAwardInReview = false
+    isAwardInReview = false,
+    isPostPreAwardLocked = false,
+    isGrant = false
 }) => {
-    const isInReview = isPreAwardInReview || isAwardInReview;
-    const reviewTooltipLabel = isPreAwardInReview
-        ? "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
-        : "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+    const isInReview = isPreAwardInReview || isAwardInReview || isPostPreAwardLocked;
+    // Editing is disabled when the agreement is in review/locked, or when it is a grant (grant editing is not yet supported).
+    const isEditDisabled = isInReview || isGrant;
+    let editDisabledTooltipLabel;
+    if (isGrant) {
+        editDisabledTooltipLabel = "Editing is not yet available for grant agreements.";
+    } else if (isPreAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+    } else if (isAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+    } else {
+        editDisabledTooltipLabel = "This agreement has completed Pre-Award Approval and is locked from further edits.";
+    }
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -45,8 +60,8 @@ export const AgreementDetailHeader = ({
                         Unsaved Changes
                     </div>
                 )}
-                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and NOT in any approval review */}
-                {!isEditMode && isEditable && !isInReview && (
+                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and editing is not disabled */}
+                {!isEditMode && isEditable && !isEditDisabled && (
                     <button
                         type="button"
                         id="edit"
@@ -63,9 +78,9 @@ export const AgreementDetailHeader = ({
                         <span className="text-primary">Edit</span>
                     </button>
                 )}
-                {/* DISABLED EDIT BUTTON - when in approval review */}
-                {!isEditMode && isEditable && isInReview && (
-                    <Tooltip label={reviewTooltipLabel}>
+                {/* DISABLED EDIT BUTTON - when in approval review or when the agreement is a grant */}
+                {!isEditMode && isEditable && isEditDisabled && (
+                    <Tooltip label={editDisabledTooltipLabel}>
                         <span
                             id="edit-disabled"
                             className="usa-button--unstyled usa-button--disabled display-flex flex-align-center"

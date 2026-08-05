@@ -54,12 +54,19 @@ describe("BudgetLinesForm Validation Suite", () => {
             expect(result.getErrors("needByDate")).toContain("This is required information");
         });
 
-        it("should validate amount is greater than 0", () => {
+        it("should accept 0 as a valid amount (0 is allowed per business rules)", () => {
             const dataWithZeroAmount = { ...getValidData(), enteredAmount: 0 };
             const result = suite.run(dataWithZeroAmount);
 
+            expect(result.hasErrors("enteredAmount")).toBe(false);
+        });
+
+        it("should reject negative amounts", () => {
+            const dataWithNegativeAmount = { ...getValidData(), enteredAmount: -1 };
+            const result = suite.run(dataWithNegativeAmount);
+
             expect(result.hasErrors()).toBe(true);
-            expect(result.getErrors("enteredAmount")).toContain("Amount must be greater than 0");
+            expect(result.getErrors("enteredAmount")).toContain("Amount must be 0 or greater");
         });
 
         it("should validate date format", () => {
@@ -136,6 +143,43 @@ describe("BudgetLinesForm Validation Suite", () => {
             const result = suite.run([invalidData], isSuperUser);
 
             expect(result.hasErrors()).toBe(true);
+        });
+    });
+
+    describe("Grant Variant (isGrant=true)", () => {
+        const getValidGrantData = () => ({
+            grantNumberNumber: 1,
+            selectedCan: { id: 1, number: "G123456" },
+            enteredAmount: 1000,
+            needByDate: getFutureDate()
+        });
+
+        it("should validate the grant number select and pass with valid data", () => {
+            const result = suite.run(getValidGrantData(), false, true);
+
+            expect(result.hasErrors()).toBe(false);
+            expect(result.getErrors("allGrantNumberSelect")).toHaveLength(0);
+        });
+
+        it("should require the grant number select when missing", () => {
+            const result = suite.run({ ...getValidGrantData(), grantNumberNumber: 0 }, false, true);
+
+            expect(result.hasErrors()).toBe(true);
+            expect(result.getErrors("allGrantNumberSelect")).toContain("This is required information");
+        });
+
+        it("should NOT register the services component group in grant mode", () => {
+            // grantNumberNumber valid but servicesComponentNumber null: no SC error should appear
+            const result = suite.run(getValidGrantData(), false, true);
+
+            expect(result.getErrors("allServicesComponentSelect")).toHaveLength(0);
+        });
+
+        it("should NOT register the grant number group in contract mode", () => {
+            // valid contract data, grantNumberNumber absent: no grant error should appear
+            const result = suite.run(getValidData(), false, false);
+
+            expect(result.getErrors("allGrantNumberSelect")).toHaveLength(0);
         });
     });
 

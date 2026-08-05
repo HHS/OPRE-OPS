@@ -55,6 +55,18 @@ vi.mock("../../ServicesComponents/AllServicesComponentSelect", () => ({
     )
 }));
 
+vi.mock("../../GrantNumbers/AllGrantNumberSelect", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="grant-number-select"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Grant Number Select
+        </div>
+    )
+}));
+
 vi.mock("../../UI/Form/CurrencyInput", () => ({
     default: ({ messages, className }) => (
         <div
@@ -163,12 +175,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that validation error classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("usa-form-group--error");
-            expect(servicesSelect).toHaveClass("usa-form-group--error");
+            expect(servicesFormGroup).toHaveClass("usa-form-group--error");
             expect(currencyInput).toHaveClass("usa-form-group--error");
             expect(datePicker).toHaveClass("usa-form-group--error");
         });
@@ -184,12 +196,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that success classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("success");
-            expect(servicesSelect).toHaveClass("success");
+            expect(servicesFormGroup).toHaveClass("success");
             expect(currencyInput).toHaveClass("success");
             expect(datePicker).toHaveClass("success");
         });
@@ -280,6 +292,39 @@ describe("BudgetLinesForm Validation Integration", () => {
             // Should still bypass validation (no error classes)
             const canComboBox = screen.getByTestId("can-combobox");
             expect(canComboBox).not.toHaveClass("usa-form-group--error");
+        });
+    });
+
+    describe("Grant Variant (isGrant)", () => {
+        it("renders the grant number select instead of the services component select", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("grant-number-select")).toBeInTheDocument();
+            expect(screen.queryByTestId("services-component-select")).not.toBeInTheDocument();
+        });
+
+        it("applies the error class to the grant select when the grant number is missing", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={0}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("services-component-form-group")).toHaveClass("usa-form-group--error");
         });
     });
 

@@ -21,6 +21,10 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
     default: () => requestPreAwardApprovalHookMock()
 }));
 
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForAgreement: () => []
+}));
+
 vi.mock("../../../App", () => ({
     __esModule: true,
     default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
@@ -71,6 +75,16 @@ vi.mock("../../../components/UI/PageHeader", () => ({
             <h1>{title}</h1>
             <h2>{subTitle}</h2>
         </header>
+    )
+}));
+
+// Expose showBudgetLineErrors via data attribute so caller-level tests can assert the prop is passed
+vi.mock("./BudgetLinesReviewAccordion", () => ({
+    BudgetLinesReviewAccordion: (/** @type {{ showBudgetLineErrors?: boolean }} */ { showBudgetLineErrors }) => (
+        <div
+            data-testid="budget-lines-review-accordion"
+            data-show-budget-line-errors={String(showBudgetLineErrors ?? false)}
+        />
     )
 }));
 
@@ -141,7 +155,7 @@ describe("RequestPreAwardApproval", () => {
         render(<RequestPreAwardApproval />);
 
         expect(screen.getByTestId("meta-accordion")).toBeInTheDocument();
-        expect(screen.getByTestId("bli-accordion")).toBeInTheDocument();
+        expect(screen.getByTestId("budget-lines-review-accordion")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
@@ -241,8 +255,11 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
-        expect(submitButton).toBeDisabled();
+        // DisabledButtonWithTooltip renders an aria-disabled wrapper div + a disabled inner button.
+        // Both have role="button" with the same name; the inner <button> is the only one that is disabled.
+        const buttons = screen.getAllByRole("button", { name: /Send to Approval/i, hidden: true });
+        const disabledBtn = buttons.find((b) => b.tagName === "BUTTON");
+        expect(disabledBtn).toBeDisabled();
     });
 
     it("shows alert when BLI is in review", () => {
@@ -253,9 +270,9 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Budget Line In Review")).toBeInTheDocument();
+        expect(screen.getByText("Changes In Review")).toBeInTheDocument();
         expect(
-            screen.getByText(/One or more budget lines have pending change requests that are currently in review/)
+            screen.getByText(/After they are approved, you can continue your request for Pre-Award Approval/)
         ).toBeInTheDocument();
     });
 
@@ -460,6 +477,65 @@ describe("RequestPreAwardApproval", () => {
             render(<RequestPreAwardApproval />);
 
             expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+        });
+    });
+
+    describe("BLI error styling", () => {
+        it("passes showBudgetLineErrors={true} when no BLI is in review", () => {
+            // Regression guard: if showBudgetLineErrors is accidentally dropped from the
+            // BudgetLinesReviewAccordion call site, this test fails — exactly the regression
+            // that occurred in the style: prettier format commit.
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "true");
+        });
+
+        it("passes showBudgetLineErrors={false} when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "false");
+        });
+    });
+
+    describe("Edit button with pending change requests", () => {
+        it("keeps Edit button enabled when BLIs have pending change requests", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByRole("button", { name: "Edit" })).not.toBeDisabled();
+        });
+
+        it("hides the error banner when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true,
+                isAlertActive: true,
+                pageErrors: { "project-officer": ["Required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
+        });
+
+        it("shows Services Component in error banner when a BLI is missing an SC", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { services_component: ["Services Component is required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+            expect(screen.getByText("Services Component")).toBeInTheDocument();
         });
     });
 });

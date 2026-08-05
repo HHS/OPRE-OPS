@@ -456,6 +456,19 @@ class Agreement(BaseModel):
     def in_review(self) -> bool:
         return self.change_requests_in_review is not None
 
+    @property
+    def is_award_approval_requested(self) -> bool:
+        # Local import avoids a circular import: the ops_api utils layer imports models.
+        from ops_api.ops.utils.budget_line_items_helpers import is_award_approval_requested
+
+        return is_award_approval_requested(self)
+
+    @property
+    def is_post_pre_award_locked(self) -> bool:
+        from ops_api.ops.utils.budget_line_items_helpers import is_post_pre_award_locked
+
+        return is_post_pre_award_locked(self)
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
@@ -715,7 +728,6 @@ class ContractAgreement(Agreement):
         ]
 
 
-# TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
     """Grant Agreement Model"""
 
@@ -726,6 +738,17 @@ class GrantAgreement(Agreement):
     total_funding: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
     number_of_years: Mapped[Optional[int]] = mapped_column(Integer)
     number_of_grants: Mapped[Optional[int]] = mapped_column(Integer)
+    nofo_number: Mapped[Optional[str]] = mapped_column(String)
+    aln_number: Mapped[Optional[str]] = mapped_column(String)
+    funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
+
+    grant_numbers: Mapped[list["GrantNumber"]] = relationship(
+        "GrantNumber",
+        primaryjoin="GrantAgreement.id == foreign(GrantNumber.agreement_id)",
+        back_populates="agreement",
+        lazy="selectin",
+        cascade="all, delete",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,

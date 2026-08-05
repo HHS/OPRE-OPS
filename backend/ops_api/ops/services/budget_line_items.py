@@ -24,6 +24,7 @@ from models import (
     BudgetLineSortCondition,
     ChangeRequestStatus,
     ChangeRequestType,
+    GrantNumber,
     Portfolio,
     ProcurementShop,
     ServicesComponent,
@@ -48,11 +49,13 @@ from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
     create_budget_line_item_instance,
+    is_award_approval_requested,
     is_bli_editable,
+    is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
 )
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 @dataclass
@@ -127,6 +130,8 @@ class BudgetLineItemService:
             can = self.db_session.get(CAN, create_request["can_id"])
             if not can:
                 raise ResourceNotFoundError("CAN", create_request["can_id"])
+
+        self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
 
         agreement = self.db_session.get(Agreement, agreement_id)
 
@@ -534,9 +539,20 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-        # Determine if direct edit or change request is needed
-        directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed.
+        # Superusers bypass the change-request workflow for all edits.
+        # Budget Team members bypass it for financial changes only when the agreement has
+        # an active award-approval request (step 6) — any other context still routes
+        # through the DD-approval workflow.
+        budget_team_can_bypass = (
+            is_budget_team(current_user)
+            and not has_status_change
+            and is_award_approval_requested(budget_line_item.agreement)
+        )
+        directly_editable = (
+            is_super_user(current_user, current_app)
+            or budget_team_can_bypass
+            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
@@ -716,7 +732,7 @@ class BudgetLineItemService:
         raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "clin_id"}
 
     def _handle_change_requests(
         self,
@@ -765,6 +781,22 @@ class BudgetLineItemService:
             )
         return []
 
+    def _validate_grant_number_ownership(self, grant_number_id, agreement_id):
+        """
+        Validate that a grant number referenced by a BLI exists and belongs to the BLI's agreement.
+
+        Shared by create() and update() so a cross-agreement grant_number_id cannot be attached to a
+        BLI (IDOR), and a nonexistent grant_number_id surfaces a 404 instead of a DB IntegrityError.
+        """
+        if not grant_number_id:
+            return
+
+        gn = self.db_session.get(GrantNumber, grant_number_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", grant_number_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
+
     def _validation(self, budget_line_item, updated_fields):
         """
         Validate the updated fields for a Budget Line Item.
@@ -779,13 +811,33 @@ class BudgetLineItemService:
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
-        if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
+        # Block edits while pre-award approval is in flight (budget team can bypass)
+        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        # Block edits after pre-award is fully approved (DD approved + requisition submitted).
+        # Exceptions:
+        #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
+        #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
+        #     the award workflow (COR assigns CLINs before submitting for award approval)
+        if not is_budget_team(current_user):
+            # Use the raw request JSON to determine what the caller actually sent.
+            # updated_fields contains Marshmallow load_default values for all schema fields
+            # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
+            # so it cannot reliably tell us which fields the caller intended to change.
+            request_obj = updated_fields.get("request")
+            edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
+            clin_only_edit = edit_keys <= {"clin_id"}
+            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
+                raise ValidationError(
+                    {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
+                )
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
+
+        self._validate_grant_number_ownership(updated_fields.get("grant_number_id"), budget_line_item.agreement_id)
 
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)
@@ -802,9 +854,10 @@ class BudgetLineItemService:
             and updated_fields["status"] != budget_line_item.status
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            # check required fields on budget line item
+            # check required fields on budget line item — use the instance's polymorphic
+            # class so grant BLIs require grant_number_id instead of services_component_id.
             bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
+                budget_line_item.__class__.get_required_fields_for_status_change()
                 if not is_super_user(current_user, current_app)
                 else []
             )
@@ -836,13 +889,13 @@ class BudgetLineItemService:
             ):
                 raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
 
-            # Check amount is set and greater than 0
+            # Check amount is set and non-negative (0 is valid, negative is not)
             current_amount = budget_line_item.amount
             requested_amount = updated_fields.get("amount")
             final_amount = requested_amount if requested_amount is not None else current_amount
 
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
-                raise ValidationError({"amount": "Amount must be greater than 0."})
+            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount < 0:
+                raise ValidationError({"amount": "Amount must be 0 or greater."})
 
             # Check if the date_needed is set and in the future
             today = date.today()

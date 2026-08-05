@@ -28,6 +28,7 @@ export default defineConfig({
             "cypress/e2e/createAgreement.cy.js",
             "cypress/e2e/createAgreementWithValidations.cy.js",
             "cypress/e2e/createBLIForAgreement.cy.js",
+            "cypress/e2e/createGrantAgreement.cy.js",
             "cypress/e2e/createResearchProject.cy.js",
             "cypress/e2e/declineChangeRequestsAtAgreementLevel.cy.js",
             "cypress/e2e/editAgreement.cy.js",

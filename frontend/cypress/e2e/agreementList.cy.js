@@ -315,10 +315,10 @@ describe("Agreement List", () => {
     it("Should not allow user to edit an agreement that is not developed", () => {
         cy.get("button").contains("Filter").click();
 
-        // Select an agreement type that is not developed yet (Grant)
+        // Select an agreement type that is not developed yet (Direct Obligation)
         cy.get(".agreement-type-combobox__control").click();
         cy.get(".agreement-type-combobox__menu").should("be.visible");
-        cy.get(".agreement-type-combobox__menu").contains("Grant").click();
+        cy.get(".agreement-type-combobox__menu").contains("Direct Obligation").click();
 
         // Apply the filter
         cy.get("button").contains("Apply").click();
@@ -328,7 +328,7 @@ describe("Agreement List", () => {
 
         // Hover to reveal action icons and confirm edit is disabled
         cy.get("tbody tr[data-testid^='agreement-table-row-']").first().as("notDevelopedRow");
-        cy.get("@notDevelopedRow").find('[data-cy="agreement-type"]').should("have.text", "Grant");
+        cy.get("@notDevelopedRow").find('[data-cy="agreement-type"]').should("have.text", "Direct Obligation");
         cy.get("@notDevelopedRow").trigger("mouseover", { force: true });
         cy.get("tbody tr[data-testid^='agreement-table-row-']")
             .first()

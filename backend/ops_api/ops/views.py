@@ -11,6 +11,7 @@ from models import (
     ChangeRequest,
     Division,
     Document,
+    GrantNumber,
     Notification,
     Portfolio,
     PortfolioStatus,
@@ -75,6 +76,7 @@ from ops_api.ops.resources.change_requests import (
     ChangeRequestListAPI,
 )
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
+from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
@@ -283,6 +285,10 @@ NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-gr
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
+
+# GrantNumber ENDPOINTS
+GRANT_NUMBER_ITEM_API_VIEW_FUNC = GrantNumberItemAPI.as_view("grant-number-item", GrantNumber)
+GRANT_NUMBER_LIST_API_VIEW_FUNC = GrantNumberListAPI.as_view("grant-number-group", GrantNumber)
 
 # Azure SAS Token ENDPOINTS
 AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")

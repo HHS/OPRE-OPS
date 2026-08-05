@@ -44,7 +44,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
     default: () => <div data-testid="agreement-meta-accordion">Agreement Meta</div>
 }));
 
-vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
+vi.mock("./BudgetLinesReviewAccordion", () => ({
     BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
@@ -62,13 +62,14 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
-    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint }) => (
+    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint, messages = [] }) => (
         <div data-testid={`date-picker-${name}`}>
             <label htmlFor={id}>
                 {label}
                 {isRequired && " *"}
             </label>
-            {hint && <div className="usa-hint">{hint}</div>}
+            {messages.length > 0 && <span className="usa-error-message">{messages[0]}</span>}
+            {hint && messages.length === 0 && <div className="usa-hint">{hint}</div>}
             <input
                 id={id}
                 name={name}
@@ -96,7 +97,6 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
             <h2>{heading}</h2>
             <button
                 onClick={() => {
-                    setShowModal(false);
                     handleConfirm();
                 }}
             >
@@ -153,6 +153,8 @@ describe("ReviewBudgetTeamRequisition", () => {
         setRequisitionNumber: vi.fn(),
         requisitionDate: "",
         setRequisitionDate: vi.fn(),
+        handleDateChange: vi.fn(),
+        requisitionDateError: [],
         attestationChecked: false,
         setAttestationChecked: vi.fn(),
         MemoizedDatePicker,
@@ -161,7 +163,9 @@ describe("ReviewBudgetTeamRequisition", () => {
         modalProps: {},
         isSubmitting: false,
         submitError: "",
+        setSubmitError: vi.fn(),
         handleApprove: vi.fn(),
+        handleSaveDraft: vi.fn(),
         handleCancel: vi.fn(),
         isFormValid: vi.fn(() => false),
         hasPermission: true,
@@ -341,13 +345,13 @@ describe("ReviewBudgetTeamRequisition", () => {
             expect(mockSetRequisitionNumber).toHaveBeenCalled();
         });
 
-        it("should call setRequisitionDate when date changes", async () => {
+        it("should call handleDateChange when date changes", async () => {
             const user = userEvent.setup();
-            const mockSetRequisitionDate = vi.fn();
+            const mockHandleDateChange = vi.fn();
 
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
-                setRequisitionDate: mockSetRequisitionDate
+                handleDateChange: mockHandleDateChange
             });
 
             render(<ReviewBudgetTeamRequisition />);
@@ -355,7 +359,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             await user.type(dateInput, "2026-05-12");
 
-            expect(mockSetRequisitionDate).toHaveBeenCalled();
+            expect(mockHandleDateChange).toHaveBeenCalled();
         });
 
         it("should call setAttestationChecked when checkbox is clicked", async () => {
@@ -530,6 +534,28 @@ describe("ReviewBudgetTeamRequisition", () => {
             expect(screen.getByText("Failed to submit requisition")).toBeInTheDocument();
         });
 
+        it("should display date error message on the date field when requisitionDateError is set", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: ["Date must be MM/DD/YYYY"]
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
+        });
+
+        it("should not display date error message when requisitionDateError is empty", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: []
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.queryByText("Date must be MM/DD/YYYY")).not.toBeInTheDocument();
+        });
+
         it("should not display error alert when submitError is empty", () => {
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
@@ -539,6 +565,23 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.queryByText("Submission Error")).not.toBeInTheDocument();
+        });
+
+        it("should clear submit error when dismiss button is clicked", async () => {
+            const user = userEvent.setup();
+            const mockSetSubmitError = vi.fn();
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                submitError: "Failed to submit requisition",
+                setSubmitError: mockSetSubmitError
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            const closeButton = screen.getByLabelText("close");
+            await user.click(closeButton);
+
+            expect(mockSetSubmitError).toHaveBeenCalledWith("");
         });
     });
 

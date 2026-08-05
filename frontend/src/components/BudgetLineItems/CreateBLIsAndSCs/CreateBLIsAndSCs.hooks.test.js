@@ -14,13 +14,18 @@ const deleteBudgetLineItemMock = vi.fn();
 const deleteServicesComponentMock = vi.fn();
 const addServicesComponentMock = vi.fn();
 const updateServicesComponentMock = vi.fn();
+const addGrantNumberMock = vi.fn();
+const updateGrantNumberMock = vi.fn();
+const deleteGrantNumberMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
-    deleted_services_components_ids: []
+    deleted_services_components_ids: [],
+    grant_numbers: [],
+    deleted_grant_numbers_ids: []
 };
 
 vi.mock("react-redux", () => ({
@@ -49,7 +54,10 @@ vi.mock("../../../api/opsAPI", () => ({
     useDeleteBudgetLineItemMutation: () => [deleteBudgetLineItemMock],
     useDeleteServicesComponentMutation: () => [deleteServicesComponentMock],
     useAddServicesComponentMutation: () => [addServicesComponentMock],
-    useUpdateServicesComponentMutation: () => [updateServicesComponentMock]
+    useUpdateServicesComponentMutation: () => [updateServicesComponentMock],
+    useAddGrantNumberMutation: () => [addGrantNumberMock],
+    useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
+    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock]
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -65,7 +73,8 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
     BLILabel: vi.fn((bli) => `${bli?.id ?? "Unknown"}`),
     budgetLinesTotal: vi.fn((blis) => blis.reduce((sum, bli) => sum + (bli.amount ?? 0), 0)),
     getNonDRAFTBudgetLines: vi.fn((blis) => blis.filter((bli) => bli.status !== "DRAFT")),
-    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 })))
+    groupByServicesComponent: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], servicesComponentNumber: 1 }))),
+    groupByGrantNumber: vi.fn((blis) => blis.map((bli) => ({ budgetLines: [bli], grantNumberNumber: 1 })))
 }));
 
 vi.mock("../../../helpers/scrollToTop.helper", () => ({
@@ -88,7 +97,8 @@ vi.mock("../../../hooks/useGetAllCans", () => ({
 }));
 
 vi.mock("../../../hooks/user.hooks", () => ({
-    useGetLoggedInUserFullName: () => "Reviewer User"
+    useGetLoggedInUserFullName: () => "Reviewer User",
+    useIsUserBudgetTeam: () => false
 }));
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);
@@ -339,7 +349,9 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_services_components_ids: []
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
         });
 
         addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 99 }) });
@@ -455,5 +467,139 @@ describe("useCreateBLIsAndSCs", () => {
         expect(updateCall.data).not.toHaveProperty("mode");
         expect(updateCall.data).not.toHaveProperty("display_title");
         expect(updateCall.data).toHaveProperty("number", 2);
+    });
+
+    it("flushes grant number create, update, and delete to the API when editing an existing grant agreement", async () => {
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [
+                {
+                    number: 1,
+                    description: "New GN",
+                    period_start: "2026-01-01",
+                    period_end: "2026-12-31",
+                    display_title: "Grant 1",
+                    popStartDate: "01/01/2026",
+                    popEndDate: "12/31/2026",
+                    mode: "add"
+                },
+                {
+                    id: 55,
+                    number: 2,
+                    description: "Existing GN",
+                    period_start: "2026-06-01",
+                    period_end: "2027-05-31",
+                    display_title: "Grant 2",
+                    created_on: "2026-01-15",
+                    has_changed: true,
+                    popStartDate: "06/01/2026",
+                    popEndDate: "05/31/2027",
+                    mode: "edit"
+                }
+            ],
+            deleted_grant_numbers_ids: [99]
+        });
+
+        addGrantNumberMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 66, number: 1 }) });
+        updateGrantNumberMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 55, number: 2 }) });
+        deleteGrantNumberMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+
+        // New grant number created without UI-only fields.
+        expect(addGrantNumberMock).toHaveBeenCalled();
+        const createdGn = addGrantNumberMock.mock.calls[0][0];
+        expect(createdGn).not.toHaveProperty("has_changed");
+        expect(createdGn).not.toHaveProperty("popStartDate");
+        expect(createdGn).not.toHaveProperty("popEndDate");
+        expect(createdGn).not.toHaveProperty("mode");
+        expect(createdGn).not.toHaveProperty("display_title");
+        expect(createdGn).toHaveProperty("number", 1);
+
+        // Changed grant number PATCHed.
+        expect(updateGrantNumberMock).toHaveBeenCalled();
+        const updateGnCall = updateGrantNumberMock.mock.calls[0][0];
+        expect(updateGnCall.id).toBe(55);
+        expect(updateGnCall.data).not.toHaveProperty("has_changed");
+        expect(updateGnCall.data).toHaveProperty("number", 2);
+
+        // Removed grant number deleted.
+        expect(deleteGrantNumberMock).toHaveBeenCalledWith(99);
+    });
+
+    it("surfaces an error instead of silently saving a grant BLI whose grant number can't be resolved", async () => {
+        // Grant agreement with a persisted BLI that references a grant number (number 7) which is
+        // no longer present in the editor's grant_numbers list (deleted mid-edit / stale page data).
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        addBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        // Inject a NEW grant BLI (no created_on) carrying a grant_number_number that no persisted
+        // grant number resolves to. This routes through addGrantNumberIdToBLI during creation.
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 100,
+                grant_number_number: 7,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+
+        // The link resolution throws before any BLI is written, so the user sees an error alert
+        // rather than a BLI silently saved with grant_number_id: null.
+        expect(addBudgetLineItemMock).not.toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 });

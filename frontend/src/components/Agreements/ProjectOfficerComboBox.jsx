@@ -34,7 +34,7 @@ export const ProjectOfficerComboBox = ({
         data: users,
         error: errorUsers,
         isLoading: isLoadingUsers
-    } = useGetUsersQuery({ excludeReadOnlyUsers: true });
+    } = useGetUsersQuery({ excludeReadOnlyUsers: true, excludeSystemAdmin: true });
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;

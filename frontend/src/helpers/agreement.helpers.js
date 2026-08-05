@@ -150,11 +150,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
 export const isNotDevelopedYet = (agreementType) => {
-    if (
-        agreementType === AgreementType.GRANT ||
-        agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
-    ) {
+    if (agreementType === AgreementType.DIRECT_OBLIGATION || agreementType === AgreementType.IAA) {
         return true;
     }
 
@@ -287,6 +283,18 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.NickName,
         AgreementFields.SpecialTopic,
         AgreementFields.Methodologies
+    ]),
+    // REVIEW: NEW — GRANT entry. Gates Description and Nickname on the details view.
+    // Both AgreementFields keys already existed; no enum changes needed.
+    // isFieldVisible(GRANT, ProcurementShop) → false, so the MetaAccordion gate works automatically.
+    // isFieldVisible(GRANT, ContractNumber) → false, which the existing test at line 235 already asserts.
+    // Title and the "Grant" type label render via always-on blocks in AgreementDetailsView and are not in this set.
+    [AgreementType.GRANT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.NickName,
+        AgreementFields.NofoNumber,
+        AgreementFields.AlnNumber,
+        AgreementFields.GrantFundingPeriod
     ])
     // Add new AgreementTypes here
 };
@@ -318,6 +326,7 @@ export const cleanAgreementForApi = (data) => {
         "requesting_agency",
         "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
         "services_components",
+        "grant_numbers",
         "created_by",
         "created_on",
         "updated_by",
@@ -356,6 +365,9 @@ export const cleanBudgetLineItemForApi = (data) => {
     if (data.services_component_id === 0) {
         cleanData.services_component_id = null;
     }
+    if (data.grant_number_id === 0) {
+        cleanData.grant_number_id = null;
+    }
     if (cleanData.date_needed === "--") {
         cleanData.date_needed = null;
     }
@@ -374,6 +386,7 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.fees;
     delete cleanData.display_title;
     delete cleanData.services_component_number;
+    delete cleanData.grant_number_number;
     delete cleanData._meta;
     delete cleanData.tempChangeRequest;
     delete cleanData.financialSnapshot;

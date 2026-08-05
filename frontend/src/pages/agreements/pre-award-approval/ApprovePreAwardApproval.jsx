@@ -11,7 +11,7 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
-import { BudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 /**

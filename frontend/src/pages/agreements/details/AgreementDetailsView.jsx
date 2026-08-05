@@ -108,6 +108,46 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                 </dd>
                             </dl>
                         )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.NofoNumber) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">NOFO Number</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="nofo-number-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.nofo_number ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
+                    )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.AlnNumber) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">ALN Number</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="aln-number-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={agreement?.aln_number ?? NO_DATA}
+                                />
+                            </dd>
+                        </dl>
+                    )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.GrantFundingPeriod) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Grant Funding Period</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="funding-period-months-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={
+                                        agreement?.funding_period_months != null
+                                            ? `${agreement.funding_period_months} months`
+                                            : NO_DATA
+                                    }
+                                />
+                            </dd>
+                        </dl>
+                    )}
 
                     <div className="display-flex">
                         {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}
@@ -462,7 +502,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dd>
                         </dl>
                         <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">{`Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`}</dt>
+                            <dt className="margin-0 text-base-dark margin-top-3">
+                                {convertCodeForDisplay("alternateProjectOfficer", agreement?.agreement_type)}
+                            </dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
                                     dataCy="alternate-project-officer-tag"

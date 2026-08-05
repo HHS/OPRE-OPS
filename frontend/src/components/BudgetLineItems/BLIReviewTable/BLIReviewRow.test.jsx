@@ -21,6 +21,10 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
     }))
 }));
 
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForTooltip: vi.fn(() => "")
+}));
+
 const createTestRouter = (component) => {
     const routes = [
         {
@@ -310,6 +314,24 @@ describe("BLIReviewRow", () => {
 
                 // Hover is tricky to test in unit tests - E2E will cover this
                 // But we can verify the button doesn't render for Draft
+                expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
+            });
+
+            it("should not show CLIN edit button when no onAddCLINClick handler is provided (review-page scenario)", () => {
+                // ApproveAwardApproval uses BudgetLinesReviewAccordion which never forwards
+                // onAddCLINClick. With the default undefined, the button must not render
+                // even for non-Draft BLIs with showCLINColumn=true.
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED"
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                    // onAddCLINClick intentionally omitted — mirrors the review page
+                });
+
                 expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
             });
         });

@@ -1122,6 +1122,61 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
     });
 });
 
+describe("opsAPI - getUsers query parameter construction", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("omits exclude params when no options are provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getUsers.initiate());
+
+        expect(capturedUrl).not.toContain("exclude_read_only=");
+        expect(capturedUrl).not.toContain("exclude_system_admin=");
+    });
+
+    it("includes exclude_system_admin=true when excludeSystemAdmin is set", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getUsers.initiate({ excludeSystemAdmin: true }));
+
+        expect(capturedUrl).toContain("exclude_system_admin=true");
+        expect(capturedUrl).not.toContain("exclude_read_only=");
+    });
+
+    it("combines exclude_read_only=true and exclude_system_admin=true when both are set", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getUsers.initiate({ excludeReadOnlyUsers: true, excludeSystemAdmin: true })
+        );
+
+        expect(capturedUrl).toContain("exclude_read_only=true");
+        expect(capturedUrl).toContain("exclude_system_admin=true");
+        expect(capturedUrl).toContain("exclude_read_only=true&exclude_system_admin=true");
+    });
+});
+
 describe("opsAPI - getAllProjects queryFn pagination", () => {
     afterEach(() => server.resetHandlers());
 
