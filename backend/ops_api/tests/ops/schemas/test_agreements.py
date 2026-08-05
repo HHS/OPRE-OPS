@@ -343,6 +343,17 @@ class TestAgreementDataNestedFields:
         assert none_result["aln_numbers"] is None
         assert none_result["funding_period_months"] is None
 
+    def test_grant_agreement_data_rejects_invalid_funding_period_months(self):
+        """Test that GrantAgreementData only allows 12 or 18 for funding_period_months."""
+        schema = GrantAgreementData()
+        data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "funding_period_months": 24,
+        }
+        with pytest.raises(ValidationError):
+            schema.load(data)
+
     def test_contract_agreement_loads_with_nested_budget_line_items(self):
         """Test that ContractAgreementData loads with nested budget line items."""
         schema = ContractAgreementData()

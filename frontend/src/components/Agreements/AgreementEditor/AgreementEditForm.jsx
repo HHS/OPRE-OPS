@@ -18,6 +18,7 @@ import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import SummaryBox from "../SummaryBox";
 import AlnNumbersComboBox from "../AlnNumbersComboBox";
+import GrantFundingPeriodSelect from "../GrantFundingPeriodSelect";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -463,17 +464,9 @@ const AgreementEditForm = ({
                             runValidate(name, value);
                         }}
                     />
-                    {/* Grant Funding Period — numeric input, unit "months". No stepper component exists
-                        yet (see plan step 8); ships as a plain Input with digit-only filtering. */}
-                    <Input
-                        name="funding_period_months"
-                        label="Grant Funding Period (months)"
-                        value={fundingPeriodMonths ?? ""}
-                        onChange={(name, value) => {
-                            if (/^[0-9]*$/.test(value)) {
-                                setFundingPeriodMonths(value === "" ? null : Number(value));
-                            }
-                        }}
+                    <GrantFundingPeriodSelect
+                        value={fundingPeriodMonths}
+                        onChange={(name, value) => setFundingPeriodMonths(value)}
                     />
                     <AlnNumbersComboBox
                         selectedAlnNumbers={alnNumbers}

@@ -9373,6 +9373,7 @@ components:
             funding_period_months:
               type: integer
               nullable: true
+              enum: [12, 18]
             grant_numbers:
               type: array
               description: |
