@@ -904,7 +904,7 @@ class BudgetLineItemService:
     def _validate_amount_and_date_for_status_change(budget_line_item, updated_fields):
         current_amount = budget_line_item.amount
         final_amount = updated_fields.get("amount") if updated_fields.get("amount") is not None else current_amount
-        if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
+        if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount < 0:
             raise ValidationError({"amount": "Amount must be 0 or greater."})
 
         today = date.today()

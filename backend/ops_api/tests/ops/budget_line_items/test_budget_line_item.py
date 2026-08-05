@@ -972,6 +972,58 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
     session.commit()
 
 
+def test_budget_line_item_validation_patch_to_zero_amount_is_allowed(auth_client, app, test_can, test_project, app_ctx):
+    session = app.db_session
+
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Zero Amount Validation",
+        "service_requirement_type": "SEVERABLE",
+        "description": "Description",
+        "awarding_entity_id": 2,
+        "product_service_code_id": 1,
+        "project_id": test_project.id,
+        "project_officer_id": 520,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    sc = ServicesComponent(agreement_id=agreement_id, number=99, optional=False)
+    session.add(sc)
+    session.commit()
+
+    #  create BLI with all fields required for a non-DRAFT status change
+    new_bli = ContractBudgetLineItem(
+        line_description="Test Experiments Workflows BLI",
+        agreement_id=agreement_id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=111.11,
+        date_needed=datetime.date(2044, 1, 1),
+        services_component_id=sc.id,
+    )
+    session.add(new_bli)
+    session.commit()
+
+    # update BLI with a zero amount, expect success (0 is a valid amount)
+    data = {
+        "amount": 0,
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{new_bli.id}", json=data)
+    assert resp.status_code in (200, 202)
+
+    # cleanup
+    session.delete(new_bli)
+    session.delete(sc)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
 def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project, app_ctx):
     session = app.db_session
 
