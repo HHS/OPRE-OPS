@@ -86,6 +86,22 @@ export function EditAgreementProvider({
         dispatch({ type: "RESEED_GRANT_NUMBERS", payload: grantNumbersRef.current ?? [] });
     }, [grantNumbersReseedKey]);
 
+    // Reseed officer objects when the async getUser() fetches resolve after mount.
+    // The provider mounts before the officer fetch completes (officers start as {}),
+    // so useReducer's initial state captures {}. These effects dispatch once the real
+    // object arrives (guarded on ?.id so the {} placeholder never clobbers).
+    useEffect(() => {
+        if (projectOfficer?.id) {
+            dispatch({ type: "SET_STATE", key: "selected_project_officer", value: projectOfficer });
+        }
+    }, [projectOfficer]);
+
+    useEffect(() => {
+        if (alternateProjectOfficer?.id) {
+            dispatch({ type: "SET_STATE", key: "selected_alternate_project_officer", value: alternateProjectOfficer });
+        }
+    }, [alternateProjectOfficer]);
+
     return (
         <AgreementEditorContext.Provider value={state}>
             <EditAgreementDispatchContext.Provider value={dispatch}>{children}</EditAgreementDispatchContext.Provider>
