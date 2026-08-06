@@ -148,12 +148,12 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("disables the Edit button for a grant agreement", () => {
+        test("enables the Edit button for a grant agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
 
-            // The clickable Edit button (a real <button>) is replaced by the disabled span variant
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.getByText("Edit")).toBeInTheDocument();
+            // The clickable Edit button (a real <button>) renders for grants, not the disabled span variant
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
         });
 
         test("disables the Request BL Status Change button for a grant agreement", () => {
