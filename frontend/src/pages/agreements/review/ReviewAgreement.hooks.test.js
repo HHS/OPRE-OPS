@@ -193,6 +193,52 @@ describe("useReviewAgreement", () => {
         expect(result.current.isSubmissionReady).toBe(true);
     });
 
+    it("bypasses agreement and budget line validation for grant agreements (OPS-6013)", async () => {
+        // Same invalid data that produces errors for a contract, but on a grant the validation is skipped.
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({
+                agreement_type: "GRANT",
+                project_officer_id: 0,
+                budget_line_items: [
+                    {
+                        id: 101,
+                        amount: null,
+                        can_id: "",
+                        grant_number_id: 0,
+                        date_needed: "",
+                        status: "DRAFT",
+                        in_review: false
+                    }
+                ]
+            }),
+            error: null,
+            isLoading: false
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        await waitFor(() => {
+            expect(result.current.isGrant).toBe(true);
+        });
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        // Neither agreement-field nor budget-line validation gates the submission for grants.
+        expect(result.current.agreementValidationResults).toBeNull();
+        expect(result.current.hasBLIError).toBe(false);
+        expect(result.current.isAlertActive).toBe(false);
+        expect(result.current.pageErrors).toEqual({});
+        expect(result.current.isSubmissionReady).toBe(true);
+    });
+
     it("submits selected budget lines for approval and sets a success alert", async () => {
         const { result } = renderHook(() => useReviewAgreement(77));
 
