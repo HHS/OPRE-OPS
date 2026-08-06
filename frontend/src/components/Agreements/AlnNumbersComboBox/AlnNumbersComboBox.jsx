@@ -4,7 +4,8 @@ const OPTION_AMOUNT = 10;
 
 const ALN_NUMBER_OPTIONS = Array.from({ length: OPTION_AMOUNT }, (_, i) => ({
     id: i + 1,
-    title: String(i + 1)
+    title: String(i + 1),
+    order: i + 1
 }));
 
 /**
