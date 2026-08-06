@@ -140,9 +140,22 @@ describe("datePickerSuite — DRAFT budget line is exempt from the PoP rule", ()
 });
 
 describe("datePickerSuite — superuser bypass", () => {
-    it("suppresses all errors including PoP when isSuperUser is true", () => {
-        suite.run({ needByDate: screenFromToday(130), scStartDate: SC_START, scEndDate: SC_END }, true);
-        expect(suite.hasErrors()).toBe(false);
+    it("suppresses only the PoP error when isSuperUser is true", () => {
+        const result = suite.run({ needByDate: screenFromToday(130), scStartDate: SC_START, scEndDate: SC_END }, true);
+        expect(result.getErrors("needByDate")).not.toContain(POP_ERROR);
+    });
+
+    it("still fires the format error for a superuser", () => {
+        const result = suite.run({ needByDate: "not-a-date", scStartDate: SC_START, scEndDate: SC_END }, true);
+        expect(result.getErrors("needByDate")).toContain("Date must be MM/DD/YYYY");
+    });
+
+    it("still fires the future-date error for a superuser", () => {
+        const result = suite.run(
+            { needByDate: isoToScreen(isoFromToday(-1)), scStartDate: SC_START, scEndDate: SC_END },
+            true
+        );
+        expect(result.getErrors("needByDate")).toContain("Date must be in the future");
     });
 });
 
@@ -205,23 +218,33 @@ describe("datePickerSuite Validation", () => {
     });
 
     describe("SUPER_USER Validations", () => {
-        it("should skip validation for SUPER_USER with a past date", () => {
+        it("still fails validation for SUPER_USER with a past date", () => {
             const result = suite.run({ needByDate: "01/01/2020" }, true);
 
-            expect(result.hasErrors()).toBe(false);
-            expect(result.getErrors("needByDate")).toHaveLength(0);
+            expect(result.hasErrors()).toBe(true);
+            expect(result.getErrors("needByDate")).toContain("Date must be in the future");
         });
 
-        it("should skip validation for SUPER_USER with an invalid date format", () => {
+        it("still fails validation for SUPER_USER with an invalid date format", () => {
             const result = suite.run({ needByDate: "not-a-date" }, true);
 
-            expect(result.hasErrors()).toBe(false);
+            expect(result.hasErrors()).toBe(true);
+            expect(result.getErrors("needByDate")).toContain("Date must be MM/DD/YYYY");
         });
 
         it("should skip validation for SUPER_USER with a future date", () => {
             const result = suite.run({ needByDate: getFutureDate() }, true);
 
             expect(result.hasErrors()).toBe(false);
+        });
+
+        it("bypasses only the PoP window error for SUPER_USER, not format/future-date checks", () => {
+            const result = suite.run(
+                { needByDate: getFutureDate(), scStartDate: isoFromToday(200), scEndDate: isoFromToday(300) },
+                true
+            );
+
+            expect(result.getErrors("needByDate")).not.toContain(POP_ERROR);
         });
     });
 

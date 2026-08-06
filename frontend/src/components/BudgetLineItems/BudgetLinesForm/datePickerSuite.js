@@ -3,11 +3,6 @@ import { create, test, enforce } from "vest";
 const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
 const suite = create((data = {}, isSuperUser) => {
-    // skip all validations if user is a super user
-    if (isSuperUser) {
-        return;
-    }
-
     // Only validate the needbyDate field if it has a value since it is not required
     if (data.needByDate === null || data.needByDate === "") {
         return;
@@ -22,7 +17,9 @@ const suite = create((data = {}, isSuperUser) => {
     });
     // The SC PoP window rule only applies once the budget line is out of DRAFT status —
     // a DRAFT budget line's date is free to fall outside the agreement's SC window.
+    // Super users may also bypass this specific rule, but not format/future-date checks above.
     if (
+        !isSuperUser &&
         !data.isDraft &&
         data.needByDate &&
         DATE_FORMAT_REGEX.test(data.needByDate) &&
