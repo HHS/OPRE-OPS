@@ -438,7 +438,11 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
+                    {/* Gate on canUserEditBudgetLines so the grant-number / services-component editing
+                        controls stay locked during pre-award/award review, matching the wizard path above
+                        and defending against edit mode entered via the ?mode=edit URL param. */}
                     {!isAgreementNotYetDeveloped &&
+                        canUserEditBudgetLines &&
                         (isGrant ? (
                             <GrantNumbers
                                 agreementId={selectedAgreement.id}

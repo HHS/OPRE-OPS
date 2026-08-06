@@ -176,6 +176,73 @@ describe("AgreementBudgetLines", () => {
         });
     });
 
+    describe("Grant lifecycle locks", () => {
+        // A super user so the Edit button would render if editing were allowed; the lock, not the
+        // user's permission, is what hides it. Regular users would hide the button regardless.
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const grantAgreement = { ...mockAgreement, agreement_type: "GRANT", _meta: { isEditable: true } };
+
+        const renderWithLock = (lockProps) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={grantAgreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                            isPreAwardInReview={false}
+                            isAwardInReview={false}
+                            isPostPreAwardLocked={false}
+                            {...lockProps}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("hides the Edit button for a grant when pre-award is in review", () => {
+            renderWithLock({ isPreAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when award is in review", () => {
+            renderWithLock({ isAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when post-pre-award locked", () => {
+            renderWithLock({ isPostPreAwardLocked: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("enables the Edit button for a grant when no lifecycle lock is active", () => {
+            renderWithLock({});
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+        });
+    });
+
     test("shows the grouped table skeleton while services components are loading", () => {
         useGetServicesComponentsListQueryMock.mockReturnValue({
             data: undefined,

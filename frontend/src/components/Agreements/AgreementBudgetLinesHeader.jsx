@@ -13,6 +13,8 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {boolean} [props.isEditMode] - Whether the edit mode is on.
  * @param {Function} [props.setIsEditMode] - The function to set the edit mode.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
+ * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
+ * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementBudgetLinesHeader = ({
@@ -23,12 +25,22 @@ export const AgreementBudgetLinesHeader = ({
     isEditable,
     isEditMode = false,
     setIsEditMode = () => {},
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
-    // Editing is disabled when pre-award is in review.
-    const isEditDisabled = isPreAwardInReview;
-    const editDisabledTooltipLabel =
-        "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+    // Editing is disabled when the agreement is in review/locked, consistent with AgreementDetailHeader.
+    const isEditDisabled = isPreAwardInReview || isAwardInReview || isPostPreAwardLocked;
+    let editDisabledTooltipLabel;
+    if (isPreAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+    } else if (isAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+    } else {
+        editDisabledTooltipLabel = "This agreement has completed Pre-Award Approval and is locked from further edits.";
+    }
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
