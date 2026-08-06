@@ -1,7 +1,9 @@
 ---
 name: init-story
 description: Collect context from the developer and create a story markdown file in .claude/stories/ for the current branch. Use when the user says "init story", "create story", "start story", or "new story".
+argument-hint: "[issue-number]"
 allowed-tools: Bash, Read, Write, Agent
+disable-model-invocation: true
 ---
 
 # Init Story
@@ -71,11 +73,11 @@ Do not ask about: the title, AC items, user story, background — those come fro
 
 Before composing the story file, spawn three agents in parallel to pressure-test the plan against the codebase. Pass each agent the developer's answers from Step 3 as explicit input.
 
-- **Agent 1 — Feasibility check**: You have access to the codebase at `/Users/josbell/Dev/OPRE-OPS`. Use Read and Grep to inspect the key files listed by the developer and the patterns they reference. Given the stated approach and file list: Does the plan align with how those files and patterns actually work? Are there wrong assumptions, missing files, or adjacent files that should be on the list? Report only concrete findings grounded in what you actually read — not generic advice.
+- **Agent 1 — Feasibility check**: Use Read and Grep to inspect the key files listed by the developer and the patterns they reference. Given the stated approach and file list: Does the plan align with how those files and patterns actually work? Are there wrong assumptions, missing files, or adjacent files that should be on the list? Report only concrete findings grounded in what you actually read — not generic advice.
 
-- **Agent 2 — AC coverage check**: You have access to the codebase at `/Users/josbell/Dev/OPRE-OPS`. Use Read and Grep to inspect the key files. For each AC item, is there a plausible implementation path given the stated approach and files? Flag any AC items that seem underspecified, technically ambiguous, or likely to require files/systems not mentioned. Report only concrete findings grounded in what you actually read.
+- **Agent 2 — AC coverage check**: Use Read and Grep to inspect the key files. For each AC item, is there a plausible implementation path given the stated approach and files? Flag any AC items that seem underspecified, technically ambiguous, or likely to require files/systems not mentioned. Report only concrete findings grounded in what you actually read.
 
-- **Agent 3 — Testing strategy check**: You have access to the codebase at `/Users/josbell/Dev/OPRE-OPS`. Read `docs/TESTING.md` first. Then, given the developer's testing plan and the AC items, evaluate against the project's testing philosophy:
+- **Agent 3 — Testing strategy check**: Read `docs/TESTING.md` first. Then, given the developer's testing plan and the AC items, evaluate against the project's testing philosophy:
   - Are tests at the lowest appropriate level (unit → integration → component → E2E)?
   - Is any E2E coverage justified, or could integration/component tests suffice?
   - Are the right frameworks being used (Vest for validation, Vitest+RTL for frontend unit, MSW for API mocking, Cypress CT for complex UI, Cypress E2E for critical full-stack journeys only)?

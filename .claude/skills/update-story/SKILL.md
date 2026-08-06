@@ -1,7 +1,9 @@
 ---
 name: update-story
 description: Update the current story's acceptance criteria checkboxes based on recent git history, then sync the updated body back to the linked GitHub issue. Use when the user says "update story", "mark AC done", "sync story", or "update the issue".
+argument-hint: "[issue-number]"
 allowed-tools: Read, Write, Bash, Skill
+disable-model-invocation: true
 ---
 
 # Update Story
@@ -81,13 +83,12 @@ Merge AC state carefully — do not treat the story file as the sole authority:
 
 To find the AC section boundary in the issue body, look for a heading matching `Acceptance Criteria` (any markdown heading level or bold format). Replace only the content between that heading and the next heading (or end of section). If no recognizable AC section header exists, append the updated AC at the end of the issue body rather than replacing — and tell the developer so they can reformat manually if needed.
 
-Write the updated body to a temp file and use `--body-file` to avoid shell quoting issues with special characters:
+Write the updated body to a temp file using the Write tool (not shell redirection — avoids quoting issues with `%`, `$`, backticks, and quotes), then pass it via `--body-file`:
 
 ```bash
-tmp=$(mktemp)
-printf '%s' "<updated body>" > "$tmp"
-gh issue edit <NUMBER> --body-file "$tmp"
-rm "$tmp"
+# Use the Write tool to write the updated body to a temp path, e.g. /tmp/issue-body.md
+gh issue edit <NUMBER> --body-file /tmp/issue-body.md
+rm /tmp/issue-body.md
 ```
 
 If this command fails, tell the developer what failed and show them the full updated body to paste manually.
