@@ -318,6 +318,55 @@ describe("BLIRow", () => {
         expect(editBtn).toBeInTheDocument();
         expect(editBtn).toBeDisabled();
     });
+    it("should disable the delete button while keeping edit enabled for an editable-but-not-deletable BLI", async () => {
+        // An IN_EXECUTION BLI is editable but not deletable in PR1 (isDeletable false).
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "IN_EXECUTION",
+            in_review: false,
+            _meta: { isEditable: true, isDeletable: false }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Executing");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(editBtn).not.toBeDisabled();
+        expect(deleteBtn).toBeDisabled();
+    });
+
+    it("should enable the delete button when the BLI is deletable", async () => {
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "PLANNED",
+            in_review: false,
+            _meta: { isEditable: true, isDeletable: true }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Planned");
+        await user.hover(tag);
+
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(deleteBtn).not.toBeDisabled();
+    });
+
+    it("should fall back to editability for the delete button when isDeletable is absent", async () => {
+        // Legacy payloads without isDeletable should behave as before (delete follows edit).
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "DRAFT",
+            in_review: false,
+            _meta: { isEditable: true }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(deleteBtn).not.toBeDisabled();
+    });
+
     it("should display all BIL amount with correct rounded decimal", async () => {
         renderComponent();
 

@@ -113,11 +113,20 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     def has_status_change(cls):
         return cls.requested_change_data.has_key("status")
 
+    @hybrid_property
+    def has_delete_change(self):
+        return "delete" in self.requested_change_data
+
+    @has_delete_change.expression
+    def has_delete_change(cls):
+        return cls.requested_change_data.has_key("delete")
+
     def to_dict(self):
         """Override to_dict to include hybrid properties."""
         data = super().to_dict()
         data["has_budget_change"] = bool(self.has_budget_change)
         data["has_status_change"] = bool(self.has_status_change)
+        data["has_delete_change"] = bool(self.has_delete_change)
         return data
 
 

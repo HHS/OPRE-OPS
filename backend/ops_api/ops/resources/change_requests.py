@@ -26,6 +26,7 @@ def build_change_request_response(change_request: ChangeRequest):
     if isinstance(change_request, BudgetLineItemChangeRequest):
         resp["has_budget_change"] = change_request.has_budget_change
         resp["has_status_change"] = change_request.has_status_change
+        resp["has_delete_change"] = change_request.has_delete_change
     return resp
 
 
