@@ -37,10 +37,8 @@ from models import (
     ServicesComponent,
     User,
 )
+from models.users import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID
 from models.utils import generate_events_update
-
-SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
-SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
 
 
 def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:

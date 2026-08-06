@@ -569,6 +569,84 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
+        describe("handleDateChange", () => {
+            beforeEach(() => {
+                usePreAwardApprovalData.mockReturnValue({
+                    agreement: { id: 1, name: "Test Agreement" },
+                    isLoading: false,
+                    allBudgetLines: [],
+                    executingTotal: 0,
+                    projectOfficerName: "",
+                    alternateProjectOfficerName: "",
+                    servicesComponents: [],
+                    groupedBudgetLinesByServicesComponent: [],
+                    preAwardMemoDocuments: [],
+                    step5: { id: 1, requisition_number: null, requisition_date: null, requisition_approved_by: null },
+                    preAwardRequestorName: "",
+                    preAwardApprovalRequestedDate: ""
+                });
+            });
+
+            it("sets requisitionDateError when value is entered but invalid", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "not-a-date" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                });
+            });
+
+            it("sets requisitionDateError for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => {
+                    // Error shown in UI
+                    expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                    // Approve button must also be disabled — isFormValid must return false
+                    expect(result.current.isFormValid()).toBe(false);
+                });
+            });
+
+            it("blocks handleSaveDraft for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const mockUnwrap = vi.fn().mockResolvedValue({});
+                useUpdateProcurementTrackerStepMutation.mockReturnValue([
+                    vi.fn().mockReturnValue({ unwrap: mockUnwrap }),
+                    {}
+                ]);
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => expect(result.current.requisitionDate).toBe("qq/qq/qq"));
+
+                await result.current.handleSaveDraft();
+
+                await waitFor(() => {
+                    expect(result.current.submitError).toBe("Invalid date format. Please use MM/DD/YYYY format.");
+                    expect(mockUnwrap).not.toHaveBeenCalled();
+                });
+            });
+
+            it("clears requisitionDateError when value becomes valid", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "not-a-date" } });
+                await waitFor(() => expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]));
+                result.current.handleDateChange({ target: { value: "05/21/2026" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual([]);
+                    expect(result.current.requisitionDate).toBe("05/21/2026");
+                });
+            });
+
+            it("clears requisitionDateError when field is emptied", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "bad" } });
+                await waitFor(() => expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]));
+                result.current.handleDateChange({ target: { value: "" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual([]);
+                });
+            });
+        });
+
         it("should reject invalid date format in handleSaveDraft", async () => {
             usePreAwardApprovalData.mockReturnValue({
                 agreement: { id: 1, name: "Test Agreement" },

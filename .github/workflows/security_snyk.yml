@@ -14,7 +14,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Snyk test
         id: snyk_test
-        uses: snyk/actions/node@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        uses: snyk/actions/node@12140f4059e244892ae643824a95459a102120dd # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run Snyk monitor
         id: snyk_monitor
-        uses: snyk/actions/node@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        uses: snyk/actions/node@12140f4059e244892ae643824a95459a102120dd # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-frontend.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4
         with:
           sarif_file: snyk-frontend.sarif
           category: snyk-frontend
@@ -79,7 +79,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -91,7 +91,7 @@ jobs:
           fi
 
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        uses: snyk/actions/setup@12140f4059e244892ae643824a95459a102120dd # master
 
       - uses: ./.github/actions/setup-python
 
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-api.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4
         with:
           sarif_file: snyk-backend-api.sarif
           category: snyk-backend-api
@@ -135,7 +135,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify SNYK_TOKEN is configured
         env:
@@ -147,7 +147,7 @@ jobs:
           fi
 
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@8e119fbb6c251787721d34ba683ed48eba792766 # master
+        uses: snyk/actions/setup@12140f4059e244892ae643824a95459a102120dd # master
 
       - name: Setup Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && hashFiles('snyk-backend-data-tools.sarif') != ''
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4
         with:
           sarif_file: snyk-backend-data-tools.sarif
           category: snyk-backend-data-tools
