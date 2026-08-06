@@ -6,6 +6,7 @@ import {
     hasBlIsInReview,
     hasAnyBliInSelectedStatus,
     groupByServicesComponent,
+    groupByGrantNumber,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -300,6 +301,72 @@ describe("groupByServicesComponent", () => {
                 budgetLines: [{ id: 3, services_component_id: 2 }]
             }
         ]);
+    });
+});
+describe("groupByGrantNumber", () => {
+    it("should group budget lines by grant number", () => {
+        const budgetLines = [
+            { id: 1, grant_number_number: 1 },
+            { id: 2, grant_number_number: 2 },
+            { id: 3, grant_number_number: 1 }
+        ];
+        const result = groupByGrantNumber(budgetLines);
+
+        expect(result).toEqual([
+            {
+                grantNumberNumber: 1,
+                budgetLines: [
+                    { id: 1, grant_number_number: 1 },
+                    { id: 3, grant_number_number: 1 }
+                ]
+            },
+            {
+                grantNumberNumber: 2,
+                budgetLines: [{ id: 2, grant_number_number: 2 }]
+            }
+        ]);
+    });
+
+    it("should resolve grant number by id when grant_number_number is missing", () => {
+        const budgetLines = [
+            { id: 1, grant_number_id: 10 },
+            { id: 2, grant_number_id: 20 },
+            { id: 3 } // no link -> unassociated bucket (0)
+        ];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [{ id: 1, grant_number_id: 10 }] },
+            { grantNumberNumber: 2, budgetLines: [{ id: 2, grant_number_id: 20 }] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 3 }] }
+        ]);
+    });
+
+    it("should include grant numbers without budget lines and keep the unassociated bucket last", () => {
+        const budgetLines = [{ id: 1, grant_number_number: 0 }];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [] },
+            { grantNumberNumber: 2, budgetLines: [] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 1, grant_number_number: 0 }] }
+        ]);
+    });
+
+    it("should return an empty array if no budget lines are provided", () => {
+        expect(groupByGrantNumber([])).toEqual([]);
+    });
+
+    it("should return an empty array (not throw) for invalid input", () => {
+        expect(groupByGrantNumber(null)).toEqual([]);
     });
 });
 describe("isBLIPermanent", () => {

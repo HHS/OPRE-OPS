@@ -84,6 +84,8 @@ const CurrencyInput = ({
                 groupSeparator=","
                 decimalSeparator="."
                 decimalsLimit={2}
+                // prefix is display-only: onValueChange/onChange emit the un-prefixed raw string
+                // (rawValue / values.value). Consumers reading the DOM .value must strip "$" themselves.
                 prefix="$"
                 placeholder={placeholder}
                 data-cy={dataCy}

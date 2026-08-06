@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from models import BaseModel
 
+SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
+SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
+
 
 class UserRole(BaseModel):
     __tablename__ = "user_role"
@@ -168,6 +171,7 @@ class Role(BaseModel):
     @property
     def is_superuser(self) -> bool:
         return self.name == "SUPER_USER"
+
 
 class Group(BaseModel):
     """Main Group model."""

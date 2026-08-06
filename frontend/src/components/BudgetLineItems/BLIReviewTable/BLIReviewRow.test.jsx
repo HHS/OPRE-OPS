@@ -316,6 +316,24 @@ describe("BLIReviewRow", () => {
                 // But we can verify the button doesn't render for Draft
                 expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
             });
+
+            it("should not show CLIN edit button when no onAddCLINClick handler is provided (review-page scenario)", () => {
+                // ApproveAwardApproval uses BudgetLinesReviewAccordion which never forwards
+                // onAddCLINClick. With the default undefined, the button must not render
+                // even for non-Draft BLIs with showCLINColumn=true.
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED"
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                    // onAddCLINClick intentionally omitted — mirrors the review page
+                });
+
+                expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
+            });
         });
     });
 });

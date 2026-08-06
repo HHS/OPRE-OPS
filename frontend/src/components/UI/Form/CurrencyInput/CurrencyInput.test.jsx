@@ -82,6 +82,32 @@ describe("CurrencyInput", () => {
         expect(onChange).toHaveBeenLastCalledWith("amount", expect.any(String));
     });
 
+    it("emits the un-prefixed raw string via onChange even though the display shows $", async () => {
+        // The prefix="$" is display-only. onChange and setEnteredAmount must receive
+        // prefix-free values so consumers don't need to strip "$" from the payload.
+        const setEnteredAmount = vi.fn();
+        const onChange = vi.fn();
+
+        render(
+            <ControlledCurrencyInput
+                name="amount"
+                initialValue=""
+                onSetEnteredAmount={setEnteredAmount}
+                onOnChange={onChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+        await userEvent.type(input, "1000000");
+
+        // Display carries the "$" prefix and thousand-separators
+        expect(input).toHaveDisplayValue("$1,000,000");
+        // onChange emits the plain numeric string — no "$", no commas
+        expect(onChange).toHaveBeenLastCalledWith("amount", "1000000");
+        // setEnteredAmount emits the float
+        expect(setEnteredAmount).toHaveBeenLastCalledWith(1000000);
+    });
+
     it("clears the input when parent resets value after user typed", async () => {
         const setEnteredAmount = vi.fn();
 

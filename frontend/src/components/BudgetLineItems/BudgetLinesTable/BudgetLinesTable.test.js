@@ -99,4 +99,32 @@ describe("PreviewTable", () => {
         expect(screen.getByText("Draft")).toBeInTheDocument();
         expect(screen.getByText("Obligated")).toBeInTheDocument();
     });
+
+    test("renders Fee and Total columns for non-grant budget lines", () => {
+        customRender(
+            <BudgetLinesTable
+                budgetLines={mockBudgetLinesOne}
+                readOnly={true}
+            />,
+            store
+        );
+        expect(screen.getByText("Fee")).toBeInTheDocument();
+        expect(screen.getByText("Total")).toBeInTheDocument();
+    });
+
+    test("omits Fee and Total columns for grant budget lines", () => {
+        customRender(
+            <BudgetLinesTable
+                budgetLines={mockBudgetLinesOne}
+                readOnly={true}
+                isGrant={true}
+            />,
+            store
+        );
+        expect(screen.queryByText("Fee")).not.toBeInTheDocument();
+        expect(screen.queryByText("Total")).not.toBeInTheDocument();
+        // Grant tables still show the core columns
+        expect(screen.getByText("Amount")).toBeInTheDocument();
+        expect(screen.getByText("Status")).toBeInTheDocument();
+    });
 });

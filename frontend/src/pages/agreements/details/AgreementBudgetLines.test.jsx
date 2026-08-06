@@ -11,10 +11,12 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
 const useGetServicesComponentsListQueryMock = vi.fn();
+const useGetGrantNumbersListQueryMock = vi.fn();
 
 // Mock the hooks and API calls
 vi.mock("../../../api/opsAPI", () => ({
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    useGetGrantNumbersListQuery: (...args) => useGetGrantNumbersListQueryMock(...args),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
@@ -39,6 +41,10 @@ afterEach(() => {
 
 beforeEach(() => {
     useGetServicesComponentsListQueryMock.mockReturnValue({
+        data: [],
+        isLoading: false
+    });
+    useGetGrantNumbersListQueryMock.mockReturnValue({
         data: [],
         isLoading: false
     });
@@ -437,5 +443,76 @@ describe("AgreementBudgetLines", () => {
 
         // Should render the component for super users even with restrictions
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    describe("post-pre-award lock", () => {
+        const regularUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+        const defaultProps = {
+            agreement: { ...mockAgreement, _meta: { isEditable: true } },
+            isEditMode: false,
+            setIsEditMode: vi.fn(),
+            isAgreementNotDeveloped: false,
+            isAgreementAwarded: false,
+            isPreAwardInReview: false,
+            isAwardInReview: false,
+            isPostPreAwardLocked: true
+        };
+        const renderWith = (store, props = {}) =>
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("Edit button is hidden for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("Request BL Status Change button is disabled for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
+            const requestButton = screen.getByText("Request BL Status Change");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+        });
+
+        test("super user is also locked when isPostPreAwardLocked is true", () => {
+            renderWith(superUserStore);
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
     });
 });

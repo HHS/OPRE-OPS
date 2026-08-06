@@ -4,6 +4,7 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useUpdateAgreementEditBundleMutation
 } from "../../../api/opsAPI";
@@ -17,6 +18,7 @@ import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -68,6 +70,8 @@ const EditAgreementAndBudgetLines = () => {
     // Bumped on save failure so the editor reseeds services_components from the
     // server-cached list, reverting any optimistic edits the user had in flight.
     const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
+    // Mirrors servicesComponentsReseedKey for grant numbers (grant agreements only).
+    const [grantNumbersReseedKey, setGrantNumbersReseedKey] = useState(0);
 
     // Children populate these refs with `{ getSlice }` callbacks so the page can
     // read their current edits synchronously when the user clicks Save Changes.
@@ -85,6 +89,7 @@ const EditAgreementAndBudgetLines = () => {
     });
     // Financial-snapshot and procurement-shop changes both route through change requests
     // requiring Division Director approval — one modal covers both cases.
+    const isBudgetTeam = useIsUserBudgetTeam();
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
@@ -97,11 +102,26 @@ const EditAgreementAndBudgetLines = () => {
         skip: !isValidId
     });
 
+    // Budget Team direct-edit bypass applies when the agreement has a pending award
+    // approval (step 6). Read the backend-derived flag so this stays in sync with the
+    // server's is_award_approval_requested check (single source of truth) rather than
+    // inferring context from the returnTo URL.
+    const isAwardApprovalContext = agreement?.is_award_approval_requested === true;
+
     const {
         data: servicesComponents,
         error: errorServicesComponent,
         isLoading: isLoadingServicesComponents
     } = useGetServicesComponentsListQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+        skip: !isValidId
+    });
+
+    const {
+        data: grantNumbers,
+        error: errorGrantNumbers,
+        isLoading: isLoadingGrantNumbers
+    } = useGetGrantNumbersListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
         skip: !isValidId
     });
@@ -131,6 +151,9 @@ const EditAgreementAndBudgetLines = () => {
         if (bliSlice.services_components) {
             bundle.services_components = bliSlice.services_components;
         }
+        if (bliSlice.grant_numbers) {
+            bundle.grant_numbers = bliSlice.grant_numbers;
+        }
         if (bliSlice.budget_line_items) {
             bundle.budget_line_items = bliSlice.budget_line_items;
         }
@@ -142,7 +165,7 @@ const EditAgreementAndBudgetLines = () => {
         setIsSaving(true);
         try {
             const bundle = buildBundle();
-            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
+            const result = await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
@@ -154,6 +177,16 @@ const EditAgreementAndBudgetLines = () => {
                         redirectUrl: returnTo
                     })
                 );
+            } else if (result?.change_request_ids?.length) {
+                // Backend created change requests (e.g. budget team outside award-approval context) —
+                // edits are pending DD approval, not applied immediately.
+                setAlert({
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl: returnTo
+                });
             } else {
                 setAlert({
                     type: "success",
@@ -174,9 +207,10 @@ const EditAgreementAndBudgetLines = () => {
                 message: `An error occurred while saving. ${detail}`
             });
             // Bundle save is atomic — on failure the server state is unchanged.
-            // Reseed services_components so optimistic edits revert to the server
-            // copy, leaving the form consistent for the user to retry.
+            // Reseed services_components / grant_numbers so optimistic edits revert to the
+            // server copy, leaving the form consistent for the user to retry.
             setServicesComponentsReseedKey((key) => key + 1);
+            setGrantNumbersReseedKey((key) => key + 1);
         } finally {
             setIsSaving(false);
         }
@@ -186,7 +220,10 @@ const EditAgreementAndBudgetLines = () => {
         if (isSaving) return;
         // Both procurement-shop and BLI financial changes route through change requests that
         // need Division Director approval — show one confirmation covering either case.
-        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
+        // Budget team bypasses the modal only when editing from the award-approval review page
+        // (step 6), matching the backend's is_award_approval_requested condition.
+        const budgetTeamBypasses = isBudgetTeam && isAwardApprovalContext;
+        if (!budgetTeamBypasses && (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval)) {
             setShowFinancialApprovalModal(true);
             return;
         }
@@ -194,12 +231,12 @@ const EditAgreementAndBudgetLines = () => {
     };
 
     useEffect(() => {
-        if (!isValidId || errorAgreement || errorServicesComponent) {
+        if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
             navigate("/error");
         }
-    }, [isValidId, errorAgreement, errorServicesComponent, navigate]);
+    }, [isValidId, errorAgreement, errorServicesComponent, errorGrantNumbers, navigate]);
 
-    if (isLoadingAgreement || isLoadingServicesComponents) {
+    if (isLoadingAgreement || isLoadingServicesComponents || isLoadingGrantNumbers) {
         return (
             <App breadCrumbName="Edit Agreement and Budget Lines">
                 <h1>Loading...</h1>
@@ -207,7 +244,7 @@ const EditAgreementAndBudgetLines = () => {
         );
     }
 
-    if (!isValidId || errorAgreement || errorServicesComponent) {
+    if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
         return null;
     }
 
@@ -243,6 +280,8 @@ const EditAgreementAndBudgetLines = () => {
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
+                grantNumbers={grantNumbers ?? []}
+                grantNumbersReseedKey={grantNumbersReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showFinancialApprovalModal && (

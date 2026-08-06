@@ -90,6 +90,26 @@ Uses **Conventional Commits** enforced by commitlint.
 - Always use conventional commit format (commitlint will reject non-conforming commits)
 - Check recent commits with `git log --oneline -5` to match repository style
 - Include ticket numbers in branch names (e.g., `OPS-4927/feature-name`), not in commit messages
+- **Single line only, under 100 characters** — no multiline body, no blank lines
+- **No trailers** — no `Co-Authored-By`, no `Signed-off-by`, nothing after the subject line
+- Always commit with `git commit -m "type: description"` — never HEREDOC (multiline fails commitlint)
+- **Single line only, under 100 characters** — no multiline body, no blank lines
+- **No trailers** — no `Co-Authored-By`, no `Signed-off-by`, nothing after the subject line
+- Always commit with `git commit -m "type: description"` — never HEREDOC (multiline fails commitlint)
+
+## Branching
+
+Always branch from `main` (not from another feature branch), unless explicitly instructed otherwise.
+
+**Naming patterns:**
+- Ticket work: `OPS-NNNN/short-description` (e.g. `OPS-6028/disable-save-draft`)
+- Docs/tooling with no ticket: `docs/short-description` (e.g. `docs/claude-commit-conventions`)
+- Hotfixes: `OPS/hotfix-description`
+
+**Rules:**
+- Never commit directly to `main`
+- Branch names use kebab-case after the prefix
+- Keep descriptions short — 3-5 words max
 
 ## Pre-commit Hooks
 

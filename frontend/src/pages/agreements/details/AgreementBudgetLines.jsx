@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
@@ -13,6 +14,7 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetLinesTable/BudgetLinesTableLoading";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
+import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
@@ -23,6 +25,7 @@ import {
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
+    groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import {
@@ -49,6 +52,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
+ * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -59,7 +63,8 @@ const AgreementBudgetLines = ({
     isAgreementNotDeveloped,
     isAgreementAwarded,
     isPreAwardInReview = false,
-    isAwardInReview = false
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
@@ -70,6 +75,7 @@ const AgreementBudgetLines = ({
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     // Editing is not yet supported for grant agreements, so the Edit and Request BL Status Change buttons are disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
@@ -77,8 +83,9 @@ const AgreementBudgetLines = ({
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
 
-    // Pre-award or award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
-    const isAgreementEditable = !isPreAwardInReview && !isAwardInReview && (isSuperUser || canRegularUserEdit);
+    // All users (including superusers) are blocked by pre-award, award review, or post-pre-award lock
+    const isAgreementEditable =
+        !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
     // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
     const canRequestStatusChange = isAgreementEditable && !isGrant;
     const filters = { agreementIds: [agreement?.id] };
@@ -98,6 +105,8 @@ const AgreementBudgetLines = ({
                 return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
             case isAwardInReview:
                 return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+            case isPostPreAwardLocked:
+                return "This agreement has completed Pre-Award Approval and is locked from further edits.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
@@ -154,6 +163,11 @@ const AgreementBudgetLines = ({
                 : null) ?? [];
 
         return newTempBudgetLines.map((bli) => {
+            if (isGrant) {
+                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
+                return { ...bli, grant_number_number: grantNumberNumber };
+            }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
             const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
@@ -161,9 +175,10 @@ const AgreementBudgetLines = ({
                 : `${serviceComponentNumber}`;
             return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
         });
-    }, [agreement?.budget_line_items, servicesComponents]);
+    }, [agreement?.budget_line_items, servicesComponents, grantNumbers, isGrant]);
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
+    const groupedBudgetLinesByGrantNumber = groupByGrantNumber(budgetLines, grantNumbers ?? []);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
@@ -201,6 +216,7 @@ const AgreementBudgetLines = ({
                             subtotal={agreementSubtotal}
                             fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard
                             budgetLineItems={filteredBlis}
@@ -252,6 +268,7 @@ const AgreementBudgetLines = ({
                     projectOfficer={""}
                     alternateProjectOfficer={""}
                     servicesComponents={servicesComponents}
+                    grantNumbers={grantNumbers ?? []}
                 >
                     <CreateBLIsAndSCs
                         selectedAgreement={agreement}
@@ -279,6 +296,31 @@ const AgreementBudgetLines = ({
             {!isEditMode && isServicesComponentsLoading && <BudgetLinesTableLoading />}
 
             {!isEditMode &&
+                isGrant &&
+                groupedBudgetLinesByGrantNumber.length > 0 &&
+                groupedBudgetLinesByGrantNumber.map((group, index) => (
+                    <GrantNumberAccordion
+                        key={`${group.grantNumberNumber}-${index}`}
+                        grantNumberNumber={group.grantNumberNumber}
+                    >
+                        {group.budgetLines.length > 0 ? (
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                isAgreementAwarded={isAgreementAwarded}
+                                readOnly={true}
+                                isEditable={agreement?._meta.isEditable}
+                                isGrant={true}
+                            />
+                        ) : (
+                            <p className="text-center margin-y-7">
+                                You have not added any budget lines to this grant number yet.
+                            </p>
+                        )}
+                    </GrantNumberAccordion>
+                ))}
+
+            {!isEditMode &&
+                !isGrant &&
                 !isServicesComponentsLoading &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
@@ -314,9 +356,13 @@ const AgreementBudgetLines = ({
                     );
                 })}
 
-            {!isEditMode && !isServicesComponentsLoading && groupedBudgetLinesByServicesComponent.length === 0 && (
-                <p className="text-center">You have not added any Budget Lines yet.</p>
-            )}
+            {!isEditMode &&
+                !isServicesComponentsLoading &&
+                (isGrant
+                    ? groupedBudgetLinesByGrantNumber.length === 0
+                    : groupedBudgetLinesByServicesComponent.length === 0) && (
+                    <p className="text-center">You have not added any Budget Lines yet.</p>
+                )}
 
             {!isEditMode && !isReadOnly && (
                 <div className="grid-row flex-justify-end margin-top-1">

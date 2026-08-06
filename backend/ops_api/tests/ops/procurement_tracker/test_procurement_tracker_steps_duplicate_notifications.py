@@ -374,26 +374,33 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
 
 
 def test_decline_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
-    """Test that whitespace-only reviewer notes are treated as invalid (validation requires non-empty notes for DECLINED)."""
+    """Test that declining with whitespace-only reviewer notes succeeds and the notification omits the 'Notes:' section."""
     # Setup: approval requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
 
-    # Decline with whitespace-only notes - should fail validation
+    # Decline with whitespace-only notes - reviewer notes are optional on decline
     update_data = {
         "approval_status": "DECLINED",
         "reviewer_notes": "   \n  ",  # Whitespace only
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
 
-    # Expect validation error since reviewer notes are required for DECLINED status
-    assert response.status_code == 400
-    error_data = response.json
-    assert "errors" in error_data
-    assert "reviewer_notes" in error_data["errors"]
-    assert "Reviewer notes are required" in error_data["errors"]["reviewer_notes"]
+    # Query for the decline response notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Declined")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created for decline response"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Notes section should not appear when empty. Got: {notification.message}"
 
 
 def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):

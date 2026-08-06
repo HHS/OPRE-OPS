@@ -52,6 +52,11 @@ export const useIsUserSuperUser = () => {
     return useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 };
 
+export const useIsUserBudgetTeam = () => {
+    const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    return roles.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
+};
+
 export const useIsUserOnlyProcurementTeam = () => {
     const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     return roles.length === 1 && roles[0]?.name === USER_ROLES.PROCUREMENT_TEAM;

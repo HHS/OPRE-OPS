@@ -6,6 +6,7 @@ import {
     useAddDocumentMutation,
     useUpdateDocumentStatusMutation
 } from "../../../api/opsAPI";
+import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
 import {
     convertFileSizeToMB,
@@ -26,6 +27,7 @@ import { VALIDATABLE_BLI_STATUSES } from "./constants";
  */
 export default function useRequestPreAwardApproval(agreementId) {
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));
     const [isUploading, setIsUploading] = useState(false);
@@ -46,6 +48,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingTotal,
         projectOfficerName,
@@ -275,8 +278,12 @@ export default function useRequestPreAwardApproval(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate(`/agreements/${agreementId}/procurement-tracker`, {
-                state: { success: true }
+            setAlert({
+                type: "success",
+                heading: "Agreement Sent to Pre-Award Approval",
+                message:
+                    "This agreement has been successfully sent to your Division Director to review. After it's approved, the Budget Team will submit the requisition, and then you can upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS).",
+                redirectUrl: `/agreements/${agreementId}/procurement-tracker`
             });
         } catch {
             setSubmitError("Failed to submit approval request. Please try again.");
@@ -304,6 +311,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
         executingTotal, // Total calculated from executing budget lines only
         notes,

@@ -30,6 +30,7 @@ const mockAgreement = {
 
 let mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
 const mockServicesComponentsResult = { data: [], error: null, isLoading: false };
+const mockGrantNumbersResult = { data: [], error: null, isLoading: false };
 
 // Spy + result for the new single-mutation save path. Tests can override
 // `nextBundleResult` to either resolve with a body or reject with an error.
@@ -39,6 +40,7 @@ let nextBundleResult = { resolveWith: { ok: true } };
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: () => mockAgreementResult,
     useGetServicesComponentsListQuery: () => mockServicesComponentsResult,
+    useGetGrantNumbersListQuery: () => mockGrantNumbersResult,
     useUpdateAgreementEditBundleMutation: () => [
         (...args) => {
             updateBundleMock(...args);
@@ -157,6 +159,31 @@ const buildStore = () =>
             alert: { isActive: false, type: "", heading: "", message: "" }
         }
     });
+
+const buildBudgetTeamStore = () =>
+    configureStore({
+        reducer: { auth: authSlice, alert: alertSlice },
+        preloadedState: {
+            auth: { activeUser: { id: 1, roles: [{ name: "BUDGET_TEAM" }] } },
+            alert: { isActive: false, type: "", heading: "", message: "" }
+        }
+    });
+
+const renderPageAs = (store, initialEntry = "/agreements/review/42/edit") => {
+    const utils = render(
+        <Provider store={store}>
+            <MemoryRouter initialEntries={[initialEntry]}>
+                <Routes>
+                    <Route
+                        path="/agreements/review/:id/edit"
+                        element={<EditAgreementAndBudgetLines />}
+                    />
+                </Routes>
+            </MemoryRouter>
+        </Provider>
+    );
+    return { ...utils, store };
+};
 
 const renderPage = (initialEntry = "/agreements/review/42/edit") => {
     const store = buildStore();
@@ -363,6 +390,47 @@ describe("EditAgreementAndBudgetLines", () => {
             simulateProcurementShopChange = true;
             renderPage();
             fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("Budget Team award-approval bypass", () => {
+        beforeEach(() => {
+            simulateFinancialChange = true;
+        });
+
+        it("skips the modal and saves directly when agreement has a pending award approval", async () => {
+            mockAgreementResult = {
+                data: { ...mockAgreement, is_award_approval_requested: true },
+                error: null,
+                isLoading: false
+            };
+            nextBundleResult = { resolveWith: { budget_line_items: [], change_request_ids: [] } };
+
+            renderPageAs(buildBudgetTeamStore());
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+            await waitFor(() => {
+                expect(updateBundleMock).toHaveBeenCalled();
+            });
+            expect(screen.queryByText(/Division Director/)).not.toBeInTheDocument();
+        });
+
+        it("shows the modal when agreement does NOT have a pending award approval", async () => {
+            mockAgreementResult = {
+                data: { ...mockAgreement, is_award_approval_requested: false },
+                error: null,
+                isLoading: false
+            };
+
+            renderPageAs(buildBudgetTeamStore());
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
             expect(
                 await screen.findByText(
                     "Budget changes require approval from your Division Director. Do you want to send it to approval?"

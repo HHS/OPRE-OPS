@@ -1,12 +1,14 @@
 import { useMemo } from "react";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { AgreementType } from "../agreements.constants";
+import { groupByGrantNumber, groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Shared hook for pre-award approval data fetching and processing.
@@ -15,9 +17,18 @@ import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/bud
  * @returns {Object} - Shared data and computed values
  */
 export default function usePreAwardApprovalData(agreementId) {
-    // Fetch data
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
+    // Fetch data — refetchOnMountOrArgChange ensures fresh BLI state (e.g. in_review) is
+    // loaded when the page is revisited after an edit, preventing stale tooltips/alerts.
+    const {
+        data: agreement,
+        isLoading,
+        isFetching
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
+    });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreementId, { skip: !agreementId });
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
     const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId
@@ -40,15 +51,23 @@ export default function usePreAwardApprovalData(agreementId) {
     // Calculate total of executing budget lines only
     const executingTotal = useMemo(() => budgetLinesTotal(executingBudgetLines), [executingBudgetLines]);
 
-    // Group all budget lines by services component for display
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
+    // Group all budget lines by services component (or grant number for grants) for display.
+    // For grants, resolve the grant number number from grant_number_id so persisted grant BLIs group correctly.
+    const decorateForGrant = (blis) =>
+        blis.map((bli) => ({
+            ...bli,
+            grant_number_number: (grantNumbers ?? []).find((gn) => gn.id === bli.grant_number_id)?.number ?? 0
+        }));
+
+    const groupedBudgetLinesByServicesComponent = isGrant
+        ? groupByGrantNumber(decorateForGrant(allBudgetLines), grantNumbers ?? [])
+        : groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
     // Group only executing budget lines by services component (used by the Budget Team
     // Requisition Review page, which shows only the BLs included in the requisition)
-    const groupedExecutingBudgetLinesByServicesComponent = groupByServicesComponent(
-        executingBudgetLines,
-        servicesComponents || []
-    );
+    const groupedExecutingBudgetLinesByServicesComponent = isGrant
+        ? groupByGrantNumber(decorateForGrant(executingBudgetLines), grantNumbers ?? [])
+        : groupByServicesComponent(executingBudgetLines, servicesComponents || []);
 
     // Get active tracker and steps — include COMPLETED trackers so award approval data
     // remains visible after step 6 is completed (tracker moves to COMPLETED at that point)
@@ -72,6 +91,7 @@ export default function usePreAwardApprovalData(agreementId) {
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,

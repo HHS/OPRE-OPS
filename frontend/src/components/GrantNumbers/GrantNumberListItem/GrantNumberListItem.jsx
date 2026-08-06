@@ -1,0 +1,94 @@
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import ServicesComponentMetadata from "../../ServicesComponents/ServicesComponentMetadata";
+/**
+ * @component - GrantNumberListItem is a component that displays a single grant number item.
+ * @param {object} props
+ * @param {number} props.id - The ID of the grant number.
+ * @param {string} props.title - The title of the grant number.
+ * @param {string} props.periodStart - The start date of the period of performance.
+ * @param {string} props.periodEnd - The end date of the period of performance.
+ * @param {string} props.description - The description of the grant number.
+ * @param {Function} props.setFormDataById - Function to set form data by ID.
+ * @param {Function} props.handleDelete - Function to handle delete operation.
+ * @returns {JSX.Element}
+ *
+ * @example
+ * <GrantNumberListItem id={id} title={title} setFormDataById={setFormDataById} handleDelete={handleDelete} />
+ */
+function GrantNumberListItem({ id, title, periodStart, periodEnd, setFormDataById, description, handleDelete }) {
+    const [isHovered, setIsHovered] = React.useState(false);
+
+    return (
+        <div
+            className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
+            style={{ minHeight: "8.375rem" }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <section className="display-flex flex-justify">
+                <h2
+                    className="margin-0"
+                    data-cy={`${title}-grant-number-item-title`}
+                >
+                    {title}
+                </h2>
+                {isHovered && (
+                    <div>
+                        <Tooltip
+                            label="Edit"
+                            position="top"
+                        >
+                            <button
+                                type="button"
+                                id="edit"
+                                aria-label="Edit"
+                                data-cy="grant-number-item-edit-button"
+                                onClick={() => {
+                                    setFormDataById(id);
+                                    scrollToCenter("grant-number-form");
+                                }}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    size="2x"
+                                    className="text-primary cursor-pointer height-2 width-2 margin-right-1"
+                                />
+                            </button>
+                        </Tooltip>
+                        <Tooltip
+                            label="Delete"
+                            position="top"
+                        >
+                            <button
+                                type="button"
+                                id="delete"
+                                aria-label="Delete"
+                                data-cy="grant-number-item-delete-button"
+                                onClick={() => {
+                                    handleDelete(id);
+                                }}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faTrash}
+                                    size="2x"
+                                    className="text-primary cursor-pointer height-2 width-2"
+                                />
+                            </button>
+                        </Tooltip>
+                    </div>
+                )}
+            </section>
+            <ServicesComponentMetadata
+                periodStart={periodStart}
+                periodEnd={periodEnd}
+                description={description}
+            />
+        </div>
+    );
+}
+
+export default GrantNumberListItem;

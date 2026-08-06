@@ -7,7 +7,6 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
-import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
 const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -130,16 +129,15 @@ export default function useApproveAwardApproval(agreementId) {
                     }).unwrap();
 
                     // Canonical success pattern (per CLAUDE.md + ReviewBudgetTeamRequisition)
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Approved for Award",
-                        message: `Agreement "${agreement?.display_name}" has been successfully approved for Award.`
-                    });
-                    scrollToTop();
                     flushSync(() => {
                         setIsNavigating(true);
                     });
-                    navigate("/agreements?filter=change-requests");
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Approved for Award",
+                        message: `Agreement "${agreement?.display_name}" has been successfully approved for Award.`,
+                        redirectUrl: "/agreements?filter=change-requests"
+                    });
                 } catch (error) {
                     setSubmitError(/** @type {any} */ (error)?.data?.error || "Failed to approve award");
                     setIsSubmitting(false);

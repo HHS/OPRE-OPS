@@ -64,6 +64,10 @@ vi.mock("../../../hooks/useNavigationBlocker.hooks", () => ({
     })
 }));
 
+vi.mock("../../../hooks/user.hooks", () => ({
+    useIsUserBudgetTeam: () => false
+}));
+
 vi.mock("./AgreementEditorContext.hooks", () => ({
     useEditAgreement: () => useEditAgreementMock(),
     useEditAgreementDispatch: () => useEditAgreementDispatchMock(),

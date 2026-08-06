@@ -38,7 +38,8 @@ export const ReviewBudgetTeamRequisition = () => {
         requisitionNumber,
         setRequisitionNumber,
         requisitionDate,
-        setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -47,6 +48,7 @@ export const ReviewBudgetTeamRequisition = () => {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
         handleApprove,
         handleSaveDraft,
         handleCancel,
@@ -92,6 +94,9 @@ export const ReviewBudgetTeamRequisition = () => {
                     heading="Submission Error"
                     message={submitError}
                     isClosable={true}
+                    setIsAlertVisible={(visible) => {
+                        if (!visible) setSubmitError("");
+                    }}
                     headingLevel={2}
                 />
             )}
@@ -239,9 +244,9 @@ export const ReviewBudgetTeamRequisition = () => {
                             label="Requisition Approval Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
+                            onChange={handleDateChange}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
+                            messages={requisitionDateError}
                             isRequiredNoShow={true}
                         />
                     </div>

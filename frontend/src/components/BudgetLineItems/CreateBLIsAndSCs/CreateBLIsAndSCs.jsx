@@ -4,7 +4,10 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
+import GrantNumbers from "../../GrantNumbers";
+import GrantNumberAccordion from "../../GrantNumbers/GrantNumberAccordion";
 import ServicesComponents from "../../ServicesComponents";
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
@@ -99,6 +102,7 @@ export const CreateBLIsAndSCs = ({
         enteredDescription,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedBudgetLinesByGrantNumber,
         res,
         feesForCards,
         subTotalForCards,
@@ -116,7 +120,9 @@ export const CreateBLIsAndSCs = ({
         hasUnsavedChanges,
         setHasUnsavedChanges,
         setServicesComponentNumber,
-        requiresFinancialApproval
+        requiresFinancialApproval,
+        grantNumberNumber,
+        setGrantNumberNumber
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -135,6 +141,7 @@ export const CreateBLIsAndSCs = ({
     );
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
+    const isGrant = selectedAgreement.agreement_type === AGREEMENT_TYPES.GRANT;
 
     const handleSaveRef = useRef(handleSave);
     const onSavedRef = useRef(onSaved);
@@ -177,6 +184,8 @@ export const CreateBLIsAndSCs = ({
     // a partial-success failure mode is impossible (one transaction, all or nothing).
     const editorState = useEditAgreement();
     const deletedServicesComponentsIds = editorState?.deleted_services_components_ids ?? [];
+    const grantNumbers = editorState?.grant_numbers ?? [];
+    const deletedGrantNumbersIds = editorState?.deleted_grant_numbers_ids ?? [];
     useEffect(() => {
         if (!bundleSliceRef) return;
         bundleSliceRef.current = {
@@ -196,6 +205,24 @@ export const CreateBLIsAndSCs = ({
                         // eslint-disable-next-line no-unused-vars
                         const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = sc;
                         return { id: sc.id, ...clean };
+                    });
+
+                // Grant numbers, mirroring the SC create/update buckets. Defined before the BLI
+                // link resolution so new grant BLIs can reference an in-bundle grant number's ref.
+                const newGns = grantNumbers
+                    .filter((gn) => !("created_on" in gn))
+                    .map((gn) => {
+                        const ref = gn.display_title ?? String(gn.number ?? "");
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { ...clean, ref };
+                    });
+                const changedGns = grantNumbers
+                    .filter((gn) => "created_on" in gn && gn.has_changed)
+                    .map((gn) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = gn;
+                        return { id: gn.id, ...clean };
                     });
 
                 // For BLIs we need to resolve the SC link. New BLIs carry only
@@ -232,24 +259,56 @@ export const CreateBLIsAndSCs = ({
                     return out;
                 };
 
+                // Grant analog of the SC link resolution above. A grant BLI carries
+                // grant_number_number in editor state; resolve it to either a persisted
+                // grant number's id or a not-yet-persisted (in-bundle) grant number's ref.
+                const existingGnByNumber = new Map(
+                    grantNumbers.filter((gn) => "created_on" in gn).map((gn) => [gn.number, gn])
+                );
+                const newGnByNumber = new Map(newGns.map((gn) => [gn.number, gn]));
+
+                const linkBliToGrantNumber = (bli) => {
+                    if (bli.grant_number_number == null) return {};
+                    const existingGn = existingGnByNumber.get(bli.grant_number_number);
+                    if (existingGn) {
+                        return { grant_number_id: existingGn.id };
+                    }
+                    const newGn = newGnByNumber.get(bli.grant_number_number);
+                    if (newGn) {
+                        return { grant_number_ref: newGn.ref };
+                    }
+                    return {};
+                };
+
+                // Drop a stale grant_number_id when emitting a ref, mirroring applyScLink.
+                const applyGnLink = (cleaned, link) => {
+                    const out = { ...cleaned, ...link };
+                    if ("grant_number_ref" in link) {
+                        delete out.grant_number_id;
+                    }
+                    return out;
+                };
+
+                // For grant agreements, link BLIs to grant numbers; otherwise to services components.
+                const applyBliLink = (cleaned, bli) =>
+                    isGrant ? applyGnLink(cleaned, linkBliToGrantNumber(bli)) : applyScLink(cleaned, linkBliToSc(bli));
+
                 const newBlis = tempBudgetLines
                     .filter((bli) => !("created_on" in bli))
                     .map((bli) => {
-                        const link = linkBliToSc(bli);
                         const { data: cleaned } = cleanBudgetLineItemForApi(bli);
-                        return applyScLink(cleaned, link);
+                        return applyBliLink(cleaned, bli);
                     });
 
                 // For the dirty check we compare cleaned-vs-cleaned so the UI-only
-                // decorations (services_component_number, serviceComponentGroupingLabel,
-                // fees, _meta, etc.) don't make every existing BLI look "changed".
-                // Apply linkBliToSc to updates as well so an existing BLI moved onto an
-                // in-bundle (newly-created) SC carries services_component_ref.
+                // decorations (services_component_number, grant_number_number,
+                // serviceComponentGroupingLabel, fees, _meta, etc.) don't make every existing
+                // BLI look "changed". Apply the link to updates as well so an existing BLI moved
+                // onto an in-bundle (newly-created) SC/grant number carries the appropriate ref.
                 const updatedBlis = tempBudgetLines
                     .filter((bli) => "created_on" in bli)
                     .map((bli) => {
                         const baseline = budgetLines.find((b) => b.id === bli.id);
-                        const link = linkBliToSc(bli);
                         const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
@@ -257,7 +316,7 @@ export const CreateBLIsAndSCs = ({
                                 return null;
                             }
                         }
-                        return { id, ...applyScLink(cleaned, link) };
+                        return { id, ...applyBliLink(cleaned, bli) };
                     })
                     .filter(Boolean);
 
@@ -266,6 +325,11 @@ export const CreateBLIsAndSCs = ({
                         create: newScs,
                         update: changedScs,
                         delete: deletedServicesComponentsIds
+                    },
+                    grant_numbers: {
+                        create: newGns,
+                        update: changedGns,
+                        delete: deletedGrantNumbersIds
                     },
                     budget_line_items: {
                         create: newBlis,
@@ -315,30 +379,48 @@ export const CreateBLIsAndSCs = ({
                                 selectedResearchProject={selectedResearchProject}
                                 selectedAgreement={selectedAgreement}
                                 selectedProcurementShop={selectedProcurementShop}
+                                isGrant={isGrant}
                             />
                         </>
                     )}
-                    {isAgreementWorkflowOrCanEditBudgetLines && (
-                        <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
-                            agreementId={selectedAgreement.id}
-                            continueBtnText={continueBtnText}
-                            workflow={workflow}
-                            isReviewMode={isReviewMode}
-                            setHasUnsavedChanges={setHasUnsavedChanges}
-                            hasUnsavedChanges={hasUnsavedChanges}
-                        />
+                    {isAgreementWorkflowOrCanEditBudgetLines &&
+                        (isGrant ? (
+                            <GrantNumbers
+                                agreementId={selectedAgreement.id}
+                                continueBtnText={continueBtnText}
+                                workflow={workflow}
+                                isReviewMode={isReviewMode}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ) : (
+                            <ServicesComponents
+                                serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                                agreementId={selectedAgreement.id}
+                                continueBtnText={continueBtnText}
+                                workflow={workflow}
+                                isReviewMode={isReviewMode}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ))}
+                    {!isGrant && (
+                        <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
+                            <FormHeader
+                                heading={isReviewMode ? "Edit Budget Lines" : "Add Budget Lines"}
+                                details={
+                                    isReviewMode
+                                        ? undefined
+                                        : "Add Budget lines to each Services Component to outline how the work will be funded."
+                                }
+                            />
+                        </div>
                     )}
-                    <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
-                        <FormHeader
-                            heading={isReviewMode ? "Edit Budget Lines" : "Add Budget Lines"}
-                            details={
-                                isReviewMode
-                                    ? undefined
-                                    : "Add Budget lines to each Services Component to outline how the work will be funded."
-                            }
-                        />
-                    </div>
+                    {isGrant && (
+                        <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
+                            <FormHeader heading="Add Budget Lines" />
+                        </div>
+                    )}
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
@@ -346,6 +428,7 @@ export const CreateBLIsAndSCs = ({
                             fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee_percentage}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
@@ -355,16 +438,25 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
-                    {!isAgreementNotYetDeveloped && (
-                        <ServicesComponents
-                            serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
-                            agreementId={selectedAgreement.id}
-                            isEditMode={isEditMode}
-                            continueBtnText={continueBtnText}
-                            setHasUnsavedChanges={setHasUnsavedChanges}
-                            hasUnsavedChanges={hasUnsavedChanges}
-                        />
-                    )}
+                    {!isAgreementNotYetDeveloped &&
+                        (isGrant ? (
+                            <GrantNumbers
+                                agreementId={selectedAgreement.id}
+                                isEditMode={isEditMode}
+                                continueBtnText={continueBtnText}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ) : (
+                            <ServicesComponents
+                                serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
+                                agreementId={selectedAgreement.id}
+                                isEditMode={isEditMode}
+                                continueBtnText={continueBtnText}
+                                setHasUnsavedChanges={setHasUnsavedChanges}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                            />
+                        ))}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
@@ -378,6 +470,7 @@ export const CreateBLIsAndSCs = ({
                             fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee_percentage}
+                            isGrant={isGrant}
                         />
                         <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>
@@ -388,6 +481,9 @@ export const CreateBLIsAndSCs = ({
                 <BudgetLinesForm
                     selectedCan={selectedCan}
                     servicesComponentNumber={servicesComponentNumber}
+                    grantNumberNumber={grantNumberNumber}
+                    setGrantNumberNumber={setGrantNumberNumber}
+                    isGrant={isGrant}
                     enteredAmount={enteredAmount}
                     needByDate={needByDate}
                     setNeedByDate={setNeedByDate}
@@ -422,7 +518,28 @@ export const CreateBLIsAndSCs = ({
                 </div>
             )}
 
-            {groupedBudgetLinesByServicesComponent.length > 0 ? (
+            {isGrant ? (
+                groupedBudgetLinesByGrantNumber.length > 0 ? (
+                    groupedBudgetLinesByGrantNumber.map((group, index) => (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                isReviewMode={isReviewMode}
+                                isGrant={true}
+                            />
+                        </GrantNumberAccordion>
+                    ))
+                ) : (
+                    <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+                )
+            ) : groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                         ? group.serviceComponentGroupingLabel

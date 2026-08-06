@@ -240,7 +240,7 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
-        it("should only send fields that have values", async () => {
+        it("should send null for empty fields to allow clearing saved values", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({});
             mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
 
@@ -280,8 +280,96 @@ describe("useReviewBudgetTeamRequisition", () => {
                     stepId: 1,
                     data: {
                         is_draft: true,
-                        requisition_number: "REQ-12345"
-                        // requisition_date should NOT be in the payload
+                        requisition_number: "REQ-12345",
+                        requisition_date: null
+                    }
+                });
+            });
+        });
+
+        it("should block save when both fields empty and no prior values", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await result.current.handleSaveDraft();
+
+            await waitFor(() => {
+                expect(result.current.submitError).toBe("Enter a Requisition # or Date to save a draft.");
+                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+            });
+        });
+
+        it("should allow saving with both fields empty when prior values exist (clears them)", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: "REQ-001",
+                    requisition_date: "2026-05-21",
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            // Wait for useEffect to populate fields from step5
+            await waitFor(() => {
+                expect(result.current.requisitionNumber).toBe("REQ-001");
+            });
+
+            // Clear both fields
+            result.current.setRequisitionNumber("");
+            result.current.setRequisitionDate("");
+
+            await waitFor(() => {
+                expect(result.current.requisitionNumber).toBe("");
+                expect(result.current.requisitionDate).toBe("");
+            });
+
+            await result.current.handleSaveDraft();
+
+            await waitFor(() => {
+                expect(mockUpdateProcurementTrackerStep).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: {
+                        is_draft: true,
+                        requisition_number: null,
+                        requisition_date: null
                     }
                 });
             });
@@ -478,6 +566,84 @@ describe("useReviewBudgetTeamRequisition", () => {
                     "Please fill in all required fields and check the attestation."
                 );
                 expect(result.current.showModal).toBe(false);
+            });
+        });
+
+        describe("handleDateChange", () => {
+            beforeEach(() => {
+                usePreAwardApprovalData.mockReturnValue({
+                    agreement: { id: 1, name: "Test Agreement" },
+                    isLoading: false,
+                    allBudgetLines: [],
+                    executingTotal: 0,
+                    projectOfficerName: "",
+                    alternateProjectOfficerName: "",
+                    servicesComponents: [],
+                    groupedBudgetLinesByServicesComponent: [],
+                    preAwardMemoDocuments: [],
+                    step5: { id: 1, requisition_number: null, requisition_date: null, requisition_approved_by: null },
+                    preAwardRequestorName: "",
+                    preAwardApprovalRequestedDate: ""
+                });
+            });
+
+            it("sets requisitionDateError when value is entered but invalid", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "not-a-date" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                });
+            });
+
+            it("sets requisitionDateError for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => {
+                    // Error shown in UI
+                    expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]);
+                    // Approve button must also be disabled — isFormValid must return false
+                    expect(result.current.isFormValid()).toBe(false);
+                });
+            });
+
+            it("blocks handleSaveDraft for plausible-looking but invalid dates like qq/qq/qq", async () => {
+                const mockUnwrap = vi.fn().mockResolvedValue({});
+                useUpdateProcurementTrackerStepMutation.mockReturnValue([
+                    vi.fn().mockReturnValue({ unwrap: mockUnwrap }),
+                    {}
+                ]);
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+                result.current.handleDateChange({ target: { value: "qq/qq/qq" } });
+                await waitFor(() => expect(result.current.requisitionDate).toBe("qq/qq/qq"));
+
+                await result.current.handleSaveDraft();
+
+                await waitFor(() => {
+                    expect(result.current.submitError).toBe("Invalid date format. Please use MM/DD/YYYY format.");
+                    expect(mockUnwrap).not.toHaveBeenCalled();
+                });
+            });
+
+            it("clears requisitionDateError when value becomes valid", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "not-a-date" } });
+                await waitFor(() => expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]));
+                result.current.handleDateChange({ target: { value: "05/21/2026" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual([]);
+                    expect(result.current.requisitionDate).toBe("05/21/2026");
+                });
+            });
+
+            it("clears requisitionDateError when field is emptied", async () => {
+                const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+                result.current.handleDateChange({ target: { value: "bad" } });
+                await waitFor(() => expect(result.current.requisitionDateError).toEqual(["Date must be MM/DD/YYYY"]));
+                result.current.handleDateChange({ target: { value: "" } });
+                await waitFor(() => {
+                    expect(result.current.requisitionDateError).toEqual([]);
+                });
             });
         });
 
