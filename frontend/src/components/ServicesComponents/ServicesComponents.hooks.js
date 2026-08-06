@@ -9,6 +9,9 @@ import popValidationSuite from "./ServicesComponentForm/popValidationSuite";
 const POP_CONFIRMATION_MESSAGE =
     "Changing the Period of Performance dates will alter the agreement’s start and end. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
 
+const POP_DELETE_CONFIRMATION_MESSAGE =
+    "Deleting this Services Component will alter the agreement’s overall Period of Performance. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue deleting this services component?";
+
 /**
  * @param {number} agreementId - The ID of the agreement.
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} serviceRequirementType - The type of service requirement.
@@ -156,34 +159,60 @@ const useServicesComponents = (
     };
 
     /**
+     * Dispatches the deletion, fires the success alert, and resets the form. Runs
+     * unconditionally once the caller has decided the delete should proceed — either
+     * because there was no PoP conflict, or because the user confirmed the PoP-impact modal.
+     * @param {object} selectedServicesComponent
+     */
+    const performDelete = (selectedServicesComponent) => {
+        dispatch({
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: selectedServicesComponent
+        });
+        setHasUnsavedChanges(true);
+        setShowModal(false);
+        setFormKey(Date.now());
+        setFormData(initialFormData);
+        setAlert({
+            type: "success",
+            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            isCloseable: false,
+            isToastMessage: true
+        });
+    };
+
+    /**
      *
      * @param {number} number
      */
     const handleDelete = (number) => {
         const index = servicesComponents.findIndex((component) => component.number === number);
         const selectedServicesComponent = servicesComponents[index];
+        const remainingServicesComponents = servicesComponents.filter((component) => component.number !== number);
+
+        const popCheck = popValidationSuite.run({
+            mode: "delete",
+            allServicesComponents: remainingServicesComponents,
+            nonDraftBudgetLines
+        });
+
+        if (popCheck.hasErrors()) {
+            setShowModal(true);
+            setModalProps({
+                heading: POP_DELETE_CONFIRMATION_MESSAGE,
+                actionButtonText: "Continue with Deletion",
+                secondaryButtonText: "Cancel",
+                handleConfirm: () => performDelete(selectedServicesComponent)
+            });
+            return;
+        }
 
         setShowModal(true);
         setModalProps({
             heading: `Are you sure you want to delete ${selectedServicesComponent.display_title}?`,
             actionButtonText: "Delete",
             secondaryButtonText: "Cancel",
-            handleConfirm: () => {
-                dispatch({
-                    type: "DELETE_SERVICE_COMPONENT",
-                    payload: selectedServicesComponent
-                });
-                setHasUnsavedChanges(true);
-                setShowModal(false);
-                setFormKey(Date.now());
-                setFormData(initialFormData);
-                setAlert({
-                    type: "success",
-                    message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
-                    isCloseable: false,
-                    isToastMessage: true
-                });
-            }
+            handleConfirm: () => performDelete(selectedServicesComponent)
         });
     };
 

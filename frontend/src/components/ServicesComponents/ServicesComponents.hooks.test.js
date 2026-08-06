@@ -23,6 +23,9 @@ const CONTINUE_BTN_TEXT = "Continue";
 const POP_CONFIRMATION_MESSAGE =
     "Changing the Period of Performance dates will alter the agreement’s start and end. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
 
+const POP_DELETE_CONFIRMATION_MESSAGE =
+    "Deleting this Services Component will alter the agreement’s overall Period of Performance. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue deleting this services component?";
+
 const bli = (date_needed) => ({ date_needed });
 
 const renderUseServicesComponents = (
@@ -258,6 +261,96 @@ describe("useServicesComponents", () => {
             expect(result.current.formData).toEqual(
                 expect.objectContaining({ number: 1, popStartDate: "07/01/2025", popEndDate: "12/31/2025" })
             );
+        });
+    });
+
+    describe("handleDelete — PoP impact of removing an SC", () => {
+        it("shows the generic delete confirmation (not the PoP modal) when no non-draft BLI is affected", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-08-15")]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.heading).toBe("Are you sure you want to delete SC1?");
+            expect(result.current.modalProps.actionButtonText).toBe("Delete");
+            expect(dispatchMock).not.toHaveBeenCalled();
+        });
+
+        it("shows the PoP-impact modal instead of the generic delete confirmation when deleting the only SC covering a non-draft BLI", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, [bli("2025-03-15")]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.heading).toBe(POP_DELETE_CONFIRMATION_MESSAGE);
+            expect(result.current.modalProps.actionButtonText).toBe("Continue with Deletion");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Cancel");
+            expect(dispatchMock).not.toHaveBeenCalled();
+        });
+
+        it("dispatches the deletion when the user confirms the PoP-impact modal", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" },
+                    { id: 2, number: 2, display_title: "SC2", period_start: "2025-07-01", period_end: "2025-12-31" }
+                ]
+            });
+            const setHasUnsavedChanges = vi.fn();
+            const { result } = renderUseServicesComponents(setHasUnsavedChanges, undefined, [bli("2025-03-15")]);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 1, display_title: "SC1" })
+            });
+            expect(setHasUnsavedChanges).toHaveBeenCalledWith(true);
+            expect(result.current.showModal).toBe(false);
+        });
+
+        it("dispatches the deletion when the user confirms the generic delete confirmation", () => {
+            useEditAgreementMock.mockReturnValue({
+                services_components: [
+                    { id: 1, number: 1, display_title: "SC1", period_start: "2025-01-01", period_end: "2025-06-30" }
+                ]
+            });
+            const { result } = renderUseServicesComponents(vi.fn(), undefined, []);
+
+            act(() => {
+                result.current.handleDelete(1);
+            });
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(dispatchMock).toHaveBeenCalledWith({
+                type: "DELETE_SERVICE_COMPONENT",
+                payload: expect.objectContaining({ number: 1 })
+            });
+            expect(result.current.showModal).toBe(false);
         });
     });
 

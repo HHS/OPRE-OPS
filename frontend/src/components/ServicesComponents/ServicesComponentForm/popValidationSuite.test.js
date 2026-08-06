@@ -441,6 +441,50 @@ describe("PoP validation suite", () => {
         });
     });
 
+    // -------------------------------------------------------------------------
+    // Delete mode — deleting an SC narrows the overall window
+    //
+    // The caller passes allServicesComponents as the remaining SCs (the one being
+    // deleted already excluded), so the suite's window math is identical to edit/add.
+    // -------------------------------------------------------------------------
+    describe("delete mode — PoP boundary checks", () => {
+        // SC 1: 2025-01-01 → 2025-06-30 (about to be deleted)
+        // SC 2: 2025-07-01 → 2025-12-31
+        // BLI obligate date: 2025-03-15 — only covered by SC 1's window.
+        const bliOnlyInDeletedSC = [bli("2025-03-15")];
+
+        it("fails when deleting the only SC whose window covers a non-draft BLI", () => {
+            const result = suite.run({
+                mode: "delete",
+                nonDraftBudgetLines: bliOnlyInDeletedSC,
+                // SC 1 already removed by the caller before calling the suite.
+                allServicesComponents: [sc(2, "2025-07-01", "2025-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
+        });
+
+        it("passes when deleting an SC whose BLI-covering window is still covered by the remaining SCs", () => {
+            const result = suite.run({
+                mode: "delete",
+                nonDraftBudgetLines: [bli("2025-08-15")],
+                // SC 1 removed; SC 2 alone still covers the BLI date.
+                allServicesComponents: [sc(2, "2025-07-01", "2025-12-31")]
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+
+        it("passes when there are no remaining SCs and no non-draft BLIs", () => {
+            const result = suite.run({
+                mode: "delete",
+                nonDraftBudgetLines: [],
+                allServicesComponents: []
+            });
+            expect(result.getErrors("popStartDate")).toHaveLength(0);
+            expect(result.getErrors("popEndDate")).toHaveLength(0);
+        });
+    });
+
     describe("draft BLI exemption — edit mode", () => {
         const twoSCs = [sc(1, "2025-01-01", "2025-06-30"), sc(2, "2025-04-01", "2025-12-31")];
 

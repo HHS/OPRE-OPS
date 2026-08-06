@@ -20,14 +20,15 @@ function parseISO(dateStr) {
  * before saving, rather than preventing the save outright.
  *
  * Expected data fields:
- *   - mode: "add" | "edit"
- *   - allServicesComponents: Array<{number, period_start, period_end}> — all SCs on the agreement.
- *       The caller pre-merges live form dates for the SC being edited before passing this in, so this
- *       array is always current. The suite uses it directly to compute the overall SC window.
+ *   - mode: "add" | "edit" | "delete" — "delete" checks the window formed by the
+ *       remaining SCs once the one being deleted is excluded.
+ *   - allServicesComponents: Array<{number, period_start, period_end}> — the SCs to compute the
+ *       window from. For "add"/"edit" the caller pre-merges live form dates for the SC being
+ *       edited; for "delete" the caller passes all SCs minus the one being removed.
  *   - nonDraftBudgetLines: Array<{date_needed: string|null}> — non-draft BLIs on the agreement
  */
 const suite = create((data = {}) => {
-    if (data.mode !== "edit" && data.mode !== "add") return;
+    if (!["edit", "add", "delete"].includes(data.mode)) return;
     const allSCs = data.allServicesComponents ?? [];
     const nonDraftBLIs = data.nonDraftBudgetLines ?? [];
     if (allSCs.length === 0 || nonDraftBLIs.length === 0) return;
