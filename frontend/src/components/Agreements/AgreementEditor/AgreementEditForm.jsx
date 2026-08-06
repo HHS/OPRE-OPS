@@ -453,26 +453,30 @@ const AgreementEditForm = ({
                         number. You also can come back later to edit this information at any time or once everything is
                         finalized.
                     </p>
-                    <Input
-                        name="nofo_number"
-                        label="NOFO Number"
-                        messages={res.getErrors("nofo_number")}
-                        className={cn("nofo_number")}
-                        value={nofoNumber || ""}
-                        onChange={(name, value) => {
-                            setNofoNumber(value);
-                            runValidate(name, value);
-                        }}
-                    />
-                    <GrantFundingPeriodSelect
-                        value={fundingPeriodMonths}
-                        onChange={(name, value) => setFundingPeriodMonths(value)}
-                    />
+                    <div className="width-card-lg">
+                        <Input
+                            name="nofo_number"
+                            label="NOFO Number"
+                            messages={res.getErrors("nofo_number")}
+                            className={cn("nofo_number")}
+                            value={nofoNumber || ""}
+                            onChange={(name, value) => {
+                                setNofoNumber(value);
+                                runValidate(name, value);
+                            }}
+                        />
+                    </div>
+                    <div className="width-card-lg">
+                        <GrantFundingPeriodSelect
+                            value={fundingPeriodMonths}
+                            onChange={(name, value) => setFundingPeriodMonths(value)}
+                        />
+                    </div>
                     <AlnNumbersComboBox
                         selectedAlnNumbers={alnNumbers}
                         setSelectedAlnNumbers={setAlnNumbers}
                         legendClassName="usa-label margin-top-0"
-                        overrideStyles={{ width: "30em" }}
+                        overrideStyles={{ width: "15em" }}
                     />
                     <div className="display-flex margin-top-3">
                         <ProjectOfficerComboBox

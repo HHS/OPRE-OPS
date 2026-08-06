@@ -38,10 +38,7 @@ export const AlnNumbersComboBox = ({
     };
 
     return (
-        <div
-            className={"usa-form-group " + (className || "")}
-            style={{ width: "508px" }}
-        >
+        <div className={"usa-form-group width-card-lg " + (className || "")}>
             <label
                 className={legendClassName}
                 htmlFor="aln-numbers-combobox-input"
