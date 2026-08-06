@@ -59,6 +59,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         notes: step5Notes,
         setNotes: setStep5Notes,
         resetNotes: resetStep5Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
 
@@ -132,7 +133,10 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep5DateCompleted("");
-        resetStep5Notes(stepFiveData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepFiveData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep5Notes();
     };
 
     const cancelModalStep5 = () => {
@@ -165,6 +169,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         step5Notes,
         setStep5Notes,
         resetStep5Notes,
+        notesResetKey,
         step5NotesLabel,
         runValidate,
         validatorRes,

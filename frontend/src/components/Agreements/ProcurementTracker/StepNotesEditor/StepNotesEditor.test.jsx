@@ -24,6 +24,7 @@ const renderEditor = (props = {}) => {
             isDisabled={props.isDisabled ?? false}
             startInReadMode={props.startInReadMode}
             textAreaName={props.textAreaName}
+            resetSignal={props.resetSignal}
         />
     );
     return { setNotes, resetNotes, onSave, ...utils };
@@ -355,5 +356,144 @@ describe("StepNotesEditor", () => {
         renderEditor({ isDisabled: true, savedNotes: "Saved" });
 
         expect(editNotesBtn()).toBeDisabled();
+    });
+
+    it("collapses the open textarea back to read mode when the parent bumps resetSignal (step-level Cancel)", () => {
+        // Bug 1: a step-level Cancel resets the notes value via resetNotes but the
+        // editor's edit/read toggle is local state. The parent bumps resetSignal so
+        // an open textarea collapses back to read mode instead of lingering.
+        const { rerender } = renderEditor({ savedNotes: "Saved note", resetSignal: 0 });
+
+        fireEvent.click(editNotesBtn());
+        expect(saveNotesBtn()).toBeInTheDocument();
+
+        rerender(
+            <StepNotesEditor
+                notes="Saved note"
+                setNotes={vi.fn()}
+                resetNotes={vi.fn()}
+                savedNotes="Saved note"
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+                resetSignal={1}
+            />
+        );
+
+        expect(saveNotesBtn()).not.toBeInTheDocument();
+        expect(editNotesBtn()).toBeInTheDocument();
+    });
+
+    it("does not collapse a fresh active step (no read view) when resetSignal changes", () => {
+        // A fresh active step with no saved note has no read mode to fall back to,
+        // so a resetSignal bump must leave it in input mode rather than hiding the
+        // only editable control.
+        const { rerender } = renderEditor({ notes: "", savedNotes: "", resetSignal: 0 });
+
+        expect(saveNotesBtn()).toBeInTheDocument();
+
+        rerender(
+            <StepNotesEditor
+                notes=""
+                setNotes={vi.fn()}
+                resetNotes={vi.fn()}
+                savedNotes=""
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+                resetSignal={1}
+            />
+        );
+
+        expect(saveNotesBtn()).toBeInTheDocument();
+        expect(editNotesBtn()).not.toBeInTheDocument();
+    });
+
+    it("does not restore a note on Cancel when the saved value arrived after mount (async load)", () => {
+        // Bug 2: when savedNotes is undefined at mount (RTK Query still in-flight),
+        // the editor opens implicitly in input mode without enterEditMode running, so
+        // committedNotesRef held only its empty seed. When the note arrives, Cancel
+        // must restore THAT value, not "" — otherwise it wipes the just-loaded note.
+        // Render directly (not via renderEditor, which defaults savedNotes) so
+        // savedNotes is genuinely undefined at mount, as during an in-flight fetch.
+        const resetNotes = vi.fn();
+        const { rerender } = render(
+            <StepNotesEditor
+                notes=""
+                setNotes={vi.fn()}
+                resetNotes={resetNotes}
+                savedNotes={undefined}
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+            />
+        );
+
+        // Editor opened directly in input mode (no saved note yet).
+        expect(saveNotesBtn()).toBeInTheDocument();
+
+        // The async fetch resolves: notes + savedNotes flow in with the loaded value.
+        rerender(
+            <StepNotesEditor
+                notes="Loaded note"
+                setNotes={vi.fn()}
+                resetNotes={resetNotes}
+                savedNotes="Loaded note"
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+            />
+        );
+
+        fireEvent.click(cancelBtn());
+
+        // Cancel restores the loaded value, not the stale empty seed.
+        expect(resetNotes).toHaveBeenCalledWith("Loaded note");
+        expect(resetNotes).not.toHaveBeenCalledWith("");
+    });
+
+    it("discards unsaved keystrokes on Cancel when the user types after an async-loaded note (implicit edit mode)", () => {
+        // Bug 2 corollary: after the async note loads into a still-implicit editor,
+        // the Cancel button appears. If the user then types, committedNotesRef must
+        // stay pinned to the server value ("Loaded note") — NOT the live keystrokes —
+        // so Cancel discards the edit rather than committing it. The committed ref
+        // tracks savedNotes, not notes, precisely to survive this.
+        const resetNotes = vi.fn();
+        const { rerender } = render(
+            <StepNotesEditor
+                notes=""
+                setNotes={vi.fn()}
+                resetNotes={resetNotes}
+                savedNotes={undefined}
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+            />
+        );
+
+        // Async fetch resolves with the saved note; editor is still implicit.
+        rerender(
+            <StepNotesEditor
+                notes="Loaded note"
+                setNotes={vi.fn()}
+                resetNotes={resetNotes}
+                savedNotes="Loaded note"
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+            />
+        );
+
+        // User types in the still-open textarea (savedNotes unchanged, notes dirty).
+        rerender(
+            <StepNotesEditor
+                notes="Loaded note + unsaved edits"
+                setNotes={vi.fn()}
+                resetNotes={resetNotes}
+                savedNotes="Loaded note"
+                stepId={42}
+                onSave={vi.fn().mockResolvedValue(true)}
+            />
+        );
+
+        fireEvent.click(cancelBtn());
+
+        // Cancel discards back to the committed server value, not the typed text.
+        expect(resetNotes).toHaveBeenCalledWith("Loaded note");
+        expect(resetNotes).not.toHaveBeenCalledWith("Loaded note + unsaved edits");
     });
 });

@@ -50,6 +50,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         notes: step1Notes,
         setNotes: setStep1Notes,
         resetNotes: resetStep1Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
 
@@ -81,7 +82,10 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         setIsPreSolicitationPackageSent(false);
         setSelectedUser({});
         setStep1DateCompleted("");
-        resetStep1Notes(stepOneData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepOneData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep1Notes();
         suite.reset();
     };
     const cancelModalStep1 = () => {
@@ -110,6 +114,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         step1Notes,
         setStep1Notes,
         resetStep1Notes,
+        notesResetKey,
         handleStep1Complete,
         handleSaveNotes,
         isStepPatchInFlight,

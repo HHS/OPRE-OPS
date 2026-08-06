@@ -50,6 +50,7 @@ const ProcurementTrackerStepThree = ({
         step3Notes,
         setStep3Notes,
         resetStep3Notes,
+        notesResetKey,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -296,6 +297,7 @@ const ProcurementTrackerStepThree = ({
                             stepId={stepThreeData?.id}
                             onSave={handleSaveNotes}
                             isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -384,6 +386,7 @@ const ProcurementTrackerStepThree = ({
                         onSave={handleSaveNotes}
                         isDisabled={isDisabled || isStepPatchInFlight}
                         startInReadMode
+                        resetSignal={notesResetKey}
                     />
                 </div>
             )}

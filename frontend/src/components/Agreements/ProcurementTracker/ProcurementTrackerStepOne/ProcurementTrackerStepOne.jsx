@@ -48,6 +48,7 @@ const ProcurementTrackerStepOne = ({
         MemoizedDatePicker,
         setStep1Notes,
         resetStep1Notes,
+        notesResetKey,
         step1Notes,
         handleStep1Complete,
         handleSaveNotes,
@@ -174,6 +175,7 @@ const ProcurementTrackerStepOne = ({
                             stepId={stepOneData?.id}
                             onSave={handleSaveNotes}
                             isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
@@ -238,6 +240,7 @@ const ProcurementTrackerStepOne = ({
                         onSave={handleSaveNotes}
                         isDisabled={isDisabled || isStepPatchInFlight}
                         startInReadMode
+                        resetSignal={notesResetKey}
                     />
                 </div>
             )}

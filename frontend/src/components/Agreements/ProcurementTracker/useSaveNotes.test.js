@@ -134,6 +134,55 @@ describe("useSaveNotes", () => {
         expect(result.current.notes).toBe("Updated from server");
     });
 
+    it("resetNotes with no argument restores the current committed (server) value", () => {
+        const { result } = renderHook(() => useSaveNotes(mockPatchStep, "Server value", mockSetAlert));
+
+        act(() => {
+            result.current.setNotes("Unsaved edit");
+        });
+        expect(result.current.notes).toBe("Unsaved edit");
+
+        // Cancel with no argument: discard back to the committed value.
+        act(() => {
+            result.current.resetNotes();
+        });
+        expect(result.current.notes).toBe("Server value");
+    });
+
+    it("resetNotes with no argument restores the just-SAVED note even while the server prop is still stale", async () => {
+        // The stale-prop hazard: after a first-time save the serverNotes prop stays
+        // "" until the invalidation refetch lands. A step-level Cancel that passed
+        // that stale prop would wipe the just-saved note. resetNotes() (no arg) must
+        // restore the committed value recorded at save time instead.
+        mockUnwrap.mockResolvedValue({ success: true });
+        const { result, rerender } = renderHook(
+            ({ serverNotes }) => useSaveNotes(mockPatchStep, serverNotes, mockSetAlert),
+            { initialProps: { serverNotes: "" } }
+        );
+
+        act(() => {
+            result.current.setNotes("First note");
+        });
+
+        await act(async () => {
+            await result.current.handleSaveNotes(1);
+        });
+
+        // serverNotes prop is intentionally still "" (refetch not yet resolved).
+        rerender({ serverNotes: "" });
+
+        // User later edits then cancels.
+        act(() => {
+            result.current.setNotes("Different text");
+        });
+        act(() => {
+            result.current.resetNotes();
+        });
+
+        // Restored to the just-saved value, NOT the stale "" prop.
+        expect(result.current.notes).toBe("First note");
+    });
+
     it("resetNotes does not mark the field dirty, so a subsequent server update overwrites it", () => {
         const { result, rerender } = renderHook(
             ({ serverNotes }) => useSaveNotes(mockPatchStep, serverNotes, mockSetAlert),
@@ -218,5 +267,24 @@ describe("useSaveNotes", () => {
         rerender({ serverNotes: "Changed elsewhere" });
 
         expect(result.current.notes).toBe("Changed elsewhere");
+    });
+
+    it("starts notesResetKey at 0 and bumps it on every resetNotes so the editor can collapse to read mode", () => {
+        // Bug (step-level Cancel): resetNotes drives a resetSignal on StepNotesEditor.
+        // A changing key is what tells the editor to close an open textarea, so each
+        // reset must produce a new value.
+        const { result } = renderHook(() => useSaveNotes(mockPatchStep, "Server notes", mockSetAlert));
+
+        expect(result.current.notesResetKey).toBe(0);
+
+        act(() => {
+            result.current.resetNotes("Server notes");
+        });
+        expect(result.current.notesResetKey).toBe(1);
+
+        act(() => {
+            result.current.resetNotes("Server notes");
+        });
+        expect(result.current.notesResetKey).toBe(2);
     });
 });

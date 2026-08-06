@@ -59,6 +59,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         notes: step4Notes,
         setNotes: setStep4Notes,
         resetNotes: resetStep4Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
 
@@ -131,7 +132,10 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep4DateCompleted("");
-        resetStep4Notes(stepFourData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepFourData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep4Notes();
     };
 
     const cancelModalStep4 = () => {
@@ -164,6 +168,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         step4Notes,
         setStep4Notes,
         resetStep4Notes,
+        notesResetKey,
         step4NotesLabel,
         runValidate,
         validatorRes,

@@ -51,6 +51,7 @@ const ProcurementTrackerStepFour = ({
         step4Notes,
         setStep4Notes,
         resetStep4Notes,
+        notesResetKey,
         step4NotesLabel,
         runValidate,
         validatorRes,
@@ -247,6 +248,7 @@ const ProcurementTrackerStepFour = ({
                             stepId={stepFourData?.id}
                             onSave={handleSaveNotes}
                             isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -322,6 +324,7 @@ const ProcurementTrackerStepFour = ({
                         onSave={handleSaveNotes}
                         isDisabled={isDisabled || isStepPatchInFlight}
                         startInReadMode
+                        resetSignal={notesResetKey}
                     />
                 </div>
             )}

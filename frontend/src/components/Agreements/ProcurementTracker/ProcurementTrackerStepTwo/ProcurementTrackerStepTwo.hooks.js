@@ -79,6 +79,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         notes: step2Notes,
         setNotes: setStep2Notes,
         resetNotes: resetStep2Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
 
@@ -181,7 +182,10 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setSelectedUser({});
         setTargetCompletionDate("");
         setStep2DateCompleted("");
-        resetStep2Notes(stepTwoData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepTwoData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep2Notes();
         setRevisedTargetDate("");
     };
 
@@ -218,6 +222,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2Notes,
         setStep2Notes,
         resetStep2Notes,
+        notesResetKey,
         step2NotesLabel,
         runValidate,
         validatorRes,

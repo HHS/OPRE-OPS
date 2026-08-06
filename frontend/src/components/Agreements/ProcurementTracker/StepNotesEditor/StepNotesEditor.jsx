@@ -16,6 +16,7 @@ import { STEP_NOTES_MAX_LENGTH, STEP_NOTES_TEXTAREA_STYLE, STEP_NOTES_WIDTH } fr
  * @property {boolean} [isDisabled] - Whether the notes controls should be disabled.
  * @property {boolean} [startInReadMode] - Force read mode on mount even when there is no saved note (used for completed steps, which show "None" + Edit Notes).
  * @property {string} [textAreaName] - Name attribute for the TextArea (defaults to "notes").
+ * @property {number} [resetSignal] - A value the parent bumps (via `useSaveNotes`' `notesResetKey`) when a step-level Cancel discards edits; a change collapses the editor back to read mode so an open textarea doesn't linger.
  */
 
 /**
@@ -52,7 +53,8 @@ const StepNotesEditor = ({
     onSave,
     isDisabled = false,
     startInReadMode = false,
-    textAreaName = "notes"
+    textAreaName = "notes",
+    resetSignal
 }) => {
     // Whether a note has ever been persisted for this step. Seeded from the
     // server prop, then promoted locally the instant a save succeeds. It must NOT
@@ -98,6 +100,25 @@ const StepNotesEditor = ({
         setIsEditingNotes(false);
     };
 
+    // Collapse to read mode when the parent bumps `resetSignal` (a step-level Cancel).
+    // The step's own Cancel handler restores the notes value via `resetNotes`; this
+    // closes the textarea to match, since the editor's edit/read toggle is otherwise
+    // invisible to the parent. Focus is left alone (the step-cancel flow, e.g. its
+    // confirmation modal, owns focus) and the initial mount is skipped so a step that
+    // renders with a resolved signal doesn't start collapsed. Only steps that have a
+    // read view to fall back to are collapsed; a fresh active step with no saved note
+    // has none and stays in input mode.
+    const isFirstResetSignalRef = React.useRef(true);
+    React.useEffect(() => {
+        if (isFirstResetSignalRef.current) {
+            isFirstResetSignalRef.current = false;
+            return;
+        }
+        if (canReturnToReadMode) {
+            setIsEditingNotes(false);
+        }
+    }, [resetSignal]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // The value committed as of the last time edit mode was entered. Cancel restores
     // THIS, not the `savedNotes` prop: after a save the prop stays stale (still the
     // pre-save server value) until the RTK Query invalidation refetch lands, so
@@ -105,6 +126,24 @@ const StepNotesEditor = ({
     // "None" for a first-time note). Seeded from the server value and refreshed each
     // time the user (re)enters edit mode.
     const committedNotesRef = React.useRef(savedNotes ?? "");
+
+    // Tracks whether the user opened the editor explicitly via "Edit Notes". A fresh
+    // active step (and any step whose saved note is still in-flight when it mounts)
+    // starts in input mode WITHOUT `enterEditMode` running, so `committedNotesRef`
+    // never got a snapshot and holds only its empty seed. While in that implicit
+    // edit mode, keep the ref in sync with the SERVER value (`savedNotes`) as it
+    // flows in — otherwise Cancel would call `resetNotes("")` and wipe a note that
+    // arrived after mount. It must track `savedNotes`, not the live `notes`: once the
+    // async note loads the Cancel button appears, and if the user then types in that
+    // still-implicit session Cancel must discard back to the saved value, not to the
+    // in-progress keystrokes. Once the user explicitly enters edit mode,
+    // `enterEditMode` takes over snapshotting and this sync stops.
+    const enteredEditModeExplicitlyRef = React.useRef(false);
+    React.useEffect(() => {
+        if (isEditingNotes && !enteredEditModeExplicitlyRef.current) {
+            committedNotesRef.current = savedNotes ?? "";
+        }
+    }, [savedNotes, isEditingNotes]);
 
     // Screen-reader announcement for a completed save. The visual edit→read flip
     // is the only save-completion cue for sighted users; assistive tech gets this
@@ -116,7 +155,9 @@ const StepNotesEditor = ({
     /** Enter edit mode, clearing any prior save announcement. */
     const enterEditMode = () => {
         // Snapshot the currently committed note so Cancel can restore it without
-        // depending on the (possibly stale) `savedNotes` prop.
+        // depending on the (possibly stale) `savedNotes` prop. From here on the user
+        // owns the value, so stop the implicit server-sync above.
+        enteredEditModeExplicitlyRef.current = true;
         committedNotesRef.current = notes;
         setSaveAnnouncement("");
         setIsEditingNotes(true);

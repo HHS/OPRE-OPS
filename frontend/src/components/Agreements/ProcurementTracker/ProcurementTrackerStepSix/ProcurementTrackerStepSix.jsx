@@ -57,6 +57,7 @@ const ProcurementTrackerStepSix = ({
         stepSixNotes,
         setStepSixNotes,
         resetStepSixNotes,
+        notesResetKey,
         stepSixNotesLabel,
         isSubmitting,
         runValidate,
@@ -270,6 +271,7 @@ const ProcurementTrackerStepSix = ({
                                 stepId={stepSixData?.id}
                                 onSave={handleSaveNotes}
                                 isDisabled={isDisabled || isStepPatchInFlight}
+                                resetSignal={notesResetKey}
                             />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
@@ -361,6 +363,7 @@ const ProcurementTrackerStepSix = ({
                         isDisabled={isDisabled || isStepPatchInFlight}
                         textAreaName="notes-step-6"
                         startInReadMode
+                        resetSignal={notesResetKey}
                     />
                 </div>
             )}

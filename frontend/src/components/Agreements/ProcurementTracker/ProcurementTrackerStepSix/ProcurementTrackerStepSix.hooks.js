@@ -71,6 +71,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         notes: stepSixNotes,
         setNotes: setStepSixNotes,
         resetNotes: resetStepSixNotes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
@@ -152,7 +153,10 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
-        resetStepSixNotes(stepSixData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepSixData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStepSixNotes();
         setShowModal(false);
     };
 
@@ -185,6 +189,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         stepSixNotes,
         setStepSixNotes,
         resetStepSixNotes,
+        notesResetKey,
         isSubmitting,
         showModal,
         setShowModal,

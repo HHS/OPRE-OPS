@@ -68,6 +68,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         notes: step3Notes,
         setNotes: setStep3Notes,
         resetNotes: resetStep3Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
 
@@ -77,7 +78,10 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setSolicitationPeriodEndDate("");
         setSelectedUser({});
         setStep3DateCompleted("");
-        resetStep3Notes(stepThreeData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepThreeData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep3Notes();
         suite.reset();
     };
 
@@ -169,6 +173,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         step3Notes,
         setStep3Notes,
         resetStep3Notes,
+        notesResetKey,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,

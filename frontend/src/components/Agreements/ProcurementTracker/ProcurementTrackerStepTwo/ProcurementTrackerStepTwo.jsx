@@ -54,6 +54,7 @@ const ProcurementTrackerStepTwo = ({
         step2Notes,
         setStep2Notes,
         resetStep2Notes,
+        notesResetKey,
         step2NotesLabel,
         runValidate,
         validatorRes,
@@ -296,6 +297,7 @@ const ProcurementTrackerStepTwo = ({
                             stepId={stepTwoData?.id}
                             onSave={handleSaveNotes}
                             isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
                         <p
                             className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
@@ -397,6 +399,7 @@ const ProcurementTrackerStepTwo = ({
                         onSave={handleSaveNotes}
                         isDisabled={isDisabled || isStepPatchInFlight}
                         startInReadMode
+                        resetSignal={notesResetKey}
                     />
                 </div>
             )}
