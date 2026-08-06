@@ -79,7 +79,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -92,6 +93,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
@@ -140,6 +143,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const hasChanged = useMemo(() => {
         return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
     }, [requisitionNumber, requisitionDate, attestationChecked]);
+
+    const canSaveDraft = useMemo(() => {
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return hasCurrentValues || hasPriorValues;
+    }, [requisitionNumber, requisitionDate, step5]);
 
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
@@ -322,7 +331,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     return {
         // Data
         agreement,
-        isLoading,
+        isLoading: isLoading || isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -363,6 +372,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }
