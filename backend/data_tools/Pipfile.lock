@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b6ee6be356c29d69eb16000857bcaa79df834b2324472c66f3a3a8c29fd25c16"
+            "sha256": "4f5e31deecf14876bdf65f7031928b924a027974fa40c49f619020ca7ca83cf9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -891,12 +891,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:3d02b96de2a59074d153b1ac1c3865de738df114e430e879e6e5ef100a4d470c",
-                "sha256:d2f92587b1ef51d84f934dffe05fabb9255f0038ed0a21426f2ea761e39ad09a"
+                "sha256:4acae635506f6d352d94c4899a19d5f85f8bc4d230932342dca556fdab1c69b4",
+                "sha256:5a3d1f9a47ff216d6cf9cf863124f6a2c1a198d1354c546a4d24a370a283b64c"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==9.16.0"
+            "version": "==9.16.1"
         },
         "ipython-pygments-lexers": {
             "hashes": [
@@ -942,11 +942,11 @@
         },
         "mako": {
             "hashes": [
-                "sha256:49473fd7145702c7b6f5c61ada3967c42ced4b1d27fb24deb43d61ffee2e8fca",
-                "sha256:61aac9619e1325fa6e7be2f8dd463caef61247b3cd32a41a8692684548269ce3"
+                "sha256:a359d9a94a541213958742b2698d0a7757bb83551767bc468a74b9905aba9617",
+                "sha256:d7904710b662996425a21627710c4777c45053146942cf8a7aebf757c92b8c27"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==1.4.0"
+            "version": "==1.4.1"
         },
         "markupsafe": {
             "hashes": [
@@ -2490,12 +2490,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:3d02b96de2a59074d153b1ac1c3865de738df114e430e879e6e5ef100a4d470c",
-                "sha256:d2f92587b1ef51d84f934dffe05fabb9255f0038ed0a21426f2ea761e39ad09a"
+                "sha256:4acae635506f6d352d94c4899a19d5f85f8bc4d230932342dca556fdab1c69b4",
+                "sha256:5a3d1f9a47ff216d6cf9cf863124f6a2c1a198d1354c546a4d24a370a283b64c"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==9.16.0"
+            "version": "==9.16.1"
         },
         "ipython-pygments-lexers": {
             "hashes": [
