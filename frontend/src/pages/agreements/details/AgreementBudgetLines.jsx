@@ -77,7 +77,6 @@ const AgreementBudgetLines = ({
     );
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
-    // The BL status-change workflow is not yet supported for grant agreements, so the Request BL Status Change button is disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     // Regular users must have permission and agreement must be in editable state
@@ -86,8 +85,7 @@ const AgreementBudgetLines = ({
     // All users (including superusers) are blocked by pre-award, award review, or post-pre-award lock
     const isAgreementEditable =
         !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
-    // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
-    const canRequestStatusChange = isAgreementEditable && !isGrant;
+    const canRequestStatusChange = isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -97,8 +95,6 @@ const AgreementBudgetLines = ({
 
     const toolTipLabel = () => {
         switch (true) {
-            case isGrant:
-                return "Editing is not yet available for grant agreements.";
             case isAgreementNotDeveloped:
                 return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case isPreAwardInReview:

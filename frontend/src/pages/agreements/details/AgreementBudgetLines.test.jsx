@@ -156,13 +156,11 @@ describe("AgreementBudgetLines", () => {
             expect(editButton).not.toHaveAttribute("aria-disabled");
         });
 
-        test("disables the Request BL Status Change button for a grant agreement", () => {
+        test("enables the Request BL Status Change button for a grant agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
 
-            const requestButton = screen.getByText("Request BL Status Change");
-            expect(requestButton).toHaveAttribute("aria-disabled", "true");
-            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
-            expect(screen.queryByRole("link", { name: "Request BL Status Change" })).not.toBeInTheDocument();
+            const requestLink = screen.getByRole("link", { name: "Request BL Status Change" });
+            expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
         });
 
         test("keeps the Edit and Request BL Status Change buttons enabled for a contract agreement", () => {
