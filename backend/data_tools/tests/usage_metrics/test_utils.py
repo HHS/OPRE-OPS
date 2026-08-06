@@ -91,6 +91,29 @@ def test_is_deactivating_update_tolerates_missing_payload():
     assert is_deactivating_update(ev) is False
 
 
+def test_is_deactivating_update_true_for_automated_top_level_status():
+    # The disable_users job emits a top-level "status" (no request.json wrapper).
+    ev = _event(
+        OpsEventType.UPDATE_USER,
+        created_by=1,
+        event_details={
+            "user_id": 5,
+            "status": UserStatus.INACTIVE.name,
+            "message": "User deactivated via automated process.",
+        },
+    )
+    assert is_deactivating_update(ev) is True
+
+
+def test_is_deactivating_update_false_for_automated_non_deactivating_status():
+    ev = _event(
+        OpsEventType.UPDATE_USER,
+        created_by=1,
+        event_details={"user_id": 5, "status": UserStatus.ACTIVE.name},
+    )
+    assert is_deactivating_update(ev) is False
+
+
 def test_is_deactivating_update_matches_userstatus_enum_names():
     # The status literals are derived from the UserStatus enum, not hardcoded strings.
     for status in (UserStatus.INACTIVE, UserStatus.LOCKED):
@@ -105,6 +128,13 @@ def test_parse_lookback_days_valid():
 def test_parse_lookback_days_invalid_raises():
     with pytest.raises(ValueError):
         parse_lookback_days("not-a-number")
+
+
+@pytest.mark.parametrize("value", ["0", "-1"])
+def test_parse_lookback_days_non_positive_raises(value):
+    # A non-positive window would produce an empty report with no error; fail fast instead.
+    with pytest.raises(ValueError):
+        parse_lookback_days(value)
 
 
 # ---------------------------------------------------------------------------

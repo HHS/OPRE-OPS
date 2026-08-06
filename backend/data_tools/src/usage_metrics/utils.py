@@ -185,15 +185,17 @@ def is_deactivating_update(event: OpsEvent) -> bool:
     """Return True if an ``UPDATE_USER`` event set the user's status to INACTIVE or LOCKED.
 
     Deactivation is not its own event (``DEACTIVATE_USER`` is never emitted); it is an
-    ``UPDATE_USER`` whose request payload sets ``status`` to INACTIVE/LOCKED.
+    ``UPDATE_USER`` that sets ``status`` to INACTIVE/LOCKED. The status can arrive two ways:
+    - Manual (UI) path: nested under ``event_details['request.json']`` (the captured HTTP body).
+    - Automated (``disable_users`` job) path: a top-level ``event_details['status']``.
     """
     if event.event_type != OpsEventType.UPDATE_USER:
         return False
     details = event.event_details or {}
-    payload = details.get("request.json") if isinstance(details, dict) else None
-    if not isinstance(payload, dict):
+    if not isinstance(details, dict):
         return False
-    status = payload.get("status")
+    payload = details.get("request.json")
+    status = payload.get("status") if isinstance(payload, dict) else details.get("status")
     return status in (UserStatus.INACTIVE.name, UserStatus.LOCKED.name)
 
 
@@ -364,11 +366,18 @@ def build_workbook(counts: dict[tuple[str, str, str], dict[str, int]], user_rows
 
 
 def parse_lookback_days(lookback_days: str) -> int:
-    """Validate and convert the configured lookback-days value to an int."""
+    """Validate and convert the configured lookback-days value to a positive int.
+
+    A non-positive window (``0`` or negative) yields a cutoff at/after ``now`` that matches no
+    historical rows, so the job would silently upload an empty report. Fail fast instead.
+    """
     try:
-        return int(lookback_days)
+        days = int(lookback_days)
     except (TypeError, ValueError) as e:
         raise ValueError(f"Invalid usage_metrics_lookback_days value: {lookback_days!r}. Must be an integer.") from e
+    if days <= 0:
+        raise ValueError(f"usage_metrics_lookback_days must be > 0, got {days}.")
+    return days
 
 
 def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes:
