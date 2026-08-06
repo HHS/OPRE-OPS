@@ -7,9 +7,14 @@ const suite = create((data = {}, isSuperUser) => {
     if (data.needByDate === null || data.needByDate === "") {
         return;
     }
+    // Type validation always applies, even to super users.
     test("needByDate", "Date must be MM/DD/YYYY", () => {
         enforce(data.needByDate).matches(DATE_FORMAT_REGEX);
     });
+
+    // Business-rule checks below are bypassed for super users.
+    if (isSuperUser) return;
+
     test("needByDate", "Date must be in the future", () => {
         const today = new Date();
         const enteredDate = new Date(data.needByDate);
@@ -17,9 +22,7 @@ const suite = create((data = {}, isSuperUser) => {
     });
     // The SC PoP window rule only applies once the budget line is out of DRAFT status —
     // a DRAFT budget line's date is free to fall outside the agreement's SC window.
-    // Super users may also bypass this specific rule, but not format/future-date checks above.
     if (
-        !isSuperUser &&
         !data.isDraft &&
         data.needByDate &&
         DATE_FORMAT_REGEX.test(data.needByDate) &&
