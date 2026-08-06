@@ -1,3 +1,8 @@
+---
+issue: GITHUB-ISSUE-NUMBER
+branch: BRANCH-NAME
+---
+
 # Feature Story Template
 
 ## Story Overview

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -8,6 +8,9 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+
+const MemoizedDatePicker = React.memo(DatePicker);
+const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -32,6 +35,8 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  *   setRequisitionNumber: (value: string) => void,
  *   requisitionDate: string,
  *   setRequisitionDate: (value: string) => void,
+ *   handleDateChange: (e: any) => void,
+ *   requisitionDateError: string[],
  *   attestationChecked: boolean,
  *   setAttestationChecked: (value: boolean) => void,
  *   MemoizedDatePicker,
@@ -63,8 +68,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [isNavigating, setIsNavigating] = useState(false);
-
-    const MemoizedDatePicker = React.memo(DatePicker);
+    const [requisitionDateError, setRequisitionDateError] = useState([]);
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -75,7 +79,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -88,6 +93,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
@@ -115,11 +122,20 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
-    // Form validation
-    const isFormValid = () => {
-        const formattedDate = formatDateForApi(requisitionDate);
-        return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
-    };
+    // Form validation — uses the same strict regex as handleDateChange for consistency
+    const isFormValid = () =>
+        requisitionNumber.trim() !== "" && DATE_FORMAT_REGEX.test(requisitionDate) && attestationChecked;
+
+    // Validate date format on change — only show error when something is entered but invalid
+    const handleDateChange = useCallback((/** @param {any} e */ e) => {
+        const value = e.target.value;
+        setRequisitionDate(value);
+        if (value.trim() !== "" && !DATE_FORMAT_REGEX.test(value)) {
+            setRequisitionDateError(["Date must be MM/DD/YYYY"]);
+        } else {
+            setRequisitionDateError([]);
+        }
+    }, []);
 
     /**
      * Track if any changes have been made to the form
@@ -127,6 +143,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const hasChanged = useMemo(() => {
         return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
     }, [requisitionNumber, requisitionDate, attestationChecked]);
+
+    const canSaveDraft = useMemo(() => {
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return hasCurrentValues || hasPriorValues;
+    }, [requisitionNumber, requisitionDate, step5]);
 
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
@@ -237,15 +259,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setSubmitError("");
 
         try {
-            // Validate date format if a date was entered
+            // Validate date format if a date was entered — use strict regex consistent with handleDateChange
             let formattedDate = null;
             if (requisitionDate.trim()) {
-                formattedDate = formatDateForApi(requisitionDate);
-                if (formattedDate === null) {
+                if (!DATE_FORMAT_REGEX.test(requisitionDate)) {
                     setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
                     setIsSubmitting(false);
                     return;
                 }
+                formattedDate = formatDateForApi(requisitionDate);
             }
 
             /** @type {Record<string, any>} */
@@ -307,7 +329,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     return {
         // Data
         agreement,
-        isLoading,
+        isLoading: isLoading || isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -326,6 +348,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setRequisitionNumber,
         requisitionDate,
         setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -346,6 +370,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }
