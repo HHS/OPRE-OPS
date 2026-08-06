@@ -77,7 +77,7 @@ const AgreementBudgetLines = ({
     );
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
-    // Editing is not yet supported for grant agreements, so the Edit and Request BL Status Change buttons are disabled for them.
+    // The BL status-change workflow is not yet supported for grant agreements, so the Request BL Status Change button is disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     // Regular users must have permission and agreement must be in editable state
@@ -208,7 +208,6 @@ const AgreementBudgetLines = ({
                         setIsEditMode={setIsEditMode}
                         isEditable={isAgreementEditable}
                         isPreAwardInReview={isPreAwardInReview}
-                        isGrant={isGrant}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard

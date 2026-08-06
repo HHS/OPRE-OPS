@@ -14,7 +14,6 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
  * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
  * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
- * @param {boolean} [props.isGrant] - Whether the agreement is a grant (editing not yet supported).
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({
@@ -26,16 +25,13 @@ export const AgreementDetailHeader = ({
     hasUnsavedChanges = false,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false,
-    isGrant = false
+    isPostPreAwardLocked = false
 }) => {
     const isInReview = isPreAwardInReview || isAwardInReview || isPostPreAwardLocked;
-    // Editing is disabled when the agreement is in review/locked, or when it is a grant (grant editing is not yet supported).
-    const isEditDisabled = isInReview || isGrant;
+    // Editing is disabled when the agreement is in review/locked.
+    const isEditDisabled = isInReview;
     let editDisabledTooltipLabel;
-    if (isGrant) {
-        editDisabledTooltipLabel = "Editing is not yet available for grant agreements.";
-    } else if (isPreAwardInReview) {
+    if (isPreAwardInReview) {
         editDisabledTooltipLabel =
             "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
     } else if (isAwardInReview) {
@@ -78,7 +74,7 @@ export const AgreementDetailHeader = ({
                         <span className="text-primary">Edit</span>
                     </button>
                 )}
-                {/* DISABLED EDIT BUTTON - when in approval review or when the agreement is a grant */}
+                {/* DISABLED EDIT BUTTON - when in approval review */}
                 {!isEditMode && isEditable && isEditDisabled && (
                     <Tooltip label={editDisabledTooltipLabel}>
                         <span
