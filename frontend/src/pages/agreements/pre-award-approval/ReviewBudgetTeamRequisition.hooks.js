@@ -164,7 +164,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             setShowModal(true);
             setModalProps({
                 heading: "Save changes before leaving?",
-                description: "",
+                description:
+                    "You have unsaved changes in the pre-award requisition. If you leave without saving, these changes will be lost.",
                 actionButtonText: "Save Changes",
                 secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
