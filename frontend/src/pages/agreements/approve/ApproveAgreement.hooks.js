@@ -1,6 +1,8 @@
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import {
     useGetAgreementByIdQuery,
     useGetGrantNumbersListQuery,
@@ -92,6 +94,20 @@ const useApproveAgreement = () => {
             break;
     }
     const [afterApproval, setAfterApproval] = useToggle(true);
+
+    const hasChanged = React.useMemo(
+        () => notes.trim() !== "" || confirmation,
+        [notes, confirmation]
+    );
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     const {
         data: agreement,
@@ -392,6 +408,11 @@ const useApproveAgreement = () => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
+                // Clear dirty state before navigating so the blocker does not fire
+                flushSync(() => {
+                    setNotes("");
+                    setConfirmation(false);
+                });
                 navigate("/agreements?filter=change-requests");
             }
         });
@@ -544,6 +565,11 @@ const useApproveAgreement = () => {
                             redirectUrl: "/error"
                         });
                     } else {
+                        // Clear dirty state before navigating so the blocker does not fire
+                        flushSync(() => {
+                            setNotes("");
+                            setConfirmation(false);
+                        });
                         setAlert({
                             type: alertType,
                             heading: alertHeading,
@@ -589,6 +615,9 @@ const useApproveAgreement = () => {
         setNotes,
         setShowModal,
         showModal,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         statusChangeTo,
         statusForTitle,
         title,
