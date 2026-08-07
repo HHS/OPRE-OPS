@@ -887,7 +887,11 @@ const useCreateBLIsAndSCs = (
             date_needed,
             proc_shop_fee_percentage,
             status: BLI_STATUS.DRAFT,
-            created_by: loggedInUserFullName
+            created_by: loggedInUserFullName,
+            // Mirror handleAddBLI: a duplicated draft BLI must be editable so its
+            // edit/delete/duplicate icons stay enabled. Without this the row reads
+            // _meta?.isEditable as undefined and renders the disabled icons. (issue #6020)
+            _meta: { isEditable: true }
         };
         setTempBudgetLines([...tempBudgetLines, payload]);
         resetForm();
