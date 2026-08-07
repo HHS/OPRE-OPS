@@ -198,12 +198,16 @@ def _update_can_fields(can: CAN, data: CANData, portfolio: Optional[Portfolio], 
     can.updated_by = sys_user.id
     can.updated_on = datetime.now()
 
+    # can.portfolio_id isn't populated until flush, so diff against the resolved portfolio's id
+    # directly rather than reading the (still-stale) FK column back off `can`.
+    new_portfolio_id = portfolio.id if portfolio else old_values["portfolio_id"]
+
     return _diff_values(
         {
             "number": (old_values["number"], can.number),
             "description": (old_values["description"], can.description),
             "nick_name": (old_values["nick_name"], can.nick_name),
-            "portfolio_id": (old_values["portfolio_id"], can.portfolio_id),
+            "portfolio_id": (old_values["portfolio_id"], new_portfolio_id),
         }
     )
 

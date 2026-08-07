@@ -876,6 +876,40 @@ def test_create_models_update_preserves_blank_nick_name_and_portfolio(db_with_po
     assert can.portfolio_id == original_portfolio_id
 
 
+def test_create_models_update_portfolio_change_records_history(db_with_portfolios):
+    """Changing PORTFOLIO on an update persists the new portfolio and records a matching
+    OpsEvent/CANHistory row — the diff must not read the CAN's portfolio_id FK before flush,
+    which would still show the old value and silently drop the change from the event."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+    can = db_with_portfolios.get(CAN, 500)
+    original_portfolio_id = can.portfolio_id
+
+    create_models(_make_can_data(PORTFOLIO="CC"), sys_user, db_with_portfolios)
+
+    can = db_with_portfolios.get(CAN, 500)
+    new_portfolio = db_with_portfolios.execute(select(Portfolio).where(Portfolio.abbreviation == "CC")).scalar()
+    assert can.portfolio_id == new_portfolio.id
+    assert can.portfolio_id != original_portfolio_id
+
+    update_events = (
+        db_with_portfolios.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_CAN))
+        .scalars()
+        .all()
+    )
+    assert len(update_events) == 1
+    changes = update_events[0].event_details["can_updates"]["changes"]
+    assert changes["portfolio_id"] == {"old_value": original_portfolio_id, "new_value": new_portfolio.id}
+
+    history_events = (
+        db_with_portfolios.execute(select(CANHistory).where(CANHistory.ops_event_id == update_events[0].id))
+        .scalars()
+        .all()
+    )
+    assert any(e.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED for e in history_events)
+
+
 def test_create_models_update_preserves_blank_method_of_transfer_and_funding_source(db_with_portfolios):
     """Blank METHOD_OF_TRANSFER/FUNDING_SOURCE on an update leave the existing funding_details values untouched."""
     sys_user = get_or_create_sys_user(db_with_portfolios)
@@ -1035,6 +1069,44 @@ def test_create_models_existing_can_first_funding_details_forces_history_event(d
     assert len(update_events) == 1
     assert update_events[0].event_details["can_updates"]["owner_id"] == 700
     assert "funding_details.fund_code" in update_events[0].event_details["can_updates"]["changes"]
+
+
+def test_create_models_update_method_of_transfer_and_funding_source_records_history(db_with_portfolios):
+    """Changing METHOD_OF_TRANSFER/FUNDING_SOURCE on an update stores the new/old enum values as
+    their `.name` strings (not enum reprs) in the OpsEvent, and produces a matching CANHistory row."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+
+    create_models(
+        _make_can_data(METHOD_OF_TRANSFER="IAA", FUNDING_SOURCE="ACF"),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 500)
+    assert can.funding_details.method_of_transfer == CANMethodOfTransfer.IAA
+    assert can.funding_details.funding_source == CANFundingSource.ACF
+
+    update_events = (
+        db_with_portfolios.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_CAN))
+        .scalars()
+        .all()
+    )
+    assert len(update_events) == 1
+    changes = update_events[0].event_details["can_updates"]["changes"]
+    assert changes["funding_details.method_of_transfer"] == {"old_value": "DIRECT", "new_value": "IAA"}
+    assert changes["funding_details.funding_source"] == {"old_value": "OPRE", "new_value": "ACF"}
+
+    history_events = (
+        db_with_portfolios.execute(select(CANHistory).where(CANHistory.ops_event_id == update_events[0].id))
+        .scalars()
+        .all()
+    )
+    method_event = next(e for e in history_events if "method of transfer" in e.history_message)
+    assert method_event.history_type == CANHistoryType.CAN_FUNDING_DETAILS_EDITED
+    assert "DIRECT" in method_event.history_message
+    assert "IAA" in method_event.history_message
 
 
 def test_create_models_update_bad_portfolio_hard_fails(db_with_portfolios):
