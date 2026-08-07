@@ -27,6 +27,7 @@ vi.mock("../../../../hooks/use-alert.hooks", () => ({
 }));
 vi.mock("./suite", () => {
     const mockSuite = vi.fn();
+    mockSuite.run = vi.fn();
     mockSuite.get = vi.fn(() => ({
         getErrors: vi.fn(() => []),
         hasErrors: vi.fn(() => false),
@@ -53,7 +54,7 @@ describe("useProcurementTrackerStepThree", () => {
         vi.clearAllMocks();
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
-        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
         useAlert.mockReturnValue({ setAlert: mockSetAlert });
     });
 
@@ -181,7 +182,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("calls handleSetCompletedStepNumber with 3 after successful step completion", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -202,7 +203,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("does not call handleSetCompletedStepNumber if function not provided", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() => useProcurementTrackerStepThree(mockStepThreeData, undefined));
 
@@ -222,7 +223,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("includes solicitation dates in payload when not already saved", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const stepDataWithoutDates = { id: 1 };
             const { result } = renderHook(() =>
@@ -257,7 +258,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("excludes solicitation dates from payload when already saved", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -287,7 +288,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("trims notes before submission", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -315,7 +316,7 @@ describe("useProcurementTrackerStepThree", () => {
             const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -338,7 +339,7 @@ describe("useProcurementTrackerStepThree", () => {
             const mockError = new Error("API Error");
             const mockUnwrap = vi.fn().mockRejectedValue(mockError);
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
             const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
             const { result } = renderHook(() =>
@@ -367,7 +368,7 @@ describe("useProcurementTrackerStepThree", () => {
             const mockError = new Error("API Error");
             const mockUnwrap = vi.fn().mockRejectedValue(mockError);
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
             vi.spyOn(console, "error").mockImplementation(() => {});
 
             const { result } = renderHook(() =>
@@ -391,7 +392,7 @@ describe("useProcurementTrackerStepThree", () => {
         it("submits solicitation dates successfully", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -419,7 +420,7 @@ describe("useProcurementTrackerStepThree", () => {
             const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
             const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
 
             const { result } = renderHook(() =>
                 useProcurementTrackerStepThree(mockStepThreeData, mockHandleSetCompletedStepNumber)
@@ -442,7 +443,7 @@ describe("useProcurementTrackerStepThree", () => {
             const mockError = new Error("API Error");
             const mockUnwrap = vi.fn().mockRejectedValue(mockError);
             mockPatchStepThree.mockReturnValue({ unwrap: mockUnwrap });
-            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree]);
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepThree, { isLoading: false }]);
             const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
             const { result } = renderHook(() =>

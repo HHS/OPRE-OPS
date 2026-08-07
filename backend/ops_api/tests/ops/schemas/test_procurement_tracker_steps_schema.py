@@ -7,6 +7,9 @@ and that the patch schema accepts obligated_date.
 
 from datetime import date
 
+import pytest
+from marshmallow import ValidationError
+
 from models.procurement_tracker import ProcurementTrackerStepStatus, ProcurementTrackerStepType
 from ops_api.ops.schemas.procurement_tracker_steps import (
     ProcurementTrackerStepPatchRequestSchema,
@@ -175,3 +178,31 @@ class TestPatchSchemaObligatedDate:
         # Should load without obligated_date
         result = schema.load({"approval_status": "APPROVED"})
         assert "obligated_date" not in result or result.get("obligated_date") is None
+
+
+# ---------------------------------------------------------------------------
+# ProcurementTrackerStepPatchRequestSchema — notes length validation
+# ---------------------------------------------------------------------------
+
+
+class TestPatchSchemaNotesLength:
+    """The notes field is capped server-side to mirror the frontend STEP_NOTES_MAX_LENGTH."""
+
+    MAX_LENGTH = 750
+
+    def test_notes_at_max_length_accepted(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        note = "x" * self.MAX_LENGTH
+        result = schema.load({"notes": note})
+        assert result["notes"] == note
+
+    def test_notes_over_max_length_rejected(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load({"notes": "x" * (self.MAX_LENGTH + 1)})
+        assert "notes" in exc_info.value.messages
+
+    def test_notes_allows_none(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        result = schema.load({"notes": None})
+        assert result.get("notes") is None

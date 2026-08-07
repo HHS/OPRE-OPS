@@ -5,7 +5,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -58,6 +57,7 @@ const ProcurementTrackerStepSix = ({
         stepSixNotes,
         setStepSixNotes,
         resetStepSixNotes,
+        notesResetKey,
         stepSixNotesLabel,
         isSubmitting,
         runValidate,
@@ -71,6 +71,7 @@ const ProcurementTrackerStepSix = ({
         modalProps,
         cancelModalStepSix,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepSixComplete
     } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
 
@@ -116,11 +117,9 @@ const ProcurementTrackerStepSix = ({
                         tagStyle="primaryDarkTextWhiteBackground"
                         label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
                     />
-                    {stepSixNotesLabel && (
-                        <div className="margin-left-2">
-                            <strong>Notes:</strong> {stepSixNotesLabel}
-                        </div>
-                    )}
+                    <div className="margin-left-2">
+                        <strong>Notes:</strong> {stepSixNotesLabel || "None"}
+                    </div>
                 </div>
             )}
 
@@ -263,12 +262,16 @@ const ProcurementTrackerStepSix = ({
                             </div>
 
                             {/* Notes */}
-                            <StepNotesForm
+                            <StepNotesEditor
                                 textAreaName="notes-step-6"
                                 notes={stepSixNotes}
                                 setNotes={setStepSixNotes}
-                                onSave={() => handleSaveNotes(stepSixData?.id)}
-                                isDisabled={isDisabled}
+                                resetNotes={resetStepSixNotes}
+                                savedNotes={stepSixData?.notes}
+                                stepId={stepSixData?.id}
+                                onSave={handleSaveNotes}
+                                isDisabled={isDisabled || isStepPatchInFlight}
+                                resetSignal={notesResetKey}
                             />
 
                             <div className="margin-top-2 display-flex flex-justify-end">
@@ -288,6 +291,7 @@ const ProcurementTrackerStepSix = ({
                                     disabled={
                                         isDisabled ||
                                         isSubmitting ||
+                                        isStepPatchInFlight ||
                                         validatorRes.hasErrors("dateCompleted") ||
                                         validatorRes.hasErrors("users") ||
                                         !selectedUser ||
@@ -346,21 +350,21 @@ const ProcurementTrackerStepSix = ({
                                 className="margin-left-4"
                             />
                         )}
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <StepNotesEditor
-                                notes={stepSixNotes}
-                                setNotes={setStepSixNotes}
-                                resetNotes={resetStepSixNotes}
-                                notesLabel={stepSixNotesLabel}
-                                savedNotes={stepSixData?.notes}
-                                stepId={stepSixData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
-                                textAreaName="notes-step-6"
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        notes={stepSixNotes}
+                        setNotes={setStepSixNotes}
+                        resetNotes={resetStepSixNotes}
+                        savedNotes={stepSixData?.notes}
+                        stepId={stepSixData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        textAreaName="notes-step-6"
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>

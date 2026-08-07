@@ -53,7 +53,7 @@ describe("useProcurementTrackerStepSix", () => {
         vi.clearAllMocks();
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
-        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepSix]);
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepSix, { isLoading: false }]);
         useAlert.mockReturnValue({ setAlert: mockSetAlert });
     });
 
