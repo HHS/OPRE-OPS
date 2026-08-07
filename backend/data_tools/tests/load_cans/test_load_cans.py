@@ -70,6 +70,13 @@ def db_with_portfolios(db_with_divisions):
 
     db_with_divisions.commit()
 
+    # Persist the system user so it has a real id — CANHistory event recording needs to look
+    # it up by id, which fails on a transient (unpersisted) User.
+    sys_user = get_or_create_sys_user(db_with_divisions)
+    if sys_user.id is None:
+        db_with_divisions.add(sys_user)
+        db_with_divisions.commit()
+
     yield db_with_divisions
 
     # Cleanup
@@ -116,14 +123,14 @@ def test_validate_data():
     test_data = list(csv.DictReader(open("test_csv/can_invalid.tsv"), dialect="excel-tab"))
     assert len(test_data) == 17
     count = sum(1 for data in test_data if validate_data(create_can_data(data)))
-    assert count == 10
+    assert count == 17
 
 
 def test_validate_all():
     test_data = list(csv.DictReader(open("test_csv/can_invalid.tsv"), dialect="excel-tab"))
     assert len(test_data) == 17
     can_data = [create_can_data(data) for data in test_data]
-    assert validate_all(can_data) is False
+    assert validate_all(can_data) is True
 
 
 def test_create_models_no_can_nbr():
@@ -827,6 +834,227 @@ def test_create_models_fallback_lookup_by_number(db_with_portfolios):
 
     all_cans = db_with_portfolios.execute(select(CAN).where(CAN.number == "G99HRF2")).scalars().all()
     assert len(all_cans) == 1
+
+
+def _make_can_data(**overrides):
+    """Build a fully-populated CANData, with any field overridden by kwargs."""
+    defaults = dict(
+        FISCAL_YEAR=2023,
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+        FUNDING_PARTNER="partner 1",
+    )
+    defaults.update(overrides)
+    return CANData(**defaults)
+
+
+def test_create_models_update_preserves_blank_nick_name_and_portfolio(db_with_portfolios):
+    """Blank NICK_NAME/PORTFOLIO on an update leave the existing values untouched."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+    can = db_with_portfolios.get(CAN, 500)
+    assert can.nick_name == "HMRF-OPRE"
+    original_portfolio_id = can.portfolio_id
+
+    create_models(_make_can_data(NICK_NAME="", PORTFOLIO=""), sys_user, db_with_portfolios)
+    can = db_with_portfolios.get(CAN, 500)
+    assert can.nick_name == "HMRF-OPRE"
+    assert can.portfolio_id == original_portfolio_id
+
+
+def test_create_models_update_preserves_blank_method_of_transfer_and_funding_source(db_with_portfolios):
+    """Blank METHOD_OF_TRANSFER/FUNDING_SOURCE on an update leave the existing funding_details values untouched."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+
+    create_models(
+        _make_can_data(METHOD_OF_TRANSFER="", FUNDING_SOURCE=""),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 500)
+    assert can.funding_details.method_of_transfer == CANMethodOfTransfer.DIRECT
+    assert can.funding_details.funding_source == CANFundingSource.OPRE
+
+
+def test_create_models_update_preserves_blank_funding_partner(db_with_portfolios):
+    """Blank FUNDING_PARTNER on an update leaves the existing funding_details value untouched."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+
+    create_models(_make_can_data(FUNDING_PARTNER=""), sys_user, db_with_portfolios)
+
+    can = db_with_portfolios.get(CAN, 500)
+    assert can.funding_details.funding_partner == "partner 1"
+
+
+def test_create_models_new_can_blank_funding_partner_creates_funding_details(db_with_portfolios):
+    """FUNDING_PARTNER is never required — a blank value on a brand-new CAN still creates
+    funding_details, unlike METHOD_OF_TRANSFER/FUNDING_SOURCE."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(
+        _make_can_data(SYS_CAN_ID=600, CAN_NBR="G99NEW1", FUNDING_PARTNER=""),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 600)
+    assert can is not None
+    assert can.funding_details is not None
+    assert can.funding_details.funding_partner is None
+
+
+def test_create_models_new_can_blank_portfolio_raises(db_with_portfolios):
+    """Creating a brand-new CAN with a blank PORTFOLIO is a hard failure."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    with pytest.raises(ValueError, match="PORTFOLIO is required"):
+        create_models(
+            _make_can_data(SYS_CAN_ID=600, CAN_NBR="G99NEW1", PORTFOLIO=""),
+            sys_user,
+            db_with_portfolios,
+        )
+
+
+def test_create_models_new_can_blank_method_of_transfer_skips_funding_details(db_with_portfolios):
+    """Creating a brand-new CAN with blank METHOD_OF_TRANSFER still creates the CAN, but skips funding_details."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(
+        _make_can_data(SYS_CAN_ID=600, CAN_NBR="G99NEW1", METHOD_OF_TRANSFER=""),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 600)
+    assert can is not None
+    assert can.number == "G99NEW1"
+    assert can.funding_details is None
+
+
+def test_create_models_new_can_blank_funding_source_skips_funding_details(db_with_portfolios):
+    """Creating a brand-new CAN with blank FUNDING_SOURCE still creates the CAN, but skips funding_details."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(
+        _make_can_data(SYS_CAN_ID=600, CAN_NBR="G99NEW1", FUNDING_SOURCE=""),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 600)
+    assert can is not None
+    assert can.number == "G99NEW1"
+    assert can.funding_details is None
+
+
+def test_create_models_existing_can_first_funding_details_blank_required_field_skips(db_with_portfolios):
+    """An existing CAN with no prior funding_details still requires METHOD_OF_TRANSFER/FUNDING_SOURCE
+    for its first funding_details record; if blank, funding_details creation is skipped but the CAN
+    itself still updates normally."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+    portfolio = db_with_portfolios.execute(select(Portfolio).where(Portfolio.abbreviation == "HMRF")).scalar()
+
+    bare_can = CAN(
+        id=700,
+        number="G99BARE1",
+        description="Original description",
+        portfolio=portfolio,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+    )
+    db_with_portfolios.add(bare_can)
+    db_with_portfolios.commit()
+
+    create_models(
+        _make_can_data(
+            SYS_CAN_ID=700,
+            CAN_NBR="G99BARE1",
+            CAN_DESCRIPTION="Updated description",
+            METHOD_OF_TRANSFER="",
+        ),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 700)
+    assert can.description == "Updated description"
+    assert can.funding_details is None
+
+
+def test_create_models_existing_can_first_funding_details_forces_history_event(db_with_portfolios):
+    """When an existing CAN gets its first-ever funding_details record and no other CAN column
+    changes, an UPDATE_CAN OpsEvent is still recorded."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+    portfolio = db_with_portfolios.execute(select(Portfolio).where(Portfolio.abbreviation == "HMRF")).scalar()
+
+    bare_can = CAN(
+        id=700,
+        number="G99BARE1",
+        description="Healthy Marriages Responsible Fatherhood - OPRE",
+        nick_name="HMRF-OPRE",
+        portfolio=portfolio,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+    )
+    db_with_portfolios.add(bare_can)
+    db_with_portfolios.commit()
+
+    create_models(
+        _make_can_data(SYS_CAN_ID=700, CAN_NBR="G99BARE1"),
+        sys_user,
+        db_with_portfolios,
+    )
+
+    can = db_with_portfolios.get(CAN, 700)
+    assert can.funding_details is not None
+
+    update_events = (
+        db_with_portfolios.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_CAN))
+        .scalars()
+        .all()
+    )
+    assert len(update_events) == 1
+    assert update_events[0].event_details["can_updates"]["owner_id"] == 700
+    assert "funding_details.fund_code" in update_events[0].event_details["can_updates"]["changes"]
+
+
+def test_create_models_update_bad_portfolio_hard_fails(db_with_portfolios):
+    """A mistyped PORTFOLIO abbreviation on an update still hard-fails the batch."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+
+    with pytest.raises(ValueError, match="Portfolio not found"):
+        create_models(_make_can_data(PORTFOLIO="BOGUS"), sys_user, db_with_portfolios)
+
+
+def test_create_models_update_bad_method_of_transfer_hard_fails(db_with_portfolios):
+    """A mistyped METHOD_OF_TRANSFER on an update still hard-fails the batch."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    create_models(_make_can_data(), sys_user, db_with_portfolios)
+
+    with pytest.raises(KeyError):
+        create_models(_make_can_data(METHOD_OF_TRANSFER="BOGUS"), sys_user, db_with_portfolios)
 
 
 @pytest.mark.skip(reason="Need to update the test data")
