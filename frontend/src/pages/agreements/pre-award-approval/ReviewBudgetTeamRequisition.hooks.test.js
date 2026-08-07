@@ -840,6 +840,9 @@ describe("useReviewBudgetTeamRequisition", () => {
             await waitFor(() => {
                 expect(result.current.showModal).toBe(true);
                 expect(result.current.modalProps.heading).toBe("Save changes before leaving?");
+                expect(result.current.modalProps.description).toBe(
+                    "You have unsaved changes in the pre-award requisition. If you leave without saving, these changes will be lost."
+                );
                 expect(result.current.modalProps.actionButtonText).toBe("Save Changes");
                 expect(result.current.modalProps.secondaryButtonText).toBe("Leave without saving");
             });
