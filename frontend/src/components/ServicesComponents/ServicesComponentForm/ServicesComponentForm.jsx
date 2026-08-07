@@ -1,5 +1,6 @@
 import { faAdd, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import FormHeader from "../../UI/Form/FormHeader";
 import TextArea from "../../UI/Form/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
@@ -30,6 +31,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode (single-page edit screen).
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
+ * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -46,8 +48,24 @@ function ServicesComponentForm({
     isEditMode,
     isReviewMode = false,
     hasUnsavedChanges,
-    workflow
+    workflow,
+    scFormSuite
 }) {
+    const [scSelectTouched, setScSelectTouched] = React.useState(false);
+    React.useEffect(() => {
+        setScSelectTouched(false);
+    }, [formKey]);
+    const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
+    React.useEffect(() => {
+        if (!scFormSuite) return;
+        scFormSuite.run({
+            servicesComponentSelect: formData.number
+        });
+        forceUpdate();
+    }, [formData.number, scFormSuite]);
+
+    const suiteErrors = scFormSuite?.get();
+
     if (!serviceTypeReq) {
         return (
             <p className="text-center margin-y-7 text-error">Please add a Service Requirement Type to the Agreement.</p>
@@ -113,6 +131,7 @@ function ServicesComponentForm({
                         <div style={{ width: "17rem" }}>
                             <ServicesComponentSelect
                                 onChange={(name, value) => {
+                                    setScSelectTouched(true);
                                     setFormData({
                                         ...formData,
                                         number: +value,
@@ -122,6 +141,9 @@ function ServicesComponentForm({
                                 value={formData?.number || ""}
                                 options={optionsWithSelected}
                                 isRequired={true}
+                                messages={
+                                    scSelectTouched ? (suiteErrors?.getErrors("servicesComponentSelect") ?? []) : []
+                                }
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
