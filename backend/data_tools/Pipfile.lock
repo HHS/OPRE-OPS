@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4f5e31deecf14876bdf65f7031928b924a027974fa40c49f619020ca7ca83cf9"
+            "sha256": "7b615e8b370198eb58a062e06d808957b2df90d37906e7cb1afa1e2c1b5f464d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -644,6 +644,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.6'",
             "version": "==2022.9.22"
+        },
+        "et-xmlfile": {
+            "hashes": [
+                "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa",
+                "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2.0.0"
         },
         "executing": {
             "hashes": [
@@ -1301,6 +1309,15 @@
             ],
             "markers": "python_version >= '3.12'",
             "version": "==2.5.1"
+        },
+        "openpyxl": {
+            "hashes": [
+                "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2",
+                "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==3.1.5"
         },
         "orderedmultidict": {
             "hashes": [
