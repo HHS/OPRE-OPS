@@ -568,6 +568,7 @@ const useApproveAgreement = () => {
         confirmation,
         errorAgreement,
         isGrant,
+        grantNumbers,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,

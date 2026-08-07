@@ -122,14 +122,36 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.AlnNumber) && (
                         <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">ALN Number</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="aln-number-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.aln_number ?? NO_DATA}
-                                />
-                            </dd>
+                            <dt className="margin-0 text-base-dark margin-top-3">ALN Numbers</dt>
+                            {agreement?.aln_numbers && agreement?.aln_numbers?.length > 0 ? (
+                                <>
+                                    {[...agreement.aln_numbers]
+                                        .sort((a, b) => a - b)
+                                        .map((alnNumber) => (
+                                            <dd
+                                                key={alnNumber}
+                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                            >
+                                                <Tag
+                                                    dataCy={`aln-number-tag-${alnNumber}`}
+                                                    tagStyle="primaryDarkTextLightBackground"
+                                                    text={String(alnNumber)}
+                                                />
+                                            </dd>
+                                        ))}
+                                </>
+                            ) : (
+                                <dd
+                                    key="no-data-aln-number"
+                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                >
+                                    <Tag
+                                        dataCy="no-data-aln-number"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={NO_DATA}
+                                    />
+                                </dd>
+                            )}
                         </dl>
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.GrantFundingPeriod) && (

@@ -49,6 +49,7 @@ export const ReviewAgreement = () => {
         setNotes,
         action,
         servicesComponents,
+        grantNumbers,
         isGrant,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
@@ -207,6 +208,7 @@ export const ReviewAgreement = () => {
                                 <GrantNumberAccordion
                                     key={`${groupKey}-${index}`}
                                     grantNumberNumber={groupKey}
+                                    totalGrantNumbers={(grantNumbers ?? []).length}
                                 >
                                     {group.budgetLines.length > 0 ? (
                                         <AgreementBLIReviewTable

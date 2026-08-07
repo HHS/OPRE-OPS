@@ -28,9 +28,9 @@ export const defaultState = {
         contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
         research_methodologies: [],
-        special_topics: []
+        special_topics: [],
+        aln_numbers: []
     },
-    budget_lines: [],
     selected_agreement_id: undefined,
     selected_research_project: {},
     selected_project: {},
@@ -42,7 +42,9 @@ export const defaultState = {
     services_components: [],
     deleted_services_components_ids: [],
     grant_numbers: [],
-    deleted_grant_numbers_ids: []
+    deleted_grant_numbers_ids: [],
+    budget_line_items: [],
+    deleted_budget_line_items_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -165,6 +167,34 @@ export function editAgreementReducer(state, action) {
                 deleted_grant_numbers_ids: []
             };
         }
+        case "ADD_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: [...state.budget_line_items, action.payload]
+            };
+        }
+        case "UPDATE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.map((bli) =>
+                    bli.id === action.payload.id ? action.payload : bli
+                )
+            };
+        }
+        case "DELETE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
+                deleted_budget_line_items_ids: [...state.deleted_budget_line_items_ids, action.payload]
+            };
+        }
+        case "RESEED_BUDGET_LINE_ITEMS": {
+            return {
+                ...state,
+                budget_line_items: action.payload ?? [],
+                deleted_budget_line_items_ids: []
+            };
+        }
         case "SET_RESEARCH_METHODOLOGIES": {
             return {
                 ...state,
@@ -180,6 +210,15 @@ export function editAgreementReducer(state, action) {
                 agreement: {
                     ...state.agreement,
                     special_topics: [...action.payload]
+                }
+            };
+        }
+        case "SET_ALN_NUMBERS": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    aln_numbers: [...action.payload]
                 }
             };
         }

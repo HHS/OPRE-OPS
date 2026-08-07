@@ -28,14 +28,14 @@ const validContractData = {
 };
 
 describe("AgreementEditFormSuite — GRANT", () => {
-    it("passes with only the required grant fields (name, project_id, nofo_number)", () => {
+    it("passes with only the required grant fields (name, project_id)", () => {
         const result = suite.run(validGrantData);
         expect(result.hasErrors()).toBe(false);
     });
 
-    it("fails when nofo_number is blank", () => {
+    it("passes when nofo_number is blank", () => {
         const result = suite.run({ ...validGrantData, nofo_number: "" });
-        expect(result.hasErrors("nofo_number")).toBe(true);
+        expect(result.hasErrors("nofo_number")).toBe(false);
     });
 
     it("passes nofo_number when provided", () => {

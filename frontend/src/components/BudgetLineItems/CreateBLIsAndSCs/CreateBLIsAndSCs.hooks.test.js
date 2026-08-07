@@ -20,12 +20,15 @@ const deleteGrantNumberMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
+const dispatchMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
     deleted_services_components_ids: [],
     grant_numbers: [],
-    deleted_grant_numbers_ids: []
+    deleted_grant_numbers_ids: [],
+    budget_line_items: [],
+    deleted_budget_line_items_ids: []
 };
 
 vi.mock("react-redux", () => ({
@@ -103,7 +106,8 @@ vi.mock("../../../hooks/user.hooks", () => ({
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);
 vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => useEditAgreementMock()
+    useEditAgreement: () => useEditAgreementMock(),
+    useEditAgreementDispatch: () => dispatchMock
 }));
 
 vi.mock("../BudgetLinesForm/datePickerSuite", () => {
@@ -145,6 +149,10 @@ vi.mock("./suite", () => {
 describe("useCreateBLIsAndSCs", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // vi.clearAllMocks() clears call history but not a mockReturnValue set by a prior test —
+        // restore the module default here so tests that don't override useEditAgreementMock
+        // themselves aren't affected by whatever the previous test configured it to return.
+        useEditAgreementMock.mockImplementation(() => editAgreementMockData);
         useSelectorMock.mockImplementation((selector) =>
             selector({
                 auth: {
@@ -260,9 +268,11 @@ describe("useCreateBLIsAndSCs", () => {
             result.current.handleAddBLI({ preventDefault: vi.fn() });
         });
 
-        expect(result.current.tempBudgetLines).toHaveLength(1);
-        expect(result.current.tempBudgetLines[0].amount).toBe(1000);
-        expect(result.current.tempBudgetLines[0].agreement).toEqual({
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "ADD_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({ amount: 1000 })
+        });
+        expect(dispatchMock.mock.calls[0][0].payload.agreement).toEqual({
             procurement_shop: { fee_percentage: 5, abbr: "PSC", current_fee: { fee: 5 } }
         });
         expect(setAlertMock).toHaveBeenCalledWith(
@@ -271,6 +281,63 @@ describe("useCreateBLIsAndSCs", () => {
                 isToastMessage: true
             })
         );
+    });
+
+    it("edits a budget line, matching the original by id rather than a stale array index", () => {
+        // tempBudgetLines and the `budgetLines` prop are independently-ordered arrays that can
+        // drift out of index-alignment after any add/delete/duplicate — put the target BLI at a
+        // different position in each to prove the lookup is id-based, not index-based (issue: the
+        // old handleEditBLI indexed `budgetLines[budgetLineBeingEdited]` using an index derived
+        // from a lookup into the unrelated tempBudgetLines array).
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [
+                { id: "extra-1", amount: 1, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" },
+                { id: "target", amount: 500, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" }
+            ]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [
+                    { id: "target", amount: 500, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" },
+                    { id: "extra-1", amount: 1, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" }
+                ],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        act(() => {
+            result.current.setEnteredAmount(999);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                financialSnapshot: expect.objectContaining({ originalAmount: 500 })
+            })
+        });
     });
 
     it("opens cancel modal and navigates to budget lines on confirm", () => {
@@ -351,7 +418,9 @@ describe("useCreateBLIsAndSCs", () => {
             ],
             deleted_services_components_ids: [],
             grant_numbers: [],
-            deleted_grant_numbers_ids: []
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 99 }) });
@@ -421,7 +490,11 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_services_components_ids: []
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 88, number: 1 }) });
@@ -499,7 +572,9 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_grant_numbers_ids: [99]
+            deleted_grant_numbers_ids: [99],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addGrantNumberMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 66, number: 1 }) });
@@ -558,7 +633,9 @@ describe("useCreateBLIsAndSCs", () => {
             services_components: [],
             deleted_services_components_ids: [],
             grant_numbers: [],
-            deleted_grant_numbers_ids: []
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });

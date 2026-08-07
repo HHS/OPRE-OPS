@@ -17,6 +17,7 @@ import { VALIDATABLE_BLI_STATUSES } from "../constants";
  * @property {any} agreement - The agreement object
  * @property {any[]} servicesComponents - Services components for the agreement
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
+ * @property {number} [totalGrantNumbers] - Total count of grant numbers on the agreement (grants only)
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
  * @property {string} [executingTotalInstructions] - Override instructions for the Review Executing Total section
@@ -39,6 +40,7 @@ export const BudgetLinesReviewAccordion = ({
     agreement,
     servicesComponents,
     groupedBudgetLines,
+    totalGrantNumbers,
     executingTotal,
     showCLINColumn = false,
     executingTotalInstructions = undefined,
@@ -73,6 +75,7 @@ export const BudgetLinesReviewAccordion = ({
                                     <GrantNumberAccordion
                                         key={`${group.grantNumberNumber}-${index}`}
                                         grantNumberNumber={group.grantNumberNumber}
+                                        totalGrantNumbers={totalGrantNumbers}
                                     >
                                         {group.budgetLines.length > 0 ? (
                                             <AgreementBLIReviewTable

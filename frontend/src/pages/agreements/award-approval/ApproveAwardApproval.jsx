@@ -29,6 +29,7 @@ export const ApproveAwardApproval = () => {
         allBudgetLines,
         executingTotal,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         requestorNotes,
         handleApprove,
@@ -122,6 +123,7 @@ export const ApproveAwardApproval = () => {
                     ...group,
                     budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
                 }))}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
                 executingTotalInstructions="Review the total of all budget lines in Executing Status."
