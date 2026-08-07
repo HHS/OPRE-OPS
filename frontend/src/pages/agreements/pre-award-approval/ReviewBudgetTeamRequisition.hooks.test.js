@@ -839,15 +839,13 @@ describe("useReviewBudgetTeamRequisition", () => {
 
             await waitFor(() => {
                 expect(result.current.showModal).toBe(true);
-                expect(result.current.modalProps.heading).toBe(
-                    "Are you sure you want to cancel? This will exit the review process and you can come back to it later."
-                );
-                expect(result.current.modalProps.actionButtonText).toBe("Cancel");
-                expect(result.current.modalProps.secondaryButtonText).toBe("Continue Reviewing");
+                expect(result.current.modalProps.heading).toBe("Save changes before leaving?");
+                expect(result.current.modalProps.actionButtonText).toBe("Save Changes");
+                expect(result.current.modalProps.secondaryButtonText).toBe("Leave without saving");
             });
         });
 
-        it("proceeds with navigation and hides modal on handleConfirm", async () => {
+        it("resets blocker and triggers save draft on handleConfirm (Save Changes)", async () => {
             mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
 
             const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
@@ -858,12 +856,12 @@ describe("useReviewBudgetTeamRequisition", () => {
 
             await waitFor(() => {
                 expect(result.current.showModal).toBe(false);
-                expect(mockProceed).toHaveBeenCalled();
-                expect(mockReset).not.toHaveBeenCalled();
+                expect(mockReset).toHaveBeenCalled();
+                expect(mockProceed).not.toHaveBeenCalled();
             });
         });
 
-        it("resets blocker and hides modal on handleSecondary (Continue Reviewing)", async () => {
+        it("proceeds with navigation and hides modal on handleSecondary (Leave without saving)", async () => {
             mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
 
             const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
@@ -874,8 +872,8 @@ describe("useReviewBudgetTeamRequisition", () => {
 
             await waitFor(() => {
                 expect(result.current.showModal).toBe(false);
-                expect(mockReset).toHaveBeenCalled();
-                expect(mockProceed).not.toHaveBeenCalled();
+                expect(mockProceed).toHaveBeenCalled();
+                expect(mockReset).not.toHaveBeenCalled();
             });
         });
 

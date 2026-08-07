@@ -163,21 +163,21 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading:
-                    "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+                heading: "Save changes before leaving?",
                 description: "",
-                actionButtonText: "Cancel",
-                secondaryButtonText: "Continue Reviewing",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                    handleSaveDraft();
+                },
+                handleSecondary: () => {
                     setShowModal(false);
                     flushSync(() => {
                         setIsNavigating(true);
                     });
                     blocker.proceed?.();
-                },
-                handleSecondary: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
                 },
                 closeModal: () => {
                     setShowModal(false);
@@ -185,6 +185,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blocker.state, blocker]);
 
     // Approve handler
