@@ -987,4 +987,105 @@ describe("useProcurementTrackerStepTwo", () => {
             expect(result.current.revisedTargetDate).toBe("");
         });
     });
+
+    describe("onDirtyChange / hasChanges", () => {
+        it("does not call onDirtyChange(true) on clean mount", () => {
+            const onDirtyChange = vi.fn();
+            renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("calls onDirtyChange(true) when isPreSolicitationPackageFinalized is set to true", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when draft solicitation date is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setDraftSolicitationDate("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when a user is selected", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when target completion date is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setTargetCompletionDate("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when step2 date completed is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep2DateCompleted("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when notes are entered (stepTwoData has no notes)", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep2Notes("anything");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(false) after cancelStepTwo resets all fields", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+            act(() => {
+                result.current.cancelStepTwo();
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("does not throw when onDirtyChange prop is not provided", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 1 });
+            });
+            expect(result.current.selectedUser).toEqual({ id: 1 });
+        });
+    });
 });
