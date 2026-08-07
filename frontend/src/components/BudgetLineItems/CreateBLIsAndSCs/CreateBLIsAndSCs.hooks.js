@@ -39,6 +39,7 @@ import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
+import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 
 /**
@@ -141,6 +142,7 @@ const useCreateBLIsAndSCs = (
         suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
+        scFormSuite.reset();
         // Force a re-render with the freshly-cleared state so the render-time reads
         // (this hook's `res` and BudgetLinesForm's datePickerSuite.get()) repaint clean.
         setPageSuiteResult(suite.get());
@@ -148,8 +150,23 @@ const useCreateBLIsAndSCs = (
             suite.reset();
             budgetFormSuite.reset();
             datePickerSuite.reset();
+            scFormSuite.reset();
         };
     }, []);
+
+    // Derive the effective SC window from all services components (saved and unsaved).
+    // All SCs (saved or unsaved) carry period_start/period_end in YYYY-MM-DD format.
+    // Unsaved SCs also have popStartDate/popEndDate (MM/DD/YYYY) from the form, but
+    // period_start/period_end is always populated by the time the SC is dispatched.
+    const effectiveScStartDate = React.useMemo(() => {
+        const dates = servicesComponents.map((sc) => sc.period_start).filter(Boolean);
+        return dates.length > 0 ? dates.reduce((min, d) => (d < min ? d : min)) : null;
+    }, [servicesComponents]);
+
+    const effectiveScEndDate = React.useMemo(() => {
+        const dates = servicesComponents.map((sc) => sc.period_end).filter(Boolean);
+        return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
+    }, [servicesComponents]);
 
     React.useEffect(() => {
         if (currentStep != 0) {
@@ -214,6 +231,7 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
+    const nonDraftBudgetLines = notDraftBLIs;
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
     /**
      * Get the total fees for the cards
@@ -869,7 +887,11 @@ const useCreateBLIsAndSCs = (
             date_needed,
             proc_shop_fee_percentage,
             status: BLI_STATUS.DRAFT,
-            created_by: loggedInUserFullName
+            created_by: loggedInUserFullName,
+            // Mirror handleAddBLI: a duplicated draft BLI must be editable so its
+            // edit/delete/duplicate icons stay enabled. Without this the row reads
+            // _meta?.isEditable as undefined and renders the disabled icons. (issue #6020)
+            _meta: { isEditable: true }
         };
         setTempBudgetLines([...tempBudgetLines, payload]);
         resetForm();
@@ -1222,6 +1244,8 @@ const useCreateBLIsAndSCs = (
         budgetLines,
         budgetLinesForCards,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,
@@ -1265,7 +1289,9 @@ const useCreateBLIsAndSCs = (
         tempBudgetLines,
         totalsForCards,
         isAgreementNotYetDeveloped,
-        requiresFinancialApproval
+        requiresFinancialApproval,
+        effectiveScStartDate,
+        effectiveScEndDate
     };
 };
 
