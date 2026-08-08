@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../../../store";
@@ -848,10 +848,39 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
-        it("resets blocker and triggers save draft on handleConfirm (Save Changes)", async () => {
-            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+        it("resets blocker and calls save draft on handleConfirm (Save Changes) when canSaveDraft is true", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
 
-            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            // Provide a valid step5 so handleSaveDraft can reach the API
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: { id: 5, requisition_number: null, requisition_date: null },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            // Start unblocked so we can set requisition number first
+            mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+
+            const { result, rerender } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => expect(result.current).toBeDefined());
+
+            // Enter a requisition number so canSaveDraft is true
+            act(() => result.current.setRequisitionNumber("REQ-001"));
+            await waitFor(() => expect(result.current.canSaveDraft).toBe(true));
+
+            // Now simulate the blocker firing
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+            rerender();
 
             await waitFor(() => expect(result.current.showModal).toBe(true));
 
@@ -861,6 +890,25 @@ describe("useReviewBudgetTeamRequisition", () => {
                 expect(result.current.showModal).toBe(false);
                 expect(mockReset).toHaveBeenCalled();
                 expect(mockProceed).not.toHaveBeenCalled();
+                expect(mockUpdateProcurementTrackerStep).toHaveBeenCalled();
+            });
+        });
+
+        it("proceeds with navigation on handleConfirm (Save Changes) when canSaveDraft is false", async () => {
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+            // step5: null → canSaveDraft is false (no prior values, no current values)
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await waitFor(() => expect(result.current.showModal).toBe(true));
+
+            result.current.modalProps.handleConfirm();
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(false);
+                expect(mockProceed).toHaveBeenCalled();
+                expect(mockReset).not.toHaveBeenCalled();
+                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
             });
         });
 

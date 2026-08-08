@@ -140,9 +140,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     /**
      * Track if any changes have been made to the form
      */
+    // attestationChecked is a UI gate, not a persisted draft field — exclude it so
+    // checking the box alone does not trigger the nav-away blocker.
     const hasChanged = useMemo(() => {
-        return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
-    }, [requisitionNumber, requisitionDate, attestationChecked]);
+        return requisitionNumber.trim() !== "" || requisitionDate !== "";
+    }, [requisitionNumber, requisitionDate]);
 
     const canSaveDraft = useMemo(() => {
         const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
@@ -170,6 +172,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
                     setShowModal(false);
+                    if (!canSaveDraft) {
+                        // Nothing to save (e.g. invalid date) — just leave without saving
+                        // so the user is not stranded with a permanently cancelled navigation.
+                        flushSync(() => {
+                            setIsNavigating(true);
+                        });
+                        blocker.proceed?.();
+                        return;
+                    }
                     blocker.reset?.();
                     handleSaveDraft();
                 },
