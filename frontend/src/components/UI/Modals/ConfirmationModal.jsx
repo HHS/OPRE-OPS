@@ -48,26 +48,31 @@ export const ConfirmationModal = ({
                     firstElement.focus();
                 }
             }
-            if (event.key === "Escape" && modalRef.current?.contains(document.activeElement)) {
-                setShowModal(false);
+            if (event.key === "Escape") {
+                const activeEl = document.activeElement;
+                const focusIsInsideModal = modalRef.current?.contains(activeEl);
+                const focusIsOutsideDocument = !activeEl || activeEl === document.body;
+                if (focusIsInsideModal || focusIsOutsideDocument) {
+                    setShowModal(false);
+                }
             }
         },
         [getFocusableElements, setShowModal]
     );
 
     useEffect(() => {
+        const previouslyFocusedElement = document.activeElement;
+
         const focusableElements = getFocusableElements();
         if (focusableElements.length > 0) {
             focusableElements[0].focus();
         }
 
-        const previouslyFocusedElement = document.activeElement;
-
         document.addEventListener("keydown", handleKeyDown);
 
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
-            previouslyFocusedElement.focus();
+            previouslyFocusedElement?.focus();
         };
     }, [getFocusableElements, handleKeyDown]);
 

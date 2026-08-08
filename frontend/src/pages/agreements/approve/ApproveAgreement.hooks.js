@@ -561,8 +561,7 @@ const useApproveAgreement = () => {
                         setAlert({
                             type: "error",
                             heading: "Error Sending Agreement Edits",
-                            message: "There was an error sending your edits for approval. Please try again.",
-                            redirectUrl: "/error"
+                            message: "There was an error sending your edits for approval. Please try again."
                         });
                     } else {
                         // Clear dirty state before navigating so the blocker does not fire
