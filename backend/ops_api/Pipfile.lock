@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "83695d8c46d7ac7c722874634d00ff390ce012d51f14fa1f401d974f78adeb52"
+            "sha256": "760ed7de1ea44eeda7b9d4d0b4762b9b2c0735edda455de68de4b2b09a460174"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,12 +18,12 @@
     "default": {
         "alembic": {
             "hashes": [
-                "sha256:6487c612fc719dcfa22b17d2dd5b2b458929641e6aa2f0b65b135727f5e6d501",
-                "sha256:cf839d3849116aab3cc047e09c6968b9bd6b2fde61b6bb7c1e97352fe5503580"
+                "sha256:b39018cb3d9413a19cbd54cf3c02ad33998641f0538eb77413a488a21c3e14be",
+                "sha256:e0fca0518118c78acc493e31bcb5402f190057aaf6df8b5b95ce94c4789cf648"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.19.0"
+            "version": "==1.19.1"
         },
         "alembic-postgresql-enum": {
             "hashes": [
@@ -755,11 +755,11 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:46c4fe6984707e3cbd485dfebbf0a59874f58d695aad05c1668d15e8c6e13b46",
-                "sha256:fb43c53b3fe240b8f6af37223d6ef1636f927ad9bea8ab323afad95dff090880"
+                "sha256:e65accfbe277546df92ed7996a678c90e063e9a7c2a2f5e03f7d0b90e3768c42",
+                "sha256:fb6b8048af08d4ab061610d5b7d3696a7e4c95337dbda880edb9f95812cabc20"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==4.3.0"
+            "version": "==4.3.1"
         },
         "marshmallow-dataclass": {
             "hashes": [
@@ -3210,11 +3210,11 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:7c7f4638881064cc57edd2dd55b307cf4da35bb3f6df6f036b5e8b658f6b5bf5",
-                "sha256:8bf688bd159b32c3bd6966555c5a2605a07724b93671c32cfe3e45ac28058987"
+                "sha256:26dfda3c34f29bf1a3ca167426a67658d59979b9954e705aef60a5f724ce1773",
+                "sha256:5e9e287f5c808070eea3b40403d3368248e64b24f1b60bd9a36e85ac841d2c3e"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==21.7.2"
+            "version": "==21.7.3"
         },
         "wcwidth": {
             "hashes": [
