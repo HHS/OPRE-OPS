@@ -95,10 +95,7 @@ const useApproveAgreement = () => {
     }
     const [afterApproval, setAfterApproval] = useToggle(true);
 
-    const hasChanged = React.useMemo(
-        () => notes.trim() !== "" || confirmation,
-        [notes, confirmation]
-    );
+    const hasChanged = React.useMemo(() => notes.trim() !== "" || confirmation, [notes, confirmation]);
 
     const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
         hasChanged,

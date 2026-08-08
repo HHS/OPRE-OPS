@@ -269,7 +269,12 @@ describe("useApproveAgreement — navigation blocker", () => {
         useParamsMock.mockReturnValue({ id: "1" });
         useSearchParamsMock.mockReturnValue([new URLSearchParams("type=status-change&to=EXECUTING")]);
         checkAuthMock.mockReturnValue(false);
-        useGetAgreementByIdQueryMock.mockReturnValue({ data: baseAgreement, error: null, isLoading: false, isSuccess: true });
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            data: baseAgreement,
+            error: null,
+            isLoading: false,
+            isSuccess: true
+        });
         useGetProcurementShopsQueryMock.mockReturnValue({ data: [] });
         useGetServicesComponentsListQueryMock.mockReturnValue({ data: [] });
         reviewCRMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
