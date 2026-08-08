@@ -894,47 +894,42 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
-        it("proceeds with navigation on handleConfirm (Save Changes) when canSaveDraft is false", async () => {
-            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
-
-            // step5: null → canSaveDraft is false (no prior values, no current values)
-            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
-
-            await waitFor(() => expect(result.current.showModal).toBe(true));
-
-            result.current.modalProps.handleConfirm();
-
-            await waitFor(() => {
-                expect(result.current.showModal).toBe(false);
-                expect(mockProceed).toHaveBeenCalled();
-                expect(mockReset).not.toHaveBeenCalled();
-                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+        it("does not block navigation when form has no saveable values (empty form)", async () => {
+            let capturedCb;
+            mockUseBlocker.mockImplementation((cb) => {
+                capturedCb = cb;
+                return { state: "unblocked", proceed: mockProceed, reset: mockReset };
             });
-        });
 
-        it("proceeds with navigation on handleConfirm (Save Changes) when date is invalid", async () => {
-            // Start unblocked so we can set state first
-            mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
-
-            const { result, rerender } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            // step5: null, no input — canSaveDraft is false
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
             await waitFor(() => expect(result.current).toBeDefined());
 
-            // Enter an invalid date — hasChanged is true but canSaveDraft is false
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/review" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(false);
+        });
+
+        it("does not block navigation when date is invalid", async () => {
+            let capturedCb;
+            mockUseBlocker.mockImplementation((cb) => {
+                capturedCb = cb;
+                return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => expect(result.current).toBeDefined());
+
             act(() => result.current.setRequisitionDate("1/1/24"));
-            await waitFor(() => expect(result.current.canSaveDraft).toBe(false));
-
-            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
-            rerender();
-
-            await waitFor(() => expect(result.current.showModal).toBe(true));
-
-            result.current.modalProps.handleConfirm();
 
             await waitFor(() => {
-                expect(result.current.showModal).toBe(false);
-                expect(mockProceed).toHaveBeenCalled();
-                expect(mockReset).not.toHaveBeenCalled();
-                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+                const shouldBlock = capturedCb({
+                    currentLocation: { pathname: "/agreements/1/review" },
+                    nextLocation: { pathname: "/agreements/1/details" }
+                });
+                expect(shouldBlock).toBe(false);
             });
         });
 

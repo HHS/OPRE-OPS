@@ -137,15 +137,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         }
     }, []);
 
-    /**
-     * Track if any changes have been made to the form
-     */
-    // attestationChecked is a UI gate, not a persisted draft field — exclude it so
-    // checking the box alone does not trigger the nav-away blocker.
-    const hasChanged = useMemo(() => {
-        return requisitionNumber.trim() !== "" || requisitionDate !== "";
-    }, [requisitionNumber, requisitionDate]);
-
     const canSaveDraft = useMemo(() => {
         const dateIsValidIfEntered = !requisitionDate.trim() || DATE_FORMAT_REGEX.test(requisitionDate);
         const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
@@ -156,9 +147,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
      */
+    // Only block when there is actually something worth saving — canSaveDraft already
+    // excludes invalid dates and empty fields, so "Save Changes" in the modal can always succeed.
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+            !isNavigating && canSaveDraft && currentLocation.pathname !== nextLocation.pathname
     );
 
     // Handle blocker state changes
@@ -173,15 +166,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
                     setShowModal(false);
-                    if (!canSaveDraft) {
-                        // Nothing to save (e.g. invalid date) — just leave without saving
-                        // so the user is not stranded with a permanently cancelled navigation.
-                        flushSync(() => {
-                            setIsNavigating(true);
-                        });
-                        blocker.proceed?.();
-                        return;
-                    }
                     blocker.reset?.();
                     handleSaveDraft();
                 },
