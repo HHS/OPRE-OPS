@@ -85,16 +85,22 @@ def validate_data(data: CANData) -> bool:
     """
     Validate the data in a CanData instance.
 
+    A blank SYS_CAN_ID means this row can only create a brand-new CAN (no update fallback is
+    possible without a DB lookup), so PORTFOLIO must be present up front — mirroring the hard
+    requirement enforced later in _resolve_portfolio for new CANs — so a batch with a bad new-CAN
+    row fails atomically here rather than after some rows have already been committed.
+
     :param data: The CanData instance to validate.
 
     :return: True if the data is valid, False otherwise.
     """
-    return all(
-        [
-            data.FISCAL_YEAR is not None,
-            data.CAN_NBR is not None,
-        ]
-    )
+    checks = [
+        data.FISCAL_YEAR is not None,
+        data.CAN_NBR is not None,
+    ]
+    if data.SYS_CAN_ID is None:
+        checks.append(data.PORTFOLIO is not None)
+    return all(checks)
 
 
 def validate_all(data: List[CANData]) -> bool:
@@ -172,8 +178,12 @@ def _diff_values(pairs: dict, enum_keys: frozenset = frozenset()) -> dict:
 
 def _update_can_fields(can: CAN, data: CANData, portfolio: Optional[Portfolio], sys_user: User) -> dict:
     """
-    Update an existing CAN's attributes, leaving blank NICK_NAME/PORTFOLIO untouched, and return a
-    changes dict of whatever differs from before the update.
+    Update an existing CAN's attributes and return a changes dict of whatever differs from before
+    the update.
+
+    Blank NICK_NAME/PORTFOLIO leave the existing value untouched. CAN_DESCRIPTION is intentionally
+    full-replacement (not blank-preserving) — a description is expected to always be present in
+    the source data, so a blank value on an update is treated as a real change, not an omission.
 
     :param can: The existing CAN to update.
     :param data: The CANData instance to use.
@@ -344,6 +354,9 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             can.funding_details = get_or_create_funding_details(data, sys_user, can.funding_details)
             changes.update(_track_funding_details_changes(can, old_funding_details, is_new))
         except ValueError as e:
+            # Intentional: a new CAN with an invalid fund code, or missing required
+            # METHOD_OF_TRANSFER/FUNDING_SOURCE, still gets created with funding_details=None
+            # rather than failing the whole row. See test_create_models_new_can_blank_*.
             logger.warning(
                 f"Skipping creating funding details for {data} due to invalid or missing required funding data. {e}"
             )

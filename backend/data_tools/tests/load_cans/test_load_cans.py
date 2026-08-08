@@ -133,6 +133,21 @@ def test_validate_all():
     assert validate_all(can_data) is True
 
 
+def test_validate_data_requires_portfolio_when_sys_can_id_blank():
+    """A row with no SYS_CAN_ID can only create a brand-new CAN, so PORTFOLIO must be present at
+    validation time — a batch with such a row should fail atomically before any row is processed,
+    rather than partway through after preceding rows have already been committed."""
+    data = CANData(FISCAL_YEAR=2023, CAN_NBR="G99NEW1", FUND="AAXXXX20231DAD", PORTFOLIO=None)
+    assert validate_data(data) is False
+
+
+def test_validate_data_allows_blank_portfolio_when_sys_can_id_present():
+    """A row with a SYS_CAN_ID may be updating an existing CAN, where a blank PORTFOLIO is
+    legitimate (the existing portfolio is left untouched) — validate_data should not reject it."""
+    data = CANData(FISCAL_YEAR=2023, SYS_CAN_ID=500, CAN_NBR="G99HRF2", FUND="AAXXXX20231DAD", PORTFOLIO=None)
+    assert validate_data(data) is True
+
+
 def test_create_models_no_can_nbr():
     with pytest.raises(ValueError):
         CANData(
