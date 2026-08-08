@@ -53,7 +53,7 @@ export const SaveChangesAndExitModal = ({
                     firstElement.focus();
                 }
             }
-            if (event.key === "Escape") {
+            if (event.key === "Escape" && modalRef.current?.contains(document.activeElement)) {
                 closeModal();
                 setShowModal(false);
             }

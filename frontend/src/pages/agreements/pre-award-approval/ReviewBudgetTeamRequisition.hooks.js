@@ -144,19 +144,29 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return dateIsValidIfEntered && (hasCurrentValues || hasPriorValues);
     }, [requisitionNumber, requisitionDate, step5]);
 
+    // hasChanged tracks whether the user modified fields relative to what the server has saved.
+    // This prevents the blocker from firing on an untouched form that was pre-populated from step5.
+    const hasChanged = useMemo(() => {
+        const serverNumber = step5?.requisition_number || "";
+        const serverDate = step5?.requisition_date ? formatDateForScreen(step5.requisition_date) : "";
+        return requisitionNumber.trim() !== serverNumber.trim() || requisitionDate !== serverDate;
+    }, [requisitionNumber, requisitionDate, step5]);
+
     /**
-     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     * Navigation blocker - only fires when the user has changed something AND it is saveable.
+     * Gating on both prevents (a) blocking on untouched pre-populated forms (hasChanged)
+     * and (b) showing "Save Changes" when the data cannot actually be saved (canSaveDraft).
      */
-    // Only block when there is actually something worth saving — canSaveDraft already
-    // excludes invalid dates and empty fields, so "Save Changes" in the modal can always succeed.
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isNavigating && canSaveDraft && currentLocation.pathname !== nextLocation.pathname
+            !isNavigating && hasChanged && canSaveDraft && currentLocation.pathname !== nextLocation.pathname
     );
 
     // Handle blocker state changes
     useEffect(() => {
         if (blocker.state === "blocked") {
+            // Capture the intended destination so "Save Changes" can navigate there after saving
+            const destination = blocker.location?.pathname ?? "/agreements?filter=change-requests";
             setShowModal(true);
             setModalProps({
                 heading: "Save changes before leaving?",
@@ -167,7 +177,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 handleConfirm: () => {
                     setShowModal(false);
                     blocker.reset?.();
-                    handleSaveDraft();
+                    handleSaveDraft(destination);
                 },
                 handleSecondary: () => {
                     setShowModal(false);
@@ -240,8 +250,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         });
     };
 
-    // Save Draft handler (partial save without approval)
-    const handleSaveDraft = async () => {
+    // Save Draft handler (partial save without approval).
+    // navigateTo: optional destination — when called from the nav-away blocker, navigate to the
+    // user's original intended destination instead of the default agreements list.
+    const handleSaveDraft = async (navigateTo = "/agreements?filter=change-requests") => {
         const nothingToSave = !requisitionNumber.trim() && !requisitionDate.trim();
         const noPriorValues = !step5?.requisition_number && !step5?.requisition_date;
         if (nothingToSave && noPriorValues) {
@@ -293,7 +305,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate("/agreements?filter=change-requests");
+            navigate(navigateTo);
 
             setIsSubmitting(false);
         } catch (error) {

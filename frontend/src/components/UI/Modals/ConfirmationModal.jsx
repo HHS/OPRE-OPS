@@ -48,7 +48,7 @@ export const ConfirmationModal = ({
                     firstElement.focus();
                 }
             }
-            if (event.key === "Escape") {
+            if (event.key === "Escape" && modalRef.current?.contains(document.activeElement)) {
                 setShowModal(false);
             }
         },

@@ -811,6 +811,40 @@ describe("useReviewBudgetTeamRequisition", () => {
             expect(shouldBlock).toBe(false);
         });
 
+        it("does not block navigation when form is pre-populated from server but unchanged", async () => {
+            let capturedCb;
+            mockUseBlocker.mockImplementation((cb) => {
+                capturedCb = cb;
+                return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+            });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: { id: 1, requisition_number: "REQ-123", requisition_date: null, requisition_approved_by: null },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            // Wait for the useEffect to pre-populate the form from step5
+            await waitFor(() => expect(result.current.requisitionNumber).toBe("REQ-123"));
+
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/review" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(false);
+        });
+
         it("blocks navigation when form has changes", async () => {
             let capturedCb;
             mockUseBlocker.mockImplementation((cb) => {
