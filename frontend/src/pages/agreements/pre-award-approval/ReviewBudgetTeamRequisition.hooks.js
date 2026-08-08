@@ -165,8 +165,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Handle blocker state changes
     useEffect(() => {
         if (blocker.state === "blocked") {
-            // Capture the intended destination so "Save Changes" can navigate there after saving
-            const destination = blocker.location?.pathname ?? "/agreements?filter=change-requests";
+            // Capture the intended destination (full path including search/hash) so "Save Changes"
+            // can navigate there after saving rather than dropping query params like ?tab=... or filters.
+            const loc = blocker.location;
+            const destination = loc
+                ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}`
+                : "/agreements?filter=change-requests";
             setShowModal(true);
             setModalProps({
                 heading: "Save changes before leaving?",
