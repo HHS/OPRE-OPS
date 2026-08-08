@@ -147,9 +147,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     }, [requisitionNumber, requisitionDate]);
 
     const canSaveDraft = useMemo(() => {
+        const dateIsValidIfEntered = !requisitionDate.trim() || DATE_FORMAT_REGEX.test(requisitionDate);
         const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
         const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
-        return hasCurrentValues || hasPriorValues;
+        return dateIsValidIfEntered && (hasCurrentValues || hasPriorValues);
     }, [requisitionNumber, requisitionDate, step5]);
 
     /**
