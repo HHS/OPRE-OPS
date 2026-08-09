@@ -58,7 +58,7 @@
         "@vitest/coverage-istanbul": "4.1.10",
         "@vitest/eslint-plugin": "1.6.26",
         "@vitest/ui": "4.1.10",
-        "axe-core": "4.12.1",
+        "axe-core": "4.13.0",
         "cypress": "15.20.0",
         "cypress-axe": "1.7.0",
         "cypress-localstorage-commands": "2.3.0",
