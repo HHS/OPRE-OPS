@@ -12,6 +12,7 @@ import pytest
 from models.procurement_tracker import ProcurementTrackerStepStatus, ProcurementTrackerStepType
 from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.procurement_tracker_step import (
+    AwardApprovalObligatedDateRequiredRule,
     AwardApprovalResponseAuthorizationRule,
     AwardApprovalResponseValidationRule,
     NoUpdatingCompletedProcurementStepRule,
@@ -165,6 +166,53 @@ class TestAwardApprovalResponseValidationRule:
         with pytest.raises(ValidationError) as exc_info:
             self.rule.validate(step, ctx)
         assert "already been approved" in str(exc_info.value.validation_errors)
+
+
+# ---------------------------------------------------------------------------
+# AwardApprovalObligatedDateRequiredRule
+# ---------------------------------------------------------------------------
+
+
+class TestAwardApprovalObligatedDateRequiredRule:
+    """An obligated date must be provided when approving an AWARD step.
+
+    The date must never be assumed to be today — it is generally first documented
+    in another system.
+    """
+
+    rule = AwardApprovalObligatedDateRequiredRule()
+
+    def test_passes_for_non_award_step(self):
+        step = _make_pre_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_passes_when_approval_status_not_approved(self):
+        step = _make_award_step()
+        ctx = _make_context(updated_fields={"reviewer_notes": "some notes"})
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_passes_when_obligated_date_provided(self):
+        step = _make_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "obligated_date": "2026-07-15"})
+        self.rule.validate(step, ctx)  # Should not raise
+
+    def test_raises_when_obligated_date_missing(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED"})
+        with pytest.raises(ValidationError) as exc_info:
+            self.rule.validate(step, ctx)
+        assert "obligated_date" in str(exc_info.value.validation_errors)
+
+    def test_raises_when_obligated_date_none(self):
+        from ops_api.ops.services.ops_service import ValidationError
+
+        step = _make_award_step()
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "obligated_date": None})
+        with pytest.raises(ValidationError):
+            self.rule.validate(step, ctx)
 
 
 # ---------------------------------------------------------------------------

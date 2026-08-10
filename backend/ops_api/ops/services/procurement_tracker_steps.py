@@ -398,6 +398,11 @@ class ProcurementTrackerStepService:
                             isinstance(step, DefaultProcurementTrackerStep) and step.award_approval_status == "APPROVED"
                         ):
                             procurement_action.status = ProcurementActionStatus.AWARDED
+                            # Normally unreachable: award approval (_handle_award_approval) already sets
+                            # status=AWARDED and date_awarded_obligated together, so the AWARDED guard above
+                            # short-circuits this branch. This only fires in a legacy/edge ordering where
+                            # approval_status is APPROVED but the action was never marked AWARDED and no date
+                            # was recorded — fall back to today so the action is not left without a date.
                             if procurement_action.date_awarded_obligated is None:
                                 procurement_action.date_awarded_obligated = date.today()
                                 logger.debug(
@@ -1009,7 +1014,7 @@ class ProcurementTrackerStepService:
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
 
         When approval_status == "APPROVED":
-        - IN_EXECUTION BLIs → OBLIGATED (and set date_needed to obligated_date if provided)
+        - IN_EXECUTION BLIs → OBLIGATED (date_needed set to the provided obligated_date)
         - PLANNED BLIs → PLANNED_MOD
         - Sets procurement_action.date_awarded_obligated if not already set
         - Marks procurement_action status as AWARDED
@@ -1017,18 +1022,21 @@ class ProcurementTrackerStepService:
         Args:
             step: The ProcurementTrackerStep being updated
             approval_status: The new award approval status string
-            obligated_date: Optional date to set on IN_EXECUTION BLIs
+            obligated_date: Date to set on IN_EXECUTION BLIs. Required on approval
+                (enforced by AwardApprovalObligatedDateRequiredRule); never defaulted to today.
             current_user: User making the update
         """
         if approval_status != "APPROVED":
             return
 
+        # The obligated date is required on award approval (enforced by
+        # AwardApprovalObligatedDateRequiredRule) and must never be assumed to be today —
+        # it is generally first documented in another system.
         agreement = step.procurement_tracker.agreement
         for bli in agreement.budget_line_items:
             if bli.status == BudgetLineItemStatus.IN_EXECUTION:
                 bli.status = BudgetLineItemStatus.OBLIGATED
-                if obligated_date is not None:
-                    bli.date_needed = obligated_date
+                bli.date_needed = obligated_date
                 logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
             elif bli.status == BudgetLineItemStatus.PLANNED:
                 bli.status = BudgetLineItemStatus.PLANNED_MOD
@@ -1040,7 +1048,7 @@ class ProcurementTrackerStepService:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
             if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
                 if procurement_action.date_awarded_obligated is None:
-                    procurement_action.date_awarded_obligated = obligated_date or date.today()
+                    procurement_action.date_awarded_obligated = obligated_date
                     logger.debug(
                         f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
                     )

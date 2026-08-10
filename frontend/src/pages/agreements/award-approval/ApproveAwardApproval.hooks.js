@@ -7,6 +7,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
+import suite from "./ApproveAwardApproval.suite";
 
 const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -63,6 +64,21 @@ export default function useApproveAwardApproval(agreementId) {
         const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
+
+    /**
+     * Run validation for a single field and update the shared suite state.
+     * @param {string} name
+     * @param {any} value
+     */
+    const runValidate = (name, value) => {
+        suite.run({ [name]: value }, name);
+    };
+
+    const validatorRes = suite.get();
+
+    // The Approve Award button must stay disabled until a valid Obligated Date is entered.
+    // The date must never be assumed to be today — it is generally documented first in another system.
+    const isObligatedDateInvalid = !obligatedDate || validatorRes.hasErrors("obligatedDate");
 
     /**
      * Track unsaved changes
@@ -182,6 +198,9 @@ export default function useApproveAwardApproval(agreementId) {
         requestorDate,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker,
         showModal,
         setShowModal,

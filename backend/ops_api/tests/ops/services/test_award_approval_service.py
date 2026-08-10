@@ -205,19 +205,26 @@ class TestHandleAwardApprovalObligatedDate:
 
         assert bli.date_needed == obligated_date
 
-    def test_obligated_date_none_leaves_bli_date_unchanged(self):
+    def test_date_awarded_obligated_set_from_obligated_date_not_today(self):
+        """The procurement action's obligated date must come from the provided date, never today."""
+        from models.procurement_action import AwardType
+
         service = _make_service()
-        bli = _make_bli(BudgetLineItemStatus.IN_EXECUTION)
-        original_date = date(2024, 8, 15)
-        bli.date_needed = original_date
         agreement = _make_agreement()
-        agreement.budget_line_items = [bli]
+        agreement.budget_line_items = []
         step = _make_step()
         step.procurement_tracker.agreement = agreement
+        step.procurement_tracker.procurement_action = 1
 
-        service._handle_award_approval(step, "APPROVED", None, _make_current_user())
+        proc_action = MagicMock()
+        proc_action.award_type = AwardType.NEW_AWARD
+        proc_action.date_awarded_obligated = None
+        service.db_session.get.return_value = proc_action
 
-        assert bli.date_needed == original_date
+        obligated_date = date(2024, 9, 30)
+        service._handle_award_approval(step, "APPROVED", obligated_date, _make_current_user())
+
+        assert proc_action.date_awarded_obligated == obligated_date
 
 
 # ---------------------------------------------------------------------------

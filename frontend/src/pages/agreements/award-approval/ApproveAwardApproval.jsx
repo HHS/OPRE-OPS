@@ -45,6 +45,9 @@ export const ApproveAwardApproval = () => {
         approvalAlreadyProcessed,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker
     } = useApproveAwardApproval(agreementId);
 
@@ -227,7 +230,11 @@ export const ApproveAwardApproval = () => {
                         label="Obligated Date"
                         hint="mm/dd/yyyy"
                         value={obligatedDate}
-                        onChange={(e) => setObligatedDate(e.target.value)}
+                        onChange={(e) => {
+                            runValidate("obligatedDate", e.target.value);
+                            setObligatedDate(e.target.value);
+                        }}
+                        messages={validatorRes.getErrors("obligatedDate") || []}
                         isDisabled={approvalAlreadyProcessed}
                     />
                 </div>
@@ -316,7 +323,10 @@ export const ApproveAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleApprove}
-                    disabled={isSubmitting || approvalAlreadyProcessed || !understandsApproval}
+                    disabled={
+                        isSubmitting || approvalAlreadyProcessed || !understandsApproval || isObligatedDateInvalid
+                    }
+                    title={isObligatedDateInvalid ? "Enter the Obligated Date before approving for Award." : undefined}
                     data-cy="approve-award-btn"
                 >
                     {isSubmitting ? "Processing..." : "Approve Award"}
