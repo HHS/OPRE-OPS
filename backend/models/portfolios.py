@@ -27,6 +27,7 @@ class Division(BaseModel):
     division_director_id = Column(Integer, ForeignKey("ops_user.id"))
     deputy_division_director_id = Column(Integer, ForeignKey("ops_user.id"))
     division_director = relationship("User", foreign_keys=[division_director_id], viewonly=True)
+    deputy_division_director = relationship("User", foreign_keys=[deputy_division_director_id], viewonly=True)
 
     __table_args__ = (
         Index("ix_division_division_director_id", "division_director_id"),
@@ -42,6 +43,10 @@ class Division(BaseModel):
 
         return self.division_director.full_name if self.division_director else None
 
+    @property
+    def deputy_division_director_full_name(self):
+
+        return self.deputy_division_director.full_name if self.deputy_division_director else None
 
 
 class PortfolioUrl(BaseModel):
@@ -62,9 +67,7 @@ class PortfolioUrl(BaseModel):
 class SharedPortfolioCANs(BaseModel):
     __tablename__ = "shared_portfolio_cans"
 
-    portfolio_id: Mapped[int] = mapped_column(
-        ForeignKey("portfolio.id"), primary_key=True
-    )
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey("portfolio.id"), primary_key=True)
     can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
 
     @BaseModel.display_name.getter
@@ -75,12 +78,8 @@ class SharedPortfolioCANs(BaseModel):
 class PortfolioTeamLeaders(BaseModel):
     __tablename__ = "portfolio_team_leaders"
 
-    portfolio_id: Mapped[int] = mapped_column(
-        ForeignKey("portfolio.id"), primary_key=True
-    )
-    team_lead_id: Mapped[int] = mapped_column(
-        ForeignKey("ops_user.id"), primary_key=True
-    )
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey("portfolio.id"), primary_key=True)
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -117,3 +116,15 @@ class Portfolio(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
+
+    @property
+    def division_director(self):
+        """SafeUser dict ({id, full_name}) for this portfolio's division's director, or None."""
+        user = self.division.division_director if self.division else None
+        return {"id": user.id, "full_name": user.full_name} if user else None
+
+    @property
+    def deputy_division_director(self):
+        """SafeUser dict ({id, full_name}) for this portfolio's division's deputy director, or None."""
+        user = self.division.deputy_division_director if self.division else None
+        return {"id": user.id, "full_name": user.full_name} if user else None
