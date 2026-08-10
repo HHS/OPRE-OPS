@@ -279,8 +279,8 @@ const useCreateBLIsAndSCs = (
             const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
                 deleteGrantNumber(id).unwrap()
             );
-            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
-                deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
+            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLineId) =>
+                deleteBudgetLineItem(deletedBudgetLineId).unwrap()
             );
 
             // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.

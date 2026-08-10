@@ -185,7 +185,9 @@ export function editAgreementReducer(state, action) {
             return {
                 ...state,
                 budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
-                deleted_budget_line_items_ids: [...state.deleted_budget_line_items_ids, action.payload]
+                deleted_budget_line_items_ids: action.payload.id
+                    ? [...state.deleted_budget_line_items_ids, action.payload.id]
+                    : [...state.deleted_budget_line_items_ids]
             };
         }
         case "RESEED_BUDGET_LINE_ITEMS": {
