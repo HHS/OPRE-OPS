@@ -1,6 +1,8 @@
 import Select from "../../UI/Form/Select";
 import { FUNDING_PERIOD_OPTIONS } from "./GrantFundingPeriodSelect.constants";
 
+const DEFAULT_OPTION = "-Select Grant Funding Period-";
+
 /**
  * GrantFundingPeriodSelect is a select component for choosing a grant funding period, in months.
  *
@@ -19,10 +21,12 @@ function GrantFundingPeriodSelect({ value, onChange, isDisabled = false, tooltip
             name="funding_period_months"
             label="Grant Funding Period"
             className="padding-top-3"
-            onChange={(name, selectedValue) => onChange(name, selectedValue === "" ? null : Number(selectedValue))}
+            onChange={(name, selectedValue) =>
+                onChange(name, !selectedValue || selectedValue === DEFAULT_OPTION ? null : Number(selectedValue))
+            }
             value={value ?? ""}
             messages={[]}
-            defaultOption="-Select Grant Funding Period-"
+            defaultOption={DEFAULT_OPTION}
             options={FUNDING_PERIOD_OPTIONS}
             isDisabled={isDisabled}
             tooltipMsg={tooltipMsg}
