@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { flushSync } from "react-dom";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
@@ -16,6 +17,8 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
  *   executingTotal: number,
  *   reviewerNotes: string,
  *   setReviewerNotes: (value: string) => void,
+ *   understandsApproval: boolean,
+ *   setUnderstandsApproval: (value: boolean) => void,
  *   requestorNotes: string,
  *   handleApprove: () => void,
  *   handleDecline: () => void,
@@ -33,18 +36,21 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
  *   hasPermission: boolean,
  *   approvalAlreadyProcessed: boolean,
  *   preAwardRequestorName: string,
- *   preAwardApprovalRequestedDate: string
+ *   preAwardApprovalRequestedDate: string,
+ *   showBlockerModal: boolean,
+ *   setShowBlockerModal: (value: boolean) => void,
+ *   blockerModalProps: any
  * }} Hook state and functions.
  */
 export default function useApprovePreAwardApproval(agreementId) {
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [reviewerNotes, setReviewerNotes] = useState("");
+    const [understandsApproval, setUnderstandsApproval] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
-    const [isNavigating, setIsNavigating] = useState(false);
 
     // Use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -101,40 +107,21 @@ export default function useApprovePreAwardApproval(agreementId) {
      * Track if any changes have been made to the form
      */
     const hasChanged = useMemo(() => {
-        return reviewerNotes.trim() !== "";
-    }, [reviewerNotes]);
+        return reviewerNotes.trim() !== "" || understandsApproval;
+    }, [reviewerNotes, understandsApproval]);
 
     /**
-     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes.
+     * Primary button = "Go back" (stay), secondary = "Leave without saving" (discard + proceed).
      */
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
-
-    // Handle blocker state changes
-    useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowModal(true);
-            setModalProps({
-                heading:
-                    "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
-                actionButtonText: "Cancel",
-                secondaryButtonText: "Continue Reviewing",
-                handleConfirm: () => {
-                    setShowModal(false);
-                    flushSync(() => {
-                        setIsNavigating(true);
-                    });
-                    blocker.proceed?.();
-                },
-                closeModal: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
-                }
-            });
-        }
-    }, [blocker.state, blocker]);
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     /**
      * @param {"APPROVED" | "DECLINED"} action
@@ -179,8 +166,11 @@ export default function useApprovePreAwardApproval(agreementId) {
                         data: updateData
                     }).unwrap();
 
-                    // Allow navigation after successful action
-                    setIsNavigating(true);
+                    // Clear dirty state before navigating so the blocker does not fire
+                    flushSync(() => {
+                        setReviewerNotes("");
+                        setUnderstandsApproval(false);
+                    });
 
                     // Show alert and navigate back to For Review tab
                     setAlert({
@@ -220,8 +210,10 @@ export default function useApprovePreAwardApproval(agreementId) {
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 setShowModal(false);
+                // Clear dirty state before navigating so the blocker does not fire
                 flushSync(() => {
-                    setIsNavigating(true);
+                    setReviewerNotes("");
+                    setUnderstandsApproval(false);
                 });
                 navigate("/agreements?filter=change-requests");
             },
@@ -238,6 +230,8 @@ export default function useApprovePreAwardApproval(agreementId) {
         executingTotal, // Total calculated from executing budget lines only
         reviewerNotes,
         setReviewerNotes,
+        understandsApproval,
+        setUnderstandsApproval,
         requestorNotes,
         handleApprove,
         handleDecline,
@@ -256,6 +250,9 @@ export default function useApprovePreAwardApproval(agreementId) {
         hasPermission,
         approvalAlreadyProcessed,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate
+        preAwardApprovalRequestedDate,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }

@@ -19,12 +19,14 @@ vi.mock("./usePreAwardApprovalData", () => ({
     default: vi.fn()
 }));
 
+const mockUseBlocker = vi.fn(() => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }));
+
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
         useNavigate: () => vi.fn(),
-        useBlocker: () => ({ state: "unblocked" })
+        useBlocker: (...args) => mockUseBlocker(...args)
     };
 });
 
@@ -83,6 +85,100 @@ describe("useReviewBudgetTeamRequisition", () => {
             <MemoryRouter>{children}</MemoryRouter>
         </Provider>
     );
+
+    describe("canSaveDraft", () => {
+        it("should be false when fields are empty and step5 has no prior values", () => {
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            expect(result.current.canSaveDraft).toBe(false);
+        });
+
+        it("should be true when requisitionNumber is entered", async () => {
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            result.current.setRequisitionNumber("REQ-001");
+            await waitFor(() => {
+                expect(result.current.canSaveDraft).toBe(true);
+            });
+        });
+
+        it("should be true when requisitionDate is entered", async () => {
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            result.current.setRequisitionDate("05/21/2026");
+            await waitFor(() => {
+                expect(result.current.canSaveDraft).toBe(true);
+            });
+        });
+
+        it("should be true when step5 has a prior requisition_number", async () => {
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: "REQ-SAVED",
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => {
+                expect(result.current.canSaveDraft).toBe(true);
+            });
+        });
+
+        it("should be false when requisitionNumber is whitespace only and step5 has no prior values", async () => {
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            result.current.setRequisitionNumber("   ");
+            await waitFor(() => {
+                expect(result.current.canSaveDraft).toBe(false);
+            });
+        });
+
+        it("should return to false after user clears both fields with no prior step5 values", async () => {
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            result.current.setRequisitionNumber("REQ-001");
+            await waitFor(() => expect(result.current.canSaveDraft).toBe(true));
+
+            result.current.setRequisitionNumber("");
+            await waitFor(() => expect(result.current.canSaveDraft).toBe(false));
+        });
+
+        it("should be true when step5 has a prior requisition_date", async () => {
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: "2026-05-21",
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => {
+                expect(result.current.canSaveDraft).toBe(true);
+            });
+        });
+    });
 
     describe("Draft value loading", () => {
         it("should convert backend date format (YYYY-MM-DD) to display format (MM/DD/YYYY)", async () => {
@@ -287,6 +383,9 @@ describe("useReviewBudgetTeamRequisition", () => {
             });
         });
 
+        // NOTE: This path cannot be reached via normal UI flow — the Save Draft button is
+        // disabled by `canSaveDraft` before the user can click it. This test documents
+        // the handler's internal defense-in-depth guard in case `canSaveDraft` regresses.
         it("should block save when both fields empty and no prior values", async () => {
             const mockUnwrap = vi.fn().mockResolvedValue({});
             mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
@@ -681,6 +780,116 @@ describe("useReviewBudgetTeamRequisition", () => {
             await waitFor(() => {
                 expect(result.current.submitError).toBe("Invalid date format. Please use MM/DD/YYYY format.");
                 expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("Navigation blocker", () => {
+        let mockProceed;
+        let mockReset;
+
+        beforeEach(() => {
+            mockProceed = vi.fn();
+            mockReset = vi.fn();
+            mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+        });
+
+        it("does not block navigation when form is clean", async () => {
+            let capturedCb;
+            mockUseBlocker.mockImplementation((cb) => {
+                capturedCb = cb;
+                return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => expect(result.current).toBeDefined());
+
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/review" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(false);
+        });
+
+        it("blocks navigation when form has changes", async () => {
+            let capturedCb;
+            mockUseBlocker.mockImplementation((cb) => {
+                capturedCb = cb;
+                return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+            await waitFor(() => expect(result.current).toBeDefined());
+
+            result.current.setRequisitionNumber("REQ-1");
+
+            await waitFor(() => {
+                const shouldBlock = capturedCb({
+                    currentLocation: { pathname: "/agreements/1/review" },
+                    nextLocation: { pathname: "/agreements/1/details" }
+                });
+                expect(shouldBlock).toBe(true);
+            });
+        });
+
+        it("shows modal with correct copy when blocker fires", async () => {
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+                expect(result.current.modalProps.heading).toBe("Save changes before leaving?");
+                expect(result.current.modalProps.actionButtonText).toBe("Save Changes");
+                expect(result.current.modalProps.secondaryButtonText).toBe("Leave without saving");
+            });
+        });
+
+        it("resets blocker and triggers save draft on handleConfirm (Save Changes)", async () => {
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await waitFor(() => expect(result.current.showModal).toBe(true));
+
+            result.current.modalProps.handleConfirm();
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(false);
+                expect(mockReset).toHaveBeenCalled();
+                expect(mockProceed).not.toHaveBeenCalled();
+            });
+        });
+
+        it("proceeds with navigation and hides modal on handleSecondary (Leave without saving)", async () => {
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await waitFor(() => expect(result.current.showModal).toBe(true));
+
+            result.current.modalProps.handleSecondary();
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(false);
+                expect(mockProceed).toHaveBeenCalled();
+                expect(mockReset).not.toHaveBeenCalled();
+            });
+        });
+
+        it("resets blocker and hides modal on closeModal (Escape)", async () => {
+            mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            await waitFor(() => expect(result.current.showModal).toBe(true));
+
+            result.current.modalProps.closeModal();
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(false);
+                expect(mockReset).toHaveBeenCalled();
+                expect(mockProceed).not.toHaveBeenCalled();
             });
         });
     });

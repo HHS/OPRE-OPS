@@ -79,7 +79,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -93,6 +94,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
@@ -142,6 +145,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
     }, [requisitionNumber, requisitionDate, attestationChecked]);
 
+    const canSaveDraft = useMemo(() => {
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return hasCurrentValues || hasPriorValues;
+    }, [requisitionNumber, requisitionDate, step5]);
+
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
      */
@@ -155,20 +164,21 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                heading: "Save changes before leaving?",
                 description: "",
-                actionButtonText: "Yes, Cancel Task",
-                secondaryButtonText: "Continue Editing",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                    handleSaveDraft();
+                },
+                handleSecondary: () => {
                     setShowModal(false);
                     flushSync(() => {
                         setIsNavigating(true);
                     });
                     blocker.proceed?.();
-                },
-                handleSecondary: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
                 },
                 closeModal: () => {
                     setShowModal(false);
@@ -176,6 +186,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blocker.state, blocker]);
 
     // Approve handler
@@ -299,10 +310,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
             description: "",
-            actionButtonText: "Yes, Cancel Task",
-            secondaryButtonText: "Continue Editing",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 flushSync(() => {
                     setIsNavigating(true);
@@ -321,7 +333,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     return {
         // Data
         agreement,
-        isLoading,
+        isLoading: isLoading || isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
@@ -363,6 +375,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }

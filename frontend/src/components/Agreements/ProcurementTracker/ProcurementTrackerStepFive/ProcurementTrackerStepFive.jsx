@@ -43,6 +43,7 @@ const ProcurementTrackerStepFive = ({
     agreementId,
     budgetLineItems,
     handleSetCompletedStepNumber,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const navigate = useNavigate();
@@ -72,7 +73,7 @@ const ProcurementTrackerStepFive = ({
         cancelModalStep5,
         handleSaveNotes,
         handleStepFiveComplete
-    } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Disabled flags for form controls
     const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";

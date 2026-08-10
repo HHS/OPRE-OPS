@@ -116,10 +116,14 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
         setServicesComponentNumber,
+        effectiveScStartDate,
+        effectiveScEndDate,
         requiresFinancialApproval,
         grantNumberNumber,
         setGrantNumberNumber
@@ -402,6 +406,8 @@ export const CreateBLIsAndSCs = ({
                                 isReviewMode={isReviewMode}
                                 setHasUnsavedChanges={setHasUnsavedChanges}
                                 hasUnsavedChanges={hasUnsavedChanges}
+                                scFormSuite={scFormSuite}
+                                nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
                     {!isGrant && (
@@ -462,6 +468,8 @@ export const CreateBLIsAndSCs = ({
                                 continueBtnText={continueBtnText}
                                 setHasUnsavedChanges={setHasUnsavedChanges}
                                 hasUnsavedChanges={hasUnsavedChanges}
+                                scFormSuite={scFormSuite}
+                                nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
                     <AgreementBudgetLinesHeader
@@ -511,6 +519,8 @@ export const CreateBLIsAndSCs = ({
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
                     workflow={workflow}
+                    scStartDate={effectiveScStartDate}
+                    scEndDate={effectiveScEndDate}
                 />
             )}
 

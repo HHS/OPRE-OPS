@@ -2,6 +2,10 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import useNavigationBlocker from "./useNavigationBlocker.hooks";
 
+vi.mock("./proceedIfBlocked", () => ({
+    proceedIfBlocked: vi.fn().mockResolvedValue(undefined)
+}));
+
 let blockerCallback;
 const mockReset = vi.fn();
 const mockProceed = vi.fn();

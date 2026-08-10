@@ -283,6 +283,35 @@ describe("useCreateBLIsAndSCs", () => {
         );
     });
 
+    it("marks a duplicated budget line editable so its row icons stay enabled (issue #6020)", () => {
+        const { result } = renderSubject();
+
+        // Seed a budget line to duplicate.
+        act(() => {
+            result.current.setServicesComponentNumber(1);
+            result.current.setSelectedCan({ id: 22, display_name: "CAN 22" });
+            result.current.setEnteredAmount(1000);
+            result.current.setNeedByDate("01/01/2026");
+            result.current.setEnteredDescription("Original budget line");
+        });
+        act(() => {
+            result.current.handleAddBLI({ preventDefault: vi.fn() });
+        });
+
+        const original = result.current.tempBudgetLines[0];
+
+        act(() => {
+            result.current.handleDuplicateBudgetLine(original.id);
+        });
+
+        expect(result.current.tempBudgetLines).toHaveLength(2);
+        const duplicate = result.current.tempBudgetLines[1];
+        // Without _meta.isEditable the row renders the disabled edit/delete/duplicate icons.
+        expect(duplicate._meta).toEqual({ isEditable: true });
+        expect(duplicate.id).not.toBe(original.id);
+        expect(duplicate.amount).toBe(original.amount);
+    });
+
     it("edits a budget line, matching the original by id rather than a stale array index", () => {
         // tempBudgetLines and the `budgetLines` prop are independently-ordered arrays that can
         // drift out of index-alignment after any add/delete/duplicate — put the target BLI at a

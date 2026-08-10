@@ -16,7 +16,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerSolicitationStep | undefined} stepThreeData - The data for step three of the procurement tracker.
  * @param {Function} handleSetCompletedStepNumber - Callback to update completed step state.
  */
-export default function useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepThree(
+    stepThreeData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
@@ -66,6 +70,18 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         handleSaveNotes
     } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
 
+    const hasChanges = Boolean(
+        selectedUser?.id ||
+        step3DateCompleted ||
+        solicitationPeriodStartDate ||
+        solicitationPeriodEndDate ||
+        isSolicitationClosed ||
+        step3Notes.trim() !== (stepThreeData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
+
     const cancelStep3 = () => {
         setIsSolicitationClosed(false);
         setSolicitationPeriodStartDate("");
@@ -103,6 +119,8 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
                 stepId,
                 data: payload
             }).unwrap();
+            setSolicitationPeriodStartDate("");
+            setSolicitationPeriodEndDate("");
             console.log("Procurement Tracker Step 3 solicitation dates updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 3 solicitation dates", error);
@@ -180,6 +198,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         cancelModalStep3,
         handleSaveNotes,
         handleSolicitationDatesSubmit,
-        handleStep3Complete
+        handleStep3Complete,
+        hasChanges
     };
 }
