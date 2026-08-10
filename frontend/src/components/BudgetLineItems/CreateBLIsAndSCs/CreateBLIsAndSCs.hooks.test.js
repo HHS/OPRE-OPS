@@ -284,7 +284,11 @@ describe("useCreateBLIsAndSCs", () => {
     });
 
     it("marks a duplicated budget line editable so its row icons stay enabled (issue #6020)", () => {
-        const { result } = renderSubject();
+        // tempBudgetLines is sourced from useEditAgreement()'s budget_line_items, which dispatch()
+        // would normally update via the AgreementEditorContext reducer. dispatch is mocked here, so
+        // it doesn't mutate anything — simulate the reducer by feeding each dispatched payload back
+        // into useEditAgreementMock and re-rendering.
+        const { result, rerender } = renderSubject();
 
         // Seed a budget line to duplicate.
         act(() => {
@@ -298,14 +302,25 @@ describe("useCreateBLIsAndSCs", () => {
             result.current.handleAddBLI({ preventDefault: vi.fn() });
         });
 
-        const original = result.current.tempBudgetLines[0];
+        const original = dispatchMock.mock.calls[0][0].payload;
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [original]
+        });
+        rerender();
 
         act(() => {
             result.current.handleDuplicateBudgetLine(original.id);
         });
 
+        const duplicate = dispatchMock.mock.calls[1][0].payload;
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [original, duplicate]
+        });
+        rerender();
+
         expect(result.current.tempBudgetLines).toHaveLength(2);
-        const duplicate = result.current.tempBudgetLines[1];
         // Without _meta.isEditable the row renders the disabled edit/delete/duplicate icons.
         expect(duplicate._meta).toEqual({ isEditable: true });
         expect(duplicate.id).not.toBe(original.id);
