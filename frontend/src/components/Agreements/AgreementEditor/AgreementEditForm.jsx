@@ -457,7 +457,6 @@ const AgreementEditForm = ({
                         <Input
                             name="nofo_number"
                             label="NOFO Number"
-                            messages={res.getErrors("nofo_number")}
                             className={cn("nofo_number")}
                             value={nofoNumber || ""}
                             onChange={(name, value) => {
