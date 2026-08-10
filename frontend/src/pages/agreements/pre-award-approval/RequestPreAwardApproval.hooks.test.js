@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -31,13 +31,14 @@ vi.mock("../../../helpers/budgetLines.helpers", async (importOriginal) => {
 });
 
 const mockUseBlocker = vi.fn(() => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }));
+const navigateMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     /** @type {any} */
     const actual = await importOriginal();
     return {
         ...actual,
-        useNavigate: () => vi.fn(),
+        useNavigate: () => navigateMock,
         useBlocker: (...args) => mockUseBlocker(...args)
     };
 });
@@ -159,6 +160,44 @@ describe("useRequestPreAwardApproval — navigation blocker", () => {
             });
             expect(shouldBlock).toBe(true);
         });
+    });
+
+    it("bypasses the blocker and navigates to the edit page on handleEdit", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        // Typed notes -> hasChanged=true, so the blocker would fire on navigation.
+        act(() => {
+            result.current.setNotes("some note");
+        });
+
+        const nav = {
+            currentLocation: { pathname: "/agreements/1/pre-award-approval" },
+            nextLocation: { pathname: "/agreements/review/1/edit" }
+        };
+
+        // BEFORE handleEdit: predicate blocks (isNavigating=false).
+        await waitFor(() => expect(capturedCb(nav)).toBe(true));
+
+        // handleEdit sets the isNavigating bypass then navigates to the edit form.
+        act(() => {
+            result.current.handleEdit();
+        });
+
+        // AFTER handleEdit: the bypass is set so the predicate no longer blocks, and
+        // navigate got the encoded returnTo URL. NOTE: with useBlocker mocked, this
+        // guards the bypass-flag contract and the URL — but not the flushSync timing
+        // itself (react-router's synchronous re-check on a real forward push is what
+        // requires flushSync; that is only observable with a real router, not here).
+        expect(capturedCb(nav)).toBe(false);
+        expect(navigateMock).toHaveBeenCalledWith(
+            "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
+        );
     });
 
     it("shows correct copy when blocker fires", async () => {
