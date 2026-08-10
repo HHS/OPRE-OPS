@@ -17,7 +17,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerEvaluationStep | undefined} stepFourData - The data for step four of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepFour(
+    stepFourData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isEvaluationComplete, setIsEvaluationComplete] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
@@ -62,6 +66,17 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isEvaluationComplete ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step4DateCompleted ||
+        step4Notes.trim() !== (stepFourData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step four, updating the procurement tracker step with the new date.
@@ -136,6 +151,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         // stepFourData?.notes prop would wipe a just-saved note during the window
         // before the invalidation refetch lands.
         resetStep4Notes();
+        suite.reset();
     };
 
     const cancelModalStep4 = () => {
@@ -179,6 +195,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep4
+        cancelModalStep4,
+        hasChanges
     };
 }

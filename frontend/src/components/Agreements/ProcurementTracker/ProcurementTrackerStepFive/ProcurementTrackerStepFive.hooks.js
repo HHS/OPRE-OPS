@@ -17,7 +17,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerPreAwardStep | undefined} stepFiveData - The data for step five of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepFive(
+    stepFiveData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isPreAwardComplete, setIsPreAwardComplete] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
@@ -62,6 +66,17 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreAwardComplete ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step5DateCompleted ||
+        step5Notes.trim() !== (stepFiveData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step five, updating the procurement tracker step with the new date.
@@ -180,6 +195,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep5
+        cancelModalStep5,
+        hasChanges
     };
 }

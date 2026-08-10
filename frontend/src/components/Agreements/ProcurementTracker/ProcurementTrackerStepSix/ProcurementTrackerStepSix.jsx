@@ -41,6 +41,7 @@ const ProcurementTrackerStepSix = ({
     agreementId,
     budgetLineItems,
     handleSetCompletedStepNumber,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const navigate = useNavigate();
@@ -73,7 +74,7 @@ const ProcurementTrackerStepSix = ({
         handleSaveNotes,
         isStepPatchInFlight,
         handleStepSixComplete
-    } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Disabled flags for form controls
     const isApprovalRequested =

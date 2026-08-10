@@ -36,6 +36,7 @@ const ProcurementTrackerStepOne = ({
     handleSetCompletedStepNumber,
     authorizedUsers,
     isDisabled,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -63,7 +64,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !isDisabled);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !isDisabled, onDirtyChange);
 
     return (
         <>

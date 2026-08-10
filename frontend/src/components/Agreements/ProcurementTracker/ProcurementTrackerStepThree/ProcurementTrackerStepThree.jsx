@@ -36,6 +36,7 @@ const ProcurementTrackerStepThree = ({
     isDisabled,
     handleSetCompletedStepNumber,
     isActiveStep,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -70,7 +71,7 @@ const ProcurementTrackerStepThree = ({
         handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
-    } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Check if solicitation dates exist (either saved or entered)
     const hasSavedSolicitationDates =

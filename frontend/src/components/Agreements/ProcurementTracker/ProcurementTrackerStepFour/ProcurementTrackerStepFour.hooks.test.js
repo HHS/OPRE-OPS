@@ -432,4 +432,94 @@ describe("useProcurementTrackerStepFour", () => {
             expect(result.current.step4Notes).toBe(mockStepFourData.notes);
         });
     });
+
+    describe("onDirtyChange / hasChanges", () => {
+        it("does not call onDirtyChange(true) on clean mount", () => {
+            const onDirtyChange = vi.fn();
+            renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("calls onDirtyChange(true) when isEvaluationComplete is set to true", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setIsEvaluationComplete(true);
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when a user is selected", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when targetCompletionDate is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setTargetCompletionDate("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when step4DateCompleted is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep4DateCompleted("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when notes are changed", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep4Notes("changed");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(false) after cancelStepFour resets all fields", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+            act(() => {
+                result.current.cancelStepFour();
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("does not throw when onDirtyChange prop is not provided", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 1 });
+            });
+            expect(result.current.selectedUser).toEqual({ id: 1 });
+        });
+    });
 });

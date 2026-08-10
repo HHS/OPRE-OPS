@@ -100,6 +100,14 @@ vi.mock("../../../components/UI/Modals/ConfirmationModal", () => ({
     )
 }));
 
+vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
+    SaveChangesAndExitModal: (/** @type {{ heading: string }} */ { heading }) => (
+        <div data-testid="save-changes-modal">
+            <h3>{heading}</h3>
+        </div>
+    )
+}));
+
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 
 const mockHookData = {
@@ -109,6 +117,8 @@ const mockHookData = {
     executingTotal: 0,
     reviewerNotes: "",
     setReviewerNotes: vi.fn(),
+    understandsApproval: false,
+    setUnderstandsApproval: vi.fn(),
     requestorNotes: "Please review and approve",
     handleApprove: vi.fn(),
     handleDecline: vi.fn(),
@@ -126,7 +136,10 @@ const mockHookData = {
     hasPermission: true,
     approvalAlreadyProcessed: false,
     preAwardRequestorName: "",
-    preAwardApprovalRequestedDate: ""
+    preAwardApprovalRequestedDate: "",
+    showBlockerModal: false,
+    setShowBlockerModal: vi.fn(),
+    blockerModalProps: {}
 };
 
 describe("ApprovePreAwardApproval", () => {
@@ -237,13 +250,8 @@ describe("ApprovePreAwardApproval", () => {
     it("should call handleApprove when Approve button is clicked", async () => {
         const user = userEvent.setup();
         const handleApprove = vi.fn();
-        renderComponent({ ...mockHookData, handleApprove });
-
-        // Check the confirmation checkbox first
-        const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
-        });
-        await user.click(checkbox);
+        // understandsApproval must be true for the Approve button to be enabled
+        renderComponent({ ...mockHookData, handleApprove, understandsApproval: true });
 
         const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
         await user.click(approveButton);
@@ -376,19 +384,10 @@ describe("ApprovePreAwardApproval", () => {
         expect(approveButton).toBeDisabled();
     });
 
-    it("should enable approve button when checkbox is checked", async () => {
-        const user = userEvent.setup();
-        renderComponent();
+    it("should enable approve button when understandsApproval is true", () => {
+        renderComponent({ ...mockHookData, understandsApproval: true });
 
-        const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
-        });
         const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
-
-        expect(approveButton).toBeDisabled();
-
-        await user.click(checkbox);
-
         expect(approveButton).not.toBeDisabled();
     });
 
@@ -399,5 +398,25 @@ describe("ApprovePreAwardApproval", () => {
             name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
         });
         expect(checkbox).toBeDisabled();
+    });
+
+    it("should show navigate-away modal with correct heading when showBlockerModal is true", () => {
+        renderComponent({
+            ...mockHookData,
+            showBlockerModal: true,
+            blockerModalProps: {
+                heading: "Save changes before leaving?",
+                description:
+                    "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+                actionButtonText: "Go back",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: vi.fn(),
+                handleSecondary: vi.fn(),
+                closeModal: vi.fn()
+            }
+        });
+
+        expect(screen.getByTestId("save-changes-modal")).toBeInTheDocument();
+        expect(screen.getByText("Save changes before leaving?")).toBeInTheDocument();
     });
 });

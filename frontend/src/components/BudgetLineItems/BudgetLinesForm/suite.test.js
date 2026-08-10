@@ -91,7 +91,7 @@ describe("BudgetLinesForm Validation Suite", () => {
     });
 
     describe("SUPER_USER Validations", () => {
-        it("should skip all validations for SUPER_USER with invalid data", () => {
+        it("should skip required/business-rule validations for SUPER_USER with invalid data", () => {
             const result = suite.run(invalidData, true);
 
             expect(result.hasErrors()).toBe(false);
@@ -101,7 +101,7 @@ describe("BudgetLinesForm Validation Suite", () => {
             expect(result.getErrors("needByDate")).toHaveLength(0);
         });
 
-        it("should skip all validations for SUPER_USER with completely empty data", () => {
+        it("should skip required/business-rule validations for SUPER_USER with completely empty data", () => {
             const emptyData = {
                 servicesComponentId: undefined,
                 selectedCan: undefined,
@@ -121,12 +121,20 @@ describe("BudgetLinesForm Validation Suite", () => {
             expect(result.getErrors("enteredAmount")).toHaveLength(0);
         });
 
-        it("should skip validations for SUPER_USER even with past dates", () => {
+        it("should skip the future-date business rule for SUPER_USER even with past dates", () => {
             const dataWithPastDate = { ...getValidData(), needByDate: "01/01/2020" };
             const result = suite.run(dataWithPastDate, true);
 
             expect(result.hasErrors()).toBe(false);
             expect(result.getErrors("needByDate")).toHaveLength(0);
+        });
+
+        it("still fires the date-format error for SUPER_USER with a malformed date", () => {
+            const dataWithBadFormat = { ...getValidData(), needByDate: "not-a-date" };
+            const result = suite.run(dataWithBadFormat, true);
+
+            expect(result.hasErrors()).toBe(true);
+            expect(result.getErrors("needByDate")).toContain("Date must be MM/DD/YYYY");
         });
     });
 

@@ -37,6 +37,7 @@ const ProcurementTrackerStepTwo = ({
     isActiveStep,
     authorizedUsers,
     handleSetCompletedStepNumber,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -74,7 +75,7 @@ const ProcurementTrackerStepTwo = ({
         isPastDue,
         revisedTargetDate,
         setRevisedTargetDate
-    } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =

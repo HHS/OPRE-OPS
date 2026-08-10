@@ -17,7 +17,12 @@ import useSaveNotes from "../useSaveNotes";
  * @param {(step: number) => void} handleSetCompletedStepNumber - Function to set the completed step number.
  * @param {boolean} isEditable - Whether the current user can edit the agreement.
  */
-export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, isEditable = true) {
+export default function useProcurementTrackerStepOne(
+    stepOneData,
+    handleSetCompletedStepNumber,
+    isEditable = true,
+    onDirtyChange = undefined
+) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
@@ -53,6 +58,16 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreSolicitationPackageSent ||
+        selectedUser?.id ||
+        step1DateCompleted ||
+        step1Notes.trim() !== (stepOneData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     const handleStep1Complete = async (stepId) => {
         const payload = {
@@ -127,6 +142,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         showModal,
         setShowModal,
         runValidate,
-        validatorRes
+        validatorRes,
+        hasChanges
     };
 }
