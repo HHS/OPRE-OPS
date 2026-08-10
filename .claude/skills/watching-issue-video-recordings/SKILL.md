@@ -52,7 +52,7 @@ For a GitHub attachment, pass the `github.com/user-attachments/assets/<uuid>` UR
 
 | Need | Command |
 |---|---|
-| First pass, whole clip | `extract-frames.sh <url> ` (2 fps default) |
+| First pass, whole clip | `extract-frames.sh <url>` (2 fps default) |
 | Zoom a transition (2s–3.5s) | `extract-frames.sh <url> 10 2 1.5` |
 | Local file instead of URL | `extract-frames.sh /path/to/clip.mov` |
 | Clean up | `rm -rf <WORKSPACE printed by the script>` |

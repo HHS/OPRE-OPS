@@ -44,7 +44,12 @@ ensure_ffmpeg() {
     if [[ "$(uname)" == "Darwin" ]] && command -v brew >/dev/null 2>&1; then
         echo "ffmpeg not found; installing via Homebrew (non-interactive)..." >&2
         HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_ENV_HINTS=1 brew install ffmpeg >&2
-        return 0
+        if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
+            return 0
+        fi
+        echo "ERROR: ffmpeg installed but not on PATH (Homebrew prefix may be missing from \$PATH)." >&2
+        echo "Add Homebrew's bin dir to PATH (e.g. '$(brew --prefix)/bin') and retry." >&2
+        exit 3
     fi
     echo "ERROR: ffmpeg/ffprobe required but not installed, and no supported installer found." >&2
     echo "Install ffmpeg (e.g. 'brew install ffmpeg' on macOS, 'apt-get install ffmpeg' on Debian) and retry." >&2

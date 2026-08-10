@@ -108,7 +108,7 @@ If the test still passes against the mutant, it is the after-`act()` trap — re
 ## Scope and honest limits
 
 - This is the strongest guard achievable at the **hook-unit** layer, where `useBlocker`/`navigate` are mocked. It models — does not exercise — a real react-router transition.
-- A fully faithful guarantee needs an integration test with a real `MemoryRouter`/`createMemoryRouter`, a real blocker, and real routes. **There is no such test in this repo** — every blocker test mocks `useBlocker` (see `src/hooks/useNavigationBlocker.test.js`, `useUnsavedChangesBlocker.test.js`). Don't introduce that machinery for one line unless asked; the navigate-time unit test is the idiomatic choice here.
+- A fully faithful guarantee needs an integration test with a real `MemoryRouter`/`createMemoryRouter`, a real blocker, and real routes. **There is no such test in this repo** — every blocker test mocks `useBlocker` (see `frontend/src/hooks/useNavigationBlocker.test.js`, `frontend/src/hooks/useUnsavedChangesBlocker.test.js`). Don't introduce that machinery for one line unless asked; the navigate-time unit test is the idiomatic choice here.
 - If you keep only the after-`act()` assertion (e.g. matching a sibling test's style), add a one-line comment stating it guards the bypass-flag contract and URL but **not** the `flushSync` timing — so the next reader isn't misled. Don't write a comment claiming it verifies `flushSync` when it doesn't.
 
 ## Common Mistakes
