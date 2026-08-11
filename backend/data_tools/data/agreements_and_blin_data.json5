@@ -114,6 +114,28 @@
       ],
     },
   ],
+  // Grant numbers for Grant #1 (agreement_id: 3) — used for manual testing of
+  // the "delete grant number with associated BLIs" scenario.
+  grant_number: [
+    {
+      id: 1,
+      number: 1,
+      description: "Year 1 Grant Period",
+      period_start: "2043-06-13",
+      period_end: "2044-06-13",
+      agreement_id: 3,
+      created_by: 503,
+    },
+    {
+      id: 2,
+      number: 2,
+      description: "Year 2 Grant Period",
+      period_start: "2044-06-13",
+      period_end: "2045-06-13",
+      agreement_id: 3,
+      created_by: 503,
+    },
+  ],
   iaa_agreement: [
     {
       id: 4,
@@ -19356,6 +19378,59 @@
       step_class: "default_step",
       step_type: "AWARD",
       status: "PENDING",
+    },
+  ],
+  // Grant BLIs for Grant #1 (agreement_id: 3) — two BLIs on grant_number 1 and one
+  // on grant_number 2, allowing manual testing of deleting a grant number that has
+  // associated BLIs (the BLIs should be disassociated, not error).
+  grant_budget_line_item: [
+    {
+      budget_line_item_type: "GRANT",
+      line_description: "Grant BLI 1 (on grant number 1)",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 3,
+      amount: 500000.0,
+      status: "DRAFT",
+      date_needed: "2043-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0,
+      grant_number_id: 1,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "GRANT",
+      line_description: "Grant BLI 2 (on grant number 1)",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 3,
+      amount: 750000.0,
+      status: "DRAFT",
+      date_needed: "2043-09-01T00:00:00.000000",
+      proc_shop_fee_percentage: 0,
+      grant_number_id: 1,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "GRANT",
+      line_description: "Grant BLI 3 (on grant number 2)",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 3,
+      amount: 600000.0,
+      status: "DRAFT",
+      date_needed: "2044-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0,
+      grant_number_id: 2,
+      on_hold: false,
+      certified: false,
+      closed: false,
     },
   ],
 }
