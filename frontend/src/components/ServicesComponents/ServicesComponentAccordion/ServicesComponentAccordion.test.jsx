@@ -30,6 +30,20 @@ describe("ServicesComponentAccordion header description", () => {
         expect(descriptionSpan).toHaveClass(styles.description);
     });
 
+    it("trims leading and trailing whitespace from a rendered description", () => {
+        const { container } = render(
+            <ServicesComponentAccordion
+                {...baseProps}
+                withMetadata={false}
+                description="  Phase 2 data collection  "
+            >
+                <div>child</div>
+            </ServicesComponentAccordion>
+        );
+        const descriptionSpan = container.querySelector(`.${styles.description}`);
+        expect(descriptionSpan.textContent).toBe(": Phase 2 data collection");
+    });
+
     it("shows only the name (no colon) when the description is empty", () => {
         const { container } = render(
             <ServicesComponentAccordion

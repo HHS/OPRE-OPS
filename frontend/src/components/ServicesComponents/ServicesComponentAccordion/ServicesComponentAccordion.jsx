@@ -44,7 +44,7 @@ function ServicesComponentAccordion({
     const heading = showDescriptionInHeader ? (
         <span className={styles.header}>
             <span className={styles.name}>{servicesComponentDisplayTitle}</span>
-            <span className={styles.description}>: {description}</span>
+            <span className={styles.description}>: {description.trim()}</span>
         </span>
     ) : (
         servicesComponentDisplayTitle
