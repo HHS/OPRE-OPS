@@ -277,10 +277,14 @@ export const CreateBLIsAndSCs = ({
                     if (newGn) {
                         return { grant_number_ref: newGn.ref };
                     }
-                    return {};
+                    // The grant number was deleted mid-edit — disassociate the BLI by
+                    // explicitly nulling grant_number_id, mirroring the SC path.
+                    return { grant_number_id: null };
                 };
 
                 // Drop a stale grant_number_id when emitting a ref, mirroring applyScLink.
+                // When disassociating (grant_number_id: null), spread the explicit null so
+                // the cleaned payload doesn't keep a stale persisted id.
                 const applyGnLink = (cleaned, link) => {
                     const out = { ...cleaned, ...link };
                     if ("grant_number_ref" in link) {

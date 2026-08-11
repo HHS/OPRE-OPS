@@ -784,16 +784,11 @@ const useCreateBLIsAndSCs = (
      */
     const addGrantNumberIdToBLI = (budgetLineItem, createdGrantNumbers) => {
         const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
-        // A BLI that carries a grant_number_number the lookup can't resolve (its grant number was
-        // deleted mid-edit, or page data is stale) would otherwise be saved with grant_number_id:
-        // null, silently dropping the linkage. Fail loudly so handleSave's catch surfaces an error
-        // instead of corrupting data. A null/undefined grant_number_number is left as-is: an
-        // unassigned grant number is legitimate for a draft grant BLI.
-        if (budgetLineItem.grant_number_number != null && !matchGrantNumber) {
-            throw new Error(
-                `Unable to link budget line to grant number ${budgetLineItem.grant_number_number}. It may have been removed — please try again.`
-            );
-        }
+        // When a grant number is deleted mid-edit its referencing BLIs retain their
+        // grant_number_number but the number no longer resolves. Mirror the SC path
+        // (addServiceComponentIdToBLI) and null the link so the BLI is disassociated
+        // rather than causing an error. An unassigned BLI (grant_number_number already
+        // null/undefined) is left as-is — valid for a draft grant BLI.
         return {
             ...budgetLineItem,
             grant_number_id: matchGrantNumber?.id ?? null,
