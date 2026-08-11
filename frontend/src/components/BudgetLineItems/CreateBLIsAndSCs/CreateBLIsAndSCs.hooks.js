@@ -187,6 +187,50 @@ const useCreateBLIsAndSCs = (
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Reconcile staged budget lines when a services component (contracts/other) or grant
+    // number (grants) is deleted BEFORE saving. The BLIs live in local state and still
+    // carry the deleted component's link fields, so without this they keep rendering under
+    // a phantom accordion for the now-deleted component instead of dropping into the
+    // "BLs not associated with a Services Component / Grant Number" (group 0) section.
+    // Nulling the link here also keeps the staged data consistent with what the save path
+    // persists (addServiceComponentIdToBLI / addGrantNumberIdToBLI null unmatched links).
+    React.useEffect(() => {
+        if (isGrant) {
+            const validGrantNumbers = new Set(grantNumbers.map((gn) => gn.number));
+            setTempBudgetLines((prev) => {
+                let changed = false;
+                const next = prev.map((bli) => {
+                    const number = bli.grant_number_number;
+                    if (number != null && number !== 0 && !validGrantNumbers.has(number)) {
+                        changed = true;
+                        return { ...bli, grant_number_number: 0, grant_number_id: null };
+                    }
+                    return bli;
+                });
+                return changed ? next : prev;
+            });
+        } else {
+            const validScNumbers = new Set(servicesComponents.map((sc) => sc.number));
+            setTempBudgetLines((prev) => {
+                let changed = false;
+                const next = prev.map((bli) => {
+                    const number = bli.services_component_number;
+                    if (number != null && number !== 0 && !validScNumbers.has(number)) {
+                        changed = true;
+                        return {
+                            ...bli,
+                            services_component_number: 0,
+                            serviceComponentGroupingLabel: "0",
+                            services_component_id: null
+                        };
+                    }
+                    return bli;
+                });
+                return changed ? next : prev;
+            });
+        }
+    }, [servicesComponents, grantNumbers, isGrant]);
+
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines, servicesComponents]);

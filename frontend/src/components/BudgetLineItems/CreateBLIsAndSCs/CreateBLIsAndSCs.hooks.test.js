@@ -602,4 +602,180 @@ describe("useCreateBLIsAndSCs", () => {
         expect(addBudgetLineItemMock).toHaveBeenCalledWith(expect.objectContaining({ grant_number_id: null }));
         expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
+
+    it("moves a BLI to the no-services-component group when its SC is deleted before saving", async () => {
+        // Contract-style agreement with one persisted SC (number 1) and a staged BLI linked to it.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [{ id: 11, number: 1 }],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        const { result, rerender } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 100,
+                services_component_number: 1,
+                serviceComponentGroupingLabel: "1",
+                services_component_id: 11,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        // Simulate the staged SC deletion: the reducer drops SC 1 from services_components.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [11],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        rerender();
+
+        await waitFor(() => {
+            const bli = result.current.tempBudgetLines.find((b) => b.id === 100);
+            expect(bli.services_component_number).toBe(0);
+            expect(bli.serviceComponentGroupingLabel).toBe("0");
+            expect(bli.services_component_id).toBeNull();
+        });
+    });
+
+    it("moves a BLI to the no-grant-number group when its grant number is deleted before saving", async () => {
+        // Grant agreement with one persisted grant number (5) and a staged BLI linked to it.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [{ id: 55, number: 5 }],
+            deleted_grant_numbers_ids: []
+        });
+
+        const { result, rerender } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 200,
+                grant_number_number: 5,
+                grant_number_id: 55,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        // Simulate the staged grant number deletion.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: [55]
+        });
+
+        rerender();
+
+        await waitFor(() => {
+            const bli = result.current.tempBudgetLines.find((b) => b.id === 200);
+            expect(bli.grant_number_number).toBe(0);
+            expect(bli.grant_number_id).toBeNull();
+        });
+    });
+
+    it("leaves BLIs linked to surviving services components untouched when a different SC is deleted", async () => {
+        // Two persisted SCs; a BLI linked to SC 2 must not be disassociated when SC 1 is deleted.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [
+                { id: 11, number: 1 },
+                { id: 12, number: 2 }
+            ],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        const { result, rerender } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 300,
+                services_component_number: 2,
+                serviceComponentGroupingLabel: "2",
+                services_component_id: 12,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [{ id: 12, number: 2 }],
+            deleted_services_components_ids: [11],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        rerender();
+
+        // The BLI stays linked to the surviving SC 2.
+        const bli = result.current.tempBudgetLines.find((b) => b.id === 300);
+        expect(bli.services_component_number).toBe(2);
+        expect(bli.serviceComponentGroupingLabel).toBe("2");
+        expect(bli.services_component_id).toBe(12);
+    });
 });
