@@ -550,9 +550,10 @@ describe("useCreateBLIsAndSCs", () => {
         expect(deleteGrantNumberMock).toHaveBeenCalledWith(99);
     });
 
-    it("surfaces an error instead of silently saving a grant BLI whose grant number can't be resolved", async () => {
-        // Grant agreement with a persisted BLI that references a grant number (number 7) which is
-        // no longer present in the editor's grant_numbers list (deleted mid-edit / stale page data).
+    it("disassociates a grant BLI (saves with grant_number_id: null) when its grant number can't be resolved", async () => {
+        // Grant agreement with a BLI that references grant number 7, which is no longer present
+        // in grant_numbers (deleted mid-edit). The save should succeed and disassociate the BLI,
+        // mirroring how addServiceComponentIdToBLI silently nulls an unresolved SC link.
         useEditAgreementMock.mockReturnValue({
             agreement: { id: 42, team_members: [] },
             services_components: [],
@@ -597,9 +598,8 @@ describe("useCreateBLIsAndSCs", () => {
             await result.current.handleSave(false);
         });
 
-        // The link resolution throws before any BLI is written, so the user sees an error alert
-        // rather than a BLI silently saved with grant_number_id: null.
-        expect(addBudgetLineItemMock).not.toHaveBeenCalled();
-        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+        // BLI is saved with grant_number_id: null — disassociated, not errored.
+        expect(addBudgetLineItemMock).toHaveBeenCalledWith(expect.objectContaining({ grant_number_id: null }));
+        expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 });
