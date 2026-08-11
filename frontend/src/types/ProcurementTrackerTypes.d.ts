@@ -5,12 +5,7 @@ export type ProcurementTrackerStatus = "ACTIVE" | "INACTIVE" | "COMPLETED";
 export type ProcurementTrackerType = "DEFAULT";
 
 export type ProcurementTrackerStepType =
-    | "ACQUISITION_PLANNING"
-    | "PRE_SOLICITATION"
-    | "SOLICITATION"
-    | "EVALUATION"
-    | "PRE_AWARD"
-    | "AWARD";
+    "ACQUISITION_PLANNING" | "PRE_SOLICITATION" | "SOLICITATION" | "EVALUATION" | "PRE_AWARD" | "AWARD";
 
 export type ProcurementTrackerStep = {
     id: number;
