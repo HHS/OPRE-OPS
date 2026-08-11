@@ -13,7 +13,10 @@ vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => navigateMock
+        useNavigate: () => navigateMock,
+        // useBlocker is used by useNavigationBlocker; stub it to return an idle state
+        // so the nav-away modal never fires in unit tests (integration/E2E covers that).
+        useBlocker: () => ({ state: "idle", location: null, proceed: vi.fn(), reset: vi.fn() })
     };
 });
 

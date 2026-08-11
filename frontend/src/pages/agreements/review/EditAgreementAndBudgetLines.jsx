@@ -13,11 +13,13 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 
 /**
@@ -93,6 +95,11 @@ const EditAgreementAndBudgetLines = () => {
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
+    // Page-level dirty state aggregated from both sub-forms for the nav-away blocker.
+    const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+    const [hasBLIsChanged, setHasBLIsChanged] = useState(false);
+    const hasPageChanged = hasAgreementChanged || hasBLIsChanged;
+
     const {
         data: agreement,
         error: errorAgreement,
@@ -137,7 +144,29 @@ const EditAgreementAndBudgetLines = () => {
         }
     }, [agreement]);
 
+    // Nav-away blocker. Shows one of two modals depending on whether the pending changes
+    // require DD approval. `saveChanges` receives the intended destination so the success
+    // alert redirects there instead of the fixed returnTo URL.
+    const requiresApproval = requiresFinancialApproval || procurementShopChangeState.shouldRequestChange;
+
+    const saveAndNavigateTo = async (destination) => {
+        await fireBundleSave(destination ?? returnTo);
+        setHasAgreementChanged(false);
+        setHasBLIsChanged(false);
+    };
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged: hasPageChanged,
+        saveChanges: saveAndNavigateTo,
+        onExit: () => {
+            setHasAgreementChanged(false);
+            setHasBLIsChanged(false);
+        },
+        requiresApproval
+    });
+
     const handleCancel = () => {
+        setIsCancelling(true);
         navigate(returnTo);
     };
 
@@ -160,7 +189,13 @@ const EditAgreementAndBudgetLines = () => {
         return bundle;
     };
 
-    const fireBundleSave = async () => {
+    /**
+     * Execute the atomic edit-bundle save.
+     * @param {string} [destination=returnTo] - Where to redirect after a successful save.
+     *   Defaults to `returnTo` (the review page). The nav-away modal passes the user's
+     *   intended destination so they land where they clicked, not back on the review page.
+     */
+    const fireBundleSave = async (destination = returnTo) => {
         if (isSaving) return;
         setIsSaving(true);
         try {
@@ -174,7 +209,7 @@ const EditAgreementAndBudgetLines = () => {
                         budgetLines: agreement?.budget_line_items ?? [],
                         oldProcurementShop,
                         newProcurementShop,
-                        redirectUrl: returnTo
+                        redirectUrl: destination
                     })
                 );
             } else if (result?.change_request_ids?.length) {
@@ -185,14 +220,14 @@ const EditAgreementAndBudgetLines = () => {
                     heading: "Changes Sent to Approval",
                     message:
                         "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                    redirectUrl: returnTo
+                    redirectUrl: destination
                 });
             } else {
                 setAlert({
                     type: "success",
                     heading: "Changes Saved",
                     message: "Your changes have been saved.",
-                    redirectUrl: returnTo
+                    redirectUrl: destination
                 });
             }
             scrollToTop();
@@ -293,6 +328,18 @@ const EditAgreementAndBudgetLines = () => {
                         handleConfirm={fireBundleSave}
                     />
                 )}
+                {showBlockerModal && (
+                    <SaveChangesAndExitModal
+                        heading={blockerModalProps.heading}
+                        description={blockerModalProps.description}
+                        actionButtonText={blockerModalProps.actionButtonText}
+                        secondaryButtonText={blockerModalProps.secondaryButtonText}
+                        handleConfirm={blockerModalProps.handleConfirm}
+                        handleSecondary={blockerModalProps.handleSecondary}
+                        closeModal={blockerModalProps.closeModal}
+                        setShowModal={setShowBlockerModal}
+                    />
+                )}
                 <AgreementEditForm
                     isReviewMode={true}
                     isAgreementAwarded={isAgreementAwarded}
@@ -301,6 +348,7 @@ const EditAgreementAndBudgetLines = () => {
                     onValidityChange={setIsAgreementFormValid}
                     onProcurementShopChangeStateChange={setProcurementShopChangeState}
                     bundleSliceRef={agreementSliceRef}
+                    setHasAgreementChanged={setHasAgreementChanged}
                 />
                 <CreateBLIsAndSCs
                     workflow="agreement"
@@ -318,6 +366,7 @@ const EditAgreementAndBudgetLines = () => {
                     onValidityChange={setIsBudgetLinesValid}
                     bundleSliceRef={blisSliceRef}
                     onFinancialChangeStateChange={setRequiresFinancialApproval}
+                    onHasUnsavedChangesChange={setHasBLIsChanged}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button
