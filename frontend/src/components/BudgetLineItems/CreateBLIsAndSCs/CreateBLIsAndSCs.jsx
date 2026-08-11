@@ -49,6 +49,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @param {React.MutableRefObject<{getSlice: () => object}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns `{ services_components: { create, update, delete }, budget_line_items: { create, update, delete } }` reflecting the user's current edits, suitable for the agreement edit-bundle endpoint. Used by the review-flow edit page so it can fire one atomic mutation instead of fanning out per-resource calls. - optional
  * @param {function(boolean): void} [props.onFinancialChangeStateChange] - Called with `true` when the current edits contain financial-snapshot changes to PLANNED/IN_EXECUTION BLIs that require Division Director approval, `false` otherwise. Non-superusers only — super users always receive `false`. Used by the review-flow edit page to gate the save behind a confirmation modal. - optional
+ * @param {function(boolean): void} [props.onHasUnsavedChangesChange] - Called whenever the internal `hasUnsavedChanges` flag changes. Used by the review-flow edit page to track page-level dirty state for the nav-away modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -75,7 +76,8 @@ export const CreateBLIsAndSCs = ({
     onSaved,
     onValidityChange,
     bundleSliceRef,
-    onFinancialChangeStateChange
+    onFinancialChangeStateChange,
+    onHasUnsavedChangesChange
 }) => {
     const {
         blocker,
@@ -178,6 +180,12 @@ export const CreateBLIsAndSCs = ({
             onFinancialChangeStateChange(requiresFinancialApproval);
         }
     }, [onFinancialChangeStateChange, requiresFinancialApproval]);
+
+    useEffect(() => {
+        if (onHasUnsavedChangesChange) {
+            onHasUnsavedChangesChange(hasUnsavedChanges);
+        }
+    }, [onHasUnsavedChangesChange, hasUnsavedChanges]);
 
     // Bundle slice export. The page (`EditAgreementAndBudgetLines`) reads this synchronously
     // when the user clicks Save Changes and folds it into a single edit-bundle PATCH so that
