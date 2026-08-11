@@ -693,7 +693,7 @@ def test_agreement_search(auth_client, loaded_db):
     assert response.json["count"] == expected_count
 
 
-def test_agreement_name_filter_partial_match(auth_client, loaded_db):
+def test_agreement_name_filter_partial_matching(auth_client, loaded_db):
     """Test that the name filter uses partial matching (ilike)."""
     # Test with empty string should return no results
     response = auth_client.get(
@@ -934,7 +934,7 @@ def contract_agreement_for_create_test(loaded_db, app_ctx):
     loaded_db.commit()
 
 
-def test_agreement_create_contract_agreement(loaded_db, contract_agreement_for_create_test, app_ctx):
+def test_agreement_create_new_contract_agreement(loaded_db, contract_agreement_for_create_test, app_ctx):
     stmt = select(Agreement).where(Agreement.id == contract_agreement_for_create_test.id)
     agreement = loaded_db.scalar(stmt)
 
@@ -1385,6 +1385,85 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db, app_ctx):
     assert [m.id for m in agreement.team_members] == [500]
     assert agreement.in_review is False
     assert agreement.change_requests_in_review is None
+
+
+def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db, test_project, app_ctx):
+    """PATCH on an EXISTING grant round-trips the grant-specific detail fields.
+
+    Complements the create-time round-trip in test_grant_agreement_grant_details_round_trip:
+    here the grant already exists and we confirm an edit persists nofo_number / aln_number /
+    funding_period_months. (total_funding is a model column but is not exposed by the
+    agreement schema, so it cannot round-trip through the API and is not asserted here.)
+    """
+    ga = GrantAgreement(
+        name="Grant-details-edit-round-trip",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        nofo_number="NOFO-ORIGINAL",
+        aln_number="10.001",
+        funding_period_months=12,
+        created_by=4,
+    )
+    loaded_db.add(ga)
+    loaded_db.commit()
+    ga_id = ga.id
+
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=ga_id),
+        json={
+            "agreement_type": "GRANT",
+            "nofo_number": "NOFO-UPDATED",
+            "aln_number": "93.600",
+            "funding_period_months": 24,
+        },
+    )
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    agreement = loaded_db.get(GrantAgreement, ga_id)
+    assert agreement.nofo_number == "NOFO-UPDATED"
+    assert agreement.aln_number == "93.600"
+    assert agreement.funding_period_months == 24
+
+    get_response = auth_client.get(url_for("api.agreements-item", id=ga_id))
+    assert get_response.status_code == 200
+    assert get_response.json["nofo_number"] == "NOFO-UPDATED"
+    assert get_response.json["aln_number"] == "93.600"
+    assert get_response.json["funding_period_months"] == 24
+
+    loaded_db.delete(agreement)
+    loaded_db.commit()
+
+
+def test_agreements_patch_grant_forbidden_as_basic_user(auth_client, loaded_db, basic_user_auth_client, app_ctx):
+    """A basic user not associated with the grant cannot edit it (403).
+
+    Grant DELETE 403 is covered by test_agreements_delete_non_contract_by_id; this covers
+    the edit path.
+    """
+    grant_agreement = GrantAgreement(
+        name="Grant-edit-403-test",
+        agreement_type=AgreementType.GRANT,
+    )
+    loaded_db.add(grant_agreement)
+    loaded_db.commit()
+    ga_id = grant_agreement.id
+
+    response = basic_user_auth_client.patch(
+        url_for("api.agreements-item", id=ga_id),
+        json={"agreement_type": "GRANT", "nofo_number": "HIJACKED"},
+    )
+    assert response.status_code == 403
+
+    # An authorized user succeeds (sanity check that the payload itself is valid).
+    ok_response = auth_client.patch(
+        url_for("api.agreements-item", id=ga_id),
+        json={"agreement_type": "GRANT", "nofo_number": "NOFO-OK"},
+    )
+    assert ok_response.status_code == 200
+
+    loaded_db.delete(loaded_db.get(GrantAgreement, ga_id))
+    loaded_db.commit()
 
 
 def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract, app_ctx):
@@ -3634,7 +3713,7 @@ class TestAgreementFilterOptions:
         assert len(contract_numbers) > 0
         assert contract_numbers == sorted(contract_numbers)
 
-    def test_filter_options_research_types_empty(self, auth_client, loaded_db, app_ctx):
+    def test_filter_options_research_types_when_empty(self, auth_client, loaded_db, app_ctx):
         """Research types should be an empty list (placeholder for future logic)."""
         response = auth_client.get(url_for("api.agreements-filters"))
         assert response.status_code == 200
