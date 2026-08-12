@@ -662,6 +662,16 @@ const useCreateBLIsAndSCs = (
         const BLIStatusIsPlannedOrExecuting =
             currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
 
+        // The SC dropdown only offers non-sub-component SCs, so an actual change here can only
+        // ever land on a bare number. When the number is unchanged, preserve the original
+        // grouping label as-is — it may carry a sub-component suffix (e.g. "2-A") that a bare
+        // number would not match in addServiceComponentIdToBLI, silently dropping the BLI's SC
+        // link on save.
+        const serviceComponentGroupingLabel =
+            servicesComponentNumber === currentBudgetLine.services_component_number
+                ? currentBudgetLine.serviceComponentGroupingLabel
+                : (servicesComponentNumber ?? 0).toString();
+
         const payload = {
             ...currentBudgetLine,
             // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
@@ -670,7 +680,7 @@ const useCreateBLIsAndSCs = (
                 ? { grant_number_number: grantNumberNumber }
                 : {
                       services_component_number: servicesComponentNumber,
-                      serviceComponentGroupingLabel: (servicesComponentNumber ?? 0).toString()
+                      serviceComponentGroupingLabel
                   }),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,

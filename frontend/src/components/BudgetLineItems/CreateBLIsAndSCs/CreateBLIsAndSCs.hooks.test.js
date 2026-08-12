@@ -384,6 +384,78 @@ describe("useCreateBLIsAndSCs", () => {
         });
     });
 
+    it("preserves a sub-component grouping label on edit when the SC number is unchanged (regression)", () => {
+        // The BLI belongs to a sub-component SC ("2-A"), which is only representable via
+        // serviceComponentGroupingLabel — services_component_number alone can't carry the
+        // sub-component suffix. Editing an unrelated field (amount) must not clobber that
+        // label with a bare "2", or addServiceComponentIdToBLI will fail to match the SC on
+        // save and silently null out services_component_id.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [
+                {
+                    id: "target",
+                    amount: 500,
+                    date_needed: "2026-01-01",
+                    can_id: 1,
+                    status: "DRAFT",
+                    services_component_number: 2,
+                    serviceComponentGroupingLabel: "2-A"
+                }
+            ]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [
+                    {
+                        id: "target",
+                        amount: 500,
+                        date_needed: "2026-01-01",
+                        can_id: 1,
+                        status: "DRAFT",
+                        services_component_number: 2,
+                        serviceComponentGroupingLabel: "2-A"
+                    }
+                ],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        act(() => {
+            result.current.setEnteredAmount(999);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                services_component_number: 2,
+                serviceComponentGroupingLabel: "2-A"
+            })
+        });
+    });
+
     it("opens cancel modal and navigates to budget lines on confirm", () => {
         const { result } = renderSubject();
 
