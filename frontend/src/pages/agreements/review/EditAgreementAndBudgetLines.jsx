@@ -151,8 +151,6 @@ const EditAgreementAndBudgetLines = () => {
 
     const saveAndNavigateTo = async (destination) => {
         await fireBundleSave(destination ?? returnTo);
-        setHasAgreementChanged(false);
-        setHasBLIsChanged(false);
     };
 
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
@@ -230,6 +228,10 @@ const EditAgreementAndBudgetLines = () => {
                     redirectUrl: destination
                 });
             }
+            // Clear page-level dirty state on success so the nav-away blocker doesn't
+            // intercept the redirectUrl navigation the alert is about to trigger.
+            setHasAgreementChanged(false);
+            setHasBLIsChanged(false);
             scrollToTop();
         } catch (error) {
             const detail =
