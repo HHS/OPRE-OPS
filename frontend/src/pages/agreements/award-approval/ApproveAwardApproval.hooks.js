@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -9,7 +9,7 @@ import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
 import suite from "./ApproveAwardApproval.suite";
 
-const MemoizedDatePicker = React.memo(DatePicker);
+const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at source
 
 /**
  * Custom hook for the ApproveAwardApproval (Budget Team) review page.
@@ -65,6 +65,11 @@ export default function useApproveAwardApproval(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
+    // Vest suite state. The suite is a module-level singleton, so its errors persist across
+    // unmount/remount. Track the result in component state (seeded from suite.get()) and only
+    // update it via runValidate, so a fresh mount does not surface stale errors from a prior visit.
+    const [validatorRes, setValidatorRes] = useState(suite.get());
+
     /**
      * Run validation for a single field and update the shared suite state.
      * @param {string} name
@@ -72,9 +77,8 @@ export default function useApproveAwardApproval(agreementId) {
      */
     const runValidate = (name, value) => {
         suite.run({ [name]: value }, name);
+        setValidatorRes(suite.get());
     };
-
-    const validatorRes = suite.get();
 
     // The Approve Award button must stay disabled until a valid Obligated Date is entered.
     // The date must never be assumed to be today — it is generally documented first in another system.

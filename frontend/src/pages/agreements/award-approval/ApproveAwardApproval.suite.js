@@ -1,10 +1,12 @@
-import { create, test, enforce, only } from "vest";
+import { create, test, enforce } from "vest";
+
+const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
 /**
  * Validates if a date string is in MM/DD/YYYY format
  */
 const isValidDateFormat = (dateString) => {
-    return /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateString);
+    return DATE_FORMAT_REGEX.test(dateString);
 };
 
 /**
@@ -21,11 +23,7 @@ const parseDateString = (dateString) => {
     return date;
 };
 
-const suite = create((data = {}, fieldName) => {
-    if (fieldName) {
-        only(fieldName);
-    }
-
+const suite = create((data = {}) => {
     // Obligated Date is required before approving for Award — it must never be assumed
     // to be the current date, as it is generally first documented in another system.
     test("obligatedDate", "Obligated Date is required", () => {
@@ -34,7 +32,7 @@ const suite = create((data = {}, fieldName) => {
 
     test("obligatedDate", "Date must be MM/DD/YYYY", () => {
         if (!data.obligatedDate) return; // Skip if empty (let required validation handle)
-        enforce(data.obligatedDate).matches(/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/);
+        enforce(data.obligatedDate).matches(DATE_FORMAT_REGEX);
     });
 
     test("obligatedDate", "Date must be a valid calendar date", () => {

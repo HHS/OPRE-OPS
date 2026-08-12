@@ -5,6 +5,7 @@ and NoUpdatingCompletedProcurementStepRule (AWARD carve-out).
 No DB or Docker required.
 """
 
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
@@ -192,9 +193,9 @@ class TestAwardApprovalObligatedDateRequiredRule:
         ctx = _make_context(updated_fields={"reviewer_notes": "some notes"})
         self.rule.validate(step, ctx)  # Should not raise
 
-    def test_passes_when_obligated_date_provided(self):
+    def test_passes_when_valid_obligated_date_provided(self):
         step = _make_award_step()
-        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "obligated_date": "2026-07-15"})
+        ctx = _make_context(updated_fields={"approval_status": "APPROVED", "obligated_date": date(2026, 7, 15)})
         self.rule.validate(step, ctx)  # Should not raise
 
     def test_raises_when_obligated_date_missing(self):

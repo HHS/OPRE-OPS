@@ -1036,7 +1036,10 @@ class ProcurementTrackerStepService:
         for bli in agreement.budget_line_items:
             if bli.status == BudgetLineItemStatus.IN_EXECUTION:
                 bli.status = BudgetLineItemStatus.OBLIGATED
-                bli.date_needed = obligated_date
+                # Defense-in-depth: the validator guarantees obligated_date on the production
+                # path, but guard here so a direct/internal call with None never nulls date_needed.
+                if obligated_date is not None:
+                    bli.date_needed = obligated_date
                 logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
             elif bli.status == BudgetLineItemStatus.PLANNED:
                 bli.status = BudgetLineItemStatus.PLANNED_MOD
@@ -1047,7 +1050,9 @@ class ProcurementTrackerStepService:
         if step.procurement_tracker.procurement_action:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
             if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
-                if procurement_action.date_awarded_obligated is None:
+                # Defense-in-depth: the validator guarantees obligated_date on the production
+                # path, but guard here so a direct/internal call with None never nulls the column.
+                if procurement_action.date_awarded_obligated is None and obligated_date is not None:
                     procurement_action.date_awarded_obligated = obligated_date
                     logger.debug(
                         f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
