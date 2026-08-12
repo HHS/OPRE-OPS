@@ -1,5 +1,6 @@
 import React from "react";
 import { useBlocker } from "react-router-dom";
+import { proceedIfBlocked } from "./proceedIfBlocked";
 
 /**
  * @param {Object} options
@@ -52,23 +53,8 @@ export default function useNavigationBlocker({
     // redirect there instead of a fixed returnTo URL.
     const nextLocationRef = React.useRef(null);
 
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            // Known React Router bug — proceed() throws when blocker has already transitioned.
-            // String match is fragile; revisit if upgrading react-router.
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
+    const proceedIfBlockedLocal = async () => {
+        await proceedIfBlocked(blockerRef.current);
     };
 
     React.useEffect(() => {
@@ -93,7 +79,7 @@ export default function useNavigationBlocker({
                         await saveChangesRef.current(nextLocationRef.current);
                         setShowBlockerModal(false);
                         onExitRef.current();
-                        await proceedIfBlocked();
+                        await proceedIfBlockedLocal();
                     } catch (error) {
                         console.error(error);
                         if (onSaveErrorRef.current) {
@@ -105,7 +91,7 @@ export default function useNavigationBlocker({
                 handleSecondary: async () => {
                     setShowBlockerModal(false);
                     onExitRef.current();
-                    await proceedIfBlocked();
+                    await proceedIfBlockedLocal();
                 },
                 closeModal: () => {
                     setShowBlockerModal(false);
