@@ -120,6 +120,11 @@ pre-commit install
 pre-commit install --hook-type commit-msg
 ```
 
+## Pull Request Standards
+
+- **Never add `Closes #NNN`, `Fixes #NNN`, or `Resolves #NNN`** to PR descriptions. The team's process requires additional review and QA steps before a story moves out of "in progress" — auto-closing on merge skips those steps.
+- Reference the ticket in the branch name only (e.g. `OPS-5931/feature-name`).
+
 ## CI/CD
 
 GitHub Actions for CI/CD. Workflows in `.github/workflows/`.
