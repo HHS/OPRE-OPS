@@ -8946,9 +8946,11 @@ components:
         notes:
           type: string
           nullable: true
+          maxLength: 750
           description: >-
             Additional notes about this step (ACQUISITION_PLANNING,
-            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps)
+            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps).
+            Max 750 characters.
         target_completion_date:
           type: string
           format: date

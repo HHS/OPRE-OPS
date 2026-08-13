@@ -107,8 +107,13 @@ export default function useSaveNotes(patchStep, serverNotes, setAlert) {
                 // live value from the ref (not a closed-over `notes`) and clear the
                 // dirty flag only when the field still holds exactly what we saved,
                 // so future server updates can sync in again without losing edits.
+                // Also flush the trimmed value back into state so the field holds the
+                // exact persisted text: otherwise re-entering edit mode before the
+                // refetch lands would snapshot the un-trimmed value, and Cancel would
+                // restore the whitespace-padded original.
                 if (notesRef.current.trim() === notesToSave) {
                     isDirtyRef.current = false;
+                    setNotesState(notesToSave);
                 }
                 // No success alert: the tracker never shows success toasts. The UI
                 // instead flips the notes field from input mode to read mode.

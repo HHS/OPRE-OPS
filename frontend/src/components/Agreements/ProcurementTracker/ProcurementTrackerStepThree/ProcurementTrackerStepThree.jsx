@@ -96,7 +96,8 @@ const ProcurementTrackerStepThree = ({
         validatorRes.hasErrors("solicitationPeriodStartDate") ||
         validatorRes.hasErrors("solicitationPeriodEndDate") ||
         !solicitationPeriodStartDate ||
-        !solicitationPeriodEndDate;
+        !solicitationPeriodEndDate ||
+        isStepPatchInFlight;
 
     return (
         <>

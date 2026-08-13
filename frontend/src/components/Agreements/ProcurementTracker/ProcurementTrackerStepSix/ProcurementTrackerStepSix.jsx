@@ -83,7 +83,11 @@ const ProcurementTrackerStepSix = ({
             stepSixData?.approval_status === undefined ||
             stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
+        isDisabled ||
+        validatorRes.hasErrors("targetCompletionDate") ||
+        !targetCompletionDate ||
+        !stepSixData?.id ||
+        isStepPatchInFlight;
     const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !stepSixData?.approval_requested;
     const isUsersComboBoxDisabled = isDisabled || !isAwardCheckboxChecked || authorizedUsers.length === 0;
     const isAwardFieldsDisabled = isDisabled || !isAwardCheckboxChecked;

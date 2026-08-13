@@ -82,7 +82,11 @@ const ProcurementTrackerStepFive = ({
     const isRequisitionApproved = !!stepFiveData?.requisition_approved_by;
     const isAwaitingBudgetTeam = isApprovalApproved && !isRequisitionApproved;
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFiveData?.id;
+        isDisabled ||
+        validatorRes.hasErrors("targetCompletionDate") ||
+        !targetCompletionDate ||
+        !stepFiveData?.id ||
+        isStepPatchInFlight;
     const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved || isAwaitingBudgetTeam;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
