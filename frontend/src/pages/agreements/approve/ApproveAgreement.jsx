@@ -39,6 +39,7 @@ const ApproveAgreement = () => {
         confirmation,
         errorAgreement,
         isGrant,
+        grantNumbers,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
@@ -145,6 +146,7 @@ const ApproveAgreement = () => {
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -153,6 +155,7 @@ const ApproveAgreement = () => {
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -257,7 +260,14 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, isGrant, changeRequestType, urlChangeToStatus }) => (
+    ({
+        groupedBudgetLinesByServicesComponent,
+        servicesComponents,
+        isGrant,
+        totalGrantNumbers,
+        changeRequestType,
+        urlChangeToStatus
+    }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group, index) => {
                 if (isGrant) {
@@ -265,6 +275,7 @@ const BeforeApprovalContent = React.memo(
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable
@@ -319,6 +330,7 @@ const AfterApprovalContent = React.memo(
         groupedUpdatedBudgetLinesByServicesComponent,
         servicesComponents,
         isGrant,
+        totalGrantNumbers,
         changeRequestType,
         urlChangeToStatus
     }) => (
@@ -329,6 +341,7 @@ const AfterApprovalContent = React.memo(
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable

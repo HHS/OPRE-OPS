@@ -59,7 +59,13 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
+    // GRANT is locked from this table's edit action the same way DIRECT_OBLIGATION/IAA are
+    // (isNotDevelopedYet), but isn't added to that shared helper — isNotDevelopedYet also
+    // gates whether GrantNumbers renders on the Agreement Details page, and GRANT needs
+    // that page to render normally, just not be editable from this row.
+    const isAgreementTypeNotDeveloped =
+        isSuccess &&
+        (isNotDevelopedYet(agreement?.agreement_type ?? "") || agreement?.agreement_type === AGREEMENT_TYPES.GRANT);
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));

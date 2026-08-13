@@ -41,6 +41,7 @@ export const RequestPreAwardApproval = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         selectedFile,
         handleFileChange,
@@ -210,6 +211,7 @@ export const RequestPreAwardApproval = () => {
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
                 showBudgetLineErrors={!hasBLIInReview}
             />

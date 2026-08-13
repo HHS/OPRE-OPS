@@ -58,10 +58,10 @@ class NestedGrantNumberRequestSchema(Schema):
     - agreement_id is EXCLUDED (will be set programmatically by service layer)
     - ref is ADDED as a temporary reference identifier
 
-    The 'ref' field mirrors NestedServicesComponentRequestSchema's convention so a future
-    grant budget-line-item feature can reference a grant number being created in the same
-    request, the same way budget line items reference services components today. Not
-    consumed anywhere yet, but keeps the nested-create machinery symmetric with SC.
+    The 'ref' field mirrors NestedServicesComponentRequestSchema's convention: grant budget
+    line items reference a grant number being created in the same request via
+    `grant_number_ref` (see NestedBudgetLineItemRequestSchema), the same way budget line
+    items reference services components via `services_component_ref`.
     """
 
     ref = fields.Str(

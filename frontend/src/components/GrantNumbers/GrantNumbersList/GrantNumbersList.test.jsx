@@ -34,6 +34,6 @@ describe("GrantNumbersList", () => {
         );
 
         const titles = screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent);
-        expect(titles).toEqual(["Grant 1", "Grant 2", "Grant 3"]);
+        expect(titles).toEqual(["Grant 1 of 3", "Grant 2 of 3", "Grant 3 of 3"]);
     });
 });
