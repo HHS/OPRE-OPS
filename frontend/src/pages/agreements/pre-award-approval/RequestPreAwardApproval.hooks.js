@@ -309,6 +309,17 @@ export default function useRequestPreAwardApproval(agreementId) {
         });
     };
 
+    const handleEdit = () => {
+        const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
+        // flushSync forces the isNavigating commit (and blocker re-registration) before
+        // navigate() so the blocker's synchronous forward-push check sees isNavigating=true
+        // and lets the edit navigation through instead of showing the cancel modal.
+        flushSync(() => {
+            setIsNavigating(true);
+        });
+        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
+    };
+
     return {
         agreement,
         isLoading,
@@ -319,6 +330,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         setNotes,
         handleSubmit,
         handleCancel,
+        handleEdit,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,

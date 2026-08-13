@@ -491,6 +491,32 @@ describe("useProcurementTrackerStepSix", () => {
 
             expect(result.current.targetCompletionDate).toBe("02/15/2024");
         });
+
+        it("clears hasChanges after saving target completion date when checkbox is checked", async () => {
+            const unwrapMock = vi.fn().mockResolvedValue({});
+            mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
+
+            // approval_requested is false on server — checkbox starts unchecked
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(
+                    { ...mockStepSixData, approval_requested: false },
+                    mockHandleSetCompletedStepNumber
+                )
+            );
+
+            act(() => {
+                result.current.setIsAwardCheckboxChecked(true);
+                result.current.setTargetCompletionDate("02/15/2024");
+            });
+
+            expect(result.current.hasChanges).toBe(true);
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(6);
+            });
+
+            expect(result.current.hasChanges).toBe(false);
+        });
     });
 
     describe("handleStepSixComplete", () => {

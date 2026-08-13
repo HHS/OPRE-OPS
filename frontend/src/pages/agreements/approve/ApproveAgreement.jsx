@@ -12,6 +12,7 @@ import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAc
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import {
@@ -60,6 +61,9 @@ const ApproveAgreement = () => {
         setNotes,
         setShowModal,
         showModal,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         statusChangeTo,
         statusForTitle,
         title,
@@ -87,6 +91,18 @@ const ApproveAgreement = () => {
                     actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     secondaryButtonText={modalProps.secondaryButtonText}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
 
