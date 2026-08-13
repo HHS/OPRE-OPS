@@ -7427,6 +7427,29 @@
             },
             created_by: 521,
             created_on: "2026-04-03T16:35:45.789012Z",
+        },
+        {
+            // 75
+            event_type: "UPDATE_CAN",
+            event_status: "SUCCESS",
+            event_details: {
+                can_updates: {
+                    owner_id: 500,
+                    changes: {
+                        "funding_details.appropriation": {
+                            new_value: "75-2529-1512",
+                            old_value: "75-25-1512",
+                        },
+                        "funding_details.fiscal_year": {
+                            new_value: 2026,
+                            old_value: 2025,
+                        },
+                    },
+                    updated_by: 516,
+                },
+            },
+            created_by: 516,
+            created_on: "2026-08-07T04:20:00.000000Z",
         }
     ],
 }
