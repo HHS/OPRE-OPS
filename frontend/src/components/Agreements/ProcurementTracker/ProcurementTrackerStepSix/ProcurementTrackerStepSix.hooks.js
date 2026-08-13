@@ -99,6 +99,9 @@ export default function useProcurementTrackerStepSix(
                 data: payload
             }).unwrap();
             setTargetCompletionDate("");
+            // Reset checkbox to server value so hasChanges clears and the nav-away blocker
+            // does not fire when the user is redirected to the award approval flow.
+            setIsAwardCheckboxChecked(stepSixData?.approval_requested ?? false);
             console.log("Procurement Tracker Step 6 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 6", error);

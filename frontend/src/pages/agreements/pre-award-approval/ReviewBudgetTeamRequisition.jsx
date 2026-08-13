@@ -312,7 +312,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 <button
                     className="usa-button usa-button--outline margin-right-2"
                     type="button"
-                    onClick={handleSaveDraft}
+                    onClick={() => handleSaveDraft()}
                     disabled={isSubmitting || approvalAlreadyProcessed || !canSaveDraft}
                     data-cy="save-draft-btn"
                 >
