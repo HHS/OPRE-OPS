@@ -16,9 +16,11 @@ from models.budget_line_items import GrantBudgetLineItem
 
 
 def test_grant_number_retrieve(loaded_db, app_ctx):
+    # numbers 1 and 2 on agreement_id=3 are seeded by the fixture data; use a distinct
+    # number here to avoid colliding with the ix_grant_number_unique (agreement_id, number) index.
     grant_number = GrantNumber(
         agreement_id=3,
-        number=1,
+        number=99,
         description="Test grant number",
         period_start=datetime.date(2043, 6, 13),
         period_end=datetime.date(2044, 6, 13),
@@ -28,12 +30,12 @@ def test_grant_number_retrieve(loaded_db, app_ctx):
 
     fetched = loaded_db.get(GrantNumber, grant_number.id)
     assert fetched is not None
-    assert fetched.number == 1
+    assert fetched.number == 99
     assert fetched.description == "Test grant number"
     assert fetched.period_start == datetime.date(2043, 6, 13)
     assert fetched.period_end == datetime.date(2044, 6, 13)
-    assert fetched.display_title == "Grant 1"
-    assert fetched.display_name == "Grant 1"
+    assert fetched.display_title == "Grant 99"
+    assert fetched.display_name == "Grant 99"
 
     loaded_db.delete(fetched)
     loaded_db.commit()
