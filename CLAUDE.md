@@ -148,4 +148,4 @@ Story templates in `.claude/templates/` for planning and implementation:
 
 - **`feature-story.md`**, **`bug-story.md`**, **`refactor-story.md`**
 
-See [`.claude/templates/README.md`](.claude/templates/README.md) for usage. Story files in `.claude/stories/` are gitignored.
+See [`.claude/templates/README.md`](.claude/templates/README.md) for usage. Story files in `.claude/stories/` are tracked in git.
