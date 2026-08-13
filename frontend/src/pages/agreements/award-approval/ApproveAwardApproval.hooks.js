@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { flushSync } from "react-dom";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
@@ -85,39 +86,22 @@ export default function useApproveAwardApproval(agreementId) {
     const isObligatedDateInvalid = !obligatedDate || validatorRes.hasErrors("obligatedDate");
 
     /**
-     * Track unsaved changes
+     * Track unsaved changes — obligated date is the only editable field
      */
-    const hasChanged = useMemo(() => obligatedDate !== "", [obligatedDate]);
+    const hasChanged = useMemo(() => !isNavigating && obligatedDate !== "", [isNavigating, obligatedDate]);
 
     /**
-     * Navigation blocker — prevents accidental navigation when form has unsaved changes
+     * Navigation blocker — "Save changes before leaving?" pattern, no draft save option.
+     * Primary: "Go back" (stay). Secondary: "Leave without saving" (discard + proceed).
      */
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
-
-    useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowModal(true);
-            setModalProps({
-                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
-                actionButtonText: "Yes, Cancel Task",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: () => {
-                    setShowModal(false);
-                    flushSync(() => {
-                        setIsNavigating(true);
-                    });
-                    blocker.proceed?.();
-                },
-                closeModal: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
-                }
-            });
-        }
-    }, [blocker.state, blocker]);
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this award approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     /**
      * Approve handler — opens confirmation modal, then PATCHes step 6
@@ -167,14 +151,15 @@ export default function useApproveAwardApproval(agreementId) {
     };
 
     /**
-     * Cancel handler
+     * Cancel handler — explicit user-initiated cancel from the page Cancel button
      */
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
-            actionButtonText: "Yes, Cancel Task",
-            secondaryButtonText: "Continue Editing",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 flushSync(() => {
                     setIsNavigating(true);
@@ -209,6 +194,9 @@ export default function useApproveAwardApproval(agreementId) {
         showModal,
         setShowModal,
         modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         isSubmitting,
         submitError,
         handleApprove,
