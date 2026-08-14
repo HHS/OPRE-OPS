@@ -171,30 +171,19 @@ describe("useRequestPreAwardApproval — navigation blocker", () => {
         const { result } = setup(buildAgreement());
         await waitFor(() => expect(result.current).toBeDefined());
 
-        // Typed notes -> hasChanged=true, so the blocker would fire on navigation.
-        act(() => {
-            result.current.setNotes("some note");
-        });
-
         const nav = {
             currentLocation: { pathname: "/agreements/1/pre-award-approval" },
             nextLocation: { pathname: "/agreements/review/1/edit" }
         };
 
-        // BEFORE handleEdit: predicate blocks (isNavigating=false).
-        await waitFor(() => expect(capturedCb(nav)).toBe(true));
+        // BEFORE handleEdit: predicate does not block (hasChanged=false, no unsaved notes).
+        await waitFor(() => expect(capturedCb(nav)).toBe(false));
 
         // handleEdit sets the isNavigating bypass then navigates to the edit form.
         act(() => {
             result.current.handleEdit();
         });
 
-        // AFTER handleEdit: the bypass is set so the predicate no longer blocks, and
-        // navigate got the encoded returnTo URL. NOTE: with useBlocker mocked, this
-        // guards the bypass-flag contract and the URL — but not the flushSync timing
-        // itself (react-router's synchronous re-check on a real forward push is what
-        // requires flushSync; that is only observable with a real router, not here).
-        expect(capturedCb(nav)).toBe(false);
         expect(navigateMock).toHaveBeenCalledWith(
             "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
         );
@@ -235,6 +224,141 @@ describe("useRequestPreAwardApproval — navigation blocker", () => {
             expect(mockReset).toHaveBeenCalled();
             expect(mockProceed).not.toHaveBeenCalled();
         });
+    });
+});
+
+describe("useRequestPreAwardApproval — edit warning modal", () => {
+    let mockProceed;
+    let mockReset;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockProceed = vi.fn();
+        mockReset = vi.fn();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+    });
+
+    it("navigates straight to the edit page when there are no unsaved notes", async () => {
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        act(() => {
+            result.current.handleEdit();
+        });
+
+        expect(result.current.showEditWarningModal).toBe(false);
+        expect(navigateMock).toHaveBeenCalledWith(
+            "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
+        );
+    });
+
+    it("shows the warning modal instead of navigating when notes are unsaved", async () => {
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        act(() => {
+            result.current.setNotes("some note");
+        });
+
+        act(() => {
+            result.current.handleEdit();
+        });
+
+        expect(navigateMock).not.toHaveBeenCalled();
+        expect(result.current.showEditWarningModal).toBe(true);
+        expect(result.current.editWarningModalProps.heading).toBe("Save changes before leaving?");
+        expect(result.current.editWarningModalProps.description).toBe(
+            "You have unsaved changes in this pre-award request. If you leave without saving, these changes will be lost."
+        );
+        expect(result.current.editWarningModalProps.actionButtonText).toBe("Go back");
+        expect(result.current.editWarningModalProps.secondaryButtonText).toBe("Leave without saving");
+    });
+
+    it("handleConfirm (Go back) closes the modal and does not navigate", async () => {
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        act(() => {
+            result.current.setNotes("some note");
+        });
+        act(() => {
+            result.current.handleEdit();
+        });
+        expect(result.current.showEditWarningModal).toBe(true);
+
+        act(() => {
+            result.current.editWarningModalProps.handleConfirm();
+        });
+
+        expect(result.current.showEditWarningModal).toBe(false);
+        expect(navigateMock).not.toHaveBeenCalled();
+    });
+
+    it("handleSecondary (Leave without saving) bypasses the blocker at navigate-time and navigates to the edit page", async () => {
+        // This test guards the flushSync timing inside goToEditPage(), not just the URL.
+        // Notes are NOT cleared by handleSecondary, so hasChanged stays true the whole
+        // time — only isNavigating flipping via flushSync (a synchronous commit, not a
+        // batched setState) makes the blocker predicate false at the instant navigate()
+        // fires, matching react-router's real synchronous re-check on a forward push.
+        // See the useblocker-bypass-regression-test skill for why an after-act() check
+        // of capturedCb would pass even if flushSync were replaced by a plain setState.
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        act(() => {
+            result.current.setNotes("some note");
+        });
+
+        const nav = {
+            currentLocation: { pathname: "/agreements/1/pre-award-approval" },
+            nextLocation: { pathname: "/agreements/review/1/edit" }
+        };
+        await waitFor(() => expect(capturedCb(nav)).toBe(true));
+
+        act(() => {
+            result.current.handleEdit();
+        });
+        expect(result.current.showEditWarningModal).toBe(true);
+
+        // Capture the predicate's value at the exact moment navigate() runs.
+        let blockedAtNavigateTime;
+        navigateMock.mockImplementation(() => {
+            blockedAtNavigateTime = capturedCb(nav);
+        });
+
+        act(() => {
+            result.current.editWarningModalProps.handleSecondary();
+        });
+
+        expect(blockedAtNavigateTime).toBe(false);
+        expect(result.current.showEditWarningModal).toBe(false);
+        expect(navigateMock).toHaveBeenCalledWith(
+            "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
+        );
+    });
+
+    it("closeModal behaves the same as handleConfirm (Go back)", async () => {
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        act(() => {
+            result.current.setNotes("some note");
+        });
+        act(() => {
+            result.current.handleEdit();
+        });
+
+        act(() => {
+            result.current.editWarningModalProps.closeModal();
+        });
+
+        expect(result.current.showEditWarningModal).toBe(false);
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 });
 

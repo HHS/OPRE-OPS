@@ -39,6 +39,8 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
     const [isNavigating, setIsNavigating] = useState(false);
+    const [showEditWarningModal, setShowEditWarningModal] = useState(false);
+    const [editWarningModalProps, setEditWarningModalProps] = useState({});
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [addDocument] = useAddDocumentMutation();
@@ -311,13 +313,39 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const handleEdit = () => {
         const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
-        // flushSync forces the isNavigating commit (and blocker re-registration) before
-        // navigate() so the blocker's synchronous forward-push check sees isNavigating=true
-        // and lets the edit navigation through instead of showing the cancel modal.
-        flushSync(() => {
-            setIsNavigating(true);
+        const goToEditPage = () => {
+            // flushSync forces the isNavigating commit (and blocker re-registration) before
+            // navigate() so the blocker's synchronous forward-push check sees isNavigating=true
+            // and lets the edit navigation through instead of showing the cancel modal.
+            flushSync(() => {
+                setIsNavigating(true);
+            });
+            navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
+        };
+
+        if (!hasChanged) {
+            goToEditPage();
+            return;
+        }
+
+        setShowEditWarningModal(true);
+        setEditWarningModalProps({
+            heading: "Save changes before leaving?",
+            description:
+                "You have unsaved changes in this pre-award request. If you leave without saving, these changes will be lost.",
+            actionButtonText: "Go back",
+            secondaryButtonText: "Leave without saving",
+            handleConfirm: () => {
+                setShowEditWarningModal(false);
+            },
+            handleSecondary: () => {
+                setShowEditWarningModal(false);
+                goToEditPage();
+            },
+            closeModal: () => {
+                setShowEditWarningModal(false);
+            }
         });
-        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
     };
 
     return {
@@ -331,6 +359,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         handleSubmit,
         handleCancel,
         handleEdit,
+        showEditWarningModal,
+        setShowEditWarningModal,
+        editWarningModalProps,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
