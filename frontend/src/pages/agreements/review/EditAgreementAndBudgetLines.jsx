@@ -155,15 +155,16 @@ const EditAgreementAndBudgetLines = () => {
         await fireBundleSave(destination ?? returnTo);
     };
 
-    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
-        hasChanged: hasPageChanged,
-        saveChanges: saveAndNavigateTo,
-        onExit: () => {
-            setHasAgreementChanged(false);
-            setHasBLIsChanged(false);
-        },
-        requiresApproval
-    });
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef } =
+        useNavigationBlocker({
+            hasChanged: hasPageChanged,
+            saveChanges: saveAndNavigateTo,
+            onExit: () => {
+                setHasAgreementChanged(false);
+                setHasBLIsChanged(false);
+            },
+            requiresApproval
+        });
 
     const handleCancel = () => {
         setIsCancelling(true);
@@ -230,10 +231,12 @@ const EditAgreementAndBudgetLines = () => {
                     redirectUrl: destination
                 });
             }
-            // Clear page-level dirty state on success so the nav-away blocker doesn't
-            // intercept the redirectUrl navigation the alert is about to trigger.
-            // Also reset the child's internal hasUnsavedChanges so a post-save RTK refetch
-            // doesn't re-fire onHasUnsavedChangesChange(true) and re-enable the blocker.
+            // Synchronously bypass the blocker before the alert redirects. The RTK
+            // refetch triggered by a successful save can re-fire child dirty-state
+            // callbacks before Alert's useEffect navigates, re-enabling the blocker
+            // and intercepting the redirect. Setting a ref is synchronous and is
+            // read directly by the blocker predicate on the next navigation attempt.
+            isBypassingRef.current = true;
             blisSliceRef.current?.resetUnsavedChanges?.();
             setHasAgreementChanged(false);
             setHasBLIsChanged(false);

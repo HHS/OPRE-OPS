@@ -1414,7 +1414,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
             "agreement_type": "GRANT",
             "nofo_number": "NOFO-UPDATED",
             "aln_numbers": [3, 7],
-            "funding_period_months": 24,
+            "funding_period_months": 18,
         },
     )
     assert response.status_code == 200
@@ -1423,13 +1423,13 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
     agreement = loaded_db.get(GrantAgreement, ga_id)
     assert agreement.nofo_number == "NOFO-UPDATED"
     assert agreement.aln_numbers == [3, 7]
-    assert agreement.funding_period_months == 24
+    assert agreement.funding_period_months == 18
 
     get_response = auth_client.get(url_for("api.agreements-item", id=ga_id))
     assert get_response.status_code == 200
     assert get_response.json["nofo_number"] == "NOFO-UPDATED"
     assert get_response.json["aln_numbers"] == [3, 7]
-    assert get_response.json["funding_period_months"] == 24
+    assert get_response.json["funding_period_months"] == 18
 
     loaded_db.delete(agreement)
     loaded_db.commit()

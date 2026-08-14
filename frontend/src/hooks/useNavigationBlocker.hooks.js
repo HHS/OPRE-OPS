@@ -24,9 +24,14 @@ export default function useNavigationBlocker({
     const [blockerModalProps, setBlockerModalProps] = React.useState({});
     const [isCancelling, setIsCancelling] = React.useState(false);
 
+    // Ref-based bypass so a programmatic post-save navigate (from Alert's redirectUrl)
+    // can skip the blocker without depending on async state updates. The ref is read
+    // synchronously by the blocker predicate on every navigation attempt.
+    const isBypassingRef = React.useRef(false);
+
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
+            !isBypassingRef.current && !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
     );
 
     const saveChangesRef = React.useRef(saveChanges);
@@ -104,5 +109,5 @@ export default function useNavigationBlocker({
         }
     }, [blocker.state, blocker.location, requiresApproval]);
 
-    return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling };
+    return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef };
 }
