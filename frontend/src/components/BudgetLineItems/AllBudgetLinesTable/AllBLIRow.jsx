@@ -16,6 +16,8 @@ import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -49,6 +51,9 @@ const AllBLIRow = ({ budgetLine }) => {
         budgetLine?.agreement?.name?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
 
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const agreementPath = budgetLine?.agreement?.id ? `/agreements/${budgetLine.agreement.id}` : "";
+
     const TableRowData = (
         <>
             <td data-cy="bli-id">{budgetLine.id}</td>
@@ -56,7 +61,13 @@ const AllBLIRow = ({ budgetLine }) => {
                 <div className={tableStyles.textClipContainer}>
                     {budgetLine?.agreement?.id ? (
                         <Link
-                            to={`/agreements/${budgetLine.agreement.id}`}
+                            to={agreementPath}
+                            onClick={() =>
+                                setBreadcrumbTrail({
+                                    targetPath: agreementPath,
+                                    ancestors: [LIST_CRUMBS.budgetLines]
+                                })
+                            }
                             className="text-ink text-no-underline"
                             aria-label={agreementLinkLabel}
                         >

@@ -25,6 +25,8 @@ import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 import { useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -76,6 +78,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const [searchParams] = useSearchParams();
     const forApprovalUrl = searchParams.get("filter") === "for-approval";
 
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const agreementPath = `/agreements/${agreement?.id}`;
+
     function getLockedMessage() {
         const lockedMessages = {
             notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
@@ -115,7 +120,10 @@ export const AgreementTableRow = ({ agreement }) => {
             <td data-cy="agreement-name">
                 <Link
                     className="text-ink text-no-underline"
-                    to={`/agreements/${agreement?.id}`}
+                    to={agreementPath}
+                    onClick={() =>
+                        setBreadcrumbTrail({ targetPath: agreementPath, ancestors: [LIST_CRUMBS.agreements] })
+                    }
                     aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip

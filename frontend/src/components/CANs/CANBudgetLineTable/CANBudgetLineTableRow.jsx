@@ -12,6 +12,7 @@ import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
@@ -32,6 +33,7 @@ import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
  * @property {number} creatorId
  * @property {string} creationDate
  * @property {string} description
+ * @property {import("../../../sessionUISlice").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry to record when navigating to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
  */
 
 /**
@@ -51,8 +53,10 @@ const CANBudgetLineTableRow = ({
     inReview,
     creatorId,
     creationDate,
-    description
+    description,
+    ancestry = []
 }) => {
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
@@ -72,6 +76,12 @@ const CANBudgetLineTableRow = ({
                         <Link
                             className="text-ink text-no-underline"
                             to={`/agreements/${budgetLine.agreement.id}`}
+                            onClick={() =>
+                                setBreadcrumbTrail({
+                                    targetPath: `/agreements/${budgetLine.agreement.id}`,
+                                    ancestors: ancestry
+                                })
+                            }
                             aria-label={resolvedAgreementName}
                         >
                             <TextClip
