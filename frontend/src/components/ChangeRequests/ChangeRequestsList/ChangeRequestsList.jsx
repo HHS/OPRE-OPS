@@ -109,7 +109,8 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     const taggedChangeRequests = changeRequests.flatMap((/** @type {ChangeRequest} */ cr) => {
         const cards = [];
         if (cr.has_proc_shop_change) cards.push({ _type: "crProcShop", _sortDate: cr.created_on ?? "", item: cr });
-        if (cr.has_budget_change) cards.push({ _type: "crBudget", _sortDate: cr.created_on ?? "", item: cr });
+        if (cr.has_budget_change || cr.has_delete_change)
+            cards.push({ _type: "crBudget", _sortDate: cr.created_on ?? "", item: cr });
         if (cr.has_status_change) cards.push({ _type: "crStatus", _sortDate: cr.created_on ?? "", item: cr });
         return cards;
     });

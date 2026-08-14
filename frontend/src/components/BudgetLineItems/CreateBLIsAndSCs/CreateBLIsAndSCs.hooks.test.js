@@ -1,6 +1,6 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs, { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.hooks";
 
 const setAlertMock = vi.fn();
 const navigateMock = vi.fn();
@@ -72,7 +72,7 @@ vi.mock("../../../helpers/agreement.helpers", () => ({
 }));
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
-    BLI_STATUS: { DRAFT: "DRAFT", PLANNED: "PLANNED", EXECUTING: "EXECUTING" },
+    BLI_STATUS: { DRAFT: "DRAFT", PLANNED: "PLANNED", EXECUTING: "IN_EXECUTION" },
     BLILabel: vi.fn((bli) => `${bli?.id ?? "Unknown"}`),
     budgetLinesTotal: vi.fn((blis) => blis.reduce((sum, bli) => sum + (bli.amount ?? 0), 0)),
     getNonDRAFTBudgetLines: vi.fn((blis) => blis.filter((bli) => bli.status !== "DRAFT")),
@@ -172,10 +172,10 @@ describe("useCreateBLIsAndSCs", () => {
             useCreateBLIsAndSCs(
                 true,
                 false,
-                [],
+                overrides.budgetLines ?? [],
                 vi.fn(),
                 goBackMock,
-                vi.fn(),
+                "continueOverRide" in overrides ? overrides.continueOverRide : vi.fn(),
                 {
                     id: 1,
                     agreement_type: "GRANT",
@@ -658,6 +658,125 @@ describe("useCreateBLIsAndSCs", () => {
         expect(updateCall.data).toHaveProperty("number", 2);
     });
 
+    describe("delete routed to approval (issue #5819 / PR #5832)", () => {
+        // BLI_STATUS is mocked above as { DRAFT: "DRAFT", PLANNED: "PLANNED", EXECUTING: "IN_EXECUTION" }.
+        const superUserState = {
+            auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } }
+        };
+
+        // A budget line as it would arrive from the API (has created_on → treated as existing).
+        const existingBli = (status) => ({
+            id: 100,
+            status,
+            created_on: "2026-01-15",
+            amount: 1000,
+            services_component_id: 11,
+            can: { id: 22, display_name: "CAN 22" },
+            can_id: 22,
+            date_needed: "2026-01-01"
+        });
+
+        const deleteFirstTempBudgetLine = (result) => {
+            const bliId = result.current.tempBudgetLines[0].id;
+            act(() => {
+                result.current.handleDeleteBudgetLine(bliId);
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+        };
+
+        it("deleting a PLANNED line queues an approval message, not 'successfully deleted'", () => {
+            const { result } = renderSubject({ budgetLines: [existingBli("PLANNED")] });
+            setAlertMock.mockClear();
+
+            deleteFirstTempBudgetLine(result);
+
+            expect(setAlertMock).toHaveBeenCalledTimes(1);
+            const alert = setAlertMock.mock.calls[0][0];
+            expect(alert.type).toBe("success");
+            expect(alert.isToastMessage).toBe(true);
+            expect(alert.message).toMatch(/approval/i);
+            expect(alert.message).not.toMatch(/successfully deleted/i);
+        });
+
+        it("deleting a DRAFT line still reports an immediate deletion", () => {
+            const { result } = renderSubject({ budgetLines: [existingBli("DRAFT")] });
+            setAlertMock.mockClear();
+
+            deleteFirstTempBudgetLine(result);
+
+            expect(setAlertMock).toHaveBeenCalledTimes(1);
+            const alert = setAlertMock.mock.calls[0][0];
+            expect(alert.message).toMatch(/successfully deleted/i);
+            expect(alert.message).not.toMatch(/approval/i);
+        });
+
+        it("a super user's PLANNED delete reports an immediate deletion (hard delete)", () => {
+            useSelectorMock.mockImplementation((selector) => selector(superUserState));
+            const { result } = renderSubject({ budgetLines: [existingBli("PLANNED")] });
+            setAlertMock.mockClear();
+
+            deleteFirstTempBudgetLine(result);
+
+            const alert = setAlertMock.mock.calls[0][0];
+            expect(alert.message).toMatch(/successfully deleted/i);
+        });
+
+        it("saving after a PLANNED delete shows 'Changes Sent to Approval', not 'Agreement Updated'", async () => {
+            deleteBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            // Restore the shared edit-agreement data (a prior test leaves useEditAgreementMock returning
+            // data with no grant_numbers, which would make the edit-save flow's grant branch throw).
+            useEditAgreementMock.mockReturnValue(editAgreementMockData);
+            // That shared data's services_component has no created_on, so the flow treats it as new and
+            // calls addServicesComponent().unwrap() before the BLI work; mock it so the save completes.
+            addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
+            const { result } = renderSubject({
+                budgetLines: [existingBli("PLANNED")],
+                selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
+                continueOverRide: undefined
+            });
+            deleteFirstTempBudgetLine(result);
+            setAlertMock.mockClear();
+
+            await act(async () => {
+                await result.current.handleSave(false);
+            });
+
+            const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
+            expect(successCall).toBeDefined();
+            expect(successCall.heading).toBe("Changes Sent to Approval");
+            expect(deleteBudgetLineItemMock).toHaveBeenCalled();
+        });
+
+        it("saving after a DRAFT delete shows 'Agreement Updated'", async () => {
+            deleteBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+            // Restore the shared edit-agreement data (a prior test leaves useEditAgreementMock returning
+            // data with no grant_numbers, which would make the edit-save flow's grant branch throw).
+            useEditAgreementMock.mockReturnValue(editAgreementMockData);
+            // That shared data's services_component has no created_on, so the flow treats it as new and
+            // calls addServicesComponent().unwrap() before the BLI work; mock it so the save completes.
+            addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
+            const { result } = renderSubject({
+                budgetLines: [existingBli("DRAFT")],
+                selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
+                continueOverRide: undefined
+            });
+            deleteFirstTempBudgetLine(result);
+            setAlertMock.mockClear();
+
+            await act(async () => {
+                await result.current.handleSave(false);
+            });
+
+            const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
+            expect(successCall).toBeDefined();
+            expect(successCall.heading).toBe("Agreement Updated");
+        });
+    });
+
     it("flushes grant number create, update, and delete to the API when editing an existing grant agreement", async () => {
         useEditAgreementMock.mockReturnValue({
             agreement: { id: 42, team_members: [] },
@@ -794,5 +913,35 @@ describe("useCreateBLIsAndSCs", () => {
         // rather than a BLI silently saved with grant_number_id: null.
         expect(addBudgetLineItemMock).not.toHaveBeenCalled();
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+    });
+});
+
+describe("isDeletionRoutedToApproval", () => {
+    // Uses the real BLI_STATUS values (EXECUTING === "IN_EXECUTION"), mirrored in the mock above.
+    it("returns true for a non-super user deleting a PLANNED line", () => {
+        expect(isDeletionRoutedToApproval({ status: "PLANNED" }, false)).toBe(true);
+    });
+
+    it("returns true for a non-super user deleting an IN_EXECUTION line", () => {
+        expect(isDeletionRoutedToApproval({ status: "IN_EXECUTION" }, false)).toBe(true);
+    });
+
+    it("returns false for a DRAFT line", () => {
+        expect(isDeletionRoutedToApproval({ status: "DRAFT" }, false)).toBe(false);
+    });
+
+    it("returns false for OBLIGATED / PLANNED_MOD (not approval-routed deletes)", () => {
+        expect(isDeletionRoutedToApproval({ status: "OBLIGATED" }, false)).toBe(false);
+        expect(isDeletionRoutedToApproval({ status: "PLANNED_MOD" }, false)).toBe(false);
+    });
+
+    it("returns false for a super user regardless of status", () => {
+        expect(isDeletionRoutedToApproval({ status: "PLANNED" }, true)).toBe(false);
+        expect(isDeletionRoutedToApproval({ status: "IN_EXECUTION" }, true)).toBe(false);
+    });
+
+    it("returns false for a null/undefined budget line", () => {
+        expect(isDeletionRoutedToApproval(undefined, false)).toBe(false);
+        expect(isDeletionRoutedToApproval(null, false)).toBe(false);
     });
 });
