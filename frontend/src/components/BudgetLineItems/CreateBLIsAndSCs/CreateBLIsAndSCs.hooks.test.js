@@ -795,5 +795,4 @@ describe("useCreateBLIsAndSCs", () => {
         expect(addBudgetLineItemMock).toHaveBeenCalledWith(expect.objectContaining({ grant_number_id: null }));
         expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
-
 });

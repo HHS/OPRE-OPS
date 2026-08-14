@@ -62,9 +62,7 @@ export default function useNavigationBlocker({
     React.useEffect(() => {
         if (blocker.state === "blocked") {
             const loc = blocker.location;
-            nextLocationRef.current = loc
-                ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}`
-                : null;
+            nextLocationRef.current = loc ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}` : null;
 
             const approvalVariant = requiresApproval;
             const heading = "Save changes before leaving?";
