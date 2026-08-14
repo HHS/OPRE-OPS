@@ -9,6 +9,7 @@ const updateBudgetLineItemMock = vi.fn();
 const useGetAgreementByIdQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateBudgetLineItemMutationMock = vi.fn();
+const useGetVersionQueryMock = vi.fn();
 const getUserFullNameFromIdMock = vi.fn();
 // Stable module-level reference so the grantNumbers decoration effect doesn't loop.
 const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
@@ -27,7 +28,8 @@ vi.mock("../../../api/opsAPI", () => ({
     // Stable reference — returning a fresh object each call would make the decoration
     // effect (which lists grantNumbers in its deps) re-run every render → infinite loop.
     useGetGrantNumbersListQuery: () => EMPTY_GRANT_NUMBERS_RESULT,
-    useUpdateBudgetLineItemMutation: (...args) => useUpdateBudgetLineItemMutationMock(...args)
+    useUpdateBudgetLineItemMutation: (...args) => useUpdateBudgetLineItemMutationMock(...args),
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args)
 }));
 
 vi.mock("../../../hooks/use-alert.hooks", () => ({
@@ -112,6 +114,11 @@ describe("useReviewAgreement", () => {
             unwrap: () => Promise.resolve({ ok: true })
         });
         useUpdateBudgetLineItemMutationMock.mockReturnValue([updateBudgetLineItemMock]);
+        // Default: capability OFF and version query resolved.
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: false },
+            isSuccess: true
+        });
         getUserFullNameFromIdMock.mockImplementation((id) => `User ${id}`);
     });
 
@@ -260,6 +267,101 @@ describe("useReviewAgreement", () => {
                 })
             );
         });
+    });
+
+    it("labels the submit button 'Send to Approval' when the capability is OFF", async () => {
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+        });
+
+        await waitFor(() => {
+            expect(result.current.submitButtonText).toBe("Send to Approval");
+        });
+    });
+
+    it("labels the submit button 'Complete Status Change' for Draft→Planned when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+        });
+
+        await waitFor(() => {
+            expect(result.current.submitButtonText).toBe("Complete Status Change");
+        });
+    });
+
+    it("keeps 'Send to Approval' for Planned→Executing even when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_PLANNED_TO_EXECUTING);
+        });
+
+        await waitFor(() => {
+            expect(result.current.submitButtonText).toBe("Send to Approval");
+        });
+    });
+
+    it("shows the safe default label before the version query resolves", async () => {
+        useGetVersionQueryMock.mockReturnValue({ data: undefined, isSuccess: false });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+        });
+
+        await waitFor(() => {
+            expect(result.current.submitButtonText).toBe("Send to Approval");
+        });
+    });
+
+    it("sets an applied-immediately success alert for Draft→Planned when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        await waitFor(() => {
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: "success",
+                    heading: "Changes Saved",
+                    redirectUrl: "/agreements"
+                })
+            );
+        });
+        // Must NOT tell the user the change went to review.
+        const alertArg = setAlertMock.mock.calls.at(-1)[0];
+        expect(alertArg.message).not.toMatch(/Division Director/i);
     });
 
     it("opens the cancel modal and navigates on confirm", async () => {

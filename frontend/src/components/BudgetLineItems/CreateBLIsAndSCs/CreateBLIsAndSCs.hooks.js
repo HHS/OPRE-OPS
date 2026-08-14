@@ -11,6 +11,7 @@ import {
     useDeleteBudgetLineItemMutation,
     useDeleteGrantNumberMutation,
     useDeleteServicesComponentMutation,
+    useGetVersionQuery,
     useUpdateBudgetLineItemMutation,
     useUpdateGrantNumberMutation,
     useUpdateServicesComponentMutation
@@ -125,9 +126,27 @@ const useCreateBLIsAndSCs = (
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
     const isBudgetTeam = useIsUserBudgetTeam();
-    // Budget Team members write financial changes directly (no change-request workflow),
-    // matching the backend's is_budget_team() bypass in budget_line_items.py.
-    const canEditDirectly = isSuperUser || isBudgetTeam;
+
+    // Per-environment capability: when ON, in-Planned budget-detail edits apply immediately
+    // (no Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Default
+    // to false until the version query resolves so the approval UX never gets suppressed
+    // prematurely. The backend is the enforcement authority; this only drives display/copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+
+    // Budget Team members and superusers write financial changes directly (no change-request
+    // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
+    const bypassEditDirectly = isSuperUser || isBudgetTeam;
+    // When the capability is ON, in-Planned budget-detail edits also apply immediately for any
+    // user — but ONLY when every financially-changed editable line is PLANNED (the flag's
+    // scope). If any changed line is IN_EXECUTION it still needs approval, so we keep the
+    // approval UX for the whole save (mixed-case copy is a deferred product decision).
+    const changedFinancialBLIs = tempBudgetLines.filter((bli) => !bli.in_review && bli.financialSnapshotChanged);
+    const flagAllowsDirectApply =
+        skipCrForDraftPlanned &&
+        changedFinancialBLIs.length > 0 &&
+        changedFinancialBLIs.every((bli) => bli.status === BLI_STATUS.PLANNED);
+    const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
     // read during render (here and in BudgetLinesForm), so a stale result from a prior
@@ -1198,7 +1217,10 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         if (blocker.state === "blocked") {
             const destination = blocker.location?.pathname;
-            const modalContent = hasFinancialSnapshotChanges
+            // Only surface the "require approval" wording when the changes actually route for
+            // review. With the capability ON (and the edits in the flag's scope) they apply
+            // immediately, so fall through to the neutral "Save Changes" copy.
+            const modalContent = requiresFinancialApproval
                 ? {
                       heading: "Save changes before leaving?",
                       description:
@@ -1234,7 +1256,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode, navigate]);
+    }, [blocker, requiresFinancialApproval, setIsEditMode, navigate]);
 
     return {
         blocker,

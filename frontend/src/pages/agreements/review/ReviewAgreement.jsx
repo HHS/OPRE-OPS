@@ -39,6 +39,7 @@ export const ReviewAgreement = () => {
 
     const {
         handleSelectBLI,
+        submitButtonText,
         pageErrors,
         isAlertActive,
         setIsAlertActive,
@@ -375,7 +376,7 @@ export const ReviewAgreement = () => {
                             data-cy="send-to-approval-btn"
                             disabled={true}
                         >
-                            Send to Approval
+                            {submitButtonText}
                         </button>
                     </Tooltip>
                 ) : (
@@ -385,7 +386,7 @@ export const ReviewAgreement = () => {
                         data-cy="send-to-approval-btn"
                         onClick={handleSendToApproval}
                     >
-                        Send to Approval
+                        {submitButtonText}
                     </button>
                 )}
             </div>

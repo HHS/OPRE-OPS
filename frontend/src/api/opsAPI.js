@@ -1102,6 +1102,9 @@ export const opsApi = createApi({
         getAzureSasToken: builder.query({
             query: () => `/azure/sas-token`
         }),
+        getVersion: builder.query({
+            query: () => `/version/`
+        }),
         addServicesComponent: builder.mutation({
             query: (data) => {
                 return {
@@ -1398,5 +1401,6 @@ export const {
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
-    useGetPendingAwardApprovalsQuery
+    useGetPendingAwardApprovalsQuery,
+    useGetVersionQuery
 } = opsApi;

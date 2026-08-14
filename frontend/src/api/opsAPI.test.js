@@ -1263,3 +1263,23 @@ describe("opsAPI - getAllProjects queryFn pagination", () => {
         expect(result.data).toEqual([]);
     });
 });
+
+describe("opsAPI - getVersion", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("requests /version/ and returns the version + capability flag", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/version/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ version: "1.2.3", skip_cr_for_draft_planned: true });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getVersion.initiate(undefined));
+
+        expect(capturedUrl).toContain("/api/v1/version/");
+        expect(result.data).toEqual({ version: "1.2.3", skip_cr_for_draft_planned: true });
+    });
+});
