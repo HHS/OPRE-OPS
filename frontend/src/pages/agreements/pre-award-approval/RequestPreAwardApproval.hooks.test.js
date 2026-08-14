@@ -124,6 +124,7 @@ describe("useRequestPreAwardApproval — navigation blocker", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        navigateMock.mockReset();
         mockProceed = vi.fn();
         mockReset = vi.fn();
         mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
@@ -233,6 +234,7 @@ describe("useRequestPreAwardApproval — edit warning modal", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        navigateMock.mockReset();
         mockProceed = vi.fn();
         mockReset = vi.fn();
         mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
