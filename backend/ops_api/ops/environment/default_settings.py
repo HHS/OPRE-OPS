@@ -92,6 +92,12 @@ AZURE_BODY_LOG_MAX_BYTES = 20000
 # True when OPS_CONFIG points at Azure environment config; enables log truncation.
 RUNNING_IN_AZURE = "environment/azure" in (os.getenv("OPS_CONFIG") or "")
 
+# When True, Draft→Planned status changes and in-Planned budget-detail edits apply
+# immediately instead of creating a Change Request for Division Director review.
+# Set per-environment via the SKIP_CR_FOR_DRAFT_PLANNED env var (no code change to flip).
+# Default OFF everywhere so behavior is unchanged unless explicitly enabled.
+SKIP_CR_FOR_DRAFT_PLANNED = os.getenv("SKIP_CR_FOR_DRAFT_PLANNED", "false").lower() == "true"
+
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"
