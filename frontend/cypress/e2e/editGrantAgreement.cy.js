@@ -97,6 +97,37 @@ describe("edit an existing Grant agreement", () => {
         cy.checkA11y(null, null, terminalLog);
     });
 
+    it("deleting a grant number moves its BLI to the not-associated group", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        seedGrant(Date.now()).then(({ agreementId }) => {
+            cy.visit(`/agreements/${agreementId}/budget-lines`);
+            // Gate on the read-only accordion so grant_numbers are loaded before edit mode mounts.
+            cy.contains(".usa-accordion__heading", "Grant 1").should("be.visible");
+            cy.get("#edit").click();
+
+            // Verify the BLI starts under the "Grant 1" accordion.
+            cy.contains(".usa-accordion__heading", "Grant 1").should("be.visible");
+
+            // Delete the grant number.
+            cy.get("[data-cy='grant-number-list'] > :nth-child(1)").trigger("mouseover");
+            cy.get("[data-cy='grant-number-list'] > :nth-child(1)").within(() => {
+                cy.get("[data-cy='grant-number-item-delete-button']").should("be.visible").click();
+            });
+            // Confirm deletion in the modal.
+            cy.get("[data-cy='confirm-action']").click();
+
+            // The "Grant 1" accordion must be gone; the BLI must appear under "not associated".
+            cy.contains(".usa-accordion__heading", "Grant 1").should("not.exist");
+            cy.contains(".usa-accordion__heading", /not associated/i).should("be.visible");
+
+            cy.get("[data-cy='continue-btn']").click();
+            cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+
+            deleteAgreement(agreementId);
+        });
+    });
+
     it("edits grant metadata, a grant number, and a budget line", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 

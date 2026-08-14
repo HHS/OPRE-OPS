@@ -748,6 +748,143 @@ describe("useCreateBLIsAndSCs", () => {
         });
     });
 
+    it("keeps a BLI linked to a grant number that was renamed (not deleted)", async () => {
+        // Grant number id:55 starts with number:5, then is renamed to number:99.
+        // The BLI's grant_number_id:55 still points to a surviving record — it must NOT
+        // be disassociated just because grant_number_number no longer matches.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [{ id: 55, number: 5 }],
+            deleted_grant_numbers_ids: []
+        });
+
+        const { result, rerender } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        // Persisted BLI (has created_on) with grant_number_id:55.
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 200,
+                grant_number_number: 5,
+                grant_number_id: 55,
+                amount: 500,
+                status: "DRAFT",
+                created_on: "2026-01-01"
+            });
+        });
+
+        // Simulate the grant number being renamed (same id:55, new number:99).
+        // Must include created_on so handleSave treats it as an existing record (not a new create).
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [],
+            deleted_services_components_ids: [],
+            grant_numbers: [{ id: 55, number: 99, created_on: "2026-01-01" }],
+            deleted_grant_numbers_ids: []
+        });
+
+        rerender();
+
+        // BLI must remain linked — grant_number_id:55 still exists in grant_numbers.
+        await waitFor(() => {
+            const bli = result.current.tempBudgetLines.find((b) => b.id === 200);
+            expect(bli).toBeDefined();
+            expect(bli.grant_number_id).toBe(55);
+        });
+
+        // Also verify the save path: addGrantNumberIdToBLI must resolve by ID so the
+        // renamed grant number's BLI is not silently disassociated on save.
+        updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 200 }) });
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+        expect(updateBudgetLineItemMock).toHaveBeenCalledWith(
+            expect.objectContaining({ id: 200, data: expect.objectContaining({ grant_number_id: 55 }) })
+        );
+    });
+
+    it("disassociates a BLI linked to a deleted sub-component even when another SC shares the same number", async () => {
+        // SC 1-A (id:11) is deleted; SC 1-B (id:12) survives — both have number:1.
+        // A BLI with services_component_id:11 must be disassociated because id:11 is gone,
+        // even though validScNumbers still contains 1.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [
+                { id: 11, number: 1, sub_component: "A" },
+                { id: 12, number: 1, sub_component: "B" }
+            ],
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        const { result, rerender } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.tempBudgetLines.push({
+                id: 400,
+                services_component_number: 1,
+                serviceComponentGroupingLabel: "1-A",
+                services_component_id: 11,
+                amount: 500,
+                status: "DRAFT"
+            });
+        });
+
+        // SC 1-A (id:11) deleted; SC 1-B (id:12) still present.
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 1, team_members: [] },
+            services_components: [{ id: 12, number: 1, sub_component: "B" }],
+            deleted_services_components_ids: [11],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: []
+        });
+
+        rerender();
+
+        await waitFor(() => {
+            const bli = result.current.tempBudgetLines.find((b) => b.id === 400);
+            expect(bli.services_component_id).toBeNull();
+            expect(bli.services_component_number).toBe(0);
+            expect(bli.serviceComponentGroupingLabel).toBe("0");
+        });
+    });
+
     it("leaves BLIs linked to surviving services components untouched when a different SC is deleted", async () => {
         // Two persisted SCs; a BLI linked to SC 2 must not be disassociated when SC 1 is deleted.
         useEditAgreementMock.mockReturnValue({

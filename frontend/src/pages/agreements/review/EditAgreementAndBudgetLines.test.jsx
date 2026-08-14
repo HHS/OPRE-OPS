@@ -9,14 +9,22 @@ import EditAgreementAndBudgetLines from "./EditAgreementAndBudgetLines";
 
 const navigateMock = vi.fn();
 
+let blockerState = "idle";
+let blockerLocation = null;
+const blockerResetMock = vi.fn();
+const blockerProceedMock = vi.fn();
+
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
         useNavigate: () => navigateMock,
-        // useBlocker is used by useNavigationBlocker; stub it to return an idle state
-        // so the nav-away modal never fires in unit tests (integration/E2E covers that).
-        useBlocker: () => ({ state: "idle", location: null, proceed: vi.fn(), reset: vi.fn() })
+        useBlocker: () => ({
+            state: blockerState,
+            location: blockerLocation,
+            proceed: blockerProceedMock,
+            reset: blockerResetMock
+        })
     };
 });
 
@@ -120,8 +128,10 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
     return { default: MockAgreementEditForm };
 });
 
-// simulateFinancialChange is set by tests to trigger onFinancialChangeStateChange.
+// simulateFinancialChange and simulateUnsavedChanges are set by tests to trigger
+// the corresponding callbacks from the CreateBLIsAndSCs mock.
 let simulateFinancialChange = false;
+let simulateUnsavedChanges = false;
 
 vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
     const { useEffect } = await vi.importActual("react");
@@ -130,7 +140,8 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
         hideWizardChrome,
         isReviewMode,
         bundleSliceRef,
-        onFinancialChangeStateChange
+        onFinancialChangeStateChange,
+        onHasUnsavedChangesChange
     }) {
         useEffect(() => {
             if (bundleSliceRef) {
@@ -143,6 +154,11 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
                 onFinancialChangeStateChange(simulateFinancialChange);
             }
         }, [onFinancialChangeStateChange]);
+        useEffect(() => {
+            if (onHasUnsavedChangesChange) {
+                onHasUnsavedChangesChange(simulateUnsavedChanges);
+            }
+        }, [onHasUnsavedChangesChange]);
         return (
             <div data-testid="create-blis-and-scs">
                 <span data-testid="blis-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -209,9 +225,14 @@ describe("EditAgreementAndBudgetLines", () => {
     beforeEach(() => {
         navigateMock.mockReset();
         updateBundleMock.mockReset();
+        blockerResetMock.mockReset();
+        blockerProceedMock.mockResolvedValue(undefined);
+        blockerState = "idle";
+        blockerLocation = null;
         nextBundleResult = { resolveWith: { ok: true } };
         simulateFinancialChange = false;
         simulateProcurementShopChange = false;
+        simulateUnsavedChanges = false;
         agreementSlice = { name: "Edited Agreement" };
         blisSlice = {
             services_components: { create: [], update: [], delete: [] },
@@ -399,6 +420,49 @@ describe("EditAgreementAndBudgetLines", () => {
                 )
             ).toBeInTheDocument();
             expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("nav-away blocker modal", () => {
+        beforeEach(() => {
+            simulateUnsavedChanges = true;
+            blockerState = "blocked";
+            blockerLocation = { pathname: "/agreements/42" };
+        });
+
+        it("shows Save modal when blocker fires and proceeds to destination after confirming", async () => {
+            renderPage();
+
+            expect(await screen.findByText("Save changes before leaving?")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Leave without saving" })).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: "Save" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            // After a successful save the blocker should proceed (navigate fired).
+            await waitFor(() => expect(blockerProceedMock).toHaveBeenCalled());
+        });
+
+        it("proceeds without saving when Leave without saving is clicked", async () => {
+            renderPage();
+
+            expect(await screen.findByText("Save changes before leaving?")).toBeInTheDocument();
+            fireEvent.click(screen.getByRole("button", { name: "Leave without saving" }));
+
+            await waitFor(() => expect(blockerProceedMock).toHaveBeenCalled());
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+
+        it("shows approval-copy modal when requiresApproval is true", async () => {
+            simulateFinancialChange = true;
+            renderPage();
+
+            expect(
+                await screen.findByText(
+                    "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
+                )
+            ).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Save & send to approval" })).toBeInTheDocument();
         });
     });
 

@@ -49,8 +49,10 @@ export default function useNavigationBlocker({
         blockerRef.current = blocker;
     }, [blocker]);
 
-    // Capture the destination pathname when navigation is blocked so saveChanges can
-    // redirect there instead of a fixed returnTo URL.
+    // Capture the full destination (pathname + search + hash) when navigation is blocked so
+    // saveChanges can redirect there instead of a fixed returnTo URL. Pathname-only would
+    // drop query strings and hash fragments, sending users to a different route state than
+    // the link they selected (e.g. losing filters or an anchor).
     const nextLocationRef = React.useRef(null);
 
     const proceedIfBlockedLocal = async () => {
@@ -59,7 +61,10 @@ export default function useNavigationBlocker({
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
-            nextLocationRef.current = blocker.location?.pathname ?? null;
+            const loc = blocker.location;
+            nextLocationRef.current = loc
+                ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}`
+                : null;
 
             const approvalVariant = requiresApproval;
             const heading = "Save changes before leaving?";

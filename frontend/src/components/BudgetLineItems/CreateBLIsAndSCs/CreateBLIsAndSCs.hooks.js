@@ -168,6 +168,11 @@ const useCreateBLIsAndSCs = (
         return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
     }, [servicesComponents]);
 
+    // Disable this blocker once the wizard advances past step 0. The review-screen
+    // caller (EditAgreementAndBudgetLines) never passes currentStep, so it stays 0 and
+    // this blocker remains disabled there — the review screen owns its own blocker via
+    // useNavigationBlocker. Do NOT pass currentStep from the review screen: that would
+    // activate a second live blocker and both would fire on the same navigation.
     React.useEffect(() => {
         if (currentStep != 0) {
             setBlockerDisabledForCreateAgreement(true);
@@ -213,12 +218,23 @@ const useCreateBLIsAndSCs = (
     // persists (addServiceComponentIdToBLI / addGrantNumberIdToBLI null unmatched links).
     React.useEffect(() => {
         if (isGrant) {
-            const validGrantNumbers = new Set(grantNumbers.map((gn) => gn.number));
+            // Reconcile by ID for persisted BLIs: a renamed grant number shares the same ID so
+            // checking number alone would incorrectly disassociate it. New BLIs (no ID yet) fall
+            // back to the number check because they have no ID to match against.
+            const validGrantNumberIds = new Set(grantNumbers.map((gn) => gn.id).filter(Boolean));
+            const validGrantNumberNumbers = new Set(grantNumbers.map((gn) => gn.number));
             setTempBudgetLines((prev) => {
                 let changed = false;
                 const next = prev.map((bli) => {
+                    if (bli.grant_number_id != null) {
+                        if (!validGrantNumberIds.has(bli.grant_number_id)) {
+                            changed = true;
+                            return { ...bli, grant_number_number: 0, grant_number_id: null };
+                        }
+                        return bli;
+                    }
                     const number = bli.grant_number_number;
-                    if (number != null && number !== 0 && !validGrantNumbers.has(number)) {
+                    if (number != null && number !== 0 && !validGrantNumberNumbers.has(number)) {
                         changed = true;
                         return { ...bli, grant_number_number: 0, grant_number_id: null };
                     }
@@ -227,10 +243,26 @@ const useCreateBLIsAndSCs = (
                 return changed ? next : prev;
             });
         } else {
+            // Reconcile by ID for persisted BLIs: multiple sub-components can share the same
+            // number, so checking number alone leaves BLIs linked to a deleted sub-component
+            // when a sibling with the same number survives. New BLIs fall back to number.
+            const validScIds = new Set(servicesComponents.map((sc) => sc.id).filter(Boolean));
             const validScNumbers = new Set(servicesComponents.map((sc) => sc.number));
             setTempBudgetLines((prev) => {
                 let changed = false;
                 const next = prev.map((bli) => {
+                    if (bli.services_component_id != null) {
+                        if (!validScIds.has(bli.services_component_id)) {
+                            changed = true;
+                            return {
+                                ...bli,
+                                services_component_number: 0,
+                                serviceComponentGroupingLabel: "0",
+                                services_component_id: null
+                            };
+                        }
+                        return bli;
+                    }
                     const number = bli.services_component_number;
                     if (number != null && number !== 0 && !validScNumbers.has(number)) {
                         changed = true;
@@ -845,16 +877,26 @@ const useCreateBLIsAndSCs = (
      * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} createdGrantNumbers
      */
     const addGrantNumberIdToBLI = (budgetLineItem, createdGrantNumbers) => {
-        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
+        // For persisted BLIs (have a grant_number_id), prefer ID-based matching so a renamed
+        // grant number (same id, changed number) is not incorrectly disassociated on save.
+        if (budgetLineItem.grant_number_id != null) {
+            const byId = createdGrantNumbers.find((gn) => gn.id === budgetLineItem.grant_number_id);
+            return {
+                ...budgetLineItem,
+                grant_number_id: byId?.id ?? null,
+                grant_number_number: undefined
+            };
+        }
+        // New BLIs have no ID yet — fall back to number matching.
         // When a grant number is deleted mid-edit its referencing BLIs retain their
         // grant_number_number but the number no longer resolves. Mirror the SC path
         // (addServiceComponentIdToBLI) and null the link so the BLI is disassociated
-        // rather than causing an error. An unassigned BLI (grant_number_number already
-        // null/undefined) is left as-is — valid for a draft grant BLI.
+        // rather than causing an error.
+        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
         return {
             ...budgetLineItem,
             grant_number_id: matchGrantNumber?.id ?? null,
-            grant_number_number: undefined // Remove this property immutably
+            grant_number_number: undefined
         };
     };
 
