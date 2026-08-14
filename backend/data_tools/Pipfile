@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-SQLAlchemy = "==2.0.51"
+SQLAlchemy = "==2.0.52"
 pandas = "==3.0.5"
 json5 = "==0.15.0"
 psycopg2-binary = "==2.9.12"
@@ -37,7 +37,7 @@ pytest = "==9.1.1"
 pytest-cov = "==7.1.0"
 pytest-mock = "==3.15.1"
 pytest-xdist = "==3.8.0"
-filelock = "==3.32.2"
+filelock = "==3.32.3"
 ipython = "==9.16.1"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
 black = {extras = ["d"], version = "==26.5.1"}
