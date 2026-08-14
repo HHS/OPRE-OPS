@@ -9,6 +9,7 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
@@ -38,6 +39,9 @@ export const RequestPreAwardApproval = () => {
         handleSubmit,
         handleCancel,
         handleEdit,
+        showEditWarningModal,
+        setShowEditWarningModal,
+        editWarningModalProps,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
@@ -127,6 +131,19 @@ export const RequestPreAwardApproval = () => {
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
+            {showEditWarningModal && (
+                <SaveChangesAndExitModal
+                    heading={editWarningModalProps.heading}
+                    description={editWarningModalProps.description}
+                    actionButtonText={editWarningModalProps.actionButtonText}
+                    secondaryButtonText={editWarningModalProps.secondaryButtonText}
+                    handleConfirm={editWarningModalProps.handleConfirm}
+                    handleSecondary={editWarningModalProps.handleSecondary}
+                    closeModal={editWarningModalProps.closeModal}
+                    setShowModal={setShowEditWarningModal}
                 />
             )}
 

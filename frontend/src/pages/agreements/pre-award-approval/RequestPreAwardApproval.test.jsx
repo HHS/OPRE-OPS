@@ -68,6 +68,20 @@ vi.mock("../../../components/UI/Form/TextArea", () => ({
     )
 }));
 
+vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
+    __esModule: true,
+    default: (/** @type {{ heading: string; secondaryButtonText: string; handleSecondary: () => void }} */ {
+        heading,
+        secondaryButtonText,
+        handleSecondary
+    }) => (
+        <div data-testid="save-changes-modal">
+            <h3>{heading}</h3>
+            <button onClick={handleSecondary}>{secondaryButtonText}</button>
+        </div>
+    )
+}));
+
 vi.mock("../../../components/UI/PageHeader", () => ({
     __esModule: true,
     default: (/** @type {{ title: string; subTitle: string }} */ { title, subTitle }) => (
@@ -118,6 +132,9 @@ const baseHookResult = () => ({
     showModal: false,
     setShowModal: vi.fn(),
     modalProps: {},
+    showEditWarningModal: false,
+    setShowEditWarningModal: vi.fn(),
+    editWarningModalProps: {},
     agreementValidationResults: null,
     hasBLIError: false,
     pageErrors: {},
@@ -482,6 +499,36 @@ describe("RequestPreAwardApproval", () => {
             render(<RequestPreAwardApproval />);
 
             expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+        });
+
+        it("shows the save-changes-before-leaving modal instead of the Edit button's own navigation when showEditWarningModal is true", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                showEditWarningModal: true,
+                editWarningModalProps: {
+                    heading: "Save changes before leaving?",
+                    description:
+                        "You have unsaved changes in this pre-award request. If you leave without saving, these changes will be lost.",
+                    actionButtonText: "Go back",
+                    secondaryButtonText: "Leave without saving",
+                    handleConfirm: vi.fn(),
+                    handleSecondary: vi.fn(),
+                    closeModal: vi.fn()
+                }
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByTestId("save-changes-modal")).toBeInTheDocument();
+            expect(screen.getByText("Save changes before leaving?")).toBeInTheDocument();
+        });
+
+        it("does not render the save-changes modal when showEditWarningModal is false", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue(baseHookResult());
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByTestId("save-changes-modal")).not.toBeInTheDocument();
         });
     });
 
