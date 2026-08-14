@@ -878,7 +878,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away via tab
         cy.get('[data-cy="details-tab-CAN Funding"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         cy.get(".usa-prose").should("contain", "Do you want to save your changes before leaving this page?");
         // click "Leave without saving"
         cy.get("[data-cy='cancel-action']").click();
@@ -900,7 +900,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Spending"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // click "Save Changes"
         cy.get("[data-cy='confirm-action']").click();
         // should navigate to spending tab
@@ -938,7 +938,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         cy.get("#can-nickName").type("Escape Test");
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Funding"]').click();
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // press Escape to close the modal
         cy.get("body").type("{esc}");
         cy.get(".usa-modal__heading").should("not.exist");
@@ -961,7 +961,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Details"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // click "Leave without saving"
         cy.get("[data-cy='cancel-action']").click();
         // should navigate to details tab
