@@ -1,0 +1,96 @@
+name: Notify Slack on PR/Issue Mention
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  notify-mention:
+    runs-on: ubuntu-latest
+    # Restrict to org members/collaborators so a public-repo commenter can't trigger real Slack pings
+    if: contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    steps:
+      - name: Rate limit check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.event.comment.user.login }}
+          MAX_RUNS: "5"
+          WINDOW_MINUTES: "10"
+        run: |
+          # Even a trusted member/collaborator account can be compromised or turn malicious,
+          # so cap how many times this workflow can fire per commenter in a rolling window --
+          # using GitHub's own run history as state, since Actions has no persistent store.
+          since=$(date -u -d "${WINDOW_MINUTES} minutes ago" +%Y-%m-%dT%H:%M:%SZ)
+          run_count=$(gh api "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
+            -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count')
+
+          echo "run_count=${run_count}" >> "$GITHUB_ENV"
+
+          if [ "$run_count" -gt "$MAX_RUNS" ]; then
+            echo "::warning::${ACTOR} has triggered this workflow ${run_count} times in the last ${WINDOW_MINUTES} minutes (limit ${MAX_RUNS}); skipping Slack notification."
+            echo "rate_limited=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout (for slack_user_map.json)
+        if: env.rate_limited != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: |
+            .github/slack_user_map.json
+          sparse-checkout-cone-mode: false
+
+      - name: Find mentions and notify Slack
+        if: env.rate_limited != 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          IS_PR: ${{ github.event.issue.pull_request && 'true' || 'false' }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Strip fenced code blocks so mentions inside code samples don't trigger a false positive
+          body_no_code=$(printf '%s\n' "$COMMENT_BODY" | sed '/^```/,/^```/d')
+
+          mentions=$(printf '%s' "$body_no_code" \
+            | grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b' \
+            | sed 's/^@//' | sort -u)
+
+          if [ -z "$mentions" ]; then
+            echo "No user mentions found in comment, skipping Slack notification."
+            exit 0
+          fi
+
+          # Resolve each mentioned GitHub username to a Slack member ID via the
+          # mapping file, falling back to the plain @username text if unmapped.
+          mention_text=""
+          while IFS= read -r gh_user; do
+            gh_user_lower=$(printf '%s' "$gh_user" | tr '[:upper:]' '[:lower:]')
+            slack_id=$(jq -r --arg u "$gh_user_lower" '.[$u] // empty' .github/slack_user_map.json)
+            if [ -n "$slack_id" ]; then
+              mention_text="${mention_text}<@${slack_id}> "
+            else
+              mention_text="${mention_text}@${gh_user} "
+            fi
+          done <<< "$mentions"
+
+          kind="issue"
+          if [ "$IS_PR" = "true" ]; then
+            kind="pull request"
+          fi
+
+          # Slack mrkdwn treats &, <, > as syntax (e.g. closing a <url|label> link early to
+          # inject new links or <!channel> mentions) -- escape them per Slack's formatting spec.
+          escaped_title=$(printf '%s' "$ISSUE_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+
+          text="*${COMMENT_AUTHOR}* mentioned ${mention_text}in a comment on ${kind} <${COMMENT_URL}|${REPO}#${ISSUE_NUMBER}: ${escaped_title}>"
+
+          payload=$(jq -n --arg text "$text" '{text: $text}')
+          curl -sf -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
