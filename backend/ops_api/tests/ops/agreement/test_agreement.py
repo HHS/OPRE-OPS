@@ -1391,7 +1391,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
     """PATCH on an EXISTING grant round-trips the grant-specific detail fields.
 
     Complements the create-time round-trip in test_grant_agreement_grant_details_round_trip:
-    here the grant already exists and we confirm an edit persists nofo_number / aln_number /
+    here the grant already exists and we confirm an edit persists nofo_number / aln_numbers /
     funding_period_months. (total_funding is a model column but is not exposed by the
     agreement schema, so it cannot round-trip through the API and is not asserted here.)
     """
@@ -1400,7 +1400,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
         agreement_type=AgreementType.GRANT,
         project_id=test_project.id,
         nofo_number="NOFO-ORIGINAL",
-        aln_number="10.001",
+        aln_numbers=[3],
         funding_period_months=12,
         created_by=4,
     )
@@ -1413,7 +1413,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
         json={
             "agreement_type": "GRANT",
             "nofo_number": "NOFO-UPDATED",
-            "aln_number": "93.600",
+            "aln_numbers": [3, 7],
             "funding_period_months": 24,
         },
     )
@@ -1422,13 +1422,13 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
     loaded_db.expire_all()
     agreement = loaded_db.get(GrantAgreement, ga_id)
     assert agreement.nofo_number == "NOFO-UPDATED"
-    assert agreement.aln_number == "93.600"
+    assert agreement.aln_numbers == [3, 7]
     assert agreement.funding_period_months == 24
 
     get_response = auth_client.get(url_for("api.agreements-item", id=ga_id))
     assert get_response.status_code == 200
     assert get_response.json["nofo_number"] == "NOFO-UPDATED"
-    assert get_response.json["aln_number"] == "93.600"
+    assert get_response.json["aln_numbers"] == [3, 7]
     assert get_response.json["funding_period_months"] == 24
 
     loaded_db.delete(agreement)

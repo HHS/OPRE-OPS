@@ -232,6 +232,9 @@ const EditAgreementAndBudgetLines = () => {
             }
             // Clear page-level dirty state on success so the nav-away blocker doesn't
             // intercept the redirectUrl navigation the alert is about to trigger.
+            // Also reset the child's internal hasUnsavedChanges so a post-save RTK refetch
+            // doesn't re-fire onHasUnsavedChangesChange(true) and re-enable the blocker.
+            blisSliceRef.current?.resetUnsavedChanges?.();
             setHasAgreementChanged(false);
             setHasBLIsChanged(false);
             scrollToTop();

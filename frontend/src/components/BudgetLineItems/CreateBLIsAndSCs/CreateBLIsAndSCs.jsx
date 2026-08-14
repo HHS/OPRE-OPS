@@ -201,6 +201,7 @@ export const CreateBLIsAndSCs = ({
     useEffect(() => {
         if (!bundleSliceRef) return;
         bundleSliceRef.current = {
+            resetUnsavedChanges: () => setHasUnsavedChanges(false),
             getSlice: () => {
                 // Capture each new SC's ref BEFORE stripping UI-only fields. The ref is used
                 // by new BLIs to link to a not-yet-persisted SC via `services_component_ref`.
