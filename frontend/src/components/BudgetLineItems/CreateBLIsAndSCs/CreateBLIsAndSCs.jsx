@@ -351,7 +351,7 @@ export const CreateBLIsAndSCs = ({
                     budget_line_items: {
                         create: newBlis,
                         update: updatedBlis,
-                        delete: deletedBudgetLines ?? []
+                        delete: (deletedBudgetLines ?? []).map((bl) => bl?.id ?? bl)
                     }
                 };
             }

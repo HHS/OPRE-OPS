@@ -185,8 +185,11 @@ export function editAgreementReducer(state, action) {
             return {
                 ...state,
                 budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
+                // Store the full BLI object so the save path can inspect its status for
+                // approval routing (isDeletionRoutedToApproval). The deletion API call
+                // uses .id from each object; see handleDeletions in CreateBLIsAndSCs.hooks.js.
                 deleted_budget_line_items_ids: action.payload.id
-                    ? [...state.deleted_budget_line_items_ids, action.payload.id]
+                    ? [...state.deleted_budget_line_items_ids, action.payload]
                     : [...state.deleted_budget_line_items_ids]
             };
         }

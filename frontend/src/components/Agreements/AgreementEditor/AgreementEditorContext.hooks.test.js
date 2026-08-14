@@ -177,7 +177,7 @@ describe("editAgreementReducer - budget line items", () => {
         expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
     });
 
-    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the id to deleted_budget_line_items_ids", () => {
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the full BLI to deleted_budget_line_items_ids", () => {
         const state = {
             ...defaultState,
             budget_line_items: [
@@ -193,7 +193,8 @@ describe("editAgreementReducer - budget line items", () => {
         });
 
         expect(next.budget_line_items).toEqual([{ id: "b", amount: 200 }]);
-        expect(next.deleted_budget_line_items_ids).toEqual(["a"]);
+        // Full BLI object stored so the save path can inspect status for approval routing.
+        expect(next.deleted_budget_line_items_ids).toEqual([{ id: "a", amount: 100 }]);
     });
 
     it("DELETE_BUDGET_LINE_ITEM does not append to deleted_budget_line_items_ids when payload has no id", () => {

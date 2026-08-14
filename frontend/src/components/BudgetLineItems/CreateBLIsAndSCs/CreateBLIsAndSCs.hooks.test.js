@@ -20,7 +20,6 @@ const deleteGrantNumberMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
-const dispatchMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
@@ -105,10 +104,22 @@ vi.mock("../../../hooks/user.hooks", () => ({
 }));
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);
-vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => useEditAgreementMock(),
-    useEditAgreementDispatch: () => dispatchMock
-}));
+// dispatchMock applies the real reducer so context state evolves during tests
+// (e.g. DELETE_BUDGET_LINE_ITEM moves a BLI into deleted_budget_line_items_ids).
+const dispatchMock = vi.fn();
+vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        useEditAgreement: () => useEditAgreementMock(),
+        useEditAgreementDispatch: () => (action) => {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const next = actual.editAgreementReducer(useEditAgreementMock(), action);
+            useEditAgreementMock.mockReturnValue(next);
+            dispatchMock(action);
+        }
+    };
+});
 
 vi.mock("../BudgetLinesForm/datePickerSuite", () => {
     const suite = vi.fn();
@@ -167,8 +178,21 @@ describe("useCreateBLIsAndSCs", () => {
         deleteAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
     });
 
-    const renderSubject = (overrides = {}) =>
-        renderHook(() =>
+    const renderSubject = (overrides = {}) => {
+        // BLIs live in context (budget_line_items), not the budgetLines prop. Seed them
+        // in the mock so tempBudgetLines is populated from context on mount.
+        if (overrides.budgetLines?.length) {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: overrides.budgetLines.map((bli) => ({
+                    ...bli,
+                    services_component_number: bli.services_component_id ? 1 : 0,
+                    serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
+                })),
+                deleted_budget_line_items_ids: []
+            });
+        }
+        return renderHook(() =>
             useCreateBLIsAndSCs(
                 true,
                 false,
@@ -194,6 +218,7 @@ describe("useCreateBLIsAndSCs", () => {
                 1
             )
         );
+    };
 
     it("flags not-yet-developed agreement types", () => {
         const { result } = renderSubject();
