@@ -28,7 +28,7 @@ describe("GrantNumberForm", () => {
     test("renders the description field with a 150 character maximum", () => {
         render(<GrantNumberForm {...defaultProps} />);
 
-        const description = screen.getByLabelText("Description");
+        const description = screen.getByLabelText("Description (optional)");
         expect(description).toHaveAttribute("maxLength", "150");
     });
 

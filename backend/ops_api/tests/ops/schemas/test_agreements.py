@@ -312,7 +312,7 @@ class TestAgreementDataNestedFields:
     def test_grant_agreement_data_has_grant_details_fields(self):
         """Test that GrantAgreementData exposes the Grant Details fields (#5926)."""
         schema = GrantAgreementData()
-        for field_name in ("nofo_number", "aln_number", "funding_period_months"):
+        for field_name in ("nofo_number", "aln_numbers", "funding_period_months"):
             assert field_name in schema.fields
             assert schema.fields[field_name].allow_none is True
 
@@ -323,25 +323,36 @@ class TestAgreementDataNestedFields:
             "name": "Test Grant",
             "agreement_type": "GRANT",
             "nofo_number": "NOFO-2026-01",
-            "aln_number": "93.600",
+            "aln_numbers": [3, 7],
             "funding_period_months": 18,
         }
         result = schema.load(data)
         assert result["nofo_number"] == "NOFO-2026-01"
-        assert result["aln_number"] == "93.600"
+        assert result["aln_numbers"] == [3, 7]
         assert result["funding_period_months"] == 18
 
         none_data = {
             "name": "Test Grant",
             "agreement_type": "GRANT",
             "nofo_number": None,
-            "aln_number": None,
+            "aln_numbers": None,
             "funding_period_months": None,
         }
         none_result = schema.load(none_data)
         assert none_result["nofo_number"] is None
-        assert none_result["aln_number"] is None
+        assert none_result["aln_numbers"] is None
         assert none_result["funding_period_months"] is None
+
+    def test_grant_agreement_data_rejects_invalid_funding_period_months(self):
+        """Test that GrantAgreementData only allows 12 or 18 for funding_period_months."""
+        schema = GrantAgreementData()
+        data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "funding_period_months": 24,
+        }
+        with pytest.raises(ValidationError):
+            schema.load(data)
 
     def test_contract_agreement_loads_with_nested_budget_line_items(self):
         """Test that ContractAgreementData loads with nested budget line items."""

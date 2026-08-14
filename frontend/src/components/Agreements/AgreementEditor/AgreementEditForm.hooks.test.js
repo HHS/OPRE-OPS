@@ -630,15 +630,16 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
     });
 
     it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
         const setNofoNumberMock = vi.fn();
-        const setAlnNumberMock = vi.fn();
         const setFundingPeriodMonthsMock = vi.fn();
         const setSelectedAlternateProjectOfficerMock = vi.fn();
         const setAlternateProjectOfficerIdMock = vi.fn();
 
         useUpdateAgreementMock.mockImplementation((key) => {
             if (key === "nofo_number") return setNofoNumberMock;
-            if (key === "aln_number") return setAlnNumberMock;
             if (key === "funding_period_months") return setFundingPeriodMonthsMock;
             if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
             return vi.fn();
@@ -656,7 +657,7 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         });
 
         expect(setNofoNumberMock).toHaveBeenCalledWith(null);
-        expect(setAlnNumberMock).toHaveBeenCalledWith(null);
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_ALN_NUMBERS", payload: [] });
         expect(setFundingPeriodMonthsMock).toHaveBeenCalledWith(null);
         // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
         expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
@@ -684,7 +685,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
                 agreement_type: "GRANT",
                 name: "Existing Grant",
                 nofo_number: "NOFO-2026-01",
-                aln_number: "93.600",
+                aln_numbers: ["93.600"],
                 funding_period_months: 18
             })
         );
@@ -693,7 +694,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
 
         expect(result.current.isGrant).toBe(true);
         expect(result.current.nofoNumber).toBe("NOFO-2026-01");
-        expect(result.current.alnNumber).toBe("93.600");
+        expect(result.current.alnNumbers).toEqual(["93.600"]);
         expect(result.current.fundingPeriodMonths).toBe(18);
     });
 

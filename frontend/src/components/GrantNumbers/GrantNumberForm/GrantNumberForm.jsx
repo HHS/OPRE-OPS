@@ -149,7 +149,7 @@ function GrantNumberForm({
                 <div className="grid-col margin-left-5">
                     <TextArea
                         name="description"
-                        label="Description"
+                        label="Description (optional)"
                         className="margin-top-0"
                         maxLength={150}
                         value={formData?.description || ""}

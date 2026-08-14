@@ -74,6 +74,8 @@ const EditAgreementAndBudgetLines = () => {
     const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
     // Mirrors servicesComponentsReseedKey for grant numbers (grant agreements only).
     const [grantNumbersReseedKey, setGrantNumbersReseedKey] = useState(0);
+    // Mirrors servicesComponentsReseedKey for budget line items.
+    const [budgetLinesReseedKey, setBudgetLinesReseedKey] = useState(0);
 
     // Children populate these refs with `{ getSlice }` callbacks so the page can
     // read their current edits synchronously when the user clicks Save Changes.
@@ -248,6 +250,7 @@ const EditAgreementAndBudgetLines = () => {
             // server copy, leaving the form consistent for the user to retry.
             setServicesComponentsReseedKey((key) => key + 1);
             setGrantNumbersReseedKey((key) => key + 1);
+            setBudgetLinesReseedKey((key) => key + 1);
         } finally {
             setIsSaving(false);
         }
@@ -319,6 +322,8 @@ const EditAgreementAndBudgetLines = () => {
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
                 grantNumbers={grantNumbers ?? []}
                 grantNumbersReseedKey={grantNumbersReseedKey}
+                budgetLines={agreement?.budget_line_items ?? []}
+                budgetLinesReseedKey={budgetLinesReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showFinancialApprovalModal && (

@@ -226,7 +226,7 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Federal Project Officer",
+        GRANT: "FPO",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"

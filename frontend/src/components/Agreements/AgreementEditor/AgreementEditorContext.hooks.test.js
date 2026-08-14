@@ -130,3 +130,117 @@ describe("EditAgreementProvider - officer reseed effects", () => {
         expect(result.current.selected_project_officer?.id).toBeUndefined();
     });
 });
+
+describe("editAgreementReducer - budget line items", () => {
+    it("ADD_BUDGET_LINE_ITEM appends to budget_line_items", () => {
+        const state = { ...defaultState, budget_line_items: [{ id: "a", amount: 100 }] };
+
+        const next = editAgreementReducer(state, {
+            type: "ADD_BUDGET_LINE_ITEM",
+            payload: { id: "b", amount: 200 }
+        });
+
+        expect(next.budget_line_items).toEqual([
+            { id: "a", amount: 100 },
+            { id: "b", amount: 200 }
+        ]);
+    });
+
+    it("UPDATE_BUDGET_LINE_ITEM replaces the matching item by id", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [
+                { id: "a", amount: 100 },
+                { id: "b", amount: 200 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: { id: "a", amount: 999 }
+        });
+
+        expect(next.budget_line_items).toEqual([
+            { id: "a", amount: 999 },
+            { id: "b", amount: 200 }
+        ]);
+    });
+
+    it("UPDATE_BUDGET_LINE_ITEM is a no-op if no item matches the id", () => {
+        const state = { ...defaultState, budget_line_items: [{ id: "a", amount: 100 }] };
+
+        const next = editAgreementReducer(state, {
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: { id: "missing", amount: 999 }
+        });
+
+        expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
+    });
+
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the id to deleted_budget_line_items_ids", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [
+                { id: "a", amount: 100 },
+                { id: "b", amount: 200 }
+            ],
+            deleted_budget_line_items_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_BUDGET_LINE_ITEM",
+            payload: { id: "a", amount: 100 }
+        });
+
+        expect(next.budget_line_items).toEqual([{ id: "b", amount: 200 }]);
+        expect(next.deleted_budget_line_items_ids).toEqual(["a"]);
+    });
+
+    it("DELETE_BUDGET_LINE_ITEM does not append to deleted_budget_line_items_ids when payload has no id", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "a", amount: 100 }],
+            deleted_budget_line_items_ids: []
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "DELETE_BUDGET_LINE_ITEM",
+            payload: { amount: 100 }
+        });
+
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+
+    it("RESEED_BUDGET_LINE_ITEMS replaces budget_line_items and clears deleted_budget_line_items_ids", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "a", amount: 100 }],
+            deleted_budget_line_items_ids: ["z"]
+        };
+        const reseeded = [{ id: "c", amount: 300 }];
+
+        const next = editAgreementReducer(state, {
+            type: "RESEED_BUDGET_LINE_ITEMS",
+            payload: reseeded
+        });
+
+        expect(next.budget_line_items).toEqual(reseeded);
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+
+    it("RESEED_BUDGET_LINE_ITEMS defaults to [] when payload is null/undefined", () => {
+        const state = {
+            ...defaultState,
+            budget_line_items: [{ id: "a", amount: 100 }],
+            deleted_budget_line_items_ids: ["z"]
+        };
+
+        const next = editAgreementReducer(state, {
+            type: "RESEED_BUDGET_LINE_ITEMS",
+            payload: undefined
+        });
+
+        expect(next.budget_line_items).toEqual([]);
+        expect(next.deleted_budget_line_items_ids).toEqual([]);
+    });
+});

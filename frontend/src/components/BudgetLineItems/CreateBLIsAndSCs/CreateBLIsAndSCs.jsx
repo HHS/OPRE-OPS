@@ -350,7 +350,7 @@ export const CreateBLIsAndSCs = ({
                     budget_line_items: {
                         create: newBlis,
                         update: updatedBlis,
-                        delete: (deletedBudgetLines ?? []).map((b) => b.id)
+                        delete: deletedBudgetLines ?? []
                     }
                 };
             }
@@ -436,7 +436,14 @@ export const CreateBLIsAndSCs = ({
                     )}
                     {isGrant && (
                         <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
-                            <FormHeader heading="Add Budget Lines" />
+                            <FormHeader
+                                heading="Add Budget Lines"
+                                details={
+                                    isReviewMode
+                                        ? undefined
+                                        : "Add Budget lines to each Grant Number to outline how the grant will be funded."
+                                }
+                            />
                         </div>
                     )}
                     <div className="display-flex flex-justify margin-y-2">
@@ -550,6 +557,7 @@ export const CreateBLIsAndSCs = ({
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={grantNumbers.length}
                         >
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}

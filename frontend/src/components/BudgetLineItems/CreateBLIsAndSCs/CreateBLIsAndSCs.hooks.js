@@ -36,7 +36,10 @@ import { formatDateForApi, formatDateForScreen, renderField } from "../../../hel
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
-import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
+import {
+    useEditAgreement,
+    useEditAgreementDispatch
+} from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
 import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
@@ -89,11 +92,11 @@ const useCreateBLIsAndSCs = (
     const [needByDate, setNeedByDate] = React.useState(null);
     const [enteredDescription, setEnteredDescription] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
+    // Holds the `id` of the budget line currently being edited (not an array index —
+    // tempBudgetLines/budgetLines can drift out of index-alignment after any add/delete/duplicate).
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-    const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
-    const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
@@ -119,8 +122,11 @@ const useCreateBLIsAndSCs = (
         services_components: servicesComponents,
         deleted_services_components_ids: deletedServicesComponentsIds,
         grant_numbers: grantNumbers,
-        deleted_grant_numbers_ids: deletedGrantNumbersIds
+        deleted_grant_numbers_ids: deletedGrantNumbersIds,
+        budget_line_items: tempBudgetLines,
+        deleted_budget_line_items_ids: deletedBudgetLines
     } = useEditAgreement();
+    const dispatch = useEditAgreementDispatch();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const isSuperUser = activeUser?.is_superuser ?? false;
@@ -187,106 +193,17 @@ const useCreateBLIsAndSCs = (
     );
 
     React.useEffect(() => {
-        let newTempBudgetLines = (budgetLines && budgetLines.length > 0 ? budgetLines : null) ?? [];
-        newTempBudgetLines = newTempBudgetLines.map((bli) => {
-            if (isGrant) {
-                // For grants, decorate the baseline with grant_number_number (mirror of the
-                // SC decoration below) so the dirty-check compares like-with-like and persisted
-                // grant BLIs group under the correct grant number after reload. See plan §9/§10.
-                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
-                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
-                return { ...bli, grant_number_number: grantNumberNumber };
-            }
-            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
-            const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
-            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
-                ? `${serviceComponentNumber}-${budgetLineServicesComponent?.sub_component}`
-                : `${serviceComponentNumber}`;
-            return { ...bli, services_component_number: serviceComponentNumber, serviceComponentGroupingLabel };
-        });
-
-        setTempBudgetLines(newTempBudgetLines);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // Reconcile staged budget lines when a services component (contracts/other) or grant
-    // number (grants) is deleted BEFORE saving. The BLIs live in local state and still
-    // carry the deleted component's link fields, so without this they keep rendering under
-    // a phantom accordion for the now-deleted component instead of dropping into the
-    // "BLs not associated with a Services Component / Grant Number" (group 0) section.
-    // Nulling the link here also keeps the staged data consistent with what the save path
-    // persists (addServiceComponentIdToBLI / addGrantNumberIdToBLI null unmatched links).
-    React.useEffect(() => {
-        if (isGrant) {
-            // Reconcile by ID for persisted BLIs: a renamed grant number shares the same ID so
-            // checking number alone would incorrectly disassociate it. New BLIs (no ID yet) fall
-            // back to the number check because they have no ID to match against.
-            const validGrantNumberIds = new Set(grantNumbers.map((gn) => gn.id).filter(Boolean));
-            const validGrantNumberNumbers = new Set(grantNumbers.map((gn) => gn.number));
-            setTempBudgetLines((prev) => {
-                let changed = false;
-                const next = prev.map((bli) => {
-                    if (bli.grant_number_id != null) {
-                        if (!validGrantNumberIds.has(bli.grant_number_id)) {
-                            changed = true;
-                            return { ...bli, grant_number_number: 0, grant_number_id: null };
-                        }
-                        return bli;
-                    }
-                    const number = bli.grant_number_number;
-                    if (number != null && number !== 0 && !validGrantNumberNumbers.has(number)) {
-                        changed = true;
-                        return { ...bli, grant_number_number: 0, grant_number_id: null };
-                    }
-                    return bli;
-                });
-                return changed ? next : prev;
-            });
-        } else {
-            // Reconcile by ID for persisted BLIs: multiple sub-components can share the same
-            // number, so checking number alone leaves BLIs linked to a deleted sub-component
-            // when a sibling with the same number survives. New BLIs fall back to number.
-            const validScIds = new Set(servicesComponents.map((sc) => sc.id).filter(Boolean));
-            const validScNumbers = new Set(servicesComponents.map((sc) => sc.number));
-            setTempBudgetLines((prev) => {
-                let changed = false;
-                const next = prev.map((bli) => {
-                    if (bli.services_component_id != null) {
-                        if (!validScIds.has(bli.services_component_id)) {
-                            changed = true;
-                            return {
-                                ...bli,
-                                services_component_number: 0,
-                                serviceComponentGroupingLabel: "0",
-                                services_component_id: null
-                            };
-                        }
-                        return bli;
-                    }
-                    const number = bli.services_component_number;
-                    if (number != null && number !== 0 && !validScNumbers.has(number)) {
-                        changed = true;
-                        return {
-                            ...bli,
-                            services_component_number: 0,
-                            serviceComponentGroupingLabel: "0",
-                            services_component_id: null
-                        };
-                    }
-                    return bli;
-                });
-                return changed ? next : prev;
-            });
-        }
-    }, [servicesComponents, grantNumbers, isGrant]);
-
-    React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines, servicesComponents]);
 
     React.useEffect(() => {
-        setGroupedBudgetLinesByGrantNumber(groupByGrantNumber(tempBudgetLines, grantNumbers));
-    }, [tempBudgetLines, grantNumbers]);
+        // Don't pass grantNumbers here — that would pre-populate an empty-budgetLines
+        // group for every grant number added, hiding the "no budget lines yet" message
+        // the moment a grant number exists, before any budget line is added. Mirrors the
+        // services-component grouping call above, which has the same omission for the
+        // same reason.
+        setGroupedBudgetLinesByGrantNumber(groupByGrantNumber(tempBudgetLines));
+    }, [tempBudgetLines]);
 
     // Validation
     // Review mode re-runs the suite every render against the current budget lines.
@@ -367,8 +284,8 @@ const useCreateBLIsAndSCs = (
             const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
                 deleteGrantNumber(id).unwrap()
             );
-            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
-                deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
+            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLineId) =>
+                deleteBudgetLineItem(deletedBudgetLineId).unwrap()
             );
 
             // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.
@@ -679,7 +596,7 @@ const useCreateBLIsAndSCs = (
             fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
             _meta: { isEditable: true }
         };
-        setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
+        dispatch({ type: "ADD_BUDGET_LINE_ITEM", payload: newBudgetLine });
         setHasUnsavedChanges(true);
         setAlert({
             type: "success",
@@ -702,17 +619,17 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
-        if (
-            budgetLineBeingEdited == null ||
-            budgetLineBeingEdited < 0 ||
-            budgetLineBeingEdited >= tempBudgetLines.length
-        ) {
-            console.error("Invalid budgetLineBeingEdited index");
+        const currentBudgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineBeingEdited);
+
+        if (budgetLineBeingEdited == null || !currentBudgetLine) {
+            console.error("Invalid budgetLineBeingEdited id");
             return;
         }
 
-        const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
-        const originalBudgetLine = budgetLines[budgetLineBeingEdited];
+        // Match by id (not array position) — tempBudgetLines and the original budgetLines
+        // prop can drift out of index-alignment after any add/delete/duplicate, so an
+        // index-based lookup here could compare against the wrong BLI's original values.
+        const originalBudgetLine = budgetLines.find((bl) => bl.id === budgetLineBeingEdited);
 
         // Initialize financialSnapshot
         const financialSnapshot = {
@@ -750,6 +667,16 @@ const useCreateBLIsAndSCs = (
         const BLIStatusIsPlannedOrExecuting =
             currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
 
+        // The SC dropdown only offers non-sub-component SCs, so an actual change here can only
+        // ever land on a bare number. When the number is unchanged, preserve the original
+        // grouping label as-is — it may carry a sub-component suffix (e.g. "2-A") that a bare
+        // number would not match in addServiceComponentIdToBLI, silently dropping the BLI's SC
+        // link on save.
+        const serviceComponentGroupingLabel =
+            servicesComponentNumber === currentBudgetLine.services_component_number
+                ? currentBudgetLine.serviceComponentGroupingLabel
+                : (servicesComponentNumber ?? 0).toString();
+
         const payload = {
             ...currentBudgetLine,
             // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
@@ -758,7 +685,7 @@ const useCreateBLIsAndSCs = (
                 ? { grant_number_number: grantNumberNumber }
                 : {
                       services_component_number: servicesComponentNumber,
-                      serviceComponentGroupingLabel: (servicesComponentNumber ?? 0).toString()
+                      serviceComponentGroupingLabel
                   }),
             line_description: enteredDescription || "",
             can_id: selectedCan?.id || null,
@@ -792,18 +719,7 @@ const useCreateBLIsAndSCs = (
             delete payload.financialSnapshotChanged;
             delete payload.tempChangeRequest;
         }
-        /**
-         * Update the tempBudgetLines array with the new payload of the budgetLineBeingEdited
-         * @type {Object[]} updatedBudgetLines
-         * @returns {void}
-         */
-        const updatedBudgetLines = tempBudgetLines.map((budgetLine, index) => {
-            if (index === budgetLineBeingEdited) {
-                return payload; // Replace the edited budget line with the new payload
-            }
-            return budgetLine; // Keep other budget lines unchanged
-        });
-        setTempBudgetLines(updatedBudgetLines);
+        dispatch({ type: "UPDATE_BUDGET_LINE_ITEM", payload });
         setHasUnsavedChanges(true);
 
         setAlert({
@@ -826,9 +742,7 @@ const useCreateBLIsAndSCs = (
             heading: `Are you sure you want to delete budget line ${BLILabel(budgetLine)}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
-                const BLIToDelete = tempBudgetLines.filter((bl) => bl.id === budgetLineId);
-                setDeletedBudgetLines([...deletedBudgetLines, BLIToDelete[0]]);
-                setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
+                dispatch({ type: "DELETE_BUDGET_LINE_ITEM", payload: budgetLine });
                 setHasUnsavedChanges(true);
                 setAlert({
                     type: "success",
@@ -918,7 +832,7 @@ const useCreateBLIsAndSCs = (
                 date_needed
             } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
-            setBudgetLineBeingEdited(index);
+            setBudgetLineBeingEdited(budgetLineId);
             setServicesComponentNumber(serviceComponentNumber);
             setGrantNumberNumber(grantNumberNumberForEdit);
             setSelectedCan(can);
@@ -974,7 +888,7 @@ const useCreateBLIsAndSCs = (
             // _meta?.isEditable as undefined and renders the disabled icons. (issue #6020)
             _meta: { isEditable: true }
         };
-        setTempBudgetLines([...tempBudgetLines, payload]);
+        dispatch({ type: "ADD_BUDGET_LINE_ITEM", payload });
         resetForm();
     };
 
@@ -1020,7 +934,7 @@ const useCreateBLIsAndSCs = (
                 } else {
                     // For editing existing agreements or when user can't edit
                     resetForm();
-                    setTempBudgetLines([]);
+                    dispatch({ type: "RESEED_BUDGET_LINE_ITEMS", payload: [] });
                     setIsEditMode(false);
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                     scrollToTop();
@@ -1034,7 +948,7 @@ const useCreateBLIsAndSCs = (
             setIsEditMode(false);
             navigate(`/agreements/${selectedAgreement?.id}`);
         } else {
-            goBack({ tempBudgetLines });
+            goBack();
         }
     };
 

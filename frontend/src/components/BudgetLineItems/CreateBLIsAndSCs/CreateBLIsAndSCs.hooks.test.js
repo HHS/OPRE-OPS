@@ -20,12 +20,15 @@ const deleteGrantNumberMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
+const dispatchMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
     deleted_services_components_ids: [],
     grant_numbers: [],
-    deleted_grant_numbers_ids: []
+    deleted_grant_numbers_ids: [],
+    budget_line_items: [],
+    deleted_budget_line_items_ids: []
 };
 
 vi.mock("react-redux", () => ({
@@ -103,7 +106,8 @@ vi.mock("../../../hooks/user.hooks", () => ({
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);
 vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => useEditAgreementMock()
+    useEditAgreement: () => useEditAgreementMock(),
+    useEditAgreementDispatch: () => dispatchMock
 }));
 
 vi.mock("../BudgetLinesForm/datePickerSuite", () => {
@@ -145,6 +149,10 @@ vi.mock("./suite", () => {
 describe("useCreateBLIsAndSCs", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // vi.clearAllMocks() clears call history but not a mockReturnValue set by a prior test —
+        // restore the module default here so tests that don't override useEditAgreementMock
+        // themselves aren't affected by whatever the previous test configured it to return.
+        useEditAgreementMock.mockImplementation(() => editAgreementMockData);
         useSelectorMock.mockImplementation((selector) =>
             selector({
                 auth: {
@@ -260,9 +268,11 @@ describe("useCreateBLIsAndSCs", () => {
             result.current.handleAddBLI({ preventDefault: vi.fn() });
         });
 
-        expect(result.current.tempBudgetLines).toHaveLength(1);
-        expect(result.current.tempBudgetLines[0].amount).toBe(1000);
-        expect(result.current.tempBudgetLines[0].agreement).toEqual({
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "ADD_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({ amount: 1000 })
+        });
+        expect(dispatchMock.mock.calls[0][0].payload.agreement).toEqual({
             procurement_shop: { fee_percentage: 5, abbr: "PSC", current_fee: { fee: 5 } }
         });
         expect(setAlertMock).toHaveBeenCalledWith(
@@ -274,7 +284,11 @@ describe("useCreateBLIsAndSCs", () => {
     });
 
     it("marks a duplicated budget line editable so its row icons stay enabled (issue #6020)", () => {
-        const { result } = renderSubject();
+        // tempBudgetLines is sourced from useEditAgreement()'s budget_line_items, which dispatch()
+        // would normally update via the AgreementEditorContext reducer. dispatch is mocked here, so
+        // it doesn't mutate anything — simulate the reducer by feeding each dispatched payload back
+        // into useEditAgreementMock and re-rendering.
+        const { result, rerender } = renderSubject();
 
         // Seed a budget line to duplicate.
         act(() => {
@@ -288,18 +302,158 @@ describe("useCreateBLIsAndSCs", () => {
             result.current.handleAddBLI({ preventDefault: vi.fn() });
         });
 
-        const original = result.current.tempBudgetLines[0];
+        const original = dispatchMock.mock.calls[0][0].payload;
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [original]
+        });
+        rerender();
 
         act(() => {
             result.current.handleDuplicateBudgetLine(original.id);
         });
 
+        const duplicate = dispatchMock.mock.calls[1][0].payload;
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [original, duplicate]
+        });
+        rerender();
+
         expect(result.current.tempBudgetLines).toHaveLength(2);
-        const duplicate = result.current.tempBudgetLines[1];
         // Without _meta.isEditable the row renders the disabled edit/delete/duplicate icons.
         expect(duplicate._meta).toEqual({ isEditable: true });
         expect(duplicate.id).not.toBe(original.id);
         expect(duplicate.amount).toBe(original.amount);
+    });
+
+    it("edits a budget line, matching the original by id rather than a stale array index", () => {
+        // tempBudgetLines and the `budgetLines` prop are independently-ordered arrays that can
+        // drift out of index-alignment after any add/delete/duplicate — put the target BLI at a
+        // different position in each to prove the lookup is id-based, not index-based (issue: the
+        // old handleEditBLI indexed `budgetLines[budgetLineBeingEdited]` using an index derived
+        // from a lookup into the unrelated tempBudgetLines array).
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [
+                { id: "extra-1", amount: 1, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" },
+                { id: "target", amount: 500, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" }
+            ]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [
+                    { id: "target", amount: 500, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" },
+                    { id: "extra-1", amount: 1, date_needed: "2026-01-01", can_id: 1, status: "DRAFT" }
+                ],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        act(() => {
+            result.current.setEnteredAmount(999);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                financialSnapshot: expect.objectContaining({ originalAmount: 500 })
+            })
+        });
+    });
+
+    it("preserves a sub-component grouping label on edit when the SC number is unchanged (regression)", () => {
+        // The BLI belongs to a sub-component SC ("2-A"), which is only representable via
+        // serviceComponentGroupingLabel — services_component_number alone can't carry the
+        // sub-component suffix. Editing an unrelated field (amount) must not clobber that
+        // label with a bare "2", or addServiceComponentIdToBLI will fail to match the SC on
+        // save and silently null out services_component_id.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [
+                {
+                    id: "target",
+                    amount: 500,
+                    date_needed: "2026-01-01",
+                    can_id: 1,
+                    status: "DRAFT",
+                    services_component_number: 2,
+                    serviceComponentGroupingLabel: "2-A"
+                }
+            ]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [
+                    {
+                        id: "target",
+                        amount: 500,
+                        date_needed: "2026-01-01",
+                        can_id: 1,
+                        status: "DRAFT",
+                        services_component_number: 2,
+                        serviceComponentGroupingLabel: "2-A"
+                    }
+                ],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        act(() => {
+            result.current.setEnteredAmount(999);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                services_component_number: 2,
+                serviceComponentGroupingLabel: "2-A"
+            })
+        });
     });
 
     it("opens cancel modal and navigates to budget lines on confirm", () => {
@@ -380,7 +534,9 @@ describe("useCreateBLIsAndSCs", () => {
             ],
             deleted_services_components_ids: [],
             grant_numbers: [],
-            deleted_grant_numbers_ids: []
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 99 }) });
@@ -450,7 +606,11 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_services_components_ids: []
+            deleted_services_components_ids: [],
+            grant_numbers: [],
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 88, number: 1 }) });
@@ -528,7 +688,9 @@ describe("useCreateBLIsAndSCs", () => {
                     mode: "edit"
                 }
             ],
-            deleted_grant_numbers_ids: [99]
+            deleted_grant_numbers_ids: [99],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addGrantNumberMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 66, number: 1 }) });
@@ -588,7 +750,9 @@ describe("useCreateBLIsAndSCs", () => {
             services_components: [],
             deleted_services_components_ids: [],
             grant_numbers: [],
-            deleted_grant_numbers_ids: []
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [],
+            deleted_budget_line_items_ids: []
         });
 
         addBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });
@@ -632,316 +796,4 @@ describe("useCreateBLIsAndSCs", () => {
         expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 
-    it("moves a BLI to the no-services-component group when its SC is deleted before saving", async () => {
-        // Contract-style agreement with one persisted SC (number 1) and a staged BLI linked to it.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [{ id: 11, number: 1 }],
-            deleted_services_components_ids: [],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        const { result, rerender } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                false,
-                "Save & Exit",
-                1
-            )
-        );
-
-        act(() => {
-            result.current.tempBudgetLines.push({
-                id: 100,
-                services_component_number: 1,
-                serviceComponentGroupingLabel: "1",
-                services_component_id: 11,
-                amount: 500,
-                status: "DRAFT"
-            });
-        });
-
-        // Simulate the staged SC deletion: the reducer drops SC 1 from services_components.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [],
-            deleted_services_components_ids: [11],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        rerender();
-
-        await waitFor(() => {
-            const bli = result.current.tempBudgetLines.find((b) => b.id === 100);
-            expect(bli.services_component_number).toBe(0);
-            expect(bli.serviceComponentGroupingLabel).toBe("0");
-            expect(bli.services_component_id).toBeNull();
-        });
-    });
-
-    it("moves a BLI to the no-grant-number group when its grant number is deleted before saving", async () => {
-        // Grant agreement with one persisted grant number (5) and a staged BLI linked to it.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 42, team_members: [] },
-            services_components: [],
-            deleted_services_components_ids: [],
-            grant_numbers: [{ id: 55, number: 5 }],
-            deleted_grant_numbers_ids: []
-        });
-
-        const { result, rerender } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                false,
-                "Save & Exit",
-                1
-            )
-        );
-
-        act(() => {
-            result.current.tempBudgetLines.push({
-                id: 200,
-                grant_number_number: 5,
-                grant_number_id: 55,
-                amount: 500,
-                status: "DRAFT"
-            });
-        });
-
-        // Simulate the staged grant number deletion.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 42, team_members: [] },
-            services_components: [],
-            deleted_services_components_ids: [],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: [55]
-        });
-
-        rerender();
-
-        await waitFor(() => {
-            const bli = result.current.tempBudgetLines.find((b) => b.id === 200);
-            expect(bli.grant_number_number).toBe(0);
-            expect(bli.grant_number_id).toBeNull();
-        });
-    });
-
-    it("keeps a BLI linked to a grant number that was renamed (not deleted)", async () => {
-        // Grant number id:55 starts with number:5, then is renamed to number:99.
-        // The BLI's grant_number_id:55 still points to a surviving record — it must NOT
-        // be disassociated just because grant_number_number no longer matches.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 42, team_members: [] },
-            services_components: [],
-            deleted_services_components_ids: [],
-            grant_numbers: [{ id: 55, number: 5 }],
-            deleted_grant_numbers_ids: []
-        });
-
-        const { result, rerender } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 42, agreement_type: "GRANT", display_name: "AGR-42" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                false,
-                "Save & Exit",
-                1
-            )
-        );
-
-        // Persisted BLI (has created_on) with grant_number_id:55.
-        act(() => {
-            result.current.tempBudgetLines.push({
-                id: 200,
-                grant_number_number: 5,
-                grant_number_id: 55,
-                amount: 500,
-                status: "DRAFT",
-                created_on: "2026-01-01"
-            });
-        });
-
-        // Simulate the grant number being renamed (same id:55, new number:99).
-        // Must include created_on so handleSave treats it as an existing record (not a new create).
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 42, team_members: [] },
-            services_components: [],
-            deleted_services_components_ids: [],
-            grant_numbers: [{ id: 55, number: 99, created_on: "2026-01-01" }],
-            deleted_grant_numbers_ids: []
-        });
-
-        rerender();
-
-        // BLI must remain linked — grant_number_id:55 still exists in grant_numbers.
-        await waitFor(() => {
-            const bli = result.current.tempBudgetLines.find((b) => b.id === 200);
-            expect(bli).toBeDefined();
-            expect(bli.grant_number_id).toBe(55);
-        });
-
-        // Also verify the save path: addGrantNumberIdToBLI must resolve by ID so the
-        // renamed grant number's BLI is not silently disassociated on save.
-        updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 200 }) });
-        await act(async () => {
-            await result.current.handleSave(false);
-        });
-        expect(updateBudgetLineItemMock).toHaveBeenCalledWith(
-            expect.objectContaining({ id: 200, data: expect.objectContaining({ grant_number_id: 55 }) })
-        );
-    });
-
-    it("disassociates a BLI linked to a deleted sub-component even when another SC shares the same number", async () => {
-        // SC 1-A (id:11) is deleted; SC 1-B (id:12) survives — both have number:1.
-        // A BLI with services_component_id:11 must be disassociated because id:11 is gone,
-        // even though validScNumbers still contains 1.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [
-                { id: 11, number: 1, sub_component: "A" },
-                { id: 12, number: 1, sub_component: "B" }
-            ],
-            deleted_services_components_ids: [],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        const { result, rerender } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                false,
-                "Save & Exit",
-                1
-            )
-        );
-
-        act(() => {
-            result.current.tempBudgetLines.push({
-                id: 400,
-                services_component_number: 1,
-                serviceComponentGroupingLabel: "1-A",
-                services_component_id: 11,
-                amount: 500,
-                status: "DRAFT"
-            });
-        });
-
-        // SC 1-A (id:11) deleted; SC 1-B (id:12) still present.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [{ id: 12, number: 1, sub_component: "B" }],
-            deleted_services_components_ids: [11],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        rerender();
-
-        await waitFor(() => {
-            const bli = result.current.tempBudgetLines.find((b) => b.id === 400);
-            expect(bli.services_component_id).toBeNull();
-            expect(bli.services_component_number).toBe(0);
-            expect(bli.serviceComponentGroupingLabel).toBe("0");
-        });
-    });
-
-    it("leaves BLIs linked to surviving services components untouched when a different SC is deleted", async () => {
-        // Two persisted SCs; a BLI linked to SC 2 must not be disassociated when SC 1 is deleted.
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [
-                { id: 11, number: 1 },
-                { id: 12, number: 2 }
-            ],
-            deleted_services_components_ids: [],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        const { result, rerender } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                false,
-                "Save & Exit",
-                1
-            )
-        );
-
-        act(() => {
-            result.current.tempBudgetLines.push({
-                id: 300,
-                services_component_number: 2,
-                serviceComponentGroupingLabel: "2",
-                services_component_id: 12,
-                amount: 500,
-                status: "DRAFT"
-            });
-        });
-
-        useEditAgreementMock.mockReturnValue({
-            agreement: { id: 1, team_members: [] },
-            services_components: [{ id: 12, number: 2 }],
-            deleted_services_components_ids: [11],
-            grant_numbers: [],
-            deleted_grant_numbers_ids: []
-        });
-
-        rerender();
-
-        // The BLI stays linked to the surviving SC 2.
-        const bli = result.current.tempBudgetLines.find((b) => b.id === 300);
-        expect(bli.services_component_number).toBe(2);
-        expect(bli.serviceComponentGroupingLabel).toBe("2");
-        expect(bli.services_component_id).toBe(12);
-    });
 });
