@@ -46,6 +46,27 @@ import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 
 /**
+ * Whether deleting this budget line routes through an approval change request instead of an
+ * immediate hard delete. Mirrors the backend delete contract: DRAFT (or a super user) is hard-
+ * deleted (HTTP 200); a non-super delete of a PLANNED/IN_EXECUTION line creates a deletion change
+ * request (HTTP 202) and the line is left intact until approved. We infer this from the line's
+ * status + the user's role (the same way the edit-via-change-request messaging is inferred), since
+ * the delete mutation response does not surface the HTTP status code.
+ *
+ * Only PLANNED and IN_EXECUTION are approval-routed. Other statuses can't reach the delete control
+ * here (deletability mirrors editability — EDITABLE_STATUSES is DRAFT/PLANNED/IN_EXECUTION — so
+ * OBLIGATED, PLANNED_MOD, in-review, and OBE lines are not deletable in the wizard), so this returns
+ * false for them, matching the DRAFT/super immediate-delete branch.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line being deleted.
+ * @param {boolean} isSuperUser - Whether the acting user is a super user.
+ * @returns {boolean} True if the deletion routes to an approval change request.
+ */
+export const isDeletionRoutedToApproval = (budgetLine, isSuperUser) => {
+    if (isSuperUser) return false;
+    return budgetLine?.status === BLI_STATUS.PLANNED || budgetLine?.status === BLI_STATUS.EXECUTING;
+};
+
+/**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {Function} setIsEditMode - Function to set the edit mode.
@@ -534,16 +555,34 @@ const useCreateBLIsAndSCs = (
     const showSuccessMessage = React.useCallback(
         (isThereAnyBLIsFinancialSnapshotChanged, savedViaModal) => {
             const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
+            // Deletions of PLANNED/IN_EXECUTION lines route to an approval change request rather than
+            // deleting immediately, so a save containing any of them was "sent to approval" too — even
+            // when there were no financial-snapshot edits. Deleted lines are already out of
+            // tempBudgetLines, so this signal is derived from deletedBudgetLines separately.
+            // Financial edits write directly for super users AND budget team (canEditDirectly);
+            // only other users route them to approval. Deletions are different: the backend hard-
+            // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
+            // line STILL routes to a change request — hence the deletion signal gates on super-user
+            // only (via isDeletionRoutedToApproval), not canEditDirectly.
+            const deletionsRoutedToApproval = deletedBudgetLines.filter((bl) =>
+                isDeletionRoutedToApproval(bl, isSuperUser)
+            );
+            const deletionChangeMessages = deletionsRoutedToApproval
+                .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
+                .join("\n");
+            const anyChangeSentToApproval =
+                (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
+            const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
             if (continueOverRide) {
                 continueOverRide();
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) {
+            } else if (anyChangeSentToApproval) {
                 setAlert({
                     type: "success",
                     heading: "Changes Sent to Approval",
                     message:
                         `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                         `<strong>Pending Changes:</strong>\n` +
-                        ` ${budgetChangeMessages}`,
+                        ` ${pendingChanges}`,
                     redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
                 });
             } else {
@@ -557,8 +596,10 @@ const useCreateBLIsAndSCs = (
         },
         [
             tempBudgetLines,
+            deletedBudgetLines,
             continueOverRide,
             canEditDirectly,
+            isSuperUser,
             setAlert,
             selectedAgreement?.id,
             selectedAgreement?.display_name,
@@ -744,9 +785,14 @@ const useCreateBLIsAndSCs = (
             handleConfirm: () => {
                 dispatch({ type: "DELETE_BUDGET_LINE_ITEM", payload: budgetLine });
                 setHasUnsavedChanges(true);
+                // A PLANNED/IN_EXECUTION delete routes to an approval change request on save rather
+                // than being deleted outright, so don't claim it was deleted.
+                const message = isDeletionRoutedToApproval(budgetLine, isSuperUser)
+                    ? `The deletion of budget line ${BLILabel(budgetLine)} has been queued and will be sent to your Division Director for approval when you save.`
+                    : `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`;
                 setAlert({
                     type: "success",
-                    message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`,
+                    message,
                     isCloseable: false,
                     isToastMessage: true
                 });

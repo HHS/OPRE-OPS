@@ -330,7 +330,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                     Accept: "application/json"
                 }
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(202);
             });
         });
     });
