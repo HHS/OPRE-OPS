@@ -879,7 +879,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         cy.get('[data-cy="details-tab-CAN Funding"]').click();
         // blocker modal should appear
         cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
-        cy.get(".usa-prose").should("contain", "Do you want to save your changes before leaving this page?");
+        cy.get(".usa-prose").should("contain", "You have unsaved changes. If you leave without saving, these changes will be lost.");
         // click "Leave without saving"
         cy.get("[data-cy='cancel-action']").click();
         // should navigate to funding tab
