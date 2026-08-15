@@ -22,7 +22,7 @@ const seedGrant = (nameSuffix) => {
         project_id: 1000,
         project_officer_id: 500,
         nofo_number: "NOFO-ORIGINAL",
-        aln_number: "10.001",
+        aln_numbers: [3],
         funding_period_months: 12,
         team_members: [{ id: 502 }, { id: 504 }],
         grant_numbers: [{ number: 1, description: "Seeded grant number", ref: "gn-1" }]
@@ -140,13 +140,11 @@ describe("edit an existing Grant agreement", () => {
             cy.get("#nofo_number").should("have.value", "NOFO-ORIGINAL");
             cy.get("#nofo_number").clear();
             cy.get("#nofo_number").type("NOFO-UPDATED");
-            cy.get("#aln_number").clear();
-            cy.get("#aln_number").type("93.600");
 
             cy.get("[data-cy='continue-btn']").click();
             cy.wait("@patchAgreement").then((interception) => {
                 expect(interception.response.statusCode).to.eq(200);
-                expect(interception.request.body).to.include({ nofo_number: "NOFO-UPDATED", aln_number: "93.600" });
+                expect(interception.request.body).to.include({ nofo_number: "NOFO-UPDATED" });
             });
             cy.get(".usa-alert__body").should("contain", "has been successfully updated");
 

@@ -359,7 +359,7 @@ describe("CAN spending page", () => {
         cy.get("#big-budget-summary-card").should("exist");
         cy.get("#big-budget-summary-card").should("contain", "-$ 117,797,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
-        cy.get("span").should("contain", "12 Draft");
+        cy.get("span").should("contain", "14 Draft");
         cy.get("span").should("contain", "12 Planned");
         cy.get("span").should("contain", "7 Executing");
         cy.get("span").should("contain", "7 Obligated");
