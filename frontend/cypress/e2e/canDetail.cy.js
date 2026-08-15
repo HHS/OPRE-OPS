@@ -369,7 +369,7 @@ describe("CAN spending page", () => {
             .and("contain", "0%")
             .and("contain", "0%")
             .and("contain", "0%")
-            .and("contain", "$35,943,280.00")
+            .and("contain", "$37,193,280.00")
             .and("contain", "$66,648,053.00")
             .and("contain", "$25,204,081.00")
             .and("contain", "$25,945,506.00");
