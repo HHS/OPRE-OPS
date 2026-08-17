@@ -41,6 +41,11 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
             oldValue = renderField(keyName, "status", changeTo.status.old);
             newValue = renderField(keyName, "status", changeTo.status.new);
             break;
+        case KEY_NAMES.DELETE:
+            // Deletion request: "From" shows the BLI's current amount as currency, "To" is "Deleted".
+            oldValue = renderField(keyName, "amount", changeTo.delete.old);
+            newValue = changeTo.delete.new;
+            break;
         default:
             break;
     }

@@ -28,7 +28,7 @@ ipython = "==9.16.1"
 urllib3 = "==2.7.0"
 
 [dev-packages]
-nox = "==2026.7.11"
+nox = "==2026.8.10"
 flake8 = "==7.3.0"
 flake8-import-order = "==0.19.2"
 flake8-bugbear = "==25.11.29"

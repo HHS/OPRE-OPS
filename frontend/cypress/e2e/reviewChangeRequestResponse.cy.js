@@ -164,7 +164,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            // This BLI is now PLANNED (the Draft->Planned status change was approved
+                            // above), so deleting it creates a deletion change request (202) rather
+                            // than an immediate hard delete. The agreement delete below still cleans
+                            // it up via cascade.
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
