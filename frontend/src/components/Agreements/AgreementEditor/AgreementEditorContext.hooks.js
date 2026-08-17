@@ -97,7 +97,10 @@ export function editAgreementReducer(state, action) {
         }
         case "DELETE_SERVICE_COMPONENT": {
             const remainingScIds = new Set(
-                state.services_components.filter((sc) => sc.number !== action.payload.number).map((sc) => sc.id)
+                state.services_components
+                    .filter((sc) => sc.number !== action.payload.number)
+                    .map((sc) => sc.id)
+                    .filter(Boolean)
             );
             return {
                 ...state,
@@ -169,7 +172,10 @@ export function editAgreementReducer(state, action) {
         }
         case "DELETE_GRANT_NUMBER": {
             const remainingGnIds = new Set(
-                state.grant_numbers.filter((gn) => gn.number !== action.payload.number).map((gn) => gn.id)
+                state.grant_numbers
+                    .filter((gn) => gn.number !== action.payload.number)
+                    .map((gn) => gn.id)
+                    .filter(Boolean)
             );
             return {
                 ...state,

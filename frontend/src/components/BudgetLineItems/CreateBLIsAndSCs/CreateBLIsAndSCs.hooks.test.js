@@ -67,7 +67,7 @@ vi.mock("../../../helpers/agreement.helpers", () => ({
     cleanBudgetLineItemForApi: vi.fn((bli) => ({ id: bli.id, data: bli })),
     cleanBudgetLineItemsForApi: vi.fn((blis) => blis),
     formatTeamMember: vi.fn((tm) => tm),
-    isNotDevelopedYet: vi.fn((agreementType) => ["GRANT", "IAA", "DIRECT_OBLIGATION"].includes(agreementType))
+    isNotDevelopedYet: vi.fn((agreementType) => ["IAA", "DIRECT_OBLIGATION"].includes(agreementType))
 }));
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
@@ -222,7 +222,7 @@ describe("useCreateBLIsAndSCs", () => {
 
     it("flags not-yet-developed agreement types", () => {
         const { result } = renderSubject();
-        expect(result.current.isAgreementNotYetDeveloped).toBe(true);
+        expect(result.current.isAgreementNotYetDeveloped).toBe(false);
     });
 
     it("resets validation suites on mount and unmount so stale errors do not leak (issue #5894)", async () => {

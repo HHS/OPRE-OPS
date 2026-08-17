@@ -241,6 +241,11 @@ const EditAgreementAndBudgetLines = () => {
             setHasAgreementChanged(false);
             setHasBLIsChanged(false);
             scrollToTop();
+            // Reset the bypass after the alert's navigate fires (next tick) so the
+            // blocker is re-enabled if the user makes further edits on the page.
+            setTimeout(() => {
+                isBypassingRef.current = false;
+            }, 0);
         } catch (error) {
             const detail =
                 error?.data?.error ||

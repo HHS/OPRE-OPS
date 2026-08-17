@@ -216,7 +216,7 @@ describe("editAgreementReducer - budget line items", () => {
         const state = {
             ...defaultState,
             budget_line_items: [{ id: "a", amount: 100 }],
-            deleted_budget_line_items_ids: ["z"]
+            deleted_budget_line_items_ids: [{ id: "z", amount: 50 }]
         };
         const reseeded = [{ id: "c", amount: 300 }];
 
@@ -233,7 +233,7 @@ describe("editAgreementReducer - budget line items", () => {
         const state = {
             ...defaultState,
             budget_line_items: [{ id: "a", amount: 100 }],
-            deleted_budget_line_items_ids: ["z"]
+            deleted_budget_line_items_ids: [{ id: "z", amount: 50 }]
         };
 
         const next = editAgreementReducer(state, {
