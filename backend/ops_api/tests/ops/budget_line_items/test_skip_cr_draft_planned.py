@@ -279,22 +279,28 @@ def test_planned_to_executing_still_creates_cr_when_flag_on(
         _delete_bli_and_crs(loaded_db, bli)
 
 
-def test_in_planned_comments_edit_not_newly_persisted_when_flag_on(
+def test_in_planned_out_of_scope_field_not_newly_persisted_when_flag_on(
     skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
-    """Defect B guard: editing a non-budget field (comments) on a Planned line must not
-    be newly persisted via the flag — comments is neither a budget field nor an
-    always-direct field, so behavior matches flag-OFF today (silently dropped)."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can, comments="original")
+    """Defect B guard: editing an out-of-scope field (proc_shop_fee_percentage) on a
+    Planned line must not be newly persisted via the flag.
+
+    proc_shop_fee_percentage is neither a budget field (amount / can_id / date_needed) nor
+    an always-direct field (services_component_id / grant_number_id / line_description /
+    comments / clin_id), so it matches neither the flag's in-Planned path nor the CR path's
+    direct-edit whitelist — behavior matches flag-OFF today (silently dropped). NOTE: do not
+    use `comments` here, which IS an always-direct field and so applies directly regardless
+    of the flag."""
+    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can, proc_shop_fee_percentage=5.0)
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
-            json={"comments": "changed via flag"},
+            json={"proc_shop_fee_percentage": 10.0},
         )
         # No budget field changed and no status change → nothing routes and nothing applies.
         assert response.status_code == 200, response.json
         loaded_db.refresh(bli)
-        assert bli.comments == "original", "comments must not be newly persisted by the flag"
+        assert float(bli.proc_shop_fee_percentage) == 5.0, "out-of-scope field must not be newly persisted by the flag"
         assert bli.change_requests_in_review is None
     finally:
         loaded_db.delete(bli)
