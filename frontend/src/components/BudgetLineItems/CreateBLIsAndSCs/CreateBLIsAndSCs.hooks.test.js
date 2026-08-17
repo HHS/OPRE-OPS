@@ -687,7 +687,11 @@ describe("useCreateBLIsAndSCs", () => {
         };
 
         it("deleting a PLANNED line queues an approval message, not 'successfully deleted'", () => {
-            const { result } = renderSubject({ budgetLines: [existingBli("PLANNED")] });
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [existingBli("PLANNED")]
+            });
+            const { result } = renderSubject();
             setAlertMock.mockClear();
 
             deleteFirstTempBudgetLine(result);
@@ -701,7 +705,11 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         it("deleting a DRAFT line still reports an immediate deletion", () => {
-            const { result } = renderSubject({ budgetLines: [existingBli("DRAFT")] });
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [existingBli("DRAFT")]
+            });
+            const { result } = renderSubject();
             setAlertMock.mockClear();
 
             deleteFirstTempBudgetLine(result);
@@ -714,7 +722,11 @@ describe("useCreateBLIsAndSCs", () => {
 
         it("a super user's PLANNED delete reports an immediate deletion (hard delete)", () => {
             useSelectorMock.mockImplementation((selector) => selector(superUserState));
-            const { result } = renderSubject({ budgetLines: [existingBli("PLANNED")] });
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [existingBli("PLANNED")]
+            });
+            const { result } = renderSubject();
             setAlertMock.mockClear();
 
             deleteFirstTempBudgetLine(result);
@@ -726,18 +738,32 @@ describe("useCreateBLIsAndSCs", () => {
         it("saving after a PLANNED delete shows 'Changes Sent to Approval', not 'Agreement Updated'", async () => {
             deleteBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
             updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
-            // Restore the shared edit-agreement data (a prior test leaves useEditAgreementMock returning
-            // data with no grant_numbers, which would make the edit-save flow's grant branch throw).
-            useEditAgreementMock.mockReturnValue(editAgreementMockData);
             // That shared data's services_component has no created_on, so the flow treats it as new and
             // calls addServicesComponent().unwrap() before the BLI work; mock it so the save completes.
             addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
-            const { result } = renderSubject({
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [existingBli("PLANNED")]
+            });
+            const { result, rerender } = renderSubject({
+                // showSuccessMessage looks up each deleted id in the `budgetLines` prop (the
+                // original, pre-edit list) to read its status — must include the line being deleted.
                 budgetLines: [existingBli("PLANNED")],
                 selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
                 continueOverRide: undefined
             });
             deleteFirstTempBudgetLine(result);
+            // The delete handler dispatches DELETE_BUDGET_LINE_ITEM; dispatch is mocked and does not
+            // mutate state, so simulate the reducer removing the line from budget_line_items and
+            // recording its id in deleted_budget_line_items_ids (mirrors the real
+            // AgreementEditorContext reducer), then rerender so handleSave's closure sees the update
+            // before the save reads deletedBudgetLines.
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_budget_line_items_ids: [existingBli("PLANNED").id]
+            });
+            rerender();
             setAlertMock.mockClear();
 
             await act(async () => {
@@ -753,18 +779,29 @@ describe("useCreateBLIsAndSCs", () => {
         it("saving after a DRAFT delete shows 'Agreement Updated'", async () => {
             deleteBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
             updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
-            // Restore the shared edit-agreement data (a prior test leaves useEditAgreementMock returning
-            // data with no grant_numbers, which would make the edit-save flow's grant branch throw).
-            useEditAgreementMock.mockReturnValue(editAgreementMockData);
             // That shared data's services_component has no created_on, so the flow treats it as new and
             // calls addServicesComponent().unwrap() before the BLI work; mock it so the save completes.
             addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
-            const { result } = renderSubject({
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [existingBli("DRAFT")]
+            });
+            const { result, rerender } = renderSubject({
+                // showSuccessMessage looks up each deleted id in the `budgetLines` prop (the
+                // original, pre-edit list) to read its status — must include the line being deleted.
                 budgetLines: [existingBli("DRAFT")],
                 selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
                 continueOverRide: undefined
             });
             deleteFirstTempBudgetLine(result);
+            // See the PLANNED-delete test above for why this simulates the reducer directly and
+            // rerenders so handleSave's closure sees the update.
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_budget_line_items_ids: [existingBli("DRAFT").id]
+            });
+            rerender();
             setAlertMock.mockClear();
 
             await act(async () => {
