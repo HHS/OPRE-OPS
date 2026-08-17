@@ -1050,15 +1050,18 @@ class ProcurementTrackerStepService:
         if step.procurement_tracker.procurement_action:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
             if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
-                # Defense-in-depth: the validator guarantees obligated_date on the production
-                # path, but guard here so a direct/internal call with None never nulls the column.
-                if procurement_action.date_awarded_obligated is None and obligated_date is not None:
-                    procurement_action.date_awarded_obligated = obligated_date
-                    logger.debug(
-                        f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
-                    )
-                procurement_action.status = ProcurementActionStatus.AWARDED
-                logger.debug("Marked procurement action as AWARDED via award approval")
+                # Require an obligated_date before marking AWARDED — an action must never be
+                # AWARDED without a recorded obligation date. The production path is guarded by
+                # AwardApprovalObligatedDateRequiredRule; this couples the service method
+                # itself so direct/internal callers cannot produce an inconsistent state.
+                if obligated_date is not None:
+                    if procurement_action.date_awarded_obligated is None:
+                        procurement_action.date_awarded_obligated = obligated_date
+                        logger.debug(
+                            f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
+                        )
+                    procurement_action.status = ProcurementActionStatus.AWARDED
+                    logger.debug("Marked procurement action as AWARDED via award approval")
 
     def _handle_award_approval_notifications(
         self,

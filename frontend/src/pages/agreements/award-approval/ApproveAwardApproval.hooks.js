@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -66,10 +66,18 @@ export default function useApproveAwardApproval(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
-    // Vest suite state. The suite is a module-level singleton, so its errors persist across
-    // unmount/remount. Track the result in component state (seeded from suite.get()) and only
-    // update it via runValidate, so a fresh mount does not surface stale errors from a prior visit.
-    const [validatorRes, setValidatorRes] = useState(suite.get());
+    // Vest suite state. The suite is a module-level singleton whose result persists across
+    // unmount/remount. Reset on mount and unmount so stale errors from a prior visit never
+    // appear before the user types (same pattern as CreateBLIsAndSCs.hooks.js, issue #5894).
+    const [validatorRes, setValidatorRes] = useState(() => suite.get());
+
+    useEffect(() => {
+        suite.reset();
+        setValidatorRes(suite.get());
+        return () => {
+            suite.reset();
+        };
+    }, []);
 
     /**
      * Run validation for a single field and update the shared suite state.
@@ -128,7 +136,7 @@ export default function useApproveAwardApproval(agreementId) {
                         stepId: step6.id,
                         data: {
                             approval_status: "APPROVED",
-                            ...(obligatedDate ? { obligated_date: formatDateForApi(obligatedDate) } : {})
+                            obligated_date: formatDateForApi(obligatedDate)
                         }
                     }).unwrap();
 
