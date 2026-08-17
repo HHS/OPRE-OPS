@@ -38,6 +38,7 @@ export const ApprovePreAwardApproval = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         showModal,
@@ -133,6 +134,7 @@ export const ApprovePreAwardApproval = () => {
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
             />
 

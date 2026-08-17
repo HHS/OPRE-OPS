@@ -114,7 +114,7 @@ jobs:
         shell: bash
         if: always()
         run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
+          docker compose -f docker-compose.static.yml --profile setup logs --no-color > full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
 
       # Upload logs as artifact
       - name: Upload logs as artifact
