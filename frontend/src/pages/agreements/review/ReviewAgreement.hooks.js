@@ -305,13 +305,8 @@ const useReviewAgreement = (agreementId) => {
                     // told review is pending when it isn't.
                     setAlert({
                         type: "success",
-                        heading: "Changes Saved",
-                        message:
-                            `Your changes have been successfully updated on the agreement.\n\n` +
-                            `<strong>Changes Saved:</strong>\n` +
-                            `${statusChangeMessages}\n\n` +
-                            `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`,
-
+                        heading: "Agreement Updated",
+                        message: `The agreement ${agreement?.name} has been successfully updated.`,
                         redirectUrl: "/agreements"
                     });
                 } else {
@@ -453,11 +448,11 @@ const useReviewAgreement = (agreementId) => {
         return { id: budgetLineId, data: cleanData };
     };
 
-    // Button label: "Complete Status Change" only for a Draft→Planned action when the
+    // Button label: "Change BL Status" only for a Draft→Planned action when the
     // capability is ON. Everything else (Planned→Executing, or flag OFF) keeps "Send to
     // Approval". Until the version query resolves, fall back to the safe default so the
     // label never flips mid-render.
-    const submitButtonText = appliesImmediately ? "Complete Status Change" : "Send to Approval";
+    const submitButtonText = appliesImmediately ? "Change BL Status" : "Send to Approval";
 
     return {
         submitButtonText,

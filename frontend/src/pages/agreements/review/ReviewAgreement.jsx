@@ -104,14 +104,14 @@ export const ReviewAgreement = () => {
 
     if (isLoadingAgreement) {
         return (
-            <App breadCrumbName="Request BL Status Change">
+            <App breadCrumbName="Change BL Status">
                 <h1>Loading...</h1>
             </App>
         );
     }
 
     return (
-        <App breadCrumbName="Request BL Status Change">
+        <App breadCrumbName="Change BL Status">
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -135,7 +135,7 @@ export const ReviewAgreement = () => {
                         <SimpleAlert
                             type="error"
                             heading="Please resolve the errors outlined below"
-                            message="In order to send this agreement to approval, click edit to update the required information."
+                            message="In order to change a budget line’s status, click edit to update the required information."
                             isClosable={true}
                             setIsAlertVisible={setIsAlertActive}
                         >
@@ -153,7 +153,7 @@ export const ReviewAgreement = () => {
                     </div>
                 ) : (
                     <PageHeader
-                        title="Request BL Status Change"
+                        title="Change Budget Line Status"
                         subTitle={agreement?.name}
                     />
                 )}
@@ -177,11 +177,10 @@ export const ReviewAgreement = () => {
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"
-                instructions={`Select the budget lines you'd like this action to apply to. The agreement will be sent to your
-                Division Director to review and approve before changes are made. ${
+                instructions={`Select the budget lines you’d like this action to apply to. ${
                     action === actionOptions.CHANGE_DRAFT_TO_PLANNED
-                        ? "Use the toggle to see how your request will change the agreement total."
-                        : ""
+                        ? "Use the toggle to see how your change will affect the agreement total."
+                        : "The agreement will be sent to your Division Director to review and approve before changes are made."
                 }`}
                 budgetLineItems={selectedBudgetLines}
                 agreement={agreement}
@@ -195,7 +194,7 @@ export const ReviewAgreement = () => {
                             className="usa-error-message text-normal margin-left-neg-1"
                             role="alert"
                         >
-                            This information is required to submit for approval
+                            This is required information
                         </span>
                     </div>
                 )}
@@ -280,9 +279,9 @@ export const ReviewAgreement = () => {
                     })}
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                instructions={`The budget lines you've selected are using funds from the CANs displayed below. ${
+                instructions={`The budget lines you’ve selected are using funds from the CANs displayed below. ${
                     action === actionOptions.CHANGE_DRAFT_TO_PLANNED
-                        ? "Use the toggle to see how your approval would change the remaining budget of CANs within your Portfolio or Division."
+                        ? "Use the toggle to see how your change will affect the available budget of CANs within your Portfolio or Division."
                         : ""
                 }`}
                 selectedBudgetLines={selectedBudgetLines}
@@ -307,7 +306,7 @@ export const ReviewAgreement = () => {
                 heading="Review Changes"
                 level={2}
             >
-                <p>This is a list of status changes you are requesting approval for.</p>
+                <p>This is a list of status changes you are making.</p>
                 {selectedBudgetLines.length > 0 &&
                     selectedBudgetLines.map((budgetLine) => (
                         <StatusChangeReviewCard
@@ -323,19 +322,22 @@ export const ReviewAgreement = () => {
                         />
                     ))}
             </Accordion>
-            <Accordion
-                heading="Notes"
-                level={2}
-            >
-                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
-                <TextArea
-                    name="submitter-notes"
-                    label="Notes (optional)"
-                    maxLength={150}
-                    value={notes}
-                    onChange={(name, value) => setNotes(value)}
-                />
-            </Accordion>
+            {action != actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+                <Accordion
+                    heading="Notes"
+                    level={2}
+                >
+                    <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
+                    <TextArea
+                        name="submitter-notes"
+                        label="Notes (optional)"
+                        maxLength={150}
+                        value={notes}
+                        onChange={(name, value) => setNotes(value)}
+                    />
+                </Accordion>
+            )}
+
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     type="button"
@@ -367,8 +369,8 @@ export const ReviewAgreement = () => {
                         key={isSubmissionReady ? "submission-ready" : "submission-not-ready"}
                         label={
                             !isSubmissionReady
-                                ? "In order to send to approval, select a status change and budget line(s)"
-                                : "In order to send this agreement to approval, click edit to update the required information."
+                                ? "In order to change a budget line status, select the status and budget line(s)"
+                                : "In order to change a budget line status, click edit to resolve any errors."
                         }
                         position="top"
                     >

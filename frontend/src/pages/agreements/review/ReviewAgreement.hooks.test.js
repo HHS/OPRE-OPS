@@ -281,7 +281,7 @@ describe("useReviewAgreement", () => {
         });
     });
 
-    it("labels the submit button 'Complete Status Change' for Draft→Planned when the capability is ON", async () => {
+    it("labels the submit button 'Change BL Status' for Draft→Planned when the capability is ON", async () => {
         useGetVersionQueryMock.mockReturnValue({
             data: { version: "1.0.0", skip_cr_for_draft_planned: true },
             isSuccess: true
@@ -294,7 +294,7 @@ describe("useReviewAgreement", () => {
         });
 
         await waitFor(() => {
-            expect(result.current.submitButtonText).toBe("Complete Status Change");
+            expect(result.current.submitButtonText).toBe("Change BL Status");
         });
     });
 
@@ -354,7 +354,7 @@ describe("useReviewAgreement", () => {
             expect(setAlertMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: "success",
-                    heading: "Changes Saved",
+                    heading: "Agreement Updated",
                     redirectUrl: "/agreements"
                 })
             );
