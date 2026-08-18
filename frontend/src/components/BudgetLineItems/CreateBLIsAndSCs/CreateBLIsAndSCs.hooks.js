@@ -562,9 +562,12 @@ const useCreateBLIsAndSCs = (
             // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
             // line STILL routes to a change request — hence the deletion signal gates on super-user
             // only (via isDeletionRoutedToApproval), not canEditDirectly.
-            const deletionsRoutedToApproval = deletedBudgetLines.filter((bl) =>
-                isDeletionRoutedToApproval(bl, isSuperUser)
-            );
+            // deletedBudgetLines holds only ids (the DELETE_BUDGET_LINE_ITEM reducer case stores
+            // action.payload.id), so look each one up in the original budgetLines prop to get the
+            // status isDeletionRoutedToApproval needs.
+            const deletionsRoutedToApproval = deletedBudgetLines
+                .map((id) => budgetLines.find((bl) => bl.id === id))
+                .filter((bl) => isDeletionRoutedToApproval(bl, isSuperUser));
             const deletionChangeMessages = deletionsRoutedToApproval
                 .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
                 .join("\n");
@@ -595,6 +598,7 @@ const useCreateBLIsAndSCs = (
         [
             tempBudgetLines,
             deletedBudgetLines,
+            budgetLines,
             continueOverRide,
             canEditDirectly,
             isSuperUser,

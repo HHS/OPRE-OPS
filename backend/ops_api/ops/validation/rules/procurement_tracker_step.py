@@ -858,3 +858,31 @@ class AwardApprovalResponseValidationRule(ValidationRule):
         current_status = procurement_tracker_step.award_approval_status
         if current_status == "APPROVED":
             raise ValidationError({"approval_status": "This award approval request has already been approved."})
+
+
+class AwardApprovalObligatedDateRequiredRule(ValidationRule):
+    """
+    Validates that an obligated date is provided when approving an AWARD step.
+
+    The obligated date must never be assumed to be the current date, because it is
+    generally first documented in another system. It must be supplied explicitly on
+    the approval request so that budget lines transitioning from Executing to Obligated
+    reflect the real obligation date rather than today's date.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Obligated Date Required"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only enforce when the step is being approved for Award
+        if updated_fields.get("approval_status") != "APPROVED":
+            return
+
+        if updated_fields.get("obligated_date") is None:
+            raise ValidationError({"obligated_date": "Obligated date is required to approve for Award."})
