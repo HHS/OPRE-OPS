@@ -255,3 +255,35 @@ describe("useApproveAwardApproval — navigation blocker", () => {
         });
     });
 });
+
+describe("useApproveAwardApproval — handleApprove", () => {
+    it("sends approval_status and obligated_date (ISO) in the PATCH payload", async () => {
+        const mockUpdate = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockUpdate, {}]);
+
+        const { result } = setup();
+
+        // Set a valid obligated date
+        act(() => {
+            result.current.setObligatedDate("09/30/2024");
+        });
+
+        // Open confirmation modal
+        act(() => {
+            result.current.handleApprove();
+        });
+
+        // Confirm in modal
+        await act(async () => {
+            await result.current.modalProps.handleConfirm();
+        });
+
+        expect(mockUpdate).toHaveBeenCalledWith({
+            stepId: mockStep6.id,
+            data: {
+                approval_status: "APPROVED",
+                obligated_date: "2024-09-30"
+            }
+        });
+    });
+});

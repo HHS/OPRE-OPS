@@ -95,11 +95,12 @@ const useReviewAgreement = (agreementId) => {
     }, [isGrant, selectedBudgetLines.length, suiteResult]);
 
     const bliValidationResults = React.useMemo(() => {
-        // Bypass budget-line BLI-level validation for grants (OPS-6013). Grant agreements do not
-        // yet have a required-field validation model equivalent to contracts (no SC window, no
-        // procurement-shop constraints). This is a deliberate design choice pending grant-specific
-        // validation rules — the backend remains the safety net for required fields.
-        // Agreement-level validation (suiteResult above) still runs for grants.
+        // Grant BLI validation is intentionally skipped on the review/send-to-approval page.
+        // The suite's grant_number_id check would gate every DRAFT→PLANNED status change for
+        // BLIs not yet linked to a grant number, but linking is not a prerequisite for DRAFT
+        // status changes. The backend enforces required-field rules per transition; the frontend
+        // validator is optimized for contract agreements (SC, procurement shop) and does not
+        // have an equivalent grant-specific model yet.
         if (isGrant) {
             return [];
         }

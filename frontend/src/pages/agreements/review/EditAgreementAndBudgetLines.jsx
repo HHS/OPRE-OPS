@@ -152,7 +152,8 @@ const EditAgreementAndBudgetLines = () => {
     const requiresApproval = requiresFinancialApproval || procurementShopChangeState.shouldRequestChange;
 
     const saveAndNavigateTo = async (destination) => {
-        await fireBundleSave(destination ?? returnTo);
+        const saved = await fireBundleSave(destination ?? returnTo);
+        if (!saved) throw new Error("Save failed");
     };
 
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef } =
@@ -246,6 +247,7 @@ const EditAgreementAndBudgetLines = () => {
             setTimeout(() => {
                 isBypassingRef.current = false;
             }, 0);
+            return true;
         } catch (error) {
             const detail =
                 error?.data?.error ||
@@ -262,6 +264,7 @@ const EditAgreementAndBudgetLines = () => {
             setServicesComponentsReseedKey((key) => key + 1);
             setGrantNumbersReseedKey((key) => key + 1);
             setBudgetLinesReseedKey((key) => key + 1);
+            return false;
         } finally {
             setIsSaving(false);
         }
