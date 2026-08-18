@@ -259,7 +259,7 @@ describe("BLIReviewRow", () => {
             selected: true
         });
 
-        const tooltipText = "Obligate By date is outside the agreement’s start and end dates";
+        const tooltipText = "Obligate By date is outside the agreement’s Period of Performance";
 
         it("applies error styling and a tooltip to the Obligate By cell when the date is outside the PoP range", () => {
             renderComponent({

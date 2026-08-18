@@ -8,7 +8,7 @@ import useServicesComponents from "./ServicesComponents.hooks";
 vi.mock("./ServicesComponents.hooks");
 
 const POP_CONFIRMATION_MESSAGE =
-    "Changing the Period of Performance dates will alter the agreement’s start and end. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
+    "Changing the Period of Performance dates will alter the agreement’s Period of Performance. Some budget lines will need an updated Obligate By Date to fit within the new timeframe. Do you want to continue updating this services component?";
 
 describe("ServicesComponents", () => {
     const mockSetShowModal = vi.fn();

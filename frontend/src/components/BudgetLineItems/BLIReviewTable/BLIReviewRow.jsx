@@ -228,7 +228,7 @@ const BLIReviewRow = ({
                 <td className={dateNeededClasses}>
                     {showCellErrors && isOutsidePopRange ? (
                         <Tooltip
-                            label="Obligate By date is outside the agreement’s start and end dates"
+                            label="Obligate By date is outside the agreement’s Period of Performance"
                             position="right"
                         >
                             <span>{dateNeededFormatted}</span>
