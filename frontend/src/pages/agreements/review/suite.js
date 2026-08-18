@@ -89,6 +89,28 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
         enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
     });
+
+    // Grant BLIs have no services component / PoP window, so this rule only applies to
+    // Contract/IAA BLIs. Skip (rather than fail) when date_needed or the SC period is
+    // missing — those cases already fail the rules above with their own messages, and
+    // "outside the range" isn't the right message when there's no range to compare against.
+    if (
+        budgetLine.agreement?.agreement_type !== "GRANT" &&
+        budgetLine.date_needed &&
+        budgetLine.sc_period_start &&
+        budgetLine.sc_period_end
+    ) {
+        test(
+            "Budget Line Obligate By Date must be within PoP",
+            `Budget Line ${budgetLine.id} Obligate By date (should be within the agreement’s start and end dates)`,
+            () => {
+                enforce(
+                    budgetLine.date_needed >= budgetLine.sc_period_start &&
+                        budgetLine.date_needed <= budgetLine.sc_period_end
+                ).isTruthy();
+            }
+        );
+    }
 });
 
 /**
@@ -97,13 +119,21 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
  * The vest test keys are verbose strings; the normalized ids are short, consistent,
  * and registered in the validation display map in src/helpers/utils.js.
  */
+/**
+ * Normalized id for the PoP-range rule. Unlike other BLI rule keys (which show a single
+ * generic message deduped across all selected BLIs), this one accumulates one message per
+ * violating BL id — see the aggregation logic in ReviewAgreement.hooks.js.
+ */
+export const POP_RANGE_ERROR_KEY = "date_needed_pop_range";
+
 const BLI_ERROR_KEY_MAP = {
     "Budget Line Amount": "amount",
     "Budget Line CAN": "can",
     "Budget lines need to be assigned to a services component to change their status": "services_component",
     "Budget lines need to be assigned to a grant number to change their status": "grant_number",
     "Budget Line Obligate By Date": "date_needed",
-    "Budget Line Obligate By Date must be in the future": "date_needed"
+    "Budget Line Obligate By Date must be in the future": "date_needed",
+    "Budget Line Obligate By Date must be within PoP": POP_RANGE_ERROR_KEY
 };
 
 /**

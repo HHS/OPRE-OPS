@@ -26,6 +26,7 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
+import { POP_RANGE_ERROR_KEY } from "./suite";
 
 /**
  * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
@@ -139,14 +140,25 @@ export const ReviewAgreement = () => {
                             setIsAlertVisible={setIsAlertActive}
                         >
                             <ul data-cy="error-list">
-                                {Object.entries(pageErrors).map(([key]) => (
-                                    <li
-                                        key={key}
-                                        data-cy="error-item"
-                                    >
-                                        {convertCodeForDisplay("validation", key)}
-                                    </li>
-                                ))}
+                                {Object.entries(pageErrors).map(([key, messages]) =>
+                                    key === POP_RANGE_ERROR_KEY ? (
+                                        messages.map((message, index) => (
+                                            <li
+                                                key={`${key}-${index}`}
+                                                data-cy="error-item"
+                                            >
+                                                {message}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li
+                                            key={key}
+                                            data-cy="error-item"
+                                        >
+                                            {convertCodeForDisplay("validation", key)}
+                                        </li>
+                                    )
+                                )}
                             </ul>
                         </SimpleAlert>
                     </div>
