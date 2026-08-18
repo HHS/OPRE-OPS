@@ -1,4 +1,4 @@
-from marshmallow import EXCLUDE, Schema, fields, pre_load
+from marshmallow import EXCLUDE, Schema, fields, pre_load, validate
 
 from models import (
     AcquisitionType,
@@ -36,6 +36,8 @@ class MetaSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     isEditable = fields.Bool(load_default=False, dump_default=False)
+    isDeletable = fields.Bool(load_default=False, dump_default=False)
+    lockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
     immutable_awarded_fields = fields.List(fields.String(), load_default=None, dump_default=None, required=False)
 
 
@@ -113,8 +115,8 @@ class ContractAgreementData(AgreementData):
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
-    funding_period_months = fields.Integer(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True, load_default=[])
+    funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18]))
     # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)
     # because grant_numbers are only meaningful for GRANT agreements.
     grant_numbers = fields.List(
@@ -302,7 +304,7 @@ class ContractListAgreementResponse(AgreementListResponse):
 class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 
@@ -310,7 +312,7 @@ class GrantAgreementResponse(AgreementResponse):
 class GrantListAgreementResponse(AgreementListResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    aln_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 

@@ -32,7 +32,7 @@ function GrantNumberListItem({ id, title, periodStart, periodEnd, setFormDataByI
             <section className="display-flex flex-justify">
                 <h2
                     className="margin-0"
-                    data-cy={`${title}-grant-number-item-title`}
+                    data-cy={`Grant ${id}-grant-number-item-title`}
                 >
                     {title}
                 </h2>

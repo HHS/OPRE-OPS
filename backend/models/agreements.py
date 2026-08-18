@@ -20,7 +20,7 @@ from sqlalchemy import (
     Index,
     func,
 )
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.dialects.postgresql import ARRAY, ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
 from models.base import BaseModel
@@ -739,7 +739,7 @@ class GrantAgreement(Agreement):
     number_of_years: Mapped[Optional[int]] = mapped_column(Integer)
     number_of_grants: Mapped[Optional[int]] = mapped_column(Integer)
     nofo_number: Mapped[Optional[str]] = mapped_column(String)
-    aln_number: Mapped[Optional[str]] = mapped_column(String)
+    aln_numbers: Mapped[Optional[List[int]]] = mapped_column(ARRAY(Integer))
     funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
 
     grant_numbers: Mapped[list["GrantNumber"]] = relationship(

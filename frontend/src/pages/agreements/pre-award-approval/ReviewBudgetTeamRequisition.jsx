@@ -29,6 +29,7 @@ export const ReviewBudgetTeamRequisition = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
@@ -129,6 +130,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedExecutingBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
             />
 

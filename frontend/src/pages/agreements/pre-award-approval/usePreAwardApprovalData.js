@@ -102,6 +102,7 @@ export default function usePreAwardApprovalData(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,

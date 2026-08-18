@@ -210,7 +210,8 @@ export const codesToDisplayText = {
         amount: "Amount",
         can_id: "CAN",
         date_needed: "Obligate By Date",
-        status: "Status"
+        status: "Status",
+        delete: "Deleted"
     },
     methodOfTransfer: {
         DIRECT: "Direct",
@@ -226,7 +227,7 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Federal Project Officer",
+        GRANT: "FPO",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"
