@@ -221,10 +221,10 @@ describe("agreement BLI accordion", () => {
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
-        cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
+        cy.get('[data-cy="button-toggle-After Change"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').contains("$ 4,000,000.00");
-        cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
+        cy.get('[data-cy="button-toggle-After Change"]').first().click({ force: true });
         cy.get('[data-cy="currency-summary-card"]').contains("0");
     });
 
@@ -279,8 +279,8 @@ describe("agreement review CANS accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         // Wait for button toggle to appear
-        cy.get('[data-cy="button-toggle-After Approval"]', { timeout: 10000 }).should("exist");
-        cy.get('[data-cy="button-toggle-After Approval"]').first().should("exist");
+        cy.get('[data-cy="button-toggle-After Change"]', { timeout: 10000 }).should("exist");
+        cy.get('[data-cy="button-toggle-After Change"]').first().should("exist");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
@@ -290,12 +290,12 @@ describe("agreement review CANS accordion", () => {
             if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
                 cy.get('[data-cy="budget-summary-card-504"]').should("exist");
                 cy.get('[data-cy="budget-summary-card-504"]').contains("159,385,046.00");
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
+                cy.get('[data-cy="button-toggle-After Change"]').first().click({ force: true });
                 cy.get('[data-cy="budget-summary-card-504"]').contains("158,385,046.00");
             } else {
                 cy.log("Budget summary card not found - likely no actionable BLIs selected for this test condition");
                 // Still test the toggle functionality
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
+                cy.get('[data-cy="button-toggle-After Change"]').first().click({ force: true });
             }
         });
         // Check if budget summary card exists and verify toggle functionality

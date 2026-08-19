@@ -540,7 +540,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get("[data-cy='review-card']").should("exist");
                 cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                // NOTE: After Approval toggle is default on
+                // NOTE: After Change toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("[data-testid='term-container']")
@@ -560,7 +560,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
                 // NOTE: Before Approval toggle is now in play
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get('[data-cy="button-toggle-After Change"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
                 cy.get(".usa-table").should("exist");
@@ -687,7 +687,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 cy.get("[data-cy='review-card']").should("exist");
                 cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                // NOTE: After Approval toggle is default on
+                // NOTE: After Change toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("[data-testid='term-container']")
@@ -707,7 +707,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
                 // NOTE: Before Approval toggle is now in play
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get('[data-cy="button-toggle-After Change"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
                 cy.get(".usa-table").should("exist");
