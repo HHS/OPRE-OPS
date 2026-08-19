@@ -238,6 +238,45 @@ describe("useReviewAgreement", () => {
         });
     });
 
+    it("clears notes when the action is switched, so stale notes aren't sent for the new action", async () => {
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_PLANNED_TO_EXECUTING);
+            result.current.setNotes("Notes for Planned to Executing");
+        });
+
+        expect(result.current.notes).toBe("Notes for Planned to Executing");
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+        });
+
+        expect(result.current.notes).toBe("");
+
+        act(() => {
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalledWith({
+                id: 101,
+                data: {
+                    status: "PLANNED",
+                    requestor_notes: ""
+                }
+            });
+        });
+    });
+
     it("shows an error alert when any budget line update fails", async () => {
         updateBudgetLineItemMock.mockReturnValueOnce({
             unwrap: () => Promise.reject(new Error("save failed"))

@@ -351,6 +351,7 @@ const useReviewAgreement = (agreementId) => {
     const handleActionChange = (action) => {
         setAction(action);
         setToggleStates({});
+        setNotes("");
 
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
