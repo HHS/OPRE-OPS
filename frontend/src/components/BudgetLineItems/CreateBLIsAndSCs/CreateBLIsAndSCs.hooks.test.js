@@ -922,6 +922,72 @@ describe("useCreateBLIsAndSCs", () => {
         expect(deleteGrantNumberMock).toHaveBeenCalledWith(99);
     });
 
+    it("reassigns a grant BLI to the selected grant number on edit (regression: stale grant_number_id)", () => {
+        // A persisted BLI linked to grant number #1 (grant_number_id 10). The user opens it for
+        // editing and picks grant number #2 (id 20) in the dropdown. handleEditBLI must stamp the
+        // NEW grant_number_id — spreading the original BLI alone would keep the stale id 10, and
+        // both save paths key off grant_number_id (the non-bundle addGrantNumberIdToBLI resolves
+        // by id; the bundle dirty-check compares it), silently dropping the reassignment.
+        const targetBli = {
+            id: "target",
+            amount: 500,
+            date_needed: "2026-01-01",
+            can_id: 1,
+            status: "DRAFT",
+            grant_number_id: 10,
+            grant_number_number: 1
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            grant_numbers: [
+                { id: 10, number: 1, created_on: "2026-01-01" },
+                { id: 20, number: 2, created_on: "2026-01-01" }
+            ],
+            budget_line_items: [targetBli]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [targetBli],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        // Simulate the grant-number dropdown reassigning the BLI to grant number #2.
+        act(() => {
+            result.current.setGrantNumberNumber(2);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                grant_number_number: 2,
+                grant_number_id: 20
+            })
+        });
+    });
+
     it("disassociates a grant BLI (saves with grant_number_id: null) when its grant number can't be resolved", async () => {
         // Grant agreement with a BLI that references grant number 7, which is no longer present
         // in grant_numbers (deleted mid-edit). The save should succeed and disassociate the BLI,

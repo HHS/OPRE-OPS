@@ -722,12 +722,23 @@ const useCreateBLIsAndSCs = (
                 ? currentBudgetLine.serviceComponentGroupingLabel
                 : (servicesComponentNumber ?? 0).toString();
 
+        // Keep grant_number_id in sync with the dropdown selection. Spreading currentBudgetLine
+        // alone would retain the BLI's original (stale) grant_number_id, and both save paths key
+        // off it: the non-bundle path's addGrantNumberIdToBLI resolves by id (ignoring the new
+        // selection), and the bundle dirty-check compares grant_number_id (treating a
+        // reassignment as no change). For an existing (persisted) grant number we stamp its id
+        // now; for a not-yet-persisted in-session grant number there is no id yet, so null it and
+        // let the save-time number/ref resolution link it.
+        const selectedGrantNumber = grantNumbers?.find((gn) => gn.number === grantNumberNumber);
+        const reassignedGrantNumberId =
+            selectedGrantNumber && "created_on" in selectedGrantNumber ? selectedGrantNumber.id : null;
+
         const payload = {
             ...currentBudgetLine,
             // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
             // rewrite the BLI as "SC 0" and break grouping). For contracts, keep the SC fields.
             ...(isGrant
-                ? { grant_number_number: grantNumberNumber }
+                ? { grant_number_number: grantNumberNumber, grant_number_id: reassignedGrantNumberId }
                 : {
                       services_component_number: servicesComponentNumber,
                       serviceComponentGroupingLabel
