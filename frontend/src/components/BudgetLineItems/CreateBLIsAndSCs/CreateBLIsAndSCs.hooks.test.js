@@ -780,13 +780,13 @@ describe("useCreateBLIsAndSCs", () => {
             deleteFirstTempBudgetLine(result);
             // The delete handler dispatches DELETE_BUDGET_LINE_ITEM; dispatch is mocked and does not
             // mutate state, so simulate the reducer removing the line from budget_line_items and
-            // recording the full BLI object in deleted_budget_line_items_ids (mirrors the real
-            // AgreementEditorContext reducer, which stores action.payload), then rerender so
+            // recording its bare id in deleted_budget_line_items_ids (mirrors the real
+            // AgreementEditorContext reducer, which stores action.payload.id), then rerender so
             // handleSave's closure sees the update before the save reads deletedBudgetLines.
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
-                deleted_budget_line_items_ids: [existingBli("PLANNED")]
+                deleted_budget_line_items_ids: [existingBli("PLANNED").id]
             });
             rerender();
             setAlertMock.mockClear();
@@ -824,7 +824,7 @@ describe("useCreateBLIsAndSCs", () => {
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
-                deleted_budget_line_items_ids: [existingBli("DRAFT")]
+                deleted_budget_line_items_ids: [existingBli("DRAFT").id]
             });
             rerender();
             setAlertMock.mockClear();
