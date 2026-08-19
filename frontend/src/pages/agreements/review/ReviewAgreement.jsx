@@ -40,6 +40,7 @@ export const ReviewAgreement = () => {
     const {
         handleSelectBLI,
         submitButtonText,
+        appliesImmediately,
         pageErrors,
         isAlertActive,
         setIsAlertActive,
@@ -322,7 +323,7 @@ export const ReviewAgreement = () => {
                         />
                     ))}
             </Accordion>
-            {action != actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+            {!appliesImmediately && (
                 <Accordion
                     heading="Notes"
                     level={2}

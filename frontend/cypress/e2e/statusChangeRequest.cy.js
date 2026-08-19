@@ -154,10 +154,13 @@ it("BLI Status Change", () => {
                 cy.contains("Planned");
                 cy.contains("$1,000,000.00");
             });
+            // type pls approve in the #submitter-notes textarea
+            cy.get("#submitter-notes").type("pls approve");
             cy.get('[data-cy="send-to-approval-btn"]').click();
             cy.get(".usa-alert__body")
                 .should("contain", "Changes Sent to Approval")
-                .and("contain", `BL ${bliId} Status: Draft to Planned`);
+                .and("contain", `BL ${bliId} Status: Draft to Planned`)
+                .and("contain", "pls approve");
             waitForAgreementHistory(agreementId, bearer_token);
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);

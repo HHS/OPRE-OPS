@@ -456,6 +456,7 @@ const useReviewAgreement = (agreementId) => {
 
     return {
         submitButtonText,
+        appliesImmediately,
         action,
         handleSelectBLI,
         pageErrors,
