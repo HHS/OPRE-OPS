@@ -470,8 +470,11 @@ const useAgreementEditForm = (
         if (isEditMode && setIsEditMode) setIsEditMode(false);
     }, [setHasAgreementChanged, isEditMode, setIsEditMode]);
 
+    // In review mode (EditAgreementAndBudgetLines) the page registers its own blocker
+    // covering both agreement and BLI changes. Disable the form-level blocker there so
+    // only one blocker is live at a time — React Router supports only one per router.
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
-        hasChanged: hasAgreementChanged,
+        hasChanged: !isReviewMode && hasAgreementChanged,
         saveChanges: blockerSaveChanges,
         onExit: blockerOnExit
     });
