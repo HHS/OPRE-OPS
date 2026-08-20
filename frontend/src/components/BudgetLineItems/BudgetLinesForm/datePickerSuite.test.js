@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import suite from "./datePickerSuite";
 
-const POP_ERROR = "Date must fall within the agreement's Period of Performance.";
+const POP_ERROR = "Date must fall within the agreement’s Period of Performance.";
 
 // Returns YYYY-MM-DD n days from today (for scStartDate / scEndDate props).
 const isoFromToday = (n) => {
