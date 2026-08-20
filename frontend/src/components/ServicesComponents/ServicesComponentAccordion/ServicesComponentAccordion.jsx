@@ -1,6 +1,7 @@
 import Accordion from "../../UI/Accordion";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
 import { formatServiceComponent } from "../ServicesComponents.helpers";
+import styles from "./ServicesComponentAccordion.module.css";
 
 /**
  * @component ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
@@ -38,9 +39,20 @@ function ServicesComponentAccordion({
                   serviceComponentGroupingLabel
               );
 
+    const showDescriptionInHeader = !withMetadata && !!description?.trim();
+
+    const heading = showDescriptionInHeader ? (
+        <span className={styles.header}>
+            <span className={styles.name}>{servicesComponentDisplayTitle}</span>
+            <span className={styles.description}>: {description.trim()}</span>
+        </span>
+    ) : (
+        servicesComponentDisplayTitle
+    );
+
     return (
         <Accordion
-            heading={servicesComponentDisplayTitle}
+            heading={heading}
             level={3}
         >
             {withMetadata && (

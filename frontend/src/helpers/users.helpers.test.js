@@ -190,6 +190,44 @@ describe("embedded payload normalizers", () => {
         });
     });
 
+    it("normalizes portfolio division director and deputy division director", () => {
+        expect(
+            normalizePortfolioUsers({
+                id: 1,
+                division_director: { id: 1, full_name: "JANE SMITH", email: "jane@example.com" },
+                deputy_division_director: { id: 2, full_name: "JOHN DOE", email: "john@example.com" }
+            })
+        ).toEqual({
+            id: 1,
+            division_director: {
+                id: 1,
+                full_name: "JANE SMITH",
+                email: "jane@example.com",
+                display_name: "Jane Smith"
+            },
+            deputy_division_director: {
+                id: 2,
+                full_name: "JOHN DOE",
+                email: "john@example.com",
+                display_name: "John Doe"
+            }
+        });
+    });
+
+    it("leaves division director and deputy division director null when absent", () => {
+        expect(
+            normalizePortfolioUsers({
+                id: 1,
+                division_director: null,
+                deputy_division_director: null
+            })
+        ).toEqual({
+            id: 1,
+            division_director: null,
+            deputy_division_director: null
+        });
+    });
+
     it("normalizes nested portfolio team leaders on CAN payloads", () => {
         expect(
             normalizeCanUsers({

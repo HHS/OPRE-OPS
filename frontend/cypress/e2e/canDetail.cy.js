@@ -357,22 +357,22 @@ describe("CAN spending page", () => {
                 });
             });
         cy.get("#big-budget-summary-card").should("exist");
-        cy.get("#big-budget-summary-card").should("contain", "-$ 120,797,640.00");
+        cy.get("#big-budget-summary-card").should("contain", "-$ 117,797,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
-        cy.get("span").should("contain", "13 Draft");
-        cy.get("span").should("contain", "13 Planned");
-        cy.get("span").should("contain", "8 Executing");
-        cy.get("span").should("contain", "8 Obligated");
+        cy.get("span").should("contain", "12 Draft");
+        cy.get("span").should("contain", "12 Planned");
+        cy.get("span").should("contain", "7 Executing");
+        cy.get("span").should("contain", "7 Obligated");
         cy.get("span").should("not.contain", "1 OBE");
         cy.get("#donut-graph-with-legend-card")
             .should("contain", "0%")
             .and("contain", "0%")
             .and("contain", "0%")
             .and("contain", "0%")
-            .and("contain", "$36,943,280.00")
-            .and("contain", "$67,648,053.00")
-            .and("contain", "$26,204,081.00")
-            .and("contain", "$26,945,506.00");
+            .and("contain", "$35,943,280.00")
+            .and("contain", "$66,648,053.00")
+            .and("contain", "$25,204,081.00")
+            .and("contain", "$25,945,506.00");
         cy.get("#fiscal-year-select").select("2022");
         cy.get("table[aria-label='Loading CAN budget lines']", { timeout: 30000 }).should("not.exist");
         // table should not exist

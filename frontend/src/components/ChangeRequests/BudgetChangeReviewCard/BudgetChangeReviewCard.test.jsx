@@ -124,4 +124,26 @@ describe("BudgetChangeReviewCard", () => {
         expect(screen.getByText("6/1/2044")).toBeInTheDocument();
         expect(screen.getByText("6/13/2045")).toBeInTheDocument();
     });
+    it("should render a deletion change with Change To and To = Deleted and From = the BLI amount", () => {
+        const changeTo = {
+            delete: {
+                old: 500000,
+                new: "Deleted"
+            }
+        };
+        render(
+            <BrowserRouter>
+                <BudgetChangeReviewCard
+                    {...initialProps}
+                    key={1}
+                    changeTo={changeTo}
+                />
+            </BrowserRouter>
+        );
+
+        // "Change To" label value and "To" value both read "Deleted".
+        expect(screen.getAllByText("Deleted")).toHaveLength(2);
+        // "From" shows the current BLI amount formatted as currency.
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
+    });
 });

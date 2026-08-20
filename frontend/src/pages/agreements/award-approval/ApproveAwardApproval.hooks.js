@@ -1,14 +1,16 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
+import suite from "./ApproveAwardApproval.suite";
 
-const MemoizedDatePicker = React.memo(DatePicker);
+const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at source
 
 /**
  * Custom hook for the ApproveAwardApproval (Budget Team) review page.
@@ -45,6 +47,7 @@ export default function useApproveAwardApproval(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         step6,
         requestorName,
@@ -64,40 +67,50 @@ export default function useApproveAwardApproval(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
-    /**
-     * Track unsaved changes
-     */
-    const hasChanged = useMemo(() => obligatedDate !== "", [obligatedDate]);
-
-    /**
-     * Navigation blocker — prevents accidental navigation when form has unsaved changes
-     */
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
+    // Vest suite state. The suite is a module-level singleton whose result persists across
+    // unmount/remount. Reset on mount and unmount so stale errors from a prior visit never
+    // appear before the user types (same pattern as CreateBLIsAndSCs.hooks.js, issue #5894).
+    const [validatorRes, setValidatorRes] = useState(() => suite.get());
 
     useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowModal(true);
-            setModalProps({
-                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
-                actionButtonText: "Yes, Cancel Task",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: () => {
-                    setShowModal(false);
-                    flushSync(() => {
-                        setIsNavigating(true);
-                    });
-                    blocker.proceed?.();
-                },
-                closeModal: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
-                }
-            });
-        }
-    }, [blocker.state, blocker]);
+        suite.reset();
+        setValidatorRes(suite.get());
+        return () => {
+            suite.reset();
+        };
+    }, []);
+
+    /**
+     * Run validation for a single field and update the shared suite state.
+     * @param {string} name
+     * @param {any} value
+     */
+    const runValidate = (name, value) => {
+        suite.run({ [name]: value }, name);
+        setValidatorRes(suite.get());
+    };
+
+    // The Approve Award button must stay disabled until a valid Obligated Date is entered.
+    // The date must never be assumed to be today — it is generally documented first in another system.
+    const isObligatedDateInvalid = !obligatedDate || validatorRes.hasErrors("obligatedDate");
+
+    /**
+     * Track unsaved changes — obligated date is the only editable field
+     */
+    const hasChanged = useMemo(() => !isNavigating && obligatedDate !== "", [isNavigating, obligatedDate]);
+
+    /**
+     * Navigation blocker — "Save changes before leaving?" pattern, no draft save option.
+     * Primary: "Go back" (stay). Secondary: "Leave without saving" (discard + proceed).
+     */
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this award approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     /**
      * Approve handler — opens confirmation modal, then PATCHes step 6
@@ -124,7 +137,7 @@ export default function useApproveAwardApproval(agreementId) {
                         stepId: step6.id,
                         data: {
                             approval_status: "APPROVED",
-                            ...(obligatedDate ? { obligated_date: formatDateForApi(obligatedDate) } : {})
+                            obligated_date: formatDateForApi(obligatedDate)
                         }
                     }).unwrap();
 
@@ -147,14 +160,15 @@ export default function useApproveAwardApproval(agreementId) {
     };
 
     /**
-     * Cancel handler
+     * Cancel handler — explicit user-initiated cancel from the page Cancel button
      */
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
-            actionButtonText: "Yes, Cancel Task",
-            secondaryButtonText: "Continue Editing",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 flushSync(() => {
                     setIsNavigating(true);
@@ -175,6 +189,7 @@ export default function useApproveAwardApproval(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         step6,
         requestorNotes,
@@ -182,10 +197,16 @@ export default function useApproveAwardApproval(agreementId) {
         requestorDate,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker,
         showModal,
         setShowModal,
         modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         isSubmitting,
         submitError,
         handleApprove,

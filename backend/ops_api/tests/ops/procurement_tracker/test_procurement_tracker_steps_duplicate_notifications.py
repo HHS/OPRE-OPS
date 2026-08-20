@@ -173,7 +173,7 @@ def test_duplicate_approval_response_no_notification(auth_client, test_pre_award
     ), "Duplicate approval response should NOT send notifications"
 
 
-def test_approval_transitions_are_idempotent(auth_client, test_pre_award_step, loaded_db):
+def test_idempotent_approval_transitions(auth_client, test_pre_award_step, loaded_db):
     """Test that sending the same approval request multiple times only sends notification once."""
     # Get initial notification count
     initial_notification_count = loaded_db.scalar(select(func.count()).select_from(Notification))
@@ -513,9 +513,10 @@ def test_award_approval_dismisses_request_notifications_after_bt_approves(budget
         request_notification_ids = [n.id for n in request_notifications]
 
         # Step 2: BT approves — should dismiss "Award Approval Request" notifications
+        # (obligated_date is required to approve an AWARD step, see AwardApprovalObligatedDateRequiredRule)
         response = budget_team_auth_client.patch(
             f"/api/v1/procurement-tracker-steps/{award_step.id}",
-            json={"approval_status": "APPROVED"},
+            json={"approval_status": "APPROVED", "obligated_date": date.today().isoformat()},
         )
         assert response.status_code == 200
 

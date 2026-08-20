@@ -12,6 +12,7 @@ import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAc
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import {
@@ -38,6 +39,7 @@ const ApproveAgreement = () => {
         confirmation,
         errorAgreement,
         isGrant,
+        grantNumbers,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
@@ -59,6 +61,9 @@ const ApproveAgreement = () => {
         setNotes,
         setShowModal,
         showModal,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         statusChangeTo,
         statusForTitle,
         title,
@@ -86,6 +91,18 @@ const ApproveAgreement = () => {
                     actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     secondaryButtonText={modalProps.secondaryButtonText}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
 
@@ -129,6 +146,7 @@ const ApproveAgreement = () => {
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -137,6 +155,7 @@ const ApproveAgreement = () => {
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -241,7 +260,14 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, isGrant, changeRequestType, urlChangeToStatus }) => (
+    ({
+        groupedBudgetLinesByServicesComponent,
+        servicesComponents,
+        isGrant,
+        totalGrantNumbers,
+        changeRequestType,
+        urlChangeToStatus
+    }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group, index) => {
                 if (isGrant) {
@@ -249,6 +275,7 @@ const BeforeApprovalContent = React.memo(
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable
@@ -303,6 +330,7 @@ const AfterApprovalContent = React.memo(
         groupedUpdatedBudgetLinesByServicesComponent,
         servicesComponents,
         isGrant,
+        totalGrantNumbers,
         changeRequestType,
         urlChangeToStatus
     }) => (
@@ -313,6 +341,7 @@ const AfterApprovalContent = React.memo(
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable

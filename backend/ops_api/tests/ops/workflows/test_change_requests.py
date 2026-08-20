@@ -129,7 +129,8 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     hists, _ = history_service.get(agreement_id, limit=100, offset=0)
 
     #  submit PATCH BLI which triggers a budget change requests
-    data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
+    # SC 1 on agreement 1 has period_start=2043-06-13 and period_end=2044-06-13; date must be within that window.
+    data = {"amount": 222.22, "can_id": 501, "date_needed": "2043-09-01"}
     response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -164,9 +165,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
             assert requested_change_diff["amount"]["old"] == 111.11
             assert requested_change_diff["amount"]["new"] == 222.22
         if "date_needed" in requested_change_data:
-            assert requested_change_data["date_needed"] == "2032-02-02"
+            assert requested_change_data["date_needed"] == "2043-09-01"
             assert requested_change_diff["date_needed"]["old"] == "2033-01-01"
-            assert requested_change_diff["date_needed"]["new"] == "2032-02-02"
+            assert requested_change_diff["date_needed"]["new"] == "2043-09-01"
         if "can_id" in requested_change_data:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
@@ -237,7 +238,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
     assert bli.can_id == 500  # can_id change request was rejected
-    assert bli.date_needed == datetime.date(2032, 2, 2)
+    assert bli.date_needed == datetime.date(2043, 9, 1)
     assert bli.change_requests_in_review is None
     assert bli.in_review is False
 
@@ -369,9 +370,10 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert "errors" in response.json
 
     # make the BLI valid for status change
+    # SC 1 on agreement 1 has period_start=2043-06-13 and period_end=2044-06-13; date must be within that window.
     bli.can_id = 500
     bli.amount = 111.11
-    bli.date_needed = datetime.date(2032, 2, 2)
+    bli.date_needed = datetime.date(2043, 9, 1)
     session.add(bli)
     session.commit()
 
@@ -545,7 +547,7 @@ def test_bli_patch_can_id_fallback_resolves_division_from_incoming_can(
         can_id=None,
         amount=100.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -657,7 +659,7 @@ def test_budget_team_bli_patch_writes_directly_no_change_request(
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -698,7 +700,7 @@ def test_budget_team_bli_patch_creates_change_request_without_active_award_appro
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -751,7 +753,7 @@ def test_budget_team_bli_patch_writes_directly_when_tracker_not_active(
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -798,7 +800,7 @@ def _make_planned_bli(loaded_db, test_can, test_division_director):
         can_id=test_can.id,
         amount=500.00,
         status=BudgetLineItemStatus.PLANNED,
-        date_needed=datetime.date(2032, 2, 2),
+        date_needed=datetime.date(2043, 9, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )

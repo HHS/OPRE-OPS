@@ -17,6 +17,8 @@ import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import SummaryBox from "../SummaryBox";
+import AlnNumbersComboBox from "../AlnNumbersComboBox";
+import GrantFundingPeriodSelect from "../GrantFundingPeriodSelect";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -96,10 +98,10 @@ const AgreementEditForm = ({
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
         nofoNumber,
-        alnNumber,
+        alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumber,
+        setAlnNumbers,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
@@ -266,28 +268,43 @@ const AgreementEditForm = ({
                     setShowModal={setShowBlockerModal}
                 />
             )}
-            <Select
-                className={cn("agreement-type-filter")}
-                label="Agreement Type"
-                messages={res.getErrors("agreement-type-filter")}
-                name="agreement-type-filter"
-                options={agreementFilterOptions}
-                onChange={(name, value) => {
-                    handleAgreementFilterChange(value);
-                    runValidate(name, value);
-                }}
-                isDisabled={isAgreementCreated}
-                value={selectedAgreementFilter || ""}
-                tooltipMsg="Agreement Type cannot be changed once an agreement is created"
-                isRequired
-            />
+            <h2 className="font-sans-lg margin-top-3">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
+            <div className="padding-top-3">
+                <Select
+                    className={cn("agreement-type-filter")}
+                    label="Agreement Type"
+                    messages={res.getErrors("agreement-type-filter")}
+                    name="agreement-type-filter"
+                    options={agreementFilterOptions}
+                    onChange={(name, value) => {
+                        handleAgreementFilterChange(value);
+                        runValidate(name, value);
+                    }}
+                    isDisabled={isAgreementCreated}
+                    value={selectedAgreementFilter || ""}
+                    tooltipMsg="Agreement Type cannot be changed once an agreement is created"
+                    isRequired
+                />
+            </div>
             {isWizardMode && (
                 <>
                     <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
                     <p className="margin-top-1">
-                        Tell us a little more about this agreement. Make sure you complete the required information in
-                        order to proceed. For everything else you can skip the parts you do not know or come back to
-                        edit the information later.
+                        {!isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. Make sure you complete the required
+                                information in order to proceed. For everything else you can skip the parts you do not
+                                know or come back to edit the information later.
+                            </span>
+                        )}
+                        {isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. For grants, the agreement title should match
+                                the NOFO name. If you don’t know it yet, enter a draft name and edit it later. Complete
+                                the required information to proceed, and skip anything you don’t know for now.
+                            </span>
+                        )}
                     </p>
                 </>
             )}
@@ -432,38 +449,33 @@ const AgreementEditForm = ({
                 <>
                     <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
                     <p>
-                        Please complete the information below for this grant. You can enter this information now or come
-                        back and edit the information later.
+                        Please complete the information below for this grant. In OPS, a grant agreement is a single NOFO
+                        number. You also can come back later to edit this information at any time or once everything is
+                        finalized.
                     </p>
-                    <Input
-                        name="nofo_number"
-                        label="NOFO Number"
-                        messages={res.getErrors("nofo_number")}
-                        className={cn("nofo_number")}
-                        isRequired={true}
-                        value={nofoNumber || ""}
-                        onChange={(name, value) => {
-                            setNofoNumber(value);
-                            runValidate(name, value);
-                        }}
-                    />
-                    {/* Grant Funding Period — numeric input, unit "months". No stepper component exists
-                        yet (see plan step 8); ships as a plain Input with digit-only filtering. */}
-                    <Input
-                        name="funding_period_months"
-                        label="Grant Funding Period (months)"
-                        value={fundingPeriodMonths ?? ""}
-                        onChange={(name, value) => {
-                            if (/^[0-9]*$/.test(value)) {
-                                setFundingPeriodMonths(value === "" ? null : Number(value));
-                            }
-                        }}
-                    />
-                    <Input
-                        name="aln_number"
-                        label="ALN Number"
-                        value={alnNumber || ""}
-                        onChange={(name, value) => setAlnNumber(value)}
+                    <div className="width-card-lg">
+                        <Input
+                            name="nofo_number"
+                            label="NOFO Number"
+                            className={cn("nofo_number")}
+                            value={nofoNumber || ""}
+                            onChange={(name, value) => {
+                                setNofoNumber(value);
+                                runValidate(name, value);
+                            }}
+                        />
+                    </div>
+                    <div className="width-card-lg">
+                        <GrantFundingPeriodSelect
+                            value={fundingPeriodMonths}
+                            onChange={(name, value) => setFundingPeriodMonths(value)}
+                        />
+                    </div>
+                    <AlnNumbersComboBox
+                        selectedAlnNumbers={alnNumbers}
+                        setSelectedAlnNumbers={setAlnNumbers}
+                        legendClassName="usa-label margin-top-0"
+                        overrideStyles={{ width: "15em" }}
                     />
                     <div className="display-flex margin-top-3">
                         <ProjectOfficerComboBox

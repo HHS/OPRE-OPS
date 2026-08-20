@@ -79,19 +79,23 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
@@ -134,40 +138,58 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         }
     }, []);
 
-    /**
-     * Track if any changes have been made to the form
-     */
+    const canSaveDraft = useMemo(() => {
+        const dateIsValidIfEntered = !requisitionDate.trim() || DATE_FORMAT_REGEX.test(requisitionDate);
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return dateIsValidIfEntered && (hasCurrentValues || hasPriorValues);
+    }, [requisitionNumber, requisitionDate, step5]);
+
+    // hasChanged tracks whether the user modified fields relative to what the server has saved.
+    // This prevents the blocker from firing on an untouched form that was pre-populated from step5.
     const hasChanged = useMemo(() => {
-        return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
-    }, [requisitionNumber, requisitionDate, attestationChecked]);
+        const serverNumber = step5?.requisition_number || "";
+        const serverDate = step5?.requisition_date ? formatDateForScreen(step5.requisition_date) : "";
+        return requisitionNumber.trim() !== serverNumber.trim() || requisitionDate !== serverDate;
+    }, [requisitionNumber, requisitionDate, step5]);
 
     /**
-     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     * Navigation blocker - only fires when the user has changed something AND it is saveable.
+     * Gating on both prevents (a) blocking on untouched pre-populated forms (hasChanged)
+     * and (b) showing "Save Changes" when the data cannot actually be saved (canSaveDraft).
      */
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+            !isNavigating && hasChanged && canSaveDraft && currentLocation.pathname !== nextLocation.pathname
     );
 
     // Handle blocker state changes
     useEffect(() => {
         if (blocker.state === "blocked") {
+            // Capture the intended destination (full path including search/hash) so "Save Changes"
+            // can navigate there after saving rather than dropping query params like ?tab=... or filters.
+            const loc = blocker.location;
+            const destination = loc
+                ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}`
+                : "/agreements?filter=change-requests";
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
-                description: "",
-                actionButtonText: "Yes, Cancel Task",
-                secondaryButtonText: "Continue Editing",
+                heading: "Save changes before leaving?",
+                description:
+                    "You have unsaved changes in the pre-award requisition. If you leave without saving, these changes will be lost.",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
                 handleConfirm: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                    handleSaveDraft(destination);
+                },
+                handleSecondary: () => {
                     setShowModal(false);
                     flushSync(() => {
                         setIsNavigating(true);
                     });
                     blocker.proceed?.();
-                },
-                handleSecondary: () => {
-                    setShowModal(false);
-                    blocker.reset?.();
                 },
                 closeModal: () => {
                     setShowModal(false);
@@ -175,6 +197,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blocker.state, blocker]);
 
     // Approve handler
@@ -232,8 +255,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         });
     };
 
-    // Save Draft handler (partial save without approval)
-    const handleSaveDraft = async () => {
+    // Save Draft handler (partial save without approval).
+    // navigateTo: optional destination — when called from the nav-away blocker, navigate to the
+    // user's original intended destination instead of the default agreements list.
+    const handleSaveDraft = async (navigateTo = "/agreements?filter=change-requests") => {
         const nothingToSave = !requisitionNumber.trim() && !requisitionDate.trim();
         const noPriorValues = !step5?.requisition_number && !step5?.requisition_date;
         if (nothingToSave && noPriorValues) {
@@ -285,7 +310,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate("/agreements?filter=change-requests");
+            navigate(navigateTo);
 
             setIsSubmitting(false);
         } catch (error) {
@@ -298,10 +323,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
             description: "",
-            actionButtonText: "Yes, Cancel Task",
-            secondaryButtonText: "Continue Editing",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 flushSync(() => {
                     setIsNavigating(true);
@@ -320,13 +346,14 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     return {
         // Data
         agreement,
-        isLoading,
+        isLoading: isLoading || isLoadingTrackers,
         allBudgetLines,
         executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
@@ -361,6 +388,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }

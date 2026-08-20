@@ -54,6 +54,8 @@ const PortfolioDetail = () => {
                     label="Portfolio Description"
                     description={portfolio?.description}
                     teamLeaders={portfolio?.team_leaders}
+                    divisionDirector={portfolio?.division_director}
+                    deputyDivisionDirector={portfolio?.deputy_division_director}
                     url={portfolioUrl?.url}
                 />
                 <section className="display-flex flex-justify margin-top-3">

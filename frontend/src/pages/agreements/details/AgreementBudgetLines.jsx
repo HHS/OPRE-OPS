@@ -269,6 +269,7 @@ const AgreementBudgetLines = ({
                     alternateProjectOfficer={""}
                     servicesComponents={servicesComponents}
                     grantNumbers={grantNumbers ?? []}
+                    budgetLines={agreement?.budget_line_items ?? []}
                 >
                     <CreateBLIsAndSCs
                         selectedAgreement={agreement}
@@ -302,6 +303,7 @@ const AgreementBudgetLines = ({
                     <GrantNumberAccordion
                         key={`${group.grantNumberNumber}-${index}`}
                         grantNumberNumber={group.grantNumberNumber}
+                        totalGrantNumbers={(grantNumbers ?? []).length}
                     >
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable

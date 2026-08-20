@@ -13,6 +13,7 @@ import GrantNumberListItem from "../GrantNumberListItem";
  */
 function GrantNumbersList({ grantNumbers, setFormDataById, handleDelete }) {
     const sortedGrantNumbers = [...grantNumbers].sort((a, b) => a.number - b.number);
+    const totalGrantNumbers = grantNumbers?.length ?? 0;
 
     return (
         <section
@@ -24,7 +25,7 @@ function GrantNumbersList({ grantNumbers, setFormDataById, handleDelete }) {
                     <GrantNumberListItem
                         key={`${item.number}-${index}`}
                         id={item.number}
-                        title={item.display_title}
+                        title={`Grant ${item.number} of ${totalGrantNumbers}`}
                         periodStart={item.period_start}
                         periodEnd={item.period_end}
                         description={item.description}

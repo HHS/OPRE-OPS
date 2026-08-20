@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -27,7 +27,6 @@ const ENABLE_UPLOAD_CONSENSUS_MEMO = false;
 export const RequestPreAwardApproval = () => {
     const { id } = useParams();
     const agreementId = Number(id);
-    const navigate = useNavigate();
 
     const {
         agreement,
@@ -38,9 +37,11 @@ export const RequestPreAwardApproval = () => {
         setNotes,
         handleSubmit,
         handleCancel,
+        handleEdit,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         selectedFile,
         handleFileChange,
@@ -210,6 +211,7 @@ export const RequestPreAwardApproval = () => {
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
                 showBudgetLineErrors={!hasBLIInReview}
             />
@@ -338,10 +340,7 @@ export const RequestPreAwardApproval = () => {
                     className="usa-button usa-button--outline margin-right-2"
                     data-cy="edit-agreement-btn"
                     title={!isAgreementEditable ? "Agreement is not editable" : ""}
-                    onClick={() => {
-                        const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
-                        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
-                    }}
+                    onClick={handleEdit}
                     disabled={!isAgreementEditable}
                 >
                     Edit

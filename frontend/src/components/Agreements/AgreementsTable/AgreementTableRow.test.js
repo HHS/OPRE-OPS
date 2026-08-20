@@ -213,6 +213,27 @@ describe("AgreementTableRow", () => {
             expect(editButton).not.toBeDisabled();
         });
 
+        test("super user can edit GRANT agreements from the table row", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], grantAgreement, true);
+
+            const user = userEvent.setup();
+
+            // Hover over the table row to activate it and show ChangeIcons
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            // Should see edit button that is not disabled
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).not.toBeDisabled();
+        });
+
         test("super user sees edit button enabled (and no locked message tooltip)", async () => {
             // API returns isEditable: true for super users
             const agreementWithoutUserOnTeam = {
@@ -331,6 +352,27 @@ describe("AgreementTableRow", () => {
             };
 
             renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], notDevelopedAgreement);
+
+            const user = userEvent.setup();
+
+            // Hover over the table row to activate it and show ChangeIcons
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            // Should see edit button that is disabled
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).toBeDisabled();
+        });
+
+        test("regular user cannot edit GRANT agreements from the table row", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], grantAgreement);
 
             const user = userEvent.setup();
 

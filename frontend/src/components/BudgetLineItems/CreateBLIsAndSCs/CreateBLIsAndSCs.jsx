@@ -17,7 +17,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
-import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
+import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
@@ -116,10 +116,14 @@ export const CreateBLIsAndSCs = ({
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
         setServicesComponentNumber,
+        effectiveScStartDate,
+        effectiveScEndDate,
         requiresFinancialApproval,
         grantNumberNumber,
         setGrantNumberNumber
@@ -334,7 +338,7 @@ export const CreateBLIsAndSCs = ({
                     budget_line_items: {
                         create: newBlis,
                         update: updatedBlis,
-                        delete: (deletedBudgetLines ?? []).map((b) => b.id)
+                        delete: deletedBudgetLines ?? []
                     }
                 };
             }
@@ -402,6 +406,8 @@ export const CreateBLIsAndSCs = ({
                                 isReviewMode={isReviewMode}
                                 setHasUnsavedChanges={setHasUnsavedChanges}
                                 hasUnsavedChanges={hasUnsavedChanges}
+                                scFormSuite={scFormSuite}
+                                nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
                     {!isGrant && (
@@ -418,7 +424,14 @@ export const CreateBLIsAndSCs = ({
                     )}
                     {isGrant && (
                         <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
-                            <FormHeader heading="Add Budget Lines" />
+                            <FormHeader
+                                heading="Add Budget Lines"
+                                details={
+                                    isReviewMode
+                                        ? undefined
+                                        : "Add Budget lines to each Grant Number to outline how the grant will be funded."
+                                }
+                            />
                         </div>
                     )}
                     <div className="display-flex flex-justify margin-y-2">
@@ -455,6 +468,8 @@ export const CreateBLIsAndSCs = ({
                                 continueBtnText={continueBtnText}
                                 setHasUnsavedChanges={setHasUnsavedChanges}
                                 hasUnsavedChanges={hasUnsavedChanges}
+                                scFormSuite={scFormSuite}
+                                nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
                     <AgreementBudgetLinesHeader
@@ -504,6 +519,8 @@ export const CreateBLIsAndSCs = ({
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
                     workflow={workflow}
+                    scStartDate={effectiveScStartDate}
+                    scEndDate={effectiveScEndDate}
                 />
             )}
 
@@ -524,6 +541,7 @@ export const CreateBLIsAndSCs = ({
                         <GrantNumberAccordion
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={grantNumbers.length}
                         >
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}
@@ -551,6 +569,7 @@ export const CreateBLIsAndSCs = ({
                             serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                             serviceRequirementType={selectedAgreement.service_requirement_type}
                             optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                            description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
                         >
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}

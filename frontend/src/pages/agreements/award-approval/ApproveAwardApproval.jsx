@@ -29,6 +29,7 @@ export const ApproveAwardApproval = () => {
         allBudgetLines,
         executingTotal,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         requestorNotes,
         handleApprove,
@@ -39,12 +40,18 @@ export const ApproveAwardApproval = () => {
         showModal,
         setShowModal,
         modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         isSubmitting,
         submitError,
         hasPermission,
         approvalAlreadyProcessed,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker
     } = useApproveAwardApproval(agreementId);
 
@@ -76,7 +83,20 @@ export const ApproveAwardApproval = () => {
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    handleSecondary={modalProps.handleSecondary}
                     closeModal={modalProps.closeModal}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    setShowModal={setShowBlockerModal}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
                 />
             )}
 
@@ -122,6 +142,7 @@ export const ApproveAwardApproval = () => {
                     ...group,
                     budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
                 }))}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
                 executingTotalInstructions="Review the total of all budget lines in Executing Status."
@@ -227,7 +248,11 @@ export const ApproveAwardApproval = () => {
                         label="Obligated Date"
                         hint="mm/dd/yyyy"
                         value={obligatedDate}
-                        onChange={(e) => setObligatedDate(e.target.value)}
+                        onChange={(e) => {
+                            runValidate("obligatedDate", e.target.value);
+                            setObligatedDate(e.target.value);
+                        }}
+                        messages={validatorRes.getErrors("obligatedDate") || []}
                         isDisabled={approvalAlreadyProcessed}
                     />
                 </div>
@@ -316,7 +341,10 @@ export const ApproveAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleApprove}
-                    disabled={isSubmitting || approvalAlreadyProcessed || !understandsApproval}
+                    disabled={
+                        isSubmitting || approvalAlreadyProcessed || !understandsApproval || isObligatedDateInvalid
+                    }
+                    title={isObligatedDateInvalid ? "Enter the Obligated Date before approving for Award." : undefined}
                     data-cy="approve-award-btn"
                 >
                     {isSubmitting ? "Processing..." : "Approve Award"}

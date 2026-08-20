@@ -54,6 +54,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step4,
@@ -176,9 +177,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel? Your changes will not be saved.",
-                actionButtonText: "Yes, Cancel",
-                secondaryButtonText: "Continue Editing",
+                heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+                actionButtonText: "Cancel Pre-Award",
+                secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
                     flushSync(() => {
@@ -294,9 +295,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your changes will not be saved.",
-            actionButtonText: "Yes, Cancel",
-            secondaryButtonText: "Continue Editing",
+            heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+            actionButtonText: "Cancel Pre-Award",
+            secondaryButtonText: "Continue editing",
             handleConfirm: () => {
                 setShowModal(false);
                 setIsNavigating(true);
@@ -306,6 +307,17 @@ export default function useRequestPreAwardApproval(agreementId) {
                 setShowModal(false);
             }
         });
+    };
+
+    const handleEdit = () => {
+        const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
+        // flushSync forces the isNavigating commit (and blocker re-registration) before
+        // navigate() so the blocker's synchronous forward-push check sees isNavigating=true
+        // and lets the edit navigation through instead of showing the cancel modal.
+        flushSync(() => {
+            setIsNavigating(true);
+        });
+        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
     };
 
     return {
@@ -318,9 +330,11 @@ export default function useRequestPreAwardApproval(agreementId) {
         setNotes,
         handleSubmit,
         handleCancel,
+        handleEdit,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         selectedFile,
         handleFileChange,
