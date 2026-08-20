@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 import { actionOptions } from "./ReviewAgreement.constants";
+import { POP_RANGE_ERROR_KEY } from "./suite";
 
 const navigateMock = vi.fn();
 const setAlertMock = vi.fn();
@@ -191,6 +192,74 @@ describe("useReviewAgreement", () => {
         expect(result.current.pageErrors).toHaveProperty("can");
         expect(result.current.hasBLIError).toBe(true);
         expect(result.current.isSubmissionReady).toBe(true);
+    });
+
+    it("accumulates one POP-range message per violating BL, sorted ascending by BL id", async () => {
+        const isoDaysFromNow = (days) => {
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString().slice(0, 10);
+        };
+
+        useGetServicesComponentsListQueryMock.mockReturnValue({
+            data: [{ id: 1, number: 1, period_start: isoDaysFromNow(10), period_end: isoDaysFromNow(100) }]
+        });
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({
+                budget_line_items: [
+                    {
+                        // Higher id, but placed/selected first — proves ordering comes from
+                        // an explicit sort, not selection order or array position.
+                        id: 202,
+                        amount: 800,
+                        can_id: "CAN-002",
+                        services_component_id: 1,
+                        date_needed: isoDaysFromNow(200), // after PoP end
+                        status: "DRAFT",
+                        in_review: false
+                    },
+                    {
+                        id: 101,
+                        amount: 1500,
+                        can_id: "CAN-001",
+                        services_component_id: 1,
+                        date_needed: isoDaysFromNow(2), // before PoP start
+                        status: "DRAFT",
+                        in_review: false
+                    }
+                ]
+            }),
+            error: null,
+            isLoading: false
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+        });
+
+        act(() => {
+            result.current.handleSelectBLI(202);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([202]);
+        });
+
+        act(() => {
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.isAlertActive).toBe(true);
+        });
+
+        expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual([
+            "Budget Line 101 Obligate By date",
+            "Budget Line 202 Obligate By date"
+        ]);
     });
 
     it("submits selected budget lines for approval and sets a success alert", async () => {

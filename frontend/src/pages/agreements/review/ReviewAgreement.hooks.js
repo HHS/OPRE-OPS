@@ -203,7 +203,10 @@ const useReviewAgreement = (agreementId) => {
 
         if (hasBLIError && Array.isArray(bliValidationResults)) {
             const seenBudgetLineErrors = new Set();
-            bliValidationResults.forEach(({ isValid, errors }) => {
+            // Sort by ascending BL id so POP_RANGE_ERROR_KEY messages read in a stable,
+            // predictable order regardless of the order BLs were selected in.
+            const sortedBliValidationResults = [...bliValidationResults].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+            sortedBliValidationResults.forEach(({ isValid, errors }) => {
                 if (isValid) {
                     return;
                 }

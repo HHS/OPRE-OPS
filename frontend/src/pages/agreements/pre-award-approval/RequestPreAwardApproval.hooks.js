@@ -17,7 +17,7 @@ import {
 } from "../../../components/Agreements/Documents/Document";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
-import agreementSuite, { validateBudgetLineItems } from "./suite";
+import agreementSuite, { POP_RANGE_ERROR_KEY, validateBudgetLineItems } from "./suite";
 import { VALIDATABLE_BLI_STATUSES } from "./constants";
 
 /**
@@ -134,9 +134,18 @@ export default function useRequestPreAwardApproval(agreementId) {
 
         if (hasBLIError) {
             const seen = new Set();
-            bliValidationResults.forEach(({ isValid, errors }) => {
+            // Sort by ascending BL id so, if this ever fires, POP_RANGE_ERROR_KEY messages
+            // read in a stable order — mirrors ReviewAgreement.hooks.js's aggregation.
+            const sortedBliValidationResults = [...bliValidationResults].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+            sortedBliValidationResults.forEach(({ isValid, errors }) => {
                 if (isValid) return;
                 Object.entries(errors).forEach(([fieldName, messages]) => {
+                    // Accumulate rather than dedupe for POP_RANGE_ERROR_KEY, matching
+                    // ReviewAgreement.hooks.js, so the two hooks can't silently drift.
+                    if (fieldName === POP_RANGE_ERROR_KEY) {
+                        aggregated[fieldName] = [...(aggregated[fieldName] ?? []), ...messages];
+                        return;
+                    }
                     if (seen.has(fieldName)) return;
                     seen.add(fieldName);
                     aggregated[fieldName] = messages;
