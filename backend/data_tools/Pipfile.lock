@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d667ae63526ad724c47b847c58bfabb2441a17103184ad09c38761077f0989dc"
+            "sha256": "3c117b905f4a2a2500a2b83a6a257828f10358d457b878992f498c22512077ca"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -192,21 +192,14 @@
             "markers": "python_version >= '3.9'",
             "version": "==26.1.0"
         },
-        "azure-common": {
-            "hashes": [
-                "sha256:4ac0cd3214e36b6a1b6a442686722a5d8cc449603aa833f3f0f40bda836704a3",
-                "sha256:5c12d3dcf4ec20599ca6b0d3e09e86e146353d443e7fcc050c9a19c1f9df20ad"
-            ],
-            "version": "==1.1.28"
-        },
         "azure-communication-email": {
             "hashes": [
-                "sha256:5df96b8b4389696244982ffc3740722f1948abb289f19af00ce2e1c534450095",
-                "sha256:b580ccfc9f1372d0b65f235334e569f3909894316bc3203bd9deb5760612693a"
+                "sha256:6a4af8281024327c3ab18a4996919069a99a69aad3a19c40f7852a6682493327",
+                "sha256:9212153f21cf7e68734c32ebfe8702b43398bd01df2dddb0ca52cd5a8bbd5024"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7'",
-            "version": "==1.0.0"
+            "markers": "python_version >= '3.9'",
+            "version": "==1.1.0"
         },
         "azure-core": {
             "hashes": [
@@ -233,14 +226,6 @@
             "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==4.11.1"
-        },
-        "azure-mgmt-core": {
-            "hashes": [
-                "sha256:0460d11e85c408b71c727ee1981f74432bc641bb25dfcf1bb4e90a49e776dbc4",
-                "sha256:b26232af857b021e61d813d9f4ae530465255cb10b3dde945ad3743f7a58e79c"
-            ],
-            "markers": "python_version >= '3.9'",
-            "version": "==1.6.0"
         },
         "azure-storage-blob": {
             "hashes": [
@@ -1118,14 +1103,6 @@
             "markers": "python_version >= '3.9'",
             "version": "==1.3.1"
         },
-        "msrest": {
-            "hashes": [
-                "sha256:21120a810e1233e5e6cc7fe40b474eeb4ec6f757a15d7cf86702c369f9567c32",
-                "sha256:6e7661f46f3afd88b75667b7187a92829924446c7ea1d169be8c4bb7eeb788b9"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==0.7.1"
-        },
         "multidict": {
             "hashes": [
                 "sha256:026d264228bcd637d4e060844e39cdc60f86c479e463d49075dedc21b18fbbe0",
@@ -1357,14 +1334,6 @@
             ],
             "markers": "python_version >= '3.12'",
             "version": "==2.5.2"
-        },
-        "oauthlib": {
-            "hashes": [
-                "sha256:0f0f8aa759826a193cf66c12ea1af1637f87b9b4622d46e866952bb022e538c9",
-                "sha256:88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==3.3.1"
         },
         "openpyxl": {
             "hashes": [
@@ -1756,14 +1725,6 @@
             ],
             "markers": "python_version >= '3.10'",
             "version": "==2.34.2"
-        },
-        "requests-oauthlib": {
-            "hashes": [
-                "sha256:7dd8a5c40426b779b0868c404bdef9768deccf22749cde15852df527e6269b36",
-                "sha256:b3dffaebd884d8cd778494369603a9e7b58d29111bf6b41bdc2dcd87203af4e9"
-            ],
-            "markers": "python_version >= '3.4'",
-            "version": "==2.0.0"
         },
         "six": {
             "hashes": [
