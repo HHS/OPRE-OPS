@@ -9,10 +9,12 @@ const TeamLeaders = ({ teamLeaders }) => {
                     <dt className="text-base-dark margin-top-3">Team Leader</dt>
                     {teamLeaders.length > 0 ? (
                         <>
-                            {teamLeaders.map((leader) => (
+                            {teamLeaders.map((leader, index) => (
                                 <dd
                                     key={leader.id}
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className={`margin-0 margin-top-1 ${
+                                        index === teamLeaders.length - 1 ? "margin-bottom-neg-05" : "margin-bottom-2"
+                                    }`}
                                 >
                                     <Tag
                                         tagStyle="primaryDarkTextLightBackground"
