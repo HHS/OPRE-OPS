@@ -5707,8 +5707,14 @@ paths:
                 properties:
                   version:
                     type: string
+                  skip_cr_for_draft_planned:
+                    type: boolean
+                    description: >-
+                      When true, Draft→Planned status changes and in-Planned budget-detail
+                      edits apply immediately instead of creating a Change Request.
                 example:
                   version: "1.0.0"
+                  skip_cr_for_draft_planned: false
   /azure/sas-token/:
     get:
       tags:

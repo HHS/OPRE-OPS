@@ -371,7 +371,7 @@ const AgreementBudgetLines = ({
                             to={`/agreements/review/${agreement?.id}`}
                             data-cy="bli-continue-btn"
                         >
-                            Request BL Status Change
+                            Change BL Status
                         </Link>
                     ) : (
                         <Tooltip label={toolTipLabel()}>
@@ -380,7 +380,7 @@ const AgreementBudgetLines = ({
                                 aria-disabled="true"
                                 data-cy="bli-continue-btn-disabled"
                             >
-                                Request BL Status Change
+                                Change BL Status
                             </span>
                         </Tooltip>
                     )}

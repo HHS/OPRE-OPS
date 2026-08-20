@@ -17,6 +17,7 @@ const updateServicesComponentMock = vi.fn();
 const addGrantNumberMock = vi.fn();
 const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
+const useGetVersionQueryMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
@@ -59,7 +60,8 @@ vi.mock("../../../api/opsAPI", () => ({
     useUpdateServicesComponentMutation: () => [updateServicesComponentMock],
     useAddGrantNumberMutation: () => [addGrantNumberMock],
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
-    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock]
+    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -176,6 +178,11 @@ describe("useCreateBLIsAndSCs", () => {
             })
         );
         deleteAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+        // Default: capability OFF and version query resolved.
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: false },
+            isSuccess: true
+        });
     });
 
     const renderSubject = (overrides = {}) => {
@@ -350,6 +357,66 @@ describe("useCreateBLIsAndSCs", () => {
         expect(duplicate._meta).toEqual({ isEditable: true });
         expect(duplicate.id).not.toBe(original.id);
         expect(duplicate.amount).toBe(original.amount);
+    });
+
+    it("still requires DD approval for a Planned financial change when the capability is OFF", async () => {
+        const plannedLine = {
+            id: 501,
+            status: "PLANNED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        // tempBudgetLines is sourced from useEditAgreement()'s budget_line_items, so seed the
+        // context mock (not the budgetLines prop) for the flag-scoping logic to see the line.
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [plannedLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        expect(result.current.requiresFinancialApproval).toBe(true);
+    });
+
+    it("applies a Planned financial change immediately (no DD approval) when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const plannedLine = {
+            id: 501,
+            status: "PLANNED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [plannedLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        // Capability ON + all changed lines PLANNED → applies directly, no approval UX.
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("still requires DD approval when a changed line is IN_EXECUTION even with the capability ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const executingLine = {
+            id: 502,
+            status: "EXECUTING",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [executingLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        // A non-PLANNED changed line is out of the flag's scope → approval still required.
+        expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
     it("edits a budget line, matching the original by id rather than a stale array index", () => {

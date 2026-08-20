@@ -5,6 +5,7 @@ from sqlalchemy import select
 from models import (
     AgreementHistory,
     AgreementHistoryType,
+    BudgetLineItem,
     DefaultProcurementTracker,
     OpsEvent,
     OpsEventStatus,
@@ -723,6 +724,52 @@ def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
     assert (
         new_agreement_history_item.history_message
         == "Steve Tekell changed the amount for BL 16043 from $12,345.00 to $23,435.00."
+    )
+
+
+def test_agreement_history_direct_draft_to_planned_status_change(loaded_db, app_ctx):
+    """A directly-applied Draft->Planned status change (SKIP_CR_FOR_DRAFT_PLANNED) must
+    still produce a BUDGET_LINE_ITEM_UPDATED history entry, even though it bypasses the
+    change-request path."""
+    bli = loaded_db.get(BudgetLineItem, 16043)
+    assert bli is not None
+
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_BLI,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=test_user_id,
+        event_details={
+            "bli": bli.to_dict(),
+            "bli_updates": {
+                "owner_id": bli.agreement_id,
+                "updated_by": test_user_id,
+                "changes": {
+                    "status": {
+                        "old_value": "DRAFT",
+                        "new_value": "PLANNED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    history_item = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()[-1]
+    )
+
+    assert history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert history_item.history_title == "Status Change to Planned"
+    assert (
+        history_item.history_message
+        == f"{test_user_name} changed the budget line status on BL 16043 from Draft to Planned."
     )
 
 

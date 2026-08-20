@@ -156,20 +156,20 @@ describe("AgreementBudgetLines", () => {
             expect(editButton).not.toHaveAttribute("aria-disabled");
         });
 
-        test("enables the Request BL Status Change button for a grant agreement", () => {
+        test("enables the Change BL Status button for a grant agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
 
-            const requestLink = screen.getByRole("link", { name: "Request BL Status Change" });
+            const requestLink = screen.getByRole("link", { name: "Change BL Status" });
             expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
         });
 
-        test("keeps the Edit and Request BL Status Change buttons enabled for a contract agreement", () => {
+        test("keeps the Edit and Change BL Status buttons enabled for a contract agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "CONTRACT" });
 
             const editButton = screen.getByRole("button", { name: /edit/i });
             expect(editButton).not.toHaveAttribute("aria-disabled");
 
-            const requestLink = screen.getByRole("link", { name: "Request BL Status Change" });
+            const requestLink = screen.getByRole("link", { name: "Change BL Status" });
             expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
         });
     });
@@ -453,18 +453,18 @@ describe("AgreementBudgetLines", () => {
             expect(screen.queryByRole("button", { name: /^edit$/i })).not.toBeInTheDocument();
         });
 
-        test("does not show the Request BL Status Change button for a read-only user", () => {
+        test("does not show the Change BL Status button for a read-only user", () => {
             renderReadOnly({ canUserEditBudgetLines: true });
 
-            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+            expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
         });
 
-        test("does not show the disabled Request BL Status Change button for a read-only user on a non-editable agreement", () => {
+        test("does not show the disabled Change BL Status button for a read-only user on a non-editable agreement", () => {
             renderReadOnly({
                 agreement: { ...mockAgreement, _meta: { isEditable: false } }
             });
 
-            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+            expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
         });
     });
 
@@ -567,9 +567,9 @@ describe("AgreementBudgetLines", () => {
             expect(screen.queryByText("Edit")).not.toBeInTheDocument();
         });
 
-        test("Request BL Status Change button is disabled for regular user when isPostPreAwardLocked is true", () => {
+        test("Change BL Status button is disabled for regular user when isPostPreAwardLocked is true", () => {
             renderWith(regularUserStore);
-            const requestButton = screen.getByText("Request BL Status Change");
+            const requestButton = screen.getByText("Change BL Status");
             expect(requestButton).toHaveAttribute("aria-disabled", "true");
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
         });

@@ -547,7 +547,7 @@ export const CreateBLIsAndSCs = ({
                         className="usa-error-message text-normal margin-left-neg-1"
                         role="alert"
                     >
-                        This information is required to submit for approval
+                        This is required information
                     </span>
                 </div>
             )}

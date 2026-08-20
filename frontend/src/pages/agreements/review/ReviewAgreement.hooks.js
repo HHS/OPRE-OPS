@@ -4,6 +4,7 @@ import {
     useGetAgreementByIdQuery,
     useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
+    useGetVersionQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { AgreementType } from "../agreements.constants";
@@ -40,6 +41,13 @@ const useReviewAgreement = (agreementId) => {
     const { setAlert } = useAlert();
     const navigate = useNavigate();
 
+    // Per-environment capability: when ON, Draft→Planned status changes apply immediately
+    // (no Change Request). Default to false (safe = "Send to Approval") until the query
+    // resolves so the action button never over-promises immediate apply. The backend is the
+    // enforcement authority; this flag only drives display/copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+
     const {
         isSuccess,
         data: agreement,
@@ -67,6 +75,10 @@ const useReviewAgreement = (agreementId) => {
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
     };
     let changeRequestAction = actionOptionsToChangeRequests[action];
+    // Draft→Planned applies immediately only when the capability is ON. Planned→Executing
+    // always requires approval, so it is never treated as applied-immediately.
+    const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
+    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -302,6 +314,16 @@ const useReviewAgreement = (agreementId) => {
                         message: "There was an error sending your edits for approval. Please try again.",
                         redirectUrl: "/error"
                     });
+                } else if (appliesImmediately) {
+                    // Capability ON + Draft→Planned: the backend applied the change directly,
+                    // no Division Director review. Reflect that in the copy so the user isn't
+                    // told review is pending when it isn't.
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Updated",
+                        message: `The agreement ${agreement?.name} has been successfully updated.`,
+                        redirectUrl: "/agreements"
+                    });
                 } else {
                     setAlert({
                         type: "success",
@@ -344,6 +366,7 @@ const useReviewAgreement = (agreementId) => {
     const handleActionChange = (action) => {
         setAction(action);
         setToggleStates({});
+        setNotes("");
 
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
@@ -441,7 +464,15 @@ const useReviewAgreement = (agreementId) => {
         return { id: budgetLineId, data: cleanData };
     };
 
+    // Button label: "Change BL Status" only for a Draft→Planned action when the
+    // capability is ON. Everything else (Planned→Executing, or flag OFF) keeps "Send to
+    // Approval". Until the version query resolves, fall back to the safe default so the
+    // label never flips mid-render.
+    const submitButtonText = appliesImmediately ? "Change BL Status" : "Send to Approval";
+
     return {
+        submitButtonText,
+        appliesImmediately,
         action,
         handleSelectBLI,
         pageErrors,

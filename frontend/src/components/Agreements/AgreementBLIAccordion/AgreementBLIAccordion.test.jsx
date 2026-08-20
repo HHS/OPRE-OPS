@@ -67,7 +67,7 @@ describe("AgreementBLIAccordion", () => {
 
         expect(screen.queryByText("Off (Drafts excluded)")).not.toBeInTheDocument();
     });
-    it('should handle the "After Approval" toggle', async () => {
+    it('should handle the "After Change" toggle', async () => {
         const user = userEvent.setup();
         const setAfterApprovalMock = vi.fn();
 
@@ -81,7 +81,7 @@ describe("AgreementBLIAccordion", () => {
         );
 
         // Find the button by its role and name
-        const button = screen.getByRole("button", { name: /after approval/i });
+        const button = screen.getByRole("button", { name: /after change/i });
 
         // Check the initial state
         expect(screen.getByText("Off (Drafts excluded)")).toBeInTheDocument();

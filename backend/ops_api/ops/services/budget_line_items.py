@@ -571,9 +571,11 @@ class BudgetLineItemService:
         request = updated_fields.get("request")
         schema = updated_fields.get("schema")
 
-        # Determine what kind of changes we're making
+        # Determine what kind of changes we're making. Parse the partial body once and
+        # reuse it for both the status-change check and the target-status read below.
+        parsed_partial = schema.load(request.json, partial=True)
         diff_data = self._get_diff_data(request, schema)
-        has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
+        has_status_change = self._has_status_change(parsed_partial, budget_line_item)
         has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
         # Validate status and non-status changes aren't mixed
@@ -590,11 +592,20 @@ class BudgetLineItemService:
             and not has_status_change
             and is_award_approval_requested(budget_line_item.agreement)
         )
-        directly_editable = (
+        existing_bypass = (
             is_super_user(current_user, current_app)
             or budget_team_can_bypass
             or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
+
+        # Optional capability (per-environment): when enabled, apply Draft→Planned status
+        # changes and in-Planned budget-detail edits immediately instead of creating a
+        # Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        flag_allows_direct, flagged_fields_to_apply = self._flagged_direct_edit(
+            budget_line_item, parsed_partial, diff_data, has_status_change
+        )
+
+        directly_editable = existing_bypass or flag_allows_direct
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
         # ensure CLIN record exists and replace with actual CLIN ID
@@ -617,7 +628,13 @@ class BudgetLineItemService:
 
         change_request_ids: list[int] = []
         if directly_editable:
-            self._apply_direct_edits(budget_line_item, updated_fields, commit=commit)
+            # For the flag-enabled paths only, restrict the write set to the fields the
+            # client actually sent (Defect A): the PATCH schema None-fills unset fields, so
+            # writing the whole dict would null amount/can_id/date_needed on a status-only
+            # Draft→Planned. Existing bypasses (superuser/budget-team/draft) keep the
+            # historical full-dict behavior.
+            fields_to_apply = None if existing_bypass else flagged_fields_to_apply
+            self._apply_direct_edits(budget_line_item, updated_fields, commit=commit, fields_to_apply=fields_to_apply)
         else:
             change_request_ids = self._handle_change_requests(
                 budget_line_item, id, request, schema, updated_fields, commit=commit
@@ -668,11 +685,82 @@ class BudgetLineItemService:
                     return True
         return False
 
-    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict, commit: bool = True) -> None:
-        """Apply direct edits to the budget line item"""
-        filtered_dict = {
-            k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
-        }
+    def _flagged_direct_edit(
+        self,
+        budget_line_item: BudgetLineItem,
+        parsed_partial: dict,
+        diff_data: dict,
+        has_status_change: bool,
+    ) -> tuple[bool, set[str]]:
+        """Decide whether the SKIP_CR_FOR_DRAFT_PLANNED capability allows this edit to
+        apply directly, and return the exact set of fields that may be written.
+
+        Returns ``(allows_direct, fields_to_apply)``. When the flag is off or the edit
+        doesn't match a covered path, returns ``(False, set())``. The ``fields_to_apply``
+        set is intentionally narrow (Defect A / Defect B): only the fields specific to the
+        matched path, never the None-filled full body.
+        """
+        if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
+            return False, set()
+
+        # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
+        is_draft_to_planned = (
+            has_status_change
+            and budget_line_item.status == BudgetLineItemStatus.DRAFT
+            and parsed_partial.get("status") == BudgetLineItemStatus.PLANNED
+        )
+        if is_draft_to_planned:
+            return True, {"status"}
+
+        # In-Planned budget-detail edit: ONLY the three budget fields (matching the CR
+        # path's budget_field_names), on a line that is and stays PLANNED. NOT
+        # has_non_status_change, which would newly persist comments/fee (Defect B).
+        if not has_status_change and budget_line_item.status == BudgetLineItemStatus.PLANNED:
+            changed_budget_keys = {
+                key
+                for key in BudgetLineItemChangeRequest.budget_field_names
+                if key in diff_data and self._value_changed(key, diff_data.get(key), budget_line_item)
+            }
+            if changed_budget_keys:
+                # Also apply any always-direct fields the client actually sent. On the CR
+                # path these are applied directly (see _handle_change_requests), so omitting
+                # them here would silently drop a combined budget + line_description/clin edit.
+                always_direct_sent = {key for key in self.ALWAYS_DIRECT_EDIT_FIELDS if key in diff_data}
+                return True, changed_budget_keys | always_direct_sent
+
+        return False, set()
+
+    @staticmethod
+    def _value_changed(key: str, new_value: Any, budget_line_item: BudgetLineItem) -> bool:
+        """Compare a proposed value against the current one, using a float-aware compare
+        for ``amount`` (mirrors the logic in _has_non_status_change)."""
+        orig_value = getattr(budget_line_item, key, None)
+        if key == "amount":
+            if new_value and orig_value:
+                return float(new_value) != float(orig_value)
+            return new_value != orig_value
+        return new_value != orig_value
+
+    def _apply_direct_edits(
+        self,
+        budget_line_item: BudgetLineItem,
+        updated_fields: dict,
+        commit: bool = True,
+        fields_to_apply: Optional[set[str]] = None,
+    ) -> None:
+        """Apply direct edits to the budget line item.
+
+        When ``fields_to_apply`` is provided, only those keys are written (used by the
+        flagged direct-apply paths so the None-filled schema defaults for unsent fields
+        don't clobber existing values). When ``None``, the historical behavior applies:
+        write everything except the internal/whitelisted-out keys.
+        """
+        if fields_to_apply is not None:
+            filtered_dict = {k: v for k, v in updated_fields.items() if k in fields_to_apply}
+        else:
+            filtered_dict = {
+                k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
+            }
         update_data(budget_line_item, filtered_dict)
         budget_line_item.updated_on = datetime.now()
         budget_line_item.updated_by = get_current_user().id
