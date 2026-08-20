@@ -166,7 +166,7 @@ jobs:
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test -d --file=backend/data_tools/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-data-tools.sarif
+        run: snyk test --file=backend/data_tools/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-data-tools.sarif
 
       - name: Verify Snyk scan produced results
         if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-backend-data-tools.sarif') == ''
