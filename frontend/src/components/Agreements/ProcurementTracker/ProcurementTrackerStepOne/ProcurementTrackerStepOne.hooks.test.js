@@ -40,7 +40,7 @@ describe("useProcurementTrackerStepOne", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockPatchStepOne.mockReturnValue({ unwrap: mockUnwrap });
-        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne]);
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne, { isLoading: false }]);
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateForApi.mockReturnValue("2024-01-15");
         formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
@@ -204,7 +204,7 @@ describe("useProcurementTrackerStepOne", () => {
                 });
             });
 
-            it("triggers a success alert on successful save", async () => {
+            it("does not trigger a success alert on successful save", async () => {
                 const mockSetAlert = vi.fn();
                 useAlert.mockReturnValue({ setAlert: mockSetAlert });
 
@@ -216,12 +216,8 @@ describe("useProcurementTrackerStepOne", () => {
                     await result.current.handleSaveNotes(1);
                 });
 
-                expect(mockSetAlert).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        type: "success",
-                        heading: "Notes Saved"
-                    })
-                );
+                // The tracker never shows success toasts — the UI flips to read mode instead.
+                expect(mockSetAlert).not.toHaveBeenCalled();
             });
 
             it("triggers an error alert when the API call fails", async () => {
@@ -398,6 +394,27 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setIsPreSolicitationPackageSent(false);
             });
 
+            expect(result.current.disableStep1Buttons).toBe(true);
+        });
+
+        it("disables the buttons while a step PATCH is in flight (mutual exclusion with Save Notes)", () => {
+            // A shared mutation instance backs both Save Notes and Complete. While
+            // either PATCH is in flight, isLoading is true and Complete must be
+            // disabled so the two can't fire concurrently and revert notes.
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne, { isLoading: true }]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep1DateCompleted("2024-03-20");
+            });
+
+            // Otherwise-complete form, but the in-flight PATCH keeps it disabled.
+            expect(result.current.isStepPatchInFlight).toBe(true);
             expect(result.current.disableStep1Buttons).toBe(true);
         });
     });

@@ -5,7 +5,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -56,6 +55,7 @@ const ProcurementTrackerStepTwo = ({
         step2Notes,
         setStep2Notes,
         resetStep2Notes,
+        notesResetKey,
         step2NotesLabel,
         runValidate,
         validatorRes,
@@ -69,6 +69,7 @@ const ProcurementTrackerStepTwo = ({
         modalProps,
         cancelModalStep2,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepTwoComplete,
         step2DraftSolicitationDateLabel,
         isPastDue,
@@ -78,9 +79,17 @@ const ProcurementTrackerStepTwo = ({
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepTwoData?.id;
+        isDisabled ||
+        validatorRes.hasErrors("targetCompletionDate") ||
+        !targetCompletionDate ||
+        !stepTwoData?.id ||
+        isStepPatchInFlight;
     const isRevisedTargetDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate || !stepTwoData?.id;
+        isDisabled ||
+        validatorRes.hasErrors("revisedTargetDate") ||
+        !revisedTargetDate ||
+        !stepTwoData?.id ||
+        isStepPatchInFlight;
     const isPreSolicitationCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreSolicitationPackageFinalized || authorizedUsers.length === 0;
     const isPackageFinalizedFieldsDisabled = isDisabled || !isPreSolicitationPackageFinalized;
@@ -90,7 +99,8 @@ const ProcurementTrackerStepTwo = ({
         !selectedUser?.id ||
         !step2DateCompleted ||
         (!stepTwoData?.target_completion_date && !targetCompletionDate) ||
-        !stepTwoData?.id;
+        !stepTwoData?.id ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -287,11 +297,16 @@ const ProcurementTrackerStepTwo = ({
                                 isDisabled={isPackageFinalizedFieldsDisabled}
                             />
                         </div>
-                        <StepNotesForm
+                        <StepNotesEditor
+                            textAreaName="notes-step-2"
                             notes={step2Notes}
                             setNotes={setStep2Notes}
-                            onSave={() => handleSaveNotes(stepTwoData?.id)}
-                            isDisabled={isDisabled}
+                            resetNotes={resetStep2Notes}
+                            savedNotes={stepTwoData?.notes}
+                            stepId={stepTwoData?.id}
+                            onSave={handleSaveNotes}
+                            isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
                         <p
                             className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
@@ -380,20 +395,21 @@ const ProcurementTrackerStepTwo = ({
                                 description={step2DraftSolicitationDateLabel || "None"}
                             />
                         </div>
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <StepNotesEditor
-                                notes={step2Notes}
-                                setNotes={setStep2Notes}
-                                resetNotes={resetStep2Notes}
-                                notesLabel={step2NotesLabel}
-                                savedNotes={stepTwoData?.notes}
-                                stepId={stepTwoData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-2"
+                        notes={step2Notes}
+                        setNotes={setStep2Notes}
+                        resetNotes={resetStep2Notes}
+                        savedNotes={stepTwoData?.notes}
+                        stepId={stepTwoData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>

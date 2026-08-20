@@ -54,7 +54,23 @@ export const ProcurementTrackerPreAwardApprovalStatus = {
 export const STEP_NOTES_MAX_LENGTH = 750;
 
 /**
- * Shared inline style for the notes TextArea rendered in each procurement tracker step.
- * @type {{ height: string, minWidth: string }}
+ * Shared width for a procurement tracker step's notes, used for BOTH the editable
+ * TextArea and the read-only note text so the persisted note wraps at the same
+ * right edge as the editor. Both consumers intentionally reference this one value
+ * so they stay in lockstep; change it here to move both.
+ * @type {string}
  */
-export const STEP_NOTES_TEXTAREA_STYLE = { height: "8.5rem", minWidth: "30rem" };
+export const STEP_NOTES_WIDTH = "664px";
+
+/**
+ * Shared inline style for the notes TextArea rendered in each procurement tracker step.
+ * `width`/`maxWidth` both use {@link STEP_NOTES_WIDTH}: the fixed 664px width is a design
+ * requirement, and setting `maxWidth` overrides the USWDS `.usa-textarea` default
+ * `max-width` (30rem) that would otherwise clamp the field below that width.
+ * @type {{ height: string, width: string, maxWidth: string }}
+ */
+export const STEP_NOTES_TEXTAREA_STYLE = {
+    height: "8.5rem",
+    width: STEP_NOTES_WIDTH,
+    maxWidth: STEP_NOTES_WIDTH
+};

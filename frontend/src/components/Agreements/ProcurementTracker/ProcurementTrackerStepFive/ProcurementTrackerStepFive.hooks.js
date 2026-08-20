@@ -33,7 +33,13 @@ export default function useProcurementTrackerStepFive(
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepFive] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepFiveComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepFive, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step5CompletedByUserName = useGetUserFullNameFromId(stepFiveData?.task_completed_by ?? -1);
@@ -57,6 +63,7 @@ export default function useProcurementTrackerStepFive(
         notes: step5Notes,
         setNotes: setStep5Notes,
         resetNotes: resetStep5Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
 
@@ -141,7 +148,10 @@ export default function useProcurementTrackerStepFive(
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep5DateCompleted("");
-        resetStep5Notes(stepFiveData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepFiveData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep5Notes();
     };
 
     const cancelModalStep5 = () => {
@@ -159,6 +169,7 @@ export default function useProcurementTrackerStepFive(
     return {
         cancelStepFive,
         handleSaveNotes,
+        isStepPatchInFlight,
         isPreAwardComplete,
         setIsPreAwardComplete,
         selectedUser,
@@ -173,6 +184,7 @@ export default function useProcurementTrackerStepFive(
         step5Notes,
         setStep5Notes,
         resetStep5Notes,
+        notesResetKey,
         step5NotesLabel,
         runValidate,
         validatorRes,

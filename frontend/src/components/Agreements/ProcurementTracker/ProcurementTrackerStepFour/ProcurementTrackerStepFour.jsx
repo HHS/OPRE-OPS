@@ -4,7 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -53,6 +52,7 @@ const ProcurementTrackerStepFour = ({
         step4Notes,
         setStep4Notes,
         resetStep4Notes,
+        notesResetKey,
         step4NotesLabel,
         runValidate,
         validatorRes,
@@ -65,6 +65,7 @@ const ProcurementTrackerStepFour = ({
         modalProps,
         cancelModalStep4,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleStepFourComplete
     } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber, onDirtyChange);
 
@@ -80,7 +81,8 @@ const ProcurementTrackerStepFour = ({
         !selectedUser?.id ||
         !step4DateCompleted ||
         validatorRes.hasErrors() ||
-        !stepFourData?.id;
+        !stepFourData?.id ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -238,11 +240,16 @@ const ProcurementTrackerStepFour = ({
                                 isDisabled={isEvaluationFieldsDisabled}
                             />
                         </div>
-                        <StepNotesForm
+                        <StepNotesEditor
+                            textAreaName="notes-step-4"
                             notes={step4Notes}
                             setNotes={setStep4Notes}
-                            onSave={() => handleSaveNotes(stepFourData?.id)}
-                            isDisabled={isDisabled}
+                            resetNotes={resetStep4Notes}
+                            savedNotes={stepFourData?.notes}
+                            stepId={stepFourData?.id}
+                            onSave={handleSaveNotes}
+                            isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -305,20 +312,21 @@ const ProcurementTrackerStepFour = ({
                             term="Date Completed"
                             description={step4DateCompletedLabel}
                         />
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <StepNotesEditor
-                                notes={step4Notes}
-                                setNotes={setStep4Notes}
-                                resetNotes={resetStep4Notes}
-                                notesLabel={step4NotesLabel}
-                                savedNotes={stepFourData?.notes}
-                                stepId={stepFourData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-4"
+                        notes={step4Notes}
+                        setNotes={setStep4Notes}
+                        resetNotes={resetStep4Notes}
+                        savedNotes={stepFourData?.notes}
+                        stepId={stepFourData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>
