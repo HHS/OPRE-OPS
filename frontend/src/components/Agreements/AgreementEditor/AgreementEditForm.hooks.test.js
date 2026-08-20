@@ -665,6 +665,71 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
     });
 });
 
+describe("useAgreementEditForm - grant details pre-populate and save", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1" });
+        useSelectorMock.mockReturnValue(false);
+        // hasAgreementChanged must be true so saveAgreement doesn't short-circuit.
+        hasStateChangedMock.mockReturnValue(true);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        updateAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+    });
+
+    it("pre-populates grant detail fields from the existing agreement", () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 42,
+                agreement_type: "GRANT",
+                name: "Existing Grant",
+                nofo_number: "NOFO-2026-01",
+                aln_numbers: ["93.600"],
+                funding_period_months: 18
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        expect(result.current.isGrant).toBe(true);
+        expect(result.current.nofoNumber).toBe("NOFO-2026-01");
+        expect(result.current.alnNumbers).toEqual(["93.600"]);
+        expect(result.current.fundingPeriodMonths).toBe(18);
+    });
+
+    it("includes grant detail fields in the updateAgreement payload on save", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 42,
+                agreement_type: "GRANT",
+                name: "Existing Grant",
+                nofo_number: "NOFO-UPDATED",
+                aln_number: "10.001",
+                funding_period_months: 24,
+                team_members: []
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.saveAgreement();
+        });
+
+        expect(updateAgreementMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 42,
+                data: expect.objectContaining({
+                    nofo_number: "NOFO-UPDATED",
+                    aln_number: "10.001",
+                    funding_period_months: 24
+                })
+            })
+        );
+    });
+});
+
 describe("useAgreementEditForm - runValidate project_officer validation", () => {
     beforeEach(() => {
         vi.clearAllMocks();

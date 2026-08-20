@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { vi, beforeEach } from "vitest";
@@ -352,6 +352,89 @@ describe("BudgetLinesForm Validation Integration", () => {
             );
 
             expect(screen.getByTestId("services-component-form-group")).toHaveClass("usa-form-group--error");
+        });
+
+        // Parity with the contract-variant validation tests above: valid grant data must
+        // produce success classes and an enabled Update button, and clicking it must submit.
+        it("shows success classes for a grant BLI with valid data", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                    />
+                </Provider>
+            );
+
+            const grantFormGroup = screen.getByTestId("services-component-form-group");
+            const canComboBox = screen.getByTestId("can-combobox");
+            const currencyInput = screen.getByTestId("currency-input");
+            const datePicker = screen.getByTestId("date-picker");
+
+            expect(grantFormGroup).toHaveClass("success");
+            expect(canComboBox).toHaveClass("success");
+            expect(currencyInput).toHaveClass("success");
+            expect(datePicker).toHaveClass("success");
+        });
+
+        it("enables the Update button for a grant BLI with valid data and submits on click", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            const handleEditBLI = vi.fn();
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                        handleEditBLI={handleEditBLI}
+                    />
+                </Provider>
+            );
+
+            const updateButton = screen.getByRole("button", { name: "Update Budget Line" });
+            expect(updateButton).not.toBeDisabled();
+
+            fireEvent.click(updateButton);
+            expect(handleEditBLI).toHaveBeenCalledTimes(1);
+        });
+
+        it("disables the Update button for a grant BLI when the grant number is missing", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={0}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByRole("button", { name: "Update Budget Line" })).toBeDisabled();
+        });
+
+        it("submits a new grant BLI via handleAddBLI in add mode", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            const handleAddBLI = vi.fn();
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isEditing={false}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                        handleAddBLI={handleAddBLI}
+                    />
+                </Provider>
+            );
+
+            const addButton = screen.getByRole("button", { name: /Add Budget Line/ });
+            expect(addButton).not.toBeDisabled();
+
+            fireEvent.click(addButton);
+            expect(handleAddBLI).toHaveBeenCalledTimes(1);
         });
     });
 

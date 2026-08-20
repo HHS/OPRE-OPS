@@ -134,8 +134,15 @@ class AgreementEditBundleService:
             result.change_request_ids.extend(change_request_ids)
             deferred_notifications.extend(change_request_ids)
 
-            # 6. BLI deletes (before SC deletes — BLIs reference SCs)
-            result.budget_line_items_deleted = self._delete_budget_line_items(bli_payload.get("delete", []) or [])
+            # 6. BLI deletes (before SC deletes — BLIs reference SCs). PLANNED/IN_EXECUTION
+            #    deletes produce deletion change requests, collected for post-commit notify
+            #    alongside the edit-driven ones.
+            deleted_count, delete_change_request_ids = self._delete_budget_line_items(
+                bli_payload.get("delete", []) or []
+            )
+            result.budget_line_items_deleted = deleted_count
+            result.change_request_ids.extend(delete_change_request_ids)
+            deferred_notifications.extend(delete_change_request_ids)
 
             # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
             result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
@@ -367,7 +374,17 @@ class AgreementEditBundleService:
             change_request_ids.extend(ids)
         return len(items), change_request_ids
 
-    def _delete_budget_line_items(self, ids: list[int]) -> int:
+    def _delete_budget_line_items(self, ids: list[int]) -> tuple[int, list[int]]:
+        """Delete BLIs as part of the bundle.
+
+        DRAFT lines (and super-user deletes) are hard-deleted in-transaction. PLANNED/IN_EXECUTION
+        lines route to a deletion change request created WITHOUT committing/notifying; the returned
+        CR ids are notified post-commit alongside edit-driven change requests. Returns
+        ``(count, change_request_ids)``.
+        """
+        change_request_ids: list[int] = []
         for bli_id in ids:
-            self._blis.delete(bli_id, commit=False)
-        return len(ids)
+            _, _, change_request_id = self._blis.delete(bli_id, commit=False)
+            if change_request_id is not None:
+                change_request_ids.append(change_request_id)
+        return len(ids), change_request_ids

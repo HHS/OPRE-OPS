@@ -16,6 +16,18 @@ vi.mock("../../ServicesComponents", () => ({
     default: () => <div data-testid="services-components" />
 }));
 
+vi.mock("../../GrantNumbers", () => ({
+    __esModule: true,
+    default: () => <div data-testid="grant-numbers" />
+}));
+
+// Stub the budget-lines form: when the user can edit, it renders and pulls in the
+// EditAgreement context (via AllGrantNumberSelect) that these unit tests don't provide.
+vi.mock("../BudgetLinesForm", () => ({
+    __esModule: true,
+    default: () => <div data-testid="budget-lines-form" />
+}));
+
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -50,9 +62,9 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
     __esModule: true,
     default: vi.fn((...args) => {
         const selectedAgreement = args[6];
-        // Check if agreement is not yet developed based on agreement type
+        // Mirror the real hook's isNotDevelopedYet: only DIRECT_OBLIGATION and IAA are
+        // not-yet-developed. GRANT is developed and editable, so it must not be treated as NYD.
         const isAgreementNotYetDeveloped =
-            selectedAgreement?.agreement_type === AgreementType.GRANT ||
             selectedAgreement?.agreement_type === AgreementType.DIRECT_OBLIGATION ||
             selectedAgreement?.agreement_type === AgreementType.IAA;
 
@@ -317,7 +329,37 @@ describe("CreateBLIsAndSCs", () => {
         expect(screen.queryByTestId("services-components")).not.toBeInTheDocument();
     });
 
-    test("renders ServicesComponents for non-NYD agreement types (CONTRACT)", () => {
+    test("renders ServicesComponents for non-NYD agreement types (CONTRACT) when the user can edit", () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedResearchProject={contractAgreement}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={true}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.getByTestId("services-components")).toBeInTheDocument();
+    });
+
+    test("hides ServicesComponents editing for a CONTRACT when the user cannot edit budget lines (lifecycle-locked)", () => {
         const mockStore = createMockStore();
         const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
 
@@ -344,7 +386,67 @@ describe("CreateBLIsAndSCs", () => {
             </Provider>
         );
 
-        expect(screen.getByTestId("services-components")).toBeInTheDocument();
+        expect(screen.queryByTestId("services-components")).not.toBeInTheDocument();
+    });
+
+    test("hides GrantNumbers editing for a GRANT when the user cannot edit budget lines (lifecycle-locked)", () => {
+        const mockStore = createMockStore();
+        const grantAgreement = { ...agreement, agreement_type: AgreementType.GRANT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={grantAgreement.budget_line_items}
+                        selectedResearchProject={grantAgreement}
+                        selectedAgreement={grantAgreement}
+                        selectedProcurementShop={grantAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.queryByTestId("grant-numbers")).not.toBeInTheDocument();
+    });
+
+    test("renders GrantNumbers editing for a GRANT when the user can edit budget lines", () => {
+        const mockStore = createMockStore();
+        const grantAgreement = { ...agreement, agreement_type: AgreementType.GRANT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={grantAgreement.budget_line_items}
+                        selectedResearchProject={grantAgreement}
+                        selectedAgreement={grantAgreement}
+                        selectedProcurementShop={grantAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={true}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.getByTestId("grant-numbers")).toBeInTheDocument();
     });
 
     test("hideFooterButtons hides the Cancel/Continue action row", () => {

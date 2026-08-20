@@ -442,9 +442,6 @@ const AgreementEditForm = ({
                     )}
                 </>
             )}
-            {/* REVIEW: NEW — Grant Details block (#5926). Sits above the contract block, matching the
-                design's order (Agreement Details → Grant Details). FPO reuses project_officer_id and
-                Project Specialist reuses alternate_project_officer_id (relabeled at the display layer). */}
             {isGrant && (
                 <>
                     <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
@@ -523,11 +520,6 @@ const AgreementEditForm = ({
                     />
                 </>
             )}
-            {/* REVIEW: NEW — wraps ContractTypeSelect through Notes TextArea (the entire contract-only
-                control block). When Grant is selected none of these render, so the form shows only
-                the 4 grant fields: type filter Select, Title Input, Nickname Input, Description TextArea.
-                The AA controls above are already gated by selectedAgreementFilter === PARTNER / isAgreementAA
-                so they also won't appear for grants. */}
             {!isGrant && (
                 <>
                     <ContractTypeSelect
