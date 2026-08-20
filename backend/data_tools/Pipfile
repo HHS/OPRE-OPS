@@ -28,6 +28,7 @@ python-dotenv = "==1.2.3"
 ipython = "==9.16.1"
 urllib3 = "==2.7.0"
 azure-communication-email = "==1.1.0"
+greenlet = "==3.5.5"
 
 [dev-packages]
 nox = "==2026.8.17"
