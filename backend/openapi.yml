@@ -757,7 +757,8 @@ paths:
         `services_components` / `budget_line_items` arrays inside the `agreement`
         section are rejected — they must be sent at the top level of the bundle.
 
-        Reviewer notifications for any change requests produced by BLI updates are
+        Reviewer notifications for any change requests produced by BLI updates or
+        deletions (PLANNED / IN_EXECUTION lines route to a deletion change request) are
         sent **after** the bundle commit succeeds. If a notification fails, the change
         request id is returned in `failed_notification_change_request_ids` so the
         client can surface a "saved, but the approval request didn't go out" message.
@@ -8996,9 +8997,11 @@ components:
         notes:
           type: string
           nullable: true
+          maxLength: 750
           description: >-
             Additional notes about this step (ACQUISITION_PLANNING,
-            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps)
+            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps).
+            Max 750 characters.
         target_completion_date:
           type: string
           format: date

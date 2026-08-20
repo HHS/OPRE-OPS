@@ -175,6 +175,53 @@ def test_bundle_deletes_bli_then_sc(auth_client, bundle_contract, loaded_db):
     assert loaded_db.get(ServicesComponent, sc.id) is None
 
 
+def test_bundle_deletes_planned_bli_routes_to_change_request(budget_team_auth_client, bundle_contract, loaded_db):
+    """A non-DRAFT delete in the bundle creates a deletion change request instead of raising.
+
+    Regression: the bundle previously rejected any non-DRAFT delete (``commit=False``) with a
+    ValidationError, which failed the whole save even though the review-edit screen shows the
+    trash control for PLANNED/IN_EXECUTION lines (isDeletable) and promises approval routing.
+    Budget-team (non-super) so the delete routes to a change request; CAN 500 → managing
+    division 5.
+    """
+    from models import BudgetLineItemChangeRequest
+
+    sc = bundle_contract.services_components[0]
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=bundle_contract.id,
+        services_component_id=sc.id,
+        line_description="Planned BLI to delete",
+        amount=250000.00,
+        can_id=500,
+        status=BudgetLineItemStatus.PLANNED,
+        created_by=bundle_contract.project_officer_id,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+    planned_bli_id = planned_bli.id
+
+    response = budget_team_auth_client.patch(
+        _bundle_url(bundle_contract.id),
+        json={"budget_line_items": {"delete": [planned_bli_id]}},
+    )
+    # 202: the bundle produced a change request (approval routing) rather than an immediate save.
+    assert response.status_code == 202
+    # Counted as a delete, and a deletion change request id is surfaced for post-commit notify.
+    assert response.json["budget_line_items_deleted"] == 1
+    assert len(response.json["change_request_ids"]) == 1
+
+    # The BLI is left intact (not hard-deleted) until the request is approved, and is in review.
+    loaded_db.expire(planned_bli)
+    surviving = loaded_db.get(BudgetLineItem, planned_bli_id)
+    assert surviving is not None
+    assert surviving.in_review is True
+
+    cr = loaded_db.get(BudgetLineItemChangeRequest, response.json["change_request_ids"][0])
+    assert cr is not None
+    assert cr.has_delete_change is True
+    assert cr.budget_line_item_id == planned_bli_id
+
+
 # ---------------------------------------------------------------------------
 # Rollback semantics — the whole point of this endpoint
 # ---------------------------------------------------------------------------

@@ -36,6 +36,7 @@ export default defineConfig({
             "cypress/e2e/declineChangeRequestsAtAgreementLevel.cy.js",
             "cypress/e2e/editAgreement.cy.js",
             "cypress/e2e/editAgreementAsBasicUser.cy.js",
+            "cypress/e2e/editGrantAgreement.cy.js",
             "cypress/e2e/loginPage.cy.js",
             "cypress/e2e/mainPage.cy.js",
             "cypress/e2e/notificationCenter.cy.js",

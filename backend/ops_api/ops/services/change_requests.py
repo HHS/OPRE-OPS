@@ -377,13 +377,18 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         return change_request_ids
 
-    def add_bli_delete_change_request(self, budget_line_item: BudgetLineItem) -> int:
+    def add_bli_delete_change_request(self, budget_line_item: BudgetLineItem, commit: bool = True) -> int:
         """
         Create a single change request representing a request to delete a budget line item.
 
         The request is marked with a ``{"delete": True}`` sentinel in ``requested_change_data``;
         the ``requested_change_diff`` carries the current amount (so the reviewer card can show it
         as currency) against the literal "Deleted".
+
+        When ``commit`` is False, the change request is created without committing or notifying
+        division reviewers (mirrors ``add_bli_change_requests``). The caller owns the surrounding
+        transaction and must commit and then call ``notify_division_reviewers`` for the returned id
+        once that commit succeeds. Used by the atomic edit-bundle flow.
         """
         with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
             managing_division = get_division_for_budget_line_item(budget_line_item.id)
@@ -402,7 +407,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
             }
 
-            change_request = self.create(change_request_data)
+            change_request = self.create(change_request_data, commit=commit)
             cr_meta.metadata.update({"bli_id": budget_line_item.id, "change_request": change_request.to_dict()})
             return change_request.id
 

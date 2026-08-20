@@ -417,7 +417,9 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     # Fields shared by Acquisition Planning, Pre-Solicitation, Solicitation, and Evaluation steps
     task_completed_by = fields.Integer(required=False, allow_none=True)
     date_completed = fields.Date(required=False, allow_none=True)
-    notes = fields.String(required=False, allow_none=True)
+    # Max length mirrors the frontend STEP_NOTES_MAX_LENGTH so a client bypassing the
+    # UI can't persist an arbitrarily long note.
+    notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=750))
 
     # Pre-solicitation specific fields
     target_completion_date = fields.Date(required=False, allow_none=True)

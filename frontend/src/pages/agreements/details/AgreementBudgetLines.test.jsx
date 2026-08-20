@@ -148,21 +148,19 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("disables the Edit button for a grant agreement", () => {
+        test("enables the Edit button for a grant agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
 
-            // The clickable Edit button (a real <button>) is replaced by the disabled span variant
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.getByText("Edit")).toBeInTheDocument();
+            // The clickable Edit button (a real <button>) renders for grants, not the disabled span variant
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
         });
 
-        test("disables the Change BL Status button for a grant agreement", () => {
+        test("enables the Change BL Status button for a grant agreement", () => {
             renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
 
-            const requestButton = screen.getByText("Change BL Status");
-            expect(requestButton).toHaveAttribute("aria-disabled", "true");
-            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
-            expect(screen.queryByRole("link", { name: "Change BL Status" })).not.toBeInTheDocument();
+            const requestLink = screen.getByRole("link", { name: "Change BL Status" });
+            expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
         });
 
         test("keeps the Edit and Change BL Status buttons enabled for a contract agreement", () => {
@@ -173,6 +171,73 @@ describe("AgreementBudgetLines", () => {
 
             const requestLink = screen.getByRole("link", { name: "Change BL Status" });
             expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+    });
+
+    describe("Grant lifecycle locks", () => {
+        // A super user so the Edit button would render if editing were allowed; the lock, not the
+        // user's permission, is what hides it. Regular users would hide the button regardless.
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const grantAgreement = { ...mockAgreement, agreement_type: "GRANT", _meta: { isEditable: true } };
+
+        const renderWithLock = (lockProps) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={grantAgreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                            isPreAwardInReview={false}
+                            isAwardInReview={false}
+                            isPostPreAwardLocked={false}
+                            {...lockProps}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("hides the Edit button for a grant when pre-award is in review", () => {
+            renderWithLock({ isPreAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when award is in review", () => {
+            renderWithLock({ isAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when post-pre-award locked", () => {
+            renderWithLock({ isPostPreAwardLocked: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("enables the Edit button for a grant when no lifecycle lock is active", () => {
+            renderWithLock({});
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
         });
     });
 

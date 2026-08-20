@@ -148,7 +148,7 @@ class BudgetLineItemService:
             self.db_session.flush()
         return new_bli
 
-    def delete(self, id: int, commit: bool = True) -> tuple[BudgetLineItem, int]:
+    def delete(self, id: int, commit: bool = True) -> tuple[BudgetLineItem, int, int | None]:
         """
         Delete a Budget Line Item with the given id.
 
@@ -157,9 +157,14 @@ class BudgetLineItemService:
         change request is created and 202 is returned (the BLI is left intact until the request
         is approved).
 
-        ``commit=False`` is used by the atomic edit-bundle flow, which only ever hard-deletes
-        DRAFT lines and manages the surrounding transaction itself; in that mode the immediate
-        delete flushes instead of committing so the bundle stays atomic.
+        Returns ``(bli, status_code, change_request_id)``. ``change_request_id`` is None for a
+        hard delete and the created deletion CR's id for the 202 path.
+
+        ``commit=False`` is used by the atomic edit-bundle flow, which manages the surrounding
+        transaction itself. In that mode a hard delete flushes instead of committing, and a
+        deletion change request is created WITHOUT committing or notifying — the bundle commits
+        everything atomically and then notifies reviewers for the returned CR id post-commit
+        (mirroring how the bundle already handles edit-driven change requests).
         """
         bli = self.db_session.get(BudgetLineItem, id)
 
@@ -182,22 +187,7 @@ class BudgetLineItemService:
                 self.db_session.commit()
             else:
                 self.db_session.flush()
-            return bli, 200
-
-        # Beyond this point the delete routes through a change request, which commits and
-        # notifies immediately. That is incompatible with a caller-owned atomic transaction
-        # (``commit=False``, e.g. the edit-bundle flow): committing here would prematurely
-        # persist the whole in-flight bundle. Fail loudly instead of silently breaking
-        # atomicity. The edit-bundle only ever hard-deletes DRAFT lines, so this is a guard
-        # against future misuse, not a path exercised today.
-        if not commit:
-            raise ValidationError(
-                {
-                    "status": "Only DRAFT budget line items can be deleted as part of an atomic edit. "
-                    "PLANNED or Executing budget lines must be deleted individually so the change "
-                    "can be routed for approval."
-                },
-            )
+            return bli, 200, None
 
         # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
         # shared editability gate (in_review + OBE + Pre-Award/Award step block) so the rules
@@ -207,9 +197,13 @@ class BudgetLineItemService:
                 {"status": "Budget Line Item is not in a deletable state."},
             )
 
+        # Route the deletion through a change request. Under ``commit=False`` (edit-bundle) the CR
+        # is created without committing/notifying so it stays inside the caller's atomic
+        # transaction — the same contract the bundle already relies on for edit-driven change
+        # requests (see ``add_bli_change_requests``). The bundle notifies reviewers post-commit.
         change_request_service = ChangeRequestService(self.db_session)
-        change_request_service.add_bli_delete_change_request(bli)
-        return bli, 202
+        change_request_id = change_request_service.add_bli_delete_change_request(bli, commit=commit)
+        return bli, 202, change_request_id
 
     def get(self, id: int) -> BudgetLineItem:
         """

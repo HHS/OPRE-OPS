@@ -214,6 +214,11 @@ const useCreateBLIsAndSCs = (
         return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
     }, [servicesComponents]);
 
+    // Disable this blocker once the wizard advances past step 0. The review-screen
+    // caller (EditAgreementAndBudgetLines) never passes currentStep, so it stays 0 and
+    // this blocker remains disabled there — the review screen owns its own blocker via
+    // useNavigationBlocker. Do NOT pass currentStep from the review screen: that would
+    // activate a second live blocker and both would fire on the same navigation.
     React.useEffect(() => {
         if (currentStep != 0) {
             setBlockerDisabledForCreateAgreement(true);
@@ -319,9 +324,7 @@ const useCreateBLIsAndSCs = (
             const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
                 deleteGrantNumber(id).unwrap()
             );
-            const blisDeletionPromises = deletedBudgetLines.map((deletedBudgetLineId) =>
-                deleteBudgetLineItem(deletedBudgetLineId).unwrap()
-            );
+            const blisDeletionPromises = deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap());
 
             // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.
             await Promise.all(blisDeletionPromises);
@@ -578,9 +581,8 @@ const useCreateBLIsAndSCs = (
             // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
             // line STILL routes to a change request — hence the deletion signal gates on super-user
             // only (via isDeletionRoutedToApproval), not canEditDirectly.
-            // deletedBudgetLines holds only ids (the DELETE_BUDGET_LINE_ITEM reducer case stores
-            // action.payload.id), so look each one up in the original budgetLines prop to get the
-            // status isDeletionRoutedToApproval needs.
+            // deletedBudgetLines holds bare ids. Look each up in the original budgetLines prop
+            // to get the authoritative status isDeletionRoutedToApproval needs.
             const deletionsRoutedToApproval = deletedBudgetLines
                 .map((id) => budgetLines.find((bl) => bl.id === id))
                 .filter((bl) => isDeletionRoutedToApproval(bl, isSuperUser));
@@ -736,12 +738,23 @@ const useCreateBLIsAndSCs = (
                 ? currentBudgetLine.serviceComponentGroupingLabel
                 : (servicesComponentNumber ?? 0).toString();
 
+        // Keep grant_number_id in sync with the dropdown selection. Spreading currentBudgetLine
+        // alone would retain the BLI's original (stale) grant_number_id, and both save paths key
+        // off it: the non-bundle path's addGrantNumberIdToBLI resolves by id (ignoring the new
+        // selection), and the bundle dirty-check compares grant_number_id (treating a
+        // reassignment as no change). For an existing (persisted) grant number we stamp its id
+        // now; for a not-yet-persisted in-session grant number there is no id yet, so null it and
+        // let the save-time number/ref resolution link it.
+        const selectedGrantNumber = grantNumbers?.find((gn) => gn.number === grantNumberNumber);
+        const reassignedGrantNumberId =
+            selectedGrantNumber && "created_on" in selectedGrantNumber ? selectedGrantNumber.id : null;
+
         const payload = {
             ...currentBudgetLine,
             // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
             // rewrite the BLI as "SC 0" and break grouping). For contracts, keep the SC fields.
             ...(isGrant
-                ? { grant_number_number: grantNumberNumber }
+                ? { grant_number_number: grantNumberNumber, grant_number_id: reassignedGrantNumberId }
                 : {
                       services_component_number: servicesComponentNumber,
                       serviceComponentGroupingLabel
@@ -855,21 +868,26 @@ const useCreateBLIsAndSCs = (
      * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} createdGrantNumbers
      */
     const addGrantNumberIdToBLI = (budgetLineItem, createdGrantNumbers) => {
-        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
-        // A BLI that carries a grant_number_number the lookup can't resolve (its grant number was
-        // deleted mid-edit, or page data is stale) would otherwise be saved with grant_number_id:
-        // null, silently dropping the linkage. Fail loudly so handleSave's catch surfaces an error
-        // instead of corrupting data. A null/undefined grant_number_number is left as-is: an
-        // unassigned grant number is legitimate for a draft grant BLI.
-        if (budgetLineItem.grant_number_number != null && !matchGrantNumber) {
-            throw new Error(
-                `Unable to link budget line to grant number ${budgetLineItem.grant_number_number}. It may have been removed — please try again.`
-            );
+        // For persisted BLIs (have a grant_number_id), prefer ID-based matching so a renamed
+        // grant number (same id, changed number) is not incorrectly disassociated on save.
+        if (budgetLineItem.grant_number_id != null) {
+            const byId = createdGrantNumbers.find((gn) => gn.id === budgetLineItem.grant_number_id);
+            return {
+                ...budgetLineItem,
+                grant_number_id: byId?.id ?? null,
+                grant_number_number: undefined
+            };
         }
+        // New BLIs have no ID yet — fall back to number matching.
+        // When a grant number is deleted mid-edit its referencing BLIs retain their
+        // grant_number_number but the number no longer resolves. Mirror the SC path
+        // (addServiceComponentIdToBLI) and null the link so the BLI is disassociated
+        // rather than causing an error.
+        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
         return {
             ...budgetLineItem,
             grant_number_id: matchGrantNumber?.id ?? null,
-            grant_number_number: undefined // Remove this property immutably
+            grant_number_number: undefined
         };
     };
 
