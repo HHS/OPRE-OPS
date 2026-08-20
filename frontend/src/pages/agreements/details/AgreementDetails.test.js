@@ -495,7 +495,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
-    test("disables the Edit button for grant agreements", () => {
+    test("enables the Edit button for grant agreements", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
@@ -521,10 +521,10 @@ describe("AgreementDetails", () => {
             </Provider>
         );
 
-        // The disabled Edit variant is rendered instead of the clickable button
+        // The clickable Edit button is rendered for grants, not the disabled variant
         const editButton = screen.getByRole("button", { name: /Edit/i });
-        expect(editButton).toHaveAttribute("aria-disabled", "true");
-        expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+        expect(editButton).not.toHaveAttribute("data-cy", "edit-disabled");
     });
 
     test("enables the Edit button for non-grant agreements", () => {

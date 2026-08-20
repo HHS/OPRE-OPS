@@ -149,6 +149,26 @@ export function EditAgreementProvider({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLinesReseedKey]);
 
+    // Reseed officer objects when the async getUser() fetches resolve after mount.
+    // The provider mounts before the officer fetch completes (officers start as {}),
+    // so useReducer's initial state captures {}. These effects dispatch once the real
+    // object arrives (guarded on ?.id so the {} placeholder never clobbers).
+    // Known race: if the user changes the officer field before getUser() resolves,
+    // the arriving fetch result will overwrite their selection. Low likelihood in
+    // practice (fetch is fast and the field is not the first thing users reach for),
+    // but a future fix should track whether the field has been edited before dispatching.
+    useEffect(() => {
+        if (projectOfficer?.id) {
+            dispatch({ type: "SET_STATE", key: "selected_project_officer", value: projectOfficer });
+        }
+    }, [projectOfficer]);
+
+    useEffect(() => {
+        if (alternateProjectOfficer?.id) {
+            dispatch({ type: "SET_STATE", key: "selected_alternate_project_officer", value: alternateProjectOfficer });
+        }
+    }, [alternateProjectOfficer]);
+
     return (
         <AgreementEditorContext.Provider value={state}>
             <EditAgreementDispatchContext.Provider value={dispatch}>{children}</EditAgreementDispatchContext.Provider>

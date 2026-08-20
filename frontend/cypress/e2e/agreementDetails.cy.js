@@ -272,10 +272,10 @@ describe("agreement details", () => {
 
         // Verify modal appears
         cy.waitForModalToAppear();
-        cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
+        cy.get("#ops-modal-heading").should("contain", "Save changes before leaving?");
         cy.get("#ops-modal-description").should(
             "contain",
-            "Do you want to save your changes before leaving this page?"
+            "You have unsaved changes. If you leave without saving, these changes will be lost."
         );
 
         // Test ESC key cancels navigation

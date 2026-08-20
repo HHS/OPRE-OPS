@@ -359,7 +359,7 @@ describe("CAN spending page", () => {
         cy.get("#big-budget-summary-card").should("exist");
         cy.get("#big-budget-summary-card").should("contain", "-$ 117,797,640.00");
         cy.get("#project-agreement-bli-card").should("exist");
-        cy.get("span").should("contain", "12 Draft");
+        cy.get("span").should("contain", "14 Draft");
         cy.get("span").should("contain", "12 Planned");
         cy.get("span").should("contain", "7 Executing");
         cy.get("span").should("contain", "7 Obligated");
@@ -369,7 +369,7 @@ describe("CAN spending page", () => {
             .and("contain", "0%")
             .and("contain", "0%")
             .and("contain", "0%")
-            .and("contain", "$35,943,280.00")
+            .and("contain", "$37,193,280.00")
             .and("contain", "$66,648,053.00")
             .and("contain", "$25,204,081.00")
             .and("contain", "$25,945,506.00");
@@ -878,8 +878,8 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away via tab
         cy.get('[data-cy="details-tab-CAN Funding"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
-        cy.get(".usa-prose").should("contain", "Do you want to save your changes before leaving this page?");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
+        cy.get(".usa-prose").should("contain", "You have unsaved changes. If you leave without saving, these changes will be lost.");
         // click "Leave without saving"
         cy.get("[data-cy='cancel-action']").click();
         // should navigate to funding tab
@@ -900,7 +900,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Spending"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // click "Save Changes"
         cy.get("[data-cy='confirm-action']").click();
         // should navigate to spending tab
@@ -938,7 +938,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         cy.get("#can-nickName").type("Escape Test");
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Funding"]').click();
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // press Escape to close the modal
         cy.get("body").type("{esc}");
         cy.get(".usa-modal__heading").should("not.exist");
@@ -961,7 +961,7 @@ describe("CAN unsaved changes navigation blocking", () => {
         // try to navigate away
         cy.get('[data-cy="details-tab-CAN Details"]').click();
         // blocker modal should appear
-        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-modal__heading").should("contain", "Save changes before leaving?");
         // click "Leave without saving"
         cy.get("[data-cy='cancel-action']").click();
         // should navigate to details tab

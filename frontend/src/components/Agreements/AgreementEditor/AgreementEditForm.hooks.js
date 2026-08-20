@@ -310,9 +310,6 @@ const useAgreementEditForm = (
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
-    // REVIEW: NEW — mirrors the isAgreementAA pattern directly above.
-    // Consumed by AgreementEditForm.jsx to hide contract controls and by shouldDisableBtn (indirectly,
-    // via the suite's isGrant guards letting the button enable with only name + project_id).
     const isGrant = agreementType === AGREEMENT_TYPES.GRANT;
     const shouldDisableBtn =
         !agreementTitle ||
@@ -473,8 +470,11 @@ const useAgreementEditForm = (
         if (isEditMode && setIsEditMode) setIsEditMode(false);
     }, [setHasAgreementChanged, isEditMode, setIsEditMode]);
 
+    // In review mode (EditAgreementAndBudgetLines) the page registers its own blocker
+    // covering both agreement and BLI changes. Disable the form-level blocker there so
+    // only one blocker is live at a time — React Router supports only one per router.
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
-        hasChanged: hasAgreementChanged,
+        hasChanged: !isReviewMode && hasAgreementChanged,
         saveChanges: blockerSaveChanges,
         onExit: blockerOnExit
     });
@@ -669,14 +669,6 @@ const useAgreementEditForm = (
         return "Disabled";
     };
 
-    // REVIEW: CHANGED — added GRANT branch that clears all contract-only state.
-    // This is payload hygiene: if a user selects Contract, starts typing, then switches to Grant,
-    // the stale contract values (contract_type, vendor, PO, etc.) would otherwise be sent to the API.
-    // The suite guards already prevent those fields from blocking Submit, but the payload would still
-    // contain junk. Clearing here ensures a clean 4-field payload (name, nick_name, description,
-    // agreement_type + project_id) regardless of prior user interaction.
-    // Note: team_members uses UPDATE_AGREEMENT (not a dedicated SET_TEAM_MEMBERS) because the reducer
-    // only has ADD_TEAM_MEMBER and REMOVE_TEAM_MEMBER; UPDATE_AGREEMENT sets the key directly.
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
@@ -755,7 +747,7 @@ const useAgreementEditForm = (
         vendorDisabled,
         immutableFields,
         isAgreementAA,
-        isGrant, // REVIEW: NEW — added to return so AgreementEditForm.jsx can destructure it
+        isGrant,
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,

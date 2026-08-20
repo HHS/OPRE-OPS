@@ -82,18 +82,33 @@ const useReviewAgreement = (agreementId) => {
     }, [budgetLines]);
 
     const agreementValidationResults = React.useMemo(() => {
+        // Bypass agreement-field validation for grants (OPS-6013) so a grant BL status change can
+        // proceed without the contract-oriented required-field checks. Returning null makes the
+        // "Send to Approval" gate and the error banner treat the agreement as valid.
+        if (isGrant) {
+            return null;
+        }
         if (selectedBudgetLines.length === 0) {
             return null;
         }
         return suiteResult;
-    }, [selectedBudgetLines.length, suiteResult]);
+    }, [isGrant, selectedBudgetLines.length, suiteResult]);
 
     const bliValidationResults = React.useMemo(() => {
+        // Grant BLI validation is intentionally skipped on the review/send-to-approval page.
+        // The suite's grant_number_id check would gate every DRAFT→PLANNED status change for
+        // BLIs not yet linked to a grant number, but linking is not a prerequisite for DRAFT
+        // status changes. The backend enforces required-field rules per transition; the frontend
+        // validator is optimized for contract agreements (SC, procurement shop) and does not
+        // have an equivalent grant-specific model yet.
+        if (isGrant) {
+            return [];
+        }
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
         }
         return validateBudgetLineItems(selectedBudgetLines);
-    }, [selectedBudgetLines]);
+    }, [isGrant, selectedBudgetLines]);
 
     const hasBLIError = React.useMemo(() => {
         if (!bliValidationResults || bliValidationResults.length === 0) {
