@@ -11,6 +11,7 @@ from data_tools.src.usage_metrics.utils import (
     aggregate_events,
     aggregate_user_sign_ins,
     build_workbook,
+    deliver_report_link,
     is_deactivating_update,
     parse_lookback_days,
     resolve_actor_id,
@@ -294,6 +295,10 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
     config.usage_metrics_container_name = "data"
     config.usage_metrics_report_prefix = "reports"
     config.usage_metrics_lookback_days = "30"
+    # Email delivery not configured in this test -> deliver_report_link should no-op.
+    config.usage_metrics_acs_endpoint = None
+    config.usage_metrics_email_sender = None
+    config.usage_metrics_email_recipients = None
 
     conn = MagicMock()
     mocker.patch("data_tools.src.usage_metrics.utils.Session").return_value.__enter__.return_value = db
@@ -417,3 +422,81 @@ def test_build_workbook_has_two_sheets_with_expected_columns():
     users = wb["Per-user"]
     assert [c.value for c in users[1]] == ["name", "email", "division", "roles", "sign_in_count", "last_sign_in_utc"]
     assert [c.value for c in users[2]] == ["Ada Aardvark", "a@example.com", "OD", "analyst", 3, "2026-07-06T12:00:00"]
+
+
+# ---------------------------------------------------------------------------
+# Report-link email delivery (deliver_report_link).
+# ---------------------------------------------------------------------------
+
+
+def _email_config(**overrides):
+    """A MagicMock config with email delivery fully configured; override per test."""
+    config = MagicMock()
+    config.usage_metrics_acs_endpoint = "https://acs.communication.azure.com"
+    config.usage_metrics_email_sender = "DoNotReply@example.com"
+    config.usage_metrics_email_recipients = "ux1@example.com, ux2@example.com"
+    config.usage_metrics_sas_expiry_days = "90"
+    config.vault_url = "https://vault.example.com"
+    config.vault_file_storage_key = "storage-key-secret"
+    for key, value in overrides.items():
+        setattr(config, key, value)
+    return config
+
+
+def test_deliver_report_link_sends_when_configured(mocker):
+    """With ACS fully configured, a SAS link is minted from the vault key and emailed."""
+    get_secret = mocker.patch("data_tools.src.usage_metrics.utils.get_secret", return_value="the-account-key")
+    build_sas = mocker.patch(
+        "data_tools.src.usage_metrics.utils.build_blob_sas_url",
+        return_value="https://acct.blob.core.windows.net/data/reports/usage-metrics-2026-08-19.xlsx?sig=x",
+    )
+    send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
+
+    config = _email_config()
+    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+
+    # Vault supplies the storage key (no key in job env); SAS built for the dated blob with expiry.
+    get_secret.assert_called_once_with("https://vault.example.com", "storage-key-secret")
+    build_sas.assert_called_once_with(
+        "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx", "the-account-key", 90
+    )
+    # Email is sent to both parsed recipients with the minted link.
+    send_email.assert_called_once()
+    args = send_email.call_args.args
+    assert args[0] == "https://acs.communication.azure.com"
+    assert args[1] == "DoNotReply@example.com"
+    assert args[2] == ["ux1@example.com", "ux2@example.com"]
+    assert args[3] == build_sas.return_value
+    assert args[4] == 90
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"usage_metrics_acs_endpoint": None},
+        {"usage_metrics_email_sender": None},
+        {"usage_metrics_email_recipients": None},
+        {"usage_metrics_email_recipients": ""},
+    ],
+)
+def test_deliver_report_link_noops_when_not_configured(mocker, overrides):
+    """Missing any of endpoint/sender/recipients skips email entirely (no vault read, no send)."""
+    get_secret = mocker.patch("data_tools.src.usage_metrics.utils.get_secret")
+    send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
+
+    config = _email_config(**overrides)
+    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+
+    get_secret.assert_not_called()
+    send_email.assert_not_called()
+
+
+@pytest.mark.parametrize("bad_value", ["0", "-5", "not-a-number"])
+def test_deliver_report_link_rejects_bad_expiry(mocker, bad_value):
+    """A non-positive or non-integer SAS expiry fails fast rather than minting a useless link."""
+    mocker.patch("data_tools.src.usage_metrics.utils.get_secret")
+    mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
+
+    config = _email_config(usage_metrics_sas_expiry_days=bad_value)
+    with pytest.raises(ValueError):
+        deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx")

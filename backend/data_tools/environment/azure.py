@@ -84,3 +84,19 @@ class AzureConfig(DataToolsConfig):
     @property
     def usage_metrics_lookback_days(self) -> str:
         return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "7")
+
+    @property
+    def usage_metrics_sas_expiry_days(self) -> str:
+        return os.getenv("USAGE_METRICS_SAS_EXPIRY_DAYS", "90")
+
+    @property
+    def usage_metrics_acs_endpoint(self) -> str | None:
+        return os.getenv("USAGE_METRICS_ACS_ENDPOINT") or None
+
+    @property
+    def usage_metrics_email_sender(self) -> str | None:
+        return os.getenv("USAGE_METRICS_EMAIL_SENDER") or None
+
+    @property
+    def usage_metrics_email_recipients(self) -> str | None:
+        return os.getenv("USAGE_METRICS_EMAIL_RECIPIENTS") or None

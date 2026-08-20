@@ -52,9 +52,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from data_tools.environment.types import DataToolsConfig
-from data_tools.src.azure_utils.utils import upload_blob
+from data_tools.src.azure_utils.utils import build_blob_sas_url, get_secret, upload_blob
 from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import get_config
+from data_tools.src.usage_metrics.email_delivery import parse_recipients, send_report_link_email
 from models import Division, OpsEvent, OpsEventStatus, OpsEventType, User, UserStatus
 
 # Logger configuration (mirrors cleanup_user_sessions).
@@ -380,6 +381,42 @@ def parse_lookback_days(lookback_days: str) -> int:
     return days
 
 
+def deliver_report_link(config: DataToolsConfig, account_url: str, container: str, blob_name: str) -> None:
+    """Email a time-limited SAS download link for ``blob_name`` to the UX team.
+
+    No-ops (with a log line) unless ACS email is fully configured -- endpoint, sender, and at least
+    one recipient. This keeps local/dev/staging runs from attempting to send mail while letting the
+    same code path light up in an environment that has ACS wired.
+
+    The SAS is signed with the storage account key, which is read from Key Vault via the managed
+    identity at call time (never stored in the job env). The link points at the dated report blob
+    so each week's email references that week's specific report, and the link stays valid for
+    ``usage_metrics_sas_expiry_days`` days.
+    """
+    acs_endpoint = config.usage_metrics_acs_endpoint
+    sender = config.usage_metrics_email_sender
+    recipients = parse_recipients(config.usage_metrics_email_recipients)
+
+    if not (acs_endpoint and sender and recipients):
+        logger.info("ACS email not fully configured (endpoint/sender/recipients); skipping report email.")
+        return
+
+    try:
+        expiry_days = int(config.usage_metrics_sas_expiry_days)
+    except (TypeError, ValueError) as e:
+        raise ValueError(
+            f"Invalid usage_metrics_sas_expiry_days value: {config.usage_metrics_sas_expiry_days!r}. "
+            "Must be an integer."
+        ) from e
+    if expiry_days <= 0:
+        raise ValueError(f"usage_metrics_sas_expiry_days must be > 0, got {expiry_days}.")
+
+    account_key = get_secret(config.vault_url, config.vault_file_storage_key)
+    download_url = build_blob_sas_url(account_url, container, blob_name, account_key, expiry_days)
+
+    send_report_link_email(acs_endpoint, sender, recipients, download_url, expiry_days)
+
+
 def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes:
     """Generate the usage report and deliver it (Blob upload or local file).
 
@@ -413,6 +450,8 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
         upload_blob(account_url, container, dated_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         logger.info(f"Uploaded usage report workbook ({latest_xlsx_blob}).")
+        # Email the UX team a download link to this week's dated report (no-ops unless ACS is set).
+        deliver_report_link(config, account_url, container, dated_xlsx_blob)
     else:
         local_xlsx_path = f"usage-metrics-{today}.xlsx"
         with open(local_xlsx_path, "wb") as f:

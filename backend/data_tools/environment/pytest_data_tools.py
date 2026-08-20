@@ -49,3 +49,19 @@ class PytestDataToolsConfig(DataToolsConfig):
     @property
     def usage_metrics_lookback_days(self) -> str:
         return "7"
+
+    @property
+    def usage_metrics_sas_expiry_days(self) -> str:
+        return "90"
+
+    @property
+    def usage_metrics_acs_endpoint(self) -> str | None:
+        return None
+
+    @property
+    def usage_metrics_email_sender(self) -> str | None:
+        return None
+
+    @property
+    def usage_metrics_email_recipients(self) -> str | None:
+        return None

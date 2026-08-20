@@ -270,6 +270,44 @@ Then confirm the report appears at `data/reports/usage-metrics-latest.xlsx` (the
 workbook with the Aggregate and Per-user sheets). The UX team needs read access to that container
 (SAS link or `Storage Blob Data Reader`) to retrieve it.
 
+### Emailing a download link to the UX team (OPS-4148, no Azure ID needed)
+
+The UX team has no Azure/Entra identity, so the job can email them a **time-limited SAS download
+link** to that week's dated report (`reports/usage-metrics-<date>.xlsx`) via **Azure Communication
+Services (ACS)**. Code: `deliver_report_link` in `src/usage_metrics/utils.py` →
+`build_blob_sas_url` in `src/azure_utils/utils.py` (mints the SAS) →
+`send_report_link_email` in `src/usage_metrics/email_delivery.py` (sends via ACS). Email delivery
+**no-ops** (report still uploads to Blob) unless `USAGE_METRICS_ACS_ENDPOINT`,
+`USAGE_METRICS_EMAIL_SENDER`, and `USAGE_METRICS_EMAIL_RECIPIENTS` are all set — so local/dev/staging
+runs stay silent until wired.
+
+**SAS design (why account-key, not user-delegation):** a user-delegation SAS (MI-signed) is capped
+at **7 days** by Azure; the link needs ~90 days, so the SAS is signed with the **storage account
+key**. The key is **not** stored on the job — it's read from **Key Vault via the MI** at run time
+(`get_secret(vault_url, vault_file_storage_key)`), so the no-plaintext-secret posture holds. The
+link is a bearer token to **named-user data** — keep expiry as short as the use case allows and the
+recipient list tight. Dated files accumulate in Blob for history; only the *links* expire.
+
+**Env vars (all optional; add to `create_usage_metrics_job.sh` invocation):**
+
+| Var | Purpose | Default |
+|---|---|---|
+| `USAGE_METRICS_ACS_ENDPOINT` | ACS resource endpoint (`https://<res>.communication.azure.com`) | — (unset = no email) |
+| `USAGE_METRICS_EMAIL_SENDER` | Verified ACS `MailFrom` address | — |
+| `USAGE_METRICS_EMAIL_RECIPIENTS` | Comma-separated recipient addresses | — |
+| `USAGE_METRICS_SAS_EXPIRY_DAYS` | Days the download link stays valid | `90` |
+| `VAULT_URL`, `VAULT_FILE_STORAGE_KEY` | Key Vault URL + secret name of the storage account key (used to sign the SAS) | — |
+
+**One-time Azure prerequisites (per environment, do in the target subscription):**
+1. Provision an **ACS resource** + an **Email Communication Service** with a verified sender domain
+   (Azure-managed subdomain is quickest; custom domain needs DNS).
+2. Grant the `storageAccountUser` MI the **ACS sender role** (for Entra-auth email send).
+3. Ensure the MI can **read `VAULT_FILE_STORAGE_KEY` from Key Vault** (get-secret access) and that
+   the secret holds the storage account key.
+
+Auth uses `DefaultAzureCredential(managed_identity_client_id=MI_CLIENT_ID)` — the same MI the job
+already uses for Blob — so no ACS connection string is stored.
+
 ### Ongoing image updates
 
 `.github/workflows/stg_be_build_and_deploy.yml` (staging) and `prod_be_build_and_deploy.yml`
