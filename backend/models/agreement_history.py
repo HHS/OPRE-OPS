@@ -1002,7 +1002,7 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the status for BL {bli_id} from {old_status} to {new_status}."
             else:
                 history_message = (
-                    f"{event_user.full_name} changed the status for BL {bli_id} from {old_status} to {new_status}."
+                    f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
                 )
         if history_title and history_message:
             history_events.append(

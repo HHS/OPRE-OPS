@@ -767,7 +767,10 @@ def test_agreement_history_direct_draft_to_planned_status_change(loaded_db, app_
 
     assert history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
     assert history_item.history_title == "Status Change to Planned"
-    assert history_item.history_message == f"{test_user_name} changed the status for BL 16043 from Draft to Planned."
+    assert (
+        history_item.history_message
+        == f"{test_user_name} changed the budget line status on BL 16043 from Draft to Planned."
+    )
 
 
 def test_agreement_history_cor_and_reason_changes(loaded_db, app_ctx):
