@@ -151,7 +151,11 @@ export const codesToDisplayText = {
         can: "CAN",
         services_component: "Services Component",
         grant_number: "Grant Number",
-        date_needed: "Obligate By Date"
+        date_needed: "Obligate By Date",
+        // POP_RANGE_ERROR_KEY (see suite.js) — ReviewAgreement.jsx bypasses this and renders
+        // the per-BL messages directly, but keep a label here so the key isn't undefined if
+        // ever displayed generically (e.g. a future caller, or a page without the bypass).
+        date_needed_pop_range: "Obligate By Date Outside Period of Performance"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
