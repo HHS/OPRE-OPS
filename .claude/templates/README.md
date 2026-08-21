@@ -12,7 +12,7 @@ These templates help you:
 
 ## Usage
 
-1. **Copy the appropriate template** to a gitignored location:
+1. **Copy the appropriate template** to the stories directory:
    ```bash
    cp .claude/templates/feature-story.md .claude/stories/OPS-1234.md
    ```
@@ -21,7 +21,7 @@ These templates help you:
 
 3. **Use with Claude Code** by referencing the story file in your conversation or using plan mode
 
-4. **Keep personal stories private** - The `.claude/stories/` directory is gitignored, so your in-progress work won't be committed
+4. **Commit your story** - The `.claude/stories/` directory is tracked in git, so your story files will be committed with your changes
 
 ## Available Templates
 
@@ -52,7 +52,7 @@ For code refactoring and technical improvements. Includes sections for:
 - **Start with the template** before coding to think through the approach
 - **Update the story** as you discover new information during implementation
 - **Use plan mode** in Claude Code to have Claude help design the implementation
-- **Keep templates generic** - specific story details should only be in gitignored files
+- **Keep templates generic** - specific story details belong in your `.claude/stories/` files
 - **Review past stories** to learn patterns and improve future planning
 
 ## Directory Structure
@@ -65,7 +65,7 @@ For code refactoring and technical improvements. Includes sections for:
 │   ├── feature-story.md
 │   ├── bug-story.md
 │   └── refactor-story.md
-└── stories/           # Your personal stories (gitignored)
+└── stories/           # Your stories (tracked in git)
     └── OPS-1234.md
 ```
 
