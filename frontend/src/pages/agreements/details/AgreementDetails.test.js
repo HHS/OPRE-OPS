@@ -46,6 +46,14 @@ vi.mock("./AgreementDetailsEdit", () => ({
     default: () => <div data-testid="agreement-details-edit" />
 }));
 
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await vi.importActual("../../../api/opsAPI");
+    return {
+        ...actual,
+        useGetGrantNumbersListQuery: () => ({ data: undefined })
+    };
+});
+
 const agreementHistoryData = [
     {
         changes: {

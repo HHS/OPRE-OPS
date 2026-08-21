@@ -154,6 +154,7 @@ const Agreement = () => {
     }
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditableForProcurementTracker =
@@ -306,6 +307,7 @@ const Agreement = () => {
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={isAgreementAwarded ?? false}
                         isEditableForProcurementTracker={isEditableForProcurementTracker}
+                        isGrant={isGrant}
                     />
                 </section>
 

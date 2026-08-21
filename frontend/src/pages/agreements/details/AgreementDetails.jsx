@@ -1,5 +1,7 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
+import { useGetGrantNumbersListQuery } from "../../../api/opsAPI";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
 
@@ -35,6 +37,27 @@ const AgreementDetails = ({
     isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, {
+        skip: !isGrant || !agreement?.id
+    });
+
+    const nofoPeriodStart =
+        grantNumbers && grantNumbers.length > 0
+            ? grantNumbers.reduce((min, gn) => {
+                  if (!gn.period_start) return min;
+                  return !min || gn.period_start < min ? gn.period_start : min;
+              }, null)
+            : null;
+
+    const nofoPeriodEnd =
+        grantNumbers && grantNumbers.length > 0
+            ? grantNumbers.reduce((max, gn) => {
+                  if (!gn.period_end) return max;
+                  return !max || gn.period_end > max ? gn.period_end : max;
+              }, null)
+            : null;
+
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
@@ -76,6 +99,8 @@ const AgreementDetails = ({
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
                     isAgreementAwarded={isAgreementAwarded}
+                    nofoPeriodStart={nofoPeriodStart}
+                    nofoPeriodEnd={nofoPeriodEnd}
                 />
             )}
         </article>

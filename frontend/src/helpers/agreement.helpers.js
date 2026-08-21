@@ -288,8 +288,11 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.DescriptionAndNotes,
         AgreementFields.NickName,
         AgreementFields.NofoNumber,
+        AgreementFields.GrantFundingPeriod,
+        AgreementFields.NofoPeriod,
         AgreementFields.AlnNumber,
-        AgreementFields.GrantFundingPeriod
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders
     ])
     // Add new AgreementTypes here
 };

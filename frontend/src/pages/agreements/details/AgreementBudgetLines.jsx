@@ -25,6 +25,9 @@ import {
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -224,32 +227,38 @@ const AgreementBudgetLines = ({
                         <div className="display-flex flex-justify flex-align-center">
                             <h2 className="font-sans-lg">Budget Lines</h2>
                             {blis && blis?.length > 0 && (
-                                <button
-                                    type="button"
-                                    style={{ fontSize: "16px" }}
-                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                    data-cy="budget-line-export"
-                                    onClick={() =>
-                                        handleExport(
-                                            exportTableToXlsx,
-                                            setIsExporting,
-                                            filters,
-                                            blis,
-                                            budgetLineTrigger,
-                                            serviceComponentTrigger,
-                                            portfolioTrigger,
-                                            blis.length
-                                        )
-                                    }
+                                <Tooltip
+                                    label={isGrant ? "Export coming soon" : ""}
+                                    position="bottom"
                                 >
-                                    <svg
-                                        className={`height-2 width-2 margin-right-05`}
-                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                    <button
+                                        type="button"
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        data-cy="budget-line-export"
+                                        disabled={isGrant}
+                                        onClick={() =>
+                                            handleExport(
+                                                exportTableToXlsx,
+                                                setIsExporting,
+                                                filters,
+                                                blis,
+                                                budgetLineTrigger,
+                                                serviceComponentTrigger,
+                                                portfolioTrigger,
+                                                blis.length
+                                            )
+                                        }
                                     >
-                                        <use href={`${icons}#save_alt`}></use>
-                                    </svg>
-                                    <span>Export</span>
-                                </button>
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                </Tooltip>
                             )}
                         </div>
                         <p className="font-sans-sm">
@@ -301,6 +310,10 @@ const AgreementBudgetLines = ({
                         key={`${group.grantNumberNumber}-${index}`}
                         grantNumberNumber={group.grantNumberNumber}
                         totalGrantNumbers={(grantNumbers ?? []).length}
+                        withMetadata={true}
+                        periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                        periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                        description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                     >
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable

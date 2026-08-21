@@ -19,7 +19,8 @@ const DetailsTabs = ({
     agreementId,
     isAgreementNotDeveloped,
     isAgreementAwarded,
-    isEditableForProcurementTracker = true
+    isEditableForProcurementTracker = true,
+    isGrant = false
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ const DetailsTabs = ({
         },
         {
             name: "/budget-lines",
-            label: "SCs & Budget Lines"
+            label: isGrant ? "Grant & Budget Lines" : "SCs & Budget Lines"
         }
     ];
     // only show the these tabs if isAgreementAwarded for contracts
@@ -50,8 +51,10 @@ const DetailsTabs = ({
               {
                   name: "/procurement-tracker",
                   label: "Procurement Tracker",
-                  disabled: !isEditableForProcurementTracker,
-                  disabledTooltip: "Only agreement team members can edit the procurement tracker"
+                  disabled: isGrant || !isEditableForProcurementTracker,
+                  disabledTooltip: isGrant
+                      ? "Procurement Tracker\ntab is coming soon"
+                      : "Only agreement team members can edit the procurement tracker"
               },
               {
                   name: "/documents",

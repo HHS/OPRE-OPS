@@ -255,6 +255,23 @@ export const groupByGrantNumber = (budgetLines, grantNumbers = []) => {
     }
 };
 
+const findGrantNumberByNumber = (grantNumbers, number) => {
+    if (!grantNumbers) return undefined;
+    return grantNumbers.find((gn) => gn.number === number);
+};
+
+export const findGrantPeriodStart = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_start;
+};
+
+export const findGrantPeriodEnd = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_end;
+};
+
+export const findGrantDescription = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.description;
+};
+
 /**
  * Returns whether the given budget line is permanent.
  * @param {BudgetLine} budgetLine - The budget line to check.
