@@ -217,11 +217,15 @@ export const ReviewAgreement = () => {
                         // with the plain grant-number BLI table (no SC metadata / requirement type).
                         if (isGrant) {
                             const groupKey = group.grantNumberNumber;
+                            // The "not associated" bucket (key 0) is an error state once one of its
+                            // BLs is selected — surface it as a red border on the accordion.
+                            const isUnassociatedError = groupKey === 0 && group.budgetLines.some((bli) => bli.selected);
                             return (
                                 <GrantNumberAccordion
                                     key={`${groupKey}-${index}`}
                                     grantNumberNumber={groupKey}
                                     totalGrantNumbers={(grantNumbers ?? []).length}
+                                    isError={isUnassociatedError}
                                 >
                                     {group.budgetLines.length > 0 ? (
                                         <AgreementBLIReviewTable
@@ -251,6 +255,11 @@ export const ReviewAgreement = () => {
                         const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                             ? group.serviceComponentGroupingLabel
                             : group.servicesComponentNumber;
+                        // The "BLs not associated with a Services Component" bucket (number 0) is an
+                        // error state once one of its BLs is selected — surface it as a red border
+                        // on the accordion.
+                        const isUnassociatedError =
+                            group.servicesComponentNumber === 0 && group.budgetLines.some((bli) => bli.selected);
                         return (
                             <ServicesComponentAccordion
                                 key={`${group.servicesComponentNumber}-${index}`}
@@ -262,6 +271,7 @@ export const ReviewAgreement = () => {
                                 description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
                                 optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
                                 serviceRequirementType={agreement?.service_requirement_type}
+                                isError={isUnassociatedError}
                             >
                                 {group.budgetLines.length > 0 ? (
                                     <AgreementBLIReviewTable
