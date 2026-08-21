@@ -1,6 +1,5 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
-import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
 
@@ -47,8 +46,6 @@ const AgreementDetails = ({
         !isAwardInReview &&
         !isPostPreAwardLocked &&
         (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
-    // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
-    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     return (
         <article>
@@ -62,7 +59,6 @@ const AgreementDetails = ({
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
                 isPostPreAwardLocked={isPostPreAwardLocked}
-                isGrant={isGrant}
             />
 
             {isEditMode && isEditable ? (

@@ -98,7 +98,7 @@ const BLIReviewRow = ({
         // Not actionable: derive message by action + status
         if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
             if (budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT && budgetLine?.in_review) {
-                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+                return "Budget lines In Review Status cannot be changed until they have been approved or declined";
             }
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED) {
                 return "This budget line is already in Planned Status";
@@ -108,7 +108,7 @@ const BLIReviewRow = ({
             }
         } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED && budgetLine?.in_review) {
-                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+                return "Budget lines In Review Status cannot be changed until they have been approved or declined";
             }
             if (budgetLine?.status === BUDGET_LINE_STATUSES.IN_EXECUTION) {
                 return "This budget line is already in Executing Status";

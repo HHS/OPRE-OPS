@@ -1,5 +1,8 @@
+import { act, renderHook } from "@testing-library/react";
+import { useState } from "react";
 import { describe, expect, it } from "vitest";
-import { defaultState, editAgreementReducer } from "./AgreementEditorContext.hooks";
+import { EditAgreementProvider } from "./AgreementEditorContext";
+import { defaultState, editAgreementReducer, useEditAgreement } from "./AgreementEditorContext.hooks";
 
 describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
     it("reseeds grant_numbers and clears deleted_grant_numbers_ids in the same dispatch", () => {
@@ -38,6 +41,93 @@ describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
 
         expect(next.grant_numbers).toEqual([]);
         expect(next.deleted_grant_numbers_ids).toEqual([]);
+    });
+});
+
+describe("EditAgreementProvider - officer reseed effects", () => {
+    const mockAgreement = {
+        id: 1,
+        name: "Test Agreement",
+        agreement_type: "GRANT",
+        project_officer_id: 10,
+        alternate_project_officer_id: 20,
+        team_members: [],
+        budget_line_items: []
+    };
+
+    it("reseeds selected_project_officer when projectOfficer prop arrives after mount", async () => {
+        const officerObject = { id: 10, full_name: "Jane Smith" };
+
+        // Stateful wrapper so we can change the prop after mount
+        let setOfficer;
+        const Wrapper = ({ children }) => {
+            const [po, setPo] = useState({});
+            setOfficer = setPo;
+            return (
+                <EditAgreementProvider
+                    agreement={mockAgreement}
+                    projectOfficer={po}
+                    alternateProjectOfficer={{}}
+                >
+                    {children}
+                </EditAgreementProvider>
+            );
+        };
+
+        const { result } = renderHook(() => useEditAgreement(), { wrapper: Wrapper });
+
+        // Initially empty — async fetch hasn't resolved yet
+        expect(result.current.selected_project_officer).toEqual({});
+
+        // Simulate async getUser() resolving
+        await act(async () => setOfficer(officerObject));
+
+        expect(result.current.selected_project_officer).toEqual(officerObject);
+    });
+
+    it("reseeds selected_alternate_project_officer when alternateProjectOfficer prop arrives after mount", async () => {
+        const altOfficerObject = { id: 20, full_name: "John Doe" };
+
+        let setAltOfficer;
+        const Wrapper = ({ children }) => {
+            const [apo, setApo] = useState({});
+            setAltOfficer = setApo;
+            return (
+                <EditAgreementProvider
+                    agreement={mockAgreement}
+                    projectOfficer={{}}
+                    alternateProjectOfficer={apo}
+                >
+                    {children}
+                </EditAgreementProvider>
+            );
+        };
+
+        const { result } = renderHook(() => useEditAgreement(), { wrapper: Wrapper });
+
+        expect(result.current.selected_alternate_project_officer).toEqual({});
+
+        await act(async () => setAltOfficer(altOfficerObject));
+
+        expect(result.current.selected_alternate_project_officer).toEqual(altOfficerObject);
+    });
+
+    it("does not clobber selected_project_officer with the empty placeholder object", () => {
+        // {} has no .id, so the guard must prevent it from dispatching
+        const { result } = renderHook(() => useEditAgreement(), {
+            wrapper: ({ children }) => (
+                <EditAgreementProvider
+                    agreement={mockAgreement}
+                    projectOfficer={{}}
+                    alternateProjectOfficer={{}}
+                >
+                    {children}
+                </EditAgreementProvider>
+            )
+        });
+
+        // Should remain the reducer default ({}), not be written by the effect
+        expect(result.current.selected_project_officer?.id).toBeUndefined();
     });
 });
 
@@ -87,7 +177,7 @@ describe("editAgreementReducer - budget line items", () => {
         expect(next.budget_line_items).toEqual([{ id: "a", amount: 100 }]);
     });
 
-    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the id to deleted_budget_line_items_ids", () => {
+    it("DELETE_BUDGET_LINE_ITEM filters by id and appends the bare id to deleted_budget_line_items_ids", () => {
         const state = {
             ...defaultState,
             budget_line_items: [

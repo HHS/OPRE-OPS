@@ -85,7 +85,7 @@ describe("Procurement Tracker Step 1", () => {
                 cy.get(".usa-checkbox__label").should("not.exist");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-1-date-completed").should("not.exist");
-                cy.get("#notes").should("not.exist");
+                cy.get("#notes-step-1").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
                 return;
@@ -204,7 +204,7 @@ describe("Procurement Tracker Step 2", () => {
                 cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-2-date-completed").should("not.exist");
-                cy.get("#notes").should("not.exist");
+                cy.get("#notes-step-2").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
                 return;
@@ -286,7 +286,7 @@ describe("Procurement Tracker Step 2", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-2-date-completed").should("be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-2").should("not.be.disabled");
                 cy.get("#step-2-draft-solicitation-date").should("be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
@@ -308,7 +308,7 @@ describe("Procurement Tracker Step 2", () => {
                 // Wait for React state update, then verify fields are enabled
                 cy.get("#users-combobox-input").should("not.be.disabled");
                 cy.get("#step-2-date-completed").should("not.be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-2").should("not.be.disabled");
                 cy.get("#step-2-draft-solicitation-date").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
             } else {
@@ -403,7 +403,7 @@ describe("Procurement Tracker Step 2", () => {
 
                 // Fill out form fields
                 cy.get("#step-2-date-completed").should("not.be.disabled").type("02/20/2026");
-                cy.get("#notes").should("not.be.disabled").type("Test notes");
+                cy.get("#notes-step-2").should("not.be.disabled").type("Test notes");
 
                 // Trigger cancel modal and confirm
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled").click();
@@ -412,7 +412,7 @@ describe("Procurement Tracker Step 2", () => {
 
                 // Verify form was reset
                 cy.get("#step-2-checkbox").should("not.be.checked");
-                cy.get("#notes").should("have.value", "");
+                cy.get("#notes-step-2").should("have.value", "");
             } else {
                 cy.log("Step 2 checkbox is disabled or step not pending - skipping");
             }
@@ -537,7 +537,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
                 cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-3-date-completed").should("not.exist");
-                cy.get("#notes").should("not.exist");
+                cy.get("#notes-step-3").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
                 return;
@@ -630,7 +630,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-3-date-completed").should("be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-3").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
             }
@@ -651,7 +651,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
                 // Wait for React state update, then verify fields are enabled
                 cy.get("#users-combobox-input").should("not.be.disabled");
                 cy.get("#step-3-date-completed").should("not.be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-3").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
             } else {
                 cy.log("Step 3 checkbox is disabled or step not pending - skipping");
@@ -745,7 +745,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
 
                 // Fill out form fields
                 cy.get("#step-3-date-completed").should("not.be.disabled").type("02/20/2026");
-                cy.get("#notes").should("not.be.disabled").type("Test notes");
+                cy.get("#notes-step-3").should("not.be.disabled").type("Test notes");
 
                 // Trigger cancel modal and confirm
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled").click();
@@ -754,7 +754,7 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
 
                 // Verify form was reset
                 cy.get("#step-3-checkbox").should("not.be.checked");
-                cy.get("#notes").should("have.value", "");
+                cy.get("#notes-step-3").should("have.value", "");
             } else {
                 cy.log("Step 3 checkbox is disabled or step not pending - skipping");
             }
@@ -832,7 +832,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 cy.get(".usa-checkbox__input").should("be.disabled");
                 cy.get("#users-combobox-input").should("not.exist");
                 cy.get("#step-5-date-completed").should("not.exist");
-                cy.get("#notes").should("not.exist");
+                cy.get("#notes-step-5").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
                 return;
@@ -925,7 +925,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
             if (isPending) {
                 cy.get("#users-combobox-input").should("be.disabled");
                 cy.get("#step-5-date-completed").should("be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-5").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("be.disabled");
                 cy.get('[data-cy="continue-btn"]').should("be.disabled");
             }
@@ -946,7 +946,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 // Wait for React state update, then verify fields are enabled
                 cy.get("#users-combobox-input").should("not.be.disabled");
                 cy.get("#step-5-date-completed").should("not.be.disabled");
-                cy.get("#notes").should("not.be.disabled");
+                cy.get("#notes-step-5").should("not.be.disabled");
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
             } else {
                 cy.log("Step 5 checkbox is disabled or step not pending - skipping");
@@ -1040,7 +1040,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
 
                 // Fill out form fields
                 cy.get("#step-5-date-completed").should("not.be.disabled").type("02/20/2026");
-                cy.get("#notes").should("not.be.disabled").type("Test notes");
+                cy.get("#notes-step-5").should("not.be.disabled").type("Test notes");
 
                 // Trigger cancel modal and confirm
                 cy.get('[data-cy="cancel-button"]').should("not.be.disabled").click();
@@ -1049,7 +1049,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
 
                 // Verify form was reset
                 cy.get("#step-5-checkbox").should("not.be.checked");
-                cy.get("#notes").should("have.value", "");
+                cy.get("#notes-step-5").should("have.value", "");
             } else {
                 cy.log("Step 5 checkbox is disabled or step not pending - skipping");
             }
@@ -1106,9 +1106,9 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 cy.get("#step-5-checkbox").should("be.checked");
 
                 // Verify notes field exists and accepts input
-                cy.get("#notes").should("exist").and("not.be.disabled");
-                cy.get("#notes").type("Pre-award approval received from procurement shop");
-                cy.get("#notes").should("contain.value", "Pre-award approval received");
+                cy.get("#notes-step-5").should("exist").and("not.be.disabled");
+                cy.get("#notes-step-5").type("Pre-award approval received from procurement shop");
+                cy.get("#notes-step-5").should("contain.value", "Pre-award approval received");
             } else {
                 cy.log("Step 5 checkbox is disabled or step not pending - skipping");
             }

@@ -125,3 +125,28 @@ def test_pending_award_approvals_includes_award_fields(budget_team_auth_client, 
     assert step_data.get("award_amount") == 1500000.00
     assert step_data.get("award_date") == "2024-09-30"
     assert step_data.get("approval_requested_by") == 500
+
+
+def test_approve_award_without_obligated_date_is_rejected(budget_team_auth_client, test_pending_award_step, loaded_db):
+    """Approving an AWARD step without an obligated date must be rejected (OPS-2280).
+
+    The obligated date must never be assumed to be today — it is first documented elsewhere.
+    """
+    response = budget_team_auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_pending_award_step.id}",
+        json={"approval_status": "APPROVED"},
+    )
+    assert response.status_code == 400
+    assert "obligated_date" in str(response.json)
+
+
+def test_approve_award_with_obligated_date_succeeds(budget_team_auth_client, test_pending_award_step, loaded_db):
+    """Approving an AWARD step with an obligated date succeeds and records the date."""
+    response = budget_team_auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_pending_award_step.id}",
+        json={"approval_status": "APPROVED", "obligated_date": "2024-09-30"},
+    )
+    assert response.status_code == 200
+
+    loaded_db.refresh(test_pending_award_step)
+    assert test_pending_award_step.award_approval_status == "APPROVED"

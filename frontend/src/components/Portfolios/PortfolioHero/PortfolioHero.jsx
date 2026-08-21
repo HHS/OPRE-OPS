@@ -34,9 +34,9 @@ const PortfolioHero = ({
 }) => {
     return (
         <Hero entityName={entityName}>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{divisionName}</h2>
+            <h2 className="font-sans-3xs text-normal margin-top-1 margin-bottom-neg-05">{divisionName}</h2>
             <div className="display-flex flex-align-start">
-                <div className="margin-right-4">
+                <div className="margin-right-4 margin-bottom-neg-205">
                     <TeamLeaders teamLeaders={teamLeaders} />
                 </div>
                 <dl className="margin-0 margin-right-4 font-12px">

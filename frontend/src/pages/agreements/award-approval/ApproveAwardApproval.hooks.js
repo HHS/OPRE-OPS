@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
@@ -8,8 +8,9 @@ import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.ho
 import usePreAwardApprovalData from "../pre-award-approval/usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
+import suite from "./ApproveAwardApproval.suite";
 
-const MemoizedDatePicker = React.memo(DatePicker);
+const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at source
 
 /**
  * Custom hook for the ApproveAwardApproval (Budget Team) review page.
@@ -66,6 +67,33 @@ export default function useApproveAwardApproval(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
+    // Vest suite state. The suite is a module-level singleton whose result persists across
+    // unmount/remount. Reset on mount and unmount so stale errors from a prior visit never
+    // appear before the user types (same pattern as CreateBLIsAndSCs.hooks.js, issue #5894).
+    const [validatorRes, setValidatorRes] = useState(() => suite.get());
+
+    useEffect(() => {
+        suite.reset();
+        setValidatorRes(suite.get());
+        return () => {
+            suite.reset();
+        };
+    }, []);
+
+    /**
+     * Run validation for a single field and update the shared suite state.
+     * @param {string} name
+     * @param {any} value
+     */
+    const runValidate = (name, value) => {
+        suite.run({ [name]: value }, name);
+        setValidatorRes(suite.get());
+    };
+
+    // The Approve Award button must stay disabled until a valid Obligated Date is entered.
+    // The date must never be assumed to be today — it is generally documented first in another system.
+    const isObligatedDateInvalid = !obligatedDate || validatorRes.hasErrors("obligatedDate");
+
     /**
      * Track unsaved changes — obligated date is the only editable field
      */
@@ -109,7 +137,7 @@ export default function useApproveAwardApproval(agreementId) {
                         stepId: step6.id,
                         data: {
                             approval_status: "APPROVED",
-                            ...(obligatedDate ? { obligated_date: formatDateForApi(obligatedDate) } : {})
+                            obligated_date: formatDateForApi(obligatedDate)
                         }
                     }).unwrap();
 
@@ -169,6 +197,9 @@ export default function useApproveAwardApproval(agreementId) {
         requestorDate,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker,
         showModal,
         setShowModal,

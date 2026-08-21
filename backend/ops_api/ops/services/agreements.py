@@ -425,6 +425,13 @@ class AgreementsService(OpsService[Agreement]):
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
 
+        # grant_numbers are a nested collection only meaningful at creation time. The Grant schema
+        # loads them with a load_default of [], so a PUT that omits them arrives here as an empty
+        # list. Merging an empty collection would disassociate any existing grant numbers by nulling
+        # their (NOT NULL) agreement_id, raising an IntegrityError. Grant numbers are managed via
+        # their own endpoints, so drop them from the agreement update entirely.
+        updated_fields.pop("grant_numbers", None)
+
         # unpack the awarding_entity_id if it exists since we handle it separately (after the merge)
         awarding_entity_id = None
         if "awarding_entity_id" in updated_fields:

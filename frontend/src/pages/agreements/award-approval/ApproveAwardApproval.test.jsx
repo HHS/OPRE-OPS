@@ -114,6 +114,10 @@ const baseHookReturn = {
     approvalAlreadyProcessed: false,
     obligatedDate: "",
     setObligatedDate: vi.fn(),
+    runValidate: vi.fn(),
+    validatorRes: { getErrors: () => [], hasErrors: () => false },
+    // Default: no obligated date entered yet, so approval must remain blocked.
+    isObligatedDateInvalid: true,
     MemoizedDatePicker: ({ onChange, label }) => (
         <input
             data-testid="memoized-date-picker"
@@ -191,9 +195,9 @@ describe("ApproveAwardApproval", () => {
         expect(screen.getByText("Confirm?")).toBeInTheDocument();
     });
 
-    it("Approve Award button calls handleApprove after checking attestation", async () => {
+    it("Approve Award button calls handleApprove after checking attestation and entering obligated date", async () => {
         const handleApprove = vi.fn();
-        renderPage({ handleApprove });
+        renderPage({ handleApprove, obligatedDate: "09/30/2024", isObligatedDateInvalid: false });
         // Must check attestation before button is enabled
         const checkbox = screen.getByRole("checkbox");
         await userEvent.click(checkbox);
@@ -215,12 +219,28 @@ describe("ApproveAwardApproval", () => {
         expect(btn).toBeDisabled();
     });
 
-    it("enables Approve Award after checking attestation", async () => {
-        renderPage();
+    it("enables Approve Award after checking attestation and entering a valid obligated date", async () => {
+        renderPage({ obligatedDate: "09/30/2024", isObligatedDateInvalid: false });
         const checkbox = screen.getByRole("checkbox");
         await userEvent.click(checkbox);
         const btn = screen.getByRole("button", { name: /Approve Award/i });
         expect(btn).not.toBeDisabled();
+    });
+
+    it("keeps Approve Award disabled when attestation is checked but obligated date is missing", async () => {
+        renderPage({ isObligatedDateInvalid: true });
+        const checkbox = screen.getByRole("checkbox");
+        await userEvent.click(checkbox);
+        const btn = screen.getByRole("button", { name: /Approve Award/i });
+        expect(btn).toBeDisabled();
+    });
+
+    it("keeps Approve Award disabled when obligated date is invalid even with attestation checked", async () => {
+        renderPage({ obligatedDate: "13/45/2024", isObligatedDateInvalid: true });
+        const checkbox = screen.getByRole("checkbox");
+        await userEvent.click(checkbox);
+        const btn = screen.getByRole("button", { name: /Approve Award/i });
+        expect(btn).toBeDisabled();
     });
 
     it("shows submit error alert when submitError is set", () => {

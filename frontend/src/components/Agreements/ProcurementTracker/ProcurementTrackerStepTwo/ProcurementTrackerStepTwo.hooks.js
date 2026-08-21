@@ -34,7 +34,13 @@ export default function useProcurementTrackerStepTwo(
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepTwoComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepTwo, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by ?? -1);
@@ -77,6 +83,7 @@ export default function useProcurementTrackerStepTwo(
         notes: step2Notes,
         setNotes: setStep2Notes,
         resetNotes: resetStep2Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
 
@@ -193,7 +200,10 @@ export default function useProcurementTrackerStepTwo(
         setSelectedUser({});
         setTargetCompletionDate("");
         setStep2DateCompleted("");
-        resetStep2Notes(stepTwoData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepTwoData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep2Notes();
         setRevisedTargetDate("");
         suite.reset();
     };
@@ -213,6 +223,7 @@ export default function useProcurementTrackerStepTwo(
     return {
         cancelStepTwo,
         handleSaveNotes,
+        isStepPatchInFlight,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,
@@ -230,6 +241,7 @@ export default function useProcurementTrackerStepTwo(
         step2Notes,
         setStep2Notes,
         resetStep2Notes,
+        notesResetKey,
         step2NotesLabel,
         runValidate,
         validatorRes,

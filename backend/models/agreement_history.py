@@ -991,6 +991,19 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the services component for BL {bli_id} from {old_value} to {new_value}."
             else:
                 history_message = f"{event_user.full_name} changed the services component for BL {bli_id} from {old_value} to {new_value}."
+        elif key == "status" and old_value == "DRAFT" and new_value == "PLANNED":
+            # A directly-applied Draft->Planned transition (SKIP_CR_FOR_DRAFT_PLANNED
+            # capability) bypasses the change-request path, so its status change would
+            # otherwise leave no agreement-history entry. Mirror the CR path's wording.
+            old_status = fix_stringified_enum_values(old_value)
+            new_status = fix_stringified_enum_values(new_value)
+            history_title = f"Status Change to {new_status}"
+            if updated_by_system_user:
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the status for BL {bli_id} from {old_status} to {new_status}."
+            else:
+                history_message = (
+                    f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
+                )
         if history_title and history_message:
             history_events.append(
                 AgreementHistory(
