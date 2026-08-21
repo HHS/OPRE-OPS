@@ -56,7 +56,13 @@ def disable_user(se, user_id, system_admin_id):
         event_type=OpsEventType.UPDATE_USER,
         event_status=OpsEventStatus.SUCCESS,
         created_by=system_admin_id,
-        event_details={"user_id": user_id, "message": "User deactivated via automated process."},
+        # "status" mirrors the manual UI path's request.json payload so the usage-metrics
+        # deactivated_users detector counts these automated deactivations too.
+        event_details={
+            "user_id": user_id,
+            "status": UserStatus.INACTIVE.name,
+            "message": "User deactivated via automated process.",
+        },
     )
     se.add(ops_event)
 
