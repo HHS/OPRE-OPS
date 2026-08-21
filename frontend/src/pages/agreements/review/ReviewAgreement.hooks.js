@@ -14,7 +14,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
-import agreementSuite, { validateBudgetLineItems } from "./suite";
+import agreementSuite, { POP_RANGE_ERROR_KEY, validateBudgetLineItems } from "./suite";
 
 /**
  * Custom hook for the Review Agreement page
@@ -177,6 +177,9 @@ const useReviewAgreement = (agreementId) => {
                 ...bli,
                 services_component_number: serviceComponentNumber,
                 serviceComponentGroupingLabel,
+                // The BL's own SC period, used to validate date_needed falls within the agreement's PoP window
+                sc_period_start: budgetLineServicesComponent?.period_start ?? null,
+                sc_period_end: budgetLineServicesComponent?.period_end ?? null,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
             };
@@ -227,11 +230,20 @@ const useReviewAgreement = (agreementId) => {
 
         if (hasBLIError && Array.isArray(bliValidationResults)) {
             const seenBudgetLineErrors = new Set();
-            bliValidationResults.forEach(({ isValid, errors }) => {
+            // Sort by ascending BL id so POP_RANGE_ERROR_KEY messages read in a stable,
+            // predictable order regardless of the order BLs were selected in.
+            const sortedBliValidationResults = [...bliValidationResults].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+            sortedBliValidationResults.forEach(({ isValid, errors }) => {
                 if (isValid) {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
+                    // POP_RANGE_ERROR_KEY shows one alert line per violating BL, so accumulate
+                    // every BL's messages instead of deduping to the first (as other keys do).
+                    if (fieldName === POP_RANGE_ERROR_KEY) {
+                        aggregatedErrors[fieldName] = [...(aggregatedErrors[fieldName] ?? []), ...messages];
+                        return;
+                    }
                     const errorKey = `${fieldName}`;
                     if (seenBudgetLineErrors.has(errorKey)) {
                         return;

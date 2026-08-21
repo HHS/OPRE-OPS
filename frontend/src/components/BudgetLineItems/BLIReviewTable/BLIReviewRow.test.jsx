@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -236,6 +236,65 @@ describe("BLIReviewRow", () => {
                 (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
             );
             expect(errorCanCell).toBeUndefined();
+        });
+    });
+
+    describe("Obligate By date outside PoP range", () => {
+        // All dates must be in the future to avoid tripping the unrelated
+        // "date_needed is in the past" error class on the same cell.
+        const isoDate = (daysFromNow) => {
+            const d = new Date();
+            d.setDate(d.getDate() + daysFromNow);
+            return d.toISOString().slice(0, 10);
+        };
+        const popStart = isoDate(10);
+        const popEnd = isoDate(100);
+
+        const bliOutsidePopRange = (status) => ({
+            ...defaultBudgetLine,
+            status,
+            date_needed: isoDate(200),
+            sc_period_start: popStart,
+            sc_period_end: popEnd,
+            selected: true
+        });
+
+        const tooltipText = "Obligate By date is outside the agreement’s Period of Performance";
+
+        it("applies error styling and a tooltip to the Obligate By cell when the date is outside the PoP range", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: bliOutsidePopRange("PLANNED")
+            });
+
+            const dateCell = screen.getAllByRole("cell").find((cell) => within(cell).queryByText(tooltipText));
+            expect(dateCell).toHaveClass("table-item-error");
+        });
+
+        it("does not flag the Obligate By cell when the date is inside the PoP range", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: {
+                    ...bliOutsidePopRange("PLANNED"),
+                    date_needed: isoDate(50)
+                }
+            });
+
+            expect(screen.queryByText(tooltipText)).not.toBeInTheDocument();
+        });
+
+        it("does not flag the Obligate By cell when sc_period_start/sc_period_end are missing", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    date_needed: isoDate(200),
+                    selected: true
+                }
+            });
+
+            expect(screen.queryByText(tooltipText)).not.toBeInTheDocument();
         });
     });
 

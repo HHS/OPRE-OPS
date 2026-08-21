@@ -14,7 +14,11 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
+import {
+    addErrorClassIfNotFound,
+    futureDateErrorClass,
+    isDateOutsidePopRange
+} from "../BudgetLinesTable/BLIRow.helpers";
 import { NO_DATA } from "../../../constants";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
@@ -181,7 +185,8 @@ const BLIReviewRow = ({
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
-        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)}`;
+        const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
+        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)} ${isOutsidePopRange && rowInReviewMode ? "table-item-error" : ""}`;
         const dateNeededClasses = showCellErrors ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
@@ -220,7 +225,18 @@ const BLIReviewRow = ({
             <>
                 {renderCheckboxCell()}
                 {showCLINColumn && <td className={clinClasses}>{clinNumber}</td>}
-                <td className={dateNeededClasses}>{dateNeededFormatted}</td>
+                <td className={dateNeededClasses}>
+                    {showCellErrors && isOutsidePopRange ? (
+                        <Tooltip
+                            label="Obligate By date is outside the agreement’s Period of Performance"
+                            position="right"
+                        >
+                            <span>{dateNeededFormatted}</span>
+                        </Tooltip>
+                    ) : (
+                        dateNeededFormatted
+                    )}
+                </td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
                 <td className={amountClasses}>{amountDisplay}</td>
