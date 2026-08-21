@@ -2,6 +2,7 @@
 // Note: reaching from the accordion button to its enclosing .usa-accordion__heading via
 // .closest() is necessary to assert error-border classes on the header, which has no
 // accessible query of its own.
+import { createRef } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { test, describe, expect, vi } from "vitest";
 import { Provider } from "react-redux";
@@ -638,6 +639,96 @@ describe("CreateBLIsAndSCs", () => {
             expect(heading).not.toHaveClass("border-secondary-dark");
 
             restore();
+        });
+    });
+
+    describe("getSlice bundle export", () => {
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+
+        // Render CreateBLIsAndSCs with the hook overridden to supply a specific
+        // servicesComponents/tempBudgetLines state, then return the getSlice() output the
+        // review-flow edit page reads on Save.
+        const getSliceFor = async ({ servicesComponents, tempBudgetLines, budgetLines }) => {
+            const mockStore = createMockStore();
+            const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+            const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+            vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+                ...origImpl(...args),
+                isEditMode: true,
+                servicesComponents,
+                tempBudgetLines
+            }));
+
+            const bundleSliceRef = createRef();
+            render(
+                <Provider store={mockStore}>
+                    <BrowserRouter>
+                        <CreateBLIsAndSCs
+                            budgetLines={budgetLines}
+                            selectedResearchProject={contractAgreement}
+                            selectedAgreement={contractAgreement}
+                            selectedProcurementShop={contractAgreement.procurement_shop}
+                            isEditMode={true}
+                            continueBtnText="Save Changes"
+                            wizardSteps={wizardSteps}
+                            workflow="agreement"
+                            currentStep={1}
+                            isReviewMode={true}
+                            canUserEditBudgetLines={true}
+                            setIsEditMode={setIsEditMode}
+                            includeDrafts={true}
+                            setIncludeDrafts={setIncludeDrafts}
+                            bundleSliceRef={bundleSliceRef}
+                            hideFooterButtons={true}
+                        />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            const slice = bundleSliceRef.current.getSlice();
+            vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
+            return slice;
+        };
+
+        // Regression: resolving a missing SC (services_component_id null/0) by picking a
+        // services component. The edit form only stamps services_component_number, so the
+        // dirty check must resolve the SC link BEFORE comparing — otherwise the newly-assigned
+        // SC looks unchanged and the BLI is silently dropped from budget_line_items.update.
+        test("includes a BLI whose only change is a newly-assigned services component", async () => {
+            const baseline = { ...agreement.budget_line_items[0], id: 42, services_component_id: null };
+            // The in-progress edit: SC number now points at persisted SC id 7, but
+            // services_component_id is still null (handleEditBLI never stamps it).
+            const edited = {
+                ...baseline,
+                services_component_number: 3,
+                serviceComponentGroupingLabel: "3"
+            };
+            const servicesComponents = [{ id: 7, number: 3, created_on: "2024-05-27T19:20:46.105099Z" }];
+
+            const slice = await getSliceFor({
+                servicesComponents,
+                tempBudgetLines: [edited],
+                budgetLines: [baseline]
+            });
+
+            const updated = slice.budget_line_items.update;
+            expect(updated).toHaveLength(1);
+            expect(updated[0]).toMatchObject({ id: 42, services_component_id: 7 });
+        });
+
+        test("drops a genuinely unchanged BLI from the update bucket", async () => {
+            const baseline = { ...agreement.budget_line_items[0], id: 42, services_component_id: 7 };
+            const servicesComponents = [{ id: 7, number: 3, created_on: "2024-05-27T19:20:46.105099Z" }];
+            // Same SC assignment as the baseline, expressed via the UI-only number field.
+            const edited = { ...baseline, services_component_number: 3, serviceComponentGroupingLabel: "3" };
+
+            const slice = await getSliceFor({
+                servicesComponents,
+                tempBudgetLines: [edited],
+                budgetLines: [baseline]
+            });
+
+            expect(slice.budget_line_items.update).toHaveLength(0);
         });
     });
 });

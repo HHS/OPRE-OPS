@@ -327,13 +327,18 @@ export const CreateBLIsAndSCs = ({
                     .map((bli) => {
                         const baseline = budgetLines.find((b) => b.id === bli.id);
                         const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
+                        // Resolve the SC/grant link BEFORE the dirty check. The edit form only
+                        // stamps services_component_number (a UI-only field clean() strips), not
+                        // services_component_id — so comparing the pre-link payload would treat a
+                        // newly-assigned SC as "unchanged" and silently drop it from the update.
+                        const linked = applyBliLink(cleaned, bli);
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
-                            if (JSON.stringify(cleaned) === JSON.stringify(cleanedBaseline)) {
+                            if (JSON.stringify(linked) === JSON.stringify(cleanedBaseline)) {
                                 return null;
                             }
                         }
-                        return { id, ...applyBliLink(cleaned, bli) };
+                        return { id, ...linked };
                     })
                     .filter(Boolean);
 
