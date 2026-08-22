@@ -41,8 +41,7 @@ describe("ChangeIcons", () => {
         isItemEditable: true,
         handleSetItemForEditing: vi.fn(),
         handleDeleteItem: vi.fn(),
-        handleDuplicateItem: vi.fn(),
-        handleSubmitItemForApproval: vi.fn()
+        handleDuplicateItem: vi.fn()
     };
 
     const getEditTooltip = () =>
@@ -198,29 +197,5 @@ describe("ChangeIcons", () => {
 
         await user.click(screen.getByTestId("duplicate-row"));
         expect(defaultProps.handleDuplicateItem).toHaveBeenCalledWith(123);
-    });
-
-    it("renders send to review icon when sendToReviewIcon prop is true", () => {
-        render(
-            <ChangeIcons
-                {...defaultProps}
-                sendToReviewIcon={true}
-            />
-        );
-
-        expect(screen.getByTestId("submit-row")).toBeInTheDocument();
-    });
-
-    it("calls handleSubmitItemForApproval when send to review button is clicked", async () => {
-        const user = userEvent.setup();
-        render(
-            <ChangeIcons
-                {...defaultProps}
-                sendToReviewIcon={true}
-            />
-        );
-
-        await user.click(screen.getByTestId("submit-row"));
-        expect(defaultProps.handleSubmitItemForApproval).toHaveBeenCalledWith(123);
     });
 });

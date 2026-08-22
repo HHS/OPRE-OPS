@@ -3,7 +3,6 @@ import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
 import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
-import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 
@@ -19,8 +18,6 @@ import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
  * @param {function} props.handleDeleteItem - The function to delete the row.
  * @param {function} [props.handleDuplicateItem] - The function to duplicate the row.
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
- * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
- * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
  * @returns {JSX.Element} - The rendered component.
  **/
 
@@ -32,9 +29,7 @@ const ChangeIcons = ({
     isItemDeletable = isItemEditable,
     handleDeleteItem = () => {},
     handleDuplicateItem = () => {},
-    duplicateIcon = true,
-    sendToReviewIcon = false,
-    handleSubmitItemForApproval = () => {}
+    duplicateIcon = true
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
@@ -196,60 +191,6 @@ const ChangeIcons = ({
                                 className={disabledClasses}
                                 aria-hidden="true"
                             />
-                        </button>
-                    </Tooltip>
-                )}
-                {isItemEditable && sendToReviewIcon && (
-                    <Tooltip
-                        position="top"
-                        label="Submit for approval"
-                        className="line-height-body-1"
-                    >
-                        <button
-                            type="button"
-                            id={`submit-for-approval-${item.id}`}
-                            title="Submit for approval"
-                            aria-label="Submit for approval"
-                            data-cy="submit-row"
-                            data-testid="submit-row"
-                            onClick={() => handleSubmitItemForApproval(item.id)}
-                        >
-                            <svg
-                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
-                                aria-hidden="true"
-                                focusable="false"
-                            >
-                                <use href={`${icons}#send`}></use>
-                            </svg>
-                        </button>
-                    </Tooltip>
-                )}
-                {!isItemEditable && sendToReviewIcon && (
-                    <Tooltip
-                        position="left"
-                        label={`${
-                            lockedMessage
-                                ? lockedMessage
-                                : "Only team members on this agreement can edit, delete, or send to approval"
-                        }`}
-                        className="line-height-body-1"
-                    >
-                        <button
-                            type="button"
-                            id={`submit-for-approval-${item?.id}`}
-                            title="Submit for Approval"
-                            aria-label="Submit for Approval"
-                            data-cy="submit-row"
-                            data-testid="submit-row"
-                            disabled={true}
-                        >
-                            <svg
-                                className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
-                                aria-hidden="true"
-                                focusable="false"
-                            >
-                                <use href={`${icons}#send`}></use>
-                            </svg>
                         </button>
                     </Tooltip>
                 )}
