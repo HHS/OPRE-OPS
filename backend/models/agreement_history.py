@@ -997,13 +997,11 @@ def create_bli_update_history_events(
             # otherwise leave no agreement-history entry. Mirror the CR path's wording.
             old_status = fix_stringified_enum_values(old_value)
             new_status = fix_stringified_enum_values(new_value)
-            history_title = f"Status Change to {new_status}"
+            history_title = "Change to Budget Line Status"
             if updated_by_system_user:
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the status for BL {bli_id} from {old_status} to {new_status}."
             else:
-                history_message = (
-                    f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
-                )
+                history_message = f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
         if history_title and history_message:
             history_events.append(
                 AgreementHistory(
