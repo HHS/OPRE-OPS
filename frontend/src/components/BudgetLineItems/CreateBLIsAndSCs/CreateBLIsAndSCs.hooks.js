@@ -232,9 +232,26 @@ const useCreateBLIsAndSCs = (
             currentLocation.pathname !== nextLocation.pathname
     );
 
-    React.useEffect(() => {
-        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
+    // Attach each BLI's current services-component PoP window (sc_period_start/sc_period_end)
+    // for the "Obligate By must fall within PoP" validation (row error + tooltip in BLIRow, and
+    // the suite rule that gates Save). Derived live from the current servicesComponents rather
+    // than baked into editor state, so it stays correct when the user edits an SC's PoP dates,
+    // deletes an SC, or reassigns a BLI to a different SC in the same session. Grant BLIs have no
+    // SC, so they get null and the PoP rule skips them.
+    const budgetLinesWithScPeriod = React.useMemo(() => {
+        return tempBudgetLines.map((bli) => {
+            const sc = servicesComponents.find((sc) => sc.id === bli.services_component_id);
+            return {
+                ...bli,
+                sc_period_start: sc?.period_start ?? null,
+                sc_period_end: sc?.period_end ?? null
+            };
+        });
     }, [tempBudgetLines, servicesComponents]);
+
+    React.useEffect(() => {
+        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(budgetLinesWithScPeriod));
+    }, [budgetLinesWithScPeriod]);
 
     React.useEffect(() => {
         // Don't pass grantNumbers here — that would pre-populate an empty-budgetLines
@@ -253,7 +270,8 @@ const useCreateBLIsAndSCs = (
         ? suite.run({
               // Exclude in-review BLIs from validation — they are locked (not editable) and
               // won't be included in the save payload, so their TBD fields should not block saving.
-              budgetLines: tempBudgetLines.filter((bli) => !bli.in_review)
+              // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
+              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review)
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();

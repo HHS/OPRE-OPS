@@ -20,7 +20,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
-import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
 /**
  * @typedef {Object} BLIRowProps
@@ -61,6 +61,7 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
@@ -97,9 +98,20 @@ const BLIRow = ({
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
-                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)}`}
+                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)} ${
+                    isReviewMode && isOutsidePopRange ? "table-item-error" : ""
+                }`}
             >
-                {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
+                {isReviewMode && isOutsidePopRange ? (
+                    <Tooltip
+                        label="Obligate By date is outside the agreement’s Period of Performance"
+                        position="right"
+                    >
+                        <span>{formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}</span>
+                    </Tooltip>
+                ) : (
+                    formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)
+                )}
             </td>
             <td>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
             <td className={addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)}>

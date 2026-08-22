@@ -25,6 +25,21 @@ const suite = create((data) => {
             const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
             enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
         });
+        // Obligate By date must fall within its services component's PoP window. Only Contract/IAA
+        // BLIs carry sc_period_start/sc_period_end (attached by decorateBudgetLinesForEditor); grant
+        // BLIs have no SC, so the presence guard skips them. Skip (rather than fail) when the date or
+        // the SC period is missing — those cases already fail the required-info rule above.
+        if (item.date_needed && item.sc_period_start && item.sc_period_end) {
+            test(
+                `Budget line item (${item.id})`,
+                "Obligate By date is outside the agreement's Period of Performance",
+                () => {
+                    enforce(
+                        item.date_needed >= item.sc_period_start && item.date_needed <= item.sc_period_end
+                    ).isTruthy();
+                }
+            );
+        }
     });
 });
 

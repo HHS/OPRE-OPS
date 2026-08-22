@@ -607,6 +607,62 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
     });
 
+    it("validates each BLI against its current services component's PoP window (derived live)", async () => {
+        const suiteModule = await import("./suite");
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({}),
+            hasErrors: () => false,
+            isValid: () => true
+        }));
+
+        // A BLI linked to SC id 11, which carries a PoP window on the current services components.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            services_components: [{ id: 11, number: 1, period_start: "2044-01-01", period_end: "2044-12-31" }],
+            budget_line_items: [
+                {
+                    id: "bli-1",
+                    services_component_id: 11,
+                    date_needed: "2044-06-15",
+                    can_id: 5,
+                    amount: 100,
+                    in_review: false
+                }
+            ]
+        });
+
+        renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        // The suite must receive the BLI enriched with its SC's PoP window, derived live from
+        // the current services components (not baked into editor state) so SC edits stay in sync.
+        expect(suiteModule.default.run).toHaveBeenCalledWith({
+            budgetLines: [
+                expect.objectContaining({
+                    id: "bli-1",
+                    sc_period_start: "2044-01-01",
+                    sc_period_end: "2044-12-31"
+                })
+            ]
+        });
+    });
+
     it("does not send UI-only fields in services_components when creating a new agreement", async () => {
         useEditAgreementMock.mockReturnValue({
             agreement: { team_members: [] },
