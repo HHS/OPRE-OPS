@@ -334,7 +334,7 @@ const useReviewAgreement = (agreementId) => {
                         type: "success",
                         heading: "Agreement Updated",
                         message: `The agreement ${agreement?.name} has been successfully updated.`,
-                        redirectUrl: "/agreements"
+                        redirectUrl: `/agreements/${agreement?.id}/budget-lines`
                     });
                 } else {
                     setAlert({
@@ -346,7 +346,7 @@ const useReviewAgreement = (agreementId) => {
                             `${statusChangeMessages}\n\n` +
                             `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`,
 
-                        redirectUrl: "/agreements"
+                        redirectUrl: `/agreements/${agreement?.id}/budget-lines`
                     });
                 }
             });

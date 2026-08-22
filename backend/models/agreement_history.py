@@ -162,8 +162,12 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
             )
         case OpsEventType.UPDATE_AGREEMENT:
-            # Handle CAN Updates
-            change_dict = event.event_details["agreement_updates"]["changes"]
+            # `agreement_updates` is absent when a publisher of UPDATE_AGREEMENT does not
+            # compute a field diff (e.g. an edit-bundle save that changes no diffed agreement
+            # field). Default to empty so this handler records nothing rather than KeyError-ing
+            # (the error was previously swallowed by the subscriber, silently losing all history).
+            agreement_updates = event.event_details.get("agreement_updates") or {}
+            change_dict = agreement_updates.get("changes", {})
             for key in change_dict.keys():
                 history_item = create_agreement_update_history_event(
                     key,
@@ -171,22 +175,22 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     change_dict[key]["new_value"],
                     event_user,
                     event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    event.event_details["agreement_updates"]["owner_id"],
+                    agreement_updates["owner_id"],
                     event.id,
                     session,
                     system_user,
                 )
                 if history_item:
                     history_events.append(history_item)
-            if event.event_details["agreement_updates"].get("team_member_changes"):
+            if agreement_updates.get("team_member_changes"):
                 # Handle team member changes
-                team_member_changes = event.event_details["agreement_updates"]["team_member_changes"]
+                team_member_changes = agreement_updates["team_member_changes"]
                 for item in team_member_changes.get("user_ids_added", []):
                     added_user_id = session.get(User, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
                             history_message=f"{event_user.full_name} added team member {added_user_id.full_name}.",
@@ -198,8 +202,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_user_id = session.get(User, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
                             history_message=f"{event_user.full_name} removed team member {removed_user_id.full_name}.",
@@ -207,15 +211,15 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
                     )
-            if event.event_details["agreement_updates"].get("special_topic_changes"):
+            if agreement_updates.get("special_topic_changes"):
                 # Handle special topic changes
-                special_topic_changes = event.event_details["agreement_updates"]["special_topic_changes"]
+                special_topic_changes = agreement_updates["special_topic_changes"]
                 for item in special_topic_changes.get("special_topics_ids_added", []):
                     added_special_topic = session.get(SpecialTopic, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Special Topic/Population Studied",
                             history_message=f"{event_user.full_name} added Special Topic/Population Studied {added_special_topic.name}.",
@@ -227,8 +231,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_special_topic = session.get(SpecialTopic, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Special Topic/Population Studied",
                             history_message=f"{event_user.full_name} removed Special Topic/Population Studied {removed_special_topic.name}.",
@@ -236,15 +240,15 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
                     )
-            if event.event_details["agreement_updates"].get("research_methodology_changes"):
+            if agreement_updates.get("research_methodology_changes"):
                 # Handle research methodology changes
-                research_methodology_changes = event.event_details["agreement_updates"]["research_methodology_changes"]
+                research_methodology_changes = agreement_updates["research_methodology_changes"]
                 for item in research_methodology_changes.get("research_methodologies_ids_added", []):
                     added_research_methodology = session.get(ResearchMethodology, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Research Methodologies",
                             history_message=f"{event_user.full_name} added Research Methodology {added_research_methodology.name}.",
@@ -256,8 +260,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_research_methodology = session.get(ResearchMethodology, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Research Methodologies",
                             history_message=f"{event_user.full_name} removed Research Methodology {removed_research_methodology.name}.",

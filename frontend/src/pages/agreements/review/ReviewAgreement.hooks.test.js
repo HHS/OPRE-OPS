@@ -347,7 +347,7 @@ describe("useReviewAgreement", () => {
                 expect.objectContaining({
                     type: "success",
                     heading: "Changes Sent to Approval",
-                    redirectUrl: "/agreements"
+                    redirectUrl: "/agreements/77/budget-lines"
                 })
             );
         });
@@ -509,7 +509,7 @@ describe("useReviewAgreement", () => {
                 expect.objectContaining({
                     type: "success",
                     heading: "Agreement Updated",
-                    redirectUrl: "/agreements"
+                    redirectUrl: "/agreements/77/budget-lines"
                 })
             );
         });
