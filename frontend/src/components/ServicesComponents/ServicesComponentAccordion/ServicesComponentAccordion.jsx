@@ -14,6 +14,7 @@ import styles from "./ServicesComponentAccordion.module.css";
  * @param {string} [props.description] - The description of the services component.
  * @param {string} [props.serviceComponentGroupingLabel] - The serviceComponentGroupingLabel of the services component.
  * @param {boolean} [props.optional] - Whether the services component is optional.
+ * @param {boolean} [props.isError] - When true, renders a red error border around the accordion.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -26,6 +27,7 @@ function ServicesComponentAccordion({
     description = "",
     optional = false,
     serviceComponentGroupingLabel = "",
+    isError = false,
     children
 }) {
     const servicesComponentDisplayTitle =
@@ -54,6 +56,7 @@ function ServicesComponentAccordion({
         <Accordion
             heading={heading}
             level={3}
+            isError={isError}
         >
             {withMetadata && (
                 <ServicesComponentMetadata

@@ -142,3 +142,59 @@ describe("ReviewAgreement error banner", () => {
         expect(screen.queryByRole("list", { hidden: true })).toBeNull();
     });
 });
+
+/* eslint-disable testing-library/no-node-access */
+// The error border lives on the accordion heading (h3); reach it from the heading button.
+describe("ReviewAgreement unassociated services component error border", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    const makeBudgetLine = (selected) => ({
+        id: 16096,
+        status: "DRAFT",
+        actionable: true,
+        selected,
+        in_review: false,
+        amount: 112233,
+        fees: 0,
+        total: 112233,
+        date_needed: "2026-08-31",
+        services_component_id: null,
+        services_component_number: 0,
+        can: { number: "G994426" }
+    });
+
+    const unassociatedGroup = (selected) => [
+        {
+            serviceComponentGroupingLabel: "0",
+            servicesComponentNumber: 0,
+            budgetLines: [makeBudgetLine(selected)]
+        }
+    ];
+
+    const getUnassociatedHeading = () =>
+        screen
+            .getByRole("button", { name: /BLs not associated with a Services Component/ })
+            .closest(".usa-accordion__heading");
+
+    it("adds the red error border to the unassociated accordion heading when a BL in it is selected", () => {
+        renderComponent({
+            groupedBudgetLinesByServicesComponent: unassociatedGroup(true)
+        });
+
+        const heading = getUnassociatedHeading();
+        expect(heading).toHaveClass("border-2px");
+        expect(heading).toHaveClass("border-secondary-dark");
+    });
+
+    it("does not add the error border to the unassociated accordion heading when no BL in it is selected", () => {
+        renderComponent({
+            groupedBudgetLinesByServicesComponent: unassociatedGroup(false)
+        });
+
+        const heading = getUnassociatedHeading();
+        expect(heading).not.toHaveClass("border-2px");
+        expect(heading).not.toHaveClass("border-secondary-dark");
+    });
+});

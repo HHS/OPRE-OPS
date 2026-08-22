@@ -63,22 +63,14 @@ const BLIReviewRow = ({
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
 
-    // Services component (or, for grants, grant number) has no column in this table; surface its
-    // absence as a row-level error class so the user can locate the offending BLI when
-    // errorStatuses-mode is active.
+    // A missing services component (or, for grants, grant number) has no column in this table.
+    // Its absence is surfaced as a red border on the enclosing accordion (see
+    // ServicesComponentAccordion/GrantNumberAccordion isError), not as a row-level highlight.
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
-    const isGrantBudgetLine = budgetLine?.agreement?.agreement_type === "GRANT";
-    const missingLink = isGrantBudgetLine ? !budgetLine?.grant_number_id : !budgetLine?.services_component_id;
 
     // Tooltip for BLIs with pending change requests (in_review=true)
     const inReviewTooltip = useChangeRequestsForTooltip(budgetLine, "This budget line has pending edits:");
-    // Row-level error class for a missing services component. Only used in selection-gated
-    // mode (Review Agreement) where highlighting the whole row is correct. In errorStatuses
-    // mode (pre-award), table-item-error on the <tr> would cascade color:#b50909 to every
-    // child <td> including cells with valid data — use cell-level errors only there.
-    const missingServicesComponentClass =
-        !statusScopedErrors && showCellErrors && missingLink ? "table-item-error" : "";
 
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -310,7 +302,7 @@ const BLIReviewRow = ({
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
-                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""} ${missingServicesComponentClass}`.trim()}
+                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`.trim()}
             />
         </>
     );
