@@ -663,6 +663,67 @@ describe("useCreateBLIsAndSCs", () => {
         });
     });
 
+    it("resolves the PoP window by services_component_number when it disagrees with a stale services_component_id", async () => {
+        const suiteModule = await import("./suite");
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({}),
+            hasErrors: () => false,
+            isValid: () => true
+        }));
+
+        // Reassignment case: handleEditBLI stamps services_component_number to the NEW SC (2) but
+        // leaves services_component_id pointing at the OLD SC (1) until save time. The PoP window
+        // must follow the number (SC 2's window), not the stale id — otherwise the BLI is validated
+        // against the wrong SC while it's grouped under the new one.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            services_components: [
+                { id: 1, number: 1, period_start: "2044-01-01", period_end: "2044-06-30" },
+                { id: 2, number: 2, period_start: "2044-07-01", period_end: "2044-12-31" }
+            ],
+            budget_line_items: [
+                {
+                    id: "bli-1",
+                    services_component_id: 1,
+                    services_component_number: 2,
+                    date_needed: "2044-08-15",
+                    can_id: 5,
+                    amount: 100,
+                    in_review: false
+                }
+            ]
+        });
+
+        renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        expect(suiteModule.default.run).toHaveBeenCalledWith({
+            budgetLines: [
+                expect.objectContaining({
+                    id: "bli-1",
+                    sc_period_start: "2044-07-01",
+                    sc_period_end: "2044-12-31"
+                })
+            ]
+        });
+    });
+
     it("does not send UI-only fields in services_components when creating a new agreement", async () => {
         useEditAgreementMock.mockReturnValue({
             agreement: { team_members: [] },

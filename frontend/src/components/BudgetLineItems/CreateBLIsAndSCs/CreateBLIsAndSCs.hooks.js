@@ -238,9 +238,20 @@ const useCreateBLIsAndSCs = (
     // than baked into editor state, so it stays correct when the user edits an SC's PoP dates,
     // deletes an SC, or reassigns a BLI to a different SC in the same session. Grant BLIs have no
     // SC, so they get null and the PoP rule skips them.
+    //
+    // Prefer services_component_number over services_component_id when resolving the SC — the same
+    // precedence groupByServicesComponent uses — so the validated PoP window always matches the SC
+    // the BLI is grouped under and will be saved to. handleEditBLI keeps the number in sync on
+    // reassignment but leaves services_component_id stale until save time (getSlice resolves the id
+    // via linkBliToSc, also keyed by number); matching on the stale id here would validate against
+    // the BLI's OLD SC window while it's grouped under the new one, producing a spurious
+    // "outside PoP" error. Fall back to the id only when no number is present (e.g. undecorated data).
     const budgetLinesWithScPeriod = React.useMemo(() => {
         return tempBudgetLines.map((bli) => {
-            const sc = servicesComponents.find((sc) => sc.id === bli.services_component_id);
+            const sc =
+                bli.services_component_number != null
+                    ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
+                    : servicesComponents.find((sc) => sc.id === bli.services_component_id);
             return {
                 ...bli,
                 sc_period_start: sc?.period_start ?? null,
