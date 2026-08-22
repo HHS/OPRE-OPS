@@ -106,7 +106,7 @@ const AgreementBudgetLines = ({
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
-                return "Only team members on this agreement can send to approval";
+                return "Only team members listed on this agreement can change a BL status";
         }
     };
 
