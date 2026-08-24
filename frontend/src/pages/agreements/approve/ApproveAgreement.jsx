@@ -14,7 +14,12 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import {
+    BLI_STATUS,
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../helpers/budgetLines.helpers";
 import {
     findDescription,
     findIfOptional,
@@ -146,6 +151,7 @@ const ApproveAgreement = () => {
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            grantNumbers={grantNumbers ?? []}
                             totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
@@ -155,6 +161,7 @@ const ApproveAgreement = () => {
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
                             isGrant={isGrant}
+                            grantNumbers={grantNumbers ?? []}
                             totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
@@ -264,6 +271,7 @@ const BeforeApprovalContent = React.memo(
         groupedBudgetLinesByServicesComponent,
         servicesComponents,
         isGrant,
+        grantNumbers,
         totalGrantNumbers,
         changeRequestType,
         urlChangeToStatus
@@ -276,6 +284,10 @@ const BeforeApprovalContent = React.memo(
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
                             totalGrantNumbers={totalGrantNumbers}
+                            withMetadata={true}
+                            periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                            periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                            description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable
@@ -330,6 +342,7 @@ const AfterApprovalContent = React.memo(
         groupedUpdatedBudgetLinesByServicesComponent,
         servicesComponents,
         isGrant,
+        grantNumbers,
         totalGrantNumbers,
         changeRequestType,
         urlChangeToStatus
@@ -342,6 +355,10 @@ const AfterApprovalContent = React.memo(
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
                             totalGrantNumbers={totalGrantNumbers}
+                            withMetadata={true}
+                            periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                            periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                            description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                         >
                             {group.budgetLines.length > 0 ? (
                                 <BLIDiffTable

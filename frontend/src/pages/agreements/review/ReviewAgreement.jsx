@@ -22,6 +22,11 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
+import {
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
@@ -222,6 +227,10 @@ export const ReviewAgreement = () => {
                                     key={`${groupKey}-${index}`}
                                     grantNumberNumber={groupKey}
                                     totalGrantNumbers={(grantNumbers ?? []).length}
+                                    withMetadata={true}
+                                    periodStart={findGrantPeriodStart(grantNumbers, groupKey)}
+                                    periodEnd={findGrantPeriodEnd(grantNumbers, groupKey)}
+                                    description={findGrantDescription(grantNumbers, groupKey)}
                                 >
                                     {group.budgetLines.length > 0 ? (
                                         <AgreementBLIReviewTable

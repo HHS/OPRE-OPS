@@ -1,5 +1,4 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { useGetGrantNumbersListQuery } from "../../../api/opsAPI";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
@@ -38,25 +37,21 @@ const AgreementDetails = ({
 }) => {
     const isSuperUser = useIsUserSuperUser();
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
-    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, {
-        skip: !isGrant || !agreement?.id
-    });
+    const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
 
-    const nofoPeriodStart =
-        grantNumbers && grantNumbers.length > 0
-            ? grantNumbers.reduce((min, gn) => {
-                  if (!gn.period_start) return min;
-                  return !min || gn.period_start < min ? gn.period_start : min;
-              }, null)
-            : null;
-
-    const nofoPeriodEnd =
-        grantNumbers && grantNumbers.length > 0
-            ? grantNumbers.reduce((max, gn) => {
-                  if (!gn.period_end) return max;
-                  return !max || gn.period_end > max ? gn.period_end : max;
-              }, null)
-            : null;
+    const { nofoPeriodStart, nofoPeriodEnd } = grantNumbers.reduce(
+        (acc, gn) => ({
+            nofoPeriodStart:
+                gn.period_start && (!acc.nofoPeriodStart || gn.period_start < acc.nofoPeriodStart)
+                    ? gn.period_start
+                    : acc.nofoPeriodStart,
+            nofoPeriodEnd:
+                gn.period_end && (!acc.nofoPeriodEnd || gn.period_end > acc.nofoPeriodEnd)
+                    ? gn.period_end
+                    : acc.nofoPeriodEnd
+        }),
+        { nofoPeriodStart: null, nofoPeriodEnd: null }
+    );
 
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;

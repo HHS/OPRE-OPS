@@ -18,6 +18,11 @@ import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
+import {
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../helpers/budgetLines.helpers";
 import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
@@ -559,6 +564,10 @@ export const CreateBLIsAndSCs = ({
                             key={`${group.grantNumberNumber}-${index}`}
                             grantNumberNumber={group.grantNumberNumber}
                             totalGrantNumbers={grantNumbers.length}
+                            withMetadata={true}
+                            periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                            periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                            description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                         >
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}
