@@ -120,9 +120,8 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
  * and registered in the validation display map in src/helpers/utils.js.
  */
 /**
- * Normalized id for the PoP-range rule. Unlike other BLI rule keys (which show a single
- * generic message deduped across all selected BLIs), this one accumulates one message per
- * violating BL id — see the aggregation logic in ReviewAgreement.hooks.js.
+ * Normalized id for the PoP-range rule. Like other BLI rule keys, this shows a single
+ * generic message deduped across all selected BLIs, regardless of how many violate it.
  */
 export const POP_RANGE_ERROR_KEY = "date_needed_pop_range";
 

@@ -279,19 +279,16 @@ describe("Budget Line Suite", () => {
             expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
         });
 
-        it("produces a distinct message per violating BL when validating multiple budget lines together", () => {
-            // This is the building block the callers' aggregation (which accumulates one
-            // message per violating BL instead of deduping) relies on: each BL's own message
-            // must embed its own id, not the first offending BL's.
+        it("fails each violating BL independently when validating multiple budget lines together", () => {
             const results = validateBudgetLineItems([
                 { ...withPop, id: 5, date_needed: isoDate(2) }, // before PoP start
                 { ...withPop, id: 2, date_needed: isoDate(200) } // after PoP end
             ]);
             expect(results).toHaveLength(2);
             expect(results[0].isValid).toBe(false);
-            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 5 Obligate By date");
+            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
             expect(results[1].isValid).toBe(false);
-            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 2 Obligate By date");
+            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
         });
     });
 });

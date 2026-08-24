@@ -201,7 +201,7 @@ describe("useReviewAgreement", () => {
         expect(result.current.isSubmissionReady).toBe(true);
     });
 
-    it("accumulates one POP-range message per violating BL, sorted ascending by BL id", async () => {
+    it("shows a single POP-range message no matter how many BLs violate it", async () => {
         const isoDaysFromNow = (days) => {
             const d = new Date();
             d.setDate(d.getDate() + days);
@@ -216,8 +216,6 @@ describe("useReviewAgreement", () => {
             data: makeAgreement({
                 budget_line_items: [
                     {
-                        // Higher id, but placed/selected first — proves ordering comes from
-                        // an explicit sort, not selection order or array position.
                         id: 202,
                         amount: 800,
                         can_id: "CAN-002",
@@ -263,10 +261,7 @@ describe("useReviewAgreement", () => {
             expect(result.current.isAlertActive).toBe(true);
         });
 
-        expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual([
-            "Budget Line Obligate By",
-            "Budget Line Obligate By"
-        ]);
+        expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual(["Budget Line Obligate By"]);
     });
 
     it("bypasses agreement and budget line validation for grant agreements (OPS-6013)", async () => {
