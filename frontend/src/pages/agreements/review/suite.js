@@ -104,12 +104,16 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         budgetLine.sc_period_start &&
         budgetLine.sc_period_end
     ) {
-        test("Budget Line Obligate By Date must be within PoP", `Budget Line ${budgetLine.id} Obligate By date`, () => {
-            enforce(
-                budgetLine.date_needed >= budgetLine.sc_period_start &&
-                    budgetLine.date_needed <= budgetLine.sc_period_end
-            ).isTruthy();
-        });
+        test(
+            "Budget Line Obligate By Date must be within PoP",
+            `Budget Line ${budgetLine.id} Obligate By date is outside the agreement’s Period of Performance`,
+            () => {
+                enforce(
+                    budgetLine.date_needed >= budgetLine.sc_period_start &&
+                        budgetLine.date_needed <= budgetLine.sc_period_end
+                ).isTruthy();
+            }
+        );
     }
 });
 
