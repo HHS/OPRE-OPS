@@ -22,11 +22,7 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
-import {
-    findGrantDescription,
-    findGrantPeriodEnd,
-    findGrantPeriodStart
-} from "../../../helpers/budgetLines.helpers";
+import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";

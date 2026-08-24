@@ -46,7 +46,6 @@ vi.mock("./AgreementDetailsEdit", () => ({
     default: () => <div data-testid="agreement-details-edit" />
 }));
 
-
 const agreementHistoryData = [
     {
         changes: {

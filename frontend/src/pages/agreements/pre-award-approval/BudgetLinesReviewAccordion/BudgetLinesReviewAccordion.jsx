@@ -82,9 +82,18 @@ export const BudgetLinesReviewAccordion = ({
                                         grantNumberNumber={group.grantNumberNumber}
                                         totalGrantNumbers={totalGrantNumbers}
                                         withMetadata={true}
-                                        periodStart={findGrantPeriodStart(agreement?.grant_numbers, group.grantNumberNumber)}
-                                        periodEnd={findGrantPeriodEnd(agreement?.grant_numbers, group.grantNumberNumber)}
-                                        description={findGrantDescription(agreement?.grant_numbers, group.grantNumberNumber)}
+                                        periodStart={findGrantPeriodStart(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        periodEnd={findGrantPeriodEnd(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        description={findGrantDescription(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
                                     >
                                         {group.budgetLines.length > 0 ? (
                                             <AgreementBLIReviewTable
