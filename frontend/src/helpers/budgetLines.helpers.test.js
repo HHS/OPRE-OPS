@@ -7,6 +7,9 @@ import {
     hasAnyBliInSelectedStatus,
     groupByServicesComponent,
     groupByGrantNumber,
+    findGrantPeriodStart,
+    findGrantPeriodEnd,
+    findGrantDescription,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -723,5 +726,71 @@ describe("calculateProcShopFeePercentage", () => {
     it("returns 0 when agreement is null", () => {
         const bli = { procurement_shop_fee: null, agreement: null };
         expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+});
+
+describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () => {
+    const grantNumbers = [
+        { number: 1, period_start: "2026-01-01", period_end: "2026-12-31", description: "First grant" },
+        { number: 2, period_start: "2027-01-01", period_end: "2027-12-31", description: "Second grant" },
+        { number: 3, period_start: null, period_end: null, description: null }
+    ];
+
+    describe("findGrantPeriodStart", () => {
+        it("returns period_start for a matching grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 1)).toBe("2026-01-01");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodStart(null, 1)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is undefined", () => {
+            expect(findGrantPeriodStart(undefined, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when period_start is null on the matched grant", () => {
+            expect(findGrantPeriodStart(grantNumbers, 3)).toBeNull();
+        });
+
+        it("returns undefined for the unassociated bucket (number 0)", () => {
+            expect(findGrantPeriodStart(grantNumbers, 0)).toBeUndefined();
+        });
+    });
+
+    describe("findGrantPeriodEnd", () => {
+        it("returns period_end for a matching grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 2)).toBe("2027-12-31");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodEnd(null, 1)).toBeUndefined();
+        });
+    });
+
+    describe("findGrantDescription", () => {
+        it("returns description for a matching grant number", () => {
+            expect(findGrantDescription(grantNumbers, 1)).toBe("First grant");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantDescription(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantDescription(null, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when description is null on the matched grant", () => {
+            expect(findGrantDescription(grantNumbers, 3)).toBeNull();
+        });
     });
 });

@@ -16,6 +16,7 @@ import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetL
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
@@ -226,17 +227,29 @@ const AgreementBudgetLines = ({
                     <div className="margin-y-3">
                         <div className="display-flex flex-justify flex-align-center">
                             <h2 className="font-sans-lg">Budget Lines</h2>
-                            {blis && blis?.length > 0 && (
-                                <Tooltip
-                                    label={isGrant ? "Export coming soon" : ""}
-                                    position="bottom"
-                                >
+                            {blis &&
+                                blis?.length > 0 &&
+                                (isGrant ? (
+                                    <DisabledButtonWithTooltip
+                                        label="Export coming soon"
+                                        tooltipPosition="bottom"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        dataCy="budget-line-export"
+                                    >
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </DisabledButtonWithTooltip>
+                                ) : (
                                     <button
                                         type="button"
                                         style={{ fontSize: "16px" }}
                                         className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                         data-cy="budget-line-export"
-                                        disabled={isGrant}
                                         onClick={() =>
                                             handleExport(
                                                 exportTableToXlsx,
@@ -258,8 +271,7 @@ const AgreementBudgetLines = ({
                                         </svg>
                                         <span>Export</span>
                                     </button>
-                                </Tooltip>
-                            )}
+                                ))}
                         </div>
                         <p className="font-sans-sm">
                             This is a list of all services components and budget lines within this agreement.

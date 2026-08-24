@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
-import Tooltip from "../../UI/USWDS/Tooltip";
+import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants";
 
 /**
@@ -86,16 +86,20 @@ const DetailsTabs = ({
             </button>
         );
 
-        // Add tooltip if tab is disabled and has a tooltip message
+        // Add tooltip if tab is disabled and has a tooltip message.
+        // Use DisabledButtonWithTooltip so the focusable wrapper receives hover/focus
+        // events that a native disabled button would swallow.
         if (path.disabled && path.disabledTooltip) {
             return (
-                <Tooltip
+                <DisabledButtonWithTooltip
                     key={pathName}
                     label={path.disabledTooltip}
-                    position="bottom"
+                    tooltipPosition="bottom"
+                    className={`${tabSelected ? selected : notSelected} ${styles.btnDisabled}`}
+                    dataCy={`details-tab-${path.label}`}
                 >
-                    {button}
-                </Tooltip>
+                    {path.label}
+                </DisabledButtonWithTooltip>
             );
         }
 

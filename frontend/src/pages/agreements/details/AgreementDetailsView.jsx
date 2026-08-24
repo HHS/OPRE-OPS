@@ -14,6 +14,8 @@ import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constan
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
+ * @param {string|null} [props.nofoPeriodStart] - ISO 8601 date string for the earliest grant number period_start (grants only)
+ * @param {string|null} [props.nofoPeriodEnd] - ISO 8601 date string for the latest grant number period_end (grants only)
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetailsView = ({
