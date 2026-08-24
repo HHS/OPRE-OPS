@@ -259,8 +259,12 @@ describe("StepNotesEditor", () => {
         saveNotesBtn().focus();
         fireEvent.click(saveNotesBtn());
 
-        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
-        expect(editNotesBtn()).toHaveFocus();
+        // Focus is restored in a passive effect that flushes after the read-mode
+        // button commits, so assert focus inside waitFor rather than synchronously
+        // after presence — otherwise the check can run before the effect lands.
+        // A null element (button not yet rendered) fails toHaveFocus and retries,
+        // so this also waits for the button to appear.
+        await waitFor(() => expect(editNotesBtn()).toHaveFocus());
     });
 
     it("disables the Save Notes button and textarea in edit mode when isDisabled is true", () => {
@@ -284,8 +288,12 @@ describe("StepNotesEditor", () => {
         saveNotesBtn().focus();
         fireEvent.click(saveNotesBtn());
 
-        await waitFor(() => expect(editNotesBtn()).toBeInTheDocument());
-        expect(editNotesBtn()).toHaveFocus();
+        // Focus is restored in a passive effect that flushes after the read-mode
+        // button commits, so assert focus inside waitFor rather than synchronously
+        // after presence — otherwise the check can run before the effect lands.
+        // A null element (button not yet rendered) fails toHaveFocus and retries,
+        // so this also waits for the button to appear.
+        await waitFor(() => expect(editNotesBtn()).toHaveFocus());
     });
 
     it("restores focus to the Edit Notes button after Cancel", () => {

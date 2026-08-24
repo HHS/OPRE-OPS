@@ -760,6 +760,12 @@ describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () 
         it("returns undefined for the unassociated bucket (number 0)", () => {
             expect(findGrantPeriodStart(grantNumbers, 0)).toBeUndefined();
         });
+
+        it("resolves a string grouping key against a numeric grant number", () => {
+            // Grouping keys (grant_number_number) can arrive as strings from editor/form state
+            // while GrantNumber.number is numeric; the lookup must still resolve.
+            expect(findGrantPeriodStart(grantNumbers, "1")).toBe("2026-01-01");
+        });
     });
 
     describe("findGrantPeriodEnd", () => {

@@ -257,7 +257,10 @@ export const groupByGrantNumber = (budgetLines, grantNumbers = []) => {
 
 const findGrantNumberByNumber = (grantNumbers, number) => {
     if (!grantNumbers) return undefined;
-    return grantNumbers.find((gn) => gn.number === number);
+    // Coerce both sides to string: grouping keys (grant_number_number) can arrive as
+    // strings from editor/form state while GrantNumber.number is numeric, so a strict
+    // === comparison would fail to resolve and metadata would silently render blank.
+    return grantNumbers.find((gn) => String(gn.number) === String(number));
 };
 
 export const findGrantPeriodStart = (grantNumbers, number) => {

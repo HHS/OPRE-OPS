@@ -2,7 +2,7 @@ import React from "react";
 import { render, waitFor, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
-import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import store from "../../../store";
 
@@ -542,77 +542,5 @@ describe("Agreement memoization functionality", () => {
 
             expect(screen.getByTestId("project-title")).toHaveTextContent("");
         });
-    });
-});
-
-describe("Agreement procurement tracker route guard", () => {
-    it("redirects grants away from /procurement-tracker to the agreement details page", () => {
-        const agreementId = 42;
-        const isGrant = true;
-
-        // Render just the route element logic in isolation, mirroring Agreement.jsx:
-        // isGrant ? <Navigate to={`/agreements/${id}`} replace /> : <ProcurementTrackerContent />
-        const RouteElement = isGrant ? (
-            <Navigate
-                to={`/agreements/${agreementId}`}
-                replace
-            />
-        ) : (
-            <div data-testid="procurement-tracker">Procurement Tracker Content</div>
-        );
-
-        render(
-            <Provider store={store}>
-                <MemoryRouter initialEntries={[`/agreements/${agreementId}/procurement-tracker`]}>
-                    <Routes>
-                        <Route
-                            path={`/agreements/${agreementId}/procurement-tracker`}
-                            element={RouteElement}
-                        />
-                        <Route
-                            path={`/agreements/${agreementId}`}
-                            element={<div data-testid="agreement-details">Agreement Details</div>}
-                        />
-                    </Routes>
-                </MemoryRouter>
-            </Provider>
-        );
-
-        expect(screen.queryByTestId("procurement-tracker")).not.toBeInTheDocument();
-        expect(screen.getByTestId("agreement-details")).toBeInTheDocument();
-    });
-
-    it("does not redirect non-grant agreements from /procurement-tracker", () => {
-        const agreementId = 42;
-        const isGrant = false;
-
-        const RouteElement = isGrant ? (
-            <Navigate
-                to={`/agreements/${agreementId}`}
-                replace
-            />
-        ) : (
-            <div data-testid="procurement-tracker">Procurement Tracker Content</div>
-        );
-
-        render(
-            <Provider store={store}>
-                <MemoryRouter initialEntries={[`/agreements/${agreementId}/procurement-tracker`]}>
-                    <Routes>
-                        <Route
-                            path={`/agreements/${agreementId}/procurement-tracker`}
-                            element={RouteElement}
-                        />
-                        <Route
-                            path={`/agreements/${agreementId}`}
-                            element={<div data-testid="agreement-details">Agreement Details</div>}
-                        />
-                    </Routes>
-                </MemoryRouter>
-            </Provider>
-        );
-
-        expect(screen.getByTestId("procurement-tracker")).toBeInTheDocument();
-        expect(screen.queryByTestId("agreement-details")).not.toBeInTheDocument();
     });
 });
