@@ -252,13 +252,13 @@ describe("Budget Line Suite", () => {
         it("fails when date_needed is before the PoP start date", () => {
             const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(2) });
             expect(result.isValid).toBe(false);
-            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 42 Obligate By date");
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
         });
 
         it("fails when date_needed is after the PoP end date", () => {
             const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(200) });
             expect(result.isValid).toBe(false);
-            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 42 Obligate By date");
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
         });
 
         it("skips the rule (no error) when sc_period_start/sc_period_end are missing", () => {

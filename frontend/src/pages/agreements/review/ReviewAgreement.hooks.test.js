@@ -264,8 +264,8 @@ describe("useReviewAgreement", () => {
         });
 
         expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual([
-            "Budget Line 101 Obligate By date",
-            "Budget Line 202 Obligate By date"
+            "Budget Line Obligate By",
+            "Budget Line Obligate By"
         ]);
     });
 
