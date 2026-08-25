@@ -1365,11 +1365,11 @@
         },
         "bidict": {
             "hashes": [
-                "sha256:03069d763bc387bbd20e7d49914e75fc4132a41937fa3405417e1a5a2d006d71",
-                "sha256:5dae8d4d79b552a71cbabc7deb25dfe8ce710b17ff41711e13010ead2abfc3e5"
+                "sha256:3ac3ed76ed1875bd23a5253daa34e7816e7786570d6df8c900c0c64c28634b39",
+                "sha256:402ee24909d450d438fc5ae7621973817a22f2b9487504dc96954bb861be6f4f"
             ],
-            "markers": "python_version >= '3.8'",
-            "version": "==0.23.1"
+            "markers": "python_version >= '3.11'",
+            "version": "==0.24.0"
         },
         "black": {
             "extras": [
@@ -3380,11 +3380,11 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:376ec93cd6aab3044fa395d7db226db38043b7b5748948044b2a87168525e843",
-                "sha256:c9d960c95fa458171e58222a5ccab7465298e4b6559977865e627c4719f1e825"
+                "sha256:a73c4246fba3c8901ff9717399f466e00eeca5a3834981f1a6ebb4f1e94de2f8",
+                "sha256:e36ca889510ab6cb0b1dca93c59e5431dd4422a3c88f487358d470c90af8c07a"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==21.7.4"
+            "version": "==21.7.5"
         },
         "wcwidth": {
             "hashes": [
