@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setupStore } from "../../../store";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
+import { POP_RANGE_ERROR_KEY } from "./suite";
 
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
@@ -336,6 +337,44 @@ describe("useRequestPreAwardApproval — validation wiring", () => {
         const { result } = setup(agreement);
         await waitFor(() => expect(result.current).toBeDefined());
         expect(result.current.hasBLIError).toBe(false);
+    });
+
+    it("shows a single POP-range message no matter how many BLs violate it", async () => {
+        const isoDaysFromNow = (days) => {
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString().slice(0, 10);
+        };
+
+        const agreement = buildAgreement({
+            budget_line_items: [
+                {
+                    id: 101,
+                    status: "PLANNED",
+                    amount: 1500,
+                    can_id: 1,
+                    services_component_id: 1,
+                    date_needed: isoDaysFromNow(2), // before PoP start
+                    sc_period_start: isoDaysFromNow(10),
+                    sc_period_end: isoDaysFromNow(100)
+                },
+                {
+                    id: 102,
+                    status: "IN_EXECUTION",
+                    amount: 800,
+                    can_id: 1,
+                    services_component_id: 1,
+                    date_needed: isoDaysFromNow(200), // after PoP end
+                    sc_period_start: isoDaysFromNow(10),
+                    sc_period_end: isoDaysFromNow(100)
+                }
+            ]
+        });
+
+        const { result } = setup(agreement);
+        await waitFor(() => expect(result.current.isAlertActive).toBe(true));
+
+        expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual(["Budget Line Obligate By"]);
     });
 
     it("exposes the filtered validatable budget lines list", async () => {

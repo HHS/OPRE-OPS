@@ -85,11 +85,11 @@ describe("ReviewAgreement error banner", () => {
         vi.clearAllMocks();
     });
 
-    it("renders a single <li> for the POP_RANGE_ERROR_KEY key no matter how many BLs violate the PoP window", () => {
+    it("renders a single <li> for the POP_RANGE_ERROR_KEY key", () => {
         renderComponent({
             isAlertActive: true,
             pageErrors: {
-                [POP_RANGE_ERROR_KEY]: ["Budget Line Obligate By", "Budget Line Obligate By", "Budget Line Obligate By"]
+                [POP_RANGE_ERROR_KEY]: ["Budget Line Obligate By"]
             }
         });
 

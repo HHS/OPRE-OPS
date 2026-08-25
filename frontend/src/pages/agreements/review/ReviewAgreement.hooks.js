@@ -235,12 +235,11 @@ const useReviewAgreement = (agreementId) => {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
-                    const errorKey = `${fieldName}`;
-                    if (seenBudgetLineErrors.has(errorKey)) {
+                    if (seenBudgetLineErrors.has(fieldName)) {
                         return;
                     }
-                    seenBudgetLineErrors.add(errorKey);
-                    aggregatedErrors[errorKey] = messages;
+                    seenBudgetLineErrors.add(fieldName);
+                    aggregatedErrors[fieldName] = messages;
                 });
             });
         }
