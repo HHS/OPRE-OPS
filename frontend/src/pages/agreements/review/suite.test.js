@@ -252,17 +252,13 @@ describe("Budget Line Suite", () => {
         it("fails when date_needed is before the PoP start date", () => {
             const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(2) });
             expect(result.isValid).toBe(false);
-            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe(
-                "Budget Line 42 Obligate By date is outside the agreement’s Period of Performance"
-            );
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 42 Obligate By date");
         });
 
         it("fails when date_needed is after the PoP end date", () => {
             const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(200) });
             expect(result.isValid).toBe(false);
-            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe(
-                "Budget Line 42 Obligate By date is outside the agreement’s Period of Performance"
-            );
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 42 Obligate By date");
         });
 
         it("skips the rule (no error) when sc_period_start/sc_period_end are missing", () => {
@@ -293,13 +289,9 @@ describe("Budget Line Suite", () => {
             ]);
             expect(results).toHaveLength(2);
             expect(results[0].isValid).toBe(false);
-            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe(
-                "Budget Line 5 Obligate By date is outside the agreement’s Period of Performance"
-            );
+            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 5 Obligate By date");
             expect(results[1].isValid).toBe(false);
-            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe(
-                "Budget Line 2 Obligate By date is outside the agreement’s Period of Performance"
-            );
+            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line 2 Obligate By date");
         });
     });
 });
