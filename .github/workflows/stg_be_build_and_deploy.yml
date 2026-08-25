@@ -78,7 +78,7 @@ jobs:
         if: failure()
         uses: ./.github/actions/notify-slack-failure
         with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
 
   deploy-backend:
     needs: build-backend
@@ -104,4 +104,4 @@ jobs:
         if: failure()
         uses: ./.github/actions/notify-slack-failure
         with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
