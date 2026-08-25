@@ -60,3 +60,9 @@ jobs:
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
             yamlConfigPath: ./.github/container-app-suffixes.yml
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,27 @@
+name: "notify-slack-failure"
+author: "@devops-chris"
+description: "Posts a Slack message via incoming webhook when a deploy job fails"
+
+inputs:
+  webhook_url:
+    description: "Slack incoming webhook URL"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Post failure notification to Slack
+      shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook_url }}
+        WORKFLOW_NAME: ${{ github.workflow }}
+        JOB_NAME: ${{ github.job }}
+        RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        RUN_NUMBER: ${{ github.run_number }}
+        COMMIT_SHA: ${{ github.sha }}
+      run: |
+        MESSAGE=":red_circle: *${WORKFLOW_NAME}* failed — job \`${JOB_NAME}\` on <${RUN_URL}|run #${RUN_NUMBER}> (commit ${COMMIT_SHA})"
+
+        curl -sf -X POST -H 'Content-type: application/json' \
+          --data "$(jq -n --arg text "$MESSAGE" '{text: $text}')" \
+          "$WEBHOOK_URL"

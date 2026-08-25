@@ -74,6 +74,12 @@ jobs:
             # Start the DB schema update job
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
+      - name: Notify Slack on failure
+        if: failure()
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   deploy-backend:
     needs: build-backend
     permissions:
@@ -93,3 +99,9 @@ jobs:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
