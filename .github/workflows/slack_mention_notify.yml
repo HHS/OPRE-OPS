@@ -11,6 +11,7 @@ permissions:
 jobs:
   notify-mention:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     # Restrict to org members/collaborators so a public-repo commenter can't trigger real Slack pings
     if: contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     steps:
@@ -26,6 +27,9 @@ jobs:
           # so cap how many times this workflow can fire per commenter in a rolling window --
           # using GitHub's own run history as state, since Actions has no persistent store.
           since=$(date -u -d "${WINDOW_MINUTES} minutes ago" +%Y-%m-%dT%H:%M:%SZ)
+          # Filename below must match this workflow's own file -- if this file is ever
+          # renamed, update it too, or this 404s, run_count comes back empty, and the
+          # rate limit silently stops enforcing.
           run_count=$(gh api "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
             -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count')
 
@@ -56,7 +60,9 @@ jobs:
           IS_PR: ${{ github.event.issue.pull_request && 'true' || 'false' }}
           REPO: ${{ github.repository }}
         run: |
-          # Strip fenced code blocks so mentions inside code samples don't trigger a false positive
+          # Strip fenced code blocks so mentions inside code samples don't trigger a false positive.
+          # Detection-accuracy limitation only: an unclosed ``` fence deletes to EOF (dropping any
+          # later mentions), and indented or ~~~-style fences aren't recognized and won't be stripped.
           body_no_code=$(printf '%s\n' "$COMMENT_BODY" | sed '/^```/,/^```/d')
 
           mentions=$(printf '%s' "$body_no_code" \
@@ -93,4 +99,4 @@ jobs:
           text="*${COMMENT_AUTHOR}* mentioned ${mention_text}in a comment on ${kind} <${COMMENT_URL}|${REPO}#${ISSUE_NUMBER}: ${escaped_title}>"
 
           payload=$(jq -n --arg text "$text" '{text: $text}')
-          curl -sf -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+          curl -s --fail-with-body -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
