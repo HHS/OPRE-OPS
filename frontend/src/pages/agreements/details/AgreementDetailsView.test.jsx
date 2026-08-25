@@ -227,6 +227,54 @@ describe("AgreementDetailsView", () => {
             expect(screen.queryByText("ALN Numbers")).not.toBeInTheDocument();
             expect(screen.queryByText("Grant Funding Period")).not.toBeInTheDocument();
         });
+
+        it("renders NOFO Period label and formatted date range when both dates are provided", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart="2026-01-01"
+                    nofoPeriodEnd="2027-06-01"
+                />
+            );
+
+            expect(screen.getByText("NOFO Period")).toBeInTheDocument();
+            // dateToYearMonthDay uses parseInt so month/day are not zero-padded
+            expect(screen.getByText("1/1/2026 - 6/1/2027")).toBeInTheDocument();
+        });
+
+        it("renders NOFO Period with TBD tag when both dates are null", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart={null}
+                    nofoPeriodEnd={null}
+                />
+            );
+
+            expect(screen.getByText("NOFO Period")).toBeInTheDocument();
+            expect(screen.getByText("TBD")).toBeInTheDocument();
+        });
+
+        it("does not render NOFO Period for contract agreements", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={{ ...agreement, agreement_type: "CONTRACT" }}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={null}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart="2026-01-01"
+                    nofoPeriodEnd="2027-06-01"
+                />
+            );
+
+            expect(screen.queryByText("NOFO Period")).not.toBeInTheDocument();
+        });
     });
 
     it("should handle null agreement gracefully", () => {
