@@ -70,4 +70,50 @@ describe("GrantNumberAccordion", () => {
         expect(heading).not.toHaveClass("border-2px");
         expect(heading).not.toHaveClass("border-secondary-dark");
     });
+
+    it("renders GrantNumberMetadata when withMetadata is true and grantNumberNumber is non-zero", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                withMetadata={true}
+                periodStart="2026-01-01"
+                periodEnd="2026-12-31"
+                description="Test description"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.getByText("Period of Performance - Start")).toBeInTheDocument();
+        expect(screen.getByText("Period of Performance - End")).toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
+    });
+
+    it("does not render GrantNumberMetadata for the unassociated bucket even when withMetadata is true", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={0}
+                withMetadata={true}
+                periodStart="2026-01-01"
+                periodEnd="2026-12-31"
+                description="Test description"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.queryByText("Period of Performance - Start")).not.toBeInTheDocument();
+        expect(screen.queryByText("Period of Performance - End")).not.toBeInTheDocument();
+    });
+
+    it("does not render GrantNumberMetadata when withMetadata is false", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                withMetadata={false}
+                periodStart="2026-01-01"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.queryByText("Period of Performance - Start")).not.toBeInTheDocument();
+    });
 });

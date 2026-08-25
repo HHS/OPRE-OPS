@@ -16,6 +16,7 @@ import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetL
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
@@ -25,6 +26,9 @@ import {
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -223,34 +227,51 @@ const AgreementBudgetLines = ({
                     <div className="margin-y-3">
                         <div className="display-flex flex-justify flex-align-center">
                             <h2 className="font-sans-lg">Budget Lines</h2>
-                            {blis && blis?.length > 0 && (
-                                <button
-                                    type="button"
-                                    style={{ fontSize: "16px" }}
-                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                    data-cy="budget-line-export"
-                                    onClick={() =>
-                                        handleExport(
-                                            exportTableToXlsx,
-                                            setIsExporting,
-                                            filters,
-                                            blis,
-                                            budgetLineTrigger,
-                                            serviceComponentTrigger,
-                                            portfolioTrigger,
-                                            blis.length
-                                        )
-                                    }
-                                >
-                                    <svg
-                                        className={`height-2 width-2 margin-right-05`}
-                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                            {blis &&
+                                blis?.length > 0 &&
+                                (isGrant ? (
+                                    <DisabledButtonWithTooltip
+                                        label="Export coming soon"
+                                        tooltipPosition="bottom"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        dataCy="budget-line-export"
                                     >
-                                        <use href={`${icons}#save_alt`}></use>
-                                    </svg>
-                                    <span>Export</span>
-                                </button>
-                            )}
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </DisabledButtonWithTooltip>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        data-cy="budget-line-export"
+                                        onClick={() =>
+                                            handleExport(
+                                                exportTableToXlsx,
+                                                setIsExporting,
+                                                filters,
+                                                blis,
+                                                budgetLineTrigger,
+                                                serviceComponentTrigger,
+                                                portfolioTrigger,
+                                                blis.length
+                                            )
+                                        }
+                                    >
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                ))}
                         </div>
                         <p className="font-sans-sm">
                             This is a list of all services components and budget lines within this agreement.
@@ -301,6 +322,10 @@ const AgreementBudgetLines = ({
                         key={`${group.grantNumberNumber}-${index}`}
                         grantNumberNumber={group.grantNumberNumber}
                         totalGrantNumbers={(grantNumbers ?? []).length}
+                        withMetadata={true}
+                        periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                        periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                        description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                     >
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable
