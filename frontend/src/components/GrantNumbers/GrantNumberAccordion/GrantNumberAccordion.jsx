@@ -13,6 +13,7 @@ import GrantNumberMetadata from "../GrantNumberMetadata";
  * @param {string} [props.periodStart] - ISO 8601 start date for the period of performance.
  * @param {string} [props.periodEnd] - ISO 8601 end date for the period of performance.
  * @param {string} [props.description] - Description of the grant number.
+ * @param {boolean} [props.isError] - When true, renders a red error border around the accordion.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -23,6 +24,7 @@ function GrantNumberAccordion({
     periodStart = "",
     periodEnd = "",
     description = "",
+    isError = false,
     children
 }) {
     const grantNumberDisplayTitle =
@@ -36,6 +38,7 @@ function GrantNumberAccordion({
         <Accordion
             heading={grantNumberDisplayTitle}
             level={3}
+            isError={isError}
         >
             {withMetadata && grantNumberNumber !== 0 && (
                 <GrantNumberMetadata

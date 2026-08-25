@@ -618,11 +618,19 @@ class AgreementsService(OpsService[Agreement]):
             # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # Create a change request if at least one BLI is in PLANNED or PLANNED_MOD status
-        if any(
-            bli.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
-            for bli in agreement.budget_line_items
-        ):
+        # At least one BLI is in PLANNED status (PLANNED_MOD is unreachable here — the
+        # blocked-status guard above raises first for it). Normally this needs a Change
+        # Request for Division Director approval. When the SKIP_CR_FOR_DRAFT_PLANNED
+        # capability is enabled (per-environment), apply the change directly instead —
+        # matching the same flag's behavior for BLI Draft→Planned edits. The awarding_entity_id
+        # assignment lands on the identity-mapped agreement before the resource re-serializes it,
+        # so agreement history still records the "Change to Procurement Shop" entry via the
+        # UPDATE_AGREEMENT field diff (see resources/agreements.py and agreement_edit_bundle.py).
+        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+            if current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
+                agreement.awarding_entity_id = new_value
+                return None
+
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(

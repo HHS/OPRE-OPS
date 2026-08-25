@@ -232,9 +232,37 @@ const useCreateBLIsAndSCs = (
             currentLocation.pathname !== nextLocation.pathname
     );
 
-    React.useEffect(() => {
-        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
+    // Attach each BLI's current services-component PoP window (sc_period_start/sc_period_end)
+    // for the "Obligate By must fall within PoP" validation (row error + tooltip in BLIRow, and
+    // the suite rule that gates Save). Derived live from the current servicesComponents rather
+    // than baked into editor state, so it stays correct when the user edits an SC's PoP dates,
+    // deletes an SC, or reassigns a BLI to a different SC in the same session. Grant BLIs have no
+    // SC, so they get null and the PoP rule skips them.
+    //
+    // Prefer services_component_number over services_component_id when resolving the SC — the same
+    // precedence groupByServicesComponent uses — so the validated PoP window always matches the SC
+    // the BLI is grouped under and will be saved to. handleEditBLI keeps the number in sync on
+    // reassignment but leaves services_component_id stale until save time (getSlice resolves the id
+    // via linkBliToSc, also keyed by number); matching on the stale id here would validate against
+    // the BLI's OLD SC window while it's grouped under the new one, producing a spurious
+    // "outside PoP" error. Fall back to the id only when no number is present (e.g. undecorated data).
+    const budgetLinesWithScPeriod = React.useMemo(() => {
+        return tempBudgetLines.map((bli) => {
+            const sc =
+                bli.services_component_number != null
+                    ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
+                    : servicesComponents.find((sc) => sc.id === bli.services_component_id);
+            return {
+                ...bli,
+                sc_period_start: sc?.period_start ?? null,
+                sc_period_end: sc?.period_end ?? null
+            };
+        });
     }, [tempBudgetLines, servicesComponents]);
+
+    React.useEffect(() => {
+        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(budgetLinesWithScPeriod));
+    }, [budgetLinesWithScPeriod]);
 
     React.useEffect(() => {
         // Don't pass grantNumbers here — that would pre-populate an empty-budgetLines
@@ -253,12 +281,31 @@ const useCreateBLIsAndSCs = (
         ? suite.run({
               // Exclude in-review BLIs from validation — they are locked (not editable) and
               // won't be included in the save payload, so their TBD fields should not block saving.
-              budgetLines: tempBudgetLines.filter((bli) => !bli.in_review)
+              // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
+              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
+              // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
+              agreement_type: selectedAgreement?.agreement_type
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();
-    // Filter page errors to only include "Budget line item" errors and consolidate into single message
-    const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
+    // already renders its own "This is required information" message and red border above its accordion
+    // in review mode. Exclude those BLIs' errors here so the same BLI doesn't surface two identical
+    // messages (page-level + per-accordion) (OPS-6094). Derive the ids from the SAME grouped array the
+    // accordion renders from, so the suppression always stays in lockstep with what shows the bucket-0
+    // message (both read the same state, so there's no transient mismatch).
+    const unassociatedGroup = isGrant
+        ? groupedBudgetLinesByGrantNumber.find((group) => group.grantNumberNumber === 0)
+        : groupedBudgetLinesByServicesComponent.find((group) => group.servicesComponentNumber === 0);
+    const unassociatedBliIds = new Set(
+        isReviewMode ? (unassociatedGroup?.budgetLines ?? []).map((bli) => String(bli.id)) : []
+    );
+    const bliIdFromErrorKey = (key) => key.match(/^Budget line item \((.+)\)$/)?.[1] ?? null;
+    // Filter page errors to only include "Budget line item" errors (from associated BLIs) and
+    // consolidate into a single message.
+    const budgetLineErrors = Object.entries(pageErrors).filter(
+        (error) => error[0].includes("Budget line item") && !unassociatedBliIds.has(bliIdFromErrorKey(error[0]))
+    );
 
     const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;

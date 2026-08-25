@@ -385,6 +385,11 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.display_title;
     delete cleanData.services_component_number;
     delete cleanData.grant_number_number;
+    // UI-only PoP window that may be attached to the BLI for the Obligate By within-PoP
+    // validation. Not a backend field — strip it so it never leaks into the API payload
+    // (defensive; the edit flow derives it live and doesn't persist it on the BLI).
+    delete cleanData.sc_period_start;
+    delete cleanData.sc_period_end;
     delete cleanData._meta;
     delete cleanData.tempChangeRequest;
     delete cleanData.financialSnapshot;

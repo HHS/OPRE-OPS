@@ -356,6 +356,43 @@ describe("Accordion Component", () => {
             expect(accordion).not.toHaveClass("padding-bottom-6");
         });
 
+        it("applies the error border classes to the heading when isError is true", () => {
+            render(
+                <Accordion
+                    {...defaultProps}
+                    isError={true}
+                />
+            );
+
+            const heading = screen.getByRole("heading");
+
+            expect(heading).toHaveClass("border-2px");
+            expect(heading).toHaveClass("border-secondary-dark");
+        });
+
+        it("does not apply the error border classes when isError is false", () => {
+            render(
+                <Accordion
+                    {...defaultProps}
+                    isError={false}
+                />
+            );
+
+            const heading = screen.getByRole("heading");
+
+            expect(heading).not.toHaveClass("border-2px");
+            expect(heading).not.toHaveClass("border-secondary-dark");
+        });
+
+        it("does not apply the error border classes by default", () => {
+            render(<Accordion {...defaultProps} />);
+
+            const heading = screen.getByRole("heading");
+
+            expect(heading).not.toHaveClass("border-2px");
+            expect(heading).not.toHaveClass("border-secondary-dark");
+        });
+
         it("applies correct USWDS classes", () => {
             const { container } = render(<Accordion {...defaultProps} />);
 

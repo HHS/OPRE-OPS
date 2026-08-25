@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
@@ -23,7 +23,7 @@ import {
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
-import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
 import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 
 /**
@@ -63,16 +63,12 @@ export const AgreementTableRow = ({ agreement }) => {
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
-    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    const [searchParams] = useSearchParams();
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
-
     function getLockedMessage() {
         const lockedMessages = {
-            notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
+            notTeamMember: "Only team members on this agreement can edit or delete",
             notDeveloped:
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
             default: "Disabled"
@@ -99,8 +95,6 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={!forApprovalUrl}
-            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
     ) : null;
 

@@ -13,11 +13,13 @@ from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import Any
 
+from flask_jwt_extended import get_current_user
 from loguru import logger
 from marshmallow import EXCLUDE
 from sqlalchemy.exc import IntegrityError
 
 from models import Agreement, GrantNumber
+from models.utils import generate_agreement_events_update
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
@@ -75,6 +77,10 @@ class AgreementEditBundleService:
         self._grant_numbers = GrantNumberService(db_session)
         self._blis = BudgetLineItemService(db_session)
         self._change_requests = ChangeRequestService(db_session)
+        # Filtered agreement field-diff for the UPDATE_AGREEMENT history subscriber. Populated
+        # (scoped to awarding_entity_id only) when a procurement-shop change is applied directly
+        # via this bundle; the resource reads it into the event metadata. See _apply_agreement_update.
+        self.agreement_updates: dict | None = None
 
     def update(self, agreement_id: int, payload: dict[str, Any]) -> BundleResult:
         """Apply every section of ``payload`` to ``agreement_id`` atomically.
@@ -197,7 +203,35 @@ class AgreementEditBundleService:
         loaded.pop("services_components", None)
         loaded.pop("grant_numbers", None)
         loaded["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement.agreement_type)
+
+        # Unlike the standard PATCH resource, this orchestrator does not compute an agreement
+        # field diff for history. When a procurement-shop change is applied directly here (the
+        # SKIP_CR_FOR_DRAFT_PLANNED capability skips the Change Request that would otherwise carry
+        # the history), no "Change to Procurement Shop" entry would be recorded. Snapshot the
+        # agreement before/after and surface the awarding_entity_id diff so the UPDATE_AGREEMENT
+        # subscriber records it. Scoped to awarding_entity_id only — other bundle-edited fields
+        # deliberately do not gain history here (matching prior behavior; a separate concern).
+        old_serialized = agreement.to_dict()
         self._agreements.update(agreement.id, loaded, partial=True, commit=False)
+        # Use the current request user rather than agreement.updated_by: this runs under
+        # commit=False (flush only), and the created/updated-by stamping fires on before_commit,
+        # so agreement.updated_by is still the prior editor's id at this point. (The persisted
+        # history actor is derived from OpsEvent.created_by, so this only affects the value stored
+        # under event_details["agreement_updates"]["updated_by"], but keep it accurate.)
+        current_user = get_current_user()
+        full_updates = generate_agreement_events_update(
+            old_serialized,
+            agreement.to_dict(),
+            agreement.id,
+            current_user.id if current_user else None,
+        )
+        proc_shop_change = full_updates.get("changes", {}).get("awarding_entity_id")
+        if proc_shop_change is not None:
+            self.agreement_updates = {
+                "owner_id": full_updates["owner_id"],
+                "updated_by": full_updates["updated_by"],
+                "changes": {"awarding_entity_id": proc_shop_change},
+            }
 
     # ------------------------------------------------------------------
     # Services Components

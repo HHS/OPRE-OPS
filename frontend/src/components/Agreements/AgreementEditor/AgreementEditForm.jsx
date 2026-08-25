@@ -559,7 +559,7 @@ const AgreementEditForm = ({
                         name="product_service_code_id"
                         label="Product Service Code"
                         messages={res.getErrors("product_service_code_id")}
-                        className={cn("product_service_code_id")}
+                        className={`margin-top-3 ${cn("product_service_code_id")}`}
                         selectedProductServiceCode={selectedProductServiceCode || ""}
                         codes={productServiceCodes}
                         onChange={(name, value) => {

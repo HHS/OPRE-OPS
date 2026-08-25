@@ -7,6 +7,7 @@ import {
     useDeleteAgreementMutation,
     useGetProjectsQuery,
     useGetProductServiceCodesQuery,
+    useGetVersionQuery,
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
@@ -208,8 +209,18 @@ const useAgreementEditForm = (
     const isBudgetTeam = useIsUserBudgetTeam();
     // Superusers and Budget Team members bypass the procurement-shop change-request workflow.
     const canEditDirectly = isSuperUser || isBudgetTeam;
+    // Per-environment capability: when ON, a procurement-shop change applies immediately (no
+    // Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Defaults to
+    // false until the version query resolves so the approval UX is never suppressed prematurely.
+    // The backend is the enforcement authority; this only drives the modal/alert copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const shouldRequestChange =
-        hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded && !canEditDirectly;
+        hasProcurementShopChanged &&
+        areAnyBudgetLinesPlanned &&
+        !isAgreementAwarded &&
+        !canEditDirectly &&
+        !skipCrForDraftPlanned;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
