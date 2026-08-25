@@ -559,23 +559,43 @@ export const CreateBLIsAndSCs = ({
 
             {isGrant ? (
                 groupedBudgetLinesByGrantNumber.length > 0 ? (
-                    groupedBudgetLinesByGrantNumber.map((group, index) => (
-                        <GrantNumberAccordion
-                            key={`${group.grantNumberNumber}-${index}`}
-                            grantNumberNumber={group.grantNumberNumber}
-                            totalGrantNumbers={grantNumbers.length}
-                        >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                                isReviewMode={isReviewMode}
-                                isGrant={true}
-                            />
-                        </GrantNumberAccordion>
-                    ))
+                    groupedBudgetLinesByGrantNumber.map((group, index) => {
+                        // The "BLs not associated with a Grant Number" bucket (number 0) is an
+                        // error state in review mode — every BL in it still needs a grant number.
+                        // Surface it with a required-info message above the accordion and a red
+                        // border on its header, mirroring the services-component path below.
+                        const isUnassociatedError =
+                            isReviewMode && group.grantNumberNumber === 0 && group.budgetLines.length > 0;
+                        return (
+                            <div key={`${group.grantNumberNumber}-${index}`}>
+                                {isUnassociatedError && (
+                                    <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
+                                        <span
+                                            className="usa-error-message text-normal margin-left-neg-1"
+                                            role="alert"
+                                        >
+                                            This is required information
+                                        </span>
+                                    </div>
+                                )}
+                                <GrantNumberAccordion
+                                    grantNumberNumber={group.grantNumberNumber}
+                                    totalGrantNumbers={grantNumbers.length}
+                                    isError={isUnassociatedError}
+                                >
+                                    <BudgetLinesTable
+                                        budgetLines={group.budgetLines}
+                                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                        handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                        isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                        isReviewMode={isReviewMode}
+                                        isGrant={true}
+                                    />
+                                </GrantNumberAccordion>
+                            </div>
+                        );
+                    })
                 ) : (
                     <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
                 )

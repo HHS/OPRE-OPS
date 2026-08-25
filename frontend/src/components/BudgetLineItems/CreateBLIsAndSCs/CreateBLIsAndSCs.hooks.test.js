@@ -607,6 +607,90 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
     });
 
+    it("suppresses the page-level error for a BLI in the unassociated (bucket-0) accordion (covered by its own message)", async () => {
+        const suiteModule = await import("./suite");
+        const helpers = await import("../../../helpers/budgetLines.helpers");
+        // The bucket-0 accordion already surfaces its own message and red border for unassociated BLIs,
+        // so the page-level message must not double up. Drive the real bucket-0 grouping path: group the
+        // BLI under servicesComponentNumber 0, mirroring groupByServicesComponent's "unassociated" bucket.
+        const defaultGroupBySc = helpers.groupByServicesComponent.getMockImplementation();
+        helpers.groupByServicesComponent.mockImplementation((blis) =>
+            blis.length ? [{ budgetLines: blis, servicesComponentNumber: 0, serviceComponentGroupingLabel: "0" }] : []
+        );
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [{ id: 99, services_component_number: 0 }],
+            deleted_budget_line_items_ids: []
+        });
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({ "Budget line item (99)": ["This is required information"] }),
+            hasErrors: () => true,
+            isValid: () => false
+        }));
+
+        try {
+            const { result } = renderHook(() =>
+                useCreateBLIsAndSCs(
+                    true,
+                    true,
+                    [],
+                    vi.fn(),
+                    goBackMock,
+                    vi.fn(),
+                    { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                    { fee_percentage: 5, abbr: "PSC" },
+                    setIsEditModeMock,
+                    "agreement",
+                    true,
+                    true,
+                    "Save & Exit",
+                    1
+                )
+            );
+
+            expect(result.current.budgetLinePageErrorsExist).toBe(false);
+        } finally {
+            // Restore the shared factory mock so the override doesn't leak to later tests
+            // (vi.clearAllMocks in beforeEach clears calls, not implementations).
+            helpers.groupByServicesComponent.mockImplementation(defaultGroupBySc);
+        }
+    });
+
+    it("keeps the page-level error for an associated BLI with invalid fields", async () => {
+        const suiteModule = await import("./suite");
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [{ id: 99, services_component_number: 1, services_component_id: 11 }],
+            deleted_budget_line_items_ids: []
+        });
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({ "Budget line item (99)": ["This is required information"] }),
+            hasErrors: () => true,
+            isValid: () => false
+        }));
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        expect(result.current.budgetLinePageErrorsExist).toBe(true);
+    });
+
     it("validates each BLI against its current services component's PoP window (derived live)", async () => {
         const suiteModule = await import("./suite");
         suiteModule.default.run.mockImplementation(() => ({

@@ -288,8 +288,24 @@ const useCreateBLIsAndSCs = (
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();
-    // Filter page errors to only include "Budget line item" errors and consolidate into single message
-    const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
+    // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
+    // already renders its own "This is required information" message and red border above its accordion
+    // in review mode. Exclude those BLIs' errors here so the same BLI doesn't surface two identical
+    // messages (page-level + per-accordion) (OPS-6094). Derive the ids from the SAME grouped array the
+    // accordion renders from, so the suppression always stays in lockstep with what shows the bucket-0
+    // message (both read the same state, so there's no transient mismatch).
+    const unassociatedGroup = isGrant
+        ? groupedBudgetLinesByGrantNumber.find((group) => group.grantNumberNumber === 0)
+        : groupedBudgetLinesByServicesComponent.find((group) => group.servicesComponentNumber === 0);
+    const unassociatedBliIds = new Set(
+        isReviewMode ? (unassociatedGroup?.budgetLines ?? []).map((bli) => String(bli.id)) : []
+    );
+    const bliIdFromErrorKey = (key) => key.match(/^Budget line item \((.+)\)$/)?.[1] ?? null;
+    // Filter page errors to only include "Budget line item" errors (from associated BLIs) and
+    // consolidate into a single message.
+    const budgetLineErrors = Object.entries(pageErrors).filter(
+        (error) => error[0].includes("Budget line item") && !unassociatedBliIds.has(bliIdFromErrorKey(error[0]))
+    );
 
     const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
