@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 
 from sqlalchemy import select
 
@@ -11,7 +12,12 @@ from models import (
     OpsEventStatus,
     OpsEventType,
 )
-from models.agreement_history import add_history_events, create_agreement_update_history_event, get_project_display_name
+from models.agreement_history import (
+    add_history_events,
+    create_agreement_update_history_event,
+    create_services_component_history_event,
+    get_project_display_name,
+)
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 from ops_api.ops.utils.users import get_sys_user
 
@@ -648,6 +654,34 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
         == "Changes made to the OPRE budget spreadsheet changed the component number for Services Component "
         "SC22 from 99 to 22."
     )
+
+
+def test_services_component_period_change_with_none_value():
+    """Regression: a period_start/period_end change where the old or new value is None/empty
+    must not raise NameError. Previously the empty branch left old_date/new_date unassigned
+    while the f-string referenced them unconditionally, silently dropping SC history."""
+    event = SimpleNamespace(
+        id=999,
+        created_on=datetime(2026, 1, 2, 3, 4, 5),
+        event_details={
+            "services_component_updates": {
+                "sc_display_name": "SC1",
+                "owner_id": 1,
+                "changes": {
+                    "period_start": {"old_value": None, "new_value": "2025-01-01"},
+                    "period_end": {"old_value": "2024-06-30", "new_value": ""},
+                },
+            }
+        },
+    )
+    event_user = SimpleNamespace(full_name="Amelia Popham")
+
+    history_events = create_services_component_history_event(event, event_user, system_user_created_event=False)
+
+    messages = [h.history_message for h in history_events]
+    assert len(messages) == 2
+    assert any("from None to 01/01/2025" in m for m in messages)
+    assert any("from 06/30/2024 to None" in m for m in messages)
 
 
 def test_agreement_history_bli_deletion(loaded_db, app_ctx):

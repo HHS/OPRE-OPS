@@ -1035,18 +1035,20 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
             else:
                 history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "period_start" or key == "period_end":
-            if old_value is None or old_value == "":
-                old_value = "None"
-            else:
-                old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
-            if new_value is None or new_value == "":
-                new_value = "None"
-            else:
-                new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            old_value = (
+                "None"
+                if old_value is None or old_value == ""
+                else datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
+            new_value = (
+                "None"
+                if new_value is None or new_value == ""
+                else datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
             if system_user_created_event:
-                history_message = f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
             else:
-                history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+                history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "description":
             if system_user_created_event:
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
