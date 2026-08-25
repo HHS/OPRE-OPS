@@ -14,7 +14,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
-import agreementSuite, { POP_RANGE_ERROR_KEY, validateBudgetLineItems } from "./suite";
+import agreementSuite, { validateBudgetLineItems } from "./suite";
 
 /**
  * Custom hook for the Review Agreement page
@@ -230,26 +230,16 @@ const useReviewAgreement = (agreementId) => {
 
         if (hasBLIError && Array.isArray(bliValidationResults)) {
             const seenBudgetLineErrors = new Set();
-            // Sort by ascending BL id so POP_RANGE_ERROR_KEY messages read in a stable,
-            // predictable order regardless of the order BLs were selected in.
-            const sortedBliValidationResults = [...bliValidationResults].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-            sortedBliValidationResults.forEach(({ isValid, errors }) => {
+            bliValidationResults.forEach(({ isValid, errors }) => {
                 if (isValid) {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
-                    // POP_RANGE_ERROR_KEY shows one alert line per violating BL, so accumulate
-                    // every BL's messages instead of deduping to the first (as other keys do).
-                    if (fieldName === POP_RANGE_ERROR_KEY) {
-                        aggregatedErrors[fieldName] = [...(aggregatedErrors[fieldName] ?? []), ...messages];
+                    if (seenBudgetLineErrors.has(fieldName)) {
                         return;
                     }
-                    const errorKey = `${fieldName}`;
-                    if (seenBudgetLineErrors.has(errorKey)) {
-                        return;
-                    }
-                    seenBudgetLineErrors.add(errorKey);
-                    aggregatedErrors[errorKey] = messages;
+                    seenBudgetLineErrors.add(fieldName);
+                    aggregatedErrors[fieldName] = messages;
                 });
             });
         }

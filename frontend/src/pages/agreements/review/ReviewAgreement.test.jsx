@@ -85,25 +85,19 @@ describe("ReviewAgreement error banner", () => {
         vi.clearAllMocks();
     });
 
-    it("renders one <li> per POP_RANGE_ERROR_KEY message when multiple BLs violate the PoP window", () => {
-        const popMessages = [
-            "BL 101: Obligate By Date must be within PoP",
-            "BL 202: Obligate By Date must be within PoP",
-            "BL 303: Obligate By Date must be within PoP"
-        ];
-
+    it("renders a single <li> for the POP_RANGE_ERROR_KEY key", () => {
         renderComponent({
             isAlertActive: true,
-            pageErrors: { [POP_RANGE_ERROR_KEY]: popMessages }
+            pageErrors: {
+                [POP_RANGE_ERROR_KEY]: ["Budget Line Obligate By"]
+            }
         });
 
         const errorList = screen.getByRole("list", { hidden: true });
         const errorItems = within(errorList).getAllByRole("listitem");
-        expect(errorItems).toHaveLength(3);
-        popMessages.forEach((msg, i) => {
-            expect(errorItems[i]).toHaveTextContent(msg);
-            expect(errorItems[i]).toHaveAttribute("data-cy", "error-item");
-        });
+        expect(errorItems).toHaveLength(1);
+        expect(errorItems[0]).toHaveAttribute("data-cy", "error-item");
+        expect(errorItems[0]).toHaveTextContent("Obligate By Date Outside Period of Performance");
     });
 
     it("renders a single <li> for each non-POP_RANGE_ERROR_KEY error key", () => {
@@ -123,14 +117,14 @@ describe("ReviewAgreement error banner", () => {
             isAlertActive: true,
             pageErrors: {
                 cor: ["COR is required"],
-                [POP_RANGE_ERROR_KEY]: ["BL 101: date out of range", "BL 202: date out of range"]
+                [POP_RANGE_ERROR_KEY]: ["Budget Line Obligate By"]
             }
         });
 
         const errorList = screen.getByRole("list", { hidden: true });
         const errorItems = within(errorList).getAllByRole("listitem");
-        // 1 for cor + 2 for POP_RANGE_ERROR_KEY
-        expect(errorItems).toHaveLength(3);
+        // 1 for cor + 1 for POP_RANGE_ERROR_KEY
+        expect(errorItems).toHaveLength(2);
     });
 
     it("does not render the error banner when isAlertActive is false", () => {
