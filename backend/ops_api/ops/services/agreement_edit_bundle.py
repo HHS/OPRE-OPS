@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import Any
 
+from flask_jwt_extended import get_current_user
 from loguru import logger
 from marshmallow import EXCLUDE
 from sqlalchemy.exc import IntegrityError
@@ -212,11 +213,17 @@ class AgreementEditBundleService:
         # deliberately do not gain history here (matching prior behavior; a separate concern).
         old_serialized = agreement.to_dict()
         self._agreements.update(agreement.id, loaded, partial=True, commit=False)
+        # Use the current request user rather than agreement.updated_by: this runs under
+        # commit=False (flush only), and the created/updated-by stamping fires on before_commit,
+        # so agreement.updated_by is still the prior editor's id at this point. (The persisted
+        # history actor is derived from OpsEvent.created_by, so this only affects the value stored
+        # under event_details["agreement_updates"]["updated_by"], but keep it accurate.)
+        current_user = get_current_user()
         full_updates = generate_agreement_events_update(
             old_serialized,
             agreement.to_dict(),
             agreement.id,
-            agreement.updated_by,
+            current_user.id if current_user else None,
         )
         proc_shop_change = full_updates.get("changes", {}).get("awarding_entity_id")
         if proc_shop_change is not None:
