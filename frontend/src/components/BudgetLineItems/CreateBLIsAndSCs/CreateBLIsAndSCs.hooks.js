@@ -282,7 +282,9 @@ const useCreateBLIsAndSCs = (
               // Exclude in-review BLIs from validation — they are locked (not editable) and
               // won't be included in the save payload, so their TBD fields should not block saving.
               // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
-              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review)
+              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
+              // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
+              agreement_type: selectedAgreement?.agreement_type
           })
         : pageSuiteResult;
     const pageErrors = res.getErrors();

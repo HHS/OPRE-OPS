@@ -52,4 +52,15 @@ describe("CreateBLIsAndSCs suite — PoP range rule", () => {
             "Obligate By date is outside the agreement's Period of Performance"
         );
     });
+
+    it("skips the PoP rule for GRANT agreements even when SC period fields are present", () => {
+        const result = suite.run({
+            agreement_type: "GRANT",
+            // date_needed is outside the window — the rule would fail if it ran.
+            budgetLines: [{ ...validBase, sc_period_start: "2044-07-01", sc_period_end: "2044-12-31" }]
+        });
+        expect(result.getErrors("Budget line item (1)")).not.toContain(
+            "Obligate By date is outside the agreement's Period of Performance"
+        );
+    });
 });

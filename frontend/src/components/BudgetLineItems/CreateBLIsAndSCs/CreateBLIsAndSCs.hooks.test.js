@@ -603,7 +603,7 @@ describe("useCreateBLIsAndSCs", () => {
             )
         );
 
-        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [] });
+        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [], agreement_type: "GRANT" });
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
     });
 
@@ -659,7 +659,8 @@ describe("useCreateBLIsAndSCs", () => {
                     sc_period_start: "2044-01-01",
                     sc_period_end: "2044-12-31"
                 })
-            ]
+            ],
+            agreement_type: "CONTRACT"
         });
     });
 
@@ -720,7 +721,8 @@ describe("useCreateBLIsAndSCs", () => {
                     sc_period_start: "2044-07-01",
                     sc_period_end: "2044-12-31"
                 })
-            ]
+            ],
+            agreement_type: "CONTRACT"
         });
     });
 
