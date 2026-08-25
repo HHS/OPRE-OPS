@@ -626,10 +626,7 @@ class AgreementsService(OpsService[Agreement]):
         # assignment lands on the identity-mapped agreement before the resource re-serializes it,
         # so agreement history still records the "Change to Procurement Shop" entry via the
         # UPDATE_AGREEMENT field diff (see resources/agreements.py and agreement_edit_bundle.py).
-        if any(
-            bli.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
-            for bli in agreement.budget_line_items
-        ):
+        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
             if current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
                 agreement.awarding_entity_id = new_value
                 return None
