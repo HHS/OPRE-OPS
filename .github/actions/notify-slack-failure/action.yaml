@@ -1,5 +1,4 @@
 name: "notify-slack-failure"
-author: "@devops-chris"
 description: "Posts deploy-failure data to a Slack Workflow Builder webhook"
 
 inputs:
