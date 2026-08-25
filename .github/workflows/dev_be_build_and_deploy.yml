@@ -76,7 +76,7 @@ jobs:
         if: failure()
         uses: ./.github/actions/notify-slack-failure
         with:
-          webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       # - name: Deploy Container App
       #   uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
@@ -110,4 +110,4 @@ jobs:
         if: failure()
         uses: ./.github/actions/notify-slack-failure
         with:
-          webhook_url: ${{ vars.SLACK_WEBHOOK_URL }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
