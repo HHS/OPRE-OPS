@@ -1,10 +1,10 @@
 name: "notify-slack-failure"
 author: "@devops-chris"
-description: "Posts a Slack message via incoming webhook when a deploy job fails"
+description: "Posts deploy-failure data to a Slack Workflow Builder webhook"
 
 inputs:
   webhook_url:
-    description: "Slack incoming webhook URL"
+    description: "Slack Workflow Builder webhook URL"
     required: true
 
 runs:
@@ -20,8 +20,12 @@ runs:
         RUN_NUMBER: ${{ github.run_number }}
         COMMIT_SHA: ${{ github.sha }}
       run: |
-        MESSAGE=":red_circle: *${WORKFLOW_NAME}* failed — job \`${JOB_NAME}\` on <${RUN_URL}|run #${RUN_NUMBER}> (commit ${COMMIT_SHA})"
-
         curl -sf -X POST -H 'Content-type: application/json' \
-          --data "$(jq -n --arg text "$MESSAGE" '{text: $text}')" \
+          --data "$(jq -n \
+            --arg workflow_name "$WORKFLOW_NAME" \
+            --arg job_name "$JOB_NAME" \
+            --arg run_url "$RUN_URL" \
+            --arg run_number "$RUN_NUMBER" \
+            --arg commit_sha "$COMMIT_SHA" \
+            '{workflow_name: $workflow_name, job_name: $job_name, run_url: $run_url, run_number: $run_number, commit_sha: $commit_sha}')" \
           "$WEBHOOK_URL"
