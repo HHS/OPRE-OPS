@@ -60,7 +60,7 @@ jobs:
           body_no_code=$(printf '%s\n' "$COMMENT_BODY" | sed '/^```/,/^```/d')
 
           mentions=$(printf '%s' "$body_no_code" \
-            | grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b' \
+            | { grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b' || true; } \
             | sed 's/^@//' | sort -u)
 
           if [ -z "$mentions" ]; then
