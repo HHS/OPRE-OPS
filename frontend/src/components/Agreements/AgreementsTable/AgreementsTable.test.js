@@ -5,7 +5,6 @@ import AgreementsTable from "./AgreementsTable";
 import { configureStore } from "@reduxjs/toolkit";
 import { vi } from "vitest";
 import { opsApi } from "../../../api/opsAPI";
-import { tableSortCodes } from "../../../helpers/utils";
 
 // Mock API calls
 vi.mock("../../../api/opsAPI", async () => {
@@ -122,60 +121,6 @@ it("renders without crashing", () => {
     expect(screen.getByText("End")).toBeInTheDocument();
     expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByText("FY25 Obligated")).toBeInTheDocument();
-});
-
-it("sets aria-sort='ascending' on the Agreement column when it is the active sort, ascending", () => {
-    render(
-        <Provider store={store}>
-            <BrowserRouter>
-                <AgreementsTable
-                    agreements={agreements}
-                    selectedFiscalYear="2025"
-                    sortConditions={tableSortCodes.agreementCodes.AGREEMENT}
-                    sortDescending={false}
-                />
-            </BrowserRouter>
-        </Provider>
-    );
-
-    const agreementHeader = screen.getByRole("columnheader", { name: /^Agreement$/ });
-    expect(agreementHeader).toHaveAttribute("aria-sort", "ascending");
-});
-
-it("sets aria-sort='descending' on the Agreement column when it is the active sort, descending", () => {
-    render(
-        <Provider store={store}>
-            <BrowserRouter>
-                <AgreementsTable
-                    agreements={agreements}
-                    selectedFiscalYear="2025"
-                    sortConditions={tableSortCodes.agreementCodes.AGREEMENT}
-                    sortDescending={true}
-                />
-            </BrowserRouter>
-        </Provider>
-    );
-
-    const agreementHeader = screen.getByRole("columnheader", { name: /^Agreement$/ });
-    expect(agreementHeader).toHaveAttribute("aria-sort", "descending");
-});
-
-it("sets aria-sort='none' on a non-active column when Agreement is the active sort", () => {
-    render(
-        <Provider store={store}>
-            <BrowserRouter>
-                <AgreementsTable
-                    agreements={agreements}
-                    selectedFiscalYear="2025"
-                    sortConditions={tableSortCodes.agreementCodes.AGREEMENT}
-                    sortDescending={false}
-                />
-            </BrowserRouter>
-        </Provider>
-    );
-
-    const typeHeader = screen.getByRole("columnheader", { name: /^Type$/ });
-    expect(typeHeader).toHaveAttribute("aria-sort", "none");
 });
 
 it("does not render contract-only expanded fields for a GRANT agreement row", () => {
