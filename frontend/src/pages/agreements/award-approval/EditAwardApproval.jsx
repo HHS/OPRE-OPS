@@ -14,7 +14,7 @@ import useEditAwardApproval from "./EditAwardApproval.hooks";
  * @component - Budget Team edit screen for a pending award approval request.
  *
  * Presents the same award fields as the award request form (Vendor, Contract #,
- * Award Amount, Award Date, CLINs, Notes) pre-filled from the submitted step 6 data.
+ * Award Amount, Award Date, CLINs) pre-filled from the submitted step 6 data.
  * Saving PATCHes the step 6 record without changing the approval status, then returns
  * the user to the Award Approval review page.
  *
@@ -57,8 +57,6 @@ export const EditAwardApproval = () => {
     const {
         agreement,
         isLoading,
-        notes,
-        setNotes,
         handleSave,
         handleCancel,
         submitError,
@@ -97,7 +95,7 @@ export const EditAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Edit Award Information">
+        <App breadCrumbName="Edit Award Approval">
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -109,13 +107,13 @@ export const EditAwardApproval = () => {
             )}
 
             <PageHeader
-                title="Edit Award Information"
+                title="Edit Award Approval"
                 subTitle={agreement?.name}
             />
 
             <p className="margin-y-3">
-                Review and update the award details below. Changes will be saved to the pending Award Approval request.
-                The approval status will not change — the Budget Team can still approve once edits are complete.
+                Review the CLINs, Vendor Information and Current Award Information to make sure everything matches the
+                award exactly. If not, correct any differences.
             </p>
 
             {submitError && (
@@ -134,12 +132,13 @@ export const EditAwardApproval = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
-                instructions="Review the agreement details below."
+                instructions="Please review the agreement details below and edit any information if necessary."
                 changeRequestType={agreement?.change_request_type}
                 isAgreementAwarded={true}
             />
 
             <AwardRequestForm
+                mode="edit"
                 agreement={agreement}
                 vendors={vendors}
                 selectedVendor={selectedVendor}
@@ -159,8 +158,6 @@ export const EditAwardApproval = () => {
                 handleAddCLIN={handleAddCLIN}
                 hasMissingCLINs={hasMissingCLINs}
                 clinSelectorRef={clinSelectorRef}
-                notes={notes}
-                setNotes={setNotes}
                 validationResult={validationResult}
                 runValidate={runValidate}
             />

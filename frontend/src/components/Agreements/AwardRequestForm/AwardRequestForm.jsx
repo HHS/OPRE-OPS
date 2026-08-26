@@ -44,6 +44,9 @@ import { formatVendorType } from "./awardForm.helpers";
  * @param {Function} props.setNotes                            - (value: string) => void
  * @param {Object}   props.validationResult                    - Vest result object (getErrors)
  * @param {Function} props.runValidate                         - (fieldName, value) => void
+ * @param {"request"|"edit"} [props.mode="request"]           - Controls instruction copy and Notes visibility.
+ *   "request" = submitter creating a new award approval request (Add … copy, Notes shown).
+ *   "edit"    = Budget Team editing a pending request (Edit … copy, Notes hidden).
  * @returns {React.ReactElement}
  */
 const AwardRequestForm = ({
@@ -69,14 +72,20 @@ const AwardRequestForm = ({
     notes,
     setNotes,
     validationResult,
-    runValidate
+    runValidate,
+    mode = "request"
 }) => {
+    const isEditMode = mode === "edit";
     return (
         <>
-            {/* Add CLINs to Budget Lines */}
+            {/* Add / Edit CLINs to Budget Lines */}
             <AgreementBLIAccordion
                 title="Add CLINs to Budget Lines"
-                instructions="Hover over each budget line and click Add CLIN to enter the Contract Line Item Number as outlined in the award. The budget team will double check the CLINs match the award exactly."
+                instructions={
+                    isEditMode
+                        ? "Hover over each budget line and click Edit CLIN to edit the Contract Line Item Number as outlined in the award."
+                        : "Hover over each budget line and click Add CLIN to enter the Contract Line Item Number as outlined in the award. The budget team will double check the CLINs match the award exactly."
+                }
                 budgetLineItems={agreement?.budget_line_items ?? []}
                 agreement={agreement}
                 afterApproval={false}
@@ -154,7 +163,11 @@ const AwardRequestForm = ({
                 dataCy="vendor-information-accordion"
             >
                 <fieldset className="usa-fieldset">
-                    <p className="margin-top-1 margin-bottom-3">Add the vendor information for this contract.</p>
+                    <p className="margin-top-1 margin-bottom-3">
+                        {isEditMode
+                            ? "Edit the vendor information for this contract."
+                            : "Add the vendor information for this contract."}
+                    </p>
 
                     <div className="grid-row grid-gap margin-top-3">
                         <div className="grid-col-4">
@@ -221,7 +234,11 @@ const AwardRequestForm = ({
                 dataCy="award-information-accordion"
             >
                 <fieldset className="usa-fieldset">
-                    <p className="margin-top-1 margin-bottom-0">Add the award information for this contract.</p>
+                    <p className="margin-top-1 margin-bottom-0">
+                        {isEditMode
+                            ? "Edit the award information for this contract."
+                            : "Add the award information for this contract."}
+                    </p>
 
                     <div className="grid-row grid-gap flex-align-end">
                         <div className="grid-col-4">
@@ -316,17 +333,19 @@ const AwardRequestForm = ({
                 </div>
             </Accordion>
 
-            {/* Notes (Optional) */}
-            <div className="margin-top-4">
-                <TextArea
-                    name="notes"
-                    label="Notes (Optional)"
-                    value={notes}
-                    onChange={(_name, value) => setNotes(value)}
-                    maxLength={150}
-                    messages={notes.length > 150 ? ["Notes must be 150 characters or less"] : []}
-                />
-            </div>
+            {/* Notes (Optional) — shown on request form only, not edit */}
+            {!isEditMode && (
+                <div className="margin-top-4">
+                    <TextArea
+                        name="notes"
+                        label="Notes (Optional)"
+                        value={notes}
+                        onChange={(_name, value) => setNotes(value)}
+                        maxLength={150}
+                        messages={notes.length > 150 ? ["Notes must be 150 characters or less"] : []}
+                    />
+                </div>
+            )}
         </>
     );
 };
