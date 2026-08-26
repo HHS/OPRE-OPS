@@ -1,7 +1,7 @@
 import { Provider } from "react-redux";
 import { renderHook, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { server } from "../../../tests/mocks";
 import { setupStore } from "../../../store";
 
@@ -88,10 +88,6 @@ describe("useAgreementEditForm - project pagination regression (GH #6142)", () =
             selected_project_officer: {},
             selected_alternate_project_officer: {}
         });
-    });
-
-    afterEach(() => {
-        server.resetHandlers();
     });
 
     it("loads every project across multiple pages, not just the first page", async () => {
