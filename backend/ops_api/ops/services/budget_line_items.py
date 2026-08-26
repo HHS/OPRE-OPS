@@ -53,7 +53,6 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     compute_bli_is_deletable,
     create_budget_line_item_instance,
     get_bli_locked_message,
-    is_award_approval_requested,
     is_bli_editable,
     is_post_pre_award_locked,
     is_pre_award_in_review,
@@ -584,17 +583,11 @@ class BudgetLineItemService:
 
         # Determine if direct edit or change request is needed.
         # Superusers bypass the change-request workflow for all edits.
-        # Budget Team members bypass it for financial changes only when the agreement has
-        # an active award-approval request (step 6) — any other context still routes
-        # through the DD-approval workflow.
-        budget_team_can_bypass = (
-            is_budget_team(current_user)
-            and not has_status_change
-            and is_award_approval_requested(budget_line_item.agreement)
-        )
+        # Non-status changes on DRAFT lines also apply directly without a CR.
+        # All other changes (including Budget Team financial edits) route through the
+        # change-request/DD-approval workflow.
         existing_bypass = (
             is_super_user(current_user, current_app)
-            or budget_team_can_bypass
             or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
@@ -938,19 +931,17 @@ class BudgetLineItemService:
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
 
-        # Pre-award / post-pre-award locks (OPS-2280). These fire the specific, actionable message
+        # Pre-award / post-pre-award locks. These fire the specific, actionable message
         # BEFORE the generic is_bli_editable fallback so the user sees why editing is blocked. Both
         # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
-        # PATCH validation stay in lockstep. Super users are NOT exempt from these locks (OPS-2280);
-        # budget team bypasses because they write directly.
+        # PATCH validation stay in lockstep. Budget Team is exempt from both locks (they write
+        # directly through the change-request workflow with no additional gate).
         if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         # Block edits after pre-award is fully approved (DD approved + requisition submitted).
-        # Exceptions:
-        #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
-        #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
-        #     the award workflow (COR assigns CLINs before submitting for award approval)
+        # Exception: clin_id-only edits are allowed for any authorized user — CLIN assignment is
+        # part of the award workflow (COR assigns CLINs before submitting for award approval).
         if not is_budget_team(current_user):
             # Use the raw request JSON to determine what the caller actually sent.
             # updated_fields contains Marshmallow load_default values for all schema fields

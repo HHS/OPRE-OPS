@@ -238,8 +238,10 @@ def is_award_approval_requested(agreement) -> bool:
     """
     Check if the agreement's award approval (step 6) has been requested and is pending.
 
-    Returns True when a budget team user's BLI financial edits should bypass the
-    change-request workflow — i.e. the agreement is in the award-approval review flow.
+    Returns True while the award-approval request is submitted but not yet resolved
+    (i.e. approval_status is not APPROVED or DECLINED). Used by:
+      - The Agreement model hybrid property (agreements.py) to expose the flag to the API.
+      - The frontend "Award Approval In Review" banner and edit-lock on the details page.
 
     Args:
         agreement: Agreement object to check
