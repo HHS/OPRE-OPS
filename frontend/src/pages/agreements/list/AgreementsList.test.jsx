@@ -10,7 +10,7 @@ import {
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
 import store from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -200,7 +200,7 @@ describe("AgreementsList - Pagination", () => {
         // Mock the sort conditions hook
         useSetSortConditions.mockReturnValue({
             sortDescending: false,
-            sortCondition: null,
+            sortCondition: tableSortCodes.agreementCodes.AGREEMENT,
             setSortConditions: vi.fn()
         });
     });
@@ -617,7 +617,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         // Mock the sort conditions hook
         useSetSortConditions.mockReturnValue({
             sortDescending: false,
-            sortCondition: null,
+            sortCondition: tableSortCodes.agreementCodes.AGREEMENT,
             setSortConditions: vi.fn()
         });
 
