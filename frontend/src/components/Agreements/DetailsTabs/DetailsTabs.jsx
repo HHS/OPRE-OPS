@@ -36,7 +36,7 @@ const DetailsTabs = ({
         },
         {
             name: "/budget-lines",
-            label: isGrant ? "Grant & Budget Lines" : "SCs & Budget Lines"
+            label: isGrant ? "Grants & Budget Lines" : "SCs & Budget Lines"
         }
     ];
     // only show the these tabs if isAgreementAwarded for contracts
