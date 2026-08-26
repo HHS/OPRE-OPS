@@ -33,6 +33,13 @@ jobs:
           image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}, VITE_ENABLE_MSW=false, BUILD_STORYBOOK=true"
 
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   deploy-frontend:
     needs: build-frontend
 
@@ -62,7 +69,8 @@ jobs:
             yamlConfigPath: ./.github/container-app-suffixes.yml
 
       - name: Notify Slack on failure
-        if: failure()
+        if: failure() || cancelled()
+        continue-on-error: true
         uses: ./.github/actions/notify-slack-failure
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

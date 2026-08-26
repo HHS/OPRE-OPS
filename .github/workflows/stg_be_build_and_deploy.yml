@@ -32,6 +32,13 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
           image_tags: "${{ env.ENVIRONMENT }},${{ github.sha }}"
 
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   build-backend:
     permissions:
       contents: read
@@ -48,6 +55,13 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
           image_tags: "${{ env.ENVIRONMENT }},${{ github.sha }}"
+
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   deploy-data-tools:
     needs: build-data-tools
@@ -75,7 +89,8 @@ jobs:
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
       - name: Notify Slack on failure
-        if: failure()
+        if: failure() || cancelled()
+        continue-on-error: true
         uses: ./.github/actions/notify-slack-failure
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -101,7 +116,8 @@ jobs:
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}
 
       - name: Notify Slack on failure
-        if: failure()
+        if: failure() || cancelled()
+        continue-on-error: true
         uses: ./.github/actions/notify-slack-failure
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
