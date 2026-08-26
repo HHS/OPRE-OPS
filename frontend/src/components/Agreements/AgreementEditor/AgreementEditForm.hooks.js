@@ -5,7 +5,7 @@ import classnames from "vest/classnames";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
-    useGetProjectsQuery,
+    useGetAllProjectsQuery,
     useGetProductServiceCodesQuery,
     useGetVersionQuery,
     useLazyGetAgreementsQuery,
@@ -157,17 +157,10 @@ const useAgreementEditForm = (
     } = agreement;
 
     const {
-        data: projectsResponse,
+        data: projects = [],
         error: errorProjects,
         isLoading: isLoadingProjects
-    } = useGetProjectsQuery(
-        {},
-        {
-            skip: isWizardMode
-        }
-    );
-
-    const projects = projectsResponse?.projects ?? [];
+    } = useGetAllProjectsQuery(undefined, { skip: isWizardMode });
 
     const {
         data: productServiceCodes = [],
