@@ -74,7 +74,7 @@ function GrantNumberForm({
                     />
                 </div>
                 {isEditMode && (
-                    <div className="margin-left-auto">
+                    <div className="margin-left-auto display-flex flex-align-center flex-no-wrap">
                         <FontAwesomeIcon
                             icon={faPen}
                             size="2x"
