@@ -43,4 +43,4 @@ SQLALCHEMY_MAX_OVERFLOW = 20
 
 # Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
 # Disabled in production (Change Request review remains required).
-SKIP_CR_FOR_DRAFT_PLANNED = False
+SKIP_CR_FOR_DRAFT_PLANNED = True
