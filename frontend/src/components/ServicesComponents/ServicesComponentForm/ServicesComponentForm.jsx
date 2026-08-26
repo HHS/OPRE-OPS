@@ -108,7 +108,7 @@ function ServicesComponentForm({
                     />
                 </div>
                 {isEditMode && (
-                    <div className="margin-left-auto">
+                    <div className="margin-left-auto padding-bottom-4">
                         <FontAwesomeIcon
                             icon={faPen}
                             size="2x"
