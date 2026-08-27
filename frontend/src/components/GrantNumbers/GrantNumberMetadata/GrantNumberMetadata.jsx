@@ -41,10 +41,10 @@ function GrantNumberMetadata({ periodStart, periodEnd, description }) {
                     </dd>
                 </div>
             </dl>
-            <div className="margin-top-3 wrap-text">
+            <dl className="margin-top-3 wrap-text margin-bottom-0">
                 <dt className="margin-0 text-base-dark margin-top-1px">Description</dt>
                 <dd className="margin-0 margin-top-1 text-semibold">{description}</dd>
-            </div>
+            </dl>
         </section>
     );
 }
