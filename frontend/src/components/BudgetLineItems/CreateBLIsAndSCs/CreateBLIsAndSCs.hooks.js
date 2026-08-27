@@ -655,18 +655,14 @@ const useCreateBLIsAndSCs = (
                         `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                         `<strong>Pending Changes:</strong>\n` +
                         ` ${pendingChanges}`,
-                    redirectUrl: savedViaModal
-                        ? blocker.location?.pathname
-                        : getBudgetLinesUrl(selectedAgreement?.id)
+                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             } else {
                 setAlert({
                     type: "success",
                     heading: "Agreement Updated",
                     message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
-                    redirectUrl: savedViaModal
-                        ? blocker.location?.pathname
-                        : getBudgetLinesUrl(selectedAgreement?.id)
+                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             }
         },
