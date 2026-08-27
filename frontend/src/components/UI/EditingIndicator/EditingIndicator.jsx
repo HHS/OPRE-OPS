@@ -17,7 +17,13 @@ function EditingIndicator() {
                 data-position="top"
                 aria-hidden="true"
             />
-            <span className="text-black">Editing...</span>
+            {/* id is a Cypress selector — cy.waitForEditingState() in cypress/support/commands.js queries #editing */}
+            <span
+                id="editing"
+                className="text-black"
+            >
+                Editing...
+            </span>
         </>
     );
 }
