@@ -44,7 +44,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
             state: "unblocked",
             proceed: vi.fn(),
             reset: vi.fn(),
-            nextLocation: "/agreements/1"
+            nextLocation: { pathname: "/agreements/1", search: "", hash: "", state: null, key: "default" }
         })
     };
 });
@@ -1068,6 +1068,7 @@ describe("useCreateBLIsAndSCs", () => {
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
             expect(successCall).toBeDefined();
             expect(successCall.heading).toBe("Changes Sent to Approval");
+            expect(successCall.redirectUrl).toBe("/agreements/1/budget-lines");
             expect(deleteBudgetLineItemMock).toHaveBeenCalled();
         });
 
@@ -1106,6 +1107,76 @@ describe("useCreateBLIsAndSCs", () => {
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
             expect(successCall).toBeDefined();
             expect(successCall.heading).toBe("Agreement Updated");
+            expect(successCall.redirectUrl).toBe("/agreements/1/budget-lines");
+        });
+
+        it("showSuccessMessage uses blocker.nextLocation.pathname as redirectUrl when savedViaModal is true", async () => {
+            addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            setAlertMock.mockClear();
+
+            await act(async () => {
+                await result.current.handleSave(true);
+            });
+
+            const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
+            expect(successCall).toBeDefined();
+            expect(typeof successCall.redirectUrl).toBe("string");
+            expect(successCall.redirectUrl).toBe("/agreements/1");
+        });
+
+        it("handleFinancialSnapshotChanges redirects to budget-lines after modal confirm (suppressSuccessAlert path)", async () => {
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            let savePromise;
+            act(() => {
+                savePromise = result.current.handleSave(false, false, true);
+            });
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+            });
+            expect(result.current.modalProps.actionButtonText).toBe("Send to Approval");
+
+            await act(async () => {
+                await result.current.modalProps.handleConfirm();
+            });
+
+            await act(async () => {
+                await savePromise;
+            });
+
+            const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
+            expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
         });
     });
 

@@ -57,6 +57,24 @@ describe("DetailsTabs", () => {
         expect(screen.getByText("SCs & Budget Lines")).toBeInTheDocument();
     });
 
+    it("renders 'Grants & Budget Lines' tab label for grant agreements", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        isGrant={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("Grants & Budget Lines")).toBeInTheDocument();
+        expect(screen.queryByText("SCs & Budget Lines")).not.toBeInTheDocument();
+    });
+
     it("shows developed-only tabs when agreement is developed", () => {
         render(
             <Provider store={store}>
