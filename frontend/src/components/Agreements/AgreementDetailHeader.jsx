@@ -1,5 +1,6 @@
 import { faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import EditingIndicator from "../UI/EditingIndicator";
 import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
@@ -96,20 +97,7 @@ export const AgreementDetailHeader = ({
                 )}
                 {isEditMode && (
                     <div className="margin-left-auto">
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                            aria-hidden="true"
-                        />
-                        <span
-                            id="editing"
-                            className="text-black"
-                        >
-                            Editing...
-                        </span>
+                        <EditingIndicator />
                     </div>
                 )}
             </div>
