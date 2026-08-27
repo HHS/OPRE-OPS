@@ -57,6 +57,7 @@ export const EditAwardApproval = () => {
     const {
         agreement,
         isLoading,
+        hasPermission,
         handleSave,
         handleCancel,
         submitError,
@@ -92,6 +93,19 @@ export const EditAwardApproval = () => {
 
     if (isLoading) {
         return <p>Loading...</p>;
+    }
+
+    if (!hasPermission) {
+        return (
+            <App breadCrumbName="Edit Award Approval">
+                <SimpleAlert
+                    type="error"
+                    heading="Access Denied"
+                    message="You do not have permission to edit this award approval request."
+                    headingLevel={2}
+                />
+            </App>
+        );
     }
 
     return (

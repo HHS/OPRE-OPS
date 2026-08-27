@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate, useBlocker, useSearchParams } from "react-router-dom";
+import { useSelector, shallowEqual } from "react-redux";
 import {
     useGetAgreementByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
@@ -69,8 +70,26 @@ export default function useEditAwardApproval(agreementId) {
     const [awardDate, setAwardDate] = useState("");
     const [notes, setNotes] = useState("");
 
-    // Validation
-    const [validationResult, setValidationResult] = useState(suite.get());
+    // Auth — restrict page to Budget Team and System Owner
+    // @ts-expect-error - Redux state typing in JS files
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles ?? [], shallowEqual);
+    const hasPermission = useMemo(() => {
+        const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
+        return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
+    }, [userRoles]);
+
+    // Validation. The suite is a module-level singleton whose result persists across
+    // unmount/remount. Reset on mount and unmount so stale errors from a prior visit
+    // (e.g. the request form) never appear before the user types (issue #5894).
+    const [validationResult, setValidationResult] = useState(() => suite.get());
+
+    useEffect(() => {
+        suite.reset();
+        setValidationResult(suite.get());
+        return () => {
+            suite.reset();
+        };
+    }, []);
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
@@ -129,7 +148,7 @@ export default function useEditAwardApproval(agreementId) {
     // Seed form fields from step 6 once data is available.
     // Run only once to avoid overwriting user edits on re-renders.
     useEffect(() => {
-        if (isSeeded || !step6 || vendors.length === 0) return;
+        if (isSeeded || !step6 || !agreement || vendors.length === 0) return;
 
         if (step6.vendor_id) {
             const vendor = vendors.find((v) => v.id === step6.vendor_id);
@@ -152,7 +171,7 @@ export default function useEditAwardApproval(agreementId) {
         }
 
         setIsSeeded(true);
-    }, [isSeeded, step6, vendors, allBudgetLines]);
+    }, [isSeeded, step6, agreement, vendors, allBudgetLines]);
 
     /**
      * Track if any changes have been made compared to the seeded values.
@@ -318,7 +337,9 @@ export default function useEditAwardApproval(agreementId) {
                 secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
-                    setIsNavigating(true);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
                     navigate(returnTo);
                 },
                 closeModal: () => {
@@ -333,6 +354,7 @@ export default function useEditAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
+        hasPermission,
         step6,
         notes,
         setNotes,
