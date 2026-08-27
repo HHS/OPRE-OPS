@@ -68,6 +68,12 @@ export const isDeletionRoutedToApproval = (budgetLine, isSuperUser) => {
 };
 
 /**
+ * @param {number} agreementId - The id of the agreement.
+ * @returns {string} The path to the agreement's budget lines page.
+ */
+const getBudgetLinesUrl = (agreementId) => `/agreements/${agreementId}/budget-lines`;
+
+/**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {Function} setIsEditMode - Function to set the edit mode.
@@ -583,7 +589,7 @@ const useCreateBLIsAndSCs = (
                                     heading: "Changes Sent to Approval",
                                     message:
                                         "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                                    redirectUrl: `/agreements/${selectedAgreement?.id}/budget-lines`
+                                    redirectUrl: getBudgetLinesUrl(selectedAgreement?.id)
                                 });
                                 resolve();
                             }
@@ -651,7 +657,7 @@ const useCreateBLIsAndSCs = (
                         ` ${pendingChanges}`,
                     redirectUrl: savedViaModal
                         ? blocker.location?.pathname
-                        : `/agreements/${selectedAgreement?.id}/budget-lines`
+                        : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             } else {
                 setAlert({
@@ -660,7 +666,7 @@ const useCreateBLIsAndSCs = (
                     message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
                     redirectUrl: savedViaModal
                         ? blocker.location?.pathname
-                        : `/agreements/${selectedAgreement?.id}/budget-lines`
+                        : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             }
         },
@@ -1064,7 +1070,7 @@ const useCreateBLIsAndSCs = (
                     resetForm();
                     dispatch({ type: "RESEED_BUDGET_LINE_ITEMS", payload: [] });
                     setIsEditMode(false);
-                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
+                    navigate(getBudgetLinesUrl(selectedAgreement?.id));
                     scrollToTop();
                 }
             }
