@@ -524,7 +524,7 @@ const useCreateBLIsAndSCs = (
                         heading: "Changes Sent to Approval",
                         message:
                             "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                        redirectUrl: blocker.nextLocation?.pathname
+                        redirectUrl: blocker.location?.pathname
                     });
                 }
             } catch (error) {
@@ -650,7 +650,7 @@ const useCreateBLIsAndSCs = (
                         `<strong>Pending Changes:</strong>\n` +
                         ` ${pendingChanges}`,
                     redirectUrl: savedViaModal
-                        ? blocker.nextLocation?.pathname
+                        ? blocker.location?.pathname
                         : `/agreements/${selectedAgreement?.id}/budget-lines`
                 });
             } else {
@@ -659,7 +659,7 @@ const useCreateBLIsAndSCs = (
                     heading: "Agreement Updated",
                     message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
                     redirectUrl: savedViaModal
-                        ? blocker.nextLocation?.pathname
+                        ? blocker.location?.pathname
                         : `/agreements/${selectedAgreement?.id}/budget-lines`
                 });
             }
@@ -675,7 +675,7 @@ const useCreateBLIsAndSCs = (
             selectedAgreement?.id,
             selectedAgreement?.display_name,
             createBudgetChangeMessages,
-            blocker.nextLocation
+            blocker.location
         ]
     );
     /**

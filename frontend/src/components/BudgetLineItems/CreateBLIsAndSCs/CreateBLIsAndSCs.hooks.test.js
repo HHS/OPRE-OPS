@@ -44,7 +44,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
             state: "unblocked",
             proceed: vi.fn(),
             reset: vi.fn(),
-            nextLocation: "/agreements/1"
+            location: { pathname: "/agreements/1" }
         })
     };
 });
