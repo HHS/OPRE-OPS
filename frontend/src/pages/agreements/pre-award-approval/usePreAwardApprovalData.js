@@ -29,7 +29,8 @@ export default function usePreAwardApprovalData(agreementId) {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreementId, { skip: !agreementId });
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
-    const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
+    // Documents feature is not yet live — skip until the backend storage integration is enabled.
+    const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: true });
     const { data: procurementTrackersData, isLoading: isLoadingTrackers } = useGetProcurementTrackersByAgreementIdQuery(
         agreementId,
         {
