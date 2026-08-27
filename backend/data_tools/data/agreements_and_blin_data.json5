@@ -547,7 +547,7 @@
       id: 13,
       name: "CONTRACT #13: Procurement Tracker Test Contract",
       nick_name: "PT-CONTRACT-1",
-      description: null,
+      description: "Research and analysis contract for procurement tracker testing, covering all six procurement steps through award approval.",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
       project_officer_id: 500,
