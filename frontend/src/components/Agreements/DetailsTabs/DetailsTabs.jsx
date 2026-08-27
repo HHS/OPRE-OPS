@@ -39,32 +39,33 @@ const DetailsTabs = ({
             label: isGrant ? "Grants & Budget Lines" : "SCs & Budget Lines"
         }
     ];
-    // only show the these tabs if isAgreementAwarded for contracts
-    const developedOnlyPaths = isDevelopedAgreement
-        ? [
-              {
-                  name: "TBD1",
-                  label: "Award & Modifications",
-                  disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip: "Award & Modifications\ntab is coming soon"
-              },
-              {
-                  name: "/procurement-tracker",
-                  label: "Procurement Tracker",
-                  disabled: isGrant || !isEditableForProcurementTracker,
-                  disabledTooltip: isGrant
-                      ? "Procurement Tracker\ntab is coming soon"
-                      : "Only agreement team members can edit the procurement tracker"
-              },
-              {
-                  name: "/documents",
-                  label: "Documents",
-                  disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip:
-                      "Documents tab is coming soon. For now, please\nupload to the OPRE preferred tool to share documents"
-              }
-          ]
-        : [];
+    // Grants don't have Award & Modifications, Procurement Tracker, or Documents tabs yet
+    // (grants are awarded without procurement) — hide these until the design is defined.
+    // For contracts, only show these tabs when the agreement is developed.
+    const developedOnlyPaths =
+        isDevelopedAgreement && !isGrant
+            ? [
+                  {
+                      name: "TBD1",
+                      label: "Award & Modifications",
+                      disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
+                      disabledTooltip: "Award & Modifications\ntab is coming soon"
+                  },
+                  {
+                      name: "/procurement-tracker",
+                      label: "Procurement Tracker",
+                      disabled: !isEditableForProcurementTracker,
+                      disabledTooltip: "Only agreement team members can edit the procurement tracker"
+                  },
+                  {
+                      name: "/documents",
+                      label: "Documents",
+                      disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
+                      disabledTooltip:
+                          "Documents tab is coming soon. For now, please\nupload to the OPRE preferred tool to share documents"
+                  }
+              ]
+            : [];
     const paths = [...basePaths, ...developedOnlyPaths];
 
     const links = paths.map((path) => {
