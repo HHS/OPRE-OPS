@@ -41,7 +41,7 @@ filelock = "==3.32.4"
 ipython = "==9.16.1"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
 black = {extras = ["d"], version = "==26.5.1"}
-isort = "==9.0.0"
+isort = "==9.0.1"
 
 [requires]
 python_version = "3.14"
