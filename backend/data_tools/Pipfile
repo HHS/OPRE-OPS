@@ -16,7 +16,7 @@ marshmallow-sqlalchemy = "==1.5.0"
 marshmallow-enum = "==1.5.1"
 alembic = "==1.19.1"
 alembic-postgresql-enum = "==1.10.0"
-azure-storage-blob = "==12.30.0"
+azure-storage-blob = "==12.30.1"
 azure-identity = "==1.25.3"
 azure-keyvault-secrets = "==4.11.2"
 loguru = "==0.7.3"
@@ -41,7 +41,7 @@ filelock = "==3.32.4"
 ipython = "==9.16.1"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
 black = {extras = ["d"], version = "==26.5.1"}
-isort = "==8.0.1"
+isort = "==9.0.1"
 
 [requires]
 python_version = "3.14"
