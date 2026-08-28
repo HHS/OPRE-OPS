@@ -586,9 +586,8 @@ class BudgetLineItemService:
         # Non-status changes on DRAFT lines also apply directly without a CR.
         # All other changes (including Budget Team financial edits) route through the
         # change-request/DD-approval workflow.
-        existing_bypass = (
-            is_super_user(current_user, current_app)
-            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
+        existing_bypass = is_super_user(current_user, current_app) or (
+            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         )
 
         # Optional capability (per-environment): when enabled, apply Draft→Planned status
