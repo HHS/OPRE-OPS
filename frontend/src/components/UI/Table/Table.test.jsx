@@ -1,0 +1,57 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import Table from "./Table";
+
+const headings = [
+    { heading: "BL ID #", value: "ID_NUMBER" },
+    { heading: "CLIN", value: "" }
+];
+
+describe("Table", () => {
+    it("does not render a sort button for a header with an empty value", () => {
+        render(<Table tableHeadings={headings} />);
+
+        expect(screen.getByRole("button", { name: /BL ID #/ })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "CLIN" })).not.toBeInTheDocument();
+        expect(screen.getByText("CLIN")).toBeInTheDocument();
+    });
+
+    it("keeps aria-sort none on a non-sortable header even when selectedHeader matches its empty value", () => {
+        render(
+            <Table
+                tableHeadings={headings}
+                selectedHeader=""
+                sortDescending={false}
+            />
+        );
+
+        expect(screen.getByRole("columnheader", { name: "CLIN" })).toHaveAttribute("aria-sort", "none");
+    });
+
+    it("does not call onClickHeader when a non-sortable header is clicked", () => {
+        const onClickHeader = vi.fn();
+        render(
+            <Table
+                tableHeadings={headings}
+                onClickHeader={onClickHeader}
+            />
+        );
+
+        fireEvent.click(screen.getByText("CLIN"));
+
+        expect(onClickHeader).not.toHaveBeenCalled();
+    });
+
+    it("still supports sorting and shows the arrow on a sortable selected header", () => {
+        render(
+            <Table
+                tableHeadings={headings}
+                selectedHeader="ID_NUMBER"
+                sortDescending={false}
+                onClickHeader={vi.fn()}
+            />
+        );
+
+        expect(screen.getByRole("columnheader", { name: "BL ID #" })).toHaveAttribute("aria-sort", "ascending");
+    });
+});

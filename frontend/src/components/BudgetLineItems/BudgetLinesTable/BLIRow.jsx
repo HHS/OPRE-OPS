@@ -5,6 +5,7 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
+    getClinDisplayValue,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
@@ -96,15 +97,7 @@ const BLIRow = ({
                     BLILabel(budgetLine)
                 )}
             </td>
-            {showClinColumn && (
-                <td>
-                    {budgetLine?.status === "DRAFT"
-                        ? "N/A"
-                        : budgetLine?.clin?.number != null
-                          ? budgetLine.clin.number
-                          : "—"}
-                </td>
-            )}
+            {showClinColumn && <td>{getClinDisplayValue(budgetLine)}</td>}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),

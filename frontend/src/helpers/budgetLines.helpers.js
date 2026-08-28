@@ -305,6 +305,18 @@ export const canLabel = (budgetLine) =>
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : NO_DATA);
 
 /**
+ * Returns the display value for a budget line's CLIN column (awarded contract agreements only).
+ * @param {BudgetLine} budgetLine - The budget line to get the CLIN display value from.
+ * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or an em dash.
+ */
+export const getClinDisplayValue = (budgetLine) => {
+    if (budgetLine?.status === "DRAFT") {
+        return "N/A";
+    }
+    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "—";
+};
+
+/**
  * @typedef ItemCount
  * @property {string} type
  * @property {number} count
@@ -539,15 +551,7 @@ export const handleExport = async (
                               (budgetLine.grant_number?.number ? `Grant ${budgetLine.grant_number.number}` : NO_DATA))
                             : budgetLinesDataMap[budgetLine.id]?.service_component_name,
                         // CLIN column (awarded contract agreements only), inserted right after SC.
-                        ...(includeClin
-                            ? [
-                                  budgetLine.status === "DRAFT"
-                                      ? "N/A"
-                                      : budgetLine.clin?.number != null
-                                        ? budgetLine.clin.number
-                                        : "—"
-                              ]
-                            : []),
+                        ...(includeClin ? [getClinDisplayValue(budgetLine)] : []),
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
                         budgetLine.line_description,
                         formatDateNeeded(budgetLine?.date_needed ?? ""),

@@ -64,44 +64,58 @@ const Table = ({
             <thead>
                 <tr>
                     {firstHeadingSlot && firstHeadingSlot}
-                    {tableHeadings.map((header, index) => (
-                        <th
-                            key={index}
-                            scope="col"
-                            style={setColumnWidth(header)}
-                            aria-sort={
-                                header.value === selectedHeader ? (sortDescending ? "descending" : "ascending") : "none"
-                            }
-                        >
-                            <button
-                                type="button"
-                                data-cy={header.value}
-                                className="usa-table__header__button cursor-pointer"
-                                title={`Click to sort by ${header.heading}`}
-                                onClick={() => {
-                                    onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
-                                }}
+                    {tableHeadings.map((header, index) => {
+                        const isSortable = Boolean(header.value);
+                        return (
+                            <th
+                                key={index}
+                                scope="col"
+                                style={setColumnWidth(header)}
+                                aria-sort={
+                                    isSortable && header.value === selectedHeader
+                                        ? sortDescending
+                                            ? "descending"
+                                            : "ascending"
+                                        : "none"
+                                }
                             >
-                                {header.heading}
-                                {header.value === selectedHeader && (
-                                    <>
-                                        {!sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowUp}
-                                                className="margin-left-05 height-2 width-2 cursor-pointer"
-                                            />
+                                {isSortable ? (
+                                    <button
+                                        type="button"
+                                        data-cy={header.value}
+                                        className="usa-table__header__button cursor-pointer"
+                                        title={`Click to sort by ${header.heading}`}
+                                        onClick={() => {
+                                            onClickHeader?.(
+                                                header.value,
+                                                sortDescending == null ? true : !sortDescending
+                                            );
+                                        }}
+                                    >
+                                        {header.heading}
+                                        {header.value === selectedHeader && (
+                                            <>
+                                                {!sortDescending && (
+                                                    <FontAwesomeIcon
+                                                        icon={faArrowUp}
+                                                        className="margin-left-05 height-2 width-2 cursor-pointer"
+                                                    />
+                                                )}
+                                                {sortDescending && (
+                                                    <FontAwesomeIcon
+                                                        icon={faArrowDown}
+                                                        className="margin-left-05 height-2 width-2 cursor-pointer"
+                                                    />
+                                                )}
+                                            </>
                                         )}
-                                        {sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowDown}
-                                                className="margin-left-05 height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                    </>
+                                    </button>
+                                ) : (
+                                    header.heading
                                 )}
-                            </button>
-                        </th>
-                    ))}
+                            </th>
+                        );
+                    })}
                 </tr>
             </thead>
             <tbody>{children}</tbody>
