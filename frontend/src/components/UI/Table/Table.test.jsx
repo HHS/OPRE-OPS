@@ -42,6 +42,14 @@ describe("Table", () => {
         expect(onClickHeader).not.toHaveBeenCalled();
     });
 
+    it("renders a screen-reader label for a non-sortable header with an empty heading", () => {
+        render(<Table tableHeadings={[...headings, { heading: "", value: "" }]} />);
+
+        // Guards the empty-table-header a11y violation: an empty <th> must still
+        // expose discernible text (the expand column) for screen readers.
+        expect(screen.getByRole("columnheader", { name: "Expand row" })).toBeInTheDocument();
+    });
+
     it("still supports sorting and shows the arrow on a sortable selected header", () => {
         render(
             <Table

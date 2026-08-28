@@ -110,8 +110,10 @@ const Table = ({
                                             </>
                                         )}
                                     </button>
-                                ) : (
+                                ) : header.heading ? (
                                     header.heading
+                                ) : (
+                                    <span className="usa-sr-only">Expand row</span>
                                 )}
                             </th>
                         );
