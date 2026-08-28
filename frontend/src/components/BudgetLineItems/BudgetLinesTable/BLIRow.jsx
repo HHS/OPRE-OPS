@@ -33,6 +33,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } 
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
+ * @property {boolean} [showClinColumn] - Whether to show the CLIN cell (awarded contract agreements only).
  */
 
 /**
@@ -48,7 +49,8 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isGrant = false
+    isGrant = false,
+    showClinColumn = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -94,6 +96,15 @@ const BLIRow = ({
                     BLILabel(budgetLine)
                 )}
             </td>
+            {showClinColumn && (
+                <td>
+                    {budgetLine?.status === "DRAFT"
+                        ? "N/A"
+                        : budgetLine?.clin?.number != null
+                          ? budgetLine.clin.number
+                          : "—"}
+                </td>
+            )}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
@@ -151,7 +162,7 @@ const BLIRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={isGrant ? 7 : 9}
+            colSpan={isGrant ? 7 : showClinColumn ? 10 : 9}
             className="border-top-none"
             style={expandedRowBGColor}
         >

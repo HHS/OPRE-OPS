@@ -40,6 +40,7 @@ import React, { memo } from "react";
  * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
  * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
  * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
+ * @property {boolean} [clinReadOnly] - Read-only CLIN display: missing non-draft CLIN renders "—" with no error styling (Change BL Status page). Default false keeps the Award Approval behavior ("TBD" + error styling to prompt CLIN assignment).
  */
 
 /**
@@ -57,7 +58,8 @@ const BLIReviewRow = ({
     onAddCLINClick = undefined,
     showCLINColumn = false,
     clinAssignments = {},
-    errorStatuses
+    errorStatuses,
+    clinReadOnly = false
 }) => {
     // When errorStatuses is provided, inline errors only apply to rows whose status is in the list.
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
@@ -186,19 +188,35 @@ const BLIReviewRow = ({
         // Use local assignment if available, otherwise fall back to backend clin.number
         const assignedClinNumber = clinAssignments[budgetLine.id];
         const isDraftStatus = budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT;
+        const backendClinNumber = budgetLine?.clin?.number;
 
-        // Draft BLIs show "N/A", non-Draft show "CLIN X" or "TBD"
+        // Draft BLIs show "N/A". Non-Draft show "CLIN X" (local assignment), then:
+        //  - Read-only display (Change BL Status page): the CLIN number or "—" if unassigned
+        //    (!= null keeps a valid CLIN 0).
+        //  - Award Approval flow (default): the CLIN number or "TBD", which is flagged as an error
+        //    to prompt CLIN assignment before award.
         const clinNumber = isDraftStatus
             ? "N/A"
             : assignedClinNumber
               ? `CLIN ${assignedClinNumber}`
-              : (budgetLine?.clin?.number ?? NO_DATA);
+              : clinReadOnly
+                ? backendClinNumber != null
+                    ? backendClinNumber
+                    : "—"
+                : (backendClinNumber ?? NO_DATA);
 
-        // Only apply error styling to non-Draft BLIs with missing CLIN
-        const clinErrorClasses = !isDraftStatus ? `${addErrorClassIfNotFound(clinNumber, rowInReviewMode)}` : "";
+        // Read-only display never flags a missing CLIN as an error.
+        const clinErrorClasses =
+            !isDraftStatus && !clinReadOnly ? `${addErrorClassIfNotFound(clinNumber, rowInReviewMode)}` : "";
         // For CLIN column, show error in review mode regardless of selection (Award Approval page)
         // For other columns, only show error when selected (Review Agreement page)
-        const clinClasses = rowInReviewMode ? clinErrorClasses : budgetLine.selected ? clinErrorClasses : "";
+        const clinClasses = clinReadOnly
+            ? ""
+            : rowInReviewMode
+              ? clinErrorClasses
+              : budgetLine.selected
+                ? clinErrorClasses
+                : "";
 
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;

@@ -394,5 +394,62 @@ describe("BLIReviewRow", () => {
                 expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
             });
         });
+
+        describe("clinReadOnly (Change BL Status page)", () => {
+            it("renders an em-dash (not 'TBD') with no error styling for a non-Draft BLI without CLIN", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: null,
+                    clin: null,
+                    selected: true
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    clinReadOnly: true,
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.queryByText("TBD")).not.toBeInTheDocument();
+                const emDash = screen.getByText("—");
+                expect(emDash).toBeInTheDocument();
+                expect(emDash).not.toHaveClass("table-item-error");
+            });
+
+            it("renders CLIN 0 (not em-dash) for a non-Draft BLI assigned CLIN number 0", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: 9,
+                    clin: { id: 9, number: 0 }
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    clinReadOnly: true,
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.getByText("0")).toBeInTheDocument();
+                expect(screen.queryByText("—")).not.toBeInTheDocument();
+            });
+
+            it("still shows 'N/A' for a Draft BLI", () => {
+                const draftBLI = {
+                    ...defaultBudgetLine,
+                    status: "DRAFT",
+                    clin_id: null,
+                    clin: null
+                };
+                renderComponent({
+                    showCLINColumn: true,
+                    clinReadOnly: true,
+                    budgetLine: draftBLI
+                });
+
+                expect(screen.getByText("N/A")).toBeInTheDocument();
+            });
+        });
     });
 });

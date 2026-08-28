@@ -25,6 +25,7 @@ import {
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { AgreementType } from "../agreements.constants";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 
@@ -89,6 +90,9 @@ export const ReviewAgreement = () => {
         : undefined;
     // Add this useEffect to handle navigation after render
     const canUserEditAgreement = agreement?._meta.isEditable;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
+    const showCLINColumn = isAgreementAwarded && isContract;
 
     React.useEffect(() => {
         if (!isLoadingAgreement) {
@@ -236,6 +240,8 @@ export const ReviewAgreement = () => {
                                             }
                                             servicesComponentNumber={groupKey}
                                             action={action}
+                                            showCLINColumn={showCLINColumn}
+                                            clinReadOnly={true}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">
@@ -284,6 +290,8 @@ export const ReviewAgreement = () => {
                                         }
                                         servicesComponentNumber={group.servicesComponentNumber}
                                         action={action}
+                                        showCLINColumn={showCLINColumn}
+                                        clinReadOnly={true}
                                     />
                                 ) : (
                                     <p className="text-center margin-y-7">
