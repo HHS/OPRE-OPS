@@ -44,7 +44,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
             state: "unblocked",
             proceed: vi.fn(),
             reset: vi.fn(),
-            nextLocation: "/agreements/1"
+            location: { pathname: "/agreements/1" }
         })
     };
 });
@@ -1107,6 +1107,25 @@ describe("useCreateBLIsAndSCs", () => {
             expect(successCall).toBeDefined();
             expect(successCall.heading).toBe("Agreement Updated");
         });
+    });
+
+    it("redirects to the blocker's pending destination when saved via the unsaved-changes modal (regression: blocker.nextLocation typo)", async () => {
+        addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
+        const { result } = renderSubject({
+            selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
+            continueOverRide: undefined
+        });
+        setAlertMock.mockClear();
+
+        await act(async () => {
+            await result.current.handleSave(true);
+        });
+
+        const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
+        expect(successCall).toBeDefined();
+        // The useBlocker mock (top of file) returns location.pathname "/agreements/1" — savedViaModal
+        // should route the redirect through that pending destination, not the default budget-lines URL.
+        expect(successCall.redirectUrl).toBe("/agreements/1");
     });
 
     it("flushes grant number create, update, and delete to the API when editing an existing grant agreement", async () => {
