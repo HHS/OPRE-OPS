@@ -10,6 +10,9 @@ import {
     findGrantPeriodStart,
     findGrantPeriodEnd,
     findGrantDescription,
+    findGrantee,
+    findGrantOrganizationType,
+    findGrantState,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -798,5 +801,44 @@ describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () 
         it("returns null (not undefined) when description is null on the matched grant", () => {
             expect(findGrantDescription(grantNumbers, 3)).toBeNull();
         });
+    });
+});
+
+describe("findGrantee / findGrantOrganizationType / findGrantState", () => {
+    // Award-time fields. Present on grant 1, absent on grant 2 (the common case today, where the
+    // backend does not yet serialize them), so the caller falls back to "TBD" for grant 2.
+    const grantNumbers = [
+        { number: 1, grantee_name: "University of Example", organization_type: "Educational Institution", state: "NY" },
+        { number: 2 }
+    ];
+
+    it("returns the grantee name when present", () => {
+        expect(findGrantee(grantNumbers, 1)).toBe("University of Example");
+    });
+
+    it("returns the organization type when present", () => {
+        expect(findGrantOrganizationType(grantNumbers, 1)).toBe("Educational Institution");
+    });
+
+    it("returns the state when present", () => {
+        expect(findGrantState(grantNumbers, 1)).toBe("NY");
+    });
+
+    it("returns undefined when the field is absent on the matched grant", () => {
+        expect(findGrantee(grantNumbers, 2)).toBeUndefined();
+        expect(findGrantOrganizationType(grantNumbers, 2)).toBeUndefined();
+        expect(findGrantState(grantNumbers, 2)).toBeUndefined();
+    });
+
+    it("returns undefined for an unknown grant number", () => {
+        expect(findGrantee(grantNumbers, 99)).toBeUndefined();
+        expect(findGrantOrganizationType(grantNumbers, 99)).toBeUndefined();
+        expect(findGrantState(grantNumbers, 99)).toBeUndefined();
+    });
+
+    it("returns undefined when grantNumbers is null", () => {
+        expect(findGrantee(null, 1)).toBeUndefined();
+        expect(findGrantOrganizationType(null, 1)).toBeUndefined();
+        expect(findGrantState(null, 1)).toBeUndefined();
     });
 });
