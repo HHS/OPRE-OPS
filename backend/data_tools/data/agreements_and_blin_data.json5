@@ -18828,7 +18828,7 @@
       step_number: 5,
       step_class: "default_step",
       step_type: "PRE_AWARD",
-      status: "COMPLETED",
+      status: "ACTIVE",
       pre_award_approval_requested: true,
       pre_award_approval_requested_date: "2043-05-01",
       pre_award_approval_requested_by: 503,
