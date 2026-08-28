@@ -338,7 +338,6 @@ const AgreementBudgetLines = ({
                                 readOnly={true}
                                 isEditable={agreement?._meta.isEditable}
                                 isGrant={true}
-                                showClinColumn={showClinColumn}
                             />
                         ) : (
                             <p className="text-center margin-y-7">

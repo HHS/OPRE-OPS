@@ -29,6 +29,15 @@ import React, { memo } from "react";
  */
 
 /**
+ * @typedef {Object} BLIReviewClinConfig
+ * CLIN column display mode for the review table. All fields optional; an empty object hides the column.
+ * @property {boolean} [showColumn] - Whether to show the CLIN column (awarded contract agreements only).
+ * @property {Object} [assignments] - Map of budgetLineId to locally-assigned CLIN number (Award Approval flow).
+ * @property {Function} [onAddClick] - Callback when the "+ CLIN" button is clicked with budgetLine.id.
+ * @property {boolean} [readOnly] - Read-only CLIN display: missing non-draft CLIN renders "—" with no error styling (Change BL Status page). Default false keeps the Award Approval behavior ("TBD" + error styling to prompt CLIN assignment).
+ */
+
+/**
  * @typedef BLIReviewRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
@@ -36,11 +45,8 @@ import React, { memo } from "react";
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  * @property {string} action
  * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
- * @property {Function} [onAddCLINClick] - Callback when "+ CLIN" button is clicked with budgetLine.id
- * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
- * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
  * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
- * @property {boolean} [clinReadOnly] - Read-only CLIN display: missing non-draft CLIN renders "—" with no error styling (Change BL Status page). Default false keeps the Award Approval behavior ("TBD" + error styling to prompt CLIN assignment).
+ * @property {BLIReviewClinConfig} [clin] - CLIN column display configuration. Omit to hide the column.
  */
 
 /**
@@ -55,12 +61,16 @@ const BLIReviewRow = ({
     action,
     showCheckbox = true,
     readOnly = false,
-    onAddCLINClick = undefined,
-    showCLINColumn = false,
-    clinAssignments = {},
     errorStatuses,
-    clinReadOnly = false
+    clin = {}
 }) => {
+    const {
+        showColumn: showCLINColumn = false,
+        assignments: clinAssignments = {},
+        onAddClick: onAddCLINClick = undefined,
+        readOnly: clinReadOnly = false
+    } = clin;
+
     // When errorStatuses is provided, inline errors only apply to rows whose status is in the list.
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));

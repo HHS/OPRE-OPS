@@ -240,8 +240,7 @@ export const ReviewAgreement = () => {
                                             }
                                             servicesComponentNumber={groupKey}
                                             action={action}
-                                            showCLINColumn={showCLINColumn}
-                                            clinReadOnly={true}
+                                            clin={{ showColumn: showCLINColumn, readOnly: true }}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">
@@ -290,8 +289,7 @@ export const ReviewAgreement = () => {
                                         }
                                         servicesComponentNumber={group.servicesComponentNumber}
                                         action={action}
-                                        showCLINColumn={showCLINColumn}
-                                        clinReadOnly={true}
+                                        clin={{ showColumn: showCLINColumn, readOnly: true }}
                                     />
                                 ) : (
                                     <p className="text-center margin-y-7">

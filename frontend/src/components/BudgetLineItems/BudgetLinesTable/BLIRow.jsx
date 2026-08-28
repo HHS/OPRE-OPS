@@ -97,7 +97,7 @@ const BLIRow = ({
                     BLILabel(budgetLine)
                 )}
             </td>
-            {showClinColumn && <td>{getClinDisplayValue(budgetLine)}</td>}
+            {showClinColumn && !isGrant && <td>{getClinDisplayValue(budgetLine)}</td>}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
