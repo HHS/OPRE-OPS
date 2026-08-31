@@ -127,4 +127,30 @@ describe("PreviewTable", () => {
         expect(screen.getByText("Amount")).toBeInTheDocument();
         expect(screen.getByText("Status")).toBeInTheDocument();
     });
+
+    test("omits the CLIN column by default", () => {
+        customRender(
+            <BudgetLinesTable
+                budgetLines={mockBudgetLinesOne}
+                readOnly={true}
+            />,
+            store
+        );
+        expect(screen.queryByText("CLIN")).not.toBeInTheDocument();
+    });
+
+    test("renders the CLIN column when showClinColumn is true", () => {
+        customRender(
+            <BudgetLinesTable
+                budgetLines={mockBudgetLinesOne}
+                readOnly={true}
+                showClinColumn={true}
+            />,
+            store
+        );
+        expect(screen.getByText("CLIN")).toBeInTheDocument();
+        // Fee/Total are still present for non-grant awarded contracts
+        expect(screen.getByText("Fee")).toBeInTheDocument();
+        expect(screen.getByText("Total")).toBeInTheDocument();
+    });
 });

@@ -17,6 +17,8 @@ vi.mock("../../../App", () => ({
 
 const baseHookReturn = {
     action: "",
+    submitButtonText: "Submit",
+    appliesImmediately: false,
     handleSelectBLI: vi.fn(),
     pageErrors: {},
     isAlertActive: false,
@@ -190,5 +192,73 @@ describe("ReviewAgreement unassociated services component error border", () => {
         const heading = getUnassociatedHeading();
         expect(heading).not.toHaveClass("border-2px");
         expect(heading).not.toHaveClass("border-secondary-dark");
+    });
+});
+
+describe("ReviewAgreement CLIN column", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    const clinGroup = [
+        {
+            serviceComponentGroupingLabel: "1",
+            servicesComponentNumber: 1,
+            budgetLines: [
+                {
+                    id: 200,
+                    status: "PLANNED",
+                    actionable: true,
+                    selected: false,
+                    in_review: false,
+                    amount: 1000,
+                    fees: 0,
+                    total: 1000,
+                    date_needed: "2044-06-01",
+                    services_component_id: 1,
+                    services_component_number: 1,
+                    can: { number: "G994426" },
+                    clin: { id: 9, number: 42 }
+                }
+            ]
+        }
+    ];
+
+    const contractAgreement = {
+        id: 1,
+        name: "Test Agreement",
+        agreement_type: "CONTRACT",
+        _meta: { isEditable: true }
+    };
+
+    it("shows the CLIN column for an awarded contract agreement", () => {
+        renderComponent({
+            isAgreementAwarded: true,
+            agreement: contractAgreement,
+            groupedBudgetLinesByServicesComponent: clinGroup
+        });
+
+        expect(screen.getByText("CLIN")).toBeInTheDocument();
+        expect(screen.getByRole("cell", { name: "42" })).toBeInTheDocument();
+    });
+
+    it("hides the CLIN column for an awarded non-contract agreement", () => {
+        renderComponent({
+            isAgreementAwarded: true,
+            agreement: { ...contractAgreement, agreement_type: "IAA" },
+            groupedBudgetLinesByServicesComponent: clinGroup
+        });
+
+        expect(screen.queryByText("CLIN")).not.toBeInTheDocument();
+    });
+
+    it("hides the CLIN column for a contract agreement that is not awarded", () => {
+        renderComponent({
+            isAgreementAwarded: false,
+            agreement: contractAgreement,
+            groupedBudgetLinesByServicesComponent: clinGroup
+        });
+
+        expect(screen.queryByText("CLIN")).not.toBeInTheDocument();
     });
 });

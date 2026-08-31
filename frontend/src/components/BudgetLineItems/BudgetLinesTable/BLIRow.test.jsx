@@ -35,7 +35,12 @@ const createMockStore = (userRoles = []) => {
     });
 };
 
-const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLineOverrides = {}) => {
+const renderComponent = (
+    userRoles = [],
+    canUserEditBudgetLines = true,
+    budgetLineOverrides = {},
+    showClinColumn = false
+) => {
     useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
     useGetCansQuery.mockReturnValue({
@@ -71,6 +76,7 @@ const renderComponent = (userRoles = [], canUserEditBudgetLines = true, budgetLi
                     isReviewMode={false}
                     readOnly={false}
                     duplicateIcon={true}
+                    showClinColumn={showClinColumn}
                 />
             </Provider>
         </Router>
@@ -432,5 +438,61 @@ describe("BLIRow", () => {
         expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
         expect(feeCell).toHaveTextContent(/\$1\.23/);
         expect(totalCell).toHaveTextContent(/\$1,000,001\.23/);
+    });
+
+    describe("CLIN column", () => {
+        it("does not render a CLIN cell by default (showClinColumn omitted)", () => {
+            renderComponent();
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            // Without the CLIN column: BL ID # | Obligate By | FY | CAN | Amount | Fee | Total | Status | (expand)
+            expect(cells[0]).toHaveTextContent("1");
+            expect(cells[1]).toHaveTextContent("6/13/2043");
+        });
+
+        it("renders 'N/A' for a DRAFT budget line when showClinColumn is true", () => {
+            renderComponent([], true, {}, true);
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            // With the CLIN column, it is the second cell (after BL ID #).
+            expect(cells[1]).toHaveTextContent("N/A");
+        });
+
+        it("renders the CLIN number for a non-DRAFT budget line with an assigned CLIN", () => {
+            renderComponent([], true, { status: "PLANNED", clin: { id: 9, number: 42 } }, true);
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            expect(cells[1]).toHaveTextContent("42");
+        });
+
+        it("renders an em-dash for a non-DRAFT budget line with no CLIN", () => {
+            renderComponent([], true, { status: "PLANNED", clin_id: null, clin: null }, true);
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            expect(cells[1]).toHaveTextContent("—");
+        });
+
+        it("renders CLIN 0 (not em-dash) for a non-DRAFT budget line assigned CLIN number 0", () => {
+            renderComponent([], true, { status: "PLANNED", clin: { id: 9, number: 0 } }, true);
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            expect(cells[1]).toHaveTextContent("0");
+            expect(cells[1]).not.toHaveTextContent("—");
+        });
+
+        it("shifts the Amount/Fee/Total cells right by one when the CLIN column is shown", () => {
+            renderComponent([], true, { status: "PLANNED", clin: { id: 9, number: 42 } }, true);
+
+            const bliRow = screen.getByTestId("budget-line-row-1");
+            const cells = within(bliRow).getAllByRole("cell");
+            // BL ID # | CLIN | Obligate By | FY | CAN | Amount | Fee | Total | Status
+            const amountCell = cells[5];
+            expect(amountCell).toHaveTextContent(/\$1,000,000\.00/);
+        });
     });
 });
