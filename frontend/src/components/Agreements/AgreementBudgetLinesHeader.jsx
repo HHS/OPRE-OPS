@@ -43,7 +43,7 @@ export const AgreementBudgetLinesHeader = ({
     }
     return (
         <>
-            <div className="display-flex flex-justify flex-align-center margin-top-6">
+            <div className="display-flex flex-justify flex-align-center">
                 <h2
                     id="budget-lines-header"
                     className="font-sans-lg"
