@@ -26,6 +26,12 @@ vi.mock("../../../api/opsAPI", () => ({
     ]
 }));
 
+// Mock BudgetLinesTable so column-gating tests assert the showClinColumn prop AgreementBudgetLines
+// passes, without pulling in the real table's hook chain (useGetAllCans, procurement shops, users).
+vi.mock("../../../components/BudgetLineItems/BudgetLinesTable", () => ({
+    default: (props) => <div data-testid="budget-lines-table">show-clin:{String(!!props.showClinColumn)}</div>
+}));
+
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
@@ -661,6 +667,81 @@ describe("AgreementBudgetLines", () => {
             renderWith(superUserStore);
             expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
             expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("CLIN column", () => {
+        const editorStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+
+        const budgetLineWithClin = {
+            id: 5,
+            amount: 1000,
+            fees: 0,
+            date_needed: "2044-02-01",
+            status: "PLANNED",
+            services_component_id: 101,
+            line_description: "Test budget line",
+            can: { number: "CAN-001" },
+            clin: { id: 9, number: 42 },
+            _meta: { isEditable: true }
+        };
+
+        const renderContract = ({ agreementType = "CONTRACT", isAgreementAwarded = true } = {}) => {
+            useGetServicesComponentsListQueryMock.mockReturnValue({
+                data: [{ id: 101, number: 1, sub_component: null }],
+                isLoading: false
+            });
+
+            return render(
+                <Provider store={editorStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={{
+                                ...mockAgreement,
+                                agreement_type: agreementType,
+                                budget_line_items: [budgetLineWithClin]
+                            }}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={isAgreementAwarded}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+        };
+
+        test("passes showClinColumn=true to the table for an awarded contract agreement", () => {
+            renderContract({ agreementType: "CONTRACT", isAgreementAwarded: true });
+
+            expect(screen.getByText("show-clin:true")).toBeInTheDocument();
+        });
+
+        test("passes showClinColumn=false for a contract agreement that is not awarded", () => {
+            renderContract({ agreementType: "CONTRACT", isAgreementAwarded: false });
+
+            expect(screen.getByText("show-clin:false")).toBeInTheDocument();
+        });
+
+        test("passes showClinColumn=false for an awarded grant agreement", () => {
+            renderContract({ agreementType: "GRANT", isAgreementAwarded: true });
+
+            expect(screen.getByText("show-clin:false")).toBeInTheDocument();
         });
     });
 });

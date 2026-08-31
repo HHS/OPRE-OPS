@@ -309,7 +309,7 @@ describe("BLIReviewRow", () => {
                 clin_id: null,
                 clin: null
             };
-            renderComponent({ showCLINColumn: true, budgetLine: budgetLineWithoutCLIN });
+            renderComponent({ clin: { showColumn: true }, budgetLine: budgetLineWithoutCLIN });
 
             const clinCells = screen.getAllByText("TBD");
             expect(clinCells.length).toBeGreaterThan(0);
@@ -318,7 +318,7 @@ describe("BLIReviewRow", () => {
         });
 
         it("should not render CLIN column when showCLINColumn is false", () => {
-            renderComponent({ showCLINColumn: false });
+            renderComponent({ clin: { showColumn: false } });
 
             // CLIN column should not be present
             expect(screen.queryByText("TBD")).not.toBeInTheDocument();
@@ -333,7 +333,7 @@ describe("BLIReviewRow", () => {
                     clin: null
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     budgetLine: draftBLI
                 });
 
@@ -349,7 +349,7 @@ describe("BLIReviewRow", () => {
                     selected: true // Error classes only apply when selected
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     isReviewMode: true,
                     budgetLine: plannedBLI
                 });
@@ -366,9 +366,8 @@ describe("BLIReviewRow", () => {
                     status: "DRAFT"
                 };
                 renderComponent({
-                    showCLINColumn: true,
-                    budgetLine: draftBLI,
-                    onAddCLINClick: vi.fn()
+                    clin: { showColumn: true, onAddClick: vi.fn() },
+                    budgetLine: draftBLI
                 });
 
                 // Hover is tricky to test in unit tests - E2E will cover this
@@ -385,13 +384,67 @@ describe("BLIReviewRow", () => {
                     status: "PLANNED"
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     isReviewMode: true,
                     budgetLine: plannedBLI
-                    // onAddCLINClick intentionally omitted — mirrors the review page
+                    // onAddClick intentionally omitted — mirrors the review page
                 });
 
                 expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
+            });
+        });
+
+        describe("clinReadOnly (Change BL Status page)", () => {
+            it("renders an em-dash (not 'TBD') with no error styling for a non-Draft BLI without CLIN", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: null,
+                    clin: null,
+                    selected: true
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.queryByText("TBD")).not.toBeInTheDocument();
+                const emDash = screen.getByText("—");
+                expect(emDash).toBeInTheDocument();
+                expect(emDash).not.toHaveClass("table-item-error");
+            });
+
+            it("renders CLIN 0 (not em-dash) for a non-Draft BLI assigned CLIN number 0", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: 9,
+                    clin: { id: 9, number: 0 }
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.getByText("0")).toBeInTheDocument();
+                expect(screen.queryByText("—")).not.toBeInTheDocument();
+            });
+
+            it("still shows 'N/A' for a Draft BLI", () => {
+                const draftBLI = {
+                    ...defaultBudgetLine,
+                    status: "DRAFT",
+                    clin_id: null,
+                    clin: null
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    budgetLine: draftBLI
+                });
+
+                expect(screen.getByText("N/A")).toBeInTheDocument();
             });
         });
     });

@@ -85,6 +85,9 @@ const AgreementBudgetLines = ({
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const showClinColumn = isContract && isAgreementAwarded;
 
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
@@ -262,7 +265,8 @@ const AgreementBudgetLines = ({
                                                 budgetLineTrigger,
                                                 serviceComponentTrigger,
                                                 portfolioTrigger,
-                                                blis.length
+                                                blis.length,
+                                                showClinColumn
                                             )
                                         }
                                     >
@@ -377,6 +381,7 @@ const AgreementBudgetLines = ({
                                     isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
+                                    showClinColumn={showClinColumn}
                                 />
                             ) : (
                                 <p className="text-center margin-y-7">
