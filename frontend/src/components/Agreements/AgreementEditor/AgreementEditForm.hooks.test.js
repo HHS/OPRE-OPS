@@ -17,6 +17,7 @@ const useLocationMock = vi.fn();
 const hasStateChangedMock = vi.fn();
 const scrollToCenterMock = vi.fn();
 const setIsCancellingMock = vi.fn();
+const useGetVersionQueryMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -34,10 +35,13 @@ vi.mock("react-redux", () => ({
 vi.mock("../../../api/opsAPI", () => ({
     useAddAgreementMutation: () => [addAgreementMock],
     useDeleteAgreementMutation: () => [deleteAgreementMock],
-    useGetProjectsQuery: () => ({ data: { projects: [] }, error: null, isLoading: false }),
+    useGetAllProjectsQuery: () => ({ data: [], error: null, isLoading: false }),
     useGetProductServiceCodesQuery: () => ({ data: [], error: null, isLoading: false }),
     useLazyGetAgreementsQuery: () => [triggerGetAgreementsMock],
-    useUpdateAgreementMutation: () => [updateAgreementMock]
+    useUpdateAgreementMutation: () => [updateAgreementMock],
+    // Default to an empty result (flag off) so vi.clearAllMocks() between tests never
+    // leaves this returning undefined, which would break the hook's destructuring.
+    useGetVersionQuery: () => useGetVersionQueryMock() ?? { data: undefined }
 }));
 
 vi.mock("../../../helpers/scrollToCenter.helper", () => ({
@@ -665,6 +669,71 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
     });
 });
 
+describe("useAgreementEditForm - grant details pre-populate and save", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1" });
+        useSelectorMock.mockReturnValue(false);
+        // hasAgreementChanged must be true so saveAgreement doesn't short-circuit.
+        hasStateChangedMock.mockReturnValue(true);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        updateAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+    });
+
+    it("pre-populates grant detail fields from the existing agreement", () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 42,
+                agreement_type: "GRANT",
+                name: "Existing Grant",
+                nofo_number: "NOFO-2026-01",
+                aln_numbers: ["93.600"],
+                funding_period_months: 18
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        expect(result.current.isGrant).toBe(true);
+        expect(result.current.nofoNumber).toBe("NOFO-2026-01");
+        expect(result.current.alnNumbers).toEqual(["93.600"]);
+        expect(result.current.fundingPeriodMonths).toBe(18);
+    });
+
+    it("includes grant detail fields in the updateAgreement payload on save", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 42,
+                agreement_type: "GRANT",
+                name: "Existing Grant",
+                nofo_number: "NOFO-UPDATED",
+                aln_number: "10.001",
+                funding_period_months: 24,
+                team_members: []
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.saveAgreement();
+        });
+
+        expect(updateAgreementMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 42,
+                data: expect.objectContaining({
+                    nofo_number: "NOFO-UPDATED",
+                    aln_number: "10.001",
+                    funding_period_months: 24
+                })
+            })
+        );
+    });
+});
+
 describe("useAgreementEditForm - runValidate project_officer validation", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -712,5 +781,58 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
 
         const errors = result.current.res.getErrors("project_officer");
         expect(errors).toContain("This is required information");
+    });
+});
+
+describe("useAgreementEditForm - procurement-shop change request gating (SKIP_CR_FOR_DRAFT_PLANNED)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1/edit" });
+        useSelectorMock.mockReturnValue(false); // not superuser
+        // useHasStateChanged is used for both the agreement and the selected procurement shop;
+        // returning true makes hasProcurementShopChanged true (the proc-shop change condition).
+        hasStateChangedMock.mockReturnValue(true);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ id: 42, agreement_type: "CONTRACT", name: "Proc Shop Agreement" })
+        );
+        // No title/nickname uniqueness conflict so handleContinue reaches the save/modal branch.
+        setLazyQueryResult(0);
+        setLazyQueryResult(0);
+        updateAgreementMock.mockReturnValue({ unwrap: vi.fn().mockResolvedValue({ id: 42 }) });
+    });
+
+    it("requires a change request (shows modal) when the flag is OFF and a planned BL exists", async () => {
+        useGetVersionQueryMock.mockReturnValue({ data: { version: "1.0.0", skip_cr_for_draft_planned: false } });
+
+        const { result } = renderUseAgreementEditForm({ areAnyBudgetLinesPlanned: true });
+
+        expect(result.current.shouldRequestChange).toBe(true);
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(result.current.showModal).toBe(true);
+        expect(result.current.modalProps.heading).toContain("Procurement Shop");
+        expect(result.current.modalProps.actionButtonText).toBe("Send to Approval");
+    });
+
+    it("skips the change request (no modal, saves directly) when the flag is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({ data: { version: "1.0.0", skip_cr_for_draft_planned: true } });
+
+        const { result } = renderUseAgreementEditForm({ areAnyBudgetLinesPlanned: true, goToNext: vi.fn() });
+
+        expect(result.current.shouldRequestChange).toBe(false);
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        // No approval modal — the change is saved directly.
+        expect(result.current.showModal).toBe(false);
+        expect(updateAgreementMock).toHaveBeenCalled();
     });
 });

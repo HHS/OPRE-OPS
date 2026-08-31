@@ -9,6 +9,11 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../../helpers/servicesComponent.helpers";
+import {
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../../helpers/budgetLines.helpers";
 import { VALIDATABLE_BLI_STATUSES } from "../constants";
 
 /**
@@ -76,6 +81,19 @@ export const BudgetLinesReviewAccordion = ({
                                         key={`${group.grantNumberNumber}-${index}`}
                                         grantNumberNumber={group.grantNumberNumber}
                                         totalGrantNumbers={totalGrantNumbers}
+                                        withMetadata={true}
+                                        periodStart={findGrantPeriodStart(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        periodEnd={findGrantPeriodEnd(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        description={findGrantDescription(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
                                     >
                                         {group.budgetLines.length > 0 ? (
                                             <AgreementBLIReviewTable
@@ -84,7 +102,7 @@ export const BudgetLinesReviewAccordion = ({
                                                 isReviewMode={true}
                                                 servicesComponentNumber={group.grantNumberNumber}
                                                 action=""
-                                                showCLINColumn={showCLINColumn}
+                                                clin={{ showColumn: showCLINColumn }}
                                                 errorStatuses={
                                                     showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
                                                 }
@@ -119,7 +137,7 @@ export const BudgetLinesReviewAccordion = ({
                                             isReviewMode={true}
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
-                                            showCLINColumn={showCLINColumn}
+                                            clin={{ showColumn: showCLINColumn }}
                                             errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                         />
                                     ) : (

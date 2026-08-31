@@ -96,12 +96,31 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_SERVICE_COMPONENT": {
+            const remainingScIds = new Set(
+                state.services_components
+                    .filter((sc) => sc.number !== action.payload.number)
+                    .map((sc) => sc.id)
+                    .filter(Boolean)
+            );
             return {
                 ...state,
                 services_components: state.services_components.filter((sc) => sc.number !== action.payload.number),
                 deleted_services_components_ids: action.payload.id
                     ? [...state.deleted_services_components_ids, action.payload.id]
-                    : [...state.deleted_services_components_ids]
+                    : [...state.deleted_services_components_ids],
+                // Reconcile BLIs: clear link to deleted SC by ID so sub-components sharing
+                // a number don't incorrectly retain stale links.
+                budget_line_items: state.budget_line_items.map((bli) => {
+                    if (bli.services_component_id != null && !remainingScIds.has(bli.services_component_id)) {
+                        return {
+                            ...bli,
+                            services_component_id: null,
+                            services_component_number: 0,
+                            serviceComponentGroupingLabel: "0"
+                        };
+                    }
+                    return bli;
+                })
             };
         }
         case "REMOVE_TEAM_MEMBER": {
@@ -152,12 +171,26 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_GRANT_NUMBER": {
+            const remainingGnIds = new Set(
+                state.grant_numbers
+                    .filter((gn) => gn.number !== action.payload.number)
+                    .map((gn) => gn.id)
+                    .filter(Boolean)
+            );
             return {
                 ...state,
                 grant_numbers: state.grant_numbers.filter((gn) => gn.number !== action.payload.number),
                 deleted_grant_numbers_ids: action.payload.id
                     ? [...state.deleted_grant_numbers_ids, action.payload.id]
-                    : [...state.deleted_grant_numbers_ids]
+                    : [...state.deleted_grant_numbers_ids],
+                // Reconcile BLIs: clear link to deleted grant number so the BLI moves
+                // to the "not associated" group rather than rendering under a phantom accordion.
+                budget_line_items: state.budget_line_items.map((bli) => {
+                    if (bli.grant_number_id != null && !remainingGnIds.has(bli.grant_number_id)) {
+                        return { ...bli, grant_number_id: null, grant_number_number: 0 };
+                    }
+                    return bli;
+                })
             };
         }
         case "RESEED_GRANT_NUMBERS": {

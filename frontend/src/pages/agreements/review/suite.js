@@ -5,25 +5,27 @@ const suite = create((data = {}, fieldName = undefined) => {
         only(fieldName);
     }
 
-    test("name", "This information is required to submit for approval", () => {
+    const errorMessage = "This is required information";
+
+    test("name", errorMessage, () => {
         enforce(data.name).isNotBlank();
     });
-    test("type", "This information is required to submit for approval", () => {
+    test("type", errorMessage, () => {
         enforce(data.agreement_type).isNotBlank();
     });
-    test("description", "This information is required to submit for approval", () => {
+    test("description", errorMessage, () => {
         enforce(data.description).isNotBlank();
     });
-    test("psc", "This information is required to submit for approval", () => {
+    test("psc", errorMessage, () => {
         enforce(data.product_service_code?.name).isNotBlank();
     });
-    test("procurement-shop", "This information is required to submit for approval", () => {
+    test("procurement-shop", errorMessage, () => {
         enforce(data.procurement_shop?.abbr).isNotBlank();
     });
-    test("reason", "This information is required to submit for approval", () => {
+    test("reason", errorMessage, () => {
         enforce(data.agreement_reason).isNotBlank();
     });
-    test("vendor", "This information is required to submit for approval", () => {
+    test("vendor", errorMessage, () => {
         if (
             data.agreement_reason &&
             (data.agreement_reason === "RECOMPETE" || data.agreement_reason === "LOGICAL_FOLLOW_ON")
@@ -31,15 +33,15 @@ const suite = create((data = {}, fieldName = undefined) => {
             enforce(data.vendor).isNotBlank();
         }
     });
-    test("project-officer", "This information is required to submit for approval", () => {
+    test("project-officer", errorMessage, () => {
         enforce(Number(data.project_officer_id)).greaterThan(0);
     });
-    test("contract-type", "This information is required to submit for approval", () => {
+    test("contract-type", errorMessage, () => {
         enforce(data.contract_type).notEquals("-Select an option-");
         enforce(data.contract_type).isNotEmpty();
     });
     // test to ensure at least one budget line item exists
-    test("budget-line-items", "Must have at least one budget line item", () => {
+    test("budget-line-items", errorMessage, () => {
         const budgetLines = Array.isArray(data.budget_line_items) ? data.budget_line_items : [];
         enforce(budgetLines).longerThan(0);
     });
@@ -50,14 +52,16 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         only(fieldName);
     }
 
-    test("Budget Line Amount", "This information is required to submit for approval", () => {
+    const errorMessage = "This is required information";
+
+    test("Budget Line Amount", errorMessage, () => {
         enforce(budgetLine.amount).isNotNullish();
     });
     test("Budget Line Amount", "Amount must be 0 or greater", () => {
         enforce(Number(budgetLine.amount ?? -1)).greaterThanOrEquals(0);
     });
 
-    test("Budget Line CAN", "This information is required to submit for approval", () => {
+    test("Budget Line CAN", errorMessage, () => {
         const canId = Number(budgetLine.can_id ?? 0);
         enforce(canId).greaterThan(0);
     });
@@ -75,7 +79,7 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         });
     }
 
-    test("Budget Line Obligate By Date", "This information is required to submit for approval", () => {
+    test("Budget Line Obligate By Date", errorMessage, () => {
         enforce(budgetLine.date_needed).isNotBlank();
     });
 
@@ -89,6 +93,24 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
         enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
     });
+
+    // Grant BLIs have no services component / PoP window, so this rule only applies to
+    // Contract/IAA BLIs. Skip (rather than fail) when date_needed or the SC period is
+    // missing — those cases already fail the rules above with their own messages, and
+    // "outside the range" isn't the right message when there's no range to compare against.
+    if (
+        budgetLine.agreement?.agreement_type !== "GRANT" &&
+        budgetLine.date_needed &&
+        budgetLine.sc_period_start &&
+        budgetLine.sc_period_end
+    ) {
+        test("Budget Line Obligate By Date must be within PoP", `Budget Line Obligate By`, () => {
+            enforce(
+                budgetLine.date_needed >= budgetLine.sc_period_start &&
+                    budgetLine.date_needed <= budgetLine.sc_period_end
+            ).isTruthy();
+        });
+    }
 });
 
 /**
@@ -97,13 +119,20 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
  * The vest test keys are verbose strings; the normalized ids are short, consistent,
  * and registered in the validation display map in src/helpers/utils.js.
  */
+/**
+ * Normalized id for the PoP-range rule. Like other BLI rule keys, this shows a single
+ * generic message deduped across all selected BLIs, regardless of how many violate it.
+ */
+export const POP_RANGE_ERROR_KEY = "date_needed_pop_range";
+
 const BLI_ERROR_KEY_MAP = {
     "Budget Line Amount": "amount",
     "Budget Line CAN": "can",
     "Budget lines need to be assigned to a services component to change their status": "services_component",
     "Budget lines need to be assigned to a grant number to change their status": "grant_number",
     "Budget Line Obligate By Date": "date_needed",
-    "Budget Line Obligate By Date must be in the future": "date_needed"
+    "Budget Line Obligate By Date must be in the future": "date_needed",
+    "Budget Line Obligate By Date must be within PoP": POP_RANGE_ERROR_KEY
 };
 
 /**

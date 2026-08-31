@@ -3,13 +3,24 @@ import datetime
 import pytest
 from flask import url_for
 
-from models import AgreementHistory, AgreementHistoryType, AgreementType, GrantAgreement, GrantNumber, User
+from models import (
+    AgreementHistory,
+    AgreementHistoryType,
+    AgreementType,
+    BudgetLineItemStatus,
+    GrantAgreement,
+    GrantNumber,
+    User,
+)
+from models.budget_line_items import GrantBudgetLineItem
 
 
 def test_grant_number_retrieve(loaded_db, app_ctx):
+    # numbers 1 and 2 on agreement_id=3 are seeded by the fixture data; use a distinct
+    # number here to avoid colliding with the ix_grant_number_unique (agreement_id, number) index.
     grant_number = GrantNumber(
         agreement_id=3,
-        number=1,
+        number=99,
         description="Test grant number",
         period_start=datetime.date(2043, 6, 13),
         period_end=datetime.date(2044, 6, 13),
@@ -19,12 +30,12 @@ def test_grant_number_retrieve(loaded_db, app_ctx):
 
     fetched = loaded_db.get(GrantNumber, grant_number.id)
     assert fetched is not None
-    assert fetched.number == 1
+    assert fetched.number == 99
     assert fetched.description == "Test grant number"
     assert fetched.period_start == datetime.date(2043, 6, 13)
     assert fetched.period_end == datetime.date(2044, 6, 13)
-    assert fetched.display_title == "Grant 1"
-    assert fetched.display_name == "Grant 1"
+    assert fetched.display_title == "Grant 99"
+    assert fetched.display_name == "Grant 99"
 
     loaded_db.delete(fetched)
     loaded_db.commit()
@@ -348,6 +359,58 @@ def test_grant_numbers_delete_does_not_cascade_to_agreement(auth_client, loaded_
     assert remaining_ga is not None
 
     loaded_db.delete(remaining_ga)
+    loaded_db.commit()
+
+
+def test_grant_number_delete_disassociates_budget_lines(auth_client, loaded_db, test_project, app_ctx):
+    """Deleting a grant number that has associated budget lines disassociates them.
+
+    The FK ``GrantBudgetLineItem.grant_number_id`` is ``ON DELETE SET NULL`` and the
+    delete service performs no BLI check, so the budget line must survive with its
+    ``grant_number_id`` NULLed rather than being deleted or blocking the delete. This is
+    the server-side counterpart to the pre-save UI that drops such BLIs into the
+    "BLs not associated with a Grant Number" group.
+    """
+    ga = GrantAgreement(
+        name="Grant-delete-disassociates-blis",
+        agreement_type=AgreementType.GRANT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ga)
+    loaded_db.commit()
+    ga_id = ga.id
+
+    gn = GrantNumber(agreement_id=ga_id, number=1, description="Has budget lines")
+    loaded_db.add(gn)
+    loaded_db.commit()
+    gn_id = gn.id
+
+    bli = GrantBudgetLineItem(
+        agreement_id=ga_id,
+        grant_number_id=gn_id,
+        line_description="Linked to grant number",
+        amount=100000.00,
+        can_id=500,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=4,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    response = auth_client.delete(url_for("api.grant-number-item", id=gn_id))
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    assert loaded_db.get(GrantNumber, gn_id) is None
+    # The budget line survives, disassociated (grant_number_id NULLed).
+    surviving_bli = loaded_db.get(GrantBudgetLineItem, bli_id)
+    assert surviving_bli is not None
+    assert surviving_bli.grant_number_id is None
+
+    loaded_db.delete(surviving_bli)
+    loaded_db.delete(ga)
     loaded_db.commit()
 
 

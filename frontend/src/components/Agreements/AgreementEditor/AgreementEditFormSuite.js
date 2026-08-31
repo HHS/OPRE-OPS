@@ -6,16 +6,11 @@ const suite = create((data = {}, fieldName) => {
         only(fieldName);
     }
 
-    // REVIEW: NEW — derived flag used to skip contract-only tests below.
-    // Placed after the only() call so it's computed every run regardless of which field is being validated.
     const isGrant = data.agreement_type === AGREEMENT_TYPES.GRANT;
 
     test("agreement_type", "This is required information", () => {
         enforce(data.agreement_type).notEquals("-Select Agreement Type-");
     });
-    // REVIEW: CHANGED — removed `.notEquals(AGREEMENT_TYPES.GRANT)` from both "not yet available" tests.
-    // IAA and DIRECT_OBLIGATION remain blocked. The test registrations are kept intact (not deleted)
-    // so vest's error-key registry stays stable — no label/convertCodeForDisplay changes needed.
     test("agreement-type-filter", "This Agreement type is not yet available", () => {
         enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.IAA);
         enforce(data["agreement-type-filter"]).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
@@ -24,16 +19,12 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.IAA);
         enforce(data.agreement_type).notEquals(AGREEMENT_TYPES.DIRECT_OBLIGATION);
     });
-    // REVIEW: UNCHANGED — name and project_id are required for all agreement types including GRANT.
     test("name", "This is required information", () => {
         enforce(data.name).isNotBlank();
     });
     test("project_id", "This is required information", () => {
         enforce(data.project_id).greaterThan(0);
     });
-    // REVIEW: CHANGED — each of the following 8 tests now early-returns for GRANT.
-    // Early-return keeps the test registered (vest v6 requirement) but makes it pass immediately,
-    // clearing any stale error state from a previous type selection.
     test("service_requirement_type", "This is required information", () => {
         if (isGrant) return;
         enforce(data.service_requirement_type).notEquals("-Select Service Requirement Type-");
@@ -74,7 +65,6 @@ const suite = create((data = {}, fieldName) => {
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });
-    // REVIEW: UNCHANGED — requesting_agency / servicing_agency remain AA-only; no change needed.
     test("requesting_agency", "This is required information", () => {
         if (data.agreement_type === AGREEMENT_TYPES.AA) {
             enforce(data["requesting_agency"]).isNotNullish();

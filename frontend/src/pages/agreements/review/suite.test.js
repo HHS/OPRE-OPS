@@ -1,4 +1,4 @@
-import suite, { validateBudgetLineItem, validateBudgetLineItems } from "./suite";
+import suite, { POP_RANGE_ERROR_KEY, validateBudgetLineItem, validateBudgetLineItems } from "./suite";
 
 describe("Agreement Review Suite", () => {
     const validData = {
@@ -215,6 +215,81 @@ describe("Budget Line Suite", () => {
         // Normalized output key is "amount"
         expect(Object.keys(result.errors)).toContain("amount");
         expect(Object.keys(result.errors).length).toBe(1);
+    });
+
+    describe("Obligate By Date must be within the agreement's PoP", () => {
+        // All dates must be in the future to avoid tripping the separate
+        // "must be in the future" rule tested above.
+        const isoDate = (daysFromNow) => {
+            const d = new Date();
+            d.setDate(d.getDate() + daysFromNow);
+            return d.toISOString().slice(0, 10);
+        };
+
+        const withPop = {
+            ...validBudgetLine,
+            agreement: { agreement_type: "CONTRACT" },
+            sc_period_start: isoDate(10),
+            sc_period_end: isoDate(100)
+        };
+
+        it("passes when date_needed is inside the PoP range", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: isoDate(50) });
+            expect(result.isValid).toBe(true);
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("passes when date_needed equals the PoP start date (inclusive boundary)", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: withPop.sc_period_start });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("passes when date_needed equals the PoP end date (inclusive boundary)", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: withPop.sc_period_end });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("fails when date_needed is before the PoP start date", () => {
+            const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(2) });
+            expect(result.isValid).toBe(false);
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
+
+        it("fails when date_needed is after the PoP end date", () => {
+            const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(200) });
+            expect(result.isValid).toBe(false);
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
+
+        it("skips the rule (no error) when sc_period_start/sc_period_end are missing", () => {
+            const result = validateBudgetLineItem({
+                ...validBudgetLine,
+                agreement: { agreement_type: "CONTRACT" },
+                date_needed: isoDate(50)
+            });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("skips the rule for GRANT budget lines even when out of range", () => {
+            const result = validateBudgetLineItem({
+                ...withPop,
+                agreement: { agreement_type: "GRANT" },
+                date_needed: isoDate(200)
+            });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("fails each violating BL independently when validating multiple budget lines together", () => {
+            const results = validateBudgetLineItems([
+                { ...withPop, id: 5, date_needed: isoDate(2) }, // before PoP start
+                { ...withPop, id: 2, date_needed: isoDate(200) } // after PoP end
+            ]);
+            expect(results).toHaveLength(2);
+            expect(results[0].isValid).toBe(false);
+            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+            expect(results[1].isValid).toBe(false);
+            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
     });
 });
 

@@ -284,17 +284,15 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.SpecialTopic,
         AgreementFields.Methodologies
     ]),
-    // REVIEW: NEW — GRANT entry. Gates Description and Nickname on the details view.
-    // Both AgreementFields keys already existed; no enum changes needed.
-    // isFieldVisible(GRANT, ProcurementShop) → false, so the MetaAccordion gate works automatically.
-    // isFieldVisible(GRANT, ContractNumber) → false, which the existing test at line 235 already asserts.
-    // Title and the "Grant" type label render via always-on blocks in AgreementDetailsView and are not in this set.
     [AgreementType.GRANT]: new Set([
         AgreementFields.DescriptionAndNotes,
         AgreementFields.NickName,
         AgreementFields.NofoNumber,
+        AgreementFields.GrantFundingPeriod,
+        AgreementFields.NofoPeriod,
         AgreementFields.AlnNumber,
-        AgreementFields.GrantFundingPeriod
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders
     ])
     // Add new AgreementTypes here
 };
@@ -387,6 +385,11 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.display_title;
     delete cleanData.services_component_number;
     delete cleanData.grant_number_number;
+    // UI-only PoP window that may be attached to the BLI for the Obligate By within-PoP
+    // validation. Not a backend field — strip it so it never leaks into the API payload
+    // (defensive; the edit flow derives it live and doesn't persist it on the BLI).
+    delete cleanData.sc_period_start;
+    delete cleanData.sc_period_end;
     delete cleanData._meta;
     delete cleanData.tempChangeRequest;
     delete cleanData.financialSnapshot;

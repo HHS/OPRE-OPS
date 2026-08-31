@@ -18,6 +18,7 @@ import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
+import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
 import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
@@ -49,6 +50,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @param {React.MutableRefObject<{getSlice: () => object}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns `{ services_components: { create, update, delete }, budget_line_items: { create, update, delete } }` reflecting the user's current edits, suitable for the agreement edit-bundle endpoint. Used by the review-flow edit page so it can fire one atomic mutation instead of fanning out per-resource calls. - optional
  * @param {function(boolean): void} [props.onFinancialChangeStateChange] - Called with `true` when the current edits contain financial-snapshot changes to PLANNED/IN_EXECUTION BLIs that require Division Director approval, `false` otherwise. Non-superusers only — super users always receive `false`. Used by the review-flow edit page to gate the save behind a confirmation modal. - optional
+ * @param {function(boolean): void} [props.onHasUnsavedChangesChange] - Called whenever the internal `hasUnsavedChanges` flag changes. Used by the review-flow edit page to track page-level dirty state for the nav-away modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -75,7 +77,8 @@ export const CreateBLIsAndSCs = ({
     onSaved,
     onValidityChange,
     bundleSliceRef,
-    onFinancialChangeStateChange
+    onFinancialChangeStateChange,
+    onHasUnsavedChangesChange
 }) => {
     const {
         blocker,
@@ -183,6 +186,12 @@ export const CreateBLIsAndSCs = ({
         }
     }, [onFinancialChangeStateChange, requiresFinancialApproval]);
 
+    useEffect(() => {
+        if (onHasUnsavedChangesChange) {
+            onHasUnsavedChangesChange(hasUnsavedChanges);
+        }
+    }, [onHasUnsavedChangesChange, hasUnsavedChanges]);
+
     // Bundle slice export. The page (`EditAgreementAndBudgetLines`) reads this synchronously
     // when the user clicks Save Changes and folds it into a single edit-bundle PATCH so that
     // a partial-success failure mode is impossible (one transaction, all or nothing).
@@ -193,6 +202,7 @@ export const CreateBLIsAndSCs = ({
     useEffect(() => {
         if (!bundleSliceRef) return;
         bundleSliceRef.current = {
+            resetUnsavedChanges: () => setHasUnsavedChanges(false),
             getSlice: () => {
                 // Capture each new SC's ref BEFORE stripping UI-only fields. The ref is used
                 // by new BLIs to link to a not-yet-persisted SC via `services_component_ref`.
@@ -281,10 +291,14 @@ export const CreateBLIsAndSCs = ({
                     if (newGn) {
                         return { grant_number_ref: newGn.ref };
                     }
-                    return {};
+                    // The grant number was deleted mid-edit — disassociate the BLI by
+                    // explicitly nulling grant_number_id, mirroring the SC path.
+                    return { grant_number_id: null };
                 };
 
                 // Drop a stale grant_number_id when emitting a ref, mirroring applyScLink.
+                // When disassociating (grant_number_id: null), spread the explicit null so
+                // the cleaned payload doesn't keep a stale persisted id.
                 const applyGnLink = (cleaned, link) => {
                     const out = { ...cleaned, ...link };
                     if ("grant_number_ref" in link) {
@@ -314,13 +328,18 @@ export const CreateBLIsAndSCs = ({
                     .map((bli) => {
                         const baseline = budgetLines.find((b) => b.id === bli.id);
                         const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
+                        // Resolve the SC/grant link BEFORE the dirty check. The edit form only
+                        // stamps services_component_number (a UI-only field clean() strips), not
+                        // services_component_id — so comparing the pre-link payload would treat a
+                        // newly-assigned SC as "unchanged" and silently drop it from the update.
+                        const linked = applyBliLink(cleaned, bli);
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
-                            if (JSON.stringify(cleaned) === JSON.stringify(cleanedBaseline)) {
+                            if (JSON.stringify(linked) === JSON.stringify(cleanedBaseline)) {
                                 return null;
                             }
                         }
-                        return { id, ...applyBliLink(cleaned, bli) };
+                        return { id, ...linked };
                     })
                     .filter(Boolean);
 
@@ -338,7 +357,7 @@ export const CreateBLIsAndSCs = ({
                     budget_line_items: {
                         create: newBlis,
                         update: updatedBlis,
-                        delete: deletedBudgetLines ?? []
+                        delete: (deletedBudgetLines ?? []).map((bl) => bl?.id ?? bl)
                     }
                 };
             }
@@ -451,7 +470,11 @@ export const CreateBLIsAndSCs = ({
             {workflow === "none" && (
                 // NOTE: this is the Agreement Details page
                 <>
+                    {/* Gate on canUserEditBudgetLines so the grant-number / services-component editing
+                        controls stay locked during pre-award/award review, matching the wizard path above
+                        and defending against edit mode entered via the ?mode=edit URL param. */}
                     {!isAgreementNotYetDeveloped &&
+                        canUserEditBudgetLines &&
                         (isGrant ? (
                             <GrantNumbers
                                 agreementId={selectedAgreement.id}
@@ -530,30 +553,54 @@ export const CreateBLIsAndSCs = ({
                         className="usa-error-message text-normal margin-left-neg-1"
                         role="alert"
                     >
-                        This information is required to submit for approval
+                        This is required information
                     </span>
                 </div>
             )}
 
             {isGrant ? (
                 groupedBudgetLinesByGrantNumber.length > 0 ? (
-                    groupedBudgetLinesByGrantNumber.map((group, index) => (
-                        <GrantNumberAccordion
-                            key={`${group.grantNumberNumber}-${index}`}
-                            grantNumberNumber={group.grantNumberNumber}
-                            totalGrantNumbers={grantNumbers.length}
-                        >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                                isReviewMode={isReviewMode}
-                                isGrant={true}
-                            />
-                        </GrantNumberAccordion>
-                    ))
+                    groupedBudgetLinesByGrantNumber.map((group, index) => {
+                        // The "BLs not associated with a Grant Number" bucket (number 0) is an
+                        // error state in review mode — every BL in it still needs a grant number.
+                        // Surface it with a required-info message above the accordion and a red
+                        // border on its header, mirroring the services-component path below.
+                        const isUnassociatedError =
+                            isReviewMode && group.grantNumberNumber === 0 && group.budgetLines.length > 0;
+                        return (
+                            <div key={`${group.grantNumberNumber}-${index}`}>
+                                {isUnassociatedError && (
+                                    <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
+                                        <span
+                                            className="usa-error-message text-normal margin-left-neg-1"
+                                            role="alert"
+                                        >
+                                            This is required information
+                                        </span>
+                                    </div>
+                                )}
+                                <GrantNumberAccordion
+                                    grantNumberNumber={group.grantNumberNumber}
+                                    totalGrantNumbers={grantNumbers.length}
+                                    withMetadata={true}
+                                    periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                                    periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                                    description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
+                                    isError={isUnassociatedError}
+                                >
+                                    <BudgetLinesTable
+                                        budgetLines={group.budgetLines}
+                                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                        handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                        isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                        isReviewMode={isReviewMode}
+                                        isGrant={true}
+                                    />
+                                </GrantNumberAccordion>
+                            </div>
+                        );
+                    })
                 ) : (
                     <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
                 )
@@ -562,24 +609,42 @@ export const CreateBLIsAndSCs = ({
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                         ? group.serviceComponentGroupingLabel
                         : group.servicesComponentNumber;
+                    // The "BLs not associated with a Services Component" bucket (number 0) is an
+                    // error state in review mode — every BL in it still needs a services component.
+                    // Surface it with a required-info message above the accordion and a red border
+                    // on its header.
+                    const isUnassociatedError =
+                        isReviewMode && group.servicesComponentNumber === 0 && group.budgetLines.length > 0;
                     return (
-                        <ServicesComponentAccordion
-                            key={`${group.servicesComponentNumber}-${index}`}
-                            servicesComponentNumber={group.servicesComponentNumber}
-                            serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                            serviceRequirementType={selectedAgreement.service_requirement_type}
-                            optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                            description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                        >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                isEditable={isAgreementWorkflowOrCanEditBudgetLines}
-                                isReviewMode={isReviewMode}
-                            />
-                        </ServicesComponentAccordion>
+                        <div key={`${group.servicesComponentNumber}-${index}`}>
+                            {isUnassociatedError && (
+                                <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
+                                    <span
+                                        className="usa-error-message text-normal margin-left-neg-1"
+                                        role="alert"
+                                    >
+                                        This is required information
+                                    </span>
+                                </div>
+                            )}
+                            <ServicesComponentAccordion
+                                servicesComponentNumber={group.servicesComponentNumber}
+                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                serviceRequirementType={selectedAgreement.service_requirement_type}
+                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                isError={isUnassociatedError}
+                            >
+                                <BudgetLinesTable
+                                    budgetLines={group.budgetLines}
+                                    handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
+                                    handleDeleteBudgetLine={handleDeleteBudgetLine}
+                                    handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                                    isEditable={isAgreementWorkflowOrCanEditBudgetLines}
+                                    isReviewMode={isReviewMode}
+                                />
+                            </ServicesComponentAccordion>
+                        </div>
                     );
                 })
             ) : (

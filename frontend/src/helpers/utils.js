@@ -151,7 +151,10 @@ export const codesToDisplayText = {
         can: "CAN",
         services_component: "Services Component",
         grant_number: "Grant Number",
-        date_needed: "Obligate By Date"
+        date_needed: "Obligate By Date",
+        // POP_RANGE_ERROR_KEY (see suite.js) — shown as a single generic line regardless
+        // of how many budget lines violate the PoP window.
+        date_needed_pop_range: "Obligate By Date Outside Period of Performance"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",

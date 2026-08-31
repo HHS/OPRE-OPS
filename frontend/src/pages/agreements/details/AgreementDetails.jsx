@@ -36,6 +36,23 @@ const AgreementDetails = ({
     isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
+
+    const { nofoPeriodStart, nofoPeriodEnd } = grantNumbers.reduce(
+        (acc, gn) => ({
+            nofoPeriodStart:
+                gn.period_start && (!acc.nofoPeriodStart || gn.period_start < acc.nofoPeriodStart)
+                    ? gn.period_start
+                    : acc.nofoPeriodStart,
+            nofoPeriodEnd:
+                gn.period_end && (!acc.nofoPeriodEnd || gn.period_end > acc.nofoPeriodEnd)
+                    ? gn.period_end
+                    : acc.nofoPeriodEnd
+        }),
+        { nofoPeriodStart: null, nofoPeriodEnd: null }
+    );
+
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
@@ -47,8 +64,6 @@ const AgreementDetails = ({
         !isAwardInReview &&
         !isPostPreAwardLocked &&
         (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
-    // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
-    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
     return (
         <article>
@@ -62,7 +77,6 @@ const AgreementDetails = ({
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
                 isPostPreAwardLocked={isPostPreAwardLocked}
-                isGrant={isGrant}
             />
 
             {isEditMode && isEditable ? (
@@ -80,6 +94,8 @@ const AgreementDetails = ({
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
                     isAgreementAwarded={isAgreementAwarded}
+                    nofoPeriodStart={nofoPeriodStart}
+                    nofoPeriodEnd={nofoPeriodEnd}
                 />
             )}
         </article>

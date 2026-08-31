@@ -1,5 +1,6 @@
-import { faAdd, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import EditingIndicator from "../../UI/EditingIndicator";
 import FormHeader from "../../UI/Form/FormHeader";
 import TextArea from "../../UI/Form/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
@@ -66,31 +67,11 @@ function GrantNumberForm({
             id="grant-number-form"
             className={isReviewMode ? "margin-top-8" : undefined}
         >
-            <div className="display-flex flex-align-center">
-                <div>
-                    <FormHeader
-                        heading={heading}
-                        details={details}
-                    />
-                </div>
-                {isEditMode && (
-                    <div className="margin-left-auto">
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                        />
-                        <span
-                            id="editing"
-                            className="text-black"
-                        >
-                            Editing...
-                        </span>
-                    </div>
-                )}
-            </div>
+            <FormHeader
+                heading={heading}
+                details={details}
+                actions={isEditMode && <EditingIndicator />}
+            />
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">

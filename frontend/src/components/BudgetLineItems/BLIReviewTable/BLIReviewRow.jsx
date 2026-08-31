@@ -14,7 +14,11 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
+import {
+    addErrorClassIfNotFound,
+    futureDateErrorClass,
+    isDateOutsidePopRange
+} from "../BudgetLinesTable/BLIRow.helpers";
 import { NO_DATA } from "../../../constants";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
@@ -25,6 +29,15 @@ import React, { memo } from "react";
  */
 
 /**
+ * @typedef {Object} BLIReviewClinConfig
+ * CLIN column display mode for the review table. All fields optional; an empty object hides the column.
+ * @property {boolean} [showColumn] - Whether to show the CLIN column (awarded contract agreements only).
+ * @property {Object} [assignments] - Map of budgetLineId to locally-assigned CLIN number (Award Approval flow).
+ * @property {Function} [onAddClick] - Callback when the "+ CLIN" button is clicked with budgetLine.id.
+ * @property {boolean} [readOnly] - Read-only CLIN display: missing non-draft CLIN renders "—" with no error styling (Change BL Status page). Default false keeps the Award Approval behavior ("TBD" + error styling to prompt CLIN assignment).
+ */
+
+/**
  * @typedef BLIReviewRowProps
  * @property {BudgetLine} budgetLine - The budget line object.
  * @property {boolean} [isReviewMode] - Whether the user is in review mode.
@@ -32,10 +45,8 @@ import React, { memo } from "react";
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  * @property {string} action
  * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
- * @property {Function} [onAddCLINClick] - Callback when "+ CLIN" button is clicked with budgetLine.id
- * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
- * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
  * @property {string[]} [errorStatuses] - When provided, inline error styling applies to rows whose status is in this list (regardless of row selection). When omitted, the original selection-gated behavior is preserved: errors only show when the row is selected (Review Agreement page behavior).
+ * @property {BLIReviewClinConfig} [clin] - CLIN column display configuration. Omit to hide the column.
  */
 
 /**
@@ -50,31 +61,28 @@ const BLIReviewRow = ({
     action,
     showCheckbox = true,
     readOnly = false,
-    onAddCLINClick = undefined,
-    showCLINColumn = false,
-    clinAssignments = {},
-    errorStatuses
+    errorStatuses,
+    clin = {}
 }) => {
+    const {
+        showColumn: showCLINColumn = false,
+        assignments: clinAssignments = {},
+        onAddClick: onAddCLINClick = undefined,
+        readOnly: clinReadOnly = false
+    } = clin;
+
     // When errorStatuses is provided, inline errors only apply to rows whose status is in the list.
     // Suppress by pretending we're not in review mode — the existing helpers gate all error styling on that flag.
     const rowInReviewMode = isReviewMode && (!errorStatuses || errorStatuses.includes(budgetLine?.status));
 
-    // Services component (or, for grants, grant number) has no column in this table; surface its
-    // absence as a row-level error class so the user can locate the offending BLI when
-    // errorStatuses-mode is active.
+    // A missing services component (or, for grants, grant number) has no column in this table.
+    // Its absence is surfaced as a red border on the enclosing accordion (see
+    // ServicesComponentAccordion/GrantNumberAccordion isError), not as a row-level highlight.
     const statusScopedErrors = Array.isArray(errorStatuses);
     const showCellErrors = statusScopedErrors ? rowInReviewMode : budgetLine?.selected;
-    const isGrantBudgetLine = budgetLine?.agreement?.agreement_type === "GRANT";
-    const missingLink = isGrantBudgetLine ? !budgetLine?.grant_number_id : !budgetLine?.services_component_id;
 
     // Tooltip for BLIs with pending change requests (in_review=true)
     const inReviewTooltip = useChangeRequestsForTooltip(budgetLine, "This budget line has pending edits:");
-    // Row-level error class for a missing services component. Only used in selection-gated
-    // mode (Review Agreement) where highlighting the whole row is correct. In errorStatuses
-    // mode (pre-award), table-item-error on the <tr> would cascade color:#b50909 to every
-    // child <td> including cells with valid data — use cell-level errors only there.
-    const missingServicesComponentClass =
-        !statusScopedErrors && showCellErrors && missingLink ? "table-item-error" : "";
 
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -94,7 +102,7 @@ const BLIReviewRow = ({
         // Not actionable: derive message by action + status
         if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
             if (budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT && budgetLine?.in_review) {
-                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+                return "Budget lines In Review Status cannot be changed until they have been approved or declined";
             }
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED) {
                 return "This budget line is already in Planned Status";
@@ -104,7 +112,7 @@ const BLIReviewRow = ({
             }
         } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
             if (budgetLine?.status === BUDGET_LINE_STATUSES.PLANNED && budgetLine?.in_review) {
-                return "Budget lines In Review Status cannot be sent for status changes until the budget changes have been approved or declined";
+                return "Budget lines In Review Status cannot be changed until they have been approved or declined";
             }
             if (budgetLine?.status === BUDGET_LINE_STATUSES.IN_EXECUTION) {
                 return "This budget line is already in Executing Status";
@@ -181,7 +189,8 @@ const BLIReviewRow = ({
         const dateNeeded = budgetLine?.date_needed ?? null;
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
-        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)}`;
+        const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
+        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)} ${isOutsidePopRange && rowInReviewMode ? "table-item-error" : ""}`;
         const dateNeededClasses = showCellErrors ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
@@ -189,19 +198,35 @@ const BLIReviewRow = ({
         // Use local assignment if available, otherwise fall back to backend clin.number
         const assignedClinNumber = clinAssignments[budgetLine.id];
         const isDraftStatus = budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT;
+        const backendClinNumber = budgetLine?.clin?.number;
 
-        // Draft BLIs show "N/A", non-Draft show "CLIN X" or "TBD"
+        // Draft BLIs show "N/A". Non-Draft show "CLIN X" (local assignment), then:
+        //  - Read-only display (Change BL Status page): the CLIN number or "—" if unassigned
+        //    (!= null keeps a valid CLIN 0).
+        //  - Award Approval flow (default): the CLIN number or "TBD", which is flagged as an error
+        //    to prompt CLIN assignment before award.
         const clinNumber = isDraftStatus
             ? "N/A"
             : assignedClinNumber
               ? `CLIN ${assignedClinNumber}`
-              : (budgetLine?.clin?.number ?? NO_DATA);
+              : clinReadOnly
+                ? backendClinNumber != null
+                    ? backendClinNumber
+                    : "—"
+                : (backendClinNumber ?? NO_DATA);
 
-        // Only apply error styling to non-Draft BLIs with missing CLIN
-        const clinErrorClasses = !isDraftStatus ? `${addErrorClassIfNotFound(clinNumber, rowInReviewMode)}` : "";
+        // Read-only display never flags a missing CLIN as an error.
+        const clinErrorClasses =
+            !isDraftStatus && !clinReadOnly ? `${addErrorClassIfNotFound(clinNumber, rowInReviewMode)}` : "";
         // For CLIN column, show error in review mode regardless of selection (Award Approval page)
         // For other columns, only show error when selected (Review Agreement page)
-        const clinClasses = rowInReviewMode ? clinErrorClasses : budgetLine.selected ? clinErrorClasses : "";
+        const clinClasses = clinReadOnly
+            ? ""
+            : rowInReviewMode
+              ? clinErrorClasses
+              : budgetLine.selected
+                ? clinErrorClasses
+                : "";
 
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, rowInReviewMode)}`;
@@ -220,7 +245,18 @@ const BLIReviewRow = ({
             <>
                 {renderCheckboxCell()}
                 {showCLINColumn && <td className={clinClasses}>{clinNumber}</td>}
-                <td className={dateNeededClasses}>{dateNeededFormatted}</td>
+                <td className={dateNeededClasses}>
+                    {showCellErrors && isOutsidePopRange ? (
+                        <Tooltip
+                            label="Obligate By date is outside the agreement’s Period of Performance"
+                            position="right"
+                        >
+                            <span>{dateNeededFormatted}</span>
+                        </Tooltip>
+                    ) : (
+                        dateNeededFormatted
+                    )}
+                </td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
                 <td className={amountClasses}>{amountDisplay}</td>
@@ -294,7 +330,7 @@ const BLIReviewRow = ({
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
-                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""} ${missingServicesComponentClass}`.trim()}
+                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`.trim()}
             />
         </>
     );

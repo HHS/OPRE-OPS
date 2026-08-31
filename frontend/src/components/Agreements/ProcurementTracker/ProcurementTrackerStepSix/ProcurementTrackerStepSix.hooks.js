@@ -38,7 +38,14 @@ export default function useProcurementTrackerStepSix(
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepSix] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepSixComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value). This complements `isSubmitting`, which additionally keeps
+    // the Complete button disabled until the status refetch lands.
+    const [patchStepSix, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const stepSixCompletedByUserName = useGetUserFullNameFromId(stepSixData?.task_completed_by ?? -1);
@@ -68,6 +75,7 @@ export default function useProcurementTrackerStepSix(
         notes: stepSixNotes,
         setNotes: setStepSixNotes,
         resetNotes: resetStepSixNotes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
 
@@ -165,7 +173,10 @@ export default function useProcurementTrackerStepSix(
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
-        resetStepSixNotes(stepSixData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepSixData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStepSixNotes();
         setShowModal(false);
     };
 
@@ -186,6 +197,7 @@ export default function useProcurementTrackerStepSix(
 
     return {
         handleSaveNotes,
+        isStepPatchInFlight,
         isAwardCheckboxChecked,
         setIsAwardCheckboxChecked,
         selectedUser,
@@ -197,6 +209,7 @@ export default function useProcurementTrackerStepSix(
         stepSixNotes,
         setStepSixNotes,
         resetStepSixNotes,
+        notesResetKey,
         isSubmitting,
         showModal,
         setShowModal,

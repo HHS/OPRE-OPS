@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -239,6 +239,65 @@ describe("BLIReviewRow", () => {
         });
     });
 
+    describe("Obligate By date outside PoP range", () => {
+        // All dates must be in the future to avoid tripping the unrelated
+        // "date_needed is in the past" error class on the same cell.
+        const isoDate = (daysFromNow) => {
+            const d = new Date();
+            d.setDate(d.getDate() + daysFromNow);
+            return d.toISOString().slice(0, 10);
+        };
+        const popStart = isoDate(10);
+        const popEnd = isoDate(100);
+
+        const bliOutsidePopRange = (status) => ({
+            ...defaultBudgetLine,
+            status,
+            date_needed: isoDate(200),
+            sc_period_start: popStart,
+            sc_period_end: popEnd,
+            selected: true
+        });
+
+        const tooltipText = "Obligate By date is outside the agreement’s Period of Performance";
+
+        it("applies error styling and a tooltip to the Obligate By cell when the date is outside the PoP range", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: bliOutsidePopRange("PLANNED")
+            });
+
+            const dateCell = screen.getAllByRole("cell").find((cell) => within(cell).queryByText(tooltipText));
+            expect(dateCell).toHaveClass("table-item-error");
+        });
+
+        it("does not flag the Obligate By cell when the date is inside the PoP range", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: {
+                    ...bliOutsidePopRange("PLANNED"),
+                    date_needed: isoDate(50)
+                }
+            });
+
+            expect(screen.queryByText(tooltipText)).not.toBeInTheDocument();
+        });
+
+        it("does not flag the Obligate By cell when sc_period_start/sc_period_end are missing", () => {
+            renderComponent({
+                isReviewMode: true,
+                budgetLine: {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    date_needed: isoDate(200),
+                    selected: true
+                }
+            });
+
+            expect(screen.queryByText(tooltipText)).not.toBeInTheDocument();
+        });
+    });
+
     describe("CLIN Selector", () => {
         // Note: Hover interaction tests are covered by E2E tests rather than unit tests
         // because React Testing Library's hover simulation doesn't reliably trigger state updates
@@ -250,7 +309,7 @@ describe("BLIReviewRow", () => {
                 clin_id: null,
                 clin: null
             };
-            renderComponent({ showCLINColumn: true, budgetLine: budgetLineWithoutCLIN });
+            renderComponent({ clin: { showColumn: true }, budgetLine: budgetLineWithoutCLIN });
 
             const clinCells = screen.getAllByText("TBD");
             expect(clinCells.length).toBeGreaterThan(0);
@@ -259,7 +318,7 @@ describe("BLIReviewRow", () => {
         });
 
         it("should not render CLIN column when showCLINColumn is false", () => {
-            renderComponent({ showCLINColumn: false });
+            renderComponent({ clin: { showColumn: false } });
 
             // CLIN column should not be present
             expect(screen.queryByText("TBD")).not.toBeInTheDocument();
@@ -274,7 +333,7 @@ describe("BLIReviewRow", () => {
                     clin: null
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     budgetLine: draftBLI
                 });
 
@@ -290,7 +349,7 @@ describe("BLIReviewRow", () => {
                     selected: true // Error classes only apply when selected
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     isReviewMode: true,
                     budgetLine: plannedBLI
                 });
@@ -307,9 +366,8 @@ describe("BLIReviewRow", () => {
                     status: "DRAFT"
                 };
                 renderComponent({
-                    showCLINColumn: true,
-                    budgetLine: draftBLI,
-                    onAddCLINClick: vi.fn()
+                    clin: { showColumn: true, onAddClick: vi.fn() },
+                    budgetLine: draftBLI
                 });
 
                 // Hover is tricky to test in unit tests - E2E will cover this
@@ -326,13 +384,67 @@ describe("BLIReviewRow", () => {
                     status: "PLANNED"
                 };
                 renderComponent({
-                    showCLINColumn: true,
+                    clin: { showColumn: true },
                     isReviewMode: true,
                     budgetLine: plannedBLI
-                    // onAddCLINClick intentionally omitted — mirrors the review page
+                    // onAddClick intentionally omitted — mirrors the review page
                 });
 
                 expect(screen.queryByTestId("add-clin-hover-button")).not.toBeInTheDocument();
+            });
+        });
+
+        describe("clinReadOnly (Change BL Status page)", () => {
+            it("renders an em-dash (not 'TBD') with no error styling for a non-Draft BLI without CLIN", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: null,
+                    clin: null,
+                    selected: true
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.queryByText("TBD")).not.toBeInTheDocument();
+                const emDash = screen.getByText("—");
+                expect(emDash).toBeInTheDocument();
+                expect(emDash).not.toHaveClass("table-item-error");
+            });
+
+            it("renders CLIN 0 (not em-dash) for a non-Draft BLI assigned CLIN number 0", () => {
+                const plannedBLI = {
+                    ...defaultBudgetLine,
+                    status: "PLANNED",
+                    clin_id: 9,
+                    clin: { id: 9, number: 0 }
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    isReviewMode: true,
+                    budgetLine: plannedBLI
+                });
+
+                expect(screen.getByText("0")).toBeInTheDocument();
+                expect(screen.queryByText("—")).not.toBeInTheDocument();
+            });
+
+            it("still shows 'N/A' for a Draft BLI", () => {
+                const draftBLI = {
+                    ...defaultBudgetLine,
+                    status: "DRAFT",
+                    clin_id: null,
+                    clin: null
+                };
+                renderComponent({
+                    clin: { showColumn: true, readOnly: true },
+                    budgetLine: draftBLI
+                });
+
+                expect(screen.getByText("N/A")).toBeInTheDocument();
             });
         });
     });

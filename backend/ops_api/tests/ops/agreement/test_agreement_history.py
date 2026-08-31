@@ -1,16 +1,23 @@
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 
 from sqlalchemy import select
 
 from models import (
     AgreementHistory,
     AgreementHistoryType,
+    BudgetLineItem,
     DefaultProcurementTracker,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
 )
-from models.agreement_history import add_history_events, create_agreement_update_history_event, get_project_display_name
+from models.agreement_history import (
+    add_history_events,
+    create_agreement_update_history_event,
+    create_services_component_history_event,
+    get_project_display_name,
+)
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 from ops_api.ops.utils.users import get_sys_user
 
@@ -649,6 +656,34 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
     )
 
 
+def test_services_component_period_change_with_none_value():
+    """Regression: a period_start/period_end change where the old or new value is None/empty
+    must not raise NameError. Previously the empty branch left old_date/new_date unassigned
+    while the f-string referenced them unconditionally, silently dropping SC history."""
+    event = SimpleNamespace(
+        id=999,
+        created_on=datetime(2026, 1, 2, 3, 4, 5),
+        event_details={
+            "services_component_updates": {
+                "sc_display_name": "SC1",
+                "owner_id": 1,
+                "changes": {
+                    "period_start": {"old_value": None, "new_value": "2025-01-01"},
+                    "period_end": {"old_value": "2024-06-30", "new_value": ""},
+                },
+            }
+        },
+    )
+    event_user = SimpleNamespace(full_name="Amelia Popham")
+
+    history_events = create_services_component_history_event(event, event_user, system_user_created_event=False)
+
+    messages = [h.history_message for h in history_events]
+    assert len(messages) == 2
+    assert any("from None to 01/01/2025" in m for m in messages)
+    assert any("from 06/30/2024 to None" in m for m in messages)
+
+
 def test_agreement_history_bli_deletion(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 64)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -723,6 +758,52 @@ def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
     assert (
         new_agreement_history_item.history_message
         == "Steve Tekell changed the amount for BL 16043 from $12,345.00 to $23,435.00."
+    )
+
+
+def test_agreement_history_direct_draft_to_planned_status_change(loaded_db, app_ctx):
+    """A directly-applied Draft->Planned status change (SKIP_CR_FOR_DRAFT_PLANNED) must
+    still produce a BUDGET_LINE_ITEM_UPDATED history entry, even though it bypasses the
+    change-request path."""
+    bli = loaded_db.get(BudgetLineItem, 16043)
+    assert bli is not None
+
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_BLI,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=test_user_id,
+        event_details={
+            "bli": bli.to_dict(),
+            "bli_updates": {
+                "owner_id": bli.agreement_id,
+                "updated_by": test_user_id,
+                "changes": {
+                    "status": {
+                        "old_value": "DRAFT",
+                        "new_value": "PLANNED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    history_item = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()[-1]
+    )
+
+    assert history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert history_item.history_title == "Change to Budget Line Status"
+    assert (
+        history_item.history_message
+        == f"{test_user_name} changed the budget line status on BL 16043 from Draft to Planned."
     )
 
 

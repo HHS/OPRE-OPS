@@ -45,4 +45,75 @@ describe("GrantNumberAccordion", () => {
         );
         expect(screen.getByText("BLs not associated with a Grant Number")).toBeInTheDocument();
     });
+
+    it("renders the error border on the heading when isError is true", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={0}
+                isError={true}
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        const heading = screen.getByRole("heading", { level: 3 });
+        expect(heading).toHaveClass("border-2px");
+        expect(heading).toHaveClass("border-secondary-dark");
+    });
+
+    it("does not render the error border by default", () => {
+        render(
+            <GrantNumberAccordion grantNumberNumber={0}>
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        const heading = screen.getByRole("heading", { level: 3 });
+        expect(heading).not.toHaveClass("border-2px");
+        expect(heading).not.toHaveClass("border-secondary-dark");
+    });
+
+    it("renders GrantNumberMetadata when withMetadata is true and grantNumberNumber is non-zero", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                withMetadata={true}
+                periodStart="2026-01-01"
+                periodEnd="2026-12-31"
+                description="Test description"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.getByText("Period of Performance - Start")).toBeInTheDocument();
+        expect(screen.getByText("Period of Performance - End")).toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
+    });
+
+    it("does not render GrantNumberMetadata for the unassociated bucket even when withMetadata is true", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={0}
+                withMetadata={true}
+                periodStart="2026-01-01"
+                periodEnd="2026-12-31"
+                description="Test description"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.queryByText("Period of Performance - Start")).not.toBeInTheDocument();
+        expect(screen.queryByText("Period of Performance - End")).not.toBeInTheDocument();
+    });
+
+    it("does not render GrantNumberMetadata when withMetadata is false", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                withMetadata={false}
+                periodStart="2026-01-01"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.queryByText("Period of Performance - Start")).not.toBeInTheDocument();
+    });
 });

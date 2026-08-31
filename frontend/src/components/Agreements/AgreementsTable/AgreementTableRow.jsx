@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
@@ -23,7 +23,7 @@ import {
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
-import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
 import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 
 /**
@@ -59,26 +59,16 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    // GRANT is locked from this table's edit action the same way DIRECT_OBLIGATION/IAA are
-    // (isNotDevelopedYet), but isn't added to that shared helper — isNotDevelopedYet also
-    // gates whether GrantNumbers renders on the Agreement Details page, and GRANT needs
-    // that page to render normally, just not be editable from this row.
-    const isAgreementTypeNotDeveloped =
-        isSuccess &&
-        (isNotDevelopedYet(agreement?.agreement_type ?? "") || agreement?.agreement_type === AGREEMENT_TYPES.GRANT);
+    const isAgreementTypeNotDeveloped = isSuccess && isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
-    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    const [searchParams] = useSearchParams();
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
-
     function getLockedMessage() {
         const lockedMessages = {
-            notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
+            notTeamMember: "Only team members on this agreement can edit or delete",
             notDeveloped:
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
             default: "Disabled"
@@ -105,8 +95,6 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={!forApprovalUrl}
-            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
     ) : null;
 
@@ -148,12 +136,6 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
                 </dl>
-                {/* REVIEW: NEW — gates Procurement Shop / Subtotal / Fees / Lifetime Obligated for GRANT rows.
-                    Grants have no procurement shop and no BLIs at creation time, so these cells would all
-                    show TBD or $0 and are misleading. Using a string literal "GRANT" rather than importing
-                    the AGREEMENT_TYPES constant because this file already uses the string form elsewhere
-                    (e.g. isNotDevelopedYet) and adding another import for a one-liner guard would be noisy.
-                    QUESTION FOR REVIEW: should we import AGREEMENT_TYPES.GRANT here for consistency? */}
                 {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
                     <>
                         <dl
@@ -191,12 +173,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 className="display-flex padding-right-4"
                 style={{ justifyContent: "space-between" }}
             >
-                {/* REVIEW: NEW — gates Contract # / Award Type / spacer / Vendor for GRANT rows.
-                    Change-icons div intentionally kept outside this gate so delete/edit icons
-                    still render for grants. The spacer dl (&nbsp;) is a layout placeholder that
-                    existed before this change; it's included in the gate since it only makes sense
-                    when Contract # and Vendor are present. */}
-                {agreement?.agreement_type !== "GRANT" && (
+                {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
                     <>
                         <dl className="font-12px">
                             <dt className="margin-0 text-base-dark">Contract #</dt>

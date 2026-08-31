@@ -27,7 +27,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, formatDate, getCurrentFiscalYear } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate, getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -55,7 +55,10 @@ const AgreementsList = () => {
         contractNumber: [],
         awardType: []
     });
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
+        tableSortCodes.agreementCodes.AGREEMENT,
+        false
+    );
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());

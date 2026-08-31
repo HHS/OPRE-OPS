@@ -16,6 +16,7 @@ import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetL
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
@@ -25,6 +26,9 @@ import {
 import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -77,8 +81,10 @@ const AgreementBudgetLines = ({
     );
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
-    // Editing is not yet supported for grant agreements, so the Edit and Request BL Status Change buttons are disabled for them.
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const showClinColumn = isContract && isAgreementAwarded;
 
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
@@ -86,8 +92,7 @@ const AgreementBudgetLines = ({
     // All users (including superusers) are blocked by pre-award, award review, or post-pre-award lock
     const isAgreementEditable =
         !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
-    // Grant editing is not yet supported: the Request BL Status Change button is disabled even when the agreement is otherwise editable.
-    const canRequestStatusChange = isAgreementEditable && !isGrant;
+    const canRequestStatusChange = isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -97,8 +102,6 @@ const AgreementBudgetLines = ({
 
     const toolTipLabel = () => {
         switch (true) {
-            case isGrant:
-                return "Editing is not yet available for grant agreements.";
             case isAgreementNotDeveloped:
                 return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case isPreAwardInReview:
@@ -110,7 +113,7 @@ const AgreementBudgetLines = ({
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
-                return "Only team members on this agreement can send to approval";
+                return "Only team members listed on this agreement can change a BL status";
         }
     };
 
@@ -208,7 +211,8 @@ const AgreementBudgetLines = ({
                         setIsEditMode={setIsEditMode}
                         isEditable={isAgreementEditable}
                         isPreAwardInReview={isPreAwardInReview}
-                        isGrant={isGrant}
+                        isAwardInReview={isAwardInReview}
+                        isPostPreAwardLocked={isPostPreAwardLocked}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard
@@ -226,34 +230,52 @@ const AgreementBudgetLines = ({
                     <div className="margin-y-3">
                         <div className="display-flex flex-justify flex-align-center">
                             <h2 className="font-sans-lg">Budget Lines</h2>
-                            {blis && blis?.length > 0 && (
-                                <button
-                                    type="button"
-                                    style={{ fontSize: "16px" }}
-                                    className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                    data-cy="budget-line-export"
-                                    onClick={() =>
-                                        handleExport(
-                                            exportTableToXlsx,
-                                            setIsExporting,
-                                            filters,
-                                            blis,
-                                            budgetLineTrigger,
-                                            serviceComponentTrigger,
-                                            portfolioTrigger,
-                                            blis.length
-                                        )
-                                    }
-                                >
-                                    <svg
-                                        className={`height-2 width-2 margin-right-05`}
-                                        style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                            {blis &&
+                                blis?.length > 0 &&
+                                (isGrant ? (
+                                    <DisabledButtonWithTooltip
+                                        label="Export coming soon"
+                                        tooltipPosition="bottom"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        dataCy="budget-line-export"
                                     >
-                                        <use href={`${icons}#save_alt`}></use>
-                                    </svg>
-                                    <span>Export</span>
-                                </button>
-                            )}
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </DisabledButtonWithTooltip>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        data-cy="budget-line-export"
+                                        onClick={() =>
+                                            handleExport(
+                                                exportTableToXlsx,
+                                                setIsExporting,
+                                                filters,
+                                                blis,
+                                                budgetLineTrigger,
+                                                serviceComponentTrigger,
+                                                portfolioTrigger,
+                                                blis.length,
+                                                showClinColumn
+                                            )
+                                        }
+                                    >
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                ))}
                         </div>
                         <p className="font-sans-sm">
                             This is a list of all services components and budget lines within this agreement.
@@ -304,6 +326,10 @@ const AgreementBudgetLines = ({
                         key={`${group.grantNumberNumber}-${index}`}
                         grantNumberNumber={group.grantNumberNumber}
                         totalGrantNumbers={(grantNumbers ?? []).length}
+                        withMetadata={true}
+                        periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                        periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                        description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                     >
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable
@@ -348,6 +374,7 @@ const AgreementBudgetLines = ({
                                     isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
+                                    showClinColumn={showClinColumn}
                                 />
                             ) : (
                                 <p className="text-center margin-y-7">
@@ -374,7 +401,7 @@ const AgreementBudgetLines = ({
                             to={`/agreements/review/${agreement?.id}`}
                             data-cy="bli-continue-btn"
                         >
-                            Request BL Status Change
+                            Change BL Status
                         </Link>
                     ) : (
                         <Tooltip label={toolTipLabel()}>
@@ -383,7 +410,7 @@ const AgreementBudgetLines = ({
                                 aria-disabled="true"
                                 data-cy="bli-continue-btn-disabled"
                             >
-                                Request BL Status Change
+                                Change BL Status
                             </span>
                         </Tooltip>
                     )}

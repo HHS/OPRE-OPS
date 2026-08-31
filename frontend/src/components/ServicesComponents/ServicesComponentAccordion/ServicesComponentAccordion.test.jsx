@@ -201,4 +201,37 @@ describe("ServicesComponentAccordion special cases", () => {
         );
         expect(screen.getByRole("heading", { level: 3 })).toBeInTheDocument();
     });
+
+    it("renders the error border on the heading when isError is true", () => {
+        render(
+            <ServicesComponentAccordion
+                servicesComponentNumber={0}
+                serviceRequirementType="NON_SEVERABLE"
+                withMetadata={false}
+                description=""
+                isError={true}
+            >
+                <div>child</div>
+            </ServicesComponentAccordion>
+        );
+        const heading = screen.getByRole("heading", { level: 3 });
+        expect(heading).toHaveClass("border-2px");
+        expect(heading).toHaveClass("border-secondary-dark");
+    });
+
+    it("does not render the error border by default", () => {
+        render(
+            <ServicesComponentAccordion
+                servicesComponentNumber={0}
+                serviceRequirementType="NON_SEVERABLE"
+                withMetadata={false}
+                description=""
+            >
+                <div>child</div>
+            </ServicesComponentAccordion>
+        );
+        const heading = screen.getByRole("heading", { level: 3 });
+        expect(heading).not.toHaveClass("border-2px");
+        expect(heading).not.toHaveClass("border-secondary-dark");
+    });
 });

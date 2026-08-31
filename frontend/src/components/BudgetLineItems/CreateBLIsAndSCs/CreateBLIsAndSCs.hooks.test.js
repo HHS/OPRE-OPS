@@ -17,10 +17,10 @@ const updateServicesComponentMock = vi.fn();
 const addGrantNumberMock = vi.fn();
 const updateGrantNumberMock = vi.fn();
 const deleteGrantNumberMock = vi.fn();
+const useGetVersionQueryMock = vi.fn();
 
 const goBackMock = vi.fn();
 const setIsEditModeMock = vi.fn();
-const dispatchMock = vi.fn();
 const editAgreementMockData = {
     agreement: { id: 1, team_members: [] },
     services_components: [{ id: 11, number: 1 }],
@@ -44,7 +44,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
             state: "unblocked",
             proceed: vi.fn(),
             reset: vi.fn(),
-            nextLocation: "/agreements/1"
+            location: { pathname: "/agreements/1" }
         })
     };
 });
@@ -60,7 +60,8 @@ vi.mock("../../../api/opsAPI", () => ({
     useUpdateServicesComponentMutation: () => [updateServicesComponentMock],
     useAddGrantNumberMutation: () => [addGrantNumberMock],
     useUpdateGrantNumberMutation: () => [updateGrantNumberMock],
-    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock]
+    useDeleteGrantNumberMutation: () => [deleteGrantNumberMock],
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/agreement.helpers", () => ({
@@ -68,7 +69,7 @@ vi.mock("../../../helpers/agreement.helpers", () => ({
     cleanBudgetLineItemForApi: vi.fn((bli) => ({ id: bli.id, data: bli })),
     cleanBudgetLineItemsForApi: vi.fn((blis) => blis),
     formatTeamMember: vi.fn((tm) => tm),
-    isNotDevelopedYet: vi.fn((agreementType) => ["GRANT", "IAA", "DIRECT_OBLIGATION"].includes(agreementType))
+    isNotDevelopedYet: vi.fn((agreementType) => ["IAA", "DIRECT_OBLIGATION"].includes(agreementType))
 }));
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
@@ -105,10 +106,22 @@ vi.mock("../../../hooks/user.hooks", () => ({
 }));
 
 const useEditAgreementMock = vi.fn(() => editAgreementMockData);
-vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => useEditAgreementMock(),
-    useEditAgreementDispatch: () => dispatchMock
-}));
+// dispatchMock applies the real reducer so context state evolves during tests
+// (e.g. DELETE_BUDGET_LINE_ITEM moves a BLI into deleted_budget_line_items_ids).
+const dispatchMock = vi.fn();
+vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        useEditAgreement: () => useEditAgreementMock(),
+        useEditAgreementDispatch: () => (action) => {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const next = actual.editAgreementReducer(useEditAgreementMock(), action);
+            useEditAgreementMock.mockReturnValue(next);
+            dispatchMock(action);
+        }
+    };
+});
 
 vi.mock("../BudgetLinesForm/datePickerSuite", () => {
     const suite = vi.fn();
@@ -165,10 +178,28 @@ describe("useCreateBLIsAndSCs", () => {
             })
         );
         deleteAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+        // Default: capability OFF and version query resolved.
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: false },
+            isSuccess: true
+        });
     });
 
-    const renderSubject = (overrides = {}) =>
-        renderHook(() =>
+    const renderSubject = (overrides = {}) => {
+        // BLIs live in context (budget_line_items), not the budgetLines prop. Seed them
+        // in the mock so tempBudgetLines is populated from context on mount.
+        if (overrides.budgetLines?.length) {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: overrides.budgetLines.map((bli) => ({
+                    ...bli,
+                    services_component_number: bli.services_component_id ? 1 : 0,
+                    serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
+                })),
+                deleted_budget_line_items_ids: []
+            });
+        }
+        return renderHook(() =>
             useCreateBLIsAndSCs(
                 true,
                 false,
@@ -194,10 +225,11 @@ describe("useCreateBLIsAndSCs", () => {
                 1
             )
         );
+    };
 
     it("flags not-yet-developed agreement types", () => {
         const { result } = renderSubject();
-        expect(result.current.isAgreementNotYetDeveloped).toBe(true);
+        expect(result.current.isAgreementNotYetDeveloped).toBe(false);
     });
 
     it("resets validation suites on mount and unmount so stale errors do not leak (issue #5894)", async () => {
@@ -325,6 +357,66 @@ describe("useCreateBLIsAndSCs", () => {
         expect(duplicate._meta).toEqual({ isEditable: true });
         expect(duplicate.id).not.toBe(original.id);
         expect(duplicate.amount).toBe(original.amount);
+    });
+
+    it("still requires DD approval for a Planned financial change when the capability is OFF", async () => {
+        const plannedLine = {
+            id: 501,
+            status: "PLANNED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        // tempBudgetLines is sourced from useEditAgreement()'s budget_line_items, so seed the
+        // context mock (not the budgetLines prop) for the flag-scoping logic to see the line.
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [plannedLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        expect(result.current.requiresFinancialApproval).toBe(true);
+    });
+
+    it("applies a Planned financial change immediately (no DD approval) when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const plannedLine = {
+            id: 501,
+            status: "PLANNED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [plannedLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        // Capability ON + all changed lines PLANNED → applies directly, no approval UX.
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("still requires DD approval when a changed line is IN_EXECUTION even with the capability ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const executingLine = {
+            id: 502,
+            status: "EXECUTING",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [executingLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        // A non-PLANNED changed line is out of the flag's scope → approval still required.
+        expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
     it("edits a budget line, matching the original by id rather than a stale array index", () => {
@@ -511,8 +603,211 @@ describe("useCreateBLIsAndSCs", () => {
             )
         );
 
-        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [] });
+        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [], agreement_type: "GRANT" });
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
+    });
+
+    it("suppresses the page-level error for a BLI in the unassociated (bucket-0) accordion (covered by its own message)", async () => {
+        const suiteModule = await import("./suite");
+        const helpers = await import("../../../helpers/budgetLines.helpers");
+        // The bucket-0 accordion already surfaces its own message and red border for unassociated BLIs,
+        // so the page-level message must not double up. Drive the real bucket-0 grouping path: group the
+        // BLI under servicesComponentNumber 0, mirroring groupByServicesComponent's "unassociated" bucket.
+        const defaultGroupBySc = helpers.groupByServicesComponent.getMockImplementation();
+        helpers.groupByServicesComponent.mockImplementation((blis) =>
+            blis.length ? [{ budgetLines: blis, servicesComponentNumber: 0, serviceComponentGroupingLabel: "0" }] : []
+        );
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [{ id: 99, services_component_number: 0 }],
+            deleted_budget_line_items_ids: []
+        });
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({ "Budget line item (99)": ["This is required information"] }),
+            hasErrors: () => true,
+            isValid: () => false
+        }));
+
+        try {
+            const { result } = renderHook(() =>
+                useCreateBLIsAndSCs(
+                    true,
+                    true,
+                    [],
+                    vi.fn(),
+                    goBackMock,
+                    vi.fn(),
+                    { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                    { fee_percentage: 5, abbr: "PSC" },
+                    setIsEditModeMock,
+                    "agreement",
+                    true,
+                    true,
+                    "Save & Exit",
+                    1
+                )
+            );
+
+            expect(result.current.budgetLinePageErrorsExist).toBe(false);
+        } finally {
+            // Restore the shared factory mock so the override doesn't leak to later tests
+            // (vi.clearAllMocks in beforeEach clears calls, not implementations).
+            helpers.groupByServicesComponent.mockImplementation(defaultGroupBySc);
+        }
+    });
+
+    it("keeps the page-level error for an associated BLI with invalid fields", async () => {
+        const suiteModule = await import("./suite");
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [{ id: 99, services_component_number: 1, services_component_id: 11 }],
+            deleted_budget_line_items_ids: []
+        });
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({ "Budget line item (99)": ["This is required information"] }),
+            hasErrors: () => true,
+            isValid: () => false
+        }));
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        expect(result.current.budgetLinePageErrorsExist).toBe(true);
+    });
+
+    it("validates each BLI against its current services component's PoP window (derived live)", async () => {
+        const suiteModule = await import("./suite");
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({}),
+            hasErrors: () => false,
+            isValid: () => true
+        }));
+
+        // A BLI linked to SC id 11, which carries a PoP window on the current services components.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            services_components: [{ id: 11, number: 1, period_start: "2044-01-01", period_end: "2044-12-31" }],
+            budget_line_items: [
+                {
+                    id: "bli-1",
+                    services_component_id: 11,
+                    date_needed: "2044-06-15",
+                    can_id: 5,
+                    amount: 100,
+                    in_review: false
+                }
+            ]
+        });
+
+        renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        // The suite must receive the BLI enriched with its SC's PoP window, derived live from
+        // the current services components (not baked into editor state) so SC edits stay in sync.
+        expect(suiteModule.default.run).toHaveBeenCalledWith({
+            budgetLines: [
+                expect.objectContaining({
+                    id: "bli-1",
+                    sc_period_start: "2044-01-01",
+                    sc_period_end: "2044-12-31"
+                })
+            ],
+            agreement_type: "CONTRACT"
+        });
+    });
+
+    it("resolves the PoP window by services_component_number when it disagrees with a stale services_component_id", async () => {
+        const suiteModule = await import("./suite");
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => ({}),
+            hasErrors: () => false,
+            isValid: () => true
+        }));
+
+        // Reassignment case: handleEditBLI stamps services_component_number to the NEW SC (2) but
+        // leaves services_component_id pointing at the OLD SC (1) until save time. The PoP window
+        // must follow the number (SC 2's window), not the stale id — otherwise the BLI is validated
+        // against the wrong SC while it's grouped under the new one.
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            services_components: [
+                { id: 1, number: 1, period_start: "2044-01-01", period_end: "2044-06-30" },
+                { id: 2, number: 2, period_start: "2044-07-01", period_end: "2044-12-31" }
+            ],
+            budget_line_items: [
+                {
+                    id: "bli-1",
+                    services_component_id: 1,
+                    services_component_number: 2,
+                    date_needed: "2044-08-15",
+                    can_id: 5,
+                    amount: 100,
+                    in_review: false
+                }
+            ]
+        });
+
+        renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        expect(suiteModule.default.run).toHaveBeenCalledWith({
+            budgetLines: [
+                expect.objectContaining({
+                    id: "bli-1",
+                    sc_period_start: "2044-07-01",
+                    sc_period_end: "2044-12-31"
+                })
+            ],
+            agreement_type: "CONTRACT"
+        });
     });
 
     it("does not send UI-only fields in services_components when creating a new agreement", async () => {
@@ -755,9 +1050,9 @@ describe("useCreateBLIsAndSCs", () => {
             deleteFirstTempBudgetLine(result);
             // The delete handler dispatches DELETE_BUDGET_LINE_ITEM; dispatch is mocked and does not
             // mutate state, so simulate the reducer removing the line from budget_line_items and
-            // recording its id in deleted_budget_line_items_ids (mirrors the real
-            // AgreementEditorContext reducer), then rerender so handleSave's closure sees the update
-            // before the save reads deletedBudgetLines.
+            // recording its bare id in deleted_budget_line_items_ids (mirrors the real
+            // AgreementEditorContext reducer, which stores action.payload.id), then rerender so
+            // handleSave's closure sees the update before the save reads deletedBudgetLines.
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
@@ -812,6 +1107,25 @@ describe("useCreateBLIsAndSCs", () => {
             expect(successCall).toBeDefined();
             expect(successCall.heading).toBe("Agreement Updated");
         });
+    });
+
+    it("redirects to the blocker's pending destination when saved via the unsaved-changes modal (regression: blocker.nextLocation typo)", async () => {
+        addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
+        const { result } = renderSubject({
+            selectedAgreement: { id: 1, agreement_type: "CONTRACT" },
+            continueOverRide: undefined
+        });
+        setAlertMock.mockClear();
+
+        await act(async () => {
+            await result.current.handleSave(true);
+        });
+
+        const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success" && a.heading);
+        expect(successCall).toBeDefined();
+        // The useBlocker mock (top of file) returns location.pathname "/agreements/1" — savedViaModal
+        // should route the redirect through that pending destination, not the default budget-lines URL.
+        expect(successCall.redirectUrl).toBe("/agreements/1");
     });
 
     it("flushes grant number create, update, and delete to the API when editing an existing grant agreement", async () => {
@@ -897,9 +1211,76 @@ describe("useCreateBLIsAndSCs", () => {
         expect(deleteGrantNumberMock).toHaveBeenCalledWith(99);
     });
 
-    it("surfaces an error instead of silently saving a grant BLI whose grant number can't be resolved", async () => {
-        // Grant agreement with a persisted BLI that references a grant number (number 7) which is
-        // no longer present in the editor's grant_numbers list (deleted mid-edit / stale page data).
+    it("reassigns a grant BLI to the selected grant number on edit (regression: stale grant_number_id)", () => {
+        // A persisted BLI linked to grant number #1 (grant_number_id 10). The user opens it for
+        // editing and picks grant number #2 (id 20) in the dropdown. handleEditBLI must stamp the
+        // NEW grant_number_id — spreading the original BLI alone would keep the stale id 10, and
+        // both save paths key off grant_number_id (the non-bundle addGrantNumberIdToBLI resolves
+        // by id; the bundle dirty-check compares it), silently dropping the reassignment.
+        const targetBli = {
+            id: "target",
+            amount: 500,
+            date_needed: "2026-01-01",
+            can_id: 1,
+            status: "DRAFT",
+            grant_number_id: 10,
+            grant_number_number: 1
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            grant_numbers: [
+                { id: 10, number: 1, created_on: "2026-01-01" },
+                { id: 20, number: 2, created_on: "2026-01-01" }
+            ],
+            budget_line_items: [targetBli]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [targetBli],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleSetBudgetLineForEditingById("target");
+        });
+
+        // Simulate the grant-number dropdown reassigning the BLI to grant number #2.
+        act(() => {
+            result.current.setGrantNumberNumber(2);
+        });
+
+        act(() => {
+            result.current.handleEditBLI({ preventDefault: vi.fn() });
+        });
+
+        expect(dispatchMock).toHaveBeenCalledWith({
+            type: "UPDATE_BUDGET_LINE_ITEM",
+            payload: expect.objectContaining({
+                id: "target",
+                grant_number_number: 2,
+                grant_number_id: 20
+            })
+        });
+    });
+
+    it("disassociates a grant BLI (saves with grant_number_id: null) when its grant number can't be resolved", async () => {
+        // Grant agreement with a BLI that references grant number 7, which is no longer present
+        // in grant_numbers (deleted mid-edit). The save should succeed and disassociate the BLI,
+        // mirroring how addServiceComponentIdToBLI silently nulls an unresolved SC link.
         useEditAgreementMock.mockReturnValue({
             agreement: { id: 42, team_members: [] },
             services_components: [],
@@ -946,10 +1327,9 @@ describe("useCreateBLIsAndSCs", () => {
             await result.current.handleSave(false);
         });
 
-        // The link resolution throws before any BLI is written, so the user sees an error alert
-        // rather than a BLI silently saved with grant_number_id: null.
-        expect(addBudgetLineItemMock).not.toHaveBeenCalled();
-        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+        // BLI is saved with grant_number_id: null — disassociated, not errored.
+        expect(addBudgetLineItemMock).toHaveBeenCalledWith(expect.objectContaining({ grant_number_id: null }));
+        expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
     });
 });
 

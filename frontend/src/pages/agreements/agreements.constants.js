@@ -61,7 +61,8 @@ export const AgreementFields = {
     Name: "Name",
     NofoNumber: "NofoNumber",
     AlnNumber: "AlnNumber",
-    GrantFundingPeriod: "GrantFundingPeriod"
+    GrantFundingPeriod: "GrantFundingPeriod",
+    NofoPeriod: "NofoPeriod"
 };
 
 export const AGREEMENT_NICKNAME_LABEL = "Agreement Nickname or Acronym";

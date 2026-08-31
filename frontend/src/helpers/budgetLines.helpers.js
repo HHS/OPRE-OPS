@@ -255,6 +255,26 @@ export const groupByGrantNumber = (budgetLines, grantNumbers = []) => {
     }
 };
 
+const findGrantNumberByNumber = (grantNumbers, number) => {
+    if (!grantNumbers) return undefined;
+    // Coerce both sides to string: grouping keys (grant_number_number) can arrive as
+    // strings from editor/form state while GrantNumber.number is numeric, so a strict
+    // === comparison would fail to resolve and metadata would silently render blank.
+    return grantNumbers.find((gn) => String(gn.number) === String(number));
+};
+
+export const findGrantPeriodStart = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_start;
+};
+
+export const findGrantPeriodEnd = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_end;
+};
+
+export const findGrantDescription = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.description;
+};
+
 /**
  * Returns whether the given budget line is permanent.
  * @param {BudgetLine} budgetLine - The budget line to check.
@@ -283,6 +303,18 @@ export const canLabel = (budgetLine) =>
  * @returns {string} The BLI label of the budget line.
  */
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : NO_DATA);
+
+/**
+ * Returns the display value for a budget line's CLIN column (awarded contract agreements only).
+ * @param {BudgetLine} budgetLine - The budget line to get the CLIN display value from.
+ * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or an em dash.
+ */
+export const getClinDisplayValue = (budgetLine) => {
+    if (budgetLine?.status === "DRAFT") {
+        return "N/A";
+    }
+    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "—";
+};
 
 /**
  * @typedef ItemCount
@@ -408,6 +440,8 @@ export const getProcurementShopLabel = (budgetLine) => {
  * @param {function} budgetLineTrigger - Function to fetch budget lines with pagination.
  * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
+ * @param {number} [bliCount] - Total budget line count (fallback when _meta is absent).
+ * @param {boolean} [includeClin] - Whether to include a CLIN column (awarded contract agreements only).
  */
 export const handleExport = async (
     exportTableToXlsx,
@@ -417,7 +451,8 @@ export const handleExport = async (
     budgetLineTrigger,
     serviceComponentTrigger,
     portfolioTrigger,
-    bliCount = 0
+    bliCount = 0,
+    includeClin = false
 ) => {
     try {
         if (!budgetLineItems || budgetLineItems.length === 0) {
@@ -474,6 +509,8 @@ export const handleExport = async (
             "Project Type",
             "Agreement",
             "SC",
+            // CLIN column (awarded contract agreements only) is inserted right after SC.
+            ...(includeClin ? ["CLIN"] : []),
             "Agreement Type",
             "Description",
             "Obligate By",
@@ -513,6 +550,8 @@ export const handleExport = async (
                             ? (budgetLine.grant_number?.display_title ??
                               (budgetLine.grant_number?.number ? `Grant ${budgetLine.grant_number.number}` : NO_DATA))
                             : budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        // CLIN column (awarded contract agreements only), inserted right after SC.
+                        ...(includeClin ? [getClinDisplayValue(budgetLine)] : []),
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
                         budgetLine.line_description,
                         formatDateNeeded(budgetLine?.date_needed ?? ""),
@@ -527,7 +566,8 @@ export const handleExport = async (
                     ];
                 },
             filename: "budget_lines",
-            currencyColumns: [11, 13]
+            // A leading CLIN column shifts SubTotal and Procurement shop fee one column to the right.
+            currencyColumns: includeClin ? [12, 14] : [11, 13]
         });
     } catch (error) {
         console.error("Failed to export data:", error);

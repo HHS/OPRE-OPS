@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -154,6 +154,7 @@ const Agreement = () => {
     }
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditableForProcurementTracker =
@@ -306,6 +307,7 @@ const Agreement = () => {
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={isAgreementAwarded ?? false}
                         isEditableForProcurementTracker={isEditableForProcurementTracker}
+                        isGrant={isGrant}
                     />
                 </section>
 
@@ -346,7 +348,16 @@ const Agreement = () => {
                     />
                     <Route
                         path="procurement-tracker"
-                        element={<AgreementProcurementTracker agreement={agreement} />}
+                        element={
+                            isGrant ? (
+                                <Navigate
+                                    to={`/agreements/${agreement?.id}`}
+                                    replace
+                                />
+                            ) : (
+                                <AgreementProcurementTracker agreement={agreement} />
+                            )
+                        }
                     />
                     <Route
                         path="documents"

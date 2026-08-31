@@ -118,11 +118,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         if is_immediate_delete:
             with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-                _, status_code = service.delete(id)
+                _, status_code, _ = service.delete(id)
                 meta.metadata.update({"deleted_bli": old_bli_dict})
                 return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, status_code)
 
-        _, status_code = service.delete(id)
+        _, status_code, _ = service.delete(id)
         return make_response_with_headers(
             {"message": "BudgetLineItem deletion submitted for approval", "id": id}, status_code
         )

@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import {
     BLI_STATUS,
     getBudgetLineCreatedDate,
@@ -7,6 +8,9 @@ import {
     hasAnyBliInSelectedStatus,
     groupByServicesComponent,
     groupByGrantNumber,
+    findGrantPeriodStart,
+    findGrantPeriodEnd,
+    findGrantDescription,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -15,7 +19,8 @@ import {
     getTooltipLabel,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel,
-    calculateProcShopFeePercentage
+    calculateProcShopFeePercentage,
+    handleExport
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -723,5 +728,170 @@ describe("calculateProcShopFeePercentage", () => {
     it("returns 0 when agreement is null", () => {
         const bli = { procurement_shop_fee: null, agreement: null };
         expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+});
+
+describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () => {
+    const grantNumbers = [
+        { number: 1, period_start: "2026-01-01", period_end: "2026-12-31", description: "First grant" },
+        { number: 2, period_start: "2027-01-01", period_end: "2027-12-31", description: "Second grant" },
+        { number: 3, period_start: null, period_end: null, description: null }
+    ];
+
+    describe("findGrantPeriodStart", () => {
+        it("returns period_start for a matching grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 1)).toBe("2026-01-01");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodStart(null, 1)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is undefined", () => {
+            expect(findGrantPeriodStart(undefined, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when period_start is null on the matched grant", () => {
+            expect(findGrantPeriodStart(grantNumbers, 3)).toBeNull();
+        });
+
+        it("returns undefined for the unassociated bucket (number 0)", () => {
+            expect(findGrantPeriodStart(grantNumbers, 0)).toBeUndefined();
+        });
+
+        it("resolves a string grouping key against a numeric grant number", () => {
+            // Grouping keys (grant_number_number) can arrive as strings from editor/form state
+            // while GrantNumber.number is numeric; the lookup must still resolve.
+            expect(findGrantPeriodStart(grantNumbers, "1")).toBe("2026-01-01");
+        });
+    });
+
+    describe("findGrantPeriodEnd", () => {
+        it("returns period_end for a matching grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 2)).toBe("2027-12-31");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodEnd(null, 1)).toBeUndefined();
+        });
+    });
+
+    describe("findGrantDescription", () => {
+        it("returns description for a matching grant number", () => {
+            expect(findGrantDescription(grantNumbers, 1)).toBe("First grant");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantDescription(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantDescription(null, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when description is null on the matched grant", () => {
+            expect(findGrantDescription(grantNumbers, 3)).toBeNull();
+        });
+    });
+});
+
+describe("handleExport", () => {
+    /** Build a minimal fetched BLI shaped like the export's paginated response. */
+    const makeBli = (overrides = {}) => ({
+        id: 100,
+        status: "PLANNED",
+        services_component_id: 1,
+        portfolio_id: 1,
+        fiscal_year: 2044,
+        amount: 1000,
+        fees: 50,
+        proc_shop_fee_percentage: 5,
+        line_description: "desc",
+        comments: "note",
+        in_review: false,
+        date_needed: "2044-06-01",
+        can: { display_name: "CAN-1" },
+        clin: { id: 9, number: 42 },
+        agreement: {
+            name: "Agreement 1",
+            agreement_type: "CONTRACT",
+            project: { title: "Project 1", project_type: "RESEARCH" },
+            procurement_shop: { abbr: "GCS" }
+        },
+        ...overrides
+    });
+
+    /** Run handleExport with mocked triggers and return the object passed to exportTableToXlsx. */
+    const runExport = async (fetchedBlis, includeClin) => {
+        const exportTableToXlsx = vi.fn().mockResolvedValue(undefined);
+        const setIsExporting = vi.fn();
+        const budgetLineTrigger = vi.fn(() => Promise.resolve({ data: fetchedBlis }));
+        const serviceComponentTrigger = vi.fn((id) => ({
+            unwrap: () => Promise.resolve({ id, display_name: `SC ${id}` })
+        }));
+        const portfolioTrigger = vi.fn((id) => ({
+            unwrap: () => Promise.resolve({ id, name: `Portfolio ${id}` })
+        }));
+
+        await handleExport(
+            exportTableToXlsx,
+            setIsExporting,
+            { agreementIds: [1] },
+            fetchedBlis,
+            budgetLineTrigger,
+            serviceComponentTrigger,
+            portfolioTrigger,
+            fetchedBlis.length,
+            includeClin
+        );
+
+        expect(exportTableToXlsx).toHaveBeenCalledTimes(1);
+        return exportTableToXlsx.mock.calls[0][0];
+    };
+
+    it("omits the CLIN column and uses currencyColumns [11, 13] by default", async () => {
+        const args = await runExport([makeBli()], false);
+
+        expect(args.headers).not.toContain("CLIN");
+        expect(args.currencyColumns).toEqual([11, 13]);
+        // SubTotal / Procurement shop fee sit at the unshifted indices.
+        expect(args.headers[11]).toBe("SubTotal");
+        expect(args.headers[13]).toBe("Procurement shop fee");
+    });
+
+    it("inserts the CLIN column after SC and shifts currencyColumns to [12, 14] when includeClin is true", async () => {
+        const args = await runExport([makeBli()], true);
+
+        expect(args.headers[5]).toBe("SC");
+        expect(args.headers[6]).toBe("CLIN");
+        expect(args.currencyColumns).toEqual([12, 14]);
+        expect(args.headers[12]).toBe("SubTotal");
+        expect(args.headers[14]).toBe("Procurement shop fee");
+    });
+
+    it("exports 'N/A' in the CLIN column for a DRAFT budget line", async () => {
+        const args = await runExport([makeBli({ status: "DRAFT" })], true);
+        const row = args.rowMapper(makeBli({ status: "DRAFT" }));
+        expect(row[6]).toBe("N/A");
+    });
+
+    it("exports the CLIN number for a non-DRAFT budget line with an assigned CLIN", async () => {
+        const args = await runExport([makeBli()], true);
+        const row = args.rowMapper(makeBli({ clin: { id: 9, number: 42 } }));
+        expect(row[6]).toBe(42);
+    });
+
+    it("exports an em-dash for a non-DRAFT budget line with no CLIN", async () => {
+        const args = await runExport([makeBli()], true);
+        const row = args.rowMapper(makeBli({ clin: null }));
+        expect(row[6]).toBe("—");
     });
 });

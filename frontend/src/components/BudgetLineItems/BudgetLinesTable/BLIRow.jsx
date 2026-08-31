@@ -5,6 +5,7 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
+    getClinDisplayValue,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
@@ -20,7 +21,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
-import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
 /**
  * @typedef {Object} BLIRowProps
@@ -33,6 +34,7 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
+ * @property {boolean} [showClinColumn] - Whether to show the CLIN cell (awarded contract agreements only).
  */
 
 /**
@@ -48,7 +50,8 @@ const BLIRow = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isBLIInCurrentWorkflow = false,
-    isGrant = false
+    isGrant = false,
+    showClinColumn = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -61,6 +64,7 @@ const BLIRow = ({
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
@@ -93,13 +97,25 @@ const BLIRow = ({
                     BLILabel(budgetLine)
                 )}
             </td>
+            {showClinColumn && !isGrant && <td>{getClinDisplayValue(budgetLine)}</td>}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
-                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)}`}
+                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)} ${
+                    isReviewMode && isOutsidePopRange ? "table-item-error" : ""
+                }`}
             >
-                {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
+                {isReviewMode && isOutsidePopRange ? (
+                    <Tooltip
+                        label="Obligate By date is outside the agreement’s Period of Performance"
+                        position="right"
+                    >
+                        <span>{formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}</span>
+                    </Tooltip>
+                ) : (
+                    formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)
+                )}
             </td>
             <td>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
             <td className={addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)}>
@@ -139,7 +155,7 @@ const BLIRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={isGrant ? 7 : 9}
+            colSpan={isGrant ? 7 : showClinColumn ? 10 : 9}
             className="border-top-none"
             style={expandedRowBGColor}
         >
