@@ -1110,7 +1110,7 @@ describe("useCreateBLIsAndSCs", () => {
             expect(successCall.redirectUrl).toBe("/agreements/1/budget-lines");
         });
 
-        it("showSuccessMessage uses blocker.nextLocation.pathname as redirectUrl when savedViaModal is true", async () => {
+        it("showSuccessMessage uses blocker.location.pathname as redirectUrl when savedViaModal is true", async () => {
             addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 11, number: 1 }) });
 
             const { result } = renderSubject({ continueOverRide: undefined });
