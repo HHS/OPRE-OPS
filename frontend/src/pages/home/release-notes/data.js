@@ -6,6 +6,88 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-08-26",
+        version: "1.456.0",
+        changes: [
+            {
+                id: "0001",
+                subject: "Create a grant",
+                type: "New Feature",
+                description:
+                    "You can now create grants in OPS! This includes adding grant-specific details such as the NOFO number, budget periods, ALN numbers and grant numbers."
+            },
+            {
+                id: "0002",
+                subject: "Displaying Division Director and Deputy Director on portfolios",
+                type: "New Feature",
+                description:
+                    "The portfolio summary section now displays the Division Director and Deputy Director next to the Team Leader, so you can easily see who manages each portfolio."
+            },
+            {
+                id: "0003",
+                subject: "Agreement PoP validation",
+                type: "New Feature",
+                description:
+                    "We added validation to improve data accuracy by ensuring a budget line's Obligate By date falls within the agreement's period of performance."
+            },
+            {
+                id: "0004",
+                subject: "Alphabetical sorting on agreement",
+                type: "Fixes",
+                description:
+                    "We fixed a bug related to the default sort order in the agreements list. It now sorts the agreement name alphabetically by default."
+            },
+            {
+                id: "0005",
+                subject: "Project dropdown now shows all projects",
+                type: "Fixes",
+                description:
+                    "We fixed a bug related to the project dropdown not displaying all available projects in OPS."
+            },
+            {
+                id: "0006",
+                subject: "Reducing approvals across OPS",
+                type: "Improvements",
+                description:
+                    "Moving budget lines from Draft to Planned (and edits within Planned status) no longer requires an approval from a division director, streamlining routine budget work."
+            },
+            {
+                id: "0007",
+                subject: "Editing procurement tracker notes",
+                type: "Improvements",
+                description:
+                    "You can now save notes in the procurement tracker steps 1\u20136 at any time, including before or after steps are completed. This allows you to provide updates on procurement status as you go."
+            }
+        ]
+    },
+    {
+        releaseDate: "2026-07-31",
+        version: "1.440.1",
+        changes: [
+            {
+                id: "0001",
+                subject: "Procurement tracker step 5",
+                type: "New Feature",
+                description:
+                    "The procurement tracker is available through step 5 for pre-award. During this step, CORs or other team members request pre-award approval on their agreements to confirm everything looks good before uploading the final consensus memo to the HHS Consolidated Acquisition Solution (HCAS). We are just wrapping up one last part of step 5 for the budget team to submit the requisition."
+            },
+            {
+                id: "0002",
+                subject: "Unique agreement name validation",
+                type: "New Feature",
+                description:
+                    "We added validation to improve data accuracy by preventing duplicate agreement titles or nicknames."
+            },
+            {
+                id: "0003",
+                subject: "Displaying a CAN's nickname",
+                type: "New Feature",
+                description:
+                    "The CAN dropdown now displays the CAN nickname alongside the number for easier identification."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-06-17",
         version: "1.413.3",
         changes: [
