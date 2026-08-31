@@ -57,6 +57,24 @@ describe("DetailsTabs", () => {
         expect(screen.getByText("SCs & Budget Lines")).toBeInTheDocument();
     });
 
+    it("renders 'Grants & Budget Lines' tab label for grant agreements", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        isGrant={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("Grants & Budget Lines")).toBeInTheDocument();
+        expect(screen.queryByText("SCs & Budget Lines")).not.toBeInTheDocument();
+    });
+
     it("shows developed-only tabs when agreement is developed", () => {
         render(
             <Provider store={store}>
@@ -74,6 +92,28 @@ describe("DetailsTabs", () => {
         expect(screen.getByText("Award & Modifications")).toBeInTheDocument();
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
         expect(screen.getByText("Documents")).toBeInTheDocument();
+    });
+
+    it("does not show Award & Modifications, Procurement Tracker, or Documents tabs for grants", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        hasInExecutionBli={true}
+                        isGrant={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Grants & Budget Lines")).toBeInTheDocument();
+        expect(screen.queryByText("Award & Modifications")).not.toBeInTheDocument();
+        expect(screen.queryByText("Procurement Tracker")).not.toBeInTheDocument();
+        expect(screen.queryByText("Documents")).not.toBeInTheDocument();
     });
 
     it("does not show developed-only tabs when agreement is not developed", () => {

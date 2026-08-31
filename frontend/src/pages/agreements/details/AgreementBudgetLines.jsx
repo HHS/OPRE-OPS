@@ -27,8 +27,11 @@ import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
     findGrantDescription,
+    findGrantee,
+    findGrantOrganizationType,
     findGrantPeriodEnd,
     findGrantPeriodStart,
+    findGrantState,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -278,7 +281,8 @@ const AgreementBudgetLines = ({
                                 ))}
                         </div>
                         <p className="font-sans-sm">
-                            This is a list of all services components and budget lines within this agreement.
+                            This is a list of all {isGrant ? "grant numbers" : "services components"} and budget lines
+                            within this agreement.
                         </p>
                     </div>
                 </>
@@ -329,6 +333,9 @@ const AgreementBudgetLines = ({
                         withMetadata={true}
                         periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
                         periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                        granteeRecipient={findGrantee(grantNumbers, group.grantNumberNumber)}
+                        organizationType={findGrantOrganizationType(grantNumbers, group.grantNumberNumber)}
+                        state={findGrantState(grantNumbers, group.grantNumberNumber)}
                         description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                     >
                         {group.budgetLines.length > 0 ? (

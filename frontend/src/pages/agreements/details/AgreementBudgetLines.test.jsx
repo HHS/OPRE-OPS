@@ -180,6 +180,89 @@ describe("AgreementBudgetLines", () => {
         });
     });
 
+    describe("Grant number metadata wiring", () => {
+        // A real super user so the grant accordion section renders in full.
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const renderGrantAgreement = (agreement) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={agreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("resolves award-time fields from the grant number onto the rendered accordion", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({
+                data: [
+                    {
+                        id: 10,
+                        number: 1,
+                        description: "Test grant description",
+                        period_start: "2026-01-15",
+                        period_end: "2026-06-30",
+                        grantee_name: "University of Example",
+                        organization_type: "Educational Institution",
+                        state: "NY"
+                    }
+                ],
+                isLoading: false
+            });
+
+            renderGrantAgreement({
+                ...mockAgreement,
+                agreement_type: "GRANT",
+                budget_line_items: []
+            });
+
+            expect(screen.getByText("Test grant description")).toBeInTheDocument();
+            expect(screen.getByText("University of Example")).toBeInTheDocument();
+            expect(screen.getByText("Educational Institution")).toBeInTheDocument();
+            expect(screen.getByText("NY")).toBeInTheDocument();
+            expect(screen.getByText("1/15/2026")).toBeInTheDocument();
+            expect(screen.getByText("6/30/2026")).toBeInTheDocument();
+        });
+
+        test("falls back to TBD when the grant number has no award-time fields yet", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({
+                data: [{ id: 10, number: 1 }],
+                isLoading: false
+            });
+
+            renderGrantAgreement({
+                ...mockAgreement,
+                agreement_type: "GRANT",
+                budget_line_items: []
+            });
+
+            // PoP Start, PoP End, Grantee Recipient, Organization Type, State all fall back to "TBD"
+            expect(screen.getAllByText("TBD")).toHaveLength(5);
+        });
+    });
+
     describe("Grant lifecycle locks", () => {
         // A super user so the Edit button would render if editing were allowed; the lock, not the
         // user's permission, is what hides it. Regular users would hide the button regardless.
