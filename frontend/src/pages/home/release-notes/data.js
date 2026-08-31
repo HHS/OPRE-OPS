@@ -84,6 +84,10 @@ export const data = [
                 type: "New Feature",
                 description:
                     "The CAN dropdown now displays the CAN nickname alongside the number for easier identification."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-06-17",
         version: "1.413.3",
         changes: [
