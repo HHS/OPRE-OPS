@@ -485,7 +485,7 @@ describe("Awarded Agreement", () => {
         checkAgreementHistory();
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
             "have.text",
-            "Power User changed the notes."
+            "Admin Power User changed the notes."
         );
     });
 });

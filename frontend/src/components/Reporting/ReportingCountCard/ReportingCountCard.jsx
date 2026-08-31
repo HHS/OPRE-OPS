@@ -30,7 +30,7 @@ const AGREEMENT_TYPE_COLORS = {
 
 const CountColumn = ({ title, total, types, labelMap, getTagProps }) => (
     <div className={styles.column}>
-        <h3 className={styles.columnHeader}>{title}</h3>
+        <h3 className="margin-0 margin-bottom-1 font-12px text-base-dark text-normal">{title}</h3>
         <p className={styles.total}>{total}</p>
         <div className={styles.tagList}>
             {types.map(({ type, count }) => (

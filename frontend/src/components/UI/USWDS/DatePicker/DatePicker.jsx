@@ -82,6 +82,30 @@ function DatePicker({
         }
     }, [value]);
 
+    // USWDS clones the React-rendered input once at mount to build the visible
+    // external input, so subsequent className changes on the React node don't
+    // reach it. Toggle the error class directly on the cloned input.
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.classList.toggle("usa-input--error", messages.length > 0);
+        }
+    }, [messages.length]);
+
+    // Sync disabled state to the cloned input and calendar button when isDisabled prop changes
+    // USWDS clones elements at mount, so we must imperatively sync the disabled attribute
+    useEffect(() => {
+        if (!inputRef.current || !datePickerRef.current) return;
+
+        // Update the cloned input
+        inputRef.current.disabled = isDisabled;
+
+        // Update the calendar toggle button
+        const toggleButton = datePickerRef.current.querySelector(".usa-date-picker__button");
+        if (toggleButton) {
+            toggleButton.disabled = isDisabled;
+        }
+    }, [isDisabled]);
+
     const datePickerAttributes = {
         ...(minDate && { "data-min-date": getDateString(minDate) }),
         ...(maxDate && { "data-max-date": getDateString(maxDate) })

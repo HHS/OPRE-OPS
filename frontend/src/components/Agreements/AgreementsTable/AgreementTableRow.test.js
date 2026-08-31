@@ -213,6 +213,27 @@ describe("AgreementTableRow", () => {
             expect(editButton).not.toBeDisabled();
         });
 
+        test("super user can edit GRANT agreements from the table row", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], grantAgreement, true);
+
+            const user = userEvent.setup();
+
+            // Hover over the table row to activate it and show ChangeIcons
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            // Should see edit button that is not disabled
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).not.toBeDisabled();
+        });
+
         test("super user sees edit button enabled (and no locked message tooltip)", async () => {
             // API returns isEditable: true for super users
             const agreementWithoutUserOnTeam = {
@@ -342,6 +363,43 @@ describe("AgreementTableRow", () => {
             const editButton = screen.getByTestId("edit-row");
             expect(editButton).toBeInTheDocument();
             expect(editButton).toBeDisabled();
+        });
+
+        test("regular user can edit GRANT agreements from the table row when they are a team member", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], grantAgreement);
+
+            const user = userEvent.setup();
+
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).not.toBeDisabled();
+        });
+
+        test("grant agreement expanded row hides contract-only fields", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], grantAgreement);
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+            expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+            expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
         });
 
         test("regular user can edit editable agreements of developed type when user is on team", async () => {

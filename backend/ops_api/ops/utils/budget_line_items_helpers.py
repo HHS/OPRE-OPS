@@ -40,6 +40,8 @@ def convert_BLI_status_name_to_pretty_string(status_name):
         return BudgetLineItemStatus.IN_EXECUTION.__str__()
     elif status_name == "OBLIGATED":
         return BudgetLineItemStatus.OBLIGATED.__str__()
+    elif status_name == "PLANNED_MOD":
+        return BudgetLineItemStatus.PLANNED_MOD.__str__()
     else:
         return BudgetLineItemStatus.DRAFT.__str__()
 
@@ -80,26 +82,112 @@ def create_budget_line_item_instance(agreement_type: AgreementType, data: dict[s
     return factory(**data)
 
 
-def _bli_has_editable_status(budget_line_item):
-    """A utility function that determines if a BLI has an editable status"""
-    return is_super_user(current_user, current_app) or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-    ]
+EDITABLE_STATUSES = [
+    BudgetLineItemStatus.DRAFT,
+    BudgetLineItemStatus.PLANNED,
+    BudgetLineItemStatus.IN_EXECUTION,
+]
 
 
-def is_bli_editable(budget_line_item):
-    """A utility function that determines if a BLI is editable"""
-    editable = _bli_has_editable_status(budget_line_item)
+def compute_bli_editable_status_only(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Lock-free editability core: status + in-review + OBE only (no DB queries).
+
+    This is the base editability rule shared by the meta builder and the update write path.
+    It deliberately does NOT apply the pre-award / post-pre-award locks (OPS-2280): those locks
+    carry per-caller exceptions (Budget Team bypass, clin_id-only edits) that the write path
+    handles explicitly, so re-applying them here would double-block those exception cases. The
+    lock-aware view for the pen/trash meta is ``compute_bli_editable`` below.
+    """
+    if budget_line_item is None:
+        return False
+
+    editable = is_super or budget_line_item.status in EDITABLE_STATUSES
 
     # if the BLI is in review or is OBE, it cannot be edited
-    if budget_line_item.in_review:
+    if in_review:
         editable = False
 
-    if not is_super_user(current_user, current_app) and budget_line_item.is_obe:
+    if not is_super and budget_line_item.is_obe:
         editable = False
 
     return editable
+
+
+def compute_bli_editable(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Single source of truth for the editability META (no DB queries).
+
+    The list-meta builder and single-item GET meta delegate here so the pen-icon state cannot
+    drift from the write-path rules. It layers the pre-award / post-pre-award locks (OPS-2280) on
+    top of ``compute_bli_editable_status_only``.
+
+    These locks mirror the write-path guards in the update service (_validation) so the editability
+    meta and the PATCH validation stay in lockstep — the pen icon must not be clickable when the
+    edit would be rejected. Super users are NOT exempt from these locks (OPS-2280). Editing is
+    allowed DURING pre-award steps; it is blocked only while a pre-award approval request is
+    awaiting a decision, and permanently once pre-award is fully approved. (The write path
+    additionally allows Budget Team edits and clin_id-only edits after the locks; those are
+    per-caller/per-request nuances the meta can't express, so the pen shows as locked here.)
+    """
+    if not compute_bli_editable_status_only(budget_line_item, in_review, is_super):
+        return False
+
+    if is_pre_award_in_review(budget_line_item.agreement):
+        return False
+
+    if is_post_pre_award_locked(budget_line_item.agreement):
+        return False
+
+    return True
+
+
+def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) -> str | None:
+    """Human-readable reason a BLI is locked that the frontend cannot derive on its own.
+
+    Covers the pre-award / post-pre-award locks (OPS-2280), since the BLI payload carries no
+    tracker-step data. Returns None when none of those blocks apply. Super users are NOT exempt
+    from these locks, so they receive the message too. The in-review reason is suppressed when the
+    BLI already has a change request in review (``in_review``), since that tooltip is derived
+    frontend-side from the change requests themselves.
+    """
+    if budget_line_item is None:
+        return None
+    if not in_review and is_pre_award_in_review(budget_line_item.agreement):
+        return "This budget line can't be edited while Pre-Award Approval is in review."
+    if is_post_pre_award_locked(budget_line_item.agreement):
+        return "This budget line can't be edited after Pre-Award Approval has been completed."
+    return None
+
+
+def compute_bli_is_deletable(budget_line_item, in_review: bool, is_super: bool) -> bool:
+    """Single source of truth for whether the delete control should be enabled.
+
+    Mirrors editability exactly (delegates to ``compute_bli_editable``): a BLI is deletable when it
+    has an editable status (DRAFT/PLANNED/IN_EXECUTION), is not in review, is not OBE (unless super),
+    and its agreement's Pre-Award approval is neither in review nor fully completed. DRAFT deletes
+    immediately; PLANNED/IN_EXECUTION deletions route through an approval change request (handled in
+    the service). Note the service's ``delete`` additionally hard-deletes DRAFT lines and super-user
+    deletes ahead of this gate, so those bypass the locks even though this meta reports the control
+    as disabled — the conservative (locked-looking) direction, never clickable-then-erroring.
+    """
+    if budget_line_item is None:
+        return False
+    return compute_bli_editable(budget_line_item, in_review, is_super)
+
+
+def is_bli_editable(budget_line_item):
+    """A utility function that determines if a BLI has an editable status (lock-free).
+
+    Used by the update write path (``_validation``) as the generic fallback AFTER it has already
+    applied the pre-award / post-pre-award locks with their per-caller exceptions (Budget Team
+    bypass, clin_id-only edits). It therefore intentionally uses the lock-free core so it does not
+    re-block those exception cases. The lock-aware editability used for the pen/trash meta is
+    ``compute_bli_editable``.
+    """
+    return compute_bli_editable_status_only(
+        budget_line_item,
+        in_review=budget_line_item.in_review,
+        is_super=is_super_user(current_user, current_app),
+    )
 
 
 def is_pre_award_in_review(agreement):
@@ -144,6 +232,78 @@ def is_pre_award_in_review(agreement):
     # All other cases when approval is requested: in review
     # This includes None, "PENDING", "APPROVED" without requisition, and any unexpected values
     return True
+
+
+def is_award_approval_requested(agreement) -> bool:
+    """
+    Check if the agreement's award approval (step 6) has been requested and is pending.
+
+    Returns True when a budget team user's BLI financial edits should bypass the
+    change-request workflow — i.e. the agreement is in the award-approval review flow.
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if award approval has been requested and is not yet resolved.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    # Check every tracker for a pending AWARD step. The tracker status is intentionally
+    # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
+    # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
+    for tracker in agreement.procurement_trackers:
+        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        if not award_step or not award_step.award_approval_requested:
+            continue
+
+        # Terminal states — approval process complete
+        if award_step.award_approval_status in ("APPROVED", "DECLINED"):
+            continue
+
+        return True
+
+    return False
+
+
+def is_post_pre_award_locked(agreement) -> bool:
+    """
+    Check if the agreement is in the post-pre-award locked state.
+
+    Returns True once pre-award has been fully approved (DD approved + Budget Team
+    submitted requisition). BLI editing is locked from this point on permanently.
+
+    Exceptions (handled by callers):
+    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is fully approved and BLIs should be locked.
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    # Scope to the active tracker only — consistent with is_pre_award_in_review and
+    # is_award_approval_requested, and prevents a completed tracker from a prior
+    # procurement cycle permanently locking BLIs on a new active cycle.
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    if not tracker:
+        return False
+
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
+    if not pre_award_step:
+        return False
+
+    return (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    )
 
 
 def bli_associated_with_agreement(id: int) -> bool:

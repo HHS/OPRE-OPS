@@ -11,6 +11,7 @@ from models import (
     ChangeRequest,
     Division,
     Document,
+    GrantNumber,
     Notification,
     Portfolio,
     PortfolioStatus,
@@ -27,12 +28,14 @@ from models import (
     ServicesComponent,
     SpecialTopic,
     User,
+    Vendor,
 )
 from ops_api.ops.document.api import DocumentItemAPI, DocumentListAPI
 from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyItemAPI,
     AgreementAgencyListAPI,
 )
+from ops_api.ops.resources.agreement_edit_bundle import AgreementEditBundleAPI
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
 from ops_api.ops.resources.agreements import (
@@ -73,6 +76,7 @@ from ops_api.ops.resources.change_requests import (
     ChangeRequestListAPI,
 )
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
+from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
@@ -101,6 +105,7 @@ from ops_api.ops.resources.procurement_tracker_steps import (
     ProcurementTrackerStepItemAPI,
     ProcurementTrackerStepListAPI,
     ProcurementTrackerStepPendingApprovalsAPI,
+    ProcurementTrackerStepPendingAwardApprovalsAPI,
     ProcurementTrackerStepPendingRequisitionsAPI,
 )
 from ops_api.ops.resources.procurement_trackers import (
@@ -129,12 +134,14 @@ from ops_api.ops.resources.special_topics import (
     SpecialTopicsListAPI,
 )
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+from ops_api.ops.resources.vendors import VendorsListAPI
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
+AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 
 # Agreement History Endpoint
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)
@@ -202,6 +209,9 @@ PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC = ProcurementTrackerSte
 PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC = ProcurementTrackerStepPendingRequisitionsAPI.as_view(
     "procurement-tracker-steps-pending-requisitions", ProcurementTrackerStep
 )
+PROCUREMENT_TRACKER_STEP_PENDING_AWARD_APPROVALS_API_VIEW_FUNC = ProcurementTrackerStepPendingAwardApprovalsAPI.as_view(
+    "procurement-tracker-steps-pending-award-approvals", ProcurementTrackerStep
+)
 # LOOKUP ENDPOINTS
 LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("lookups-agreement-reason-list")
 LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("lookups-agreement-type-list")
@@ -222,6 +232,9 @@ DIVISIONS_LIST_API_VIEW_FUNC = DivisionsListAPI.as_view("divisions-group", Divis
 # USER ENDPOINTS
 USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
+
+# VENDOR ENDPOINTS
+VENDORS_LIST_API_VIEW_FUNC = VendorsListAPI.as_view("vendors-group", Vendor)
 
 # FUNDING SUMMARY ENDPOINTS
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
@@ -272,6 +285,10 @@ NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-gr
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
+
+# GrantNumber ENDPOINTS
+GRANT_NUMBER_ITEM_API_VIEW_FUNC = GrantNumberItemAPI.as_view("grant-number-item", GrantNumber)
+GRANT_NUMBER_LIST_API_VIEW_FUNC = GrantNumberListAPI.as_view("grant-number-group", GrantNumber)
 
 # Azure SAS Token ENDPOINTS
 AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")

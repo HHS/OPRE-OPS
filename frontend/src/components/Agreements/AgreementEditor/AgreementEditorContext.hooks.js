@@ -28,9 +28,9 @@ export const defaultState = {
         contract_type: undefined,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
         research_methodologies: [],
-        special_topics: []
+        special_topics: [],
+        aln_numbers: []
     },
-    budget_lines: [],
     selected_agreement_id: undefined,
     selected_research_project: {},
     selected_project: {},
@@ -40,7 +40,11 @@ export const defaultState = {
     selected_alternate_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
     services_components: [],
-    deleted_services_components_ids: []
+    deleted_services_components_ids: [],
+    grant_numbers: [],
+    deleted_grant_numbers_ids: [],
+    budget_line_items: [],
+    deleted_budget_line_items_ids: []
 };
 export let initialState = { ...defaultState };
 
@@ -92,12 +96,31 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_SERVICE_COMPONENT": {
+            const remainingScIds = new Set(
+                state.services_components
+                    .filter((sc) => sc.number !== action.payload.number)
+                    .map((sc) => sc.id)
+                    .filter(Boolean)
+            );
             return {
                 ...state,
                 services_components: state.services_components.filter((sc) => sc.number !== action.payload.number),
                 deleted_services_components_ids: action.payload.id
                     ? [...state.deleted_services_components_ids, action.payload.id]
-                    : [...state.deleted_services_components_ids]
+                    : [...state.deleted_services_components_ids],
+                // Reconcile BLIs: clear link to deleted SC by ID so sub-components sharing
+                // a number don't incorrectly retain stale links.
+                budget_line_items: state.budget_line_items.map((bli) => {
+                    if (bli.services_component_id != null && !remainingScIds.has(bli.services_component_id)) {
+                        return {
+                            ...bli,
+                            services_component_id: null,
+                            services_component_number: 0,
+                            serviceComponentGroupingLabel: "0"
+                        };
+                    }
+                    return bli;
+                })
             };
         }
         case "REMOVE_TEAM_MEMBER": {
@@ -126,6 +149,87 @@ export function editAgreementReducer(state, action) {
                 )
             };
         }
+        case "RESEED_SERVICES_COMPONENTS": {
+            return {
+                ...state,
+                services_components: action.payload ?? [],
+                deleted_services_components_ids: []
+            };
+        }
+        case "ADD_GRANT_NUMBER": {
+            return {
+                ...state,
+                grant_numbers: [...state.grant_numbers, action.payload]
+            };
+        }
+        case "UPDATE_GRANT_NUMBER": {
+            return {
+                ...state,
+                grant_numbers: state.grant_numbers.map((gn) =>
+                    gn.number === action.payload.number ? action.payload : gn
+                )
+            };
+        }
+        case "DELETE_GRANT_NUMBER": {
+            const remainingGnIds = new Set(
+                state.grant_numbers
+                    .filter((gn) => gn.number !== action.payload.number)
+                    .map((gn) => gn.id)
+                    .filter(Boolean)
+            );
+            return {
+                ...state,
+                grant_numbers: state.grant_numbers.filter((gn) => gn.number !== action.payload.number),
+                deleted_grant_numbers_ids: action.payload.id
+                    ? [...state.deleted_grant_numbers_ids, action.payload.id]
+                    : [...state.deleted_grant_numbers_ids],
+                // Reconcile BLIs: clear link to deleted grant number so the BLI moves
+                // to the "not associated" group rather than rendering under a phantom accordion.
+                budget_line_items: state.budget_line_items.map((bli) => {
+                    if (bli.grant_number_id != null && !remainingGnIds.has(bli.grant_number_id)) {
+                        return { ...bli, grant_number_id: null, grant_number_number: 0 };
+                    }
+                    return bli;
+                })
+            };
+        }
+        case "RESEED_GRANT_NUMBERS": {
+            return {
+                ...state,
+                grant_numbers: action.payload ?? [],
+                deleted_grant_numbers_ids: []
+            };
+        }
+        case "ADD_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: [...state.budget_line_items, action.payload]
+            };
+        }
+        case "UPDATE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.map((bli) =>
+                    bli.id === action.payload.id ? action.payload : bli
+                )
+            };
+        }
+        case "DELETE_BUDGET_LINE_ITEM": {
+            return {
+                ...state,
+                budget_line_items: state.budget_line_items.filter((bli) => bli.id !== action.payload.id),
+                deleted_budget_line_items_ids: action.payload.id
+                    ? [...state.deleted_budget_line_items_ids, action.payload.id]
+                    : [...state.deleted_budget_line_items_ids]
+            };
+        }
+        case "RESEED_BUDGET_LINE_ITEMS": {
+            return {
+                ...state,
+                budget_line_items: action.payload ?? [],
+                deleted_budget_line_items_ids: []
+            };
+        }
         case "SET_RESEARCH_METHODOLOGIES": {
             return {
                 ...state,
@@ -141,6 +245,15 @@ export function editAgreementReducer(state, action) {
                 agreement: {
                     ...state.agreement,
                     special_topics: [...action.payload]
+                }
+            };
+        }
+        case "SET_ALN_NUMBERS": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    aln_numbers: [...action.payload]
                 }
             };
         }

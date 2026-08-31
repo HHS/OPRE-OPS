@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import {
     calculateTotalBudget,
+    getActivePortfolioTagTextColor,
     sortPortfoliosByStaticOrder,
     transformPortfoliosToChartData
 } from "./PortfolioSummaryCards.helpers";
@@ -519,6 +520,45 @@ describe("PortfolioSummaryCards.helpers", () => {
             transformPortfoliosToChartData(portfolios, totalBudget);
             // Original portfolio object should not have a percent field added
             expect(portfolios[0]).not.toHaveProperty("percent");
+        });
+    });
+
+    describe("getActivePortfolioTagTextColor", () => {
+        it("returns dark text for light-background portfolios", () => {
+            ["CC", "HS", "HMRF", "HV", "DO", "Non-OPRE", "OCDO"].forEach((abbr) => {
+                expect(getActivePortfolioTagTextColor(abbr)).toBe("#1B1B1B");
+            });
+        });
+
+        it("returns white text for dark-background portfolios (e.g. CW, ADR, WR)", () => {
+            ["CW", "ADR", "WR", "OD"].forEach((abbr) => {
+                expect(getActivePortfolioTagTextColor(abbr)).toBe("#FFFFFF");
+            });
+        });
+
+        it("returns dark text for HMRF (#428cae — white fails WCAG AA at 3.75:1, dark passes at 4.59:1)", () => {
+            expect(getActivePortfolioTagTextColor("HMRF")).toBe("#1B1B1B");
+        });
+
+        it("returns white text for OTIP (#1975aa — dark fails WCAG AA at 3.42:1, white passes at 5.04:1)", () => {
+            expect(getActivePortfolioTagTextColor("OTIP")).toBe("#FFFFFF");
+        });
+
+        it("is alias-aware — DD resolves to the same dark text as its primary abbreviation DO (shared color)", () => {
+            // DO is in LIGHT_BACKGROUND_PORTFOLIOS; DD is its alias and
+            // shares --portfolio-bar-graph-dd, so both must get dark text.
+            expect(getActivePortfolioTagTextColor("DO")).toBe("#1B1B1B");
+            expect(getActivePortfolioTagTextColor("DD")).toBe("#1B1B1B");
+        });
+
+        it("resolves other abbreviations sharing a light color var (e.g. DB → dark)", () => {
+            // DB also uses --portfolio-bar-graph-dd, so it must match DO's dark text.
+            expect(getActivePortfolioTagTextColor("DB")).toBe("#1B1B1B");
+        });
+
+        it("defaults to white text for unknown portfolios", () => {
+            expect(getActivePortfolioTagTextColor("UNKNOWN")).toBe("#FFFFFF");
+            expect(getActivePortfolioTagTextColor(undefined)).toBe("#FFFFFF");
         });
     });
 });

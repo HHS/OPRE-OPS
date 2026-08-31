@@ -1,5 +1,7 @@
-import { faAdd, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import EditingIndicator from "../../UI/EditingIndicator";
 import FormHeader from "../../UI/Form/FormHeader";
 import TextArea from "../../UI/Form/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
@@ -27,8 +29,10 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode (single-page edit screen).
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
+ * @param {any} [props.scFormSuite] - Vest suite used to display field-level validation errors.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
  *
  * @example
@@ -43,9 +47,26 @@ function ServicesComponentForm({
     handleCancel,
     servicesComponentsNumbers = [],
     isEditMode,
+    isReviewMode = false,
     hasUnsavedChanges,
-    workflow
+    workflow,
+    scFormSuite
 }) {
+    const [scSelectTouched, setScSelectTouched] = React.useState(false);
+    React.useEffect(() => {
+        setScSelectTouched(false);
+    }, [formKey]);
+    const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
+    React.useEffect(() => {
+        if (!scFormSuite) return;
+        scFormSuite.run({
+            servicesComponentSelect: formData.number
+        });
+        forceUpdate();
+    }, [formData.number, scFormSuite]);
+
+    const suiteErrors = scFormSuite?.get();
+
     if (!serviceTypeReq) {
         return (
             <p className="text-center margin-y-7 text-error">Please add a Service Requirement Type to the Agreement.</p>
@@ -63,47 +84,35 @@ function ServicesComponentForm({
         return option;
     });
 
-    const heading = isEditMode ? "Edit Services Components" : "Create Services Components";
-    const details = isEditMode
-        ? "When adding a new SC, a Services Component must be selected from the dropdown."
-        : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
+    const heading = isEditMode || isReviewMode ? "Edit Services Components" : "Create Services Components";
+    let details;
+    if (isReviewMode) {
+        details = undefined;
+    } else if (isEditMode) {
+        details = "When adding a new SC, a Services Component must be selected from the dropdown.";
+    } else {
+        details =
+            "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
+    }
 
     return (
         <form
             onSubmit={handleSubmit}
             id="services-component-form"
+            className={isReviewMode ? "margin-top-8" : undefined}
         >
-            <div className="display-flex flex-align-center">
-                <div>
-                    <FormHeader
-                        heading={heading}
-                        details={details}
-                    />
-                </div>
-                {isEditMode && (
-                    <div className="margin-left-auto">
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                        />
-                        <span
-                            id="editing"
-                            className="text-black"
-                        >
-                            Editing...
-                        </span>
-                    </div>
-                )}
-            </div>
+            <FormHeader
+                heading={heading}
+                details={details}
+                actions={isEditMode && <EditingIndicator />}
+            />
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">
                         <div style={{ width: "17rem" }}>
                             <ServicesComponentSelect
                                 onChange={(name, value) => {
+                                    setScSelectTouched(true);
                                     setFormData({
                                         ...formData,
                                         number: +value,
@@ -113,6 +122,9 @@ function ServicesComponentForm({
                                 value={formData?.number || ""}
                                 options={optionsWithSelected}
                                 isRequired={true}
+                                messages={
+                                    scSelectTouched ? (suiteErrors?.getErrors("servicesComponentSelect") ?? []) : []
+                                }
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (

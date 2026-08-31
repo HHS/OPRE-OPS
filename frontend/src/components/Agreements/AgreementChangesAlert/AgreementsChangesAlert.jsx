@@ -8,14 +8,18 @@ import SimpleAlert from "../../UI/Alert/SimpleAlert";
  * @param {string[]} props.changeRequests - The change requests.
  * @param {boolean} props.isAlertVisible - Whether the alert is visible.
  * @param {Function} props.setIsAlertVisible - The function to set the alert visibility.
+ * @param {string} [props.message] - Override the default message body.
  * @returns {JSX.Element} - The rendered component.
  */
-function AgreementChangesAlert({ changeRequests, isAlertVisible, setIsAlertVisible }) {
+function AgreementChangesAlert({ changeRequests, isAlertVisible, setIsAlertVisible, message }) {
     return (
         <SimpleAlert
             type="warning"
             heading="Changes In Review"
-            message="There are changes pending approval from your Division Director. After they are approved, they will update on the agreement."
+            message={
+                message ??
+                "There are changes pending approval from your Division Director. After they are approved, they will update on the agreement."
+            }
             isClosable={true}
             setIsAlertVisible={setIsAlertVisible}
             isAlertVisible={isAlertVisible}
@@ -37,6 +41,7 @@ function AgreementChangesAlert({ changeRequests, isAlertVisible, setIsAlertVisib
 AgreementChangesAlert.propTypes = {
     changeRequests: PropTypes.arrayOf(PropTypes.string),
     isAlertVisible: PropTypes.bool.isRequired,
-    setIsAlertVisible: PropTypes.func.isRequired
+    setIsAlertVisible: PropTypes.func.isRequired,
+    message: PropTypes.string
 };
 export default AgreementChangesAlert;

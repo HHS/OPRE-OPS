@@ -162,6 +162,121 @@ describe("AgreementDetailsView", () => {
         });
     });
 
+    describe("GRANT details fields", () => {
+        const grantAgreement = {
+            ...agreement,
+            agreement_type: "GRANT",
+            nofo_number: "NOFO-2026-01",
+            aln_numbers: [3, 7],
+            funding_period_months: 18
+        };
+        const mockAlternateProjectOfficer = {
+            id: 2,
+            full_name: "Jane Specialist",
+            email: "jane.specialist@example.com"
+        };
+
+        it("renders NOFO Number, ALN Numbers, and Grant Funding Period for grants", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.getByText("NOFO Number")).toBeInTheDocument();
+            expect(screen.getByText("NOFO-2026-01")).toBeInTheDocument();
+            expect(screen.getByText("ALN Numbers")).toBeInTheDocument();
+            expect(screen.getByText("3")).toBeInTheDocument();
+            expect(screen.getByText("7")).toBeInTheDocument();
+            expect(screen.getByText("Grant Funding Period")).toBeInTheDocument();
+            expect(screen.getByText("18 months")).toBeInTheDocument();
+        });
+
+        it("labels the PO/Alt-PO block as FPO / Project Specialist", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.getByText("FPO")).toBeInTheDocument();
+            expect(screen.getByText("Project Specialist")).toBeInTheDocument();
+            expect(screen.getByText("Jane Specialist")).toBeInTheDocument();
+            // Must NOT use the "Alternate ..." wording for grants
+            expect(screen.queryByText("Alternate FPO")).not.toBeInTheDocument();
+            expect(screen.queryByText("Alternate Project Officer")).not.toBeInTheDocument();
+        });
+
+        it("does not render grant-only fields for contracts", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={{ ...agreement, agreement_type: "CONTRACT" }}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={null}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            expect(screen.queryByText("NOFO Number")).not.toBeInTheDocument();
+            expect(screen.queryByText("ALN Numbers")).not.toBeInTheDocument();
+            expect(screen.queryByText("Grant Funding Period")).not.toBeInTheDocument();
+        });
+
+        it("renders NOFO Period label and formatted date range when both dates are provided", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart="2026-01-01"
+                    nofoPeriodEnd="2027-06-01"
+                />
+            );
+
+            expect(screen.getByText("NOFO Period")).toBeInTheDocument();
+            // dateToYearMonthDay uses parseInt so month/day are not zero-padded
+            expect(screen.getByText("1/1/2026 - 6/1/2027")).toBeInTheDocument();
+        });
+
+        it("renders NOFO Period with TBD tag when both dates are null", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={grantAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={mockAlternateProjectOfficer}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart={null}
+                    nofoPeriodEnd={null}
+                />
+            );
+
+            expect(screen.getByText("NOFO Period")).toBeInTheDocument();
+            expect(screen.getByText("TBD")).toBeInTheDocument();
+        });
+
+        it("does not render NOFO Period for contract agreements", () => {
+            render(
+                <AgreementDetailsView
+                    agreement={{ ...agreement, agreement_type: "CONTRACT" }}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={null}
+                    isAgreementAwarded={false}
+                    nofoPeriodStart="2026-01-01"
+                    nofoPeriodEnd="2027-06-01"
+                />
+            );
+
+            expect(screen.queryByText("NOFO Period")).not.toBeInTheDocument();
+        });
+    });
+
     it("should handle null agreement gracefully", () => {
         render(
             <AgreementDetailsView

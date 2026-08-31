@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { flushSync } from "react-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -8,6 +9,9 @@ import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
+const MemoizedDatePicker = React.memo(DatePicker);
+const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
  * @param {number} agreementId - The agreement ID.
@@ -15,11 +19,13 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  *   agreement: any,
  *   isLoading: boolean,
  *   allBudgetLines: any[],
+ *   executingBudgetLines: any[],
  *   executingTotal: number,
  *   projectOfficerName: string,
  *   alternateProjectOfficerName: string,
  *   servicesComponents: any[],
  *   groupedBudgetLinesByServicesComponent: any[],
+ *   groupedExecutingBudgetLinesByServicesComponent: any[],
  *   preAwardMemoDocuments: any[],
  *   requestorNotes: string,
  *   reviewerNotes: string,
@@ -29,6 +35,8 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
  *   setRequisitionNumber: (value: string) => void,
  *   requisitionDate: string,
  *   setRequisitionDate: (value: string) => void,
+ *   handleDateChange: (e: any) => void,
+ *   requisitionDateError: string[],
  *   attestationChecked: boolean,
  *   setAttestationChecked: (value: boolean) => void,
  *   MemoizedDatePicker,
@@ -59,8 +67,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
-
-    const MemoizedDatePicker = React.memo(DatePicker);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [requisitionDateError, setRequisitionDateError] = useState([]);
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -71,35 +79,37 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Fetch data using shared hook
     const {
         agreement,
-        isLoading,
+        isLoading: isLoadingAgreement,
+        isLoadingTrackers,
         allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        grantNumbers,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = usePreAwardApprovalData(agreementId);
 
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
+
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
 
-    // Load saved draft values when step5 data arrives
+    // Load saved draft values when step5 data arrives — always set both fields
+    // so stale empty state can't overwrite previously-saved values before this effect fires
     useEffect(() => {
         if (step5) {
-            if (step5.requisition_number) {
-                setRequisitionNumber(step5.requisition_number);
-            }
+            setRequisitionNumber(step5.requisition_number || "");
             if (step5.requisition_date) {
-                // Backend always sends YYYY-MM-DD format
-                // Convert to display format (MM/DD/YYYY) for the DatePicker
                 const displayDate = formatDateForScreen(step5.requisition_date);
-                if (displayDate) {
-                    setRequisitionDate(displayDate);
-                }
+                setRequisitionDate(displayDate || "");
+            } else {
+                setRequisitionDate("");
             }
         }
     }, [step5]);
@@ -113,11 +123,82 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER");
     }, [userRoles]);
 
-    // Form validation
-    const isFormValid = () => {
-        const formattedDate = formatDateForApi(requisitionDate);
-        return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
-    };
+    // Form validation — uses the same strict regex as handleDateChange for consistency
+    const isFormValid = () =>
+        requisitionNumber.trim() !== "" && DATE_FORMAT_REGEX.test(requisitionDate) && attestationChecked;
+
+    // Validate date format on change — only show error when something is entered but invalid
+    const handleDateChange = useCallback((/** @param {any} e */ e) => {
+        const value = e.target.value;
+        setRequisitionDate(value);
+        if (value.trim() !== "" && !DATE_FORMAT_REGEX.test(value)) {
+            setRequisitionDateError(["Date must be MM/DD/YYYY"]);
+        } else {
+            setRequisitionDateError([]);
+        }
+    }, []);
+
+    const canSaveDraft = useMemo(() => {
+        const dateIsValidIfEntered = !requisitionDate.trim() || DATE_FORMAT_REGEX.test(requisitionDate);
+        const hasCurrentValues = requisitionNumber.trim() !== "" || requisitionDate.trim() !== "";
+        const hasPriorValues = Boolean(step5?.requisition_number || step5?.requisition_date);
+        return dateIsValidIfEntered && (hasCurrentValues || hasPriorValues);
+    }, [requisitionNumber, requisitionDate, step5]);
+
+    // hasChanged tracks whether the user modified fields relative to what the server has saved.
+    // This prevents the blocker from firing on an untouched form that was pre-populated from step5.
+    const hasChanged = useMemo(() => {
+        const serverNumber = step5?.requisition_number || "";
+        const serverDate = step5?.requisition_date ? formatDateForScreen(step5.requisition_date) : "";
+        return requisitionNumber.trim() !== serverNumber.trim() || requisitionDate !== serverDate;
+    }, [requisitionNumber, requisitionDate, step5]);
+
+    /**
+     * Navigation blocker - only fires when the user has changed something AND it is saveable.
+     * Gating on both prevents (a) blocking on untouched pre-populated forms (hasChanged)
+     * and (b) showing "Save Changes" when the data cannot actually be saved (canSaveDraft).
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && canSaveDraft && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            // Capture the intended destination (full path including search/hash) so "Save Changes"
+            // can navigate there after saving rather than dropping query params like ?tab=... or filters.
+            const loc = blocker.location;
+            const destination = loc
+                ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}`
+                : "/agreements?filter=change-requests";
+            setShowModal(true);
+            setModalProps({
+                heading: "Save changes before leaving?",
+                description:
+                    "You have unsaved changes in the pre-award requisition. If you leave without saving, these changes will be lost.",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                    handleSaveDraft(destination);
+                },
+                handleSecondary: () => {
+                    setShowModal(false);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blocker.state, blocker]);
 
     // Approve handler
     const handleApprove = async () => {
@@ -152,12 +233,17 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                         }
                     }).unwrap();
 
+                    // Allow navigation after successful approval
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
                         message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
                     });
                     scrollToTop();
+                    // Use flushSync to ensure state update completes before navigation
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
                     navigate("/agreements?filter=change-requests");
                 } catch (error) {
                     setSubmitError(
@@ -169,11 +255,14 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         });
     };
 
-    // Save Draft handler (partial save without approval)
-    const handleSaveDraft = async () => {
-        // Validate at least one field is filled
-        if (!requisitionNumber.trim() && !requisitionDate.trim()) {
-            setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
+    // Save Draft handler (partial save without approval).
+    // navigateTo: optional destination — when called from the nav-away blocker, navigate to the
+    // user's original intended destination instead of the default agreements list.
+    const handleSaveDraft = async (navigateTo = "/agreements?filter=change-requests") => {
+        const nothingToSave = !requisitionNumber.trim() && !requisitionDate.trim();
+        const noPriorValues = !step5?.requisition_number && !step5?.requisition_date;
+        if (nothingToSave && noPriorValues) {
+            setSubmitError("Enter a Requisition # or Date to save a draft.");
             return;
         }
 
@@ -186,33 +275,30 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setSubmitError("");
 
         try {
-            // Build request data - only include fields with values
-            /** @type {Record<string, any>} */
-            const data = {
-                is_draft: true
-            };
-
-            // Only send requisition_number if it has a value
-            if (requisitionNumber.trim()) {
-                data.requisition_number = requisitionNumber;
-            }
-
-            // Only send requisition_date if it has a value and it's valid
+            // Validate date format if a date was entered — use strict regex consistent with handleDateChange
+            let formattedDate = null;
             if (requisitionDate.trim()) {
-                const formattedDate = formatDateForApi(requisitionDate);
-                if (formattedDate === null) {
+                if (!DATE_FORMAT_REGEX.test(requisitionDate)) {
                     setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
                     setIsSubmitting(false);
                     return;
                 }
-                data.requisition_date = formattedDate;
+                formattedDate = formatDateForApi(requisitionDate);
             }
+
+            /** @type {Record<string, any>} */
+            const data = {
+                is_draft: true,
+                requisition_number: requisitionNumber.trim() || null,
+                requisition_date: formattedDate
+            };
 
             await updateProcurementTrackerStep({
                 stepId: step5.id,
                 data
             }).unwrap();
 
+            // Allow navigation after successful save
             // Success: Show success message and redirect
             setAlert({
                 type: "success",
@@ -220,7 +306,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 message: "Requisition information has been saved. You can return later to complete the approval."
             });
             scrollToTop();
-            navigate("/agreements?filter=change-requests");
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
+            navigate(navigateTo);
 
             setIsSubmitting(false);
         } catch (error) {
@@ -233,15 +323,22 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel?",
-            description: "Any information you have entered will be discarded.",
-            actionButtonText: "Continue Editing",
-            secondaryButtonText: "Discard Changes",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+            description: "",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
-                setShowModal(false);
+                flushSync(() => {
+                    setIsNavigating(true);
+                });
+                navigate("/agreements?filter=change-requests");
             },
             handleSecondary: () => {
-                navigate("/agreements?filter=change-requests");
+                setShowModal(false);
+            },
+            closeModal: () => {
+                setShowModal(false);
             }
         });
     };
@@ -249,13 +346,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     return {
         // Data
         agreement,
-        isLoading,
+        isLoading: isLoading || isLoadingTrackers,
         allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        grantNumbers,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
         reviewerNotes,
@@ -267,6 +366,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setRequisitionNumber,
         requisitionDate,
         setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -277,6 +378,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
 
         // Handlers
         handleApprove,
@@ -286,6 +388,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Permissions
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     };
 }

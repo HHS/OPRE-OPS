@@ -150,11 +150,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines = [], isAfterA
  * @returns {boolean} - True if the agreement is not developed yet, otherwise false.
  */
 export const isNotDevelopedYet = (agreementType) => {
-    if (
-        agreementType === AgreementType.GRANT ||
-        agreementType === AgreementType.DIRECT_OBLIGATION ||
-        agreementType === AgreementType.IAA
-    ) {
+    if (agreementType === AgreementType.DIRECT_OBLIGATION || agreementType === AgreementType.IAA) {
         return true;
     }
 
@@ -287,6 +283,16 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
         AgreementFields.NickName,
         AgreementFields.SpecialTopic,
         AgreementFields.Methodologies
+    ]),
+    [AgreementType.GRANT]: new Set([
+        AgreementFields.DescriptionAndNotes,
+        AgreementFields.NickName,
+        AgreementFields.NofoNumber,
+        AgreementFields.GrantFundingPeriod,
+        AgreementFields.NofoPeriod,
+        AgreementFields.AlnNumber,
+        AgreementFields.DivisionDirectors,
+        AgreementFields.TeamLeaders
     ])
     // Add new AgreementTypes here
 };
@@ -318,6 +324,7 @@ export const cleanAgreementForApi = (data) => {
         "requesting_agency",
         "servicing_agency", // These two agency objects are not used in the backend. No need to pass them
         "services_components",
+        "grant_numbers",
         "created_by",
         "created_on",
         "updated_by",
@@ -356,6 +363,9 @@ export const cleanBudgetLineItemForApi = (data) => {
     if (data.services_component_id === 0) {
         cleanData.services_component_id = null;
     }
+    if (data.grant_number_id === 0) {
+        cleanData.grant_number_id = null;
+    }
     if (cleanData.date_needed === "--") {
         cleanData.date_needed = null;
     }
@@ -374,6 +384,12 @@ export const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.fees;
     delete cleanData.display_title;
     delete cleanData.services_component_number;
+    delete cleanData.grant_number_number;
+    // UI-only PoP window that may be attached to the BLI for the Obligate By within-PoP
+    // validation. Not a backend field — strip it so it never leaks into the API payload
+    // (defensive; the edit flow derives it live and doesn't persist it on the BLI).
+    delete cleanData.sc_period_start;
+    delete cleanData.sc_period_end;
     delete cleanData._meta;
     delete cleanData.tempChangeRequest;
     delete cleanData.financialSnapshot;
@@ -388,5 +404,43 @@ export const formatTeamMember = (team_member) => {
         id: team_member.id,
         full_name: team_member.full_name,
         email: team_member.email
+    };
+};
+
+/**
+ * Build the alert payload shown when a procurement-shop change is sent to the
+ * Division Director for approval. The agreement edit form and the review-flow
+ * edit page both render this same notice; keeping it here prevents the two
+ * call sites from drifting.
+ *
+ * @param {Object} params
+ * @param {Array}  params.budgetLines - The agreement's budget line items.
+ * @param {Object} params.oldProcurementShop - The shop currently on the agreement.
+ * @param {Object} params.newProcurementShop - The shop the user has selected.
+ * @param {string} [params.redirectUrl] - Optional redirect attached to the alert.
+ * @returns {{type: string, heading: string, message: string, redirectUrl?: string}}
+ */
+export const buildProcurementShopChangeAlert = ({
+    budgetLines,
+    oldProcurementShop,
+    newProcurementShop,
+    redirectUrl
+}) => {
+    const oldTotal = calculateAgreementTotal(budgetLines ?? [], oldProcurementShop?.fee_percentage ?? 0);
+    const newTotal = calculateAgreementTotal(budgetLines ?? [], newProcurementShop?.fee_percentage ?? 0);
+    const procurementShopChanges = `Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop?.name} (${newProcurementShop?.abbr})`;
+    const feeRateChanges = `Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop?.fee_percentage}%`;
+    const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+
+    return {
+        type: "success",
+        heading: "Changes Sent to Approval",
+        message:
+            `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+            `<strong>Pending Changes:</strong>\n` +
+            `<ul><li>${procurementShopChanges}</li>` +
+            `<li>${feeRateChanges}</li>` +
+            `<li>${feeTotalChanges}</li></ul>`,
+        ...(redirectUrl ? { redirectUrl } : {})
     };
 };

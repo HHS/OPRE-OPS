@@ -2,6 +2,10 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import useNavigationBlocker from "./useNavigationBlocker.hooks";
 
+vi.mock("./proceedIfBlocked", () => ({
+    proceedIfBlocked: vi.fn().mockResolvedValue(undefined)
+}));
+
 let blockerCallback;
 const mockReset = vi.fn();
 const mockProceed = vi.fn();
@@ -88,8 +92,25 @@ describe("useNavigationBlocker", () => {
         const { result } = renderHook(() => useNavigationBlocker(defaultProps));
 
         expect(result.current.showBlockerModal).toBe(true);
-        expect(result.current.blockerModalProps.heading).toBe("You have unsaved changes");
-        expect(result.current.blockerModalProps.actionButtonText).toBe("Save Changes");
+        expect(result.current.blockerModalProps.heading).toBe("Save changes before leaving?");
+        expect(result.current.blockerModalProps.description).toBe(
+            "You have unsaved changes. If you leave without saving, these changes will be lost."
+        );
+        expect(result.current.blockerModalProps.actionButtonText).toBe("Save");
+        expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
+    });
+
+    it("shows approval-variant modal copy when requiresApproval is true", () => {
+        blockerState = "blocked";
+
+        const { result } = renderHook(() => useNavigationBlocker({ ...defaultProps, requiresApproval: true }));
+
+        expect(result.current.showBlockerModal).toBe(true);
+        expect(result.current.blockerModalProps.heading).toBe("Save changes before leaving?");
+        expect(result.current.blockerModalProps.description).toBe(
+            "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
+        );
+        expect(result.current.blockerModalProps.actionButtonText).toBe("Save & send to approval");
         expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
     });
 

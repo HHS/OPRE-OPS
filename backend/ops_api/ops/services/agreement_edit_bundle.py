@@ -1,0 +1,424 @@
+"""Atomic-edit orchestrator for agreement, services components, and budget line items.
+
+Used by the ``PATCH /agreements/<id>/edit-bundle`` endpoint to apply every change in a
+single SQLAlchemy transaction. If any step raises, the entire bundle is rolled back so
+no partial writes survive.
+
+The orchestrator delegates to the existing per-resource services with their new
+``commit=False`` flag so individual writes flush (to assign ids and surface integrity
+errors immediately) without committing.
+"""
+
+from dataclasses import dataclass, field
+from types import SimpleNamespace
+from typing import Any
+
+from flask_jwt_extended import get_current_user
+from loguru import logger
+from marshmallow import EXCLUDE
+from sqlalchemy.exc import IntegrityError
+
+from models import Agreement, GrantNumber
+from models.utils import generate_agreement_events_update
+from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_TYPE_TO_CLASS_MAPPING,
+    AGREEMENT_TYPE_TO_DATACLASS_MAPPING,
+)
+from ops_api.ops.schemas.budget_line_items import (
+    NestedBudgetLineItemRequestSchema,
+    PATCHRequestBodySchema,
+)
+from ops_api.ops.schemas.grant_number import (
+    GrantNumberUpdateSchema,
+    NestedGrantNumberRequestSchema,
+)
+from ops_api.ops.schemas.services_component import (
+    NestedServicesComponentRequestSchema,
+    ServicesComponentUpdateSchema,
+)
+from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.budget_line_items import BudgetLineItemService
+from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.grant_number import GrantNumberService
+from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
+from ops_api.ops.services.services_component import ServicesComponentService
+from ops_api.ops.utils.agreements_helpers import is_agreement_name_unique_violation
+
+
+@dataclass
+class BundleResult:
+    """What the orchestrator returns to the caller for the API response."""
+
+    agreement_updated: bool = False
+    services_components_created: int = 0
+    services_components_updated: int = 0
+    services_components_deleted: int = 0
+    grant_numbers_created: int = 0
+    grant_numbers_updated: int = 0
+    grant_numbers_deleted: int = 0
+    budget_line_items_created: int = 0
+    budget_line_items_updated: int = 0
+    budget_line_items_deleted: int = 0
+    change_request_ids: list[int] = field(default_factory=list)
+    # IDs of change requests that committed successfully but whose post-commit reviewer
+    # notification failed. Surfacing these lets the client tell the user "saved, but the
+    # approval request didn't go out — please retry" instead of reporting unqualified
+    # success.
+    failed_notification_change_request_ids: list[int] = field(default_factory=list)
+
+
+class AgreementEditBundleService:
+    """Orchestrates an atomic agreement / SC / BLI / change-request edit."""
+
+    def __init__(self, db_session):
+        self.db_session = db_session
+        self._agreements = AgreementsService(db_session)
+        self._scs = ServicesComponentService(db_session)
+        self._grant_numbers = GrantNumberService(db_session)
+        self._blis = BudgetLineItemService(db_session)
+        self._change_requests = ChangeRequestService(db_session)
+        # Filtered agreement field-diff for the UPDATE_AGREEMENT history subscriber. Populated
+        # (scoped to awarding_entity_id only) when a procurement-shop change is applied directly
+        # via this bundle; the resource reads it into the event metadata. See _apply_agreement_update.
+        self.agreement_updates: dict | None = None
+
+    def update(self, agreement_id: int, payload: dict[str, Any]) -> BundleResult:
+        """Apply every section of ``payload`` to ``agreement_id`` atomically.
+
+        Order of operations matters: SCs are created before BLIs so new BLIs can
+        reference newly-created SCs by ``services_component_ref``. Deletes run last
+        so referencing rows are gone before their parents.
+        """
+        agreement = self.db_session.get(Agreement, agreement_id)
+        if not agreement:
+            raise ResourceNotFoundError("Agreement", agreement_id)
+
+        result = BundleResult()
+        # Change requests created without commit must have reviewers notified after the
+        # bundle commit succeeds — never before, or we'd notify on a rolled-back tx.
+        deferred_notifications: list = []
+
+        try:
+            # 1. Agreement-level update (optional)
+            agreement_data = payload.get("agreement")
+            if agreement_data:
+                self._apply_agreement_update(agreement, agreement_data)
+                result.agreement_updated = True
+
+            sc_payload = payload.get("services_components") or {}
+            gn_payload = payload.get("grant_numbers") or {}
+            bli_payload = payload.get("budget_line_items") or {}
+
+            # 2. SC creates → flush to populate IDs so later BLI creates can resolve
+            #    services_component_ref to the new SC ids.
+            sc_ref_map, created_sc_count = self._create_services_components(
+                agreement_id, sc_payload.get("create", []) or []
+            )
+            result.services_components_created = created_sc_count
+
+            # 3. SC updates
+            result.services_components_updated = self._update_services_components(sc_payload.get("update", []) or [])
+
+            # 3b. Grant number creates/updates. Flush creates to populate IDs so later BLI
+            #     creates/updates can resolve grant_number_ref → new grant number ids.
+            gn_ref_map, created_gn_count = self._create_grant_numbers(agreement_id, gn_payload.get("create", []) or [])
+            result.grant_numbers_created = created_gn_count
+            result.grant_numbers_updated = self._update_grant_numbers(agreement_id, gn_payload.get("update", []) or [])
+
+            # 4. BLI creates (resolves services_component_ref / grant_number_ref)
+            result.budget_line_items_created = self._create_budget_line_items(
+                agreement, bli_payload.get("create", []) or [], sc_ref_map, gn_ref_map
+            )
+
+            # 5. BLI updates — may produce change requests; collected for post-commit notify.
+            #    Pass the same sc_ref_map / gn_ref_map so an existing BLI reassigned to a
+            #    not-yet-persisted (in-bundle) SC or grant number can be linked via ref → new id.
+            updated_count, change_request_ids = self._update_budget_line_items(
+                bli_payload.get("update", []) or [], sc_ref_map, gn_ref_map
+            )
+            result.budget_line_items_updated = updated_count
+            result.change_request_ids.extend(change_request_ids)
+            deferred_notifications.extend(change_request_ids)
+
+            # 6. BLI deletes (before SC deletes — BLIs reference SCs). PLANNED/IN_EXECUTION
+            #    deletes produce deletion change requests, collected for post-commit notify
+            #    alongside the edit-driven ones.
+            deleted_count, delete_change_request_ids = self._delete_budget_line_items(
+                bli_payload.get("delete", []) or []
+            )
+            result.budget_line_items_deleted = deleted_count
+            result.change_request_ids.extend(delete_change_request_ids)
+            deferred_notifications.extend(delete_change_request_ids)
+
+            # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
+            result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
+            result.grant_numbers_deleted = self._delete_grant_numbers(agreement_id, gn_payload.get("delete", []) or [])
+
+            # 8. Commit the entire bundle
+            self.db_session.commit()
+            logger.info(f"Agreement edit bundle committed for agreement_id={agreement_id}: {result}")
+
+        except IntegrityError as e:
+            self.db_session.rollback()
+            logger.error(f"Bundle rollback (integrity error) agreement_id={agreement_id}: {e}")
+            if is_agreement_name_unique_violation(e):
+                raise ValidationError(
+                    {
+                        "name": [
+                            "An agreement with this name and type already exists. "
+                            "Agreement names must be unique (case-insensitive) within each agreement type."
+                        ]
+                    }
+                )
+            raise
+        except Exception:
+            self.db_session.rollback()
+            logger.exception(f"Bundle rollback agreement_id={agreement_id}")
+            raise
+
+        # Post-commit: notify division reviewers for any deferred change requests.
+        # The data is already saved — we record any notification failure on the result so
+        # the caller can surface a "saved but not notified" message to the user.
+        for cr_id in deferred_notifications:
+            try:
+                cr = self._change_requests.get(cr_id)
+                self._change_requests.notify_division_reviewers(cr)
+            except Exception:
+                logger.exception(f"Failed to notify reviewers for change_request_id={cr_id}")
+                result.failed_notification_change_request_ids.append(cr_id)
+
+        return result
+
+    # ------------------------------------------------------------------
+    # Agreement
+    # ------------------------------------------------------------------
+
+    def _apply_agreement_update(self, agreement: Agreement, agreement_data: dict[str, Any]) -> None:
+        schema = AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(agreement.agreement_type)()
+        # Nested SC / grant number / BLI arrays are rejected by the bundle request schema,
+        # but the per-type dataclass schema may still emit them under default values — drop
+        # them after loading so they can't leak into the agreement update.
+        loaded = schema.load(agreement_data, unknown=EXCLUDE, partial=True)
+        loaded.pop("budget_line_items", None)
+        loaded.pop("services_components", None)
+        loaded.pop("grant_numbers", None)
+        loaded["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement.agreement_type)
+
+        # Unlike the standard PATCH resource, this orchestrator does not compute an agreement
+        # field diff for history. When a procurement-shop change is applied directly here (the
+        # SKIP_CR_FOR_DRAFT_PLANNED capability skips the Change Request that would otherwise carry
+        # the history), no "Change to Procurement Shop" entry would be recorded. Snapshot the
+        # agreement before/after and surface the awarding_entity_id diff so the UPDATE_AGREEMENT
+        # subscriber records it. Scoped to awarding_entity_id only — other bundle-edited fields
+        # deliberately do not gain history here (matching prior behavior; a separate concern).
+        old_serialized = agreement.to_dict()
+        self._agreements.update(agreement.id, loaded, partial=True, commit=False)
+        # Use the current request user rather than agreement.updated_by: this runs under
+        # commit=False (flush only), and the created/updated-by stamping fires on before_commit,
+        # so agreement.updated_by is still the prior editor's id at this point. (The persisted
+        # history actor is derived from OpsEvent.created_by, so this only affects the value stored
+        # under event_details["agreement_updates"]["updated_by"], but keep it accurate.)
+        current_user = get_current_user()
+        full_updates = generate_agreement_events_update(
+            old_serialized,
+            agreement.to_dict(),
+            agreement.id,
+            current_user.id if current_user else None,
+        )
+        proc_shop_change = full_updates.get("changes", {}).get("awarding_entity_id")
+        if proc_shop_change is not None:
+            self.agreement_updates = {
+                "owner_id": full_updates["owner_id"],
+                "updated_by": full_updates["updated_by"],
+                "changes": {"awarding_entity_id": proc_shop_change},
+            }
+
+    # ------------------------------------------------------------------
+    # Services Components
+    # ------------------------------------------------------------------
+
+    def _create_services_components(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
+        sc_ref_map: dict[str, int] = {}
+        sc_create_schema = NestedServicesComponentRequestSchema()
+        for idx, sc_data in enumerate(items):
+            loaded = sc_create_schema.load(sc_data, unknown=EXCLUDE)
+            temp_ref = loaded.pop("ref", None) or str(idx)
+            loaded["agreement_id"] = agreement_id
+            new_sc = self._scs.create(loaded, commit=False)
+            sc_ref_map[temp_ref] = new_sc.id
+        return sc_ref_map, len(items)
+
+    def _update_services_components(self, items: list[dict[str, Any]]) -> int:
+        sc_update_schema = ServicesComponentUpdateSchema()
+        for sc_data in items:
+            sc_id = sc_data.get("id")
+            if sc_id is None:
+                raise ValidationError({"services_components.update": "Each item requires an 'id'."})
+            data_to_load = {k: v for k, v in sc_data.items() if k != "id"}
+            loaded = sc_update_schema.load(data_to_load, unknown=EXCLUDE, partial=True)
+            self._scs.update(sc_id, loaded, commit=False)
+        return len(items)
+
+    def _delete_services_components(self, ids: list[int]) -> int:
+        for sc_id in ids:
+            self._scs.delete(sc_id, commit=False)
+        return len(ids)
+
+    # ------------------------------------------------------------------
+    # Grant Numbers
+    # ------------------------------------------------------------------
+
+    def _create_grant_numbers(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
+        gn_ref_map: dict[str, int] = {}
+        gn_create_schema = NestedGrantNumberRequestSchema()
+        for idx, gn_data in enumerate(items):
+            loaded = gn_create_schema.load(gn_data, unknown=EXCLUDE)
+            temp_ref = loaded.pop("ref", None) or str(idx)
+            loaded["agreement_id"] = agreement_id
+            new_gn = self._grant_numbers.create(loaded, commit=False)
+            gn_ref_map[temp_ref] = new_gn.id
+        return gn_ref_map, len(items)
+
+    def _assert_gn_belongs_to_agreement(self, gn_id: int, agreement_id: int) -> None:
+        """Reject a grant number id that belongs to a different agreement than the bundle target.
+
+        ``GrantNumberService`` only checks the user has access to the grant number's own parent
+        agreement — not that the parent matches this bundle's ``agreement_id``. Without this guard a
+        user with access to two agreements could submit a bundle for Agreement A carrying a grant
+        number id from Agreement B and mutate it (IDOR).
+        """
+        gn = self.db_session.get(GrantNumber, gn_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", gn_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_numbers": "Grant Number does not belong to the Agreement."})
+
+    def _update_grant_numbers(self, agreement_id: int, items: list[dict[str, Any]]) -> int:
+        gn_update_schema = GrantNumberUpdateSchema()
+        for gn_data in items:
+            gn_id = gn_data.get("id")
+            if gn_id is None:
+                raise ValidationError({"grant_numbers.update": "Each item requires an 'id'."})
+            self._assert_gn_belongs_to_agreement(gn_id, agreement_id)
+            data_to_load = {k: v for k, v in gn_data.items() if k != "id"}
+            loaded = gn_update_schema.load(data_to_load, unknown=EXCLUDE, partial=True)
+            self._grant_numbers.update(gn_id, loaded, commit=False)
+        return len(items)
+
+    def _delete_grant_numbers(self, agreement_id: int, ids: list[int]) -> int:
+        for gn_id in ids:
+            self._assert_gn_belongs_to_agreement(gn_id, agreement_id)
+            self._grant_numbers.delete(gn_id, commit=False)
+        return len(ids)
+
+    # ------------------------------------------------------------------
+    # Budget Line Items
+    # ------------------------------------------------------------------
+
+    def _create_budget_line_items(
+        self,
+        agreement: Agreement,
+        items: list[dict[str, Any]],
+        sc_ref_map: dict[str, int],
+        gn_ref_map: dict[str, int] | None = None,
+    ) -> int:
+        # NestedBudgetLineItemRequestSchema converts string enums (status) to enum
+        # values and supports services_component_ref / grant_number_ref. agreement_id is set by us.
+        gn_ref_map = gn_ref_map or {}
+        bli_create_schema = NestedBudgetLineItemRequestSchema()
+        for bli_data in items:
+            loaded = bli_create_schema.load(bli_data, unknown=EXCLUDE)
+            # Strip None defaults so the model uses its column defaults rather than NULL.
+            loaded = {k: v for k, v in loaded.items() if v is not None}
+            services_component_ref = loaded.pop("services_component_ref", None)
+            if services_component_ref is not None:
+                if services_component_ref not in sc_ref_map:
+                    raise ValidationError(
+                        {
+                            "services_component_ref": [
+                                f"Invalid services_component_ref {services_component_ref!r}. "
+                                f"Available references: {list(sc_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                loaded["services_component_id"] = sc_ref_map[services_component_ref]
+            grant_number_ref = loaded.pop("grant_number_ref", None)
+            if grant_number_ref is not None:
+                if grant_number_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {grant_number_ref!r}. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                loaded["grant_number_id"] = gn_ref_map[grant_number_ref]
+            loaded["agreement_id"] = agreement.id
+            self._blis.create(loaded, commit=False)
+        return len(items)
+
+    def _update_budget_line_items(
+        self, items: list[dict[str, Any]], sc_ref_map: dict[str, int], gn_ref_map: dict[str, int] | None = None
+    ) -> tuple[int, list[int]]:
+        gn_ref_map = gn_ref_map or {}
+        change_request_ids: list[int] = []
+        patch_schema = PATCHRequestBodySchema(partial=True)
+        for bli_data in items:
+            bli_id = bli_data.get("id")
+            if bli_id is None:
+                raise ValidationError({"budget_line_items.update": "Each item requires an 'id'."})
+            data_for_load = {k: v for k, v in bli_data.items() if k != "id"}
+            # Resolve services_component_ref / grant_number_ref → new id before delegating. The
+            # PATCH schema uses unknown=EXCLUDE and would otherwise drop ref silently.
+            sc_ref = data_for_load.pop("services_component_ref", None)
+            if sc_ref is not None:
+                if sc_ref not in sc_ref_map:
+                    raise ValidationError(
+                        {
+                            "services_component_ref": [
+                                f"Invalid services_component_ref {sc_ref!r}. "
+                                f"Available references: {list(sc_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                data_for_load["services_component_id"] = sc_ref_map[sc_ref]
+            gn_ref = data_for_load.pop("grant_number_ref", None)
+            if gn_ref is not None:
+                if gn_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {gn_ref!r}. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                data_for_load["grant_number_id"] = gn_ref_map[gn_ref]
+            loaded = patch_schema.load(data_for_load, unknown=EXCLUDE, partial=True)
+            # The BLI service reads `request.json` and `schema.load(...)`; we synthesize
+            # a request-like object with the per-BLI body so the service can run unchanged.
+            fake_request = SimpleNamespace(json=data_for_load)
+            updated_fields = loaded | {
+                "method": "PATCH",
+                "schema": patch_schema,
+                "request": fake_request,
+            }
+            _, _, ids = self._blis.update_with_change_request_ids(bli_id, updated_fields, commit=False)
+            change_request_ids.extend(ids)
+        return len(items), change_request_ids
+
+    def _delete_budget_line_items(self, ids: list[int]) -> tuple[int, list[int]]:
+        """Delete BLIs as part of the bundle.
+
+        DRAFT lines (and super-user deletes) are hard-deleted in-transaction. PLANNED/IN_EXECUTION
+        lines route to a deletion change request created WITHOUT committing/notifying; the returned
+        CR ids are notified post-commit alongside edit-driven change requests. Returns
+        ``(count, change_request_ids)``.
+        """
+        change_request_ids: list[int] = []
+        for bli_id in ids:
+            _, _, change_request_id = self._blis.delete(bli_id, commit=False)
+            if change_request_id is not None:
+                change_request_ids.append(change_request_id)
+        return len(ids), change_request_ids

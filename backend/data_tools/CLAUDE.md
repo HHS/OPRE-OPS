@@ -78,6 +78,8 @@ Coverage is not enabled by default so that running individual tests stays fast. 
 
 **Important:** Tests mirror the source structure. Tests for `src/load_projects/utils.py` live under `tests/load_projects/`. Many tests use the `loaded_db` fixture, which brings up Postgres via pytest-docker and applies history triggers.
 
+See [docs/TESTING.md](../../docs/TESTING.md#etl-testing-pattern) for the ETL testing pattern (parse → validate → create models → verify).
+
 ### Code Quality
 
 ```bash

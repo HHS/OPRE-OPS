@@ -1,4 +1,4 @@
-import suite, { validateBudgetLineItem, validateBudgetLineItems } from "./suite";
+import suite, { POP_RANGE_ERROR_KEY, validateBudgetLineItem, validateBudgetLineItems } from "./suite";
 
 describe("Agreement Review Suite", () => {
     const validData = {
@@ -35,7 +35,6 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("reason");
         expect(result.getErrors()).toHaveProperty("project-officer");
         expect(result.getErrors()).toHaveProperty("contract-type");
-        expect(result.getErrors()).toHaveProperty("team-members");
         expect(result.getErrors()).toHaveProperty("budget-line-items");
     });
 
@@ -90,13 +89,13 @@ describe("Agreement Review Suite", () => {
         expect(result.getErrors()).toHaveProperty("contract-type");
     });
 
-    it("fails if team_members is empty", () => {
+    it("passes if team_members is empty (team members are not required for approval)", () => {
         const data = { ...validData, team_members: [] };
         suite.reset();
         suite.run(data);
         const result = suite.get();
-        expect(result.isValid()).toBe(false);
-        expect(result.getErrors()).toHaveProperty("team-members");
+        expect(result.isValid()).toBe(true);
+        expect(result.getErrors()).not.toHaveProperty("team-members");
     });
 
     it("fails if budget_line_items is empty", () => {
@@ -140,44 +139,49 @@ describe("Budget Line Suite", () => {
         expect(result.errors).toEqual({});
     });
 
-    it("fails if amount is 0 or negative", () => {
+    it("passes if amount is 0 (0 is a valid amount per business rules)", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, amount: 0 });
+        expect(result.isValid).toBe(true);
+    });
+
+    it("fails if amount is null", () => {
+        const result = validateBudgetLineItem({ ...validBudgetLine, amount: null });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Amount");
+        // Normalized key: "Budget Line Amount" → "amount"
+        expect(result.errors).toHaveProperty("amount");
     });
 
     it("fails if can_id is null", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, can_id: null });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line CAN");
+        // Normalized key: "Budget Line CAN" → "can"
+        expect(result.errors).toHaveProperty("can");
     });
 
     it("fails if can_id is 0", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, can_id: 0 });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line CAN");
+        expect(result.errors).toHaveProperty("can");
     });
 
     it("fails if services_component_id is null", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: null });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty(
-            "Budget lines need to be assigned to a services component to change their status"
-        );
+        // Normalized key: long sentence → "services_component"
+        expect(result.errors).toHaveProperty("services_component");
     });
 
     it("fails if services_component_id is 0", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: 0 });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty(
-            "Budget lines need to be assigned to a services component to change their status"
-        );
+        expect(result.errors).toHaveProperty("services_component");
     });
 
     it("fails if date_needed is blank", () => {
         const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: "" });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Obligate By Date");
+        // Normalized key: "Budget Line Obligate By Date" → "date_needed"
+        expect(result.errors).toHaveProperty("date_needed");
     });
 
     it("fails if date_needed is in the past", () => {
@@ -185,14 +189,107 @@ describe("Budget Line Suite", () => {
         pastDate.setDate(pastDate.getDate() - 2);
         const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: pastDate.toISOString().slice(0, 10) });
         expect(result.isValid).toBe(false);
-        expect(result.errors).toHaveProperty("Budget Line Obligate By Date must be in the future");
+        // Both date tests normalize to "date_needed"; first message wins
+        expect(result.errors).toHaveProperty("date_needed");
+    });
+
+    it("fails if date_needed is today (strictly future required)", () => {
+        const today = new Date();
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: todayISO });
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toHaveProperty("date_needed");
+    });
+
+    it("passes if date_needed is tomorrow", () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+        const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: tomorrowISO });
+        expect(result.isValid).toBe(true);
     });
 
     it("validates only a single field when fieldName is provided", () => {
         const result = validateBudgetLineItem({}, "Budget Line Amount");
         expect(result.isValid).toBe(false);
-        expect(Object.keys(result.errors)).toContain("Budget Line Amount");
+        // Normalized output key is "amount"
+        expect(Object.keys(result.errors)).toContain("amount");
         expect(Object.keys(result.errors).length).toBe(1);
+    });
+
+    describe("Obligate By Date must be within the agreement's PoP", () => {
+        // All dates must be in the future to avoid tripping the separate
+        // "must be in the future" rule tested above.
+        const isoDate = (daysFromNow) => {
+            const d = new Date();
+            d.setDate(d.getDate() + daysFromNow);
+            return d.toISOString().slice(0, 10);
+        };
+
+        const withPop = {
+            ...validBudgetLine,
+            agreement: { agreement_type: "CONTRACT" },
+            sc_period_start: isoDate(10),
+            sc_period_end: isoDate(100)
+        };
+
+        it("passes when date_needed is inside the PoP range", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: isoDate(50) });
+            expect(result.isValid).toBe(true);
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("passes when date_needed equals the PoP start date (inclusive boundary)", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: withPop.sc_period_start });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("passes when date_needed equals the PoP end date (inclusive boundary)", () => {
+            const result = validateBudgetLineItem({ ...withPop, date_needed: withPop.sc_period_end });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("fails when date_needed is before the PoP start date", () => {
+            const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(2) });
+            expect(result.isValid).toBe(false);
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
+
+        it("fails when date_needed is after the PoP end date", () => {
+            const result = validateBudgetLineItem({ ...withPop, id: 42, date_needed: isoDate(200) });
+            expect(result.isValid).toBe(false);
+            expect(result.errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
+
+        it("skips the rule (no error) when sc_period_start/sc_period_end are missing", () => {
+            const result = validateBudgetLineItem({
+                ...validBudgetLine,
+                agreement: { agreement_type: "CONTRACT" },
+                date_needed: isoDate(50)
+            });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("skips the rule for GRANT budget lines even when out of range", () => {
+            const result = validateBudgetLineItem({
+                ...withPop,
+                agreement: { agreement_type: "GRANT" },
+                date_needed: isoDate(200)
+            });
+            expect(result.errors).not.toHaveProperty(POP_RANGE_ERROR_KEY);
+        });
+
+        it("fails each violating BL independently when validating multiple budget lines together", () => {
+            const results = validateBudgetLineItems([
+                { ...withPop, id: 5, date_needed: isoDate(2) }, // before PoP start
+                { ...withPop, id: 2, date_needed: isoDate(200) } // after PoP end
+            ]);
+            expect(results).toHaveLength(2);
+            expect(results[0].isValid).toBe(false);
+            expect(results[0].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+            expect(results[1].isValid).toBe(false);
+            expect(results[1].errors[POP_RANGE_ERROR_KEY][0]).toBe("Budget Line Obligate By");
+        });
     });
 });
 
@@ -210,13 +307,13 @@ describe("validateBudgetLineItems", () => {
     };
 
     it("returns array of results for multiple budget lines", () => {
+        // amount: 0 is now valid per business rules
         const lines = [validBudgetLine, { ...validBudgetLine, id: 2, amount: 0 }];
         const results = validateBudgetLineItems(lines);
         expect(Array.isArray(results)).toBe(true);
         expect(results.length).toBe(2);
         expect(results[0].isValid).toBe(true);
-        expect(results[1].isValid).toBe(false);
-        expect(results[1].errors).toHaveProperty("Budget Line Amount");
+        expect(results[1].isValid).toBe(true);
     });
 
     it("handles single object input", () => {

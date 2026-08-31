@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CanFunding from "./CanFunding";
 
 vi.mock("./CanFunding.hooks.js", () => ({
@@ -31,6 +31,14 @@ vi.mock("./CanFunding.hooks.js", () => ({
     })
 }));
 
+const { mockUseIsUserReadOnly } = vi.hoisted(() => ({
+    mockUseIsUserReadOnly: vi.fn(() => false)
+}));
+
+vi.mock("../../../hooks/user.hooks", () => ({
+    useIsUserReadOnly: mockUseIsUserReadOnly
+}));
+
 vi.mock("../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard", () => ({
     default: () => <div>Budget by FY card</div>
 }));
@@ -49,6 +57,10 @@ vi.mock("../../../components/UI/Modals/index.js", () => ({ default: () => <div>M
 vi.mock("../../../components/UI/RoundedBox", () => ({ default: ({ children }) => <div>{children}</div> }));
 
 describe("CanFunding", () => {
+    beforeEach(() => {
+        mockUseIsUserReadOnly.mockReturnValue(false);
+    });
+
     afterEach(() => {
         vi.clearAllMocks();
     });
@@ -131,5 +143,61 @@ describe("CanFunding", () => {
         expect(screen.getByRole("button", { name: "Funding Received YTD" })).toBeInTheDocument();
         expect(screen.getByRole("table", { name: "Loading funding received" })).toBeInTheDocument();
         expect(screen.queryByText("Funding received table")).not.toBeInTheDocument();
+    });
+
+    it("renders the Edit button when the user is not read-only", () => {
+        mockUseIsUserReadOnly.mockReturnValue(false);
+
+        render(
+            <CanFunding
+                canId={1}
+                canNumber="CAN-001"
+                currentFiscalYearFundingId={11}
+                funding={{ fiscal_year: 2026, active_period: 1 }}
+                fundingBudgets={[]}
+                fiscalYear={2026}
+                totalFunding={1000}
+                receivedFunding={100}
+                fundingReceived={[]}
+                isBudgetTeamMember={false}
+                isEditMode={false}
+                toggleEditMode={() => {}}
+                carryForwardFunding={0}
+                welcomeModal={{ showModal: false }}
+                resetWelcomeModal={() => {}}
+                isExpired={false}
+                isTableLoading={false}
+            />
+        );
+
+        expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+    });
+
+    it("hides the Edit button when the user is read-only", () => {
+        mockUseIsUserReadOnly.mockReturnValue(true);
+
+        render(
+            <CanFunding
+                canId={1}
+                canNumber="CAN-001"
+                currentFiscalYearFundingId={11}
+                funding={{ fiscal_year: 2026, active_period: 1 }}
+                fundingBudgets={[]}
+                fiscalYear={2026}
+                totalFunding={1000}
+                receivedFunding={100}
+                fundingReceived={[]}
+                isBudgetTeamMember={false}
+                isEditMode={false}
+                toggleEditMode={() => {}}
+                carryForwardFunding={0}
+                welcomeModal={{ showModal: false }}
+                resetWelcomeModal={() => {}}
+                isExpired={false}
+                isTableLoading={false}
+            />
+        );
+
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     });
 });

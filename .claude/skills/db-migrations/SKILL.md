@@ -3,7 +3,7 @@ name: db-migrations
 description: Create, review, test, and rollback Alembic database migrations for OPRE OPS. Use this skill whenever the user mentions database migrations, alembic, schema changes, adding/modifying columns or tables, model changes that need migration, or "migrate the database". Also use when a model change has been made and the user needs to generate the corresponding migration.
 argument-hint: "[create <message> | review | upgrade | downgrade | status | history]"
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Database Migration Manager

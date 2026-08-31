@@ -20,6 +20,10 @@ Coverage is not enabled by default so that running individual tests stays fast. 
 
 Test files mirror source structure: `ops/resources/agreements.py` → `tests/ops/resources/test_agreements.py`.
 
+Before adding a test, see [docs/TESTING.md](../../docs/TESTING.md#decision-matrix-which-test-type-should-i-use) for the unit vs. integration vs. BDD decision matrix, [When NOT to Write Tests](../../docs/TESTING.md#when-not-to-write-tests), and [BDD Testing Guidelines](../../docs/TESTING.md#bdd-testing-guidelines) for multi-step business-process scenarios.
+
+For the full CI check suite across both packages (ops_api + data_tools, including lint, format, and Docker pre-flight for data_tools), use the `/backend-tests` skill — it is NOT auto-invoked, so invoke it explicitly (e.g., `/backend-tests all`).
+
 ### Code Quality
 
 ```bash
@@ -39,7 +43,7 @@ alembic upgrade head
 alembic downgrade -1   # Rollback
 ```
 
-Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying.
+Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying. Use the `/db-migrations` skill for the full workflow — it includes Docker pre-flight checks, a review checklist (renamed columns, enum value changes, NOT NULL two-step migrations), and a critical reminder that new models inheriting `BaseModel` also need a `*_history` table. The skill is NOT auto-invoked.
 
 ## Architecture
 
@@ -73,6 +77,10 @@ class AgreementItemAPI(BaseItemAPI):
 ```
 
 Scopes are defined in `ops/auth/authorization_providers.py`.
+
+### API Documentation (OpenAPI)
+
+`backend/openapi.yml` documents the API and must stay in sync with the Flask routes in `ops/urls.py`. **After adding, changing, or removing any endpoint (route, resource method, or request/response schema), run the `/sync-openapi` skill** to update the spec — it is NOT auto-invoked (model invocation is disabled), so it must be run explicitly. Validate with `./backend/validate_openapi.sh`.
 
 ### MessageBus (Domain Events)
 
@@ -156,6 +164,7 @@ agreement.fee_percentage = 0.05
 - `ops/resources/base_views.py`: Base classes for API resources
 - `ops/auth/decorators.py`: Authorization decorators
 - `ops/auth/authorization_providers.py`: Permission definitions
+- `openapi.yml` (in `backend/`): OpenAPI spec — keep in sync via the `/sync-openapi` skill
 - `models/base.py`: Base model with audit fields and event listeners
 - `models/__init__.py`: Database initialization and model imports
 - `tests/conftest.py`: Pytest fixtures and test configuration

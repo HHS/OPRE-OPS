@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAcquisitionPlanningStep} ProcurementTrackerAcquisitionPlanningStep
@@ -16,12 +17,21 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @param {(step: number) => void} handleSetCompletedStepNumber - Function to set the completed step number.
  * @param {boolean} isEditable - Whether the current user can edit the agreement.
  */
-export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, isEditable = true) {
+export default function useProcurementTrackerStepOne(
+    stepOneData,
+    handleSetCompletedStepNumber,
+    isEditable = true,
+    onDirtyChange = undefined
+) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
-    const [step1Notes, setStep1Notes] = React.useState("");
-    const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStep1Complete`, so `isStepPatchInFlight` is true for either in-flight
+    // PATCH. Threading it into both the Save Notes editor and the Complete button
+    // makes them mutually exclusive, preventing two concurrent PATCHes (a Save
+    // Notes landing after Complete could otherwise revert `notes` to a stale value).
+    const [patchStepOne, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -40,6 +50,24 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step1Notes,
+        setNotes: setStep1Notes,
+        resetNotes: resetStep1Notes,
+        notesResetKey,
+        handleSaveNotes
+    } = useSaveNotes(patchStepOne, stepOneData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreSolicitationPackageSent ||
+        selectedUser?.id ||
+        step1DateCompleted ||
+        step1Notes.trim() !== (stepOneData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     const handleStep1Complete = async (stepId) => {
         const payload = {
@@ -69,7 +97,10 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         setIsPreSolicitationPackageSent(false);
         setSelectedUser({});
         setStep1DateCompleted("");
-        setStep1Notes("");
+        // No argument: restore the last committed note. Passing the raw
+        // stepOneData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep1Notes();
         suite.reset();
     };
     const cancelModalStep1 = () => {
@@ -85,7 +116,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     };
 
     const disableStep1Buttons =
-        !isEditable || !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
+        !isEditable || !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted || isStepPatchInFlight;
 
     return {
         isPreSolicitationPackageSent,
@@ -97,7 +128,11 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         MemoizedDatePicker,
         step1Notes,
         setStep1Notes,
+        resetStep1Notes,
+        notesResetKey,
         handleStep1Complete,
+        handleSaveNotes,
+        isStepPatchInFlight,
         cancelModalStep1,
         disableStep1Buttons,
         step1CompletedByUserName,
@@ -107,6 +142,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         showModal,
         setShowModal,
         runValidate,
-        validatorRes
+        validatorRes,
+        hasChanges
     };
 }

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -8,10 +7,11 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 /**
@@ -29,6 +29,8 @@ export const ApprovePreAwardApproval = () => {
         executingTotal,
         reviewerNotes,
         setReviewerNotes,
+        understandsApproval,
+        setUnderstandsApproval,
         requestorNotes,
         handleApprove,
         handleDecline,
@@ -36,6 +38,7 @@ export const ApprovePreAwardApproval = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         showModal,
@@ -46,10 +49,11 @@ export const ApprovePreAwardApproval = () => {
         hasPermission,
         approvalAlreadyProcessed,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate
+        preAwardApprovalRequestedDate,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     } = useApprovePreAwardApproval(agreementId);
-
-    const [understandsApproval, setUnderstandsApproval] = useState(false);
 
     if (isLoading) {
         return <p>Loading...</p>;
@@ -77,6 +81,18 @@ export const ApprovePreAwardApproval = () => {
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
 
@@ -113,11 +129,12 @@ export const ApprovePreAwardApproval = () => {
             />
 
             {/* Budget Lines and Executing Total */}
-            <PreAwardBudgetLinesReviewAccordion
+            <BudgetLinesReviewAccordion
                 budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
             />
 

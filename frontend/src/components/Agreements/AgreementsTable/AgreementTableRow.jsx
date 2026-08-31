@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
@@ -10,6 +10,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
+import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
     areAllBudgetLinesInStatus,
     getAgreementContractNumber,
@@ -22,7 +23,7 @@ import {
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
-import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
 import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 
 /**
@@ -58,20 +59,16 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
+    const isAgreementTypeNotDeveloped = isSuccess && isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
-    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    const [searchParams] = useSearchParams();
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
-
     function getLockedMessage() {
         const lockedMessages = {
-            notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
+            notTeamMember: "Only team members on this agreement can edit or delete",
             notDeveloped:
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
             default: "Disabled"
@@ -98,8 +95,6 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={!forApprovalUrl}
-            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
     ) : null;
 
@@ -141,64 +136,72 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
                 </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0">{procurementShopDisplay}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
-                    <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
-                </dl>
+                {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
+                    <>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                            <dd className="margin-0">{procurementShopDisplay}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Subtotal</dt>
+                            <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Fees</dt>
+                            <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
+                            <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
+                        </dl>
+                    </>
+                )}
             </div>
             <div
                 className="display-flex padding-right-4"
                 style={{ justifyContent: "space-between" }}
             >
-                <dl className="font-12px">
-                    <dt className="margin-0 text-base-dark">Contract #</dt>
-                    <dd className="margin-0">{contractNumber || NO_DATA}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "7rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Award Type</dt>
-                    <dd className="margin-0">{awardType}</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "2.5rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">&nbsp;</dt>
-                    <dd className="margin-0">&nbsp;</dd>
-                </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "4rem" }}
-                >
-                    <dt className="margin-0 text-base-dark">Vendor</dt>
-                    <dd className="margin-0">{vendor}</dd>
-                </dl>
+                {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
+                    <>
+                        <dl className="font-12px">
+                            <dt className="margin-0 text-base-dark">Contract #</dt>
+                            <dd className="margin-0">{contractNumber || NO_DATA}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "7rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Award Type</dt>
+                            <dd className="margin-0">{awardType}</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "2.5rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">&nbsp;</dt>
+                            <dd className="margin-0">&nbsp;</dd>
+                        </dl>
+                        <dl
+                            className="font-12px"
+                            style={{ marginLeft: "4rem" }}
+                        >
+                            <dt className="margin-0 text-base-dark">Vendor</dt>
+                            <dd className="margin-0">{vendor}</dd>
+                        </dl>
+                    </>
+                )}
                 {!isReadOnly && (
                     <div
                         className="flex-align-self-end margin-bottom-1"

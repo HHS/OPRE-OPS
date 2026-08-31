@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
@@ -15,6 +17,8 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
  *   executingTotal: number,
  *   reviewerNotes: string,
  *   setReviewerNotes: (value: string) => void,
+ *   understandsApproval: boolean,
+ *   setUnderstandsApproval: (value: boolean) => void,
  *   requestorNotes: string,
  *   handleApprove: () => void,
  *   handleDecline: () => void,
@@ -32,13 +36,17 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
  *   hasPermission: boolean,
  *   approvalAlreadyProcessed: boolean,
  *   preAwardRequestorName: string,
- *   preAwardApprovalRequestedDate: string
+ *   preAwardApprovalRequestedDate: string,
+ *   showBlockerModal: boolean,
+ *   setShowBlockerModal: (value: boolean) => void,
+ *   blockerModalProps: any
  * }} Hook state and functions.
  */
 export default function useApprovePreAwardApproval(agreementId) {
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [reviewerNotes, setReviewerNotes] = useState("");
+    const [understandsApproval, setUnderstandsApproval] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +69,7 @@ export default function useApprovePreAwardApproval(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step5,
@@ -93,6 +102,26 @@ export default function useApprovePreAwardApproval(agreementId) {
                 bli.can?.portfolio?.division?.deputy_division_director_id === userId
         );
     }, [userRoles, userId, allBudgetLines]);
+
+    /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return reviewerNotes.trim() !== "" || understandsApproval;
+    }, [reviewerNotes, understandsApproval]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes.
+     * Primary button = "Go back" (stay), secondary = "Leave without saving" (discard + proceed).
+     */
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
 
     /**
      * @param {"APPROVED" | "DECLINED"} action
@@ -137,6 +166,12 @@ export default function useApprovePreAwardApproval(agreementId) {
                         data: updateData
                     }).unwrap();
 
+                    // Clear dirty state before navigating so the blocker does not fire
+                    flushSync(() => {
+                        setReviewerNotes("");
+                        setUnderstandsApproval(false);
+                    });
+
                     // Show alert and navigate back to For Review tab
                     setAlert({
                         type: action === "APPROVED" ? "success" : "error",
@@ -175,7 +210,15 @@ export default function useApprovePreAwardApproval(agreementId) {
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 setShowModal(false);
+                // Clear dirty state before navigating so the blocker does not fire
+                flushSync(() => {
+                    setReviewerNotes("");
+                    setUnderstandsApproval(false);
+                });
                 navigate("/agreements?filter=change-requests");
+            },
+            closeModal: () => {
+                setShowModal(false);
             }
         });
     };
@@ -187,6 +230,8 @@ export default function useApprovePreAwardApproval(agreementId) {
         executingTotal, // Total calculated from executing budget lines only
         reviewerNotes,
         setReviewerNotes,
+        understandsApproval,
+        setUnderstandsApproval,
         requestorNotes,
         handleApprove,
         handleDecline,
@@ -194,6 +239,7 @@ export default function useApprovePreAwardApproval(agreementId) {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         showModal,
@@ -204,6 +250,9 @@ export default function useApprovePreAwardApproval(agreementId) {
         hasPermission,
         approvalAlreadyProcessed,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate
+        preAwardApprovalRequestedDate,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }

@@ -42,14 +42,15 @@ from models.change_requests import (
 )
 
 
-class BudgetLineItemStatus(Enum):
+class BudgetLineItemStatus(str, Enum):
     def __str__(self):
         return str(self.value)
 
-    DRAFT = "Draft"
-    PLANNED = "Planned"
-    IN_EXECUTION = "In Execution"
-    OBLIGATED = "Obligated"
+    DRAFT = "DRAFT"
+    PLANNED = "PLANNED"
+    IN_EXECUTION = "IN_EXECUTION"
+    OBLIGATED = "OBLIGATED"
+    PLANNED_MOD = "PLANNED_MOD"
 
 
 class BudgetLineSortCondition(Enum):
@@ -552,6 +553,30 @@ class GrantBudgetLineItem(BudgetLineItem):
     bns_number: Mapped[Optional[str]] = mapped_column(String)
     committed_date: Mapped[Optional[date]] = mapped_column(Date)
     fa_signed_date: Mapped[Optional[date]] = mapped_column(Date)
+
+    # A grant number is the grant BLI's analog of a Contract BLI's services component.
+    # It lives on this subclass (not the base) because it only applies to grant BLIs;
+    # services_component_id sits on the base for legacy reasons.
+    grant_number_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("grant_number.id", ondelete="SET NULL"),
+    )
+    grant_number: Mapped[Optional["GrantNumber"]] = relationship(
+        "GrantNumber", backref="budget_line_items", passive_deletes=True
+    )
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> list[str]:
+        """
+        Grant BLIs require a grant number (not a services component) to change status.
+        """
+        return [
+            "date_needed",
+            "can_id",
+            "amount",
+            "agreement_id",
+            "grant_number_id",
+        ]
 
 
 class DirectObligationBudgetLineItem(BudgetLineItem):

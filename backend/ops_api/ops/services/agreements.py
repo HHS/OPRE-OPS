@@ -22,6 +22,7 @@ from models import (
     ContractAgreement,
     Division,
     GrantAgreement,
+    GrantNumber,
     OpsEventType,
     Portfolio,
     PortfolioTeamLeaders,
@@ -44,7 +45,7 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -67,6 +68,7 @@ class AgreementFilters:
     agreement_type: Optional[list[str]] = None
     delivered_status: Optional[list[str]] = None
     awarding_entity_id: Optional[list[int]] = None
+    division: Optional[list[int]] = None
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
@@ -95,6 +97,7 @@ class AgreementFilters:
             agreement_type=data.get("agreement_type", []),
             delivered_status=data.get("delivered_status", []),
             awarding_entity_id=data.get("awarding_entity_id", []),
+            division=data.get("division", []),
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
@@ -160,6 +163,7 @@ class AgreementsService(OpsService[Agreement]):
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])
         services_components_data = create_request.pop("services_components", [])
+        grant_numbers_data = create_request.pop("grant_numbers", [])
 
         try:
             # STEP 1: Create agreement (existing logic)
@@ -180,24 +184,27 @@ class AgreementsService(OpsService[Agreement]):
             self.db_session.add(agreement)
             self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
 
-            # STEP 2: Create services components FIRST (so BLIs can reference them)
+            # STEP 2: Create services components and grant numbers FIRST (so BLIs can
+            # reference them via services_component_ref / grant_number_ref).
             sc_ref_map, sc_count = self._create_services_components(agreement.id, services_components_data)
+            gn_ref_map, gn_count = self._create_grant_numbers(agreement.id, grant_numbers_data)
 
-            # STEP 3: Create budget line items, resolving services_component_ref
-            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map)
+            # STEP 3: Create budget line items, resolving services_component_ref / grant_number_ref
+            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map, gn_ref_map)
 
             # STEP 4: Commit the entire transaction
             self.db_session.commit()
 
             logger.info(
-                f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items "
-                f"and {sc_count} services components"
+                f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items, "
+                f"{sc_count} services components, and {gn_count} grant numbers"
             )
 
             # STEP 5: Return enriched response
             return agreement, {
                 "budget_line_items_created": bli_count,
                 "services_components_created": sc_count,
+                "grant_numbers_created": gn_count,
             }
 
         except IntegrityError as e:
@@ -206,7 +213,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to create agreement - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [
@@ -264,11 +271,52 @@ class AgreementsService(OpsService[Agreement]):
 
         return sc_ref_map, sc_count
 
+    def _create_grant_numbers(
+        self, agreement_id: int, grant_numbers_data: list[dict[str, Any]]
+    ) -> tuple[dict[str, int], int]:
+        """
+        Create grant numbers for an agreement.
+
+        Args:
+            agreement_id: The agreement ID to associate with grant numbers
+            grant_numbers_data: List of grant number data dictionaries
+
+        Returns:
+            Tuple of (gn_ref_map, gn_count) where:
+                - gn_ref_map: Map of temporary reference to actual GrantNumber ID
+                - gn_count: Number of grant numbers created
+        """
+        gn_ref_map = {}  # Map temporary ref -> actual GrantNumber ID
+        gn_count = 0
+
+        for idx, gn_data in enumerate(grant_numbers_data):
+            # Extract temporary reference (default to string index if not provided)
+            temp_ref = gn_data.pop("ref", None) or str(idx)
+
+            # Set agreement_id on the grant number
+            gn_data["agreement_id"] = agreement_id
+
+            # Create grant number directly (skip authorization - user already authorized for agreement)
+            new_gn = GrantNumber(**gn_data)
+            self.db_session.add(new_gn)
+            self.db_session.flush()  # Flush to get new_gn.id
+
+            # Store mapping of temporary reference to actual ID
+            gn_ref_map[temp_ref] = new_gn.id
+            gn_count += 1
+
+            logger.debug(
+                f"Created GrantNumber with ref={temp_ref!r} -> id={new_gn.id!r} for agreement_id={agreement_id!r}"
+            )
+
+        return gn_ref_map, gn_count
+
     def _create_budget_line_items(
         self,
         agreement: Agreement,
         budget_line_items_data: list[dict[str, Any]],
         sc_ref_map: dict[str, int],
+        gn_ref_map: dict[str, int] | None = None,
     ) -> int:
         """
         Create budget line items for an agreement.
@@ -277,14 +325,16 @@ class AgreementsService(OpsService[Agreement]):
             agreement: The agreement to associate with budget line items
             budget_line_items_data: List of budget line item data dictionaries
             sc_ref_map: Map of services component references to IDs for resolution
+            gn_ref_map: Map of grant number references to IDs for resolution (grant BLIs)
 
         Returns:
             Number of budget line items created
 
         Raises:
-            ValidationError: If services_component_ref is invalid
+            ValidationError: If services_component_ref or grant_number_ref is invalid
             ResourceNotFoundError: If referenced CAN doesn't exist
         """
+        gn_ref_map = gn_ref_map or {}
         bli_count = 0
 
         for bli_data in budget_line_items_data:
@@ -305,6 +355,25 @@ class AgreementsService(OpsService[Agreement]):
                 logger.debug(
                     f"Resolved services_component_ref {services_component_ref!r} "
                     f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                )
+
+            # Resolve grant_number_ref to grant_number_id (grant BLIs; if provided and not None)
+            grant_number_ref = bli_data.pop("grant_number_ref", None)
+            if grant_number_ref is not None:
+                if grant_number_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {grant_number_ref!r}. "
+                                f"No grant number with that reference exists in the request. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                bli_data["grant_number_id"] = gn_ref_map[grant_number_ref]
+                logger.debug(
+                    f"Resolved grant_number_ref {grant_number_ref!r} "
+                    f"to grant_number_id={gn_ref_map[grant_number_ref]!r}"
                 )
 
             # Set agreement_id on the budget line item
@@ -328,9 +397,19 @@ class AgreementsService(OpsService[Agreement]):
 
         return bli_count
 
-    def update(self, id: int, updated_fields: dict[str, Any], partial: bool = True) -> tuple[Agreement, int]:
+    def update(
+        self,
+        id: int,
+        updated_fields: dict[str, Any],
+        partial: bool = True,
+        commit: bool = True,
+    ) -> tuple[Agreement, int]:
         """
-        Update an existing agreement
+        Update an existing agreement.
+
+        When ``commit`` is False, all writes (the merged agreement and any procurement-shop
+        change request) are flushed but not committed. The caller owns the eventual commit
+        and any deferred reviewer notifications (used by the edit-bundle orchestrator).
         """
         agreement = self.db_session.get(Agreement, id)
 
@@ -345,6 +424,13 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
+
+        # grant_numbers are a nested collection only meaningful at creation time. The Grant schema
+        # loads them with a load_default of [], so a PUT that omits them arrives here as an empty
+        # list. Merging an empty collection would disassociate any existing grant numbers by nulling
+        # their (NOT NULL) agreement_id, raising an IntegrityError. Grant numbers are managed via
+        # their own endpoints, so drop them from the agreement update entirely.
+        updated_fields.pop("grant_numbers", None)
 
         # unpack the awarding_entity_id if it exists since we handle it separately (after the merge)
         awarding_entity_id = None
@@ -363,13 +449,17 @@ class AgreementsService(OpsService[Agreement]):
             add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
 
             self.db_session.merge(agreement_data)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
 
             change_request_id = None
             if awarding_entity_id:
-                change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+                change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id, commit=commit)
 
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
 
             return agreement, 202 if change_request_id else 200
 
@@ -379,7 +469,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to update agreement id={id} - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [
@@ -505,36 +595,42 @@ class AgreementsService(OpsService[Agreement]):
 
         return paginated_results, metadata
 
-    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
-        # Get the current status list for ordering
-        bli_statuses = list(BudgetLineItemStatus.__members__.values())
-
-        # Block if any BLIs are IN_EXECUTION or higher
-        if any(
-            [
-                bli_statuses.index(bli.status) >= bli_statuses.index(BudgetLineItemStatus.IN_EXECUTION)
-                for bli in agreement.budget_line_items
-            ]
-        ):
+        # Block if any BLIs are IN_EXECUTION or higher (use explicit set, not ordinal position,
+        # to avoid PLANNED_MOD sorting after OBLIGATED in the enum definition order)
+        _blocked_statuses = {
+            BudgetLineItemStatus.IN_EXECUTION,
+            BudgetLineItemStatus.OBLIGATED,
+            BudgetLineItemStatus.PLANNED_MOD,
+        }
+        if any(bli.status in _blocked_statuses for bli in agreement.budget_line_items):
             raise ValidationError(
                 "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
             )
 
         # Apply the change immediate if all BLIs are DRAFT
-        if all(
-            bli_statuses.index(bli.status) == bli_statuses.index(BudgetLineItemStatus.DRAFT)
-            for bli in agreement.budget_line_items
-        ):
+        if all(bli.status == BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
             agreement.awarding_entity_id = new_value
             # TODO: update budget line items' procurement shop fees directly for DRAFT BLIs
             # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # Create a change request if at least one BLI is in PLANNED status
+        # At least one BLI is in PLANNED status (PLANNED_MOD is unreachable here — the
+        # blocked-status guard above raises first for it). Normally this needs a Change
+        # Request for Division Director approval. When the SKIP_CR_FOR_DRAFT_PLANNED
+        # capability is enabled (per-environment), apply the change directly instead —
+        # matching the same flag's behavior for BLI Draft→Planned edits. The awarding_entity_id
+        # assignment lands on the identity-mapped agreement before the resource re-serializes it,
+        # so agreement history still records the "Change to Procurement Shop" entry via the
+        # UPDATE_AGREEMENT field diff (see resources/agreements.py and agreement_edit_bundle.py).
         if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+            if current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
+                agreement.awarding_entity_id = new_value
+                return None
+
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -549,7 +645,8 @@ class AgreementsService(OpsService[Agreement]):
                         },
                         "created_by": get_current_user().id,
                         "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                    }
+                    },
+                    commit=commit,
                 )
                 cr_meta.metadata.update(
                     {
@@ -930,6 +1027,11 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         BudgetLineItemStatus.OBLIGATED,
     ]
 
+    # PLANNED_MOD BLIs are modifications to already-PLANNED lines, so they're grouped under PLANNED here.
+    status_bucket = {
+        BudgetLineItemStatus.PLANNED_MOD: BudgetLineItemStatus.PLANNED,
+    }
+
     amount_by_status: dict[BudgetLineItemStatus, Decimal] = {s: Decimal("0") for s in tracked_statuses}
     agreements_by_status: dict[BudgetLineItemStatus, set[int]] = {s: set() for s in tracked_statuses}
 
@@ -937,9 +1039,10 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         for bli in agreement.budget_line_items:
             if fiscal_year is not None and bli.fiscal_year != fiscal_year:
                 continue
-            if bli.status in amount_by_status:
-                amount_by_status[bli.status] += (bli.amount or Decimal("0")) + bli.fees
-                agreements_by_status[bli.status].add(agreement.id)
+            bucket = status_bucket.get(bli.status, bli.status)
+            if bucket in amount_by_status:
+                amount_by_status[bucket] += (bli.amount or Decimal("0")) + bli.fees
+                agreements_by_status[bucket].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
     tracked_agreement_ids = set().union(*agreements_by_status.values())
@@ -1146,6 +1249,13 @@ def _apply_agreement_filters(
         values = data.get(filter_key, [])
         if values:
             query = query.where(column.in_(values))
+
+    # Filter by the division of the agreement's project officer (COR).
+    # Uses a subquery join through User because division lives on the User model,
+    # not the agreement. This naturally excludes agreements with no project officer.
+    divisions = data.get("division", [])
+    if divisions:
+        query = query.where(agreement_cls.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
 
     # Apply name filter with partial or exact matching based on exact_match flag
     # Use OR logic so multiple names return agreements matching ANY of them

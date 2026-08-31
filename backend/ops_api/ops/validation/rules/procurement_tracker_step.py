@@ -116,16 +116,34 @@ class CompletedByUpdateAuthorizationRule(ValidationRule):
 
 class NoUpdatingCompletedProcurementStepRule(ValidationRule):
     """
-    Validates that completed procurement tracker steps cannot be updated.
+    Validates that completed procurement tracker steps cannot be updated,
+    except when the only field being updated is the notes.
+    AWARD steps are also exempt when the PATCH only contains approval-response fields, because
+    Budget Team approval happens after the COR completes (status=COMPLETED) the step.
     """
+
+    # Fields that are still editable after a step has been completed.
+    EDITABLE_AFTER_COMPLETION = frozenset({"notes"})
+    AWARD_APPROVAL_FIELDS = frozenset({"approval_status", "obligated_date"})
 
     @property
     def name(self) -> str:
         return "No Updating Completed Procurement Step"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
-        if procurement_tracker_step.status == ProcurementTrackerStepStatus.COMPLETED:
-            raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
+        if procurement_tracker_step.status != ProcurementTrackerStepStatus.COMPLETED:
+            return
+
+        # Allow notes-only edits on a completed step; block any other field change.
+        updated_field_names = set(context.updated_fields.keys())
+        if updated_field_names.issubset(self.EDITABLE_AFTER_COMPLETION):
+            return
+
+        if procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            if updated_field_names <= self.AWARD_APPROVAL_FIELDS:
+                return
+
+        raise ValidationError({"status": "Cannot update a procurement tracker step that is already completed."})
 
 
 class AcquisitionPlanningRequiredFieldsRule(ValidationRule):
@@ -140,20 +158,26 @@ class AcquisitionPlanningRequiredFieldsRule(ValidationRule):
         return "Required Fields Check"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
 
         updated_fields = context.updated_fields
-        acquisition_planning = ["notes", "task_completed_by", "date_completed"]
-        required_acquisition_planning_fields = ["task_completed_by", "date_completed"]
-        acquisition_planning_field_found = [field for field in acquisition_planning if field in updated_fields]
-        if acquisition_planning_field_found:
-            missing_fields = [field for field in required_acquisition_planning_fields if field not in updated_fields]
-            if missing_fields:
-                raise ValidationError(
-                    {
-                        field: f"{field} is required when updating procurement tracker step with acquisition planning package provided."
-                        for field in missing_fields
-                    }
-                )
+        mapping = {
+            "task_completed_by": "acquisition_planning_task_completed_by",
+            "date_completed": "acquisition_planning_date_completed",
+        }
+        required_fields = ["task_completed_by", "date_completed"]
+        missing_fields = [field for field in required_fields if field not in updated_fields]
+        final_missing_fields = [
+            field for field in missing_fields if getattr(procurement_tracker_step, mapping[field], None) is None
+        ]
+        if final_missing_fields:
+            raise ValidationError(
+                {
+                    field: f"{field} is required when completing acquisition planning step."
+                    for field in final_missing_fields
+                }
+            )
 
 
 class NoFutureCompletionDateUpdateValidationRule(ValidationRule):
@@ -295,6 +319,117 @@ class PreAwardCompletionRequiredFieldsRule(ValidationRule):
             )
 
 
+class AwardCompletionRequiredFieldsRule(ValidationRule):
+    """
+    Validates that required fields are present when completing the AWARD step.
+    Only runs when status is being set to COMPLETED.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Completion Required Fields Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        mapping = {
+            "task_completed_by": "award_task_completed_by",
+            "date_completed": "award_date_completed",
+        }
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        updated_fields = context.updated_fields
+        award_required_fields = ["task_completed_by", "date_completed"]
+
+        # Check for missing fields
+        missing_fields = [field for field in award_required_fields if field not in updated_fields]
+
+        # Check if missing fields are populated on model
+        final_missing_fields = [
+            field for field in missing_fields if getattr(procurement_tracker_step, mapping[field], None) is None
+        ]
+
+        # Check if any provided fields are explicitly set to None
+        null_fields = [
+            field for field in award_required_fields if field in updated_fields and updated_fields[field] is None
+        ]
+
+        # Combine missing and null fields
+        invalid_fields = list(set(final_missing_fields + null_fields))
+
+        if invalid_fields:
+            raise ValidationError(
+                {field: f"{field} is required when completing AWARD step." for field in invalid_fields}
+            )
+
+
+class AwardAgreementDataRequiredRule(ValidationRule):
+    """
+    Validates that the agreement has required data before completing the AWARD step:
+    - Vendor must exist for CONTRACT and AA agreement types
+    - At least one CLIN must exist for CONTRACT and AA agreement types
+    Only runs when status is being set to COMPLETED.
+
+    Note: IAA agreements use agencies instead of vendors and don't have CLINs, so they are excluded.
+    GRANT and DIRECT_OBLIGATION types don't use procurement trackers.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Agreement Data Required Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        from sqlalchemy import select
+
+        from models import AgreementType
+        from models.services_components import CLIN
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        # Get the agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError({"agreement": "Procurement tracker step is not linked to a valid agreement."})
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Only validate for CONTRACT and AA types
+        # IAA agreements use agencies instead of vendors and don't have CLINs
+        # GRANT and DIRECT_OBLIGATION types don't use procurement trackers
+        if agreement.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
+            return
+
+        # Validate Vendor exists — check the step's award_vendor_id first (set in this PATCH),
+        # then fall back to the agreement's vendor_id (set via agreement edit).
+        # The vendor is entered on the step form and lives on the step until Budget Team approval
+        # writes it through to the agreement, so checking only agreement.vendor_id misses it.
+        vendor_id = (
+            context.updated_fields.get("vendor_id")
+            or getattr(procurement_tracker_step, "award_vendor_id", None)
+            or getattr(agreement, "vendor_id", None)
+        )
+        if not vendor_id:
+            raise ValidationError(
+                {"vendor": "Vendor is required for CONTRACT and AA agreements before completing the AWARD step."}
+            )
+
+        # Validate at least one CLIN exists (use .first() for efficiency)
+        has_clin = (
+            context.db_session.execute(select(CLIN).where(CLIN.agreement_id == agreement.id).limit(1)).first()
+            is not None
+        )
+
+        if not has_clin:
+            raise ValidationError(
+                {
+                    "clins": "At least one CLIN is required for CONTRACT and AA agreements before completing the AWARD step."
+                }
+            )
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the target_completion_date is not in the past when being updated for pre-solicitation, evaluation, and pre-award steps.
@@ -384,6 +519,8 @@ class CompletionAuthorizationRule(ValidationRule):
             task_completed_by_id = procurement_tracker_step.evaluation_task_completed_by
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             task_completed_by_id = procurement_tracker_step.pre_award_task_completed_by
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            task_completed_by_id = procurement_tracker_step.award_task_completed_by
         # If task_completed_by is not set, the CompletionRequiredFieldsRule will catch it
         if not task_completed_by_id:
             return
@@ -632,7 +769,6 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
     Validates that approval responses are valid:
     - Can only respond if approval has been requested
     - Cannot respond if already responded
-    - Reviewer notes required when declining
     """
 
     @property
@@ -663,9 +799,90 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
                 {"approval_status": f"This approval request has already been {current_approval_status.lower()}."}
             )
 
-        # Require reviewer notes when declining
-        if updated_fields["approval_status"] == "DECLINED":
-            if not updated_fields.get("reviewer_notes") or not updated_fields["reviewer_notes"].strip():
-                raise ValidationError(
-                    {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
-                )
+
+class AwardApprovalResponseAuthorizationRule(ValidationRule):
+    """
+    Validates that the user responding to an award approval request is authorized.
+    Only BUDGET_TEAM or SYSTEM_OWNER may respond to AWARD step approvals.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        user_id = context.user.id
+        user = context.db_session.get(User, user_id)
+        if user:
+            user_role_names = {role.name for role in user.roles}
+            if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+                return
+
+        raise AuthorizationError(
+            f"User {user_id} is not authorized to respond to award approval requests. "
+            "Only BUDGET_TEAM or SYSTEM_OWNER members may approve award requests.",
+            "ProcurementTrackerStep",
+        )
+
+
+class AwardApprovalResponseValidationRule(ValidationRule):
+    """
+    Validates that award approval responses are valid:
+    - Approval must have been requested first
+    - Cannot respond if already responded (APPROVED)
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Response Validation"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+        if "approval_status" not in context.updated_fields:
+            return
+
+        if not procurement_tracker_step.award_approval_requested:
+            raise ValidationError(
+                {"approval_status": "Cannot respond to an award approval request that has not been submitted."}
+            )
+
+        if context.updated_fields["approval_status"] != "APPROVED":
+            raise ValidationError({"approval_status": "Award approvals can only be set to APPROVED."})
+
+        current_status = procurement_tracker_step.award_approval_status
+        if current_status == "APPROVED":
+            raise ValidationError({"approval_status": "This award approval request has already been approved."})
+
+
+class AwardApprovalObligatedDateRequiredRule(ValidationRule):
+    """
+    Validates that an obligated date is provided when approving an AWARD step.
+
+    The obligated date must never be assumed to be the current date, because it is
+    generally first documented in another system. It must be supplied explicitly on
+    the approval request so that budget lines transitioning from Executing to Obligated
+    reflect the real obligation date rather than today's date.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Obligated Date Required"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only enforce when the step is being approved for Award
+        if updated_fields.get("approval_status") != "APPROVED":
+            return
+
+        if updated_fields.get("obligated_date") is None:
+            raise ValidationError({"obligated_date": "Obligated date is required to approve for Award."})

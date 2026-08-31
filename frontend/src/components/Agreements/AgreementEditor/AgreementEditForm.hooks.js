@@ -5,16 +5,22 @@ import classnames from "vest/classnames";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
-    useGetProjectsQuery,
+    useGetAllProjectsQuery,
     useGetProductServiceCodesQuery,
+    useGetVersionQuery,
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import {
+    buildProcurementShopChangeAlert,
+    cleanAgreementForApi,
+    formatTeamMember
+} from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
@@ -87,6 +93,9 @@ const useAgreementEditForm = (
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
     const setRequestingAgency = useUpdateAgreement("requesting_agency");
     const setServicingAgency = useUpdateAgreement("servicing_agency");
+    // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
+    const setNofoNumber = useUpdateAgreement("nofo_number");
+    const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -111,6 +120,20 @@ const useAgreementEditForm = (
         selected_project_officer: selectedProjectOfficer,
         selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
+
+    // Capture the original agreement identity once at mount. The reducer mutates
+    // agreement.name/nick_name/agreement_type as the user types, so comparing
+    // against `agreement?.name` would treat the typed-in duplicate as "the
+    // current row" and suppress the conflict. We need the pre-edit baseline.
+    const originalAgreementRef = React.useRef(null);
+    if (originalAgreementRef.current === null && agreement?.id) {
+        originalAgreementRef.current = {
+            id: agreement.id,
+            name: agreement.name,
+            nick_name: agreement.nick_name,
+            agreement_type: agreement.agreement_type
+        };
+    }
     const {
         notes: agreementNotes,
         vendor: agreementVendor,
@@ -127,21 +150,17 @@ const useAgreementEditForm = (
         requesting_agency: requestingAgency,
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
+        nofo_number: nofoNumber,
+        aln_numbers: alnNumbers,
+        funding_period_months: fundingPeriodMonths,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
 
     const {
-        data: projectsResponse,
+        data: projects = [],
         error: errorProjects,
         isLoading: isLoadingProjects
-    } = useGetProjectsQuery(
-        {},
-        {
-            skip: isWizardMode
-        }
-    );
-
-    const projects = projectsResponse?.projects ?? [];
+    } = useGetAllProjectsQuery(undefined, { skip: isWizardMode });
 
     const {
         data: productServiceCodes = [],
@@ -180,7 +199,21 @@ const useAgreementEditForm = (
     }, [agreementType]);
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
-    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Superusers and Budget Team members bypass the procurement-shop change-request workflow.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
+    // Per-environment capability: when ON, a procurement-shop change applies immediately (no
+    // Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Defaults to
+    // false until the version query resolves so the approval UX is never suppressed prematurely.
+    // The backend is the enforcement authority; this only drives the modal/alert copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const shouldRequestChange =
+        hasProcurementShopChanged &&
+        areAnyBudgetLinesPlanned &&
+        !isAgreementAwarded &&
+        !canEditDirectly &&
+        !skipCrForDraftPlanned;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
@@ -238,12 +271,15 @@ const useAgreementEditForm = (
                 const totalMatches = result?.count ?? 0;
                 // The current agreement (in edit mode) is itself in the result set when its
                 // saved value still matches the input. Treat that one row as not a conflict.
+                // Compare against the original (pre-edit) values, not the live reducer state,
+                // since `agreement.name` / `nick_name` get mutated as the user types.
+                const original = originalAgreementRef.current;
                 const currentMatchesInput =
-                    !!agreement?.id &&
+                    !!original?.id &&
                     (field === "name"
-                        ? agreement?.agreement_type === agreementType &&
-                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
-                        : agreement?.nick_name === trimmed);
+                        ? original.agreement_type === agreementType &&
+                          (original.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : original.nick_name === trimmed);
                 const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
                 setUniquenessErrors((prev) => ({
                     ...prev,
@@ -255,14 +291,7 @@ const useAgreementEditForm = (
                 return false;
             }
         },
-        [
-            agreement?.id,
-            agreement?.agreement_type,
-            agreement?.name,
-            agreement?.nick_name,
-            agreementType,
-            triggerGetAgreements
-        ]
+        [agreementType, triggerGetAgreements]
     );
 
     const checkUniqueOnBlur = React.useMemo(
@@ -285,6 +314,7 @@ const useAgreementEditForm = (
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
+    const isGrant = agreementType === AGREEMENT_TYPES.GRANT;
     const shouldDisableBtn =
         !agreementTitle ||
         !agreement?.project_id ||
@@ -352,8 +382,20 @@ const useAgreementEditForm = (
         });
     };
 
+    const setAlnNumbers = (alnNumbers) => {
+        dispatch({
+            type: "SET_ALN_NUMBERS",
+            payload: alnNumbers ? alnNumbers : []
+        });
+    };
+
     const saveAgreement = React.useCallback(
-        async (redirectUrl = null, skipChangeCheck = false) => {
+        async (
+            redirectUrl = null,
+            skipChangeCheck = false,
+            suppressErrorAlert = false,
+            suppressSuccessAlert = false
+        ) => {
             const data = {
                 ...agreement,
                 team_members: selectedTeamMembers.map((team_member) => {
@@ -372,48 +414,37 @@ const useAgreementEditForm = (
                 try {
                     const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (shouldRequestChange) {
-                        const oldTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            procurementShop?.fee_percentage ?? 0
-                        );
-                        const newTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            selectedProcurementShop?.fee_percentage ?? 0
-                        );
-                        const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                        const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                        const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-
-                        setAlert({
-                            type: "success",
-                            heading: "Changes Sent to Approval",
-                            message:
-                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                `<strong>Pending Changes:</strong>\n` +
-                                `<ul><li>${procurementShopChanges}</li>` +
-                                `<li>${feeRateChanges}</li>` +
-                                `<li>${feeTotalChanges}</li></ul>`,
-                            redirectUrl: redirectUrl
-                        });
-                    } else {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Updated",
-                            message: `The agreement ${agreement.name} has been successfully updated.`,
-                            redirectUrl: redirectUrl
-                        });
+                    if (!suppressSuccessAlert) {
+                        if (shouldRequestChange) {
+                            setAlert(
+                                buildProcurementShopChangeAlert({
+                                    budgetLines: agreement?.budget_line_items ?? [],
+                                    oldProcurementShop: procurementShop,
+                                    newProcurementShop: selectedProcurementShop,
+                                    redirectUrl
+                                })
+                            );
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Updated",
+                                message: `The agreement ${agreement.name} has been successfully updated.`,
+                                redirectUrl: redirectUrl
+                            });
+                        }
+                        scrollToTop();
                     }
-                    scrollToTop();
                     return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while saving the agreement.",
-                        redirectUrl: "/error"
-                    });
+                    if (!suppressErrorAlert) {
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                            redirectUrl: "/error"
+                        });
+                    }
                     // Don't call scrollToTop on error - let the redirect happen
                     throw rejected; // Re-throw to prevent further execution
                 }
@@ -443,8 +474,11 @@ const useAgreementEditForm = (
         if (isEditMode && setIsEditMode) setIsEditMode(false);
     }, [setHasAgreementChanged, isEditMode, setIsEditMode]);
 
+    // In review mode (EditAgreementAndBudgetLines) the page registers its own blocker
+    // covering both agreement and BLI changes. Disable the form-level blocker there so
+    // only one blocker is live at a time — React Router supports only one per router.
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
-        hasChanged: hasAgreementChanged,
+        hasChanged: !isReviewMode && hasAgreementChanged,
         saveChanges: blockerSaveChanges,
         onExit: blockerOnExit
     });
@@ -457,7 +491,7 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
-    const verifyUniquenessBeforeSubmit = async () => {
+    const verifyUniquenessBeforeSubmit = React.useCallback(async () => {
         checkUniqueOnBlur.cancel();
         const [nameConflict, nickNameConflict] = await Promise.all([
             runUniqueCheck("name", agreementTitle),
@@ -466,7 +500,7 @@ const useAgreementEditForm = (
         if (nameConflict) return "name";
         if (nickNameConflict) return "nickname";
         return null;
-    };
+    }, [checkUniqueOnBlur, runUniqueCheck, agreementTitle, agreementNickName]);
 
     const handleContinue = async () => {
         const conflictFieldId = await verifyUniquenessBeforeSubmit();
@@ -521,7 +555,14 @@ const useAgreementEditForm = (
         }
 
         try {
-            const result = await saveAgreement();
+            // Bypass the navigation blocker: saving a draft is an intentional, saved exit,
+            // so the "You have unsaved changes" modal must not appear. Note that
+            // setHasAgreementChanged(false) only resets the parent's copy — the blocker's
+            // hasChanged is bound to the local useHasStateChanged(agreement) value, which
+            // stays true here. Navigation is deferred to the success alert's redirectUrl so a
+            // re-render propagates isCancelling before useBlocker re-evaluates.
+            setIsCancelling(true);
+            const result = await saveAgreement("/agreements");
             if (result === false && !agreement.id) {
                 const data = {
                     ...agreement,
@@ -537,12 +578,16 @@ const useAgreementEditForm = (
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
-                    message: `The agreement ${agreement.name} has been successfully created.`
+                    message: `The agreement ${agreement.name} has been successfully created.`,
+                    redirectUrl: "/agreements"
                 });
                 scrollToTop();
+            } else if (result === false) {
+                // Existing agreement with no changes to save: saveAgreement set no alert and
+                // hasChanged is false, so the blocker is inactive — navigate directly.
+                navigate("/agreements");
             }
             setHasAgreementChanged(false);
-            navigate("/agreements");
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
             if (!agreement.id) {
@@ -632,14 +677,39 @@ const useAgreementEditForm = (
         setSelectedAgreementFilter(value);
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
+            clearGrantOnlyFields();
         } else if (value === AGREEMENT_TYPES.GRANT) {
+            suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
+            setContractType(null);
+            setServiceReqType(null);
+            changeSelectedProductServiceCode(null);
+            setAgreementReason(null);
+            setAgreementVendor(null);
+            setAgreementNotes(null);
+            changeSelectedProjectOfficer(null);
+            changeSelectedAlternateProjectOfficer(null);
+            dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
+            dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
+            dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
+            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
+            clearGrantOnlyFields();
         }
+    };
+
+    // Clear Grant-only fields (NOFO/ALN/Funding Period) when switching AWAY from GRANT.
+    // Deliberately does NOT clear alternate_project_officer_id / Project Specialist: that column
+    // is shared with Contracts (their Alternate PO/Alt-COR), so a value present when switching
+    // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
+    const clearGrantOnlyFields = () => {
+        setNofoNumber(null);
+        setAlnNumbers([]);
+        setFundingPeriodMonths(null);
     };
 
     return {
@@ -668,6 +738,12 @@ const useAgreementEditForm = (
         selectedProcurementShop,
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
+        nofoNumber,
+        alnNumbers,
+        fundingPeriodMonths,
+        setNofoNumber,
+        setAlnNumbers,
+        setFundingPeriodMonths,
         showModal,
         setShowModal,
         modalProps,
@@ -675,6 +751,7 @@ const useAgreementEditForm = (
         vendorDisabled,
         immutableFields,
         isAgreementAA,
+        isGrant,
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,
@@ -697,6 +774,8 @@ const useAgreementEditForm = (
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,
+        procurementShop,
+        shouldRequestChange,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,
@@ -713,6 +792,7 @@ const useAgreementEditForm = (
         setShowBlockerModal,
         blockerModalProps,
         saveAgreement,
+        verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes,
         isLoadingProjects
     };

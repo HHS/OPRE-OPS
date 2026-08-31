@@ -1,12 +1,20 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ProjectFundingByPortfolioCard from "./ProjectFundingByPortfolioCard";
 
+// Mock exposes setActiveId via a per-segment button so tests can drive the
+// hover/active state the same way HorizontalStackedBar does on mouseenter.
 vi.mock("../../UI/DataViz/HorizontalStackedBar/HorizontalStackedBar", () => ({
-    default: ({ data }) => (
+    default: ({ data, setActiveId }) => (
         <div data-testid="horizontal-stacked-bar">
             {data.map((d) => (
-                <span key={d.id}>{d.abbreviation}</span>
+                <button
+                    key={d.id}
+                    data-testid={`activate-${d.abbreviation}`}
+                    onClick={() => setActiveId(d.id)}
+                >
+                    {d.abbreviation}
+                </button>
             ))}
         </div>
     )
@@ -76,6 +84,70 @@ describe("ProjectFundingByPortfolioCard", () => {
         );
         expect(screen.getByTestId("portfolio-legend-item-CC")).toBeInTheDocument();
         expect(screen.getByTestId("portfolio-legend-item-HS")).toBeInTheDocument();
+    });
+
+    it("applies active styling to the percent tag when a segment is activated", () => {
+        render(
+            <ProjectFundingByPortfolioCard
+                fiscalYear={2025}
+                fundingByPortfolio={mockFunding}
+            />
+        );
+        const tag = within(screen.getByTestId("portfolio-legend-item-CC")).getByText("100%");
+        // Before activation: default white background, no active color/fake-bold.
+        expect(tag.className).not.toContain("fake-bold");
+        expect(tag).not.toHaveStyle({ backgroundColor: "var(--portfolio-bar-graph-cc)" });
+
+        fireEvent.click(screen.getByTestId("activate-CC"));
+
+        // After activation: tag takes the portfolio color background and fake-bold.
+        expect(tag.className).toContain("fake-bold");
+        expect(tag).toHaveStyle({ backgroundColor: "var(--portfolio-bar-graph-cc)" });
+    });
+
+    it("active light-background portfolio (CC) uses dark text color (#1B1B1B) on the percent tag", () => {
+        render(
+            <ProjectFundingByPortfolioCard
+                fiscalYear={2025}
+                fundingByPortfolio={mockFunding}
+            />
+        );
+        fireEvent.click(screen.getByTestId("activate-CC"));
+        const tag = within(screen.getByTestId("portfolio-legend-item-CC")).getByText("100%");
+        expect(tag).toHaveStyle({ color: "#1B1B1B" });
+    });
+
+    it("active dark-background portfolio (CW) uses light text color (#FFFFFF) on the percent tag", () => {
+        render(
+            <ProjectFundingByPortfolioCard
+                fiscalYear={2025}
+                fundingByPortfolio={[
+                    { portfolio_id: 7, portfolio: "Child Welfare Research", amount: 500000, abbreviation: "CW" }
+                ]}
+            />
+        );
+        fireEvent.click(screen.getByTestId("activate-CW"));
+        const tag = within(screen.getByTestId("portfolio-legend-item-CW")).getByText("100%");
+        expect(tag).toHaveStyle({ color: "#FFFFFF" });
+    });
+
+    it("only the activated segment's tag receives active styling", () => {
+        const multiFunding = [
+            { portfolio_id: 3, portfolio: "Child Care Research", amount: 500000, abbreviation: "CC" },
+            { portfolio_id: 2, portfolio: "Head Start Research", amount: 250000, abbreviation: "HS" }
+        ];
+        render(
+            <ProjectFundingByPortfolioCard
+                fiscalYear={2025}
+                fundingByPortfolio={multiFunding}
+            />
+        );
+        fireEvent.click(screen.getByTestId("activate-CC"));
+
+        const ccTag = within(screen.getByTestId("portfolio-legend-item-CC")).getByText(/%$/);
+        const hsTag = within(screen.getByTestId("portfolio-legend-item-HS")).getByText(/%$/);
+        expect(ccTag.className).toContain("fake-bold");
+        expect(hsTag.className).not.toContain("fake-bold");
     });
 
     it("renders gracefully with empty funding data", () => {

@@ -1,5 +1,6 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
 
@@ -16,6 +17,8 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
+ * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
+ * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -28,12 +31,39 @@ const AgreementDetails = ({
     isAgreementNotDeveloped,
     isAgreementAwarded = false,
     hasAgreementChanged = false,
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
+
+    const { nofoPeriodStart, nofoPeriodEnd } = grantNumbers.reduce(
+        (acc, gn) => ({
+            nofoPeriodStart:
+                gn.period_start && (!acc.nofoPeriodStart || gn.period_start < acc.nofoPeriodStart)
+                    ? gn.period_start
+                    : acc.nofoPeriodStart,
+            nofoPeriodEnd:
+                gn.period_end && (!acc.nofoPeriodEnd || gn.period_end > acc.nofoPeriodEnd)
+                    ? gn.period_end
+                    : acc.nofoPeriodEnd
+        }),
+        { nofoPeriodStart: null, nofoPeriodEnd: null }
+    );
+
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
+    // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
+    // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
+    // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
+    // states, the form should not be reachable via URL params either.
+    const isEditable =
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
 
     return (
         <article>
@@ -45,6 +75,8 @@ const AgreementDetails = ({
                 isEditable={isEditable}
                 hasUnsavedChanges={hasAgreementChanged}
                 isPreAwardInReview={isPreAwardInReview}
+                isAwardInReview={isAwardInReview}
+                isPostPreAwardLocked={isPostPreAwardLocked}
             />
 
             {isEditMode && isEditable ? (
@@ -62,6 +94,8 @@ const AgreementDetails = ({
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
                     isAgreementAwarded={isAgreementAwarded}
+                    nofoPeriodStart={nofoPeriodStart}
+                    nofoPeriodEnd={nofoPeriodEnd}
                 />
             )}
         </article>

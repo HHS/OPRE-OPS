@@ -6,6 +6,10 @@ import {
     hasBlIsInReview,
     hasAnyBliInSelectedStatus,
     groupByServicesComponent,
+    groupByGrantNumber,
+    findGrantPeriodStart,
+    findGrantPeriodEnd,
+    findGrantDescription,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -302,6 +306,72 @@ describe("groupByServicesComponent", () => {
         ]);
     });
 });
+describe("groupByGrantNumber", () => {
+    it("should group budget lines by grant number", () => {
+        const budgetLines = [
+            { id: 1, grant_number_number: 1 },
+            { id: 2, grant_number_number: 2 },
+            { id: 3, grant_number_number: 1 }
+        ];
+        const result = groupByGrantNumber(budgetLines);
+
+        expect(result).toEqual([
+            {
+                grantNumberNumber: 1,
+                budgetLines: [
+                    { id: 1, grant_number_number: 1 },
+                    { id: 3, grant_number_number: 1 }
+                ]
+            },
+            {
+                grantNumberNumber: 2,
+                budgetLines: [{ id: 2, grant_number_number: 2 }]
+            }
+        ]);
+    });
+
+    it("should resolve grant number by id when grant_number_number is missing", () => {
+        const budgetLines = [
+            { id: 1, grant_number_id: 10 },
+            { id: 2, grant_number_id: 20 },
+            { id: 3 } // no link -> unassociated bucket (0)
+        ];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [{ id: 1, grant_number_id: 10 }] },
+            { grantNumberNumber: 2, budgetLines: [{ id: 2, grant_number_id: 20 }] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 3 }] }
+        ]);
+    });
+
+    it("should include grant numbers without budget lines and keep the unassociated bucket last", () => {
+        const budgetLines = [{ id: 1, grant_number_number: 0 }];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [] },
+            { grantNumberNumber: 2, budgetLines: [] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 1, grant_number_number: 0 }] }
+        ]);
+    });
+
+    it("should return an empty array if no budget lines are provided", () => {
+        expect(groupByGrantNumber([])).toEqual([]);
+    });
+
+    it("should return an empty array (not throw) for invalid input", () => {
+        expect(groupByGrantNumber(null)).toEqual([]);
+    });
+});
 describe("isBLIPermanent", () => {
     it("should return true if the budget line is permanent", () => {
         const result = isBLIPermanent(budgetLine);
@@ -413,13 +483,36 @@ describe("areAllBudgetLinesInReview helpers", () => {
 });
 
 describe("getTooltipLabel", () => {
-    it("returns the executing-status tooltip", () => {
+    it("prefers the backend-supplied lockedMessage when present", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.EXECUTING,
+            _meta: { lockedMessage: "This budget line can't be edited because the agreement has reached Pre-Award." }
+        });
+        expect(result).toBe("This budget line can't be edited because the agreement has reached Pre-Award.");
+    });
+    it("returns an empty string for an executing budget line with no lockedMessage (now editable)", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.EXECUTING });
-        expect(result).toBe("If you need to edit a budget line in Executing Status, please contact the budget team");
+        expect(result).toBe("");
     });
     it("returns the obligated-status tooltip", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED });
         expect(result).toBe("Obligated budget lines cannot be edited");
+    });
+    it("returns the OBE tooltip", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.PLANNED, is_obe: true });
+        expect(result).toBe("Budget lines that are overcome by events (OBE) cannot be edited");
+    });
+    it("gives lockedMessage precedence over the OBLIGATED branch", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED, _meta: { lockedMessage: "Locked X" } });
+        expect(result).toBe("Locked X");
+    });
+    it("gives lockedMessage precedence over the OBE branch", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.PLANNED,
+            is_obe: true,
+            _meta: { lockedMessage: "Locked Y" }
+        });
+        expect(result).toBe("Locked Y");
     });
     it("returns an empty string for any other status", () => {
         const result = getTooltipLabel({ status: "SOMETHING_ELSE" });
@@ -633,5 +726,77 @@ describe("calculateProcShopFeePercentage", () => {
     it("returns 0 when agreement is null", () => {
         const bli = { procurement_shop_fee: null, agreement: null };
         expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+});
+
+describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () => {
+    const grantNumbers = [
+        { number: 1, period_start: "2026-01-01", period_end: "2026-12-31", description: "First grant" },
+        { number: 2, period_start: "2027-01-01", period_end: "2027-12-31", description: "Second grant" },
+        { number: 3, period_start: null, period_end: null, description: null }
+    ];
+
+    describe("findGrantPeriodStart", () => {
+        it("returns period_start for a matching grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 1)).toBe("2026-01-01");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodStart(null, 1)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is undefined", () => {
+            expect(findGrantPeriodStart(undefined, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when period_start is null on the matched grant", () => {
+            expect(findGrantPeriodStart(grantNumbers, 3)).toBeNull();
+        });
+
+        it("returns undefined for the unassociated bucket (number 0)", () => {
+            expect(findGrantPeriodStart(grantNumbers, 0)).toBeUndefined();
+        });
+
+        it("resolves a string grouping key against a numeric grant number", () => {
+            // Grouping keys (grant_number_number) can arrive as strings from editor/form state
+            // while GrantNumber.number is numeric; the lookup must still resolve.
+            expect(findGrantPeriodStart(grantNumbers, "1")).toBe("2026-01-01");
+        });
+    });
+
+    describe("findGrantPeriodEnd", () => {
+        it("returns period_end for a matching grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 2)).toBe("2027-12-31");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodEnd(null, 1)).toBeUndefined();
+        });
+    });
+
+    describe("findGrantDescription", () => {
+        it("returns description for a matching grant number", () => {
+            expect(findGrantDescription(grantNumbers, 1)).toBe("First grant");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantDescription(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantDescription(null, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when description is null on the matched grant", () => {
+            expect(findGrantDescription(grantNumbers, 3)).toBeNull();
+        });
     });
 });

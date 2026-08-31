@@ -89,6 +89,7 @@ const convertStatusToOrdinalValue = (budgetLineStatus) => {
             case BLI_STATUS.DRAFT:
                 return 0;
             case BLI_STATUS.PLANNED:
+            case BLI_STATUS.PLANNED_MOD:
                 return 1;
             case BLI_STATUS.EXECUTING:
                 return 2;

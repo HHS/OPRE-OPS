@@ -62,6 +62,7 @@ const TableTag = ({ status, inReview = false, lockedMessage, isObe = false }) =>
             classNames += "bg-brand-data-viz-bl-by-status-1 text-ink";
             break;
         case "Planned":
+        case "Planned Mod":
             classNames += "bg-brand-data-viz-bl-by-status-2 text-white";
             break;
         case "Executing":

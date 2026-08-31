@@ -8,10 +8,12 @@ from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
 from models import (
     CAN,
+    CLIN,
     Agreement,
     AgreementChangeRequest,
     AgreementReason,
@@ -22,8 +24,10 @@ from models import (
     BudgetLineSortCondition,
     ChangeRequestStatus,
     ChangeRequestType,
+    GrantNumber,
     Portfolio,
     ProcurementShop,
+    ProcurementTracker,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -37,18 +41,25 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import (
+    CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
     associated_with_agreement,
     check_user_association,
+    is_unique_violation,
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
+    compute_bli_editable,
+    compute_bli_is_deletable,
     create_budget_line_item_instance,
+    get_bli_locked_message,
+    is_award_approval_requested,
     is_bli_editable,
+    is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
 )
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 @dataclass
@@ -103,9 +114,13 @@ class BudgetLineItemService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> BudgetLineItem:
+    def create(self, create_request: dict[str, Any], commit: bool = True) -> BudgetLineItem:
         """
         Create a new Budget Line Item and save it to the database.
+
+        When ``commit`` is False, the new BLI is added to the session and flushed to
+        populate its id, but the session is not committed. The caller is then
+        responsible for committing (used by the edit-bundle orchestrator).
         """
         agreement_id = create_request["agreement_id"]
 
@@ -120,17 +135,36 @@ class BudgetLineItemService:
             if not can:
                 raise ResourceNotFoundError("CAN", create_request["can_id"])
 
+        self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
+
         agreement = self.db_session.get(Agreement, agreement_id)
 
         new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
         self.db_session.add(new_bli)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
         return new_bli
 
-    def delete(self, id: int) -> None:
+    def delete(self, id: int, commit: bool = True) -> tuple[BudgetLineItem, int, int | None]:
         """
         Delete a Budget Line Item with the given id.
+
+        DRAFT BLIs (and any delete by a super user) are hard-deleted immediately and 200 is
+        returned. PLANNED and IN_EXECUTION BLIs route through an approval workflow: a deletion
+        change request is created and 202 is returned (the BLI is left intact until the request
+        is approved).
+
+        Returns ``(bli, status_code, change_request_id)``. ``change_request_id`` is None for a
+        hard delete and the created deletion CR's id for the 202 path.
+
+        ``commit=False`` is used by the atomic edit-bundle flow, which manages the surrounding
+        transaction itself. In that mode a hard delete flushes instead of committing, and a
+        deletion change request is created WITHOUT committing or notifying — the bundle commits
+        everything atomically and then notifies reviewers for the returned CR id post-commit
+        (mirroring how the bundle already handles edit-driven change requests).
         """
         bli = self.db_session.get(BudgetLineItem, id)
 
@@ -146,9 +180,30 @@ class BudgetLineItemService:
                 "BudgetLineItem",
             )
 
-        self.db_session.delete(bli)
-        self.db_session.commit()
-        return bli
+        is_super = is_super_user(current_user, current_app)
+        if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+            self.db_session.delete(bli)
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
+            return bli, 200, None
+
+        # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
+        # shared editability gate (in_review + OBE + Pre-Award/Award step block) so the rules
+        # cannot drift from the edit path.
+        if not compute_bli_editable(bli, bli.in_review, is_super):
+            raise ValidationError(
+                {"status": "Budget Line Item is not in a deletable state."},
+            )
+
+        # Route the deletion through a change request. Under ``commit=False`` (edit-bundle) the CR
+        # is created without committing/notifying so it stays inside the caller's atomic
+        # transaction — the same contract the bundle already relies on for edit-driven change
+        # requests (see ``add_bli_change_requests``). The bundle notifies reviewers post-commit.
+        change_request_service = ChangeRequestService(self.db_session)
+        change_request_id = change_request_service.add_bli_delete_change_request(bli, commit=commit)
+        return bli, 202, change_request_id
 
     def get(self, id: int) -> BudgetLineItem:
         """
@@ -178,6 +233,9 @@ class BudgetLineItemService:
                     selectinload(Agreement.team_members),
                     joinedload(Agreement.project),
                     joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+                    # Needed by the editability checks: is_pre_award_in_review and
+                    # is_post_pre_award_locked walk the active tracker's steps.
+                    selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
                 ),
                 # Eager load CAN and its portfolio/division
                 selectinload(BudgetLineItem.can).options(
@@ -494,7 +552,18 @@ class BudgetLineItemService:
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query, agreement_joined
 
-    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
+    def update(self, id: int, updated_fields: dict[str, Any], commit: bool = True) -> tuple[BudgetLineItem, int]:
+        budget_line_item, status_code, _ = self.update_with_change_request_ids(id, updated_fields, commit=commit)
+        return budget_line_item, status_code
+
+    def update_with_change_request_ids(
+        self, id: int, updated_fields: dict[str, Any], commit: bool = True
+    ) -> tuple[BudgetLineItem, int, list[int]]:
+        """Same as ``update`` but also returns the ids of any change requests created.
+
+        Useful for transactional callers (the edit-bundle orchestrator) that need to
+        defer reviewer notifications until after the bundle commit succeeds.
+        """
         budget_line_item = self._get_budget_line_item(id)
         self._validation(budget_line_item, updated_fields)
 
@@ -502,29 +571,78 @@ class BudgetLineItemService:
         request = updated_fields.get("request")
         schema = updated_fields.get("schema")
 
-        # Determine what kind of changes we're making
+        # Determine what kind of changes we're making. Parse the partial body once and
+        # reuse it for both the status-change check and the target-status read below.
+        parsed_partial = schema.load(request.json, partial=True)
         diff_data = self._get_diff_data(request, schema)
-        has_status_change = self._has_status_change(schema.load(request.json, partial=True), budget_line_item)
+        has_status_change = self._has_status_change(parsed_partial, budget_line_item)
         has_non_status_change = self._has_non_status_change(diff_data, budget_line_item)
 
         # Validate status and non-status changes aren't mixed
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
-        # Determine if direct edit or change request is needed
-        directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+        # Determine if direct edit or change request is needed.
+        # Superusers bypass the change-request workflow for all edits.
+        # Budget Team members bypass it for financial changes only when the agreement has
+        # an active award-approval request (step 6) — any other context still routes
+        # through the DD-approval workflow.
+        budget_team_can_bypass = (
+            is_budget_team(current_user)
+            and not has_status_change
+            and is_award_approval_requested(budget_line_item.agreement)
+        )
+        existing_bypass = (
+            is_super_user(current_user, current_app)
+            or budget_team_can_bypass
+            or (not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT])
         )
 
-        change_request_ids = []
+        # Optional capability (per-environment): when enabled, apply Draft→Planned status
+        # changes and in-Planned budget-detail edits immediately instead of creating a
+        # Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        flag_allows_direct, flagged_fields_to_apply = self._flagged_direct_edit(
+            budget_line_item, parsed_partial, diff_data, has_status_change
+        )
+
+        directly_editable = existing_bypass or flag_allows_direct
+
+        # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
+        # ensure CLIN record exists and replace with actual CLIN ID
+        # If clin_id is already a CLIN record ID (>= 5000), pass it through unchanged
+        if "clin_id" in updated_fields and updated_fields["clin_id"] is not None:
+            clin_value = updated_fields["clin_id"]
+            # CLIN numbers are 1-10 and need lazy creation
+            # CLIN IDs are >= 5000 (from sequence) and reference existing records
+            if 1 <= clin_value <= 10:
+                # CLIN number: ensure the CLIN record exists and get its ID
+                updated_fields["clin_id"] = self._ensure_clin_exists(budget_line_item, clin_value)
+            elif clin_value < 5000:
+                # Invalid: not a CLIN number (1-10) and not a CLIN ID (>= 5000)
+                raise ValidationError(
+                    {
+                        "clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."
+                    }
+                )
+            # clin_value >= 5000: valid CLIN ID, passes through unchanged
+
+        change_request_ids: list[int] = []
         if directly_editable:
-            self._apply_direct_edits(budget_line_item, updated_fields)
+            # For the flag-enabled paths only, restrict the write set to the fields the
+            # client actually sent (Defect A): the PATCH schema None-fills unset fields, so
+            # writing the whole dict would null amount/can_id/date_needed on a status-only
+            # Draft→Planned. Existing bypasses (superuser/budget-team/draft) keep the
+            # historical full-dict behavior.
+            fields_to_apply = None if existing_bypass else flagged_fields_to_apply
+            self._apply_direct_edits(budget_line_item, updated_fields, commit=commit, fields_to_apply=fields_to_apply)
         else:
-            change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
+            change_request_ids = self._handle_change_requests(
+                budget_line_item, id, request, schema, updated_fields, commit=commit
+            )
 
         logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
-        return budget_line_item, 202 if change_request_ids else 200
+        return budget_line_item, (202 if change_request_ids else 200), change_request_ids
 
     def _get_budget_line_item(self, id: int) -> BudgetLineItem:
         """Retrieve budget line item by ID or raise appropriate error"""
@@ -567,19 +685,183 @@ class BudgetLineItemService:
                     return True
         return False
 
-    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict) -> None:
-        """Apply direct edits to the budget line item"""
-        filtered_dict = {
-            k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
-        }
+    def _flagged_direct_edit(
+        self,
+        budget_line_item: BudgetLineItem,
+        parsed_partial: dict,
+        diff_data: dict,
+        has_status_change: bool,
+    ) -> tuple[bool, set[str]]:
+        """Decide whether the SKIP_CR_FOR_DRAFT_PLANNED capability allows this edit to
+        apply directly, and return the exact set of fields that may be written.
+
+        Returns ``(allows_direct, fields_to_apply)``. When the flag is off or the edit
+        doesn't match a covered path, returns ``(False, set())``. The ``fields_to_apply``
+        set is intentionally narrow (Defect A / Defect B): only the fields specific to the
+        matched path, never the None-filled full body.
+        """
+        if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
+            return False, set()
+
+        # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
+        is_draft_to_planned = (
+            has_status_change
+            and budget_line_item.status == BudgetLineItemStatus.DRAFT
+            and parsed_partial.get("status") == BudgetLineItemStatus.PLANNED
+        )
+        if is_draft_to_planned:
+            return True, {"status"}
+
+        # In-Planned budget-detail edit: ONLY the three budget fields (matching the CR
+        # path's budget_field_names), on a line that is and stays PLANNED. NOT
+        # has_non_status_change, which would newly persist comments/fee (Defect B).
+        if not has_status_change and budget_line_item.status == BudgetLineItemStatus.PLANNED:
+            changed_budget_keys = {
+                key
+                for key in BudgetLineItemChangeRequest.budget_field_names
+                if key in diff_data and self._value_changed(key, diff_data.get(key), budget_line_item)
+            }
+            if changed_budget_keys:
+                # Also apply any always-direct fields the client actually sent. On the CR
+                # path these are applied directly (see _handle_change_requests), so omitting
+                # them here would silently drop a combined budget + line_description/clin edit.
+                always_direct_sent = {key for key in self.ALWAYS_DIRECT_EDIT_FIELDS if key in diff_data}
+                return True, changed_budget_keys | always_direct_sent
+
+        return False, set()
+
+    @staticmethod
+    def _value_changed(key: str, new_value: Any, budget_line_item: BudgetLineItem) -> bool:
+        """Compare a proposed value against the current one, using a float-aware compare
+        for ``amount`` (mirrors the logic in _has_non_status_change)."""
+        orig_value = getattr(budget_line_item, key, None)
+        if key == "amount":
+            if new_value and orig_value:
+                return float(new_value) != float(orig_value)
+            return new_value != orig_value
+        return new_value != orig_value
+
+    def _apply_direct_edits(
+        self,
+        budget_line_item: BudgetLineItem,
+        updated_fields: dict,
+        commit: bool = True,
+        fields_to_apply: Optional[set[str]] = None,
+    ) -> None:
+        """Apply direct edits to the budget line item.
+
+        When ``fields_to_apply`` is provided, only those keys are written (used by the
+        flagged direct-apply paths so the None-filled schema defaults for unsent fields
+        don't clobber existing values). When ``None``, the historical behavior applies:
+        write everything except the internal/whitelisted-out keys.
+        """
+        if fields_to_apply is not None:
+            filtered_dict = {k: v for k, v in updated_fields.items() if k in fields_to_apply}
+        else:
+            filtered_dict = {
+                k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
+            }
         update_data(budget_line_item, filtered_dict)
         budget_line_item.updated_on = datetime.now()
         budget_line_item.updated_by = get_current_user().id
         self.db_session.add(budget_line_item)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
+
+    def _ensure_clin_exists(self, budget_line_item: BudgetLineItem, clin_number: int, max_retries: int = 3) -> int:
+        """
+        Ensure a CLIN record exists for the given CLIN number and agreement.
+        Creates CLIN record if it doesn't exist (lazy creation pattern, similar to services components).
+
+        Handles concurrent creation: if multiple requests try to create the same CLIN simultaneously,
+        the first succeeds and others catch the IntegrityError and use the existing record.
+        Automatically retries on transient race conditions (concurrent rollback).
+
+        Args:
+            budget_line_item: The BLI being updated
+            clin_number: The CLIN number (1-10) from frontend
+            max_retries: Maximum retry attempts for transient concurrency issues (default: 3)
+
+        Returns:
+            The CLIN record ID to use for the foreign key
+        """
+        agreement = budget_line_item.agreement
+        if not agreement:
+            raise ValidationError({"clin_id": "Cannot assign CLIN to budget line item without an agreement."})
+
+        clin_lookup = select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
+
+        for attempt in range(max_retries):
+            # Check if CLIN record already exists for this (number, agreement_id) pair
+            existing_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
+
+            if existing_clin:
+                return existing_clin.id
+
+            # Lazy create: CLIN doesn't exist yet, create it now
+            # Use savepoint (nested transaction) to isolate CLIN creation attempt
+            # This prevents rollback from discarding other session changes (e.g., BLI updates)
+            savepoint = self.db_session.begin_nested()
+            try:
+                new_clin = CLIN(
+                    number=clin_number,
+                    name=f"CLIN {clin_number}",
+                    agreement_id=agreement.id,
+                    pop_start_date=agreement.sc_start_date,  # Use services component dates
+                    pop_end_date=agreement.sc_end_date,
+                    created_by=get_current_user().id,
+                )
+                self.db_session.add(new_clin)
+                self.db_session.flush()  # Get the ID without committing
+                savepoint.commit()  # Commit the savepoint
+
+                logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+                return new_clin.id
+
+            except IntegrityError as e:
+                # Another transaction created this CLIN between our check and insert
+                if is_unique_violation(e, CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT):
+                    savepoint.rollback()  # Only rollback the nested transaction
+                    # Fetch the CLIN that was created by the concurrent transaction
+                    concurrent_clin = self.db_session.execute(clin_lookup).scalar_one_or_none()
+
+                    if concurrent_clin:
+                        logger.debug(
+                            f"CLIN {clin_number} for agreement {agreement.id} was created by concurrent request, "
+                            f"using existing ID {concurrent_clin.id}"
+                        )
+                        return concurrent_clin.id
+                    elif attempt < max_retries - 1:
+                        # Concurrent transaction rolled back between duplicate error and fetch - retry
+                        logger.warning(
+                            f"CLIN {clin_number} not found after concurrent rollback, "
+                            f"retrying (attempt {attempt + 1}/{max_retries})"
+                        )
+                        continue
+                    else:
+                        # Max retries exhausted - this is a persistent concurrency issue
+                        logger.error(
+                            f"CLIN {clin_number} for agreement {agreement.id} could not be created or retrieved "
+                            f"after {max_retries} attempts"
+                        )
+                        raise ValidationError(
+                            {
+                                "clin_id": f"Unable to create or retrieve CLIN {clin_number} after {max_retries} "
+                                f"attempts due to concurrent modifications. Please try again later."
+                            }
+                        )
+
+                # Re-raise if it's a different integrity error
+                savepoint.rollback()
+                raise
+
+        # Should never reach here due to loop logic, but satisfy type checker
+        raise ValidationError({"clin_id": f"Failed to create or retrieve CLIN {clin_number}."})
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "comments", "clin_id"}
 
     def _handle_change_requests(
         self,
@@ -588,6 +870,7 @@ class BudgetLineItemService:
         request,
         schema,
         updated_fields: dict,
+        commit: bool = True,
     ) -> list:
         """Handle changes that require change requests"""
         change_data, changing_from_data = validate_and_prepare_change_data(
@@ -609,7 +892,10 @@ class BudgetLineItemService:
             budget_line_item.updated_on = datetime.now()
             budget_line_item.updated_by = get_current_user().id
             self.db_session.add(budget_line_item)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
 
         if changed_budget_or_status_prop_keys:
             change_request_service = ChangeRequestService(self.db_session)
@@ -620,8 +906,25 @@ class BudgetLineItemService:
                 change_data,
                 changed_budget_or_status_prop_keys,
                 updated_fields.get("requestor_notes"),
+                commit=commit,
             )
         return []
+
+    def _validate_grant_number_ownership(self, grant_number_id, agreement_id):
+        """
+        Validate that a grant number referenced by a BLI exists and belongs to the BLI's agreement.
+
+        Shared by create() and update() so a cross-agreement grant_number_id cannot be attached to a
+        BLI (IDOR), and a nonexistent grant_number_id surfaces a 404 instead of a DB IntegrityError.
+        """
+        if not grant_number_id:
+            return
+
+        gn = self.db_session.get(GrantNumber, grant_number_id)
+        if not gn:
+            raise ResourceNotFoundError("GrantNumber", grant_number_id)
+        if gn.agreement_id != agreement_id:
+            raise ValidationError({"grant_number_id": "Grant Number does not belong to the Agreement."})
 
     def _validation(self, budget_line_item, updated_fields):
         """
@@ -634,16 +937,41 @@ class BudgetLineItemService:
             )
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
+
+        # Pre-award / post-pre-award locks (OPS-2280). These fire the specific, actionable message
+        # BEFORE the generic is_bli_editable fallback so the user sees why editing is blocked. Both
+        # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
+        # PATCH validation stay in lockstep. Super users are NOT exempt from these locks (OPS-2280);
+        # budget team bypasses because they write directly.
+        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
+            raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
+
+        # Block edits after pre-award is fully approved (DD approved + requisition submitted).
+        # Exceptions:
+        #   - Budget Team bypass is handled in update_with_change_request_ids via budget_team_can_bypass
+        #   - clin_id-only edits are allowed for any authorized user — CLIN assignment is part of
+        #     the award workflow (COR assigns CLINs before submitting for award approval)
+        if not is_budget_team(current_user):
+            # Use the raw request JSON to determine what the caller actually sent.
+            # updated_fields contains Marshmallow load_default values for all schema fields
+            # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
+            # so it cannot reliably tell us which fields the caller intended to change.
+            request_obj = updated_fields.get("request")
+            edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
+            clin_only_edit = edit_keys <= {"clin_id"}
+            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
+                raise ValidationError(
+                    {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
+                )
+
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
-
-        # Check if the agreement's pre-award approval is in review (super users can bypass)
-        if not is_super_user(current_user, current_app) and is_pre_award_in_review(budget_line_item.agreement):
-            raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
             raise ValidationError({"services_component_id": "Services Component does not belong to the Agreement."})
+
+        self._validate_grant_number_ownership(updated_fields.get("grant_number_id"), budget_line_item.agreement_id)
 
         # validate the can_id if it is being updated
         can_id = updated_fields.get("can_id", None)
@@ -651,80 +979,99 @@ class BudgetLineItemService:
         if can_id and not can:
             raise ResourceNotFoundError("CAN", can_id)
 
-        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields)
+        self._validation_change_status_higher_than_draft(budget_line_item, updated_fields, self.db_session)
 
     @staticmethod
-    def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
+    def _validation_change_status_higher_than_draft(budget_line_item, updated_fields, db_session):
+        if not (
+            (
+                "status" in updated_fields
+                and updated_fields["status"] != budget_line_item.status
+                and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+            )
+            or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT])
+        ):
+            return
+        # check required fields on budget line item— use the instance's polymorphic
+        # class so grant BLIs require grant_number_id instead of services_component_id.
+        bli_required_fields = (
+            budget_line_item.__class__.get_required_fields_for_status_change()
+            if not is_super_user(current_user, current_app)
+            else []
+        )
+        missing_fields = BudgetLineItemService._get_missing_fields(
+            bli_required_fields, budget_line_item, updated_fields
+        )
+        if missing_fields:
+            raise ValidationError({"status": "Budget Line Item is missing required fields."})
+
+        BudgetLineItemService._validate_agreement_for_status_change(budget_line_item, updated_fields, db_session)
+        BudgetLineItemService._validate_amount_and_date_for_status_change(budget_line_item, updated_fields)
+
+        current_can_id = budget_line_item.can_id
+        final_can_id = updated_fields.get("can_id") if updated_fields.get("can_id") is not None else current_can_id
+        if not final_can_id:
+            raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
+
+    @staticmethod
+    def _validate_agreement_for_status_change(budget_line_item, updated_fields, db_session):
+        agreement = budget_line_item.agreement
+        if not agreement and updated_fields.get("agreement_id") is not None:
+            agreement = db_session.get(Agreement, updated_fields["agreement_id"])
+
+        if not agreement:
+            raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
+
+        agreement_required_fields = agreement.__class__.get_required_fields_for_status_change()
+        missing_fields = BudgetLineItemService._get_missing_fields(agreement_required_fields, agreement, updated_fields)
+        if missing_fields:
+            raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
+
         if (
-            "status" in updated_fields
-            and updated_fields["status"] != budget_line_item.status
-            and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-        ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            # check required fields on budget line item
-            bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
-                if not is_super_user(current_user, current_app)
-                else []
+            agreement.agreement_reason in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
+            and not agreement.vendor_id
+        ):
+            raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
+
+    @staticmethod
+    def _validate_amount_and_date_for_status_change(budget_line_item, updated_fields):
+        current_amount = budget_line_item.amount
+        final_amount = updated_fields.get("amount") if updated_fields.get("amount") is not None else current_amount
+        if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount < 0:
+            raise ValidationError({"amount": "Amount must be 0 or greater."})
+
+        today = date.today()
+        current_date_needed = budget_line_item.date_needed
+        final_date_needed = (
+            updated_fields.get("date_needed") if updated_fields.get("date_needed") is not None else current_date_needed
+        )
+
+        if final_date_needed is None:
+            raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
+
+        if not is_super_user(current_user, current_app) and final_date_needed <= today:
+            raise ValidationError(
+                {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
             )
 
-            missing_fields = BudgetLineItemService._get_missing_fields(
-                bli_required_fields, budget_line_item, updated_fields
+        BudgetLineItemService._validate_date_within_sc_window(budget_line_item, final_date_needed)
+
+    @staticmethod
+    def _validate_date_within_sc_window(budget_line_item, final_date_needed):
+        """Validate that date_needed falls within [sc_start_date, sc_end_date] (inclusive) for non-superusers."""
+        if is_super_user(current_user, current_app):
+            return
+        sc_start_date = budget_line_item.agreement.sc_start_date if budget_line_item.agreement else None
+        sc_end_date = budget_line_item.agreement.sc_end_date if budget_line_item.agreement else None
+        bli_in_window = (final_date_needed >= sc_start_date if sc_start_date else True) and (
+            final_date_needed <= sc_end_date if sc_end_date else True
+        )
+        if not bli_in_window:
+            raise ValidationError(
+                {
+                    "date_needed": "BLI must have a Need By Date within the agreement's start and end dates when status is not DRAFT"
+                }
             )
-            if missing_fields:
-                raise ValidationError({"status": "Budget Line Item is missing required fields."})
-
-            # check required fields on agreement
-            if not budget_line_item.agreement and (
-                "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
-            ):
-                raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
-
-            agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
-            missing_fields = BudgetLineItemService._get_missing_fields(
-                agreement_required_fields, budget_line_item.agreement, updated_fields
-            )
-            if missing_fields:
-                raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
-
-            # check if the agreement reason is Recompete or Logical Follow On and if the vendor_id is set
-            if (
-                budget_line_item.agreement.agreement_reason
-                in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
-                and not budget_line_item.agreement.vendor_id
-            ):
-                raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
-
-            # Check amount is set and greater than 0
-            current_amount = budget_line_item.amount
-            requested_amount = updated_fields.get("amount")
-            final_amount = requested_amount if requested_amount is not None else current_amount
-
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
-                raise ValidationError({"amount": "Amount must be greater than 0."})
-
-            # Check if the date_needed is set and in the future
-            today = date.today()
-            current_date_needed = budget_line_item.date_needed
-            requested_date_needed = updated_fields.get("date_needed")
-            final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
-
-            # Validate that date_needed is not None for all users
-            if final_date_needed is None:
-                raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
-
-            # Validate that date_needed is not in the past for non-superusers
-            if not is_super_user(current_user, current_app) and final_date_needed <= today:
-                raise ValidationError(
-                    {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
-                )
-
-            # Check if the can_id is set
-            current_can_id = budget_line_item.can_id
-            requested_can_id = updated_fields.get("can_id")
-            final_can_id = requested_can_id if requested_can_id is not None else current_can_id
-
-            if not final_can_id:
-                raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
 
     @staticmethod
     def _get_missing_fields(required_fields: list[str], obj: Any, updated_fields: dict[str, Any]) -> list[str]:
@@ -836,6 +1183,7 @@ class BudgetLineItemService:
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
+            BudgetLineItemStatus.PLANNED_MOD.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
             "Overcome by Events",
@@ -885,7 +1233,7 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             [
                 result.amount + result.fees
                 for result in all_results
-                if result.amount and result.status == BudgetLineItemStatus.PLANNED
+                if result.amount and result.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
             ]
         )
         total_in_execution_amount = sum(
@@ -911,7 +1259,11 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.DRAFT]
         )
         total_planned_amount = sum(
-            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.PLANNED]
+            [
+                result.amount
+                for result in all_results
+                if result.amount and result.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
+            ]
         )
         total_in_execution_amount = sum(
             [
@@ -955,20 +1307,39 @@ def get_is_editable_meta_data(serialized_bli):
     meta_schema = MetaSchema()
     data_for_meta = {
         "isEditable": False,
+        "isDeletable": False,
+        "lockedMessage": None,
     }
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
-    budget_line_item = current_app.db_session.get(BudgetLineItem, serialized_bli.get("id"))
+    is_super = is_super_user(current_user, current_app)
+    # Eager-load the agreement's procurement trackers and their steps so the editability
+    # checks (is_pre_award_in_review and is_post_pre_award_locked walk tracker.steps) don't
+    # trigger per-attribute lazy-loads. Mirrors get_list and
+    # get_bli_is_editable_meta_data_for_agreements.
+    budget_line_item = current_app.db_session.get(
+        BudgetLineItem,
+        serialized_bli.get("id"),
+        options=[
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        ],
+    )
+    in_review = budget_line_item.in_review if budget_line_item else False
 
     if is_budget_team:
         # if the user has the BUDGET_TEAM role, they can edit all budget line items
-        data_for_meta["isEditable"] = is_bli_editable(budget_line_item)
+        is_associated = True
     elif serialized_bli.get("agreement_id"):
-        data_for_meta["isEditable"] = bli_associated_with_agreement(serialized_bli.get("id")) and is_bli_editable(
-            budget_line_item
-        )
+        is_associated = bli_associated_with_agreement(serialized_bli.get("id"))
     else:
-        data_for_meta["isEditable"] = False
+        is_associated = False
+
+    if is_associated:
+        data_for_meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
+        data_for_meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
+        data_for_meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
 
     meta = meta_schema.dump(data_for_meta)
 
@@ -978,24 +1349,45 @@ def get_is_editable_meta_data(serialized_bli):
 def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
     bli_ids = [bli["id"] for bli in serialized_agreement["budget_line_items"] if bli.get("id")]
 
-    budget_line_items = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
+    # Eager-load the agreement's procurement_trackers (and their steps) so the editability
+    # checks (is_pre_award_in_review and is_post_pre_award_locked walk tracker.steps) do not
+    # lazy-load per BLI (consistent with get_list).
+    budget_line_items = (
+        current_app.db_session.query(BudgetLineItem)
+        .filter(BudgetLineItem.id.in_(bli_ids))
+        .options(
+            selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.procurement_trackers)
+            .selectinload(ProcurementTracker.steps)
+        )
+        .all()
+    )
     bli_dict = {bli.id: bli for bli in budget_line_items}
 
     is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+    is_super = is_super_user(current_user, current_app)
 
     for bli in serialized_agreement["budget_line_items"]:
         bli_id = bli.get("id")
 
         budget_line_item = bli_dict.get(bli_id)
+        in_review = budget_line_item.in_review if budget_line_item else False
 
         if is_budget_team:
-            is_editable = is_bli_editable(budget_line_item)
+            is_associated = True
         elif bli.get("agreement_id"):
-            is_editable = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
+            is_associated = bli_associated_with_agreement(bli_id)
         else:
-            is_editable = False
+            is_associated = False
 
-        bli["_meta"] = {"isEditable": is_editable}
+        if is_associated:
+            bli["_meta"] = {
+                "isEditable": compute_bli_editable(budget_line_item, in_review, is_super),
+                "isDeletable": compute_bli_is_deletable(budget_line_item, in_review, is_super),
+                "lockedMessage": get_bli_locked_message(budget_line_item, in_review, is_super),
+            }
+        else:
+            bli["_meta"] = {"isEditable": False, "isDeletable": False, "lockedMessage": None}
 
 
 def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:

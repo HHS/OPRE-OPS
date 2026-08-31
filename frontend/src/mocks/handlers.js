@@ -98,7 +98,7 @@ export const authHandlers = [
             { id: 4, name: "budget_team", is_superuser: false, description: "Budget Team Member" },
             { id: 5, name: "procurement_team", is_superuser: false, description: "Procurement Team Member" },
             { id: 6, name: "division_director", is_superuser: false, description: "Division Director" },
-            { id: 7, name: "super_user", is_superuser: true, description: "Power User" }
+            { id: 7, name: "super_user", is_superuser: true, description: "Administrative Power User" }
         ]);
     })
 ];

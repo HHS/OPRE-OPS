@@ -15,6 +15,7 @@ const useGetAgreementByIdQueryMock = vi.fn();
 const useGetChangeRequestsListQueryMock = vi.fn();
 const useGetPendingPreAwardApprovalsQueryMock = vi.fn();
 const useGetPendingBudgetRequisitionsQueryMock = vi.fn();
+const useGetPendingAwardApprovalsQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetAllCansMock = vi.fn();
 const getChangeRequestMessagesMock = vi.fn();
@@ -28,6 +29,7 @@ vi.mock("../api/opsAPI", () => ({
     useGetChangeRequestsListQuery: (...args) => useGetChangeRequestsListQueryMock(...args),
     useGetPendingPreAwardApprovalsQuery: (...args) => useGetPendingPreAwardApprovalsQueryMock(...args),
     useGetPendingBudgetRequisitionsQuery: (...args) => useGetPendingBudgetRequisitionsQueryMock(...args),
+    useGetPendingAwardApprovalsQuery: (...args) => useGetPendingAwardApprovalsQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args)
 }));
 
@@ -76,6 +78,7 @@ describe("useChangeRequestTotal", () => {
         });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
         useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingAwardApprovalsQueryMock.mockReturnValue({ data: [] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
@@ -91,6 +94,7 @@ describe("useChangeRequestTotal", () => {
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: undefined });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
         useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: undefined });
+        useGetPendingAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 

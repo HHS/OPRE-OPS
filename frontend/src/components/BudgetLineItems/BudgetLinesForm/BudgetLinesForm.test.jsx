@@ -1,11 +1,37 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import BudgetLinesForm from "./BudgetLinesForm";
 import suite from "./suite";
+import datePickerSuite from "./datePickerSuite";
 import { USER_ROLES } from "../../Users/User.constants";
+
+const POP_ERROR = "Date must fall within the agreement’s Period of Performance.";
+
+// Returns YYYY-MM-DD n days from today.
+const isoFromToday = (n) => {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+// Returns MM/DD/YYYY n days from today.
+const screenFromToday = (n) => {
+    const iso = isoFromToday(n);
+    const [year, month, day] = iso.split("-");
+    return `${month}/${day}/${year}`;
+};
+
+// Convert YYYY-MM-DD → MM/DD/YYYY.
+const isoToScreen = (iso) => {
+    const [year, month, day] = iso.split("-");
+    return `${month}/${day}/${year}`;
+};
 
 // Mount-tracking counters for DatePicker stability regression test.
 // A bug where a `React.memo(DatePicker)` wrapper is recreated inside the
@@ -51,6 +77,18 @@ vi.mock("../../ServicesComponents/AllServicesComponentSelect", () => ({
             className={className}
         >
             Services Component Select
+        </div>
+    )
+}));
+
+vi.mock("../../GrantNumbers/AllGrantNumberSelect", () => ({
+    default: ({ messages, className }) => (
+        <div
+            data-testid="grant-number-select"
+            data-messages={JSON.stringify(messages)}
+            className={className}
+        >
+            Grant Number Select
         </div>
     )
 }));
@@ -111,6 +149,7 @@ describe("BudgetLinesForm Validation Integration", () => {
     // Reset suite state before each test to prevent stale validation errors
     beforeEach(() => {
         suite.reset();
+        datePickerSuite.reset();
     });
 
     const defaultProps = {
@@ -133,7 +172,7 @@ describe("BudgetLinesForm Validation Integration", () => {
         isEditing: true,
         isReviewMode: true,
         budgetFormSuite: suite,
-        datePickerSuite: suite,
+        datePickerSuite,
         isBudgetLineNotDraft: true
     };
 
@@ -163,12 +202,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that validation error classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("usa-form-group--error");
-            expect(servicesSelect).toHaveClass("usa-form-group--error");
+            expect(servicesFormGroup).toHaveClass("usa-form-group--error");
             expect(currencyInput).toHaveClass("usa-form-group--error");
             expect(datePicker).toHaveClass("usa-form-group--error");
         });
@@ -184,12 +223,12 @@ describe("BudgetLinesForm Validation Integration", () => {
 
             // Check that success classes are applied
             const canComboBox = screen.getByTestId("can-combobox");
-            const servicesSelect = screen.getByTestId("services-component-select");
+            const servicesFormGroup = screen.getByTestId("services-component-form-group");
             const currencyInput = screen.getByTestId("currency-input");
             const datePicker = screen.getByTestId("date-picker");
 
             expect(canComboBox).toHaveClass("success");
-            expect(servicesSelect).toHaveClass("success");
+            expect(servicesFormGroup).toHaveClass("success");
             expect(currencyInput).toHaveClass("success");
             expect(datePicker).toHaveClass("success");
         });
@@ -283,6 +322,122 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
     });
 
+    describe("Grant Variant (isGrant)", () => {
+        it("renders the grant number select instead of the services component select", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("grant-number-select")).toBeInTheDocument();
+            expect(screen.queryByTestId("services-component-select")).not.toBeInTheDocument();
+        });
+
+        it("applies the error class to the grant select when the grant number is missing", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={0}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("services-component-form-group")).toHaveClass("usa-form-group--error");
+        });
+
+        // Parity with the contract-variant validation tests above: valid grant data must
+        // produce success classes and an enabled Update button, and clicking it must submit.
+        it("shows success classes for a grant BLI with valid data", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                    />
+                </Provider>
+            );
+
+            const grantFormGroup = screen.getByTestId("services-component-form-group");
+            const canComboBox = screen.getByTestId("can-combobox");
+            const currencyInput = screen.getByTestId("currency-input");
+            const datePicker = screen.getByTestId("date-picker");
+
+            expect(grantFormGroup).toHaveClass("success");
+            expect(canComboBox).toHaveClass("success");
+            expect(currencyInput).toHaveClass("success");
+            expect(datePicker).toHaveClass("success");
+        });
+
+        it("enables the Update button for a grant BLI with valid data and submits on click", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            const handleEditBLI = vi.fn();
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                        handleEditBLI={handleEditBLI}
+                    />
+                </Provider>
+            );
+
+            const updateButton = screen.getByRole("button", { name: "Update Budget Line" });
+            expect(updateButton).not.toBeDisabled();
+
+            fireEvent.click(updateButton);
+            expect(handleEditBLI).toHaveBeenCalledTimes(1);
+        });
+
+        it("disables the Update button for a grant BLI when the grant number is missing", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isGrant={true}
+                        grantNumberNumber={0}
+                    />
+                </Provider>
+            );
+
+            expect(screen.getByRole("button", { name: "Update Budget Line" })).toBeDisabled();
+        });
+
+        it("submits a new grant BLI via handleAddBLI in add mode", () => {
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            const handleAddBLI = vi.fn();
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        isEditing={false}
+                        isGrant={true}
+                        grantNumberNumber={1}
+                        handleAddBLI={handleAddBLI}
+                    />
+                </Provider>
+            );
+
+            const addButton = screen.getByRole("button", { name: /Add Budget Line/ });
+            expect(addButton).not.toBeDisabled();
+
+            fireEvent.click(addButton);
+            expect(handleAddBLI).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe("Non-editing and Non-review Mode", () => {
         it("should not validate when not in editing mode (new budget line creation)", () => {
             const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
@@ -368,6 +523,255 @@ describe("BudgetLinesForm Validation Integration", () => {
             // Should show success classes since validation doesn't run
             const canComboBox = screen.getByTestId("can-combobox");
             expect(canComboBox).toHaveClass("success");
+        });
+    });
+
+    describe("PoP boundary validation — DRAFT BLI is exempt", () => {
+        // SC window: opens 30 days out, closes 120 days out.
+        const SC_START = isoFromToday(30);
+        const SC_END = isoFromToday(120);
+
+        const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+
+        // Base props: DRAFT, editing, not review mode — datePickerSuite is active.
+        const popBaseProps = {
+            ...defaultProps,
+            budgetFormSuite: suite,
+            datePickerSuite,
+            isEditing: true,
+            isReviewMode: false,
+            isBudgetLineNotDraft: false,
+            scStartDate: SC_START,
+            scEndDate: SC_END
+        };
+
+        it("does not show PoP error when date is before scStartDate", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(15)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date is after scEndDate", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(130)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date equals scStartDate exactly", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={isoToScreen(SC_START)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date equals scEndDate exactly", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={isoToScreen(SC_END)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date falls inside the window", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(60)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when needByDate is null", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={null}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+    });
+
+    describe("PoP boundary validation — PLANNED BLI", () => {
+        const SC_START = isoFromToday(30);
+        const SC_END = isoFromToday(120);
+
+        const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+
+        // PLANNED BLI: isBudgetLineNotDraft=true, isReviewMode=false
+        const plannedBaseProps = {
+            ...defaultProps,
+            budgetFormSuite: suite,
+            datePickerSuite,
+            isEditing: true,
+            isReviewMode: false,
+            isBudgetLineNotDraft: true,
+            scStartDate: SC_START,
+            scEndDate: SC_END
+        };
+
+        it("shows PoP error when date is before scStartDate on a PLANNED BLI", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...plannedBaseProps}
+                        needByDate={screenFromToday(15)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date falls on the boundary of a PLANNED BLI", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...plannedBaseProps}
+                        needByDate={isoToScreen(SC_START)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+    });
+
+    describe("PoP boundary re-validation when the SC window changes elsewhere", () => {
+        // Editing a budget line's Services Component (e.g. shrinking its date range on the
+        // SC form) doesn't touch this component's own fields — the parent just re-renders
+        // BudgetLinesForm with new scStartDate/scEndDate props. The effect in
+        // BudgetLinesForm.jsx re-runs datePickerSuite on that prop change specifically so a
+        // previously-valid date_needed gets re-flagged without the user touching the date field.
+        const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+        const ORIGINAL_SC_START = isoFromToday(30);
+        const ORIGINAL_SC_END = isoFromToday(120);
+        // A date valid under the original window but before the narrowed window's new start.
+        const NEED_BY_DATE = screenFromToday(45);
+
+        it("flags a previously-valid date once the SC window is edited to exclude it (PLANNED BLI)", () => {
+            const baseProps = {
+                ...defaultProps,
+                budgetFormSuite: suite,
+                datePickerSuite,
+                isEditing: true,
+                isReviewMode: false,
+                isBudgetLineNotDraft: true,
+                needByDate: NEED_BY_DATE,
+                scStartDate: ORIGINAL_SC_START,
+                scEndDate: ORIGINAL_SC_END
+            };
+
+            const { rerender } = render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...baseProps} />
+                </Provider>
+            );
+
+            // Date starts out inside the window — no error yet.
+            let datePicker = screen.getByTestId("date-picker");
+            expect(JSON.parse(datePicker.getAttribute("data-messages"))).not.toContain(POP_ERROR);
+
+            // The SC is edited elsewhere so the agreement's window narrows to start AFTER
+            // the budget line's existing need-by date. The parent passes the new bounds down;
+            // the user has not touched this form's own fields.
+            const narrowedStartIso = isoFromToday(60);
+            rerender(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...baseProps}
+                        scStartDate={narrowedStartIso}
+                    />
+                </Provider>
+            );
+
+            datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
+        });
+
+        it("flags an out-of-window date the moment a DRAFT budget line changes status to PLANNED", () => {
+            // The date was always outside the SC window, but DRAFT BLIs are exempt from the
+            // PoP check. When the user changes status out of DRAFT (isBudgetLineNotDraft flips
+            // to true), the same date must now be flagged without any edit to the date itself.
+            const outOfWindowDate = screenFromToday(15); // before ORIGINAL_SC_START (30 days out)
+            const baseProps = {
+                ...defaultProps,
+                budgetFormSuite: suite,
+                datePickerSuite,
+                isEditing: true,
+                isReviewMode: false,
+                needByDate: outOfWindowDate,
+                scStartDate: ORIGINAL_SC_START,
+                scEndDate: ORIGINAL_SC_END
+            };
+
+            const { rerender } = render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...baseProps}
+                        isBudgetLineNotDraft={false}
+                    />
+                </Provider>
+            );
+
+            // DRAFT: out-of-window date is exempt, no error.
+            let datePicker = screen.getByTestId("date-picker");
+            expect(JSON.parse(datePicker.getAttribute("data-messages"))).not.toContain(POP_ERROR);
+
+            // Status change out of DRAFT — no date field touched.
+            rerender(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...baseProps}
+                        isBudgetLineNotDraft={true}
+                    />
+                </Provider>
+            );
+
+            datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
         });
     });
 });

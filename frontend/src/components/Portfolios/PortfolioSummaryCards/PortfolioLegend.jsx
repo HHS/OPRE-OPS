@@ -2,6 +2,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tag from "../../UI/Tag";
+import { getActivePortfolioTagTextColor } from "./PortfolioSummaryCards.helpers";
 import styles from "./PortfolioLegend.module.scss";
 
 /**
@@ -46,8 +47,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                 const displayPercent = item.percent;
 
                 // Portfolios with light backgrounds need dark text for readability
-                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
-                const textColor = lightBackgroundPortfolios.includes(item.abbreviation) ? "#1B1B1B" : "#FFFFFF";
+                const textColor = getActivePortfolioTagTextColor(item.abbreviation);
 
                 return (
                     <div
@@ -70,7 +70,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                         <div className={styles.valueAndPercent}>
                             <span className={isActive ? "fake-bold" : ""}>{formatCurrency(item.value)}</span>
                             <Tag
-                                className={`${styles.percentTag}`}
+                                className={`${styles.percentTag} ${isActive ? "fake-bold" : ""}`}
                                 tagStyle="darkTextWhiteBackground"
                                 text={`${displayPercent}%`}
                                 label={item.abbreviation}
@@ -79,8 +79,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                                     isActive
                                         ? {
                                               backgroundColor: item.color,
-                                              color: textColor,
-                                              fontWeight: "bold"
+                                              color: textColor
                                           }
                                         : {}
                                 }

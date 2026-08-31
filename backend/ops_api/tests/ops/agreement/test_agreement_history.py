@@ -1,10 +1,25 @@
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 
 from sqlalchemy import select
 
-from models import AgreementHistory, AgreementHistoryType, OpsEvent, OpsEventStatus, OpsEventType
-from models.agreement_history import add_history_events, get_project_display_name
+from models import (
+    AgreementHistory,
+    AgreementHistoryType,
+    BudgetLineItem,
+    DefaultProcurementTracker,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+)
+from models.agreement_history import (
+    add_history_events,
+    create_agreement_update_history_event,
+    create_services_component_history_event,
+    get_project_display_name,
+)
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
+from ops_api.ops.utils.users import get_sys_user
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -466,6 +481,49 @@ def test_proc_shop_fee_changes(loaded_db, app_ctx):
     )
 
 
+def test_proc_shop_change_with_none_amount_budget_line(loaded_db, app_ctx):
+    """A procurement shop change must not crash when a budget line has a None amount."""
+    from models import ContractAgreement, ContractBudgetLineItem
+    from models.agreements import AgreementType
+    from models.budget_line_items import BudgetLineItemStatus
+
+    sys_user = get_sys_user(loaded_db)
+
+    agreement = ContractAgreement(
+        name="None Amount Fee Regression",
+        agreement_type=AgreementType.CONTRACT,
+        awarding_entity_id=3,  # NIH (seeded)
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        amount=None,  # the exact condition that previously raised TypeError
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    loaded_db.add(bli)
+    loaded_db.flush()
+
+    # Fire the awarding_entity_id branch directly (proc shop 3 -> None).
+    history_item = create_agreement_update_history_event(
+        "awarding_entity_id",
+        3,
+        None,
+        sys_user,
+        timestamp,
+        agreement.id,
+        None,
+        loaded_db,
+        sys_user,
+    )
+
+    assert history_item is not None
+    assert history_item.history_title == "Change to Procurement Shop"
+    # None amount is treated as 0, so the fee total is $0.00 rather than crashing.
+    assert "fee total from $0.00 to $0.00" in history_item.history_message
+
+
 def test_agreement_history_create_bli(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 48)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -598,6 +656,34 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
     )
 
 
+def test_services_component_period_change_with_none_value():
+    """Regression: a period_start/period_end change where the old or new value is None/empty
+    must not raise NameError. Previously the empty branch left old_date/new_date unassigned
+    while the f-string referenced them unconditionally, silently dropping SC history."""
+    event = SimpleNamespace(
+        id=999,
+        created_on=datetime(2026, 1, 2, 3, 4, 5),
+        event_details={
+            "services_component_updates": {
+                "sc_display_name": "SC1",
+                "owner_id": 1,
+                "changes": {
+                    "period_start": {"old_value": None, "new_value": "2025-01-01"},
+                    "period_end": {"old_value": "2024-06-30", "new_value": ""},
+                },
+            }
+        },
+    )
+    event_user = SimpleNamespace(full_name="Amelia Popham")
+
+    history_events = create_services_component_history_event(event, event_user, system_user_created_event=False)
+
+    messages = [h.history_message for h in history_events]
+    assert len(messages) == 2
+    assert any("from None to 01/01/2025" in m for m in messages)
+    assert any("from 06/30/2024 to None" in m for m in messages)
+
+
 def test_agreement_history_bli_deletion(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 64)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -615,7 +701,7 @@ def test_agreement_history_bli_deletion(loaded_db, app_ctx):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_DELETED
     assert new_agreement_history_item.history_title == "Budget Line Deleted"
-    assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
+    assert new_agreement_history_item.history_message == "Steve Tekell deleted the BL 16044."
 
 
 def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
@@ -672,6 +758,52 @@ def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
     assert (
         new_agreement_history_item.history_message
         == "Steve Tekell changed the amount for BL 16043 from $12,345.00 to $23,435.00."
+    )
+
+
+def test_agreement_history_direct_draft_to_planned_status_change(loaded_db, app_ctx):
+    """A directly-applied Draft->Planned status change (SKIP_CR_FOR_DRAFT_PLANNED) must
+    still produce a BUDGET_LINE_ITEM_UPDATED history entry, even though it bypasses the
+    change-request path."""
+    bli = loaded_db.get(BudgetLineItem, 16043)
+    assert bli is not None
+
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_BLI,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=test_user_id,
+        event_details={
+            "bli": bli.to_dict(),
+            "bli_updates": {
+                "owner_id": bli.agreement_id,
+                "updated_by": test_user_id,
+                "changes": {
+                    "status": {
+                        "old_value": "DRAFT",
+                        "new_value": "PLANNED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    history_item = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()[-1]
+    )
+
+    assert history_item.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_UPDATED
+    assert history_item.history_title == "Change to Budget Line Status"
+    assert (
+        history_item.history_message
+        == f"{test_user_name} changed the budget line status on BL 16043 from Draft to Planned."
     )
 
 
@@ -939,7 +1071,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award approval request
-    from models import ProcurementTracker, ProcurementTrackerType, User
+    from models import User
 
     requester = loaded_db.get(User, 503)  # Amelia Popham
     assert requester is not None, "Requester user (ID 503) not found in database"
@@ -948,9 +1080,8 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     requester_id = requester.id
 
     # Create a ProcurementTracker for testing (let DB auto-assign ID)
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=1,  # Use existing test agreement
-        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=requester_id,
     )
     loaded_db.add(tracker)
@@ -1010,7 +1141,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     loaded_db.query(User).filter(User.id.in_([503, 521, 99999])).all()
 
     # Get tracker from database
-    tracker = loaded_db.query(ProcurementTracker).filter(ProcurementTracker.id == tracker_id).one()
+    tracker = loaded_db.query(DefaultProcurementTracker).filter(DefaultProcurementTracker.id == tracker_id).one()
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
@@ -1040,7 +1171,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award approval
-    from models import ProcurementTracker, ProcurementTrackerType, User
+    from models import User
 
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
@@ -1053,9 +1184,8 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     approver_id = approver.id
 
     # Create a ProcurementTracker for testing (let DB auto-assign ID)
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=1,  # Use existing test agreement
-        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=approver_id,
     )
     loaded_db.add(tracker)
@@ -1147,7 +1277,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award decline
-    from models import ProcurementTracker, ProcurementTrackerType, User
+    from models import User
 
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
@@ -1160,9 +1290,8 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     decliner_id = decliner.id
 
     # Create a ProcurementTracker for testing (let DB auto-assign ID)
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=1,  # Use existing test agreement
-        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=decliner_id,
     )
     loaded_db.add(tracker)
@@ -1252,7 +1381,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     loaded_db.flush()
 
     # Create a mock OpsEvent with non-existent requester
-    from models import ProcurementTracker, ProcurementTrackerType, User
+    from models import User
 
     approver = loaded_db.get(User, 521)  # User Demo
     non_existent_user_id = 99999
@@ -1262,9 +1391,8 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     approver_id = approver.id
 
     # Create a ProcurementTracker for testing (let DB auto-assign ID)
-    tracker = ProcurementTracker(
+    tracker = DefaultProcurementTracker(
         agreement_id=1,  # Use existing test agreement
-        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=approver_id,
     )
     loaded_db.add(tracker)

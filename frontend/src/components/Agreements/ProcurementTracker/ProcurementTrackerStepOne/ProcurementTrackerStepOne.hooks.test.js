@@ -40,7 +40,7 @@ describe("useProcurementTrackerStepOne", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockPatchStepOne.mockReturnValue({ unwrap: mockUnwrap });
-        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne]);
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne, { isLoading: false }]);
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateForApi.mockReturnValue("2024-01-15");
         formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
@@ -59,7 +59,32 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.step1DateCompleted).toBe("");
+            expect(result.current.step1Notes).toBe("Test notes");
+        });
+
+        it("initializes step1Notes to empty string when stepOneData has no notes", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne({ id: 1 }, mockHandleSetCompletedStepNumber)
+            );
+
             expect(result.current.step1Notes).toBe("");
+        });
+
+        it("seeds step1Notes with existing notes from stepOneData so they render editable", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(
+                    { id: 1, notes: "Existing notes to edit" },
+                    mockHandleSetCompletedStepNumber
+                )
+            );
+
+            expect(result.current.step1Notes).toBe("Existing notes to edit");
+
+            act(() => {
+                result.current.setStep1Notes("Edited notes");
+            });
+
+            expect(result.current.step1Notes).toBe("Edited notes");
         });
 
         it("provides MemoizedDatePicker component", () => {
@@ -131,6 +156,93 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(result.current.step1Notes).toBe("New notes");
+        });
+
+        describe("handleSaveNotes", () => {
+            beforeEach(() => {
+                mockUnwrap.mockResolvedValue({ success: true });
+            });
+
+            it("PATCHes procurement tracker step with only the notes field", async () => {
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                act(() => {
+                    result.current.setStep1Notes("Updated notes");
+                });
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(mockPatchStepOne).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: { notes: "Updated notes" }
+                });
+                expect(mockPatchStepOne).toHaveBeenCalledTimes(1);
+                const call = mockPatchStepOne.mock.calls[0][0];
+                expect(Object.keys(call.data)).toEqual(["notes"]);
+            });
+
+            it("trims whitespace from notes before sending", async () => {
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                act(() => {
+                    result.current.setStep1Notes("   Padded notes   ");
+                });
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(mockPatchStepOne).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: { notes: "Padded notes" }
+                });
+            });
+
+            it("does not trigger a success alert on successful save", async () => {
+                const mockSetAlert = vi.fn();
+                useAlert.mockReturnValue({ setAlert: mockSetAlert });
+
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                // The tracker never shows success toasts — the UI flips to read mode instead.
+                expect(mockSetAlert).not.toHaveBeenCalled();
+            });
+
+            it("triggers an error alert when the API call fails", async () => {
+                const mockSetAlert = vi.fn();
+                useAlert.mockReturnValue({ setAlert: mockSetAlert });
+                vi.spyOn(console, "error").mockImplementation(() => {});
+                const mockError = new Error("API Error");
+                mockUnwrap.mockRejectedValue(mockError);
+
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(console.error).toHaveBeenCalledWith("Failed to save notes", mockError);
+                expect(mockSetAlert).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        type: "error",
+                        heading: "Error"
+                    })
+                );
+            });
         });
     });
 
@@ -284,6 +396,27 @@ describe("useProcurementTrackerStepOne", () => {
 
             expect(result.current.disableStep1Buttons).toBe(true);
         });
+
+        it("disables the buttons while a step PATCH is in flight (mutual exclusion with Save Notes)", () => {
+            // A shared mutation instance backs both Save Notes and Complete. While
+            // either PATCH is in flight, isLoading is true and Complete must be
+            // disabled so the two can't fire concurrently and revert notes.
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOne, { isLoading: true }]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep1DateCompleted("2024-03-20");
+            });
+
+            // Otherwise-complete form, but the in-flight PATCH keeps it disabled.
+            expect(result.current.isStepPatchInFlight).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
+        });
     });
 
     describe("Async Operation - handleStep1Complete Success", () => {
@@ -385,6 +518,7 @@ describe("useProcurementTrackerStepOne", () => {
 
             act(() => {
                 result.current.setStep1DateCompleted("2024-03-20");
+                result.current.setStep1Notes("");
             });
 
             await act(async () => {
@@ -540,7 +674,7 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.step1DateCompleted).toBe("");
-            expect(result.current.step1Notes).toBe("");
+            expect(result.current.step1Notes).toBe(mockStepOneData.notes);
         });
 
         it("can call cancelModalStep1 multiple times", () => {
@@ -594,6 +728,88 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(formatDateForApi).toHaveBeenCalledWith("03/20/2024");
+        });
+    });
+
+    describe("onDirtyChange / hasChanges", () => {
+        it("does not call onDirtyChange(true) on clean mount", () => {
+            const onDirtyChange = vi.fn();
+            renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("calls onDirtyChange(true) when isPreSolicitationPackageSent is set to true", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when a user is selected", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when date completed is entered", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep1DateCompleted("01/15/2025");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(true) when notes differ from saved data", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            act(() => {
+                result.current.setStep1Notes("different notes");
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        });
+
+        it("calls onDirtyChange(false) after cancel resets all fields", () => {
+            const onDirtyChange = vi.fn();
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber, true, onDirtyChange)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 42 });
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+            act(() => {
+                result.current.cancelModalStep1();
+            });
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+            expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        });
+
+        it("does not throw when onDirtyChange prop is not provided", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+            );
+            act(() => {
+                result.current.setSelectedUser({ id: 1 });
+            });
+            expect(result.current.selectedUser).toEqual({ id: 1 });
         });
     });
 });

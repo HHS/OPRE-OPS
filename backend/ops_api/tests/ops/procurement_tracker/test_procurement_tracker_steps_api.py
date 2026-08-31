@@ -234,36 +234,24 @@ def test_update_procurement_tracker_step_by_id(auth_client, test_step):
 
 def test_update_procurement_tracker_step_creates_event(auth_client, test_step, loaded_db):
     """Test that updating a procurement tracker step creates an UPDATE_PROCUREMENT_TRACKER_STEP event."""
-    # Get initial event count
-    initial_event_count = loaded_db.scalar(
-        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
-    )
-    initial_count = (
-        0
-        if initial_event_count is None
-        else len(
-            loaded_db.scalars(
-                select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
-            ).all()
-        )
-    )
-
     update_data = {
         "status": "ACTIVE",
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Verify an event was created
-    events = loaded_db.scalars(
-        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
-    ).all()
-    assert len(events) == initial_count + 1
+    # Find the event scoped to this specific step to avoid parallel-test ordering races
+    event = loaded_db.scalars(
+        select(OpsEvent)
+        .where(
+            OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
+            OpsEvent.event_details["step_id"].as_integer() == test_step.id,
+        )
+        .order_by(OpsEvent.created_on.desc())
+    ).first()
 
-    # Get the most recent event
-    latest_event = events[-1]
-    assert latest_event.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP
-    assert latest_event.event_status.name == "SUCCESS"
+    assert event is not None
+    assert event.event_status.name == "SUCCESS"
 
 
 def test_update_procurement_tracker_step_event_metadata(auth_client, test_step, loaded_db):
@@ -448,8 +436,8 @@ def test_update_procurement_tracker_step_creates_update_tracker_event(auth_clien
         select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
     )
 
-    # Complete the first step
-    update_data = {"status": "COMPLETED"}
+    # Complete the first step (acquisition planning step requires date_completed and task_completed_by)
+    update_data = {"status": "COMPLETED", "date_completed": date.today().isoformat(), "task_completed_by": 503}
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{first_step.id}", json=update_data)
     assert response.status_code == 200
 

@@ -318,6 +318,108 @@ describe("BLIRow", () => {
         expect(editBtn).toBeInTheDocument();
         expect(editBtn).toBeDisabled();
     });
+    it("should disable the delete button while keeping edit enabled for an editable-but-not-deletable BLI", async () => {
+        // An IN_EXECUTION BLI is editable but not deletable in PR1 (isDeletable false).
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "IN_EXECUTION",
+            in_review: false,
+            _meta: { isEditable: true, isDeletable: false }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Executing");
+        await user.hover(tag);
+
+        const editBtn = screen.getByTestId("edit-row");
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(editBtn).not.toBeDisabled();
+        expect(deleteBtn).toBeDisabled();
+    });
+
+    it("should enable the delete button when the BLI is deletable", async () => {
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "PLANNED",
+            in_review: false,
+            _meta: { isEditable: true, isDeletable: true }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Planned");
+        await user.hover(tag);
+
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(deleteBtn).not.toBeDisabled();
+    });
+
+    it("should fall back to editability for the delete button when isDeletable is absent", async () => {
+        // Legacy payloads without isDeletable should behave as before (delete follows edit).
+        renderComponent([USER_ROLES.VIEWER_EDITOR], true, {
+            status: "DRAFT",
+            in_review: false,
+            _meta: { isEditable: true }
+        });
+
+        const user = userEvent.setup();
+        const tag = screen.getByText("Draft");
+        await user.hover(tag);
+
+        const deleteBtn = screen.getByTestId("delete-row");
+        expect(deleteBtn).not.toBeDisabled();
+    });
+
+    const renderInReview = (budgetLineOverrides = {}) => {
+        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
+        useGetCansQuery.mockReturnValue({
+            data: { cans: [{ id: 1, code: "CAN 1", name: "CAN 1" }], count: 1, limit: 10, offset: 0 }
+        });
+        useLazyGetCansQuery.mockReturnValue([
+            vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
+            { isLoading: false, isError: false }
+        ]);
+        useGetProcurementShopsQuery.mockReturnValue({ data: [], isSuccess: true });
+
+        const mockStore = createMockStore([USER_ROLES.VIEWER_EDITOR]);
+        const testBli = { ...budgetLine, ...budgetLineOverrides };
+        render(
+            <Router location="/">
+                <Provider store={mockStore}>
+                    <BLIRow
+                        budgetLine={testBli}
+                        isEditable={true}
+                        isBLIInCurrentWorkflow={false}
+                        isReviewMode={true}
+                        readOnly={false}
+                    />
+                </Provider>
+            </Router>
+        );
+    };
+
+    it("should show the PoP error styling and tooltip when Obligate By is outside the SC PoP range in review mode", () => {
+        renderInReview({
+            date_needed: "2043-06-13",
+            sc_period_start: "2044-01-01",
+            sc_period_end: "2044-12-31"
+        });
+
+        const dateCell = screen.getByRole("cell", { name: /6\/13\/2043/ });
+        expect(dateCell).toHaveClass("table-item-error");
+        expect(screen.getByText(/outside the agreement.s Period of Performance/i)).toBeInTheDocument();
+    });
+
+    it("should not flag the Obligate By cell when date_needed is within the SC PoP range", () => {
+        renderInReview({
+            date_needed: "2043-06-13",
+            sc_period_start: "2043-01-01",
+            sc_period_end: "2043-12-31"
+        });
+
+        const dateCell = screen.getByRole("cell", { name: "6/13/2043" });
+        expect(dateCell).not.toHaveClass("table-item-error");
+        expect(screen.queryByText(/outside the agreement.s Period of Performance/i)).not.toBeInTheDocument();
+    });
+
     it("should display all BIL amount with correct rounded decimal", async () => {
         renderComponent();
 

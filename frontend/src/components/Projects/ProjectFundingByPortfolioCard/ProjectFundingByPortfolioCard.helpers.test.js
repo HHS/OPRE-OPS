@@ -46,17 +46,15 @@ describe("buildPortfolioChartData", () => {
         expect(result[0].abbreviation).toBe("Child Care Research");
     });
 
-    it("assigns sequential colors from PORTFOLIO_ORDER palette regardless of which portfolios are present", () => {
-        // CC is slot 0, CWR is slot 1 in PORTFOLIO_ORDER — so sorted [CC, CWR]
-        // should get palette[0] and palette[1] respectively
+    it("assigns each portfolio its fixed color from PORTFOLIO_ORDER by abbreviation", () => {
         const result = buildPortfolioChartData(mockFundingByPortfolio);
-        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // palette[0]
-        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)"); // palette[1]
+        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // CC's fixed color
+        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)"); // CWR's fixed color
     });
 
-    it("skips sparse slots — 3 present portfolios get colors 1, 2, 3 not 1, 3, 13", () => {
-        // CC=slot0, HS=slot2, OCDO=slot12 in PORTFOLIO_ORDER
-        // After sort: [CC, HS, OCDO] → sequential colors: palette[0], palette[1], palette[2]
+    it("gives each portfolio its own fixed color regardless of which others are present", () => {
+        // Colors must match PortfolioSummaryCards — HS keeps hs, OCDO keeps ocdo,
+        // never a compacted sequential slot.
         const sparse = [
             { portfolio_id: 8, portfolio: "OCDO Portfolio", amount: 7000000, abbreviation: "OCDO" },
             { portfolio_id: 2, portfolio: "Head Start Research", amount: 10000000, abbreviation: "HS" },
@@ -64,23 +62,32 @@ describe("buildPortfolioChartData", () => {
         ];
         const result = buildPortfolioChartData(sparse);
         expect(result[0].abbreviation).toBe("CC");
-        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // palette[0]
+        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)");
         expect(result[1].abbreviation).toBe("HS");
-        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)"); // palette[1], not HS's own slot
+        expect(result[1].color).toBe("var(--portfolio-bar-graph-hs)");
         expect(result[2].abbreviation).toBe("OCDO");
-        expect(result[2].color).toBe("var(--portfolio-bar-graph-hs)"); // palette[2], not OCDO's own slot
+        expect(result[2].color).toBe("var(--portfolio-bar-graph-ocdo)");
     });
 
-    it("falls back to FALLBACK_COLOR when palette is exhausted (>14 portfolios)", () => {
-        const manyPortfolios = Array.from({ length: 15 }, (_, i) => ({
-            portfolio_id: 100 + i,
-            portfolio: `Portfolio ${i}`,
-            amount: 100000,
-            abbreviation: `UNK${i}`
-        }));
-        const result = buildPortfolioChartData(manyPortfolios);
-        // First 14 get palette colors, 15th falls back
-        expect(result[14].color).toBe("var(--data-viz-bl-by-status-1)");
+    it("resolves color via aliases (e.g. HMRF, DD→DO)", () => {
+        const withAlias = [
+            { portfolio_id: 5, portfolio: "Healthy Marriage", amount: 500000, abbreviation: "HMRF" },
+            { portfolio_id: 6, portfolio: "Division of Data", amount: 250000, abbreviation: "DD" }
+        ];
+        const result = buildPortfolioChartData(withAlias);
+        const hmrf = result.find((r) => r.abbreviation === "HMRF");
+        const dd = result.find((r) => r.abbreviation === "DD");
+        expect(hmrf.color).toBe("var(--portfolio-bar-graph-hmrf)");
+        expect(dd.color).toBe("var(--portfolio-bar-graph-dd)"); // DD is an alias of DO
+    });
+
+    it("falls back to FALLBACK_COLOR for unknown portfolios", () => {
+        const withUnknown = [
+            { portfolio_id: 3, portfolio: "Child Care Research", amount: 500000, abbreviation: "CC" },
+            { portfolio_id: 99, portfolio: "Unknown Portfolio", amount: 100000, abbreviation: "UNK" }
+        ];
+        const result = buildPortfolioChartData(withUnknown);
+        expect(result.find((r) => r.abbreviation === "UNK").color).toBe("var(--data-viz-bl-by-status-1)");
     });
     it("applies computeDisplayPercents so percents sum correctly", () => {
         const result = buildPortfolioChartData(mockFundingByPortfolio);

@@ -5,7 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
 import StepSelectProject from "./StepSelectProject";
-import { useGetResearchProjectsQuery, useDeleteAgreementMutation } from "../../api/opsAPI";
+import { useGetAllProjectsQuery, useDeleteAgreementMutation } from "../../api/opsAPI";
 
 // ── Mock dependencies ────────────────────────────────────────────────────────
 
@@ -17,7 +17,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("../../api/opsAPI", () => ({
-    useGetResearchProjectsQuery: vi.fn(),
+    useGetAllProjectsQuery: vi.fn(),
     useDeleteAgreementMutation: vi.fn()
 }));
 
@@ -100,8 +100,8 @@ describe("StepSelectProject", () => {
     });
 
     describe("RTK Query – cache-bust option", () => {
-        it("calls useGetResearchProjectsQuery with refetchOnMountOrArgChange: true", () => {
-            useGetResearchProjectsQuery.mockReturnValue({
+        it("calls useGetAllProjectsQuery with refetchOnMountOrArgChange: true", () => {
+            useGetAllProjectsQuery.mockReturnValue({
                 data: MOCK_PROJECTS,
                 error: undefined,
                 isLoading: false
@@ -109,13 +109,13 @@ describe("StepSelectProject", () => {
 
             renderComponent();
 
-            expect(useGetResearchProjectsQuery).toHaveBeenCalledWith(undefined, { refetchOnMountOrArgChange: true });
+            expect(useGetAllProjectsQuery).toHaveBeenCalledWith(undefined, { refetchOnMountOrArgChange: true });
         });
     });
 
     describe("loading state", () => {
         it("shows a loading indicator while projects are being fetched", () => {
-            useGetResearchProjectsQuery.mockReturnValue({
+            useGetAllProjectsQuery.mockReturnValue({
                 data: undefined,
                 error: undefined,
                 isLoading: true
@@ -129,7 +129,7 @@ describe("StepSelectProject", () => {
 
     describe("error state", () => {
         it("navigates to /error when the query fails", () => {
-            useGetResearchProjectsQuery.mockReturnValue({
+            useGetAllProjectsQuery.mockReturnValue({
                 data: undefined,
                 error: { status: 500 },
                 isLoading: false
@@ -143,7 +143,7 @@ describe("StepSelectProject", () => {
 
     describe("success state", () => {
         beforeEach(() => {
-            useGetResearchProjectsQuery.mockReturnValue({
+            useGetAllProjectsQuery.mockReturnValue({
                 data: MOCK_PROJECTS,
                 error: undefined,
                 isLoading: false
@@ -182,7 +182,7 @@ describe("StepSelectProject", () => {
         });
 
         it("renders an empty project list gracefully when data is an empty array", () => {
-            useGetResearchProjectsQuery.mockReturnValue({
+            useGetAllProjectsQuery.mockReturnValue({
                 data: [],
                 error: undefined,
                 isLoading: false
@@ -197,7 +197,7 @@ describe("StepSelectProject", () => {
 
     describe("Cancel button", () => {
         beforeEach(() => {
-            useGetResearchProjectsQuery.mockReturnValue({
+            useGetAllProjectsQuery.mockReturnValue({
                 data: MOCK_PROJECTS,
                 error: undefined,
                 isLoading: false

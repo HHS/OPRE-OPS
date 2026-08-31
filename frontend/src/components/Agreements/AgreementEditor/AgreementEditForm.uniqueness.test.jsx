@@ -20,7 +20,7 @@ vi.mock("../AgreementReasonSelect", () => ({ default: () => <div /> }));
 vi.mock("../AgreementTypeSelect", () => ({ default: () => <div /> }));
 vi.mock("../ProcurementShopSelectWithFee", () => ({ default: () => <div /> }));
 vi.mock("../ProductServiceCodeSelect", () => ({ default: () => <div /> }));
-vi.mock("../ProductServiceCodeSummaryBox", () => ({ default: () => <div /> }));
+vi.mock("../SummaryBox", () => ({ default: () => <div /> }));
 vi.mock("../ProjectOfficerComboBox", () => ({ default: () => <div /> }));
 vi.mock("../ResearchMethodologyComboBox", () => ({ default: () => <div /> }));
 vi.mock("../SpecialTopicComboBox", () => ({ default: () => <div /> }));

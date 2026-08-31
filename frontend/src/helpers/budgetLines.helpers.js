@@ -17,7 +17,8 @@ export const BLI_STATUS = {
     DRAFT: "DRAFT",
     PLANNED: "PLANNED",
     EXECUTING: "IN_EXECUTION",
-    OBLIGATED: "OBLIGATED"
+    OBLIGATED: "OBLIGATED",
+    PLANNED_MOD: "PLANNED_MOD"
 };
 
 /**
@@ -194,6 +195,87 @@ export const groupByServicesComponent = (budgetLines, servicesComponents = []) =
 };
 
 /**
+ * Returns an array of budget lines grouped by grant number.
+ * Grant analog of {@link groupByServicesComponent}. Grant numbers have no
+ * sub-component, so the grouping key is simply the grant number `number`
+ * (as a string). Budget lines with no grant number fall into group "0"
+ * ("BLs not associated with a Grant Number").
+ * @param {BudgetLine[]} budgetLines - The budget lines to group.
+ * @param {import("../types/GrantNumbers").GrantNumber[]} [grantNumbers] - The grant numbers to group by / resolve ids against.
+ * @returns {Array<{grantNumberNumber: number, budgetLines: BudgetLine[]}>} An array of grouped budget line objects.
+ */
+export const groupByGrantNumber = (budgetLines, grantNumbers = []) => {
+    try {
+        handleBLIArrayProp(budgetLines);
+
+        const groupedBudgetLinesByGn = budgetLines.reduce((acc, budgetLine) => {
+            // Prefer the editor-state key; otherwise resolve from grant_number_id.
+            let grantNumberNumber = budgetLine.grant_number_number;
+            if (grantNumberNumber == null && budgetLine.grant_number_id) {
+                // Loose equality to handle both numeric and string ids from form submissions.
+                const gn = grantNumbers.find((gn) => gn.id == budgetLine.grant_number_id);
+                grantNumberNumber = gn?.number ?? 0;
+            } else {
+                grantNumberNumber = grantNumberNumber ?? 0;
+            }
+
+            const groupingLabel = String(grantNumberNumber);
+            const index = acc.findIndex((item) => String(item.grantNumberNumber) === groupingLabel);
+
+            if (index === -1) {
+                acc.push({ grantNumberNumber, budgetLines: [budgetLine] });
+            } else {
+                acc[index].budgetLines.push(budgetLine);
+            }
+            return acc;
+        }, []);
+
+        if (grantNumbers.length > 0) {
+            grantNumbers.forEach((gn) => {
+                // Ensure grant numbers with no budget lines still render as an empty accordion.
+                if (!groupedBudgetLinesByGn.some((item) => String(item.grantNumberNumber) === String(gn.number))) {
+                    groupedBudgetLinesByGn.push({ grantNumberNumber: gn.number, budgetLines: [] });
+                }
+            });
+        }
+
+        groupedBudgetLinesByGn.sort((a, b) => {
+            // Keep the "unassociated" bucket (0) last.
+            if (String(a.grantNumberNumber) === "0") return 1;
+            if (String(b.grantNumberNumber) === "0") return -1;
+            return String(a.grantNumberNumber).localeCompare(String(b.grantNumberNumber), undefined, {
+                numeric: true,
+                sensitivity: "base"
+            });
+        });
+        return groupedBudgetLinesByGn;
+    } catch (error) {
+        console.error("Error in groupByGrantNumber:", error);
+        return [];
+    }
+};
+
+const findGrantNumberByNumber = (grantNumbers, number) => {
+    if (!grantNumbers) return undefined;
+    // Coerce both sides to string: grouping keys (grant_number_number) can arrive as
+    // strings from editor/form state while GrantNumber.number is numeric, so a strict
+    // === comparison would fail to resolve and metadata would silently render blank.
+    return grantNumbers.find((gn) => String(gn.number) === String(number));
+};
+
+export const findGrantPeriodStart = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_start;
+};
+
+export const findGrantPeriodEnd = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.period_end;
+};
+
+export const findGrantDescription = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.description;
+};
+
+/**
  * Returns whether the given budget line is permanent.
  * @param {BudgetLine} budgetLine - The budget line to check.
  * @returns {boolean} Whether the budget line is permanent.
@@ -265,8 +347,10 @@ export const areAllBudgetLinesInReview = (budgetlines) => {
  */
 export const getTooltipLabel = (budgetLine) => {
     let label = "";
-    if (budgetLine?.status === BLI_STATUS.EXECUTING) {
-        label = "If you need to edit a budget line in Executing Status, please contact the budget team";
+    // The backend computes a human-readable reason a BLI is locked when the frontend cannot derive
+    // it on its own (e.g. the agreement has reached Pre-Award/Award). Prefer it when present.
+    if (budgetLine?._meta?.lockedMessage) {
+        label = budgetLine._meta.lockedMessage;
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
     } else if (budgetLine?.is_obe === true) {
@@ -443,7 +527,12 @@ export const handleExport = async (
                             ? convertCodeForDisplay("project", budgetLine.agreement.project.project_type)
                             : NO_DATA,
                         budgetLine.agreement?.name ?? NO_DATA,
-                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        // Grant BLIs show their grant number in the SC column (grant numbers are the
+                        // grant analog of services components); other BLIs show the SC display name.
+                        budgetLine.agreement?.agreement_type === "GRANT"
+                            ? (budgetLine.grant_number?.display_title ??
+                              (budgetLine.grant_number?.number ? `Grant ${budgetLine.grant_number.number}` : NO_DATA))
+                            : budgetLinesDataMap[budgetLine.id]?.service_component_name,
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
                         budgetLine.line_description,
                         formatDateNeeded(budgetLine?.date_needed ?? ""),

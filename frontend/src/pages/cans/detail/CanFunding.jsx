@@ -14,6 +14,7 @@ import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAn
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 
 /**
  * @typedef {import("../../../types/CANTypes").FundingDetails} FundingDetails
@@ -75,6 +76,7 @@ const CanFunding = ({
     isExpired,
     isTableLoading = false
 }) => {
+    const isReadOnly = useIsUserReadOnly();
     const {
         handleAddBudget,
         handleAddFundingReceived,
@@ -158,48 +160,49 @@ const CanFunding = ({
             )}
             <div className="display-flex flex-justify">
                 <h2>{!isEditMode ? "CAN Funding" : `Review FY ${fiscalYear} Funding Information`}</h2>
-                {!showButton ? (
-                    <Tooltip
-                        label="Only data from the current fiscal year can be edited."
-                        position="bottom"
-                        className="display-inline-flex flex-align-center"
-                    >
+                {!isReadOnly &&
+                    (!showButton ? (
+                        <Tooltip
+                            label="Only data from the current fiscal year can be edited."
+                            position="bottom"
+                            className="display-inline-flex flex-align-center"
+                        >
+                            <button
+                                type="button"
+                                id="edit"
+                                className="cursor-not-allowed"
+                                style={{ cursor: "not-allowed", display: "inline-flex", alignItems: "center" }}
+                                disabled={!showButton}
+                                onClick={toggleEditMode}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    size="2x"
+                                    className="height-2 width-2 margin-right-1 text-base-light"
+                                    title="edit"
+                                    data-position="top"
+                                />
+                                <span className="text-base-light">Edit</span>
+                            </button>
+                        </Tooltip>
+                    ) : (
                         <button
                             type="button"
                             id="edit"
-                            className="cursor-not-allowed"
-                            style={{ cursor: "not-allowed", display: "inline-flex", alignItems: "center" }}
+                            className="hover:text-underline cursor-pointer"
                             disabled={!showButton}
                             onClick={toggleEditMode}
                         >
                             <FontAwesomeIcon
                                 icon={faPen}
                                 size="2x"
-                                className="height-2 width-2 margin-right-1 text-base-light"
+                                className="height-2 width-2 margin-right-1 text-primary cursor-pointer"
                                 title="edit"
                                 data-position="top"
                             />
-                            <span className="text-base-light">Edit</span>
+                            <span className="text-primary">Edit</span>
                         </button>
-                    </Tooltip>
-                ) : (
-                    <button
-                        type="button"
-                        id="edit"
-                        className="hover:text-underline cursor-pointer"
-                        disabled={!showButton}
-                        onClick={toggleEditMode}
-                    >
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="height-2 width-2 margin-right-1 text-primary cursor-pointer"
-                            title="edit"
-                            data-position="top"
-                        />
-                        <span className="text-primary">Edit</span>
-                    </button>
-                )}
+                    ))}
             </div>
             <p>
                 {!isEditMode

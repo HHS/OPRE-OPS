@@ -90,7 +90,9 @@ describe("ProcurementTrackerStepOne", () => {
     const mockSetSelectedUser = vi.fn();
     const mockSetStep1DateCompleted = vi.fn();
     const mockSetStep1Notes = vi.fn();
+    const mockResetStep1Notes = vi.fn();
     const mockHandleStep1Complete = vi.fn();
+    const mockHandleSaveNotes = vi.fn();
     const mockCancelStep1 = vi.fn();
     const mockRunValidate = vi.fn();
     const mockHandleSetCompletedStepNumber = vi.fn();
@@ -131,9 +133,12 @@ describe("ProcurementTrackerStepOne", () => {
         MemoizedDatePicker: MockDatePicker,
         step1Notes: "",
         setStep1Notes: mockSetStep1Notes,
+        resetStep1Notes: mockResetStep1Notes,
         handleStep1Complete: mockHandleStep1Complete,
+        handleSaveNotes: mockHandleSaveNotes,
         cancelStep1: mockCancelStep1,
         disableStep1Buttons: true,
+        isStepPatchInFlight: false,
         step1CompletedByUserName: "John Doe",
         step1DateCompletedLabel: "January 15, 2024",
         step1NotesLabel: "Test notes",
@@ -239,7 +244,7 @@ describe("ProcurementTrackerStepOne", () => {
             expect(dateInput).toHaveAttribute("max");
         });
 
-        it("TextArea has correct props (label, maxLength 750, disabled state)", () => {
+        it("TextArea has correct props (label, maxLength 750, enabled by default)", () => {
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
@@ -252,7 +257,7 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
             // eslint-disable-next-line testing-library/no-node-access
             const textarea = screen.getByTestId("text-area").querySelector("textarea");
-            expect(textarea).toBeDisabled();
+            expect(textarea).not.toBeDisabled();
             expect(textarea).toHaveAttribute("maxLength", "750");
         });
 
@@ -309,6 +314,174 @@ describe("ProcurementTrackerStepOne", () => {
 
             const completeButton = screen.getByRole("button", { name: /complete step 1/i });
             expect(completeButton).not.toBeDisabled();
+        });
+    });
+
+    describe("Notes Editing & Save Notes button", () => {
+        it("renders the Save Notes button", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            expect(saveNotesButton).toBeInTheDocument();
+            expect(saveNotesButton).toHaveAttribute("data-cy", "save-notes-button");
+        });
+
+        it("TextArea is enabled regardless of checkbox state", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageSent: false
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).not.toBeDisabled();
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                disableStep1Buttons: false,
+                isStepPatchInFlight: true
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toBeDisabled();
+        });
+
+        it("renders existing notes from step1Notes in the TextArea after clicking Edit Notes", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Previously saved notes"
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={{ id: 1, notes: "Previously saved notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            // With a saved note the editor starts in read mode.
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toHaveValue("Previously saved notes");
+            expect(textarea).not.toBeDisabled();
+        });
+
+        it("edits existing notes by calling setStep1Notes when the user types", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Previously saved notes"
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={{ id: 1, notes: "Previously saved notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            fireEvent.change(textarea, { target: { value: "Edited notes" } });
+
+            expect(mockSetStep1Notes).toHaveBeenCalledWith("Edited notes");
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with stepOneData.id", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "A note"
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(1);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+        });
+
+        it("clicking Save Notes does not call handleStep1Complete", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "A note"
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
+            fireEvent.click(saveNotesButton);
+
+            expect(mockHandleStep1Complete).not.toHaveBeenCalled();
+        });
+
+        it("disables Save Notes until the notes field has input", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: ""
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
         });
     });
 
@@ -442,7 +615,7 @@ describe("ProcurementTrackerStepOne", () => {
             expect(mockHandleStep1Complete).toHaveBeenCalledWith(1);
         });
 
-        it("form fields disabled when checkbox unchecked", () => {
+        it("checkbox-gated fields disabled when checkbox unchecked, notes remain editable", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
                 isPreSolicitationPackageSent: false
@@ -466,7 +639,7 @@ describe("ProcurementTrackerStepOne", () => {
 
             expect(select).toBeDisabled();
             expect(dateInput).toBeDisabled();
-            expect(textarea).toBeDisabled();
+            expect(textarea).not.toBeDisabled();
         });
 
         it("form fields enabled when checkbox checked", () => {
@@ -657,7 +830,12 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.getByText("January 15, 2024")).toBeInTheDocument();
         });
 
-        it("displays notes from step1NotesLabel with correct styling", () => {
+        it("displays the saved notes in read mode with correct styling", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Test notes"
+            });
+
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
@@ -670,13 +848,12 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.getByText("Notes")).toBeInTheDocument();
             expect(screen.getByText("Test notes")).toBeInTheDocument();
 
-            const dt = screen.getByText("Notes");
-            expect(dt.tagName).toBe("DT");
-            expect(dt).toHaveClass("margin-0", "text-base-dark", "margin-top-3", "font-12px");
+            const label = screen.getByText("Notes");
+            expect(label.tagName).toBe("DT");
+            expect(label).toHaveClass("margin-0", "text-base-dark", "margin-top-3");
 
-            const dd = screen.getByText("Test notes");
-            expect(dd.tagName).toBe("DD");
-            expect(dd).toHaveClass("margin-0", "margin-top-1");
+            // The note text sits inline with the Edit Notes button.
+            expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
         });
     });
 
@@ -894,9 +1071,7 @@ describe("ProcurementTrackerStepOne", () => {
             );
 
             expect(screen.getByText("Notes")).toBeInTheDocument();
-            // eslint-disable-next-line testing-library/no-node-access
-            const dd = screen.getByText("Notes").nextElementSibling;
-            expect(dd.textContent).toBe("None");
+            expect(screen.getByText("None")).toBeInTheDocument();
         });
     });
 
@@ -993,6 +1168,7 @@ describe("ProcurementTrackerStepOne", () => {
                     ),
                     step1Notes: "Test notes",
                     setStep1Notes: mockSetStep1Notes,
+                    resetStep1Notes: mockResetStep1Notes,
                     handleStep1Complete: mockHandleStep1Complete,
                     cancelModalStep1: mockCancelStep1,
                     // Hook properly calculates disable state based on isEditable
@@ -1168,6 +1344,96 @@ describe("ProcurementTrackerStepOne", () => {
             const checkbox = screen.getByRole("checkbox");
             // Checkbox should be enabled because isActiveStep=true and isDisabled defaults to false
             expect(checkbox).not.toBeDisabled();
+        });
+    });
+
+    describe("COMPLETED State — Edit Notes", () => {
+        beforeEach(() => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                step1Notes: "Existing notes",
+                step1NotesLabel: "Existing notes"
+            });
+        });
+
+        it("Edit Notes button is visible when step is in COMPLETED state", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            const editNotesButton = screen.getByRole("button", { name: /edit notes/i });
+            expect(editNotesButton).toBeInTheDocument();
+            expect(editNotesButton).toHaveAttribute("data-cy", "edit-notes-button");
+        });
+
+        it("clicking Edit Notes replaces the notes label with a TextArea populated from step1Notes", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+            expect(textarea).toHaveValue("Existing notes");
+        });
+
+        it("clicking Cancel makes no API call and exits edit mode", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
+
+            expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(mockResetStep1Notes).toHaveBeenCalledWith("Existing notes");
+            expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
+        });
+
+        it("clicking Save Notes calls handleSaveNotes with the step id and not handleStep1Complete", () => {
+            mockHandleSaveNotes.mockResolvedValue(undefined);
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={{ id: 1, notes: "Existing notes" }}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
+            fireEvent.click(screen.getByRole("button", { name: /save notes/i }));
+
+            expect(mockHandleSaveNotes).toHaveBeenCalledWith(1);
+            expect(mockHandleSaveNotes).toHaveBeenCalledTimes(1);
+            expect(mockHandleStep1Complete).not.toHaveBeenCalled();
         });
     });
 

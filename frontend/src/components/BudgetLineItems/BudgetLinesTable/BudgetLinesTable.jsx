@@ -1,9 +1,9 @@
+import { useMemo } from "react";
 import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
-import _ from "lodash";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import { BUDGET_LINE_TABLE_HEADERS, GRANT_BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
 
 /**
@@ -18,6 +18,7 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
+ * @param {Boolean} [props.isGrant] - A flag to indicate grant budget lines, which omit the Fee and Total columns (grants have no procurement shop).
  * @returns {React.ReactElement} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -29,21 +30,31 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     isAgreementAwarded = false,
     budgetLineIdsInReview = [],
-    isEditable = false
+    isEditable = false,
+    isGrant = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    const sortedBudgetLines = budgetLines
-        .slice()
-        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
-        .reverse();
+    // Memoize initial sorting by creation date
+    const sortedBudgetLines = useMemo(
+        () =>
+            budgetLines
+                .slice()
+                .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+                .reverse(),
+        [budgetLines]
+    );
 
-    let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
-
-    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BUDGET_LINES);
+    // Use shallow copy instead of deep clone - useSortData doesn't mutate nested properties
+    const copiedBudgetLines = useSortData(
+        [...sortedBudgetLines],
+        sortDescending,
+        sortCondition,
+        SORT_TYPES.BUDGET_LINES
+    );
     return (
         <Table
-            tableHeadings={BUDGET_LINE_TABLE_HEADERS}
+            tableHeadings={isGrant ? GRANT_BUDGET_LINE_TABLE_HEADERS : BUDGET_LINE_TABLE_HEADERS}
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
             sortDescending={sortDescending}
@@ -60,6 +71,7 @@ const BudgetLinesTable = ({
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                     isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
+                    isGrant={isGrant}
                 />
             ))}
         </Table>

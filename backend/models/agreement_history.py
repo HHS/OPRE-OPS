@@ -36,6 +36,9 @@ class AgreementHistoryType(Enum):
     SERVICE_COMPONENT_CREATED = auto()
     SERVICE_COMPONENT_UPDATED = auto()
     SERVICE_COMPONENT_DELETED = auto()
+    GRANT_NUMBER_CREATED = auto()
+    GRANT_NUMBER_UPDATED = auto()
+    GRANT_NUMBER_DELETED = auto()
 
 
 class AgreementHistory(BaseModel):
@@ -132,9 +135,9 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     ops_event_id=event.id,
                     history_title="Budget Line Deleted",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        f"Changes made to the OPRE budget spreadsheet deleted the BL {event.event_details['deleted_bli']['id']}."
                         if updated_by_system_user
-                        else f"{event_user.full_name} deleted the Draft BL {event.event_details['deleted_bli']['id']}."
+                        else f"{event_user.full_name} deleted the BL {event.event_details['deleted_bli']['id']}."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
@@ -159,8 +162,12 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
             )
         case OpsEventType.UPDATE_AGREEMENT:
-            # Handle CAN Updates
-            change_dict = event.event_details["agreement_updates"]["changes"]
+            # `agreement_updates` is absent when a publisher of UPDATE_AGREEMENT does not
+            # compute a field diff (e.g. an edit-bundle save that changes no diffed agreement
+            # field). Default to empty so this handler records nothing rather than KeyError-ing
+            # (the error was previously swallowed by the subscriber, silently losing all history).
+            agreement_updates = event.event_details.get("agreement_updates") or {}
+            change_dict = agreement_updates.get("changes", {})
             for key in change_dict.keys():
                 history_item = create_agreement_update_history_event(
                     key,
@@ -168,22 +175,22 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     change_dict[key]["new_value"],
                     event_user,
                     event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    event.event_details["agreement_updates"]["owner_id"],
+                    agreement_updates["owner_id"],
                     event.id,
                     session,
                     system_user,
                 )
                 if history_item:
                     history_events.append(history_item)
-            if event.event_details["agreement_updates"].get("team_member_changes"):
+            if agreement_updates.get("team_member_changes"):
                 # Handle team member changes
-                team_member_changes = event.event_details["agreement_updates"]["team_member_changes"]
+                team_member_changes = agreement_updates["team_member_changes"]
                 for item in team_member_changes.get("user_ids_added", []):
                     added_user_id = session.get(User, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
                             history_message=f"{event_user.full_name} added team member {added_user_id.full_name}.",
@@ -195,8 +202,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_user_id = session.get(User, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
                             history_message=f"{event_user.full_name} removed team member {removed_user_id.full_name}.",
@@ -204,15 +211,15 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
                     )
-            if event.event_details["agreement_updates"].get("special_topic_changes"):
+            if agreement_updates.get("special_topic_changes"):
                 # Handle special topic changes
-                special_topic_changes = event.event_details["agreement_updates"]["special_topic_changes"]
+                special_topic_changes = agreement_updates["special_topic_changes"]
                 for item in special_topic_changes.get("special_topics_ids_added", []):
                     added_special_topic = session.get(SpecialTopic, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Special Topic/Population Studied",
                             history_message=f"{event_user.full_name} added Special Topic/Population Studied {added_special_topic.name}.",
@@ -224,8 +231,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_special_topic = session.get(SpecialTopic, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Special Topic/Population Studied",
                             history_message=f"{event_user.full_name} removed Special Topic/Population Studied {removed_special_topic.name}.",
@@ -233,15 +240,15 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
                     )
-            if event.event_details["agreement_updates"].get("research_methodology_changes"):
+            if agreement_updates.get("research_methodology_changes"):
                 # Handle research methodology changes
-                research_methodology_changes = event.event_details["agreement_updates"]["research_methodology_changes"]
+                research_methodology_changes = agreement_updates["research_methodology_changes"]
                 for item in research_methodology_changes.get("research_methodologies_ids_added", []):
                     added_research_methodology = session.get(ResearchMethodology, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Research Methodologies",
                             history_message=f"{event_user.full_name} added Research Methodology {added_research_methodology.name}.",
@@ -253,8 +260,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     removed_research_methodology = session.get(ResearchMethodology, item)
                     history_events.append(
                         AgreementHistory(
-                            agreement_id=event.event_details["agreement_updates"]["owner_id"],
-                            agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Research Methodologies",
                             history_message=f"{event_user.full_name} removed Research Methodology {removed_research_methodology.name}.",
@@ -308,6 +315,40 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_type=AgreementHistoryType.SERVICE_COMPONENT_DELETED,
                 )
             )
+        case OpsEventType.CREATE_GRANT_NUMBER:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["new_gn"]["agreement_id"],
+                    agreement_id_record=event.event_details["new_gn"]["agreement_id"],
+                    ops_event_id=event.id,
+                    history_title="New Grant Number Added",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet added new grant number {event.event_details['new_gn']['display_name']}."
+                        if updated_by_system_user
+                        else f"{event_user.full_name} added a new grant number {event.event_details['new_gn']['display_name']}."
+                    ),
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.GRANT_NUMBER_CREATED,
+                )
+            )
+        case OpsEventType.UPDATE_GRANT_NUMBER:
+            history_events.extend(create_grant_number_history_event(event, event_user, updated_by_system_user))
+        case OpsEventType.DELETE_GRANT_NUMBER:
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["grant_number"]["agreement_id"],
+                    agreement_id_record=event.event_details["grant_number"]["agreement_id"],
+                    ops_event_id=event.id,
+                    history_title="Grant Number Deleted",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet deleted grant number {event.event_details['grant_number']['display_name']}."
+                        if updated_by_system_user
+                        else f"{event_user.full_name} deleted grant number {event.event_details['grant_number']['display_name']}."
+                    ),
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.GRANT_NUMBER_DELETED,
+                )
+            )
         case OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP:
             history_event = create_procurement_tracker_step_update_history_event(event, event_user, session)
             if history_event:
@@ -334,6 +375,41 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        if property_changed == "delete":
+            # Deletion request: distinct history_type + BLI id handling, so it cannot fall through
+            # to the shared tail return (which would crash on the unset title/message and use the
+            # wrong history_type). Handles both request-created and reviewed (approved/declined).
+            #
+            # Resolve the requestor via the created_by column (not the created_by_user dict): on
+            # approval the BLI is cascade-deleted and the CR is detached before to_dict() runs, so
+            # the relationship-derived created_by_user is None in the event payload.
+            bli_id = change_request["budget_line_item_id"]
+            requestor_user = session.get(User, change_request["created_by"])
+            requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
+            if new_change_request:
+                title = "Budget Line Deletion Requested"
+                message = f"{requestor_name} requested to delete BL {bli_id} and it's currently In Review for approval."
+            else:
+                title = (
+                    "Budget Line Deleted" if change_request["status"] == "APPROVED" else "Budget Line Deletion Declined"
+                )
+                message = (
+                    f"{reviewer_user.full_name} {change_request_status} the deletion of BL {bli_id} "
+                    f"as requested by {requestor_name}."
+                )
+            agreement_id = change_request["agreement_id"]
+            agreement = session.get(Agreement, agreement_id)
+            return AgreementHistory(
+                agreement_id=agreement_id if agreement else None,
+                agreement_id_record=agreement_id,
+                budget_line_id=None,
+                budget_line_id_record=bli_id,
+                ops_event_id=event.id,
+                history_title=title,
+                history_message=message,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                history_type=AgreementHistoryType.BUDGET_LINE_ITEM_DELETED,
+            )
         if property_changed == "status":
             title = f"Status Change to {fix_stringified_enum_values(change_request['requested_change_data']['status'])} {fix_stringified_enum_values(change_request['status'])}"
             if new_change_request:
@@ -406,14 +482,24 @@ def create_change_request_history_event(
             if old_proc_shop:
                 old_proc_shop_abbr = old_proc_shop.abbr
                 old_proc_shop_fee_total = (
-                    sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
             if new_proc_shop:
                 new_proc_shop_abbr = new_proc_shop.abbr
                 new_proc_shop_fee_total = (
-                    sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
@@ -671,7 +757,7 @@ def create_agreement_update_history_event(
                     old_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (old_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -684,7 +770,7 @@ def create_agreement_update_history_event(
                     new_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (new_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -909,6 +995,17 @@ def create_bli_update_history_events(
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the services component for BL {bli_id} from {old_value} to {new_value}."
             else:
                 history_message = f"{event_user.full_name} changed the services component for BL {bli_id} from {old_value} to {new_value}."
+        elif key == "status" and old_value == "DRAFT" and new_value == "PLANNED":
+            # A directly-applied Draft->Planned transition (SKIP_CR_FOR_DRAFT_PLANNED
+            # capability) bypasses the change-request path, so its status change would
+            # otherwise leave no agreement-history entry. Mirror the CR path's wording.
+            old_status = fix_stringified_enum_values(old_value)
+            new_status = fix_stringified_enum_values(new_value)
+            history_title = "Change to Budget Line Status"
+            if updated_by_system_user:
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the status for BL {bli_id} from {old_status} to {new_status}."
+            else:
+                history_message = f"{event_user.full_name} changed the budget line status on BL {bli_id} from {old_status} to {new_status}."
         if history_title and history_message:
             history_events.append(
                 AgreementHistory(
@@ -938,18 +1035,20 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
             else:
                 history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "period_start" or key == "period_end":
-            if old_value is None or old_value == "":
-                old_value = "None"
-            else:
-                old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
-            if new_value is None or new_value == "":
-                new_value = "None"
-            else:
-                new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            old_value = (
+                "None"
+                if old_value is None or old_value == ""
+                else datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
+            new_value = (
+                "None"
+                if new_value is None or new_value == ""
+                else datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
             if system_user_created_event:
-                history_message = f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
             else:
-                history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_date} to {new_date}."
+                history_message = f"{event_user.full_name} changed the {get_services_component_property_display_name(key)} for Services Component {event.event_details['services_component_updates']['sc_display_name']} from {old_value} to {new_value}."
         elif key == "description":
             if system_user_created_event:
                 history_message = f"Changes made to the OPRE budget spreadsheet changed the description for Services Component {event.event_details['services_component_updates']['sc_display_name']}."
@@ -982,6 +1081,58 @@ def create_services_component_history_event(event: OpsEvent, event_user: User, s
     return history_events
 
 
+def create_grant_number_history_event(event: OpsEvent, event_user: User, system_user_created_event: bool):
+    gn_change_dict = event.event_details["grant_number_updates"]["changes"]
+    gn_display_name = event.event_details["grant_number_updates"]["gn_display_name"]
+    owner_id = event.event_details["grant_number_updates"]["owner_id"]
+    history_events = []
+    for key in gn_change_dict:
+        old_value = gn_change_dict[key]["old_value"]
+        new_value = gn_change_dict[key]["new_value"]
+        if key == "number":
+            if system_user_created_event:
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the number for Grant Number {gn_display_name} from {old_value} to {new_value}."
+            else:
+                history_message = f"{event_user.full_name} changed the number for Grant Number {gn_display_name} from {old_value} to {new_value}."
+        elif key == "period_start" or key == "period_end":
+            old_value = (
+                "None"
+                if old_value is None or old_value == ""
+                else datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
+            new_value = (
+                "None"
+                if new_value is None or new_value == ""
+                else datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+            )
+            property_display = (
+                "Period of Performance Start Date" if key == "period_start" else "Period of Performance End Date"
+            )
+            if system_user_created_event:
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the {property_display} for Grant Number {gn_display_name} from {old_value} to {new_value}."
+            else:
+                history_message = f"{event_user.full_name} changed the {property_display} for Grant Number {gn_display_name} from {old_value} to {new_value}."
+        elif key == "description":
+            if system_user_created_event:
+                history_message = f"Changes made to the OPRE budget spreadsheet changed the description for Grant Number {gn_display_name}."
+            else:
+                history_message = f"{event_user.full_name} changed the description for Grant Number {gn_display_name}."
+        else:
+            continue  # Skip any keys that are not handled
+        history_events.append(
+            AgreementHistory(
+                agreement_id=owner_id,
+                agreement_id_record=owner_id,
+                ops_event_id=event.id,
+                history_title="Change to Grant Number",
+                history_message=history_message,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                history_type=AgreementHistoryType.GRANT_NUMBER_UPDATED,
+            )
+        )
+    return history_events
+
+
 def create_procurement_tracker_step_update_history_event(
     event: OpsEvent,
     event_user: User,
@@ -995,13 +1146,25 @@ def create_procurement_tracker_step_update_history_event(
     procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
 
     # Handle approval request events
+    step_type = procurement_tracker_step.get("step_type")
+
     if "approval_requested" in updates and updates["approval_requested"]["new_value"] is True:
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+        if is_award_step:
+            history_title = "Award Approval Requested"
+            history_message = (
+                f"{event_user.full_name} uploaded the signed award, entered the CLINs and award details, "
+                "and requested award approval from the Budget Team."
+            )
+        else:
+            history_title = "Pre-Award Approval Requested"
+            history_message = f"{event_user.full_name} requested pre-award approval from the Division Director."
         return AgreementHistory(
             agreement_id=procurement_tracker.agreement_id,
             agreement_id_record=procurement_tracker.agreement_id,
             ops_event_id=event.id,
-            history_title="Pre-Award Approval Requested",
-            history_message=f"{event_user.full_name} requested pre-award approval from the Division Director.",
+            history_title=history_title,
+            history_message=history_message,
             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
         )
@@ -1021,22 +1184,37 @@ def create_procurement_tracker_step_update_history_event(
             )
         requester_name = requester_user.full_name
 
+        is_award_step = step_type in ("AWARD", str(ProcurementTrackerStepType.AWARD))
+
         if status == "APPROVED":
-            # Extract first name from full name (e.g., "Dave Director" -> "Dave")
-            name_parts = event_user.full_name.split() if event_user.full_name else []
-            approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Approved & Requisition Started"
-            history_message = (
-                f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
-                f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
-                f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
-            )
+            if is_award_step:
+                history_title = "Agreement Awarded"
+                history_message = (
+                    "The Budget Team reviewed and approved this agreement for award. "
+                    "The Executing budget lines were changed to Obligated Status."
+                )
+            else:
+                # Extract first name from full name (e.g., "Dave Director" -> "Dave")
+                name_parts = event_user.full_name.split() if event_user.full_name else []
+                approver_first_name = name_parts[0] if name_parts else "Unknown"
+                history_title = "Pre-Award Approved & Requisition Started"
+                history_message = (
+                    f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
+                    f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+                    f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
+                )
         elif status == "DECLINED":
             # Extract first name from full name (e.g., "Dave Director" -> "Dave")
             name_parts = event_user.full_name.split() if event_user.full_name else []
             approver_first_name = name_parts[0] if name_parts else "Unknown"
-            history_title = "Pre-Award Declined"
-            history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
+            if is_award_step:
+                history_title = "Award Declined"
+                history_message = (
+                    f"{approver_first_name} declined this agreement for award as requested by {requester_name}."
+                )
+            else:
+                history_title = "Pre-Award Declined"
+                history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
         else:
             history_title = None
 

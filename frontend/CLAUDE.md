@@ -40,6 +40,8 @@ bun run test:ui                  # Run tests with UI
 
 **Important**: 90% code coverage is required. Tests are co-located with components (`.test.jsx` files).
 
+Before adding a test, see [docs/TESTING.md](../docs/TESTING.md#decision-matrix-which-test-type-should-i-use) for the unit vs. integration vs. component vs. E2E decision matrix and [When NOT to Write Tests](../docs/TESTING.md#when-not-to-write-tests).
+
 ### E2E Tests
 
 E2E tests use Cypress and require the Docker stack to be running. Use the `/e2e-tests` skill for running, monitoring, and fixing E2E tests.
@@ -149,6 +151,17 @@ navigate("/agreements");
 ```
 
 Import from `src/helpers/scrollToTop.helper`. Do NOT call `scrollToTop()` on error paths.
+
+**Exception — `redirectUrl`:** this rule assumes the handler calls `navigate()` itself. If instead you pass `redirectUrl` to `setAlert(...)`, `Alert.jsx` calls `navigate(redirectUrl)` immediately (the 6s timer only controls the alert's auto-dismiss, not navigation timing), and the destination page already scrolls to top on mount via `useScrollToTop` in `App.jsx`. In that case, calling `scrollToTop()` in the handler is a no-op — omit it.
+
+```javascript
+// CORRECT — redirectUrl navigates immediately; destination page scrolls itself
+setAlert({ type: "success", heading: "Saved", message: "...", redirectUrl: "/agreements" });
+
+// INCORRECT — scrollToTop() here has no observable effect
+setAlert({ type: "success", heading: "Saved", message: "...", redirectUrl: "/agreements" });
+scrollToTop();
+```
 
 ## Numeric Display Conventions
 

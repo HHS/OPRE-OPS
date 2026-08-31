@@ -130,11 +130,21 @@ const ProjectSpending = () => {
             DIRECT_OBLIGATION: "direct_obligation"
         };
 
+        // Match each agreement type to its active Tag style so the legend
+        // percentage tag is highlighted with the segment color on hover
+        const tagStyleActiveMap = {
+            CONTRACT: "whiteOnContractBlue",
+            PARTNER: "darkOnPartnerGreen",
+            GRANT: "darkOnGrantOrange",
+            DIRECT_OBLIGATION: "whiteOnDirectObligationPink"
+        };
+
         const rawItems = AGREEMENT_TYPE_ORDER.map((config, idx) => ({
             id: idx + 1,
             label: config.label,
             value: Number(typeBreakdown[keyMap[config.type]] ?? 0),
-            color: config.color
+            color: config.color,
+            tagStyleActive: tagStyleActiveMap[config.type]
         }));
 
         return computeDisplayPercents(rawItems);

@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AgreementsTable from "./AgreementsTable";
 import { configureStore } from "@reduxjs/toolkit";
@@ -121,4 +121,26 @@ it("renders without crashing", () => {
     expect(screen.getByText("End")).toBeInTheDocument();
     expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByText("FY25 Obligated")).toBeInTheDocument();
+});
+
+it("does not render contract-only expanded fields for a GRANT agreement row", () => {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="2025"
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    // Expand the grant row so ExpandedData is actually rendered
+    fireEvent.click(screen.getByTestId("expand-row"));
+
+    // Contract-only fields must be absent even in the expanded state
+    expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+    expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+    expect(screen.queryByText("Award Type")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
 });

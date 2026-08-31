@@ -11,10 +11,12 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
 const useGetServicesComponentsListQueryMock = vi.fn();
+const useGetGrantNumbersListQueryMock = vi.fn();
 
 // Mock the hooks and API calls
 vi.mock("../../../api/opsAPI", () => ({
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    useGetGrantNumbersListQuery: (...args) => useGetGrantNumbersListQueryMock(...args),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
@@ -39,6 +41,10 @@ afterEach(() => {
 
 beforeEach(() => {
     useGetServicesComponentsListQueryMock.mockReturnValue({
+        data: [],
+        isLoading: false
+    });
+    useGetGrantNumbersListQueryMock.mockReturnValue({
         data: [],
         isLoading: false
     });
@@ -105,6 +111,134 @@ describe("AgreementBudgetLines", () => {
 
         // Should render the component without errors
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    describe("Grant agreements", () => {
+        // A real super user so the Edit/Request buttons render (regular users would hide them entirely)
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const renderAgreement = (agreement) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={agreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("enables the Edit button for a grant agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
+
+            // The clickable Edit button (a real <button>) renders for grants, not the disabled span variant
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+        });
+
+        test("enables the Change BL Status button for a grant agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "GRANT" });
+
+            const requestLink = screen.getByRole("link", { name: "Change BL Status" });
+            expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+
+        test("keeps the Edit and Change BL Status buttons enabled for a contract agreement", () => {
+            renderAgreement({ ...mockAgreement, agreement_type: "CONTRACT" });
+
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+
+            const requestLink = screen.getByRole("link", { name: "Change BL Status" });
+            expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+    });
+
+    describe("Grant lifecycle locks", () => {
+        // A super user so the Edit button would render if editing were allowed; the lock, not the
+        // user's permission, is what hides it. Regular users would hide the button regardless.
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const grantAgreement = { ...mockAgreement, agreement_type: "GRANT", _meta: { isEditable: true } };
+
+        const renderWithLock = (lockProps) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={grantAgreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                            isPreAwardInReview={false}
+                            isAwardInReview={false}
+                            isPostPreAwardLocked={false}
+                            {...lockProps}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("hides the Edit button for a grant when pre-award is in review", () => {
+            renderWithLock({ isPreAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when award is in review", () => {
+            renderWithLock({ isAwardInReview: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("hides the Edit button for a grant when post-pre-award locked", () => {
+            renderWithLock({ isPostPreAwardLocked: true });
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("enables the Edit button for a grant when no lifecycle lock is active", () => {
+            renderWithLock({});
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+        });
     });
 
     test("shows the grouped table skeleton while services components are loading", () => {
@@ -319,18 +453,18 @@ describe("AgreementBudgetLines", () => {
             expect(screen.queryByRole("button", { name: /^edit$/i })).not.toBeInTheDocument();
         });
 
-        test("does not show the Request BL Status Change button for a read-only user", () => {
+        test("does not show the Change BL Status button for a read-only user", () => {
             renderReadOnly({ canUserEditBudgetLines: true });
 
-            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+            expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
         });
 
-        test("does not show the disabled Request BL Status Change button for a read-only user on a non-editable agreement", () => {
+        test("does not show the disabled Change BL Status button for a read-only user on a non-editable agreement", () => {
             renderReadOnly({
                 agreement: { ...mockAgreement, _meta: { isEditable: false } }
             });
 
-            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+            expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
         });
     });
 
@@ -374,5 +508,76 @@ describe("AgreementBudgetLines", () => {
 
         // Should render the component for super users even with restrictions
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    describe("post-pre-award lock", () => {
+        const regularUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+        const defaultProps = {
+            agreement: { ...mockAgreement, _meta: { isEditable: true } },
+            isEditMode: false,
+            setIsEditMode: vi.fn(),
+            isAgreementNotDeveloped: false,
+            isAgreementAwarded: false,
+            isPreAwardInReview: false,
+            isAwardInReview: false,
+            isPostPreAwardLocked: true
+        };
+        const renderWith = (store, props = {}) =>
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("Edit button is hidden for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("Change BL Status button is disabled for regular user when isPostPreAwardLocked is true", () => {
+            renderWith(regularUserStore);
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+        });
+
+        test("super user is also locked when isPostPreAwardLocked is true", () => {
+            renderWith(superUserStore);
+            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+        });
     });
 });

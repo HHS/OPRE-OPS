@@ -1,9 +1,9 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
+import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -36,6 +36,7 @@ const ProcurementTrackerStepFour = ({
     isActiveStep,
     authorizedUsers,
     handleSetCompletedStepNumber,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -50,6 +51,8 @@ const ProcurementTrackerStepFour = ({
         setStep4DateCompleted,
         step4Notes,
         setStep4Notes,
+        resetStep4Notes,
+        notesResetKey,
         step4NotesLabel,
         runValidate,
         validatorRes,
@@ -61,8 +64,10 @@ const ProcurementTrackerStepFour = ({
         setShowModal,
         modalProps,
         cancelModalStep4,
+        handleSaveNotes,
+        isStepPatchInFlight,
         handleStepFourComplete
-    } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
@@ -76,7 +81,8 @@ const ProcurementTrackerStepFour = ({
         !selectedUser?.id ||
         !step4DateCompleted ||
         validatorRes.hasErrors() ||
-        !stepFourData?.id;
+        !stepFourData?.id ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -234,14 +240,16 @@ const ProcurementTrackerStepFour = ({
                                 isDisabled={isEvaluationFieldsDisabled}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step4Notes}
-                            onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep4Notes(value)}
-                            isDisabled={isEvaluationFieldsDisabled}
+                        <StepNotesEditor
+                            textAreaName="notes-step-4"
+                            notes={step4Notes}
+                            setNotes={setStep4Notes}
+                            resetNotes={resetStep4Notes}
+                            savedNotes={stepFourData?.notes}
+                            stepId={stepFourData?.id}
+                            onSave={handleSaveNotes}
+                            isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -304,11 +312,21 @@ const ProcurementTrackerStepFour = ({
                             term="Date Completed"
                             description={step4DateCompletedLabel}
                         />
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <dd className="margin-0 margin-top-1">{step4NotesLabel || "None"}</dd>
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-4"
+                        notes={step4Notes}
+                        setNotes={setStep4Notes}
+                        resetNotes={resetStep4Notes}
+                        savedNotes={stepFourData?.notes}
+                        stepId={stepFourData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>

@@ -215,8 +215,18 @@ describe("isFieldVisible", () => {
     });
 
     it("returns false for unsupported agreement types", () => {
-        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.DescriptionAndNotes)).toBe(false);
         expect(isFieldVisible(AgreementType.IAA, AgreementFields.ContractType)).toBe(false);
+    });
+
+    it("returns true for GRANT DescriptionAndNotes and NickName fields", () => {
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.DescriptionAndNotes)).toBe(true);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.NickName)).toBe(true);
+    });
+
+    it("returns false for GRANT contract-only fields", () => {
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.ProcurementShop)).toBe(false);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.ContractType)).toBe(false);
+        expect(isFieldVisible(AgreementType.GRANT, AgreementFields.Vendor)).toBe(false);
     });
 
     it("returns false for unknown fields", () => {
@@ -423,9 +433,9 @@ describe("getProcurementShopFees", () => {
 });
 
 describe("isNotDevelopedYet", () => {
-    it("returns true for GRANT agreement type", () => {
+    it("returns false for GRANT agreement type (grants are now creatable)", () => {
         const result = isNotDevelopedYet(AgreementType.GRANT);
-        expect(result).toBe(true);
+        expect(result).toBe(false);
     });
 
     it("returns true for DIRECT_OBLIGATION agreement type", () => {
@@ -634,5 +644,25 @@ describe("cleanAgreementForApi", () => {
         const data = { id: 1, name: "Test Agreement", nick_name: null };
         const { cleanData } = cleanAgreementForApi(data);
         expect(cleanData.nick_name).toBeNull();
+    });
+
+    it("strips grant_numbers from the cleaned payload", () => {
+        const data = {
+            id: 1,
+            name: "Test Grant",
+            grant_numbers: [{ id: 10, number: 1, display_title: "Grant 1" }]
+        };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData).not.toHaveProperty("grant_numbers");
+    });
+
+    it("strips services_components from the cleaned payload", () => {
+        const data = {
+            id: 1,
+            name: "Test Contract",
+            services_components: [{ id: 10, number: 1, display_title: "SC 1" }]
+        };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData).not.toHaveProperty("services_components");
     });
 });

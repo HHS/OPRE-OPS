@@ -1,21 +1,20 @@
 import React, { useEffect, useCallback, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
-import { useGetPortfolioCansByIdQuery, useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
-import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
+import {
+    useGetPortfolioCansByIdQuery,
+    useGetReportingSummaryQuery,
+    useLazyGetBudgetLineItemQuery
+} from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioSpendingTableLoading from "./PortfolioSpendingTableLoading";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
-import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
 const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
-    const [budgetLineTypesCount, setBudgetLineTypesCount] = React.useState([]);
-    const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
     const {
         portfolioId,
         fiscalYear,
-        projectTypesCount,
         inDraftFunding,
         totalFunding,
         inExecutionFunding,
@@ -38,6 +37,14 @@ const PortfolioSpending = () => {
         }
     );
 
+    const { data: reportingSummaryResponse } = useGetReportingSummaryQuery(
+        { fiscalYear, portfolioIds: [portfolioId] },
+        { skip: !portfolioId || !fiscalYear }
+    );
+
+    const agreementSpendingData = reportingSummaryResponse?.spending;
+    const reportingSummaryData = reportingSummaryResponse?.counts;
+
     const budgetLineIds = useMemo(
         () => [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items) ?? [])],
         [portfolioCans]
@@ -55,11 +62,6 @@ const PortfolioSpending = () => {
                 (item) => item.fiscal_year === fiscalYear || item.fiscal_year === null
             );
             setBudgetLineItems(budgetLineItemsByFiscalYear);
-            const budgetLineItemsForSummaryCard = budgetLineItemsData.filter((item) => item.fiscal_year === fiscalYear);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsForSummaryCard ?? [], "status");
-            setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const newAgreementTypesCount = getAgreementTypesCount(budgetLineItemsForSummaryCard);
-            setAgreementTypesCount(newAgreementTypesCount);
         } catch (error) {
             console.error("Failed to fetch budgetLineItems:", error);
         }
@@ -72,10 +74,7 @@ const PortfolioSpending = () => {
     const isTableLoading = isLoading || isCansFetching;
 
     useEffect(() => {
-        // Reset states when fiscal year changes
         setBudgetLineItems([]);
-        setBudgetLineTypesCount([]);
-        setAgreementTypesCount([]);
 
         if (budgetLineIds?.length) {
             fetchBudgetLineItems();
@@ -90,14 +89,13 @@ const PortfolioSpending = () => {
             </p>
             <PortfolioBudgetSummary
                 fiscalYear={fiscalYear}
-                projectTypesCount={projectTypesCount}
-                budgetLineTypesCount={budgetLineTypesCount}
-                agreementTypesCount={agreementTypesCount}
                 inDraftFunding={inDraftFunding}
                 totalFunding={totalFunding}
                 inExecutionFunding={inExecutionFunding}
                 obligatedFunding={obligatedFunding}
                 plannedFunding={plannedFunding}
+                spendingData={agreementSpendingData}
+                counts={reportingSummaryData}
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>

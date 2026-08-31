@@ -11,14 +11,14 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert data["agreement_id"] == 13
     assert data["status"] == "ACTIVE"
     assert data["tracker_type"] == "DEFAULT"
-    assert data["active_step_number"] == 1
+    assert data["active_step_number"] == 5
     assert data["procurement_action"] == 100
 
     # Verify steps are included
     assert "steps" in data
     assert len(data["steps"]) == 6
 
-    # Verify step 1 is ACQUISITION_PLANNING with extra fields
+    # Verify step 1 is ACQUISITION_PLANNING PENDING (steps 1-3 are pending; step 4 is completed)
     step_1 = data["steps"][0]
     assert step_1["step_number"] == 1
     assert step_1["step_type"] == "ACQUISITION_PLANNING"
@@ -27,7 +27,7 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert "date_completed" in step_1
     assert "notes" in step_1
 
-    # Verify step 2 is PRE_SOLICITATION with extra fields
+    # Verify step 2 is PRE_SOLICITATION PENDING
     step_2 = data["steps"][1]
     assert step_2["step_number"] == 2
     assert step_2["step_type"] == "PRE_SOLICITATION"
@@ -258,14 +258,16 @@ def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     assert "solicitation_period_start_date" not in pre_award_step
     assert "solicitation_period_end_date" not in pre_award_step
 
-    # AWARD step should NOT have extra fields
+    # AWARD step should have extra fields (OPS-1640: Award step implementation)
     award_step = steps[5]
     assert award_step["step_type"] == "AWARD"
-    assert "task_completed_by" not in award_step
-    assert "date_completed" not in award_step
-    assert "notes" not in award_step
+    assert "task_completed_by" in award_step
+    assert "date_completed" in award_step
+    assert "notes" in award_step
+    assert "target_completion_date" in award_step
+    assert "approval_requested" in award_step
+    assert "approval_status" in award_step
     assert "draft_solicitation_date" not in award_step
-    assert "target_completion_date" not in award_step
     assert "solicitation_period_start_date" not in award_step
     assert "solicitation_period_end_date" not in award_step
 

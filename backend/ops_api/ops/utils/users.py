@@ -3,8 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Role, User
-
-SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
+from models.users import SYSTEM_ADMIN_OIDC_ID
 
 
 def is_user_admin(user: User, session: Session = None) -> bool:
@@ -24,6 +23,10 @@ def is_super_user(user: User, app_context: Flask) -> bool:
         return False
 
     return super_user_role in user.roles
+
+
+def is_budget_team(user: User) -> bool:
+    return "BUDGET_TEAM" in (role.name for role in user.roles)
 
 
 def get_sys_user(session: Session) -> User:

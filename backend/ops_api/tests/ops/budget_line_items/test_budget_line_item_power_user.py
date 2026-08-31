@@ -849,6 +849,59 @@ def test_power_user_update_obligate_by_date(
     loaded_db.commit()
 
 
+def test_power_user_create_bli_with_past_obligate_by_date(
+    power_user_auth_client,
+    budget_team_auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+):
+    """Administrative Power Users can POST a new BLI and transition it past DRAFT with a past
+    `date_needed`. Budget Team users hit the same endpoint successfully on POST (status is DRAFT)
+    but are blocked when they attempt to transition past DRAFT with a past date.
+    """
+    agreement = test_contract
+    past_date = "2020-06-21"
+    target_status = BudgetLineItemStatus.PLANNED
+
+    payload = {
+        "agreement_id": agreement.id,
+        "line_description": f"Past date BLI for {target_status.name}",
+        "can_id": test_can.id,
+        "amount": 3500,
+        "status": "DRAFT",
+        "date_needed": past_date,
+        "proc_shop_fee_percentage": 1.23,
+        "services_component_id": agreement.awarding_entity_id,
+    }
+
+    # Power user POST + transition: should succeed.
+    post_response = power_user_auth_client.post("/api/v1/budget-line-items/", json=payload)
+    assert post_response.status_code == 201
+    power_user_bli_id = post_response.json["id"]
+
+    transition_response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=power_user_bli_id),
+        json={"status": target_status.name},
+    )
+    assert transition_response.status_code == 200
+
+    # Budget team user POST succeeds (DRAFT), but transition with the past date is rejected.
+    budget_team_post_response = budget_team_auth_client.post("/api/v1/budget-line-items/", json=payload)
+    assert budget_team_post_response.status_code == 201
+    budget_team_bli_id = budget_team_post_response.json["id"]
+
+    budget_team_transition_response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=budget_team_bli_id),
+        json={"status": target_status.name},
+    )
+    assert budget_team_transition_response.status_code == 400
+    assert (
+        "BLI must have a Need By Date in the future when status is not DRAFT"
+        in budget_team_transition_response.json["errors"]["date_needed"]
+    )
+
+
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -976,18 +1029,25 @@ def test_planned_bli_can_update_services_component_without_change_request(
     loaded_db,
     test_can,
     test_contract,
-    test_services_component,
     app_ctx,
 ):
     """A PLANNED BLI can have its services_component_id changed directly, without creating a change request."""
     agreement = test_contract
 
+    # Neither SC has period dates, so the SC window is undefined and PoP validation passes.
+    sc1 = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+    )
     sc2 = ServicesComponent(
         agreement=agreement,
         number=100,
         optional=False,
     )
+    loaded_db.add(sc1)
     loaded_db.add(sc2)
+    loaded_db.flush()  # populate sc1.id and sc2.id before referencing them
 
     bli = ContractBudgetLineItem(
         line_description="Planned BLI for SC update test",
@@ -996,7 +1056,7 @@ def test_planned_bli_can_update_services_component_without_change_request(
         can_id=test_can.id,
         status=BudgetLineItemStatus.PLANNED,
         amount=1000.00,
-        services_component_id=test_services_component.id,
+        services_component_id=sc1.id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -1015,7 +1075,61 @@ def test_planned_bli_can_update_services_component_without_change_request(
     assert bli.change_requests_in_review is None, "No change request should be created for services_component_id update"
 
     loaded_db.delete(bli)
+    loaded_db.delete(sc1)
     loaded_db.delete(sc2)
+    loaded_db.commit()
+
+
+def test_planned_grant_bli_can_update_grant_number_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_grant,
+    app_ctx,
+):
+    """A PLANNED grant BLI can have its grant_number_id changed directly, without a change request.
+
+    Regression for grant_number_id being absent from ALWAYS_DIRECT_EDIT_FIELDS — the grant-BLI
+    analog of the services_component_id direct-edit path. Without the fix the update is silently
+    dropped (neither applied directly nor captured as a change request).
+    """
+    from models import GrantNumber
+
+    agreement = test_grant
+
+    gn1 = GrantNumber(agreement_id=agreement.id, number=1, description="GN1")
+    gn2 = GrantNumber(agreement_id=agreement.id, number=2, description="GN2")
+    loaded_db.add_all([gn1, gn2])
+    loaded_db.commit()
+
+    bli = GrantBudgetLineItem(
+        line_description="Planned grant BLI for GN update test",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+        amount=1000.00,
+        grant_number_id=gn1.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"grant_number_id": gn2.id},
+    )
+
+    assert response.status_code == 200, "PLANNED grant BLI grant_number_id update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.grant_number_id == gn2.id, "grant_number_id should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for grant_number_id update"
+
+    loaded_db.delete(bli)
+    loaded_db.delete(gn1)
+    loaded_db.delete(gn2)
     loaded_db.commit()
 
 
@@ -1024,11 +1138,19 @@ def test_planned_bli_can_update_line_description_without_change_request(
     loaded_db,
     test_can,
     test_contract,
-    test_services_component,
     app_ctx,
 ):
     """A PLANNED BLI can have its line_description changed directly, without creating a change request."""
     agreement = test_contract
+
+    # SC has no period dates, so the PoP window is undefined and validation passes.
+    sc = ServicesComponent(
+        agreement=agreement,
+        number=99,
+        optional=False,
+    )
+    loaded_db.add(sc)
+    loaded_db.flush()  # populate sc.id before referencing it on the BLI
 
     bli = ContractBudgetLineItem(
         line_description="Original Description",
@@ -1037,7 +1159,7 @@ def test_planned_bli_can_update_line_description_without_change_request(
         can_id=test_can.id,
         status=BudgetLineItemStatus.PLANNED,
         amount=1000.00,
-        services_component_id=test_services_component.id,
+        services_component_id=sc.id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -1054,6 +1176,113 @@ def test_planned_bli_can_update_line_description_without_change_request(
     loaded_db.refresh(bli)
     assert bli.line_description == "Updated Description", "line_description should be updated directly"
     assert bli.change_requests_in_review is None, "No change request should be created for line_description update"
+
+    loaded_db.delete(bli)
+    loaded_db.delete(sc)
+    loaded_db.commit()
+
+
+@pytest.mark.parametrize(
+    "bli_status",
+    [
+        BudgetLineItemStatus.PLANNED,
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+    ],
+)
+def test_power_user_can_save_non_draft_bli_with_date_outside_sc_pop(
+    power_user_auth_client,
+    loaded_db,
+    bli_status,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """A superuser can save a non-DRAFT BLI whose obligate-by date falls outside the SC PoP window.
+
+    The BLI is inserted directly via SQLAlchemy to bypass service-layer validation at creation
+    time (a normal user couldn't create such a BLI in the first place). The test then verifies
+    that a superuser PATCH succeeds rather than being rejected by _validate_date_within_sc_window.
+
+    test_services_component has period_start=2024-01-01, period_end=2024-06-30.
+    The date_needed used here (2030-12-31) is well outside that window.
+    """
+    agreement = test_contract
+
+    # Insert directly — bypasses the service-layer PoP validation so we can set up
+    # a BLI that is already outside the window, simulating a pre-existing record or
+    # one created while the SC dates were different.
+    bli = ContractBudgetLineItem(
+        line_description=f"Outside-PoP {bli_status} BLI",
+        agreement_id=agreement.id,
+        date_needed=date(2030, 12, 31),  # outside SC period_end 2024-06-30
+        can_id=test_can.id,
+        amount=5000.00,
+        status=bli_status,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"amount": 6000.00},
+    )
+    assert (
+        response.status_code == 200
+    ), f"Power user should be able to save a {bli_status} BLI with obligate-by date outside the SC PoP window"
+
+    loaded_db.refresh(bli)
+    assert float(bli.amount) == 6000.00
+
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+def test_power_user_can_status_transition_bli_with_date_outside_sc_pop(
+    power_user_auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """A superuser can transition a DRAFT BLI to PLANNED even when its obligate-by date
+    falls outside the SC PoP window.
+
+    Transitioning to IN_EXECUTION is intentionally excluded here — that transition creates
+    a ProcurementTracker which the test_contract fixture cannot cascade-delete, and is
+    already covered by test_power_user_can_save_non_draft_bli_with_date_outside_sc_pop.
+
+    test_services_component has period_start=2024-01-01, period_end=2024-06-30.
+    The date_needed used here (2030-12-31) is well outside that window.
+    """
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description="Outside-PoP DRAFT-to-PLANNED BLI",
+        agreement_id=agreement.id,
+        date_needed=date(2030, 12, 31),  # outside SC period_end 2024-06-30
+        can_id=test_can.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.DRAFT,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"status": BudgetLineItemStatus.PLANNED.name},
+    )
+    assert response.status_code in (200, 202), (
+        f"Power user should be able to transition DRAFT→PLANNED with obligate-by date outside the SC PoP window, "
+        f"got {response.status_code}: {response.json}"
+    )
+
+    loaded_db.refresh(bli)
+    assert bli.status == BudgetLineItemStatus.PLANNED
 
     loaded_db.delete(bli)
     loaded_db.commit()

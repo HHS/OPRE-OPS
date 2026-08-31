@@ -238,7 +238,26 @@ describe("TextArea Component", () => {
             />
         );
 
-        expect(screen.getByText("You can enter up to 500 characters")).toBeInTheDocument();
+        expect(screen.getByText("500 left")).toBeInTheDocument();
+    });
+
+    it("hides characters left hint when no maxLength is provided", () => {
+        // eslint-disable-next-line no-unused-vars
+        const { maxLength, ...propsWithoutMax } = defaultProps;
+        render(<TextArea {...propsWithoutMax} />);
+
+        expect(screen.queryByText(/left/)).not.toBeInTheDocument();
+    });
+
+    it("shows characters left hint when maxLength is provided", () => {
+        render(
+            <TextArea
+                {...defaultProps}
+                maxLength={200}
+            />
+        );
+
+        expect(screen.getByText("200 left")).toBeInTheDocument();
     });
 
     it("has correct aria-describedby attributes", () => {
@@ -275,11 +294,11 @@ describe("TextArea Component", () => {
         expect(fieldset).toHaveClass("usa-fieldset");
     });
 
-    it("has usa-sr-only class on character count message", () => {
+    it("has usa-character-count__message class on character count message", () => {
         render(<TextArea {...defaultProps} />);
 
-        const srOnlyMessage = screen.getByText(/You can enter up to \d+ characters/);
-        expect(srOnlyMessage).toHaveClass("usa-sr-only");
-        expect(srOnlyMessage).toHaveClass("usa-character-count__message");
+        const countMessage = screen.getByText(/\d+ left/);
+        expect(countMessage).toHaveClass("usa-character-count__message");
+        expect(countMessage).toHaveClass("usa-hint");
     });
 });

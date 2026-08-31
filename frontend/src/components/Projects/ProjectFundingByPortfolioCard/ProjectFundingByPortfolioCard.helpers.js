@@ -5,11 +5,19 @@ import {
 import { computeDisplayPercents } from "../../../helpers/utils";
 
 /**
+ * Returns the PORTFOLIO_ORDER config whose primary abbreviation or aliases match,
+ * or undefined if the abbreviation is unknown.
+ */
+const findConfig = (abbreviation) =>
+    PORTFOLIO_ORDER.find((c) => c.abbreviation === abbreviation || c.aliases?.includes(abbreviation));
+
+/**
  * Build chart data for the "Project Funding by Portfolio" horizontal stacked bar.
- * Items are sorted by their position in PORTFOLIO_ORDER, then colors are assigned
- * sequentially (slot 1, 2, 3 …) so a project with 3 portfolios always shows
- * the first 3 colors from the palette — matching the visual sequence on the
- * reporting page — rather than the sparse slots of each abbreviation's fixed color.
+ * Items are sorted by their position in PORTFOLIO_ORDER, then each portfolio is
+ * assigned its fixed color from PORTFOLIO_ORDER by abbreviation — the same scheme
+ * used by transformPortfoliosToChartData for the "FY Budget Across Portfolios"
+ * view — so a given portfolio (e.g. HMRF) always renders with the same color
+ * across both views. Unknown portfolios fall back to FALLBACK_COLOR.
  * Abbreviations come directly from the funding API response (item.abbreviation).
  *
  * @param {Array<{portfolio_id: number, portfolio: string, amount: number, abbreviation: string|null}>} fundingByPortfolio
@@ -32,16 +40,14 @@ export const buildPortfolioChartData = (fundingByPortfolio) => {
         return idxA - idxB;
     });
 
-    // Assign colors sequentially from PORTFOLIO_ORDER so 3 portfolios always
-    // get colors #1, #2, #3 rather than their sparse fixed slots (e.g. 1, 3, 13).
-    const paletteColors = PORTFOLIO_ORDER.map((c) => c.color);
-
-    const rawItems = sorted.map((item, i) => ({
+    // Assign each portfolio its fixed color from PORTFOLIO_ORDER by abbreviation
+    // so colors stay consistent with the PortfolioSummaryCards view.
+    const rawItems = sorted.map((item) => ({
         id: item.portfolio_id,
         label: item.portfolio,
         abbreviation: item.abbreviation || item.portfolio,
         value: item.amount,
-        color: paletteColors[i] ?? FALLBACK_COLOR
+        color: findConfig(item.abbreviation)?.color ?? FALLBACK_COLOR
     }));
 
     return computeDisplayPercents(rawItems);

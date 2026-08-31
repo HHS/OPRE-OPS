@@ -7,7 +7,7 @@ import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
@@ -24,12 +24,13 @@ export const ReviewBudgetTeamRequisition = () => {
     const {
         agreement,
         isLoading,
-        allBudgetLines,
+        executingBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent,
+        grantNumbers,
+        groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
         reviewerNotes,
@@ -38,7 +39,8 @@ export const ReviewBudgetTeamRequisition = () => {
         requisitionNumber,
         setRequisitionNumber,
         requisitionDate,
-        setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -47,12 +49,14 @@ export const ReviewBudgetTeamRequisition = () => {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
         handleApprove,
         handleSaveDraft,
         handleCancel,
         isFormValid,
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     } = useReviewBudgetTeamRequisition(agreementId);
 
     if (isLoading) {
@@ -92,6 +96,9 @@ export const ReviewBudgetTeamRequisition = () => {
                     heading="Submission Error"
                     message={submitError}
                     isClosable={true}
+                    setIsAlertVisible={(visible) => {
+                        if (!visible) setSubmitError("");
+                    }}
                     headingLevel={2}
                 />
             )}
@@ -116,19 +123,21 @@ export const ReviewBudgetTeamRequisition = () => {
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines and Executing Total */}
-            <PreAwardBudgetLinesReviewAccordion
-                budgetLineItems={allBudgetLines}
+            {/* Budget Lines and Executing Total (only budget lines in Executing status are
+                relevant to the requisition, so limit the review to those) */}
+            <BudgetLinesReviewAccordion
+                budgetLineItems={executingBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
-                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                groupedBudgetLines={groupedExecutingBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
             />
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
                 instructions="The budget lines on this agreement have allocated funds from the CANs displayed below. Review to confirm everything looks good and click on each CAN to view more details."
-                selectedBudgetLines={allBudgetLines}
+                selectedBudgetLines={executingBudgetLines}
                 afterApproval={false}
                 setAfterApproval={() => {}}
                 action=""
@@ -235,12 +244,12 @@ export const ReviewBudgetTeamRequisition = () => {
                         <MemoizedDatePicker
                             id="requisition-date"
                             name="requisitionDate"
-                            label="Requisition Date"
+                            label="Requisition Approval Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
+                            onChange={handleDateChange}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
+                            messages={requisitionDateError}
                             isRequiredNoShow={true}
                         />
                     </div>
@@ -305,8 +314,8 @@ export const ReviewBudgetTeamRequisition = () => {
                 <button
                     className="usa-button usa-button--outline margin-right-2"
                     type="button"
-                    onClick={handleSaveDraft}
-                    disabled={isSubmitting || approvalAlreadyProcessed}
+                    onClick={() => handleSaveDraft()}
+                    disabled={isSubmitting || approvalAlreadyProcessed || !canSaveDraft}
                     data-cy="save-draft-btn"
                 >
                     Save Draft
@@ -333,7 +342,7 @@ export const ReviewBudgetTeamRequisition = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     handleSecondary={modalProps.handleSecondary}
-                    closeModal={() => setShowModal(false)}
+                    closeModal={modalProps.closeModal || (() => setShowModal(false))}
                 />
             )}
         </App>

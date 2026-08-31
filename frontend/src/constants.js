@@ -48,7 +48,7 @@ const constants = {
         { name: "BUDGET_TEAM", label: "Budget Team" },
         { name: "READ_ONLY", label: "Read Only" },
         { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
-        { name: "SUPER_USER", label: "Temp Year End Role" }
+        { name: "SUPER_USER", label: "Administrative Power User" }
     ]
 };
 
@@ -68,8 +68,8 @@ export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_2: true,
     STEP_3: true,
     STEP_4: true,
-    STEP_5: process.env.NODE_ENV !== "production",
-    STEP_6: process.env.NODE_ENV !== "production"
+    STEP_5: true,
+    STEP_6: true
 };
 
 export default constants;

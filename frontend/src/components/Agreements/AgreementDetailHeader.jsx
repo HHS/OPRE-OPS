@@ -1,5 +1,6 @@
 import { faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import EditingIndicator from "../UI/EditingIndicator";
 import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
@@ -12,6 +13,8 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {boolean} props.isEditable - Whether the agreement is editable.
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
+ * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
+ * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({
@@ -21,8 +24,23 @@ export const AgreementDetailHeader = ({
     setIsEditMode,
     isEditable,
     hasUnsavedChanges = false,
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
+    const isInReview = isPreAwardInReview || isAwardInReview || isPostPreAwardLocked;
+    // Editing is disabled when the agreement is in review/locked.
+    const isEditDisabled = isInReview;
+    let editDisabledTooltipLabel;
+    if (isPreAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+    } else if (isAwardInReview) {
+        editDisabledTooltipLabel =
+            "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+    } else {
+        editDisabledTooltipLabel = "This agreement has completed Pre-Award Approval and is locked from further edits.";
+    }
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -39,8 +57,8 @@ export const AgreementDetailHeader = ({
                         Unsaved Changes
                     </div>
                 )}
-                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and NOT in pre-award review */}
-                {!isEditMode && isEditable && !isPreAwardInReview && (
+                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and editing is not disabled */}
+                {!isEditMode && isEditable && !isEditDisabled && (
                     <button
                         type="button"
                         id="edit"
@@ -57,9 +75,9 @@ export const AgreementDetailHeader = ({
                         <span className="text-primary">Edit</span>
                     </button>
                 )}
-                {/* DISABLED EDIT BUTTON - when in pre-award review */}
-                {!isEditMode && isEditable && isPreAwardInReview && (
-                    <Tooltip label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.">
+                {/* DISABLED EDIT BUTTON - when in approval review */}
+                {!isEditMode && isEditable && isEditDisabled && (
+                    <Tooltip label={editDisabledTooltipLabel}>
                         <span
                             id="edit-disabled"
                             className="usa-button--unstyled usa-button--disabled display-flex flex-align-center"
@@ -79,20 +97,7 @@ export const AgreementDetailHeader = ({
                 )}
                 {isEditMode && (
                     <div className="margin-left-auto">
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                            aria-hidden="true"
-                        />
-                        <span
-                            id="editing"
-                            className="text-black"
-                        >
-                            Editing...
-                        </span>
+                        <EditingIndicator />
                     </div>
                 )}
             </div>

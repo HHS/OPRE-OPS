@@ -1,8 +1,10 @@
 import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
+import AllGrantNumberSelect from "../../GrantNumbers/AllGrantNumberSelect";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
@@ -16,6 +18,9 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {Function} props.setSelectedCan - A function to set the selected CAN.
  * @param {number | null} props.servicesComponentNumber - The selected services component number.
  * @param {Function} props.setServicesComponentNumber - A function to set the selected services component number.
+ * @param {number | null} [props.grantNumberNumber] - The selected grant number (grant agreements).
+ * @param {Function} [props.setGrantNumberNumber] - A function to set the selected grant number.
+ * @param {boolean} [props.isGrant] - Whether the agreement is a grant (renders the grant-number select instead of the services-component select).
  * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {Function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {string | null} props.enteredDescription - The entered budget line description.
@@ -32,6 +37,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
+ * @param {string | null} [props.scStartDate] - The earliest SC start date (YYYY-MM-DD) from the agreement.
+ * @param {string | null} [props.scEndDate] - The latest SC end date (YYYY-MM-DD) from the agreement.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -39,6 +46,9 @@ export const BudgetLinesForm = ({
     setSelectedCan,
     servicesComponentNumber,
     setServicesComponentNumber,
+    grantNumberNumber,
+    setGrantNumberNumber = () => {},
+    isGrant = false,
     enteredAmount,
     setEnteredAmount,
     enteredDescription,
@@ -54,9 +64,20 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     hasUnsavedChanges,
     isBudgetLineNotDraft = false,
-    workflow
+    workflow,
+    scStartDate = null,
+    scEndDate = null
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+
+    // Re-run the suite whenever the SC window changes so the PoP boundary check
+    // reflects unsaved service components without waiting for a user interaction.
+    const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
+    React.useEffect(() => {
+        datePickerSuite.run({ needByDate, scStartDate, scEndDate, isDraft: !isBudgetLineNotDraft }, isSuperUser);
+        forceUpdate();
+    }, [scStartDate, scEndDate, needByDate, isSuperUser, isBudgetLineNotDraft, datePickerSuite]);
+
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
@@ -70,11 +91,13 @@ export const BudgetLinesForm = ({
             const validationResult = budgetFormSuite.run(
                 {
                     servicesComponentNumber,
+                    grantNumberNumber,
                     selectedCan,
                     enteredAmount,
                     needByDate
                 },
-                isSuperUser
+                isSuperUser,
+                isGrant
             );
 
             const budgetCn = classnames(validationResult, {
@@ -83,7 +106,7 @@ export const BudgetLinesForm = ({
                 warning: "warning"
             });
 
-            scCn = budgetCn("allServicesComponentSelect");
+            scCn = isGrant ? budgetCn("allGrantNumberSelect") : budgetCn("allServicesComponentSelect");
             canCn = budgetCn("selectedCan");
             enteredAmountCn = budgetCn("enteredAmount");
             needByDateCn = budgetCn("needByDate");
@@ -91,7 +114,10 @@ export const BudgetLinesForm = ({
         if (!isBudgetLineNotDraft) {
             datePickerSuite.run(
                 {
-                    needByDate
+                    needByDate,
+                    scStartDate,
+                    scEndDate,
+                    isDraft: true
                 },
                 isSuperUser
             );
@@ -102,12 +128,14 @@ export const BudgetLinesForm = ({
         budgetFormSuite.run(
             {
                 servicesComponentNumber,
+                grantNumberNumber,
                 selectedCan,
                 enteredAmount,
                 needByDate,
                 ...{ [name]: value }
             },
-            isSuperUser
+            isSuperUser,
+            isGrant
         );
     };
 
@@ -115,6 +143,9 @@ export const BudgetLinesForm = ({
         datePickerSuite.run(
             {
                 needByDate,
+                scStartDate,
+                scEndDate,
+                isDraft: !isBudgetLineNotDraft,
                 ...{ [name]: value }
             },
             isSuperUser
@@ -127,35 +158,96 @@ export const BudgetLinesForm = ({
             className="grid-row grid-gap margin-y-3"
             id="budget-line-form"
         >
-            <div className="grid-col-4 padding-top-3">
-                <div className="usa-form-group">
-                    <AllServicesComponentSelect
-                        messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
-                        className={scCn}
-                        value={servicesComponentNumber || ""}
-                        onChange={(name, value) => {
-                            if (isReviewMode) {
-                                validateBudgetForm("servicesComponentNumber", +value);
-                            }
+            <div className="grid-col-8">
+                <div className="grid-row grid-gap flex-align-end">
+                    <div className="grid-col-6">
+                        <div
+                            className={`usa-form-group ${scCn || ""}`}
+                            data-testid="services-component-form-group"
+                        >
+                            {isGrant ? (
+                                <AllGrantNumberSelect
+                                    messages={budgetFormSuite.getErrors("allGrantNumberSelect")}
+                                    value={grantNumberNumber || ""}
+                                    onChange={(name, value) => {
+                                        if (isReviewMode) {
+                                            validateBudgetForm("grantNumberNumber", +value);
+                                        }
 
-                            setServicesComponentNumber(+value);
-                        }}
-                    />
+                                        setGrantNumberNumber(+value);
+                                    }}
+                                />
+                            ) : (
+                                <AllServicesComponentSelect
+                                    messages={budgetFormSuite.getErrors("allServicesComponentSelect")}
+                                    value={servicesComponentNumber || ""}
+                                    onChange={(name, value) => {
+                                        if (isReviewMode) {
+                                            validateBudgetForm("servicesComponentNumber", +value);
+                                        }
+
+                                        setServicesComponentNumber(+value);
+                                    }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div className="grid-col-6">
+                        <DatePicker
+                            id="need-by-date"
+                            name="needByDate"
+                            label="Obligate by Date"
+                            hint="mm/dd/yyyy"
+                            messages={[
+                                ...(budgetFormSuite.getErrors("needByDate") || []),
+                                ...(dateRes.getErrors("needByDate") || [])
+                            ]}
+                            className={needByDateCn}
+                            value={needByDate}
+                            onChange={(e) => {
+                                setNeedByDate(e.target.value);
+                                if (isReviewMode) {
+                                    validateBudgetForm("needByDate", e.target.value);
+                                } else {
+                                    validateDatePicker("needByDate", e.target.value);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
-                <div className="usa-form-group padding-top-105">
-                    <CanComboBox
-                        name="selectedCan"
-                        label="CAN"
-                        messages={budgetFormSuite.getErrors("selectedCan")}
-                        className={canCn}
-                        selectedCan={selectedCan}
-                        setSelectedCan={setSelectedCan}
-                        onChange={(name, value) => {
-                            if (isReviewMode) {
-                                validateBudgetForm(name, value);
-                            }
-                        }}
-                    />
+                <div className="grid-row grid-gap flex-align-end margin-top-105">
+                    <div className="grid-col-6">
+                        <div className="usa-form-group">
+                            <CanComboBox
+                                name="selectedCan"
+                                label="CAN"
+                                messages={budgetFormSuite.getErrors("selectedCan")}
+                                className={canCn}
+                                selectedCan={selectedCan}
+                                setSelectedCan={setSelectedCan}
+                                onChange={(name, value) => {
+                                    if (isReviewMode) {
+                                        validateBudgetForm(name, value);
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className="grid-col-6">
+                        <CurrencyInput
+                            name="enteredAmount"
+                            label="Amount"
+                            messages={budgetFormSuite.getErrors("enteredAmount")}
+                            className={enteredAmountCn}
+                            value={enteredAmount ?? ""}
+                            setEnteredAmount={setEnteredAmount}
+                            onChange={(name, value) => {
+                                if (isReviewMode) {
+                                    validateBudgetForm(name, value);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
                 {hasUnsavedChanges && workflow != "agreement" && (
                     <div
@@ -168,41 +260,6 @@ export const BudgetLinesForm = ({
                 )}
             </div>
             <div className="grid-col-4">
-                <DatePicker
-                    id="need-by-date"
-                    name="needByDate"
-                    label="Obligate by Date"
-                    hint="mm/dd/yyyy"
-                    messages={[
-                        ...(budgetFormSuite.getErrors("needByDate") || []),
-                        ...(dateRes.getErrors("needByDate") || [])
-                    ]}
-                    className={needByDateCn}
-                    value={needByDate}
-                    onChange={(e) => {
-                        setNeedByDate(e.target.value);
-                        if (isReviewMode) {
-                            validateBudgetForm("needByDate", e.target.value);
-                        } else {
-                            validateDatePicker("needByDate", e.target.value);
-                        }
-                    }}
-                />
-                <CurrencyInput
-                    name="enteredAmount"
-                    label="Amount"
-                    messages={budgetFormSuite.getErrors("enteredAmount")}
-                    className={enteredAmountCn}
-                    value={enteredAmount || ""}
-                    setEnteredAmount={setEnteredAmount}
-                    onChange={(name, value) => {
-                        if (isReviewMode) {
-                            validateBudgetForm(name, value);
-                        }
-                    }}
-                />
-            </div>
-            <div className="grid-col-4">
                 <TextArea
                     name="enteredDescription"
                     label="Description (optional)"
@@ -211,7 +268,7 @@ export const BudgetLinesForm = ({
                     onChange={(name, value) => {
                         setEnteredDescription(value);
                     }}
-                    textAreaStyle={{ height: "9rem" }}
+                    textAreaStyle={{ height: "9.6rem" }}
                 />
 
                 {isEditing ? (

@@ -46,10 +46,6 @@ describe("Agreement List", () => {
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(5)").should("have.text", "$1,000,000.00");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(6)").should("have.text", "$0");
 
-        cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
-        cy.get("button[id^='submit-for-approval-']").first().should("exist");
-        cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
-
         // expand agreement-table-row-9
         cy.get('[data-testid="agreement-table-row-9"] > :nth-child(7) > [data-cy="expand-row"]').should("exist");
         cy.get('[data-testid="agreement-table-row-9"] > :nth-child(7) > [data-cy="expand-row"]').click();
@@ -62,21 +58,6 @@ describe("Agreement List", () => {
         cy.get('[data-cy="expanded-data"]').should("contain.text", "Lifetime Obligated");
         cy.get('[data-cy="expanded-data"]').should("contain.text", "Contract #");
         cy.get('[data-cy="expanded-data"]').should("contain.text", "Vendor");
-    });
-
-    it("navigates to the ReviewAgreements page when the review button is clicked", () => {
-        // Wait for table to load with data
-        cy.get(".usa-table", { timeout: 20000 }).should("exist");
-        cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
-        cy.get("#fiscal-year-select").select("2044");
-        cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
-        cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
-        cy.get("button[id^='submit-for-approval-']").first().should("exist");
-        cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
-        cy.get("button[id^='submit-for-approval-']").first().click();
-        cy.url().should("include", "/agreements/review");
-        cy.get("h1").should("exist");
-        cy.get("h1").should("have.text", "Request BL Status Change");
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
@@ -315,10 +296,10 @@ describe("Agreement List", () => {
     it("Should not allow user to edit an agreement that is not developed", () => {
         cy.get("button").contains("Filter").click();
 
-        // Select an agreement type that is not developed yet (Grant)
+        // Select an agreement type that is not developed yet (Direct Obligation)
         cy.get(".agreement-type-combobox__control").click();
         cy.get(".agreement-type-combobox__menu").should("be.visible");
-        cy.get(".agreement-type-combobox__menu").contains("Grant").click();
+        cy.get(".agreement-type-combobox__menu").contains("Direct Obligation").click();
 
         // Apply the filter
         cy.get("button").contains("Apply").click();
@@ -328,7 +309,7 @@ describe("Agreement List", () => {
 
         // Hover to reveal action icons and confirm edit is disabled
         cy.get("tbody tr[data-testid^='agreement-table-row-']").first().as("notDevelopedRow");
-        cy.get("@notDevelopedRow").find('[data-cy="agreement-type"]').should("have.text", "Grant");
+        cy.get("@notDevelopedRow").find('[data-cy="agreement-type"]').should("have.text", "Direct Obligation");
         cy.get("@notDevelopedRow").trigger("mouseover", { force: true });
         cy.get("tbody tr[data-testid^='agreement-table-row-']")
             .first()

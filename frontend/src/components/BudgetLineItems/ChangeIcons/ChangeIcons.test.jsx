@@ -41,12 +41,14 @@ describe("ChangeIcons", () => {
         isItemEditable: true,
         handleSetItemForEditing: vi.fn(),
         handleDeleteItem: vi.fn(),
-        handleDuplicateItem: vi.fn(),
-        handleSubmitItemForApproval: vi.fn()
+        handleDuplicateItem: vi.fn()
     };
 
     const getEditTooltip = () =>
         screen.getAllByTestId("tooltip").find((tooltip) => within(tooltip).queryByTestId("edit-row"));
+
+    const getDeleteTooltip = () =>
+        screen.getAllByTestId("tooltip").find((tooltip) => within(tooltip).queryByTestId("delete-row"));
 
     it("renders edit, delete, and duplicate icons when item is editable", () => {
         render(<ChangeIcons {...defaultProps} />);
@@ -76,15 +78,12 @@ describe("ChangeIcons", () => {
             <ChangeIcons
                 {...defaultProps}
                 isItemEditable={false}
-                item={{ ...mockItem, status: "IN_EXECUTION" }}
+                item={{ ...mockItem, status: "OBLIGATED" }}
                 lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
             />
         );
 
-        expect(getEditTooltip()).toHaveAttribute(
-            "data-label",
-            "If you need to edit a budget line in Executing Status, please contact the budget team"
-        );
+        expect(getEditTooltip()).toHaveAttribute("data-label", "Obligated budget lines cannot be edited");
     });
 
     it("keeps the loading tooltip when no static fallback exists", () => {
@@ -128,35 +127,75 @@ describe("ChangeIcons", () => {
         expect(within(deleteButton).getByRole("img", { hidden: true })).toHaveClass(DISABLED_ICON_CLASSES);
     });
 
+    it("shows the descriptive locked message on the delete tooltip when editable but not deletable", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={true}
+                isItemDeletable={false}
+                lockedMessage="This budget line is in an active change request"
+            />
+        );
+
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", "This budget line is in an active change request");
+    });
+
+    it("falls back to the static delete tooltip when no descriptive message is available", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={true}
+                isItemDeletable={false}
+            />
+        );
+
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", "This budget line can't be deleted");
+    });
+
+    it("shows the Delete tooltip when the item is deletable", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={true}
+                isItemDeletable={true}
+            />
+        );
+
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", "Delete");
+    });
+
+    it("falls back to the static delete tooltip while locked message data is loading", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={true}
+                isItemDeletable={false}
+                item={{ ...mockItem, status: "OBLIGATED" }}
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
+            />
+        );
+
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", "Obligated budget lines cannot be edited");
+    });
+
+    it("keeps the loading delete tooltip when no static fallback exists", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={true}
+                isItemDeletable={false}
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
+            />
+        );
+
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", CHANGE_REQUESTS_TOOLTIP_LOADING);
+    });
+
     it("calls handleDuplicateItem when duplicate button is clicked", async () => {
         const user = userEvent.setup();
         render(<ChangeIcons {...defaultProps} />);
 
         await user.click(screen.getByTestId("duplicate-row"));
         expect(defaultProps.handleDuplicateItem).toHaveBeenCalledWith(123);
-    });
-
-    it("renders send to review icon when sendToReviewIcon prop is true", () => {
-        render(
-            <ChangeIcons
-                {...defaultProps}
-                sendToReviewIcon={true}
-            />
-        );
-
-        expect(screen.getByTestId("submit-row")).toBeInTheDocument();
-    });
-
-    it("calls handleSubmitItemForApproval when send to review button is clicked", async () => {
-        const user = userEvent.setup();
-        render(
-            <ChangeIcons
-                {...defaultProps}
-                sendToReviewIcon={true}
-            />
-        );
-
-        await user.click(screen.getByTestId("submit-row"));
-        expect(defaultProps.handleSubmitItemForApproval).toHaveBeenCalledWith(123);
     });
 });

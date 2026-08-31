@@ -44,8 +44,8 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
     default: () => <div data-testid="agreement-meta-accordion">Agreement Meta</div>
 }));
 
-vi.mock("./PreAwardBudgetLinesReviewAccordion", () => ({
-    PreAwardBudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
+vi.mock("./BudgetLinesReviewAccordion", () => ({
+    BudgetLinesReviewAccordion: () => <div data-testid="budget-lines-accordion">Budget Lines</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
@@ -62,13 +62,14 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
-    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint }) => (
+    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint, messages = [] }) => (
         <div data-testid={`date-picker-${name}`}>
             <label htmlFor={id}>
                 {label}
                 {isRequired && " *"}
             </label>
-            {hint && <div className="usa-hint">{hint}</div>}
+            {messages.length > 0 && <span className="usa-error-message">{messages[0]}</span>}
+            {hint && messages.length === 0 && <div className="usa-hint">{hint}</div>}
             <input
                 id={id}
                 name={name}
@@ -94,7 +95,13 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     ) => (
         <div data-testid="modal">
             <h2>{heading}</h2>
-            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button
+                onClick={() => {
+                    handleConfirm();
+                }}
+            >
+                {actionButtonText}
+            </button>
             {handleSecondary && <button onClick={handleSecondary}>{secondaryButtonText}</button>}
             <button onClick={closeModal}>Close</button>
         </div>
@@ -131,11 +138,12 @@ describe("ReviewBudgetTeamRequisition", () => {
         },
         isLoading: false,
         allBudgetLines: [],
+        executingBudgetLines: [],
         executingTotal: 50000,
         projectOfficerName: "John Doe",
         alternateProjectOfficerName: "Jane Smith",
         servicesComponents: [],
-        groupedBudgetLinesByServicesComponent: [],
+        groupedExecutingBudgetLinesByServicesComponent: [],
         preAwardMemoDocuments: [],
         requestorNotes: "Submitter notes here",
         reviewerNotes: "Division Director notes here",
@@ -145,6 +153,8 @@ describe("ReviewBudgetTeamRequisition", () => {
         setRequisitionNumber: vi.fn(),
         requisitionDate: "",
         setRequisitionDate: vi.fn(),
+        handleDateChange: vi.fn(),
+        requisitionDateError: [],
         attestationChecked: false,
         setAttestationChecked: vi.fn(),
         MemoizedDatePicker,
@@ -153,11 +163,14 @@ describe("ReviewBudgetTeamRequisition", () => {
         modalProps: {},
         isSubmitting: false,
         submitError: "",
+        setSubmitError: vi.fn(),
         handleApprove: vi.fn(),
+        handleSaveDraft: vi.fn(),
         handleCancel: vi.fn(),
         isFormValid: vi.fn(() => false),
         hasPermission: true,
-        approvalAlreadyProcessed: false
+        approvalAlreadyProcessed: false,
+        canSaveDraft: true
     };
 
     beforeEach(() => {
@@ -234,7 +247,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             const requisitionInput = screen.getByLabelText("Requisition #");
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             const attestationCheckbox = screen.getByRole("checkbox");
 
             expect(requisitionInput).toBeDisabled();
@@ -272,7 +285,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
-            expect(screen.getByLabelText(/Requisition Date/)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Requisition Approval Date/)).toBeInTheDocument();
         });
 
         it("should render attestation checkbox", () => {
@@ -333,21 +346,21 @@ describe("ReviewBudgetTeamRequisition", () => {
             expect(mockSetRequisitionNumber).toHaveBeenCalled();
         });
 
-        it("should call setRequisitionDate when date changes", async () => {
+        it("should call handleDateChange when date changes", async () => {
             const user = userEvent.setup();
-            const mockSetRequisitionDate = vi.fn();
+            const mockHandleDateChange = vi.fn();
 
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
-                setRequisitionDate: mockSetRequisitionDate
+                handleDateChange: mockHandleDateChange
             });
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const dateInput = screen.getByLabelText(/Requisition Date/);
+            const dateInput = screen.getByLabelText(/Requisition Approval Date/);
             await user.type(dateInput, "2026-05-12");
 
-            expect(mockSetRequisitionDate).toHaveBeenCalled();
+            expect(mockHandleDateChange).toHaveBeenCalled();
         });
 
         it("should call setAttestationChecked when checkbox is clicked", async () => {
@@ -394,6 +407,28 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             const approveButton = screen.getByRole("button", { name: /approve pre-award requisition/i });
             expect(approveButton).not.toBeDisabled();
+        });
+
+        it("should disable Save Draft button when canSaveDraft is false", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                canSaveDraft: false
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByRole("button", { name: /save draft/i })).toBeDisabled();
+        });
+
+        it("should enable Save Draft button when canSaveDraft is true", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                canSaveDraft: true
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByRole("button", { name: /save draft/i })).not.toBeDisabled();
         });
 
         it("should disable approve button while submitting", () => {
@@ -476,10 +511,11 @@ describe("ReviewBudgetTeamRequisition", () => {
                 ...defaultHookReturn,
                 showModal: true,
                 modalProps: {
-                    heading: "Are you sure you want to cancel?",
-                    description: "Any information you have entered will be discarded.",
-                    actionButtonText: "Continue Editing",
-                    secondaryButtonText: "Discard Changes",
+                    heading:
+                        "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+                    description: "",
+                    actionButtonText: "Cancel",
+                    secondaryButtonText: "Continue Reviewing",
                     handleConfirm: vi.fn(),
                     handleSecondary: vi.fn()
                 }
@@ -488,7 +524,11 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByTestId("modal")).toBeInTheDocument();
-            expect(screen.getByText("Are you sure you want to cancel?")).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    "Are you sure you want to cancel? This will exit the review process and you can come back to it later."
+                )
+            ).toBeInTheDocument();
         });
 
         it("should disable cancel button while submitting", () => {
@@ -517,6 +557,28 @@ describe("ReviewBudgetTeamRequisition", () => {
             expect(screen.getByText("Failed to submit requisition")).toBeInTheDocument();
         });
 
+        it("should display date error message on the date field when requisitionDateError is set", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: ["Date must be MM/DD/YYYY"]
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
+        });
+
+        it("should not display date error message when requisitionDateError is empty", () => {
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                requisitionDateError: []
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            expect(screen.queryByText("Date must be MM/DD/YYYY")).not.toBeInTheDocument();
+        });
+
         it("should not display error alert when submitError is empty", () => {
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
@@ -526,6 +588,23 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.queryByText("Submission Error")).not.toBeInTheDocument();
+        });
+
+        it("should clear submit error when dismiss button is clicked", async () => {
+            const user = userEvent.setup();
+            const mockSetSubmitError = vi.fn();
+            mockUseReviewBudgetTeamRequisition.mockReturnValue({
+                ...defaultHookReturn,
+                submitError: "Failed to submit requisition",
+                setSubmitError: mockSetSubmitError
+            });
+
+            render(<ReviewBudgetTeamRequisition />);
+
+            const closeButton = screen.getByLabelText("close");
+            await user.click(closeButton);
+
+            expect(mockSetSubmitError).toHaveBeenCalledWith("");
         });
     });
 

@@ -5,6 +5,7 @@ from typing import Any, Union
 
 from flask import current_app
 from flask_jwt_extended import current_user
+from loguru import logger
 from marshmallow.experimental.context import Context
 
 from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
@@ -48,7 +49,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- CRUD Operations (Generic) ---
 
-    def create(self, create_request: dict[str, Any]) -> ChangeRequest:
+    def create(self, create_request: dict[str, Any], commit: bool = True) -> ChangeRequest:
+        """Create a change request.
+
+        When ``commit`` is False, the change request is added (and flushed to assign id)
+        but neither committed nor notified. The caller must commit and then call
+        ``notify_division_reviewers`` for each deferred change request once the bundle
+        commit succeeds. This avoids notifying reviewers about a transaction that ends up
+        rolled back.
+        """
         request_type = create_request.get("change_request_type")
         if request_type is None:
             raise ValueError("Missing 'change_request_type' in request data")
@@ -56,9 +65,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         model_class = get_model_class_by_type(request_type)
         change_request = model_class(**create_request)
         self.db_session.add(change_request)
-        self.db_session.commit()
-
-        self._notify_division_reviewers(change_request)
+        if commit:
+            self.db_session.commit()
+            self.notify_division_reviewers(change_request)
+        else:
+            self.db_session.flush()  # assigns the DB-sequence id without committing
 
         return change_request
 
@@ -78,11 +89,13 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         reviewer_notes = updated_fields.pop("reviewer_notes", None)
 
         model_to_update = None
+        bli_to_delete = None
 
         # Handle review action if present
         if action:
             result = self._handle_review_action(change_request, action, reviewer_notes)
             model_to_update = result.get("model_to_update")
+            bli_to_delete = result.get("bli_to_delete")
 
         # Apply any direct field updates to the change request
         for key, value in updated_fields.items():
@@ -96,6 +109,25 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         self.db_session.commit()
         self._notify_submitter_of_review_outcome(change_request)
+
+        # Deletion-on-approval must happen LAST. The change_request row has
+        # budget_line_item_id ON DELETE CASCADE, so deleting the BLI removes the CR row too, yet the
+        # resource still serializes the change request (via to_dict()) after this returns. We:
+        #   1. finalize the CR (status/reviewed fields above) and notify the submitter — done while
+        #      the CR row still exists;
+        #   2. capture the CR's full serialized form NOW, while it is still attached, so every
+        #      relationship the auto-schema touches (agreement, managing_division, and the
+        #      continuum-injected lazy="dynamic" ``versions``) serializes correctly;
+        #   3. detach (expunge) the CR so the final commit can neither expire nor cascade-refresh it;
+        #   4. delete the BLI last, and pin the CR's to_dict() to the captured snapshot so the
+        #      resource never re-serializes a detached/cascade-deleted instance.
+        # The durable record of the deletion is the AgreementHistory + automatic OpsDBHistory trail.
+        if bli_to_delete is not None:
+            snapshot = change_request.to_dict()
+            self.db_session.expunge(change_request)
+            self.db_session.delete(bli_to_delete)
+            self.db_session.commit()
+            change_request.to_dict = lambda: snapshot
 
         return change_request, 200
 
@@ -177,20 +209,28 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         change_request.status = ChangeRequestStatus.APPROVED if action == "APPROVE" else ChangeRequestStatus.REJECTED
 
         model_to_update = None
+        bli_to_delete = None
 
         if change_request.status == ChangeRequestStatus.APPROVED:
             if change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
-                model_to_update = self._apply_budget_line_item_changes(change_request)
+                if getattr(change_request, "has_delete_change", False):
+                    # A deletion request: don't re-add the BLI (model_to_update stays None).
+                    # The BLI is deleted last in update(), after the CR is finalized — see the
+                    # ordering note there.
+                    bli_to_delete = self.db_session.get(BudgetLineItem, change_request.budget_line_item_id)
+                else:
+                    model_to_update = self._apply_budget_line_item_changes(change_request)
             elif change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
                 model_to_update = self._apply_agreement_changes(change_request)
 
         return {
             "model_to_update": model_to_update,
+            "bli_to_delete": bli_to_delete,
         }
 
     # --- Notification Handling ---
 
-    def _notify_division_reviewers(
+    def notify_division_reviewers(
         self, change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest]
     ) -> None:
         division_director_ids: set[int] = set()
@@ -206,7 +246,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
             # Use the managing_division_id directly from the change request
             if change_request.managing_division_id is None:
-                raise ValueError("BudgetLineItemChangeRequest must have a managing_division_id set.")
+                logger.warning(
+                    f"BudgetLineItemChangeRequest {change_request.id} has no managing_division_id — "
+                    "no director notification sent."
+                )
+                return
 
             division: Division = self.db_session.get(Division, change_request.managing_division_id)
             if not division:
@@ -266,9 +310,14 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         change_data,
         changed_budget_or_status_prop_keys,
         requestor_notes,
+        commit: bool = True,
     ) -> list[int]:
         """
         Creates one change request per changed field.
+
+        When ``commit`` is False, change requests are created without committing or
+        notifying division reviewers. Callers are responsible for committing and
+        notifying after the surrounding transaction succeeds.
         """
         change_request_ids = []
 
@@ -288,10 +337,33 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
                 managing_division = get_division_for_budget_line_item(bli_id)
 
+                # If the BLI has no CAN yet (null can_id in DB) but we're changing it,
+                # resolve the division from the incoming can_id so the director is notified.
+                if managing_division is None and change_data.get("can_id"):
+                    from models import CAN
+
+                    new_can = self.db_session.get(CAN, change_data["can_id"])
+                    if new_can and new_can.portfolio and new_can.portfolio.division:
+                        managing_division = new_can.portfolio.division
+
+                if managing_division is None:
+                    # Cannot create a change request without a managing division — no director
+                    # would be able to approve or reject it, leaving the BLI permanently locked.
+                    # This happens when a PLANNED/IN_EXECUTION BLI has no CAN assigned and no
+                    # incoming can_id in the change. The COR must assign a CAN first.
+                    raise ValidationError(
+                        {
+                            "can_id": (
+                                "A CAN must be assigned to this budget line before financial changes "
+                                "can be submitted for approval."
+                            )
+                        }
+                    )
+
                 change_request_data = {
                     "budget_line_item_id": bli_id,
                     "agreement_id": budget_line_item.agreement_id,  # Can update the class to capture agreement_id
-                    "managing_division_id": (managing_division.id if managing_division else None),
+                    "managing_division_id": managing_division.id,
                     "requested_change_data": requested_change_data,
                     "requested_change_diff": requested_change_diff,
                     "requested_change_info": {"target_display_name": budget_line_item.display_name},
@@ -299,11 +371,45 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 }
 
-                change_request = self.create(change_request_data)
+                change_request = self.create(change_request_data, commit=commit)
                 change_request_ids.append(change_request.id)
                 cr_meta.metadata.update({"bli_id": bli_id, "change_request": change_request.to_dict()})
 
         return change_request_ids
+
+    def add_bli_delete_change_request(self, budget_line_item: BudgetLineItem, commit: bool = True) -> int:
+        """
+        Create a single change request representing a request to delete a budget line item.
+
+        The request is marked with a ``{"delete": True}`` sentinel in ``requested_change_data``;
+        the ``requested_change_diff`` carries the current amount (so the reviewer card can show it
+        as currency) against the literal "Deleted".
+
+        When ``commit`` is False, the change request is created without committing or notifying
+        division reviewers (mirrors ``add_bli_change_requests``). The caller owns the surrounding
+        transaction and must commit and then call ``notify_division_reviewers`` for the returned id
+        once that commit succeeds. Used by the atomic edit-bundle flow.
+        """
+        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
+            managing_division = get_division_for_budget_line_item(budget_line_item.id)
+
+            # amount is a Decimal; store it as a JSON-native float so the diff serializes to JSONB
+            # (and the frontend formats it as currency), mirroring the amount diff in edit CRs.
+            old_amount = float(budget_line_item.amount) if budget_line_item.amount is not None else None
+
+            change_request_data = {
+                "budget_line_item_id": budget_line_item.id,
+                "agreement_id": budget_line_item.agreement_id,
+                "managing_division_id": (managing_division.id if managing_division else None),
+                "requested_change_data": {"delete": True},
+                "requested_change_diff": {"delete": {"old": old_amount, "new": "Deleted"}},
+                "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+            }
+
+            change_request = self.create(change_request_data, commit=commit)
+            cr_meta.metadata.update({"bli_id": budget_line_item.id, "change_request": change_request.to_dict()})
+            return change_request.id
 
     def _apply_budget_line_item_changes(self, change_request: BudgetLineItemChangeRequest) -> BudgetLineItem:
         budget_line_item = self.db_session.get(BudgetLineItem, change_request.budget_line_item_id)

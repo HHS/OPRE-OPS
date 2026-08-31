@@ -151,7 +151,9 @@ describe("agreement details", () => {
             .should("contain", "Obligated budget lines cannot be edited");
     });
 
-    it("should not allow editing EXECUTING BLIs", () => {
+    it("should allow editing EXECUTING BLIs before the agreement reaches Pre-Award", () => {
+        // Per issue #5819, IN_EXECUTION BLIs are now editable like PLANNED ones (unless the
+        // agreement's procurement tracker has reached Pre-Award/Award, i.e. step >= 5).
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         // Wait for edit mode to render the editable table
@@ -160,13 +162,7 @@ describe("agreement details", () => {
         cy.get("[data-testid='budget-line-row-15004']").as("executingRow");
         cy.get("@executingRow").find("[data-cy='expand-row']").click();
         cy.get("@executingRow").next("[data-testid='expanded-data']").as("executingExpandedRow");
-        cy.get("@executingExpandedRow")
-            .find("[data-cy='edit-row']")
-            .should("be.disabled")
-            .closest(".usa-tooltip")
-            .find(".usa-tooltip__body")
-            .should("contain", "Executing Status")
-            .and("contain", "budget team");
+        cy.get("@executingExpandedRow").find("[data-cy='edit-row']").should("not.be.disabled");
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
@@ -191,13 +187,14 @@ describe("agreement details", () => {
         cy.get("#toggleDraftBLIs").should("exist");
     });
 
-    it("Grants load with temp banner", () => {
+    it("Grant type agreement loads with details", () => {
         cy.visit("/agreements/3");
-        cy.get('[data-cy="alert"]').contains(
-            "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon."
-        );
-        cy.get('[data-cy="close-alert"]').click();
-        cy.get("#edit").should("not.exist");
+        cy.get("h1").contains("Grant #1: Early Care and Education Leadership Study (ExCELS)");
+        cy.get('[data-cy="agreement-description"]').contains("Test description");
+        cy.get('[data-cy="agreement-nickname-tag"]').contains(NO_DATA);
+        cy.get('[data-cy="agreement-type-tag"]').contains("Grant");
+        cy.get('[data-cy="contract-number-tag"]').should("not.exist");
+        cy.get('[data-cy="procurement-shop-tag"]').should("not.exist");
     });
 
     it("IAAs load with temp banner", () => {
@@ -275,10 +272,10 @@ describe("agreement details", () => {
 
         // Verify modal appears
         cy.waitForModalToAppear();
-        cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
+        cy.get("#ops-modal-heading").should("contain", "Save changes before leaving?");
         cy.get("#ops-modal-description").should(
             "contain",
-            "Do you want to save your changes before leaving this page?"
+            "You have unsaved changes. If you leave without saving, these changes will be lost."
         );
 
         // Test ESC key cancels navigation

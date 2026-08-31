@@ -1,4 +1,4 @@
-from marshmallow import EXCLUDE, Schema, fields, pre_load
+from marshmallow import EXCLUDE, Schema, fields, pre_load, validate
 
 from models import (
     AcquisitionType,
@@ -16,6 +16,7 @@ from ops_api.ops.schemas.budget_line_items import (
     NestedBudgetLineItemRequestSchema,
 )
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
+from ops_api.ops.schemas.grant_number import GrantNumberItemResponse, NestedGrantNumberRequestSchema
 from ops_api.ops.schemas.pagination import PaginationListSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
@@ -35,6 +36,8 @@ class MetaSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     isEditable = fields.Bool(load_default=False, dump_default=False)
+    isDeletable = fields.Bool(load_default=False, dump_default=False)
+    lockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
     immutable_awarded_fields = fields.List(fields.String(), load_default=None, dump_default=None, required=False)
 
 
@@ -111,6 +114,18 @@ class ContractAgreementData(AgreementData):
 
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True, load_default=[])
+    funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18]))
+    # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)
+    # because grant_numbers are only meaningful for GRANT agreements.
+    grant_numbers = fields.List(
+        fields.Nested(NestedGrantNumberRequestSchema),
+        required=False,
+        allow_none=True,
+        load_default=[],
+        metadata={"description": "Grant numbers to create with the agreement"},
+    )
 
 
 class DirectAgreementData(AgreementData):
@@ -148,6 +163,7 @@ class AgreementRequestSchema(PaginationListSchema):
     agreement_type = fields.List(fields.String(), required=False)
     delivered_status = fields.List(fields.String(), required=False)
     awarding_entity_id = fields.List(fields.Integer(), required=False)
+    division = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
     nick_name = fields.List(fields.String(), required=False)
@@ -199,6 +215,8 @@ class AgreementResponse(FyObligatedMixin, AgreementData):
     division_directors = fields.List(fields.String(), required=True)
     team_leaders = fields.List(fields.String(), required=True)
     in_review = fields.Bool(required=True)
+    is_award_approval_requested = fields.Bool(load_default=False, dump_default=False, required=False)
+    is_post_pre_award_locked = fields.Bool(load_default=False, dump_default=False, required=False)
     change_requests_in_review = fields.Nested(
         AgreementChangeRequestResponseSchema,
         many=True,
@@ -285,10 +303,18 @@ class ContractListAgreementResponse(AgreementListResponse):
 
 class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
+    funding_period_months = fields.Integer(allow_none=True)
+    grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 
 
 class GrantListAgreementResponse(AgreementListResponse):
     foa = fields.String(allow_none=True)
+    nofo_number = fields.String(allow_none=True)
+    aln_numbers = fields.List(fields.Integer(), allow_none=True)
+    funding_period_months = fields.Integer(allow_none=True)
+    grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
 
 
 class DirectAgreementResponse(AgreementResponse):

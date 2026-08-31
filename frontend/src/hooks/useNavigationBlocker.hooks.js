@@ -1,21 +1,37 @@
 import React from "react";
 import { useBlocker } from "react-router-dom";
+import { proceedIfBlocked } from "./proceedIfBlocked";
 
 /**
  * @param {Object} options
  * @param {boolean} options.hasChanged - Whether the form has unsaved changes
- * @param {() => Promise<void>} options.saveChanges - Async function to save changes (should throw on failure)
+ * @param {(destination: string | null) => Promise<void>} options.saveChanges - Async function to
+ *   save changes (should throw on failure). Receives the destination pathname the user was
+ *   navigating to, so the save can redirect there instead of a fixed returnTo URL.
  * @param {() => void} options.onExit - Function to call when exiting edit mode
  * @param {(error: unknown) => void} [options.onSaveError] - Optional error handler for save failures
+ * @param {boolean} [options.requiresApproval=false] - When true, shows the approval-variant modal
+ *   ("Save & send to approval") instead of the plain "Save Changes" variant.
  */
-export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, onSaveError }) {
+export default function useNavigationBlocker({
+    hasChanged,
+    saveChanges,
+    onExit,
+    onSaveError,
+    requiresApproval = false
+}) {
     const [showBlockerModal, setShowBlockerModal] = React.useState(false);
     const [blockerModalProps, setBlockerModalProps] = React.useState({});
     const [isCancelling, setIsCancelling] = React.useState(false);
 
+    // Ref-based bypass so a programmatic post-save navigate (from Alert's redirectUrl)
+    // can skip the blocker without depending on async state updates. The ref is read
+    // synchronously by the blocker predicate on every navigation attempt.
+    const isBypassingRef = React.useRef(false);
+
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
+            !isBypassingRef.current && !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
     );
 
     const saveChangesRef = React.useRef(saveChanges);
@@ -38,39 +54,40 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
         blockerRef.current = blocker;
     }, [blocker]);
 
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            // Known React Router bug — proceed() throws when blocker has already transitioned.
-            // String match is fragile; revisit if upgrading react-router.
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
+    // Capture the full destination (pathname + search + hash) when navigation is blocked so
+    // saveChanges can redirect there instead of a fixed returnTo URL. Pathname-only would
+    // drop query strings and hash fragments, sending users to a different route state than
+    // the link they selected (e.g. losing filters or an anchor).
+    const nextLocationRef = React.useRef(null);
+
+    const proceedIfBlockedLocal = async () => {
+        await proceedIfBlocked(blockerRef.current);
     };
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const loc = blocker.location;
+            nextLocationRef.current = loc ? `${loc.pathname}${loc.search ?? ""}${loc.hash ?? ""}` : null;
+
+            const approvalVariant = requiresApproval;
+            const heading = "Save changes before leaving?";
+            const description = approvalVariant
+                ? "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
+                : "You have unsaved changes. If you leave without saving, these changes will be lost.";
+            const actionButtonText = approvalVariant ? "Save & send to approval" : "Save";
+
             setShowBlockerModal(true);
             setBlockerModalProps({
-                heading: "You have unsaved changes",
-                description: "Do you want to save your changes before leaving this page?",
-                actionButtonText: "Save Changes",
+                heading,
+                description,
+                actionButtonText,
                 secondaryButtonText: "Leave without saving",
                 handleConfirm: async () => {
                     try {
-                        await saveChangesRef.current();
+                        await saveChangesRef.current(nextLocationRef.current);
                         setShowBlockerModal(false);
                         onExitRef.current();
-                        await proceedIfBlocked();
+                        await proceedIfBlockedLocal();
                     } catch (error) {
                         console.error(error);
                         if (onSaveErrorRef.current) {
@@ -82,7 +99,7 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
                 handleSecondary: async () => {
                     setShowBlockerModal(false);
                     onExitRef.current();
-                    await proceedIfBlocked();
+                    await proceedIfBlockedLocal();
                 },
                 closeModal: () => {
                     setShowBlockerModal(false);
@@ -90,7 +107,7 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
                 }
             });
         }
-    }, [blocker.state]);
+    }, [blocker.state, blocker.location, requiresApproval]);
 
-    return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling };
+    return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef };
 }

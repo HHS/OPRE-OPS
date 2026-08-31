@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
-import Tooltip from "../../UI/USWDS/Tooltip";
+import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants";
 
 /**
@@ -19,7 +19,8 @@ const DetailsTabs = ({
     agreementId,
     isAgreementNotDeveloped,
     isAgreementAwarded,
-    isEditableForProcurementTracker = true
+    isEditableForProcurementTracker = true,
+    isGrant = false
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ const DetailsTabs = ({
         },
         {
             name: "/budget-lines",
-            label: "SCs & Budget Lines"
+            label: isGrant ? "Grants & Budget Lines" : "SCs & Budget Lines"
         }
     ];
     // only show the these tabs if isAgreementAwarded for contracts
@@ -50,8 +51,10 @@ const DetailsTabs = ({
               {
                   name: "/procurement-tracker",
                   label: "Procurement Tracker",
-                  disabled: !isEditableForProcurementTracker,
-                  disabledTooltip: "Only agreement team members can edit the procurement tracker"
+                  disabled: isGrant || !isEditableForProcurementTracker,
+                  disabledTooltip: isGrant
+                      ? "Procurement Tracker\ntab is coming soon"
+                      : "Only agreement team members can edit the procurement tracker"
               },
               {
                   name: "/documents",
@@ -83,16 +86,20 @@ const DetailsTabs = ({
             </button>
         );
 
-        // Add tooltip if tab is disabled and has a tooltip message
+        // Add tooltip if tab is disabled and has a tooltip message.
+        // Use DisabledButtonWithTooltip so the focusable wrapper receives hover/focus
+        // events that a native disabled button would swallow.
         if (path.disabled && path.disabledTooltip) {
             return (
-                <Tooltip
+                <DisabledButtonWithTooltip
                     key={pathName}
                     label={path.disabledTooltip}
-                    position="bottom"
+                    tooltipPosition="bottom"
+                    className={`${tabSelected ? selected : notSelected} ${styles.btnDisabled}`}
+                    dataCy={`details-tab-${path.label}`}
                 >
-                    {button}
-                </Tooltip>
+                    {path.label}
+                </DisabledButtonWithTooltip>
             );
         }
 

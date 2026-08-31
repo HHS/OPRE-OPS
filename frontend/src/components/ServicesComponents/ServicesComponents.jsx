@@ -11,9 +11,11 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
+ * @param {boolean} [props.isReviewMode] - Whether the component is in review mode (single-page edit screen).
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
-
+ * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
+ * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
  * @returns {React.ReactElement}
  *
  * @example
@@ -23,10 +25,13 @@ const ServicesComponents = ({
     serviceRequirementType,
     agreementId,
     isEditMode = false,
+    isReviewMode = false,
     continueBtnText,
     workflow,
     setHasUnsavedChanges,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    scFormSuite,
+    nonDraftBudgetLines = []
 }) => {
     const {
         formData,
@@ -41,7 +46,14 @@ const ServicesComponents = ({
         setFormDataById,
         servicesComponentsNumbers,
         formKey
-    } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges);
+    } = useServicesComponents(
+        agreementId,
+        serviceRequirementType,
+        continueBtnText,
+        setHasUnsavedChanges,
+        scFormSuite,
+        nonDraftBudgetLines
+    );
 
     return (
         <>
@@ -63,9 +75,11 @@ const ServicesComponents = ({
                 handleCancel={handleCancel}
                 servicesComponentsNumbers={servicesComponentsNumbers}
                 isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
                 formKey={formKey}
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
+                scFormSuite={scFormSuite}
             />
 
             <ServicesComponentsList

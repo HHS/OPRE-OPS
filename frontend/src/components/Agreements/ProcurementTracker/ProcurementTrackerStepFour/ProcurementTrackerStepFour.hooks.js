@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerEvaluationStep} ProcurementTrackerEvaluationStep
@@ -16,12 +17,15 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @param {ProcurementTrackerEvaluationStep | undefined} stepFourData - The data for step four of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepFour(
+    stepFourData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isEvaluationComplete, setIsEvaluationComplete] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step4DateCompleted, setStep4DateCompleted] = React.useState("");
-    const [step4Notes, setStep4Notes] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -29,7 +33,13 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepFour] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepFourComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepFour, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step4CompletedByUserName = useGetUserFullNameFromId(stepFourData?.task_completed_by ?? -1);
@@ -48,6 +58,25 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step4Notes,
+        setNotes: setStep4Notes,
+        resetNotes: resetStep4Notes,
+        notesResetKey,
+        handleSaveNotes
+    } = useSaveNotes(patchStepFour, stepFourData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isEvaluationComplete ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step4DateCompleted ||
+        step4Notes.trim() !== (stepFourData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step four, updating the procurement tracker step with the new date.
@@ -118,7 +147,11 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep4DateCompleted("");
-        setStep4Notes("");
+        // No argument: restore the last committed note. Passing the raw
+        // stepFourData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep4Notes();
+        suite.reset();
     };
 
     const cancelModalStep4 = () => {
@@ -135,6 +168,8 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
 
     return {
         cancelStepFour,
+        handleSaveNotes,
+        isStepPatchInFlight,
         isEvaluationComplete,
         setIsEvaluationComplete,
         selectedUser,
@@ -148,6 +183,8 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         step4TargetCompletionDateLabel,
         step4Notes,
         setStep4Notes,
+        resetStep4Notes,
+        notesResetKey,
         step4NotesLabel,
         runValidate,
         validatorRes,
@@ -158,6 +195,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep4
+        cancelModalStep4,
+        hasChanges
     };
 }

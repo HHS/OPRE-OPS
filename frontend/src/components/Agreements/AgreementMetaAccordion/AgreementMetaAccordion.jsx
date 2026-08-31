@@ -109,20 +109,23 @@ const AgreementMetaAccordion = ({
                             )}
                         </dl>
                     </div>
-                    {newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
-                        <div className="padding-left-1 border-left-05 text-brand-portfolio-budget-graph-3">
+                    {isFieldVisible(agreement?.agreement_type, AgreementFields.ProcurementShop) &&
+                        (newAwardingEntity && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.PROCUREMENT_SHOP ? (
+                            <div className="padding-left-1 border-left-05 text-brand-portfolio-budget-graph-3">
+                                <dl>
+                                    {renderTerm(
+                                        "procurement-shop",
+                                        "Procurement Shop",
+                                        newAwardingEntity?.abbr,
+                                        "text-brand-portfolio-budget-graph-3"
+                                    )}
+                                </dl>
+                            </div>
+                        ) : (
                             <dl>
-                                {renderTerm(
-                                    "procurement-shop",
-                                    "Procurement Shop",
-                                    newAwardingEntity?.abbr,
-                                    "text-brand-portfolio-budget-graph-3"
-                                )}
+                                {renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}
                             </dl>
-                        </div>
-                    ) : (
-                        <dl>{renderTerm("procurement-shop", "Procurement Shop", agreement?.procurement_shop?.abbr)}</dl>
-                    )}
+                        ))}
                     <dl className="margin-0">
                         {renderTerm(
                             "reason",

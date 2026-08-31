@@ -3,6 +3,7 @@ import { PacmanLoader } from "react-spinners";
 import App from "../../../App";
 import {
     useGetBudgetLineItemsQuery,
+    useGetBudgetLineItemsFilterOptionsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
     useLazyGetServicesComponentByIdQuery
@@ -31,6 +32,12 @@ const BudgetLineItemList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters, useApproachB, fyHelpers } = useBudgetLinesList();
+
+    /** @type {{data?: import("../../../types/BudgetLineTypes").Filters | undefined}} */
+    const { data: bliFilterOptions } = useGetBudgetLineItemsFilterOptionsQuery({
+        onlyMy: myBudgetLineItemsUrl,
+        enableObe: false
+    });
 
     // ============================================
     // TEMPORARY: A/B Testing Fiscal Year Filter
@@ -202,6 +209,7 @@ const BudgetLineItemList = () => {
                                     setFilters={setFilters}
                                     selectedFiscalYear={fiscalYearDropdownValue}
                                     useApproachB={useApproachB}
+                                    filterOptions={bliFilterOptions}
                                 />
                             </div>
                         </div>

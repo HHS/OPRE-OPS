@@ -5,6 +5,7 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import useSaveNotes from "../useSaveNotes";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep
@@ -16,12 +17,15 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @param {ProcurementTrackerPreAwardStep | undefined} stepFiveData - The data for step five of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepFive(
+    stepFiveData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isPreAwardComplete, setIsPreAwardComplete] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step5DateCompleted, setStep5DateCompleted] = React.useState("");
-    const [step5Notes, setStep5Notes] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -29,7 +33,13 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepFive] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepFiveComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepFive, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step5CompletedByUserName = useGetUserFullNameFromId(stepFiveData?.task_completed_by ?? -1);
@@ -48,6 +58,25 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
     };
 
     let validatorRes = suite.get();
+
+    const {
+        notes: step5Notes,
+        setNotes: setStep5Notes,
+        resetNotes: resetStep5Notes,
+        notesResetKey,
+        handleSaveNotes
+    } = useSaveNotes(patchStepFive, stepFiveData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreAwardComplete ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step5DateCompleted ||
+        step5Notes.trim() !== (stepFiveData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step five, updating the procurement tracker step with the new date.
@@ -119,7 +148,10 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep5DateCompleted("");
-        setStep5Notes("");
+        // No argument: restore the last committed note. Passing the raw
+        // stepFiveData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep5Notes();
     };
 
     const cancelModalStep5 = () => {
@@ -136,6 +168,8 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
 
     return {
         cancelStepFive,
+        handleSaveNotes,
+        isStepPatchInFlight,
         isPreAwardComplete,
         setIsPreAwardComplete,
         selectedUser,
@@ -149,6 +183,8 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         step5TargetCompletionDateLabel,
         step5Notes,
         setStep5Notes,
+        resetStep5Notes,
+        notesResetKey,
         step5NotesLabel,
         runValidate,
         validatorRes,
@@ -159,6 +195,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep5
+        cancelModalStep5,
+        hasChanges
     };
 }

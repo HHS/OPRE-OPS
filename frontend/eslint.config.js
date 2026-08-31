@@ -79,7 +79,9 @@ export default [
             "react/react-in-jsx-scope": "off",
             "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
             // 1 warns instead of errors and we can ignore children props
-            "react/prop-types": [1, { ignore: ["children"], skipUndeclared: true }]
+            "react/prop-types": [1, { ignore: ["children"], skipUndeclared: true }],
+            // Allow unused params prefixed with underscore
+            "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
         }
     },
     {

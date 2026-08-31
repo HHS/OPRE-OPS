@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../../../store";
@@ -9,6 +9,7 @@ import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetServicesComponentsListQuery: vi.fn(),
+    useGetGrantNumbersListQuery: vi.fn(),
     useUpdateProcurementTrackerStepMutation: vi.fn(),
     useGetDocumentsByAgreementIdQuery: vi.fn(),
     useGetProcurementTrackersByAgreementIdQuery: vi.fn()
@@ -25,27 +26,32 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
     groupByServicesComponent: vi.fn(),
+    groupByGrantNumber: vi.fn(),
     budgetLinesTotal: vi.fn()
 }));
+
+const mockUseBlocker = vi.fn(() => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }));
 
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
         ...actual,
-        useNavigate: () => vi.fn()
+        useNavigate: () => vi.fn(),
+        useBlocker: (...args) => mockUseBlocker(...args)
     };
 });
 
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
+    useGetGrantNumbersListQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { groupByGrantNumber, groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 
 // Helper to create test store with auth state
 const createTestStore = (authState = {}) => {
@@ -118,6 +124,8 @@ describe("useApprovePreAwardApproval", () => {
             data: []
         });
 
+        useGetGrantNumbersListQuery.mockReturnValue({ data: [] });
+
         useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
 
         useGetDocumentsByAgreementIdQuery.mockReturnValue({
@@ -135,6 +143,8 @@ describe("useApprovePreAwardApproval", () => {
         });
 
         groupByServicesComponent.mockReturnValue([]);
+
+        groupByGrantNumber.mockReturnValue([]);
 
         budgetLinesTotal.mockReturnValue(0);
     });
@@ -294,5 +304,167 @@ describe("useApprovePreAwardApproval", () => {
             expect.arrayContaining([expect.objectContaining({ status: "IN_EXECUTION" })]),
             []
         );
+    });
+});
+
+describe("useApprovePreAwardApproval — navigation blocker", () => {
+    let mockProceed;
+    let mockReset;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockProceed = vi.fn();
+        mockReset = vi.fn();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+
+        // Default API mocks required by the hook
+        useGetAgreementByIdQuery.mockReturnValue({
+            data: { id: 1, name: "Test", budget_line_items: [] },
+            isLoading: false
+        });
+        useGetServicesComponentsListQuery.mockReturnValue({ data: [] });
+        useGetGrantNumbersListQuery.mockReturnValue({ data: [] });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
+        useGetDocumentsByAgreementIdQuery.mockReturnValue({ data: { documents: [] } });
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: { data: [{ status: "ACTIVE", steps: [] }] }
+        });
+        useGetUserFullNameFromId.mockReturnValue("Test User");
+        useAlert.mockReturnValue({ setAlert: vi.fn() });
+        groupByServicesComponent.mockReturnValue([]);
+        groupByGrantNumber.mockReturnValue([]);
+        budgetLinesTotal.mockReturnValue(0);
+    });
+
+    const createWrapper = (store) => {
+        const Wrapper = ({ children }) => (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
+        Wrapper.displayName = "TestWrapper";
+        return Wrapper;
+    };
+
+    const setup = () => {
+        const store = setupStore({ auth: { activeUser: null } });
+        return renderHook(() => useApprovePreAwardApproval(1), { wrapper: createWrapper(store) });
+    };
+
+    it("does not block navigation when form is clean", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        const shouldBlock = capturedCb({
+            currentLocation: { pathname: "/agreements/1/review-pre-award" },
+            nextLocation: { pathname: "/agreements/1/details" }
+        });
+        expect(shouldBlock).toBe(false);
+    });
+
+    it("blocks navigation when reviewer notes are entered", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        result.current.setReviewerNotes("some notes");
+
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/review-pre-award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("blocks navigation when attestation checkbox is checked", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        result.current.setUnderstandsApproval(true);
+
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/review-pre-award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("shows correct copy when blocker fires", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = setup();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(true);
+            expect(result.current.blockerModalProps.heading).toBe("Save changes before leaving?");
+            expect(result.current.blockerModalProps.actionButtonText).toBe("Go back");
+            expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
+        });
+    });
+
+    it("resets blocker and hides modal on handleConfirm (Go back)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        result.current.blockerModalProps.handleConfirm();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockReset).toHaveBeenCalled();
+            expect(mockProceed).not.toHaveBeenCalled();
+        });
+    });
+
+    it("proceeds with navigation and hides modal on handleSecondary (Leave without saving)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        await result.current.blockerModalProps.handleSecondary();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockProceed).toHaveBeenCalled();
+            expect(mockReset).not.toHaveBeenCalled();
+        });
+    });
+
+    it("resets blocker and hides modal on closeModal (Escape)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = setup();
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        result.current.blockerModalProps.closeModal();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockReset).toHaveBeenCalled();
+            expect(mockProceed).not.toHaveBeenCalled();
+        });
     });
 });

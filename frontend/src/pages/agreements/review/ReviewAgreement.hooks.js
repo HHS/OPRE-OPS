@@ -2,10 +2,13 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
+    useGetVersionQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { AgreementType } from "../agreements.constants";
+import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
@@ -38,6 +41,13 @@ const useReviewAgreement = (agreementId) => {
     const { setAlert } = useAlert();
     const navigate = useNavigate();
 
+    // Per-environment capability: when ON, Draft→Planned status changes apply immediately
+    // (no Change Request). Default to false (safe = "Send to Approval") until the query
+    // resolves so the action button never over-promises immediate apply. The backend is the
+    // enforcement authority; this flag only drives display/copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+
     const {
         isSuccess,
         data: agreement,
@@ -48,10 +58,14 @@ const useReviewAgreement = (agreementId) => {
         skip: !agreementId
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement });
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
 
-    const groupedBudgetLinesByServicesComponent = budgetLines
-        ? groupByServicesComponent(budgetLines, servicesComponents)
-        : [];
+    const groupedBudgetLinesByServicesComponent = !budgetLines
+        ? []
+        : isGrant
+          ? groupByGrantNumber(budgetLines, grantNumbers ?? [])
+          : groupByServicesComponent(budgetLines, servicesComponents);
 
     // NOTE: convert page errors about budget lines object into an array of objects
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
@@ -61,6 +75,10 @@ const useReviewAgreement = (agreementId) => {
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
     };
     let changeRequestAction = actionOptionsToChangeRequests[action];
+    // Draft→Planned applies immediately only when the capability is ON. Planned→Executing
+    // always requires approval, so it is never treated as applied-immediately.
+    const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
+    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -76,18 +94,33 @@ const useReviewAgreement = (agreementId) => {
     }, [budgetLines]);
 
     const agreementValidationResults = React.useMemo(() => {
+        // Bypass agreement-field validation for grants (OPS-6013) so a grant BL status change can
+        // proceed without the contract-oriented required-field checks. Returning null makes the
+        // "Send to Approval" gate and the error banner treat the agreement as valid.
+        if (isGrant) {
+            return null;
+        }
         if (selectedBudgetLines.length === 0) {
             return null;
         }
         return suiteResult;
-    }, [selectedBudgetLines.length, suiteResult]);
+    }, [isGrant, selectedBudgetLines.length, suiteResult]);
 
     const bliValidationResults = React.useMemo(() => {
+        // Grant BLI validation is intentionally skipped on the review/send-to-approval page.
+        // The suite's grant_number_id check would gate every DRAFT→PLANNED status change for
+        // BLIs not yet linked to a grant number, but linking is not a prerequisite for DRAFT
+        // status changes. The backend enforces required-field rules per transition; the frontend
+        // validator is optimized for contract agreements (SC, procurement shop) and does not
+        // have an equivalent grant-specific model yet.
+        if (isGrant) {
+            return [];
+        }
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
         }
         return validateBudgetLineItems(selectedBudgetLines);
-    }, [selectedBudgetLines]);
+    }, [isGrant, selectedBudgetLines]);
 
     const hasBLIError = React.useMemo(() => {
         if (!bliValidationResults || bliValidationResults.length === 0) {
@@ -114,8 +147,8 @@ const useReviewAgreement = (agreementId) => {
     const isAgreementAwarded = agreement?.is_awarded;
 
     React.useEffect(() => {
-        // Add guard clause
-        if (!agreement?.budget_line_items || !servicesComponents) {
+        // Add guard clause — grants have no services components, so gate only on the required list per type.
+        if (!agreement?.budget_line_items || (isGrant ? !grantNumbers : !servicesComponents)) {
             return;
         }
 
@@ -125,6 +158,16 @@ const useReviewAgreement = (agreementId) => {
                 : null) ?? [];
 
         newBudgetLines = newBudgetLines.map((bli) => {
+            if (isGrant) {
+                const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                const grantNumberNumber = budgetLineGrantNumber?.number ?? 0;
+                return {
+                    ...bli,
+                    grant_number_number: grantNumberNumber,
+                    selected: false, // for use in the BLI table
+                    actionable: false // based on action accordion
+                };
+            }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
             const serviceComponentNumber = budgetLineServicesComponent?.number ?? 0;
             const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
@@ -134,13 +177,16 @@ const useReviewAgreement = (agreementId) => {
                 ...bli,
                 services_component_number: serviceComponentNumber,
                 serviceComponentGroupingLabel,
+                // The BL's own SC period, used to validate date_needed falls within the agreement's PoP window
+                sc_period_start: budgetLineServicesComponent?.period_start ?? null,
+                sc_period_end: budgetLineServicesComponent?.period_end ?? null,
                 selected: false, // for use in the BLI table
                 actionable: false // based on action accordion
             };
         });
 
         setBudgetLines(newBudgetLines);
-    }, [agreement, servicesComponents]);
+    }, [agreement, servicesComponents, grantNumbers, isGrant]);
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -189,12 +235,11 @@ const useReviewAgreement = (agreementId) => {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
-                    const errorKey = `${fieldName}`;
-                    if (seenBudgetLineErrors.has(errorKey)) {
+                    if (seenBudgetLineErrors.has(fieldName)) {
                         return;
                     }
-                    seenBudgetLineErrors.add(errorKey);
-                    aggregatedErrors[errorKey] = messages;
+                    seenBudgetLineErrors.add(fieldName);
+                    aggregatedErrors[fieldName] = messages;
                 });
             });
         }
@@ -271,6 +316,16 @@ const useReviewAgreement = (agreementId) => {
                         message: "There was an error sending your edits for approval. Please try again.",
                         redirectUrl: "/error"
                     });
+                } else if (appliesImmediately) {
+                    // Capability ON + Draft→Planned: the backend applied the change directly,
+                    // no Division Director review. Reflect that in the copy so the user isn't
+                    // told review is pending when it isn't.
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Updated",
+                        message: `The agreement ${agreement?.name} has been successfully updated.`,
+                        redirectUrl: `/agreements/${agreement?.id}/budget-lines`
+                    });
                 } else {
                     setAlert({
                         type: "success",
@@ -281,7 +336,7 @@ const useReviewAgreement = (agreementId) => {
                             `${statusChangeMessages}\n\n` +
                             `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`,
 
-                        redirectUrl: "/agreements"
+                        redirectUrl: `/agreements/${agreement?.id}/budget-lines`
                     });
                 }
             });
@@ -313,6 +368,7 @@ const useReviewAgreement = (agreementId) => {
     const handleActionChange = (action) => {
         setAction(action);
         setToggleStates({});
+        setNotes("");
 
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
@@ -353,7 +409,9 @@ const useReviewAgreement = (agreementId) => {
 
         setBudgetLines((prevBudgetLines) => {
             const updatedLines = prevBudgetLines.map((bli) => {
-                if (bli.actionable && bli.services_component_number === servicesComponentNumber) {
+                // For grants the group key is the grant number; otherwise the services component.
+                const bliGroupKey = isGrant ? bli.grant_number_number : bli.services_component_number;
+                if (bli.actionable && bliGroupKey === servicesComponentNumber) {
                     return {
                         ...bli,
                         selected: !toggleStates[servicesComponentNumber]
@@ -408,7 +466,15 @@ const useReviewAgreement = (agreementId) => {
         return { id: budgetLineId, data: cleanData };
     };
 
+    // Button label: "Change BL Status" only for a Draft→Planned action when the
+    // capability is ON. Everything else (Planned→Executing, or flag OFF) keeps "Send to
+    // Approval". Until the version query resolves, fall back to the safe default so the
+    // label never flips mid-render.
+    const submitButtonText = appliesImmediately ? "Change BL Status" : "Send to Approval";
+
     return {
+        submitButtonText,
+        appliesImmediately,
         action,
         handleSelectBLI,
         pageErrors,
@@ -420,6 +486,8 @@ const useReviewAgreement = (agreementId) => {
         notes,
         setNotes,
         servicesComponents,
+        grantNumbers,
+        isGrant,
         groupedBudgetLinesByServicesComponent,
         handleSendToApproval,
         hasBLIError,

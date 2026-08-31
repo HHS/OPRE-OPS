@@ -21,6 +21,10 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
     default: () => requestPreAwardApprovalHookMock()
 }));
 
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
+    useChangeRequestsForAgreement: () => []
+}));
+
 vi.mock("../../../App", () => ({
     __esModule: true,
     default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
@@ -74,15 +78,27 @@ vi.mock("../../../components/UI/PageHeader", () => ({
     )
 }));
 
+// Expose showBudgetLineErrors via data attribute so caller-level tests can assert the prop is passed
+vi.mock("./BudgetLinesReviewAccordion", () => ({
+    BudgetLinesReviewAccordion: (/** @type {{ showBudgetLineErrors?: boolean }} */ { showBudgetLineErrors }) => (
+        <div
+            data-testid="budget-lines-review-accordion"
+            data-show-budget-line-errors={String(showBudgetLineErrors ?? false)}
+        />
+    )
+}));
+
 const baseHookResult = () => ({
-    agreement: { name: "Test Agreement", id: 1 },
+    agreement: { name: "Test Agreement", id: 1, _meta: { isEditable: true } },
     isLoading: false,
+    allBudgetLines: [],
     executingBudgetLines: [{ id: 1, status: "IN_EXECUTION" }],
     executingTotal: 0,
     notes: "",
     setNotes: vi.fn(),
     handleSubmit: vi.fn(),
     handleCancel: vi.fn(),
+    handleEdit: vi.fn(),
     projectOfficerName: "John Doe",
     alternateProjectOfficerName: "Jane Smith",
     isApprovalPending: false,
@@ -98,7 +114,16 @@ const baseHookResult = () => ({
     uploadError: "",
     submitError: "",
     preAwardMemoDocuments: [],
-    isStep4Completed: true
+    isStep4Completed: true,
+    showModal: false,
+    setShowModal: vi.fn(),
+    modalProps: {},
+    agreementValidationResults: null,
+    hasBLIError: false,
+    pageErrors: {},
+    isAlertActive: false,
+    setIsAlertActive: vi.fn(),
+    validatableBudgetLines: []
 });
 
 describe("RequestPreAwardApproval", () => {
@@ -131,7 +156,7 @@ describe("RequestPreAwardApproval", () => {
         render(<RequestPreAwardApproval />);
 
         expect(screen.getByTestId("meta-accordion")).toBeInTheDocument();
-        expect(screen.getByTestId("bli-accordion")).toBeInTheDocument();
+        expect(screen.getByTestId("budget-lines-review-accordion")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
@@ -231,8 +256,11 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
-        expect(submitButton).toBeDisabled();
+        // DisabledButtonWithTooltip renders an aria-disabled wrapper div + a disabled inner button.
+        // Both have role="button" with the same name; the inner <button> is the only one that is disabled.
+        const buttons = screen.getAllByRole("button", { name: /Send to Approval/i, hidden: true });
+        const disabledBtn = buttons.find((b) => b.tagName === "BUTTON");
+        expect(disabledBtn).toBeDisabled();
     });
 
     it("shows alert when BLI is in review", () => {
@@ -243,9 +271,9 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Budget Line In Review")).toBeInTheDocument();
+        expect(screen.getByText("Changes In Review")).toBeInTheDocument();
         expect(
-            screen.getByText(/One or more budget lines have pending change requests that are currently in review/)
+            screen.getByText(/After they are approved, you can continue your request for Pre-Award Approval/)
         ).toBeInTheDocument();
     });
 
@@ -315,5 +343,204 @@ describe("RequestPreAwardApproval", () => {
 
         const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
+    });
+
+    describe("validation error banner", () => {
+        it("shows the error banner when there are page errors and step 4 is complete", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { name: ["Agreement name is required"] },
+                isStep4Completed: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+            expect(screen.getByRole("list")).toBeInTheDocument();
+        });
+
+        it("keeps the page header h1 visible while the error banner is shown", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { name: ["Agreement name is required"] },
+                isStep4Completed: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            // The h1 landmark must remain for orientation/screen readers even when errors show.
+            expect(screen.getByRole("heading", { level: 1, name: "Request Pre-Award Approval" })).toBeInTheDocument();
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+        });
+
+        it("hides the error banner when step 4 is not completed even if there are errors", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { name: ["Agreement name is required"] },
+                isStep4Completed: false
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
+        });
+
+        it("hides the error banner when isAlertActive is false", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: false,
+                pageErrors: { name: ["Agreement name is required"] },
+                isStep4Completed: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
+        });
+
+        it("renders each page error as a list item", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { name: ["required"], can: ["required"] },
+                isStep4Completed: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            const items = screen.getAllByRole("listitem");
+            expect(items).toHaveLength(2);
+        });
+
+        it("disables Send to Approval with tooltip wrapper when hasBLIError is true", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIError: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            // DisabledButtonWithTooltip renders a focusable div[role=button] wrapping a disabled
+            // <button>. Both match "Send to Approval" by accessible name. Target the native button.
+            const buttons = screen.getAllByRole("button", { name: "Send to Approval" });
+            const submitButton = buttons.find((el) => el.tagName === "BUTTON");
+            expect(submitButton).toBeDisabled();
+        });
+
+        it("does not show tooltip wrapper when step 4 is incomplete, even if hasBLIError is true", () => {
+            // When Step 4 is not complete, the Step 4 warning takes precedence.
+            // The button should be a plain disabled button (not tooltip-wrapped).
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isStep4Completed: false,
+                hasBLIError: true
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            const submitButton = screen.getByRole("button", { name: "Send to Approval" });
+            // Still disabled, but via the normal disabled prop + title (not Tooltip wrapper)
+            expect(submitButton).toBeDisabled();
+            expect(submitButton).toHaveAttribute(
+                "title",
+                "Step 4 (Evaluation) must be completed before requesting pre-award approval"
+            );
+        });
+    });
+
+    describe("Edit button", () => {
+        it("renders the Edit button", () => {
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+        });
+
+        it("calls handleEdit on click", async () => {
+            const handleEditMock = vi.fn();
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                handleEdit: handleEditMock
+            });
+
+            const user = userEvent.setup();
+            render(<RequestPreAwardApproval />);
+
+            await user.click(screen.getByRole("button", { name: "Edit" }));
+
+            expect(handleEditMock).toHaveBeenCalledTimes(1);
+        });
+
+        it("disables the Edit button when agreement is not editable", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                agreement: { name: "Test Agreement", id: 1, _meta: { isEditable: false } }
+            });
+
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+        });
+    });
+
+    describe("BLI error styling", () => {
+        it("passes showBudgetLineErrors={true} when no BLI is in review", () => {
+            // Regression guard: if showBudgetLineErrors is accidentally dropped from the
+            // BudgetLinesReviewAccordion call site, this test fails — exactly the regression
+            // that occurred in the style: prettier format commit.
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "true");
+        });
+
+        it("passes showBudgetLineErrors={false} when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            const accordion = screen.getByTestId("budget-lines-review-accordion");
+            expect(accordion).toHaveAttribute("data-show-budget-line-errors", "false");
+        });
+    });
+
+    describe("Edit button with pending change requests", () => {
+        it("keeps Edit button enabled when BLIs have pending change requests", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByRole("button", { name: "Edit" })).not.toBeDisabled();
+        });
+
+        it("hides the error banner when a BLI has a pending change request", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                hasBLIInReview: true,
+                isAlertActive: true,
+                pageErrors: { "project-officer": ["Required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.queryByText("Please resolve the errors outlined below")).not.toBeInTheDocument();
+        });
+
+        it("shows Services Component in error banner when a BLI is missing an SC", () => {
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                isAlertActive: true,
+                pageErrors: { services_component: ["Services Component is required"] }
+            });
+            render(<RequestPreAwardApproval />);
+
+            expect(screen.getByText("Please resolve the errors outlined below")).toBeInTheDocument();
+            expect(screen.getByText("Services Component")).toBeInTheDocument();
+        });
     });
 });

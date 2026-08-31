@@ -99,13 +99,16 @@ class PreAwardRequest(ProcurementStepRequest, Attestation, TargetDate):
 
 @dataclass(kw_only=True)
 class AwardResponse(ProcurementStepResponse, Attestation):
-    vendor: Optional[str] = None
-    vendor_type: Optional[str] = None
-    financial_number: Optional[str] = None
+    vendor_id: Optional[int] = None
+    vendor: Optional[dict] = None  # {id, name, duns}
+    contract_number: Optional[str] = None
+    award_amount: Optional[float] = None
+    award_date: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 @dataclass(kw_only=True)
 class AwardRequest(ProcurementStepRequest, Attestation):
-    vendor: Optional[str] = None
-    vendor_type: Optional[str] = None
-    financial_number: Optional[str] = None
+    vendor_id: Optional[int] = None
+    contract_number: Optional[str] = None
+    award_amount: Optional[float] = None
+    award_date: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})

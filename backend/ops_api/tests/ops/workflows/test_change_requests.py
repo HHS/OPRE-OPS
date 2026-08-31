@@ -4,6 +4,7 @@ from decimal import Decimal
 from flask import url_for
 
 from models import (
+    Agreement,
     AgreementChangeRequest,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
@@ -12,8 +13,13 @@ from models import (
     ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
+    ContractBudgetLineItem,
+    DefaultProcurementTracker,
+    DefaultProcurementTrackerStep,
     Division,
-    GrantBudgetLineItem,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
+    User,
 )
 from ops_api.ops.services.agreement_history import AgreementHistoryService
 
@@ -77,7 +83,7 @@ def test_budget_line_item_change_request(app, test_bli, app_ctx):
 
 
 def test_budget_line_item_patch_with_budgets_change_requests(
-    budget_team_auth_client,
+    basic_user_auth_client,
     division_director_auth_client,
     app,
     loaded_db,
@@ -92,13 +98,25 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     hists, _ = history_service.get(agreement_id, limit=100, offset=0)
     prev_hist_count = len(hists)
 
-    #  create PLANNED BLI
-    bli = GrantBudgetLineItem(
-        line_description="Grant Expenditure GA999",
+    # Add basic_user (521) as a team member on agreement 1 so they pass the association check.
+    # Agreement 1's existing members are all superusers or division directors; 521 is a plain
+    # VIEWER_EDITOR who will trigger the change-request workflow (not bypass it).
+    agreement = session.get(Agreement, agreement_id)
+    basic_user = session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    session.flush()
+
+    #  create PLANNED BLI with a valid future date so required-field validation passes.
+    #  Use a date different from the patch target (2032-02-02) so patching date_needed creates a CR.
+    #  Agreement 1 is a contract agreement, so use ContractBudgetLineItem (grant BLIs now require
+    #  grant_number_id for status changes and would fail validation on this agreement).
+    bli = ContractBudgetLineItem(
+        line_description="SC1",
         agreement_id=1,
         can_id=test_can.id,
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2033, 1, 1),
         created_by=test_division_director.id,
         services_component_id=1,
     )
@@ -111,8 +129,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     hists, _ = history_service.get(agreement_id, limit=100, offset=0)
 
     #  submit PATCH BLI which triggers a budget change requests
-    data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
-    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    # SC 1 on agreement 1 has period_start=2043-06-13 and period_end=2044-06-13; date must be within that window.
+    data = {"amount": 222.22, "can_id": 501, "date_needed": "2043-09-01"}
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -146,9 +165,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
             assert requested_change_diff["amount"]["old"] == 111.11
             assert requested_change_diff["amount"]["new"] == 222.22
         if "date_needed" in requested_change_data:
-            assert requested_change_data["date_needed"] == "2032-02-02"
-            assert requested_change_diff["date_needed"]["old"] is None
-            assert requested_change_diff["date_needed"]["new"] == "2032-02-02"
+            assert requested_change_data["date_needed"] == "2043-09-01"
+            assert requested_change_diff["date_needed"]["old"] == "2033-01-01"
+            assert requested_change_diff["date_needed"]["new"] == "2043-09-01"
         if "can_id" in requested_change_data:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
@@ -162,7 +181,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert str(bli.amount) == "111.11"
     assert bli.amount == Decimal("111.11")
     assert bli.can_id == 500
-    assert bli.date_needed is None
+    assert bli.date_needed == datetime.date(2033, 1, 1)
     assert len(bli.change_requests_in_review) == len(change_request_ids)
     assert bli.in_review is True
 
@@ -219,7 +238,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
     assert bli.can_id == 500  # can_id change request was rejected
-    assert bli.date_needed == datetime.date(2032, 2, 2)
+    assert bli.date_needed == datetime.date(2043, 9, 1)
     assert bli.change_requests_in_review is None
     assert bli.in_review is False
 
@@ -331,8 +350,8 @@ def test_budget_line_item_patch_with_status_change_requests(
     prev_hist_count = len(response.json["data"])
 
     #  create DRAFT BLI with missing required fields
-    bli = GrantBudgetLineItem(
-        line_description="Grant Expenditure GA999",
+    bli = ContractBudgetLineItem(
+        line_description="SC1",
         agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_division_director.id,
@@ -351,9 +370,10 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert "errors" in response.json
 
     # make the BLI valid for status change
+    # SC 1 on agreement 1 has period_start=2043-06-13 and period_end=2044-06-13; date must be within that window.
     bli.can_id = 500
     bli.amount = 111.11
-    bli.date_needed = datetime.date(2032, 2, 2)
+    bli.date_needed = datetime.date(2043, 9, 1)
     session.add(bli)
     session.commit()
 
@@ -492,3 +512,389 @@ def test_change_request_review_auth(
     assert response.status_code == 200
 
     # delete change request
+
+
+# ---=== CAN-ID FALLBACK BRANCH COVERAGE (OPS-2280) ===---
+
+
+def test_bli_patch_can_id_fallback_resolves_division_from_incoming_can(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    When a PLANNED BLI has no CAN assigned (can_id=None) and the PATCH includes a can_id,
+    the change-request service must resolve the managing division from the *incoming* CAN
+    rather than the null DB can_id.
+
+    Expected: 202, one change request whose managing_division_id matches the incoming CAN's
+    division, and a ChangeRequestNotification sent to that division's director.
+    """
+    # Add basic_user (521) to agreement 1's team so they pass the association check
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    if basic_user not in agreement.team_members:
+        agreement.team_members.append(basic_user)
+        app.db_session.flush()
+
+    # Create a PLANNED BLI with no CAN but a valid future date
+    bli = ContractBudgetLineItem(
+        line_description="BLI with no initial CAN",
+        agreement_id=1,
+        can_id=None,
+        amount=100.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 9, 1),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    # PATCH: change the amount AND assign a CAN for the first time
+    data = {"amount": 200.00, "can_id": test_can.id}
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert response.status_code == 202, response.json
+
+    resp_json = response.json
+    assert "change_requests_in_review" in resp_json
+    change_requests = resp_json["change_requests_in_review"]
+    # One CR for amount, one for can_id
+    assert len(change_requests) >= 1
+
+    # All CRs must have a non-null managing_division_id (resolved from the incoming CAN)
+    for cr in change_requests:
+        assert (
+            cr.get("managing_division_id") is not None
+        ), "managing_division_id should be resolved from the incoming CAN, not the null DB can_id"
+
+    # At least one ChangeRequestNotification sent to division 5's director (user 522, test_can → division 5)
+    cr_id = change_requests[0]["id"]
+    notification = (
+        loaded_db.query(ChangeRequestNotification)
+        .filter_by(change_request_id=cr_id, recipient_id=test_division_director.id)
+        .first()
+    )
+    assert (
+        notification is not None
+    ), "A ChangeRequestNotification must be sent to the division director resolved from the incoming CAN"
+
+
+def test_bli_patch_can_id_fallback_validation_error_when_no_can_provided(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    app_ctx,
+):
+    """
+    When a PLANNED BLI has can_id=None in the DB AND the PATCH does not include a can_id,
+    attempting a financial change must raise a 400 ValidationError with the 'can_id' message.
+    """
+    # Add basic_user (521) to agreement 1's team so they pass the association check
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    if basic_user not in agreement.team_members:
+        agreement.team_members.append(basic_user)
+        app.db_session.flush()
+
+    # Create a PLANNED BLI with no CAN but a valid future date
+    bli = ContractBudgetLineItem(
+        line_description="BLI with no CAN, no can_id in PATCH",
+        agreement_id=1,
+        can_id=None,
+        amount=100.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2032, 2, 2),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    app.db_session.add(bli)
+    app.db_session.commit()
+    bli_id = bli.id
+
+    # PATCH only the amount — no can_id provided; must be rejected with a 400 error
+    # related to the missing CAN (either "can_id" key or "missing required fields" which
+    # includes can_id in its required-field check).
+    data = {"amount": 999.99}
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert response.status_code == 400, response.json
+
+
+def test_budget_team_bli_patch_writes_directly_no_change_request(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    A Budget Team user editing a PLANNED BLI's financial fields must get a direct write
+    (HTTP 200) rather than a change request (HTTP 202), but ONLY when the agreement has
+    an active award-approval request (step 6). This covers the is_budget_team() bypass
+    added in OPS-2280.
+    """
+    # Set up an active procurement tracker with a pending AWARD approval for agreement 1
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=6,
+        step_type=ProcurementTrackerStepType.AWARD,
+        award_approval_requested=True,
+        award_approval_status=None,  # pending — not yet approved or declined
+    )
+    loaded_db.add(award_step)
+
+    # Create a PLANNED BLI with a CAN and a valid future date
+    bli = ContractBudgetLineItem(
+        line_description="BLI for budget-team direct-write test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 9, 1),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    # Budget Team patches a financial field → should write directly, not create a CR
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 200
+    ), f"Budget Team should get a direct 200 write, not a 202 change-request. Got: {response.json}"
+    assert not response.json.get("change_requests_in_review"), "Budget Team edits must not create change requests"
+
+    # Confirm the BLI was updated in the DB
+    updated_bli = loaded_db.get(type(bli), bli_id)
+    assert float(updated_bli.amount) == 750.00
+
+
+def test_budget_team_bli_patch_creates_change_request_without_active_award_approval(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    A Budget Team user editing a PLANNED BLI when NO active award-approval request
+    exists must still go through the change-request workflow (HTTP 202).
+    This is the negative case: the bypass must not apply outside the award-approval flow.
+    """
+    # Agreement 1 has no procurement tracker in seed data — is_award_approval_requested returns False
+    bli = ContractBudgetLineItem(
+        line_description="BLI for budget-team no-bypass test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 9, 1),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 202
+    ), f"Budget Team without active award approval should get a 202 change-request. Got: {response.json}"
+    assert response.json.get(
+        "change_requests_in_review"
+    ), "A change request must be created when no active award approval exists"
+
+
+def test_budget_team_bli_patch_writes_directly_when_tracker_not_active(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """
+    The bypass must apply even when the procurement tracker status is not ACTIVE
+    (e.g. COMPLETED), as long as the AWARD step has a pending approval request.
+    Regression test for the ACTIVE-filter removal in is_award_approval_requested.
+    """
+    # Use a COMPLETED tracker — previously this would have caused is_award_approval_requested
+    # to return False and the bypass to silently fail.
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.COMPLETED)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=6,
+        step_type=ProcurementTrackerStepType.AWARD,
+        award_approval_requested=True,
+        award_approval_status=None,  # pending — not yet approved or declined
+    )
+    loaded_db.add(award_step)
+
+    # Agreement 1 is a contract agreement, so use ContractBudgetLineItem (grant BLIs now require
+    # grant_number_id for status changes and would fail validation on this agreement).
+    bli = ContractBudgetLineItem(
+        line_description="BLI for budget-team bypass with non-active tracker",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 9, 1),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    bli_id = bli.id
+
+    data = {"amount": 750.00}
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert (
+        response.status_code == 200
+    ), f"Budget Team bypass should work even when tracker is COMPLETED. Got: {response.json}"
+    assert not response.json.get("change_requests_in_review"), "No change request should be created"
+
+    updated_bli = loaded_db.get(type(bli), bli_id)
+    assert float(updated_bli.amount) == 750.00
+
+
+# --- Post-pre-award lock tests ---
+
+
+def _setup_fully_approved_pre_award(loaded_db):
+    """Helper: create a procurement tracker with a fully approved PRE_AWARD step on agreement 1."""
+    tracker = DefaultProcurementTracker(agreement_id=1, status=ProcurementTrackerStatus.ACTIVE)
+    loaded_db.add(tracker)
+    loaded_db.flush()
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=5,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=500,  # approved by user 500
+    )
+    loaded_db.add(pre_award_step)
+    return tracker, pre_award_step
+
+
+def _make_planned_bli(loaded_db, test_can, test_division_director):
+    """Helper: create a PLANNED BLI on agreement 1."""
+    bli = ContractBudgetLineItem(
+        line_description="BLI for post-pre-award lock test",
+        agreement_id=1,
+        can_id=test_can.id,
+        amount=500.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 9, 1),
+        created_by=test_division_director.id,
+        services_component_id=1,
+    )
+    loaded_db.add(bli)
+    return bli
+
+
+def test_post_pre_award_lock_blocks_regular_user(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Regular users cannot edit BLIs once pre-award is fully approved."""
+    # Add basic user (521) as team member so they pass the association check
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
+    assert response.status_code == 400, f"Should be blocked after full pre-award approval. Got: {response.json}"
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
+
+
+def test_post_pre_award_lock_allows_clin_only_for_any_user(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Any authorized user can update clin_id after pre-award is fully approved — CLIN assignment
+    is part of the award workflow (COR assigns CLINs before submitting for award approval)."""
+    # Add basic user (521) as team member so they pass the association check
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1})
+    assert response.status_code == 200, f"clin_id update should be allowed for any user. Got: {response.json}"
+
+
+def test_post_pre_award_lock_blocks_mixed_clin_and_financial_edit(
+    basic_user_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """A payload containing clin_id AND a financial field is blocked — the clin-only exception
+    is exact and cannot be used as a loophole to sneak through financial changes."""
+    agreement = app.db_session.get(Agreement, 1)
+    basic_user = app.db_session.get(User, 521)
+    agreement.team_members.append(basic_user)
+    app.db_session.flush()
+
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"clin_id": 1, "amount": 750.00}
+    )
+    assert response.status_code == 400, f"Mixed clin+financial edit should be blocked. Got: {response.json}"
+    assert "Pre-Award Approval" in response.json.get("errors", {}).get("status", "")
+
+
+def test_post_pre_award_lock_allows_budget_team(
+    budget_team_auth_client,
+    app,
+    loaded_db,
+    test_division_director,
+    test_can,
+    app_ctx,
+):
+    """Budget team can still edit BLIs after pre-award approval (routes through change-request)."""
+    _setup_fully_approved_pre_award(loaded_db)
+    bli = _make_planned_bli(loaded_db, test_can, test_division_director)
+    loaded_db.commit()
+
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 750.00})
+    # Budget team is not blocked — goes through change-request workflow (202)
+    assert response.status_code == 202, f"Budget team should get 202 change-request. Got: {response.json}"

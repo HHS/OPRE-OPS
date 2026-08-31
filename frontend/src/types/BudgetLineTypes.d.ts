@@ -39,6 +39,15 @@ export type BudgetLine = {
     services_component_id?: number;
     services_component_number?: number;
     serviceComponentGroupingLabel?: string;
+    grant_number_id?: number;
+    grant_number_number?: number; // UI-only: editor-state grant number key (analog of services_component_number)
+    grant_number_ref?: string; // UI-only: links a BLI to a not-yet-persisted grant number in a create/edit bundle
+    clin_id?: number | null;
+    clin?: {
+        id: number;
+        number: number | null;
+        name?: string | null;
+    } | null;
     status: string;
     is_obe: boolean;
     team_members: SafeUser[];
@@ -53,6 +62,8 @@ export type BudgetLine = {
     // NOTE: this property may move to another endpoint
     _meta: {
         isEditable: boolean;
+        isDeletable?: boolean;
+        lockedMessage?: string | null;
         limit: number;
         number_of_pages: number;
         offset: number;

@@ -18,6 +18,7 @@ from .procurement_action import *
 from .projects import *
 from .project_history import *
 from .services_components import *
+from .grant_numbers import *
 from .users import *
 from .vendors import *
 from .special_topics import *
