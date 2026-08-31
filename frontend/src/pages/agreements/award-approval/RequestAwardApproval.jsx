@@ -263,9 +263,11 @@ export const RequestAwardApproval = () => {
                                             isReviewMode={true}
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
-                                            onAddCLINClick={setSelectedBudgetLineId}
-                                            showCLINColumn={true}
-                                            clinAssignments={clinAssignments}
+                                            clin={{
+                                                showColumn: true,
+                                                onAddClick: setSelectedBudgetLineId,
+                                                assignments: clinAssignments
+                                            }}
                                         />
                                     ) : (
                                         <p className="text-center margin-y-7">
