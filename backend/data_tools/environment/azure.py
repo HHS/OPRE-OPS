@@ -63,3 +63,40 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
 
         return cutoff_days
+
+    @property
+    def usage_metrics_storage_account_url(self) -> str | None:
+        url = os.getenv("USAGE_METRICS_STORAGE_ACCOUNT_URL")
+
+        if not url:
+            raise ValueError("Missing environment variable for USAGE_METRICS_STORAGE_ACCOUNT_URL.")
+
+        return url
+
+    @property
+    def usage_metrics_container_name(self) -> str:
+        return os.getenv("USAGE_METRICS_CONTAINER_NAME", "data")
+
+    @property
+    def usage_metrics_report_prefix(self) -> str:
+        return os.getenv("USAGE_METRICS_REPORT_PREFIX", "reports")
+
+    @property
+    def usage_metrics_lookback_days(self) -> str:
+        return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "7")
+
+    @property
+    def usage_metrics_sas_expiry_days(self) -> str:
+        return os.getenv("USAGE_METRICS_SAS_EXPIRY_DAYS", "90")
+
+    @property
+    def usage_metrics_acs_endpoint(self) -> str | None:
+        return os.getenv("USAGE_METRICS_ACS_ENDPOINT") or None
+
+    @property
+    def usage_metrics_email_sender(self) -> str | None:
+        return os.getenv("USAGE_METRICS_EMAIL_SENDER") or None
+
+    @property
+    def usage_metrics_email_recipients(self) -> str | None:
+        return os.getenv("USAGE_METRICS_EMAIL_RECIPIENTS") or None

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "69b986186f0f1d81ad344e5c4311677056105f9e7957e90aba11e582667a1964"
+            "sha256": "f98e83ab8dd381f3e75ea3a588521439d319cd448fa27ee2be1aa2b52641ce70"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -191,6 +191,15 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==26.1.0"
+        },
+        "azure-communication-email": {
+            "hashes": [
+                "sha256:6a4af8281024327c3ab18a4996919069a99a69aad3a19c40f7852a6682493327",
+                "sha256:9212153f21cf7e68734c32ebfe8702b43398bd01df2dddb0ca52cd5a8bbd5024"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==1.1.0"
         },
         "azure-core": {
             "hashes": [
@@ -724,6 +733,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==2022.9.22"
         },
+        "et-xmlfile": {
+            "hashes": [
+                "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa",
+                "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2.0.0"
+        },
         "executing": {
             "hashes": [
                 "sha256:3632cc370565f6648cc328b32435bd120a1e4ebb20c77e3fdde9a13cd1e533c4",
@@ -957,6 +974,7 @@
                 "sha256:f7278591501941bb2456af102bb9cd59aab48c6cfd6e2dd68fa1290bb0c49a42",
                 "sha256:fef01bd457f11fc158b130ca0027a3c365693280e8e231b65bdaf57999f39f5b"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==3.5.5"
         },
@@ -1402,6 +1420,15 @@
             ],
             "markers": "python_version >= '3.12'",
             "version": "==2.5.2"
+        },
+        "openpyxl": {
+            "hashes": [
+                "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2",
+                "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==3.1.5"
         },
         "orderedmultidict": {
             "hashes": [
