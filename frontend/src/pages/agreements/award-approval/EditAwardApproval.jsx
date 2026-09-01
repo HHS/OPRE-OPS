@@ -4,17 +4,25 @@ import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import AwardRequestForm from "../../../components/Agreements/AwardRequestForm";
+import useEditAwardApproval from "./EditAwardApproval.hooks";
 
 /**
- * @component - Renders a page for requesting award approval from the Budget Team.
- * @returns {React.ReactElement} - The rendered component.
+ * @component - Budget Team edit screen for a pending award approval request.
+ *
+ * Presents the same award fields as the award request form (Vendor, Contract #,
+ * Award Amount, Award Date, CLINs) pre-filled from the submitted step 6 data.
+ * Saving PATCHes the step 6 record without changing the approval status, then returns
+ * the user to the Award Approval review page.
+ *
+ * Route: /agreements/:id/edit-award
+ *
+ * @returns {React.ReactElement}
  */
-export const RequestAwardApproval = () => {
+export const EditAwardApproval = () => {
     const { id } = useParams();
     const agreementId = Number(id);
     const { setAlert } = useAlert();
@@ -36,10 +44,9 @@ export const RequestAwardApproval = () => {
             [selectedBudgetLineId]: clinNumber
         }));
 
-        // Show success toast
         setAlert({
             type: "success",
-            message: `Budget line ${selectedBudgetLineId} was updated. When you're done adding CLINs, click Send to Approval below.`,
+            message: `Budget line ${selectedBudgetLineId} was updated.`,
             isCloseable: false,
             isToastMessage: true
         });
@@ -50,16 +57,11 @@ export const RequestAwardApproval = () => {
     const {
         agreement,
         isLoading,
-        notes,
-        setNotes,
-        handleSubmit,
+        hasPermission,
+        handleSave,
         handleCancel,
         submitError,
         isSubmitting,
-        hasApprovalBeenRequested,
-        isApprovalApproved,
-        hasBLIInReview,
-        isStep5Completed,
         projectOfficerName,
         alternateProjectOfficerName,
         allBudgetLines,
@@ -82,7 +84,7 @@ export const RequestAwardApproval = () => {
         showModal,
         setShowModal,
         modalProps
-    } = useRequestAwardApproval(agreementId);
+    } = useEditAwardApproval(agreementId);
 
     // Check if any non-Draft BLIs are missing CLINs
     const hasMissingCLINs = useMemo(() => {
@@ -93,82 +95,66 @@ export const RequestAwardApproval = () => {
         return <p>Loading...</p>;
     }
 
+    if (!hasPermission) {
+        return (
+            <App breadCrumbName="Edit Award Approval">
+                <SimpleAlert
+                    type="error"
+                    heading="Access Denied"
+                    message="You do not have permission to edit this award approval request."
+                    headingLevel={2}
+                />
+            </App>
+        );
+    }
+
     return (
-        <App breadCrumbName="Request Award Approval">
+        <App breadCrumbName="Edit Award Approval">
             {showModal && (
-                <ConfirmationModal
+                <SaveChangesAndExitModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    handleSecondary={modalProps.closeModal}
+                    closeModal={modalProps.closeModal}
                 />
             )}
 
             <PageHeader
-                title="Request Award Approval"
+                title="Edit Award Approval"
                 subTitle={agreement?.name}
             />
 
             <p className="margin-y-3">
-                Review the agreement details below to ensure the signed award has been uploaded, CLINs have been
-                entered, and Vendor information is complete. The Budget Team will review everything before changing the
-                agreement to Awarded status in OPS. Once approved, you can complete Step 6 (Award) in the Procurement
-                Tracker.
+                Review the CLINs, Vendor Information and Current Award Information to make sure everything matches the
+                award exactly. If not, correct any differences.
             </p>
-
-            {!isStep5Completed && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Step 5 Not Completed"
-                    message="Step 5 (Pre-Award) must be completed before requesting Award Approval. Please complete Step 5 first."
-                    isClosable={false}
-                    headingLevel={2}
-                />
-            )}
-
-            {hasApprovalBeenRequested && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Award Approval Already Requested"
-                    message="Award Approval has already been requested for this agreement. The Budget Team will review and approve when ready."
-                    isClosable={false}
-                    headingLevel={2}
-                />
-            )}
-
-            {hasBLIInReview && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Budget Line Items In Review"
-                    message="Some budget line items have pending changes that are currently in review. Award Approval cannot be requested until all changes are approved."
-                    isClosable={false}
-                    headingLevel={2}
-                />
-            )}
 
             {submitError && (
                 <SimpleAlert
                     type="error"
-                    heading="Error Requesting Award Approval"
+                    heading="Error Saving Changes"
                     message={submitError}
                     isClosable={true}
                     headingLevel={2}
                 />
             )}
 
-            {/* Agreement Details */}
+            {/* Agreement Details — read-only */}
             <AgreementMetaAccordion
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
-                instructions="Review the agreement details below to ensure the signed award has been uploaded, CLINs have been entered, and Vendor information is complete."
+                instructions="Please review the agreement details below and edit any information if necessary."
                 changeRequestType={agreement?.change_request_type}
                 isAgreementAwarded={true}
             />
 
             <AwardRequestForm
+                mode="edit"
                 agreement={agreement}
                 vendors={vendors}
                 selectedVendor={selectedVendor}
@@ -188,30 +174,25 @@ export const RequestAwardApproval = () => {
                 handleAddCLIN={handleAddCLIN}
                 hasMissingCLINs={hasMissingCLINs}
                 clinSelectorRef={clinSelectorRef}
-                notes={notes}
-                setNotes={setNotes}
                 validationResult={validationResult}
                 runValidate={runValidate}
             />
 
             {/* Action Buttons */}
-            <div className="grid-row flex-justify-end margin-top-8">
+            <div className="grid-row flex-justify-end margin-top-8 margin-bottom-8">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
                     disabled={isSubmitting}
+                    data-cy="cancel-edit-award-btn"
                 >
                     Cancel
                 </button>
                 <button
                     className="usa-button"
-                    onClick={handleSubmit}
+                    onClick={handleSave}
                     disabled={
                         isSubmitting ||
-                        hasApprovalBeenRequested ||
-                        isApprovalApproved ||
-                        hasBLIInReview ||
-                        !isStep5Completed ||
                         validationResult.hasErrors() ||
                         !selectedVendor ||
                         !contractNumber ||
@@ -219,13 +200,13 @@ export const RequestAwardApproval = () => {
                         !awardDate ||
                         hasMissingCLINs
                     }
-                    data-cy="request-award-approval-submit"
+                    data-cy="save-edit-award-btn"
                 >
-                    {isSubmitting ? "Submitting..." : "Send to Approval"}
+                    {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
             </div>
         </App>
     );
 };
 
-export default RequestAwardApproval;
+export default EditAwardApproval;

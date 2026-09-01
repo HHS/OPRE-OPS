@@ -11,7 +11,7 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert data["agreement_id"] == 13
     assert data["status"] == "ACTIVE"
     assert data["tracker_type"] == "DEFAULT"
-    assert data["active_step_number"] == 5
+    assert data["active_step_number"] == 6
     assert data["procurement_action"] == 100
 
     # Verify steps are included

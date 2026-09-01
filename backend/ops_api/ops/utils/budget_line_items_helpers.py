@@ -238,8 +238,10 @@ def is_award_approval_requested(agreement) -> bool:
     """
     Check if the agreement's award approval (step 6) has been requested and is pending.
 
-    Returns True when a budget team user's BLI financial edits should bypass the
-    change-request workflow — i.e. the agreement is in the award-approval review flow.
+    Returns True while the award-approval request is submitted but not yet resolved
+    (i.e. approval_status is not APPROVED or DECLINED). Used by:
+      - The Agreement model hybrid property (agreements.py) to expose the flag to the API.
+      - The frontend "Award Approval In Review" banner and edit-lock on the details page.
 
     Args:
         agreement: Agreement object to check
@@ -275,7 +277,8 @@ def is_post_pre_award_locked(agreement) -> bool:
     submitted requisition). BLI editing is locked from this point on permanently.
 
     Exceptions (handled by callers):
-    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - Budget Team is exempt from this validation lock (handled in _validation via is_budget_team check),
+      but their financial edits still route through the change-request workflow (HTTP 202).
     - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
 
     Args:
