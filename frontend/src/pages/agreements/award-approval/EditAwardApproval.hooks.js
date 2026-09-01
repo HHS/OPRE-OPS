@@ -344,6 +344,7 @@ export default function useEditAwardApproval(agreementId) {
                 },
                 closeModal: () => {
                     setShowModal(false);
+                    blocker.reset?.();
                 }
             });
         } else {

@@ -4,7 +4,7 @@ import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import AwardRequestForm from "../../../components/Agreements/AwardRequestForm";
@@ -111,12 +111,14 @@ export const EditAwardApproval = () => {
     return (
         <App breadCrumbName="Edit Award Approval">
             {showModal && (
-                <ConfirmationModal
+                <SaveChangesAndExitModal
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    handleSecondary={modalProps.closeModal}
+                    closeModal={modalProps.closeModal}
                 />
             )}
 
