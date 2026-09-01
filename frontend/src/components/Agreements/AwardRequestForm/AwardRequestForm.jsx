@@ -80,7 +80,7 @@ const AwardRequestForm = ({
         <>
             {/* Add / Edit CLINs to Budget Lines */}
             <AgreementBLIAccordion
-                title="Add CLINs to Budget Lines"
+                title={isEditMode ? "Edit CLINs on Budget Lines" : "Add CLINs to Budget Lines"}
                 instructions={
                     isEditMode
                         ? "Hover over each budget line and click Edit CLIN to edit the Contract Line Item Number as outlined in the award."
@@ -98,7 +98,9 @@ const AwardRequestForm = ({
                             className="usa-error-message text-normal margin-left-neg-1"
                             role="alert"
                         >
-                            This information is required to submit for approval
+                            {isEditMode
+                                ? "This information is required to save changes"
+                                : "This information is required to submit for approval"}
                         </span>
                     </div>
                 )}

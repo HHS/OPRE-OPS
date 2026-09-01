@@ -56,9 +56,7 @@ vi.mock("../../UI/Form/CurrencyInput", () => ({
 
 vi.mock("../../UI/Accordion", () => ({
     default: ({ heading, children }) => (
-        <div data-testid={`accordion-${heading?.replace(/\s+/g, "-").toLowerCase()}`}>
-            {children}
-        </div>
+        <div data-testid={`accordion-${heading?.replace(/\s+/g, "-").toLowerCase()}`}>{children}</div>
     )
 }));
 
@@ -173,9 +171,7 @@ describe("AwardRequestForm", () => {
     describe("mode: request (default)", () => {
         it("uses Add CLIN instruction text", () => {
             renderForm();
-            expect(screen.getByTestId("bli-accordion-instructions")).toHaveTextContent(
-                "click Add CLIN to enter"
-            );
+            expect(screen.getByTestId("bli-accordion-instructions")).toHaveTextContent("click Add CLIN to enter");
         });
 
         it("shows Notes textarea", () => {
@@ -197,9 +193,7 @@ describe("AwardRequestForm", () => {
     describe("mode: edit", () => {
         it("uses Edit CLIN instruction text", () => {
             renderForm({ mode: "edit" });
-            expect(screen.getByTestId("bli-accordion-instructions")).toHaveTextContent(
-                "click Edit CLIN to edit"
-            );
+            expect(screen.getByTestId("bli-accordion-instructions")).toHaveTextContent("click Edit CLIN to edit");
         });
 
         it("hides Notes textarea", () => {
@@ -233,16 +227,12 @@ describe("AwardRequestForm", () => {
     describe("missing CLINs error", () => {
         it("shows error message when CLINs are missing and no BLI is being edited", () => {
             renderForm({ hasMissingCLINs: true, selectedBudgetLineId: null });
-            expect(
-                screen.getByText("This information is required to submit for approval")
-            ).toBeInTheDocument();
+            expect(screen.getByText("This information is required to submit for approval")).toBeInTheDocument();
         });
 
         it("does not show error when a BLI is being edited (selector is open)", () => {
             renderForm({ hasMissingCLINs: true, selectedBudgetLineId: 101 });
-            expect(
-                screen.queryByText("This information is required to submit for approval")
-            ).not.toBeInTheDocument();
+            expect(screen.queryByText("This information is required to submit for approval")).not.toBeInTheDocument();
         });
     });
 
