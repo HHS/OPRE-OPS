@@ -43,7 +43,7 @@ function GrantNumberMetadata({ periodStart, periodEnd, granteeRecipient, organiz
                         </Tag>
                     </dd>
                 </div>
-                <div className="margin-left-4">
+                <div className="margin-left-6">
                     <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - End</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag tagStyle="primaryDarkTextLightBackground">
@@ -51,19 +51,19 @@ function GrantNumberMetadata({ periodStart, periodEnd, granteeRecipient, organiz
                         </Tag>
                     </dd>
                 </div>
-                <div className="margin-left-4">
+                <div className="margin-left-6">
                     <dt className="margin-0 text-base-dark margin-top-1px">Grantee Recipient</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag tagStyle="primaryDarkTextLightBackground">{granteeRecipient || NO_DATA}</Tag>
                     </dd>
                 </div>
-                <div className="margin-left-4">
+                <div className="margin-left-6">
                     <dt className="margin-0 text-base-dark margin-top-1px">Organization Type</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag tagStyle="primaryDarkTextLightBackground">{organizationType || NO_DATA}</Tag>
                     </dd>
                 </div>
-                <div className="margin-left-4">
+                <div className="margin-left-6">
                     <dt className="margin-0 text-base-dark margin-top-1px">State</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag tagStyle="primaryDarkTextLightBackground">{state || NO_DATA}</Tag>
