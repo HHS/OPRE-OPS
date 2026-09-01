@@ -121,6 +121,27 @@ def test_write_rows_csv_round_trips_embedded_comma_and_quote(tmp_path):
     assert read_back == rows
 
 
+def test_write_rows_csv_opens_output_file_with_newline_empty_string(tmp_path, monkeypatch):
+    """Round-tripping alone can't prove newline="" is passed: on POSIX, Python's text-mode
+    newline translation is a no-op, so a round-trip test would pass identically whether or
+    not newline="" is present -- the bug it guards against (doubled CRLF / mangled embedded
+    newlines) only manifests on Windows. Assert the open() call itself instead."""
+    import data_tools.src.compare_prod_to_maps_budget_lines as module
+
+    real_open = open
+    captured = {}
+
+    def fake_open(path, mode="r", *args, **kwargs):
+        captured["newline"] = kwargs.get("newline")
+        return real_open(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(module, "open", fake_open, raising=False)
+
+    write_rows_csv(str(tmp_path / "out.csv"), [{"A": "1"}], headers=["A"])
+
+    assert captured["newline"] == ""
+
+
 # ---------------------------------------------------------------------------
 # Integration tests (real Postgres via loaded_db)
 # ---------------------------------------------------------------------------
@@ -328,6 +349,23 @@ def test_run_raises_on_header_mismatch(db_with_bli_data, tmp_path):
 
     with pytest.raises(ValueError):
         run(str(bad_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
+
+
+def test_run_gives_actionable_error_on_utf8_bom_header(db_with_bli_data, tmp_path):
+    bom_input = tmp_path / "bom.tsv"
+    bom_input.write_text("﻿" + "\t".join(EXPECTED_HEADERS) + "\n15000\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="BOM"):
+        run(str(bom_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
+
+
+def test_run_gives_actionable_error_on_non_utf8_byte(db_with_bli_data, tmp_path):
+    bad_bytes_input = tmp_path / "bad_encoding.tsv"
+    header = "\t".join(EXPECTED_HEADERS).encode("utf-8")
+    bad_bytes_input.write_bytes(header + b"\n15000\t\xff\n")
+
+    with pytest.raises(ValueError, match="encoding"):
+        run(str(bad_bytes_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
 
 
 def test_run_handles_header_only_file_without_crashing(db_with_bli_data, tmp_path):

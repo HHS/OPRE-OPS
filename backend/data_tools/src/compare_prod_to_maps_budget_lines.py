@@ -248,13 +248,28 @@ def run(
     """Read the MAPS export, classify every row, and write the two output CSVs."""
     reader: DictReader = get_csv(input_path, config, dialect="excel-tab")
 
-    if reader.fieldnames != EXPECTED_HEADERS:
+    try:
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+    except UnicodeDecodeError as err:
         raise ValueError(
-            "Input file header does not match the expected MAPS export columns.\n"
-            f"Expected: {EXPECTED_HEADERS}\nGot: {reader.fieldnames}"
+            f"Could not read {input_path} as UTF-8: {err}\n"
+            "The file may be saved in a different encoding (e.g. Windows-1252) -- "
+            "re-save it as UTF-8 and try again."
+        ) from err
+
+    if fieldnames != EXPECTED_HEADERS:
+        bom_hint = ""
+        if fieldnames and fieldnames[0] and fieldnames[0].startswith("﻿"):
+            bom_hint = (
+                "\nThe first column name starts with a UTF-8 BOM (\\ufeff) -- "
+                're-save the file as "UTF-8" without a BOM and try again.'
+            )
+        raise ValueError(
+            "Input file header does not match the expected MAPS export columns."
+            f"{bom_hint}\nExpected: {EXPECTED_HEADERS}\nGot: {fieldnames}"
         )
 
-    rows = list(reader)
     logger.info(f"Read {len(rows)} rows from {input_path}.")
 
     existing_rows, missing_rows = classify_budget_lines(session, rows)
