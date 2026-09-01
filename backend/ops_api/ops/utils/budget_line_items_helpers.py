@@ -277,7 +277,8 @@ def is_post_pre_award_locked(agreement) -> bool:
     submitted requisition). BLI editing is locked from this point on permanently.
 
     Exceptions (handled by callers):
-    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - Budget Team is exempt from this validation lock (handled in _validation via is_budget_team check),
+      but their financial edits still route through the change-request workflow (HTTP 202).
     - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
 
     Args:
