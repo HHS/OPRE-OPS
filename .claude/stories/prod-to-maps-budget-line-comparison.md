@@ -5,6 +5,15 @@ branch: data/prod-to-maps-data-comparison-script
 
 # Feature Story: Compare MAPS Budget Line Export Against Production
 
+## CRITICAL CONSTRAINT — READ-ONLY, NO ROW DELETION
+
+**This script must never delete rows from anything, anywhere, under any circumstance.** It is a comparison/reporting tool only. This applies to:
+- `BudgetLineItem` and all its subtype tables (`ContractBudgetLineItem`, `GrantBudgetLineItem`, `IAABudgetLineItem`, `DirectObligationBudgetLineItem`, `AABudgetLineItem`).
+- Any other table in the database — CANs, agreements, projects, users, history/version tables, anything.
+- This holds even though the script's *purpose* is to identify budget lines that were deleted from OPS — identifying a deletion is a read-only classification, not an action the script performs.
+
+Concretely: the new module must contain **zero** calls to `session.delete(...)`, `session.commit()`, `session.flush()` (explicit or implicit via autoflush left off), or any raw `DELETE`/`UPDATE`/`INSERT` SQL. The DB session it opens is used exclusively for `SELECT`s (`get_existing_bli_obe_map`, `get_deleted_bli_ids`). This is already reflected below (no writes/commits anywhere in the design), but is called out here explicitly because it must never regress during implementation, refactor, or future extension.
+
 ## Story Overview
 
 **Ticket:** N/A (no ticket provided)
@@ -64,6 +73,7 @@ As a developer reconciling legacy MAPS data against OPS, I want a script that se
 - [ ] Every row with a `Sys_Budget_ID` that never existed in OPS, or with a blank or non-numeric `Sys_Budget_ID`, lands in the missing-lines CSV.
 - [ ] Both output files use the original TSV header text as column headers (plus `OBE` on the existing file).
 - [ ] The script connects to the DB the same way `load_data.py` does (env-driven config via `.env`), but performs no writes/commits.
+- [ ] The script never deletes rows from any table — this includes `BudgetLineItem`/its subtypes and every other table in the database. It contains zero `session.delete(...)`, `session.commit()`, or raw `DELETE`/`UPDATE`/`INSERT` calls (see Critical Constraint above).
 
 ## Technical Context
 
@@ -90,7 +100,7 @@ As a developer reconciling legacy MAPS data against OPS, I want a script that se
 
 ### Approach
 
-A new standalone module (not wired into `load_data.py`'s `--type` dispatcher, since this performs no DB writes and needs none of its `sys_user`/history-trigger scaffolding) with its own `click` CLI entrypoint, following `load_data.py`'s `.env`-driven connection pattern for the DB half only.
+A new standalone flat script (not wired into `load_data.py`'s `--type` dispatcher, since this performs no DB writes and needs none of its `sys_user`/history-trigger scaffolding) with its own `click` CLI entrypoint, following `load_data.py`'s `.env`-driven connection pattern for the DB half only — see Files to Create for why this is one flat file rather than a package.
 
 Column mapping (original TSV header → reused `BudgetLineItemData` field — the existing dataclass uses different field names than this file's headers, so a small mapping function is needed, mirroring the `create_budget_line_item_data` pattern already used in `load_master_spreadsheet_budget_lines_v2/utils.py`):
 
@@ -119,23 +129,20 @@ Column mapping (original TSV header → reused `BudgetLineItemData` field — th
 Output rows are built from the **raw `DictReader` row dict** (original header keys, untouched string values), not from the dataclass's stringified fields — the dataclass instance is only used transiently to obtain a validated `int` `Sys_Budget_ID` for the DB lookup. This sidesteps any string round-tripping quirks in the dataclass's `__post_init__` and satisfies "same columns as input, pass-through."
 
 ### Files to Create
-- `data_tools/src/compare_prod_to_maps_budget_lines/__init__.py` — empty.
-- `data_tools/src/compare_prod_to_maps_budget_lines/utils.py` — core logic (pure functions, unit-testable):
+
+**Layout correction (added after adversarial review):** the original draft proposed a package (`__init__.py` + `utils.py` + `main.py`) mirroring the `load_*` module shape. A reviewer found that's actually neither existing convention: `load_*` packages have `__init__.py`+`utils.py` but deliberately *no* CLI of their own (since `load_data.py` is their sole entrypoint), while the codebase's genuinely standalone, unwired scripts (`src/backfill_procurement_tracker.py`, `src/approve_change_requests.py`, `src/update_budget_line_sort_columns.py`) are each a **single flat `.py` file** directly under `src/`, combining CLI + logic together and invoked as `python data_tools/src/<script>.py --env ...` from `backend/`. Per user decision, this script follows that flat-file precedent instead — one file, not a package:
+
+- `data_tools/src/compare_prod_to_maps_budget_lines.py` — single file combining the CLI entrypoint (dotenv load, loguru setup, `click.command()` — mirroring `load_data.py`'s boilerplate the same way the existing flat scripts do) and the core logic below. The test file (see below) still imports individual functions directly from this module for unit testing, so splitting CLI from logic isn't necessary for testability here — the existing flat scripts already prove this shape doesn't hurt testing (see `tests/backfill_procurement_tracker/`).
   - `EXPECTED_HEADERS: list[str]` — the 19 original headers, in order (source of truth for both input validation and output headers).
   - `create_compare_budget_line_data(row: dict) -> BudgetLineItemData` — maps a raw TSV row dict to the reused dataclass (imported from `data_tools.src.load_remove_budget_lines.utils`). The dataclass's `__post_init__` raises a bare `ValueError` in two distinct cases that this function's caller must not conflate (see Decision 4a): a blank/falsy `Sys_Budget_ID` (`if not self.SYS_BUDGET_ID: raise ValueError("SYS_BUDGET_ID is required.")`), and a truthy-but-non-numeric value like `"ABC"` (passes that check, then fails inside `int(self.SYS_BUDGET_ID)`). Both are plain `ValueError` with only the message text to distinguish them.
   - `chunked(items, size)` — small batching helper for `IN (...)` queries.
   - `get_existing_bli_obe_map(session, ids: set[int]) -> dict[int, Optional[bool]]` — chunked `select(BudgetLineItem.id, BudgetLineItem.is_obe).where(BudgetLineItem.id.in_(chunk))` against the live table. Return type is `Optional[bool]`, not `bool` — `is_obe` is nullable (see Related Components), so a live BLI can map to `None`.
   - `get_deleted_bli_ids(session, ids: set[int]) -> set[int]` — chunked query against `sqlalchemy_continuum.version_class(BudgetLineItem)` filtering `.id.in_(chunk)`, `.end_transaction_id.is_(None)`, **and** `.operation_type == Operation.DELETE` (from `sqlalchemy_continuum.operation.Operation`). All three conditions together are required: `end_transaction_id IS NULL` alone also matches the terminal version of every live row (confirmed empirically — see Background), so without the `operation_type` filter this helper would return live ids and `classify_budget_lines` would silently drop them from both output files, violating AC #1. With the filter in place, the returned set is deleted-only by construction, so no anomaly logging is needed here.
   - `classify_budget_lines(session, rows: list[dict]) -> tuple[list[dict], list[dict]]` — orchestrates: parse each row, catching `ValueError` from `create_compare_budget_line_data` into the missing bucket directly (bypassing the DB-lookup step, since there's no valid id to look up). Per Decision 4a, this catch covers two distinct causes — blank `Sys_Budget_ID` and non-numeric `Sys_Budget_ID` (e.g. `"ABC"`) — and the row is logged with a label that names which one occurred (checking `row.get("Sys_Budget_ID")`/the mapped `Sys_Budget_ID` value truthiness directly, not by parsing the exception message) rather than a single generic "blank-id" label that would misdescribe the non-numeric case. Splits remaining ids into existing/deleted/missing via the two query helpers above, and builds `(existing_rows, missing_rows)` — `existing_rows` have an added `"OBE"` key, serialized as `"True"`/`"False"` when `is_obe` is set and `""` (empty string, not the literal text `"None"`) when `is_obe` is `None` (see Decision 7). Logs summary counts (total, existing, deleted-dropped, missing-unmatched-id, missing-blank-id, missing-non-numeric-id).
-  - `write_rows_csv(path: str, rows: list[dict], headers: list[str]) -> None` — thin `csv.DictWriter` wrapper.
-  - `run(input_path: str, existing_output_path: str, missing_output_path: str, session: Session, config) -> None` — calls `get_csv(input_path, config, dialect="excel-tab")` to get a `csv.DictReader`, reads `reader.fieldnames` immediately (before consuming any rows) and compares it **exactly** (`reader.fieldnames == EXPECTED_HEADERS`, not a set comparison — order matters too) against `EXPECTED_HEADERS`, raising/logging a clear error and stopping on any mismatch. Only after that check passes does it consume the rows (`list(reader)`), call `classify_budget_lines`, and write both output files. Note: a trailing tab in the real export would produce a `None` entry in `reader.fieldnames` (an extra, unnamed column), which this exact-match check correctly rejects rather than silently misaligning columns — that's desired fail-fast behavior, not a bug to work around.
-- `data_tools/src/compare_prod_to_maps_budget_lines/main.py` — CLI entrypoint mirroring `load_data.py`'s boilerplate (dotenv load, loguru setup) but with its own `click.command()`:
-  - `--env`
-  - `--input-file` (path or Azure blob URL, passed to `get_csv`)
-  - `--existing-output` (default `existing_budget_lines.csv`)
-  - `--missing-output` (default `missing_budget_lines.csv`)
-  - Mirrors `load_data.py`'s connection setup exactly (`db_engine, _ = init_db_from_config(script_config)` then `Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))`, used as `with Session() as session: run(...)`) — **no** `setup_triggers`, **no** `get_or_create_sys_user`, **no** `session.commit()` anywhere (read-only tool).
-- `data_tools/test_csv/compare_prod_to_maps_budget_lines_sample.tsv` — fixture file for tests (5 rows, see Testing Strategy).
+  - `write_rows_csv(path: str, rows: list[dict], headers: list[str]) -> None` — thin `csv.DictWriter` wrapper. Opens the output file with `newline=""` (per Python's `csv` module docs — omitting it can insert stray `\r` on Windows and mishandle embedded newlines in quoted multi-line field values); relies on `csv.DictWriter`'s default `QUOTE_MINIMAL` quoting to correctly escape any embedded commas/quotes/newlines in free-text columns (`Comments`, `Line Desc`, `Change Reason(s)`) without extra configuration.
+  - `run(input_path: str, existing_output_path: str, missing_output_path: str, session: Session, config) -> None` — calls `get_csv(input_path, config, dialect="excel-tab")` to get a `csv.DictReader`, reads `reader.fieldnames` immediately (before consuming any rows) and compares it **exactly** (`reader.fieldnames == EXPECTED_HEADERS`, not a set comparison — order matters too) against `EXPECTED_HEADERS`, raising/logging a clear error and stopping on any mismatch. Only after that check passes does it consume the rows (`list(reader)`), call `classify_budget_lines`, and write both output files. Note: a trailing tab in the real export would produce a `None` entry in `reader.fieldnames` (an extra, unnamed column), which this exact-match check correctly rejects rather than silently misaligning columns — that's desired fail-fast behavior, not a bug to work around. A header-only file (zero data rows) still passes this check and produces two headers-only output CSVs — `list(reader)` on a fully empty file (no header at all) yields `fieldnames=None`, which fails the equality check cleanly rather than raising deeper in the function.
+  - CLI: `click.command()` with `--env`, `--input-file` (path or Azure blob URL, passed to `get_csv`), `--existing-output` (default `existing_budget_lines.csv`), `--missing-output` (default `missing_budget_lines.csv`). Mirrors `load_data.py`'s connection setup exactly (`db_engine, _ = init_db_from_config(script_config)` then `Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))`, used as `with Session() as session: run(...)`) — **no** `setup_triggers`, **no** `get_or_create_sys_user`, **no** `session.commit()` anywhere (read-only tool).
+- `data_tools/test_csv/compare_prod_to_maps_budget_lines_sample.tsv` — fixture file for tests (see Testing Strategy for row count/contents).
 - `data_tools/tests/compare_prod_to_maps_budget_lines/__init__.py`
 - `data_tools/tests/compare_prod_to_maps_budget_lines/test_compare_prod_to_maps_budget_lines.py`
 
@@ -252,7 +259,7 @@ Output rows are built from the **raw `DictReader` row dict** (original header ke
 
 ### Functional Validation
 - [ ] Script runs end-to-end against the sample fixture TSV with `--env pytest_data_tools` (or equivalent) and produces both CSVs with expected content.
-- [ ] No rows are ever written/committed to the DB by this script (read-only session; confirm no `session.commit()` calls exist in the new module).
+- [ ] No rows are ever written/committed to or deleted from the DB by this script (read-only session; confirm zero `session.delete(...)`, `session.commit()`, `session.flush()`, or raw `DELETE`/`UPDATE`/`INSERT` calls exist in the new module — see Critical Constraint).
 
 ## Risks and Mitigations
 
@@ -265,6 +272,7 @@ Output rows are built from the **raw `DictReader` row dict** (original header ke
 | MAPS export's real header row doesn't exactly match the 19 expected names (casing, extra whitespace, reordering) | Silent column mis-mapping | Medium | `run()` validates the input header against `EXPECTED_HEADERS` and fails fast with a clear error instead of proceeding |
 | Very large export → huge `IN (...)` clause | Query failure or slowness | Medium | Chunk id lookups (~1000 per batch) in both `get_existing_bli_obe_map` and `get_deleted_bli_ids` |
 | Multiple MAPS rows share one `Sys_Budget_ID` (change-history rows) | None expected — each row classified independently but consistently since keyed on the same id | N/A | No dedup; call out explicitly in code comments/tests so it isn't "fixed" by a future reader |
+| A future edit (e.g. "auto-clean up deleted rows while we're at it") adds a `session.delete(...)`/commit call to this script | Script would start deleting/mutating production data — directly contradicts its read-only reporting purpose | Low today, but the risk this constraint guards against | See Critical Constraint at top of this document; code review must reject any PR touching this module that introduces a delete/write call; functional validation explicitly greps for these calls |
 
 ## Notes
 
