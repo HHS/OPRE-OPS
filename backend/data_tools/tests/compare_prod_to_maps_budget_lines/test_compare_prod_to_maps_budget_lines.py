@@ -7,6 +7,7 @@ from sqlalchemy.inspection import inspect as sa_inspect
 
 from data_tools.src.compare_prod_to_maps_budget_lines import (
     EXPECTED_HEADERS,
+    LEGACY_ONLY_COLUMNS,
     OBE_COLUMN,
     _read_input_file,
     chunked,
@@ -320,7 +321,7 @@ def test_classify_budget_lines_full_scenario(db_with_bli_data):
     assert set(existing_by_id.keys()) == {"15000", "15001", "15002", "15006"}
     assert existing_by_id["15000"][OBE_COLUMN] == "False"
     assert existing_by_id["15001"][OBE_COLUMN] == "True"
-    assert existing_by_id["15002"][OBE_COLUMN] == ""
+    assert existing_by_id["15002"][OBE_COLUMN] == "False"
     assert existing_by_id["15006"][OBE_COLUMN] == "False"
     # Original TSV fields must survive untouched alongside the added OBE column.
     assert existing_by_id["15001"]["Comments"] == "Updated, see notes"
@@ -356,15 +357,99 @@ def test_run_end_to_end_writes_expected_csvs(db_with_bli_data, tmp_path):
 
     by_id = {r["Sys_Budget_ID"]: r for r in existing_rows}
     assert by_id["15001"]["Comments"] == "Updated, see notes"
-    assert by_id["15002"][OBE_COLUMN] == ""
+    assert by_id["15002"][OBE_COLUMN] == "False"
 
 
-def test_run_raises_on_header_mismatch(db_with_bli_data, tmp_path):
+def test_run_exclude_legacy_columns_drops_them_from_both_outputs(db_with_bli_data, tmp_path):
+    existing_path = tmp_path / "existing.csv"
+    missing_path = tmp_path / "missing.csv"
+
+    class _FakeConfig:
+        pass
+
+    run(
+        SAMPLE_TSV_PATH,
+        str(existing_path),
+        str(missing_path),
+        db_with_bli_data,
+        _FakeConfig(),
+        exclude_legacy_columns=True,
+    )
+
+    expected_headers = [h for h in EXPECTED_HEADERS if h not in LEGACY_ONLY_COLUMNS]
+
+    with open(existing_path, newline="") as f:
+        existing_reader = csv.DictReader(f)
+        assert existing_reader.fieldnames == expected_headers + [OBE_COLUMN]
+        existing_rows = list(existing_reader)
+
+    with open(missing_path, newline="") as f:
+        missing_reader = csv.DictReader(f)
+        assert missing_reader.fieldnames == expected_headers
+        missing_rows = list(missing_reader)
+
+    assert {r["Sys_Budget_ID"] for r in existing_rows} == {"15000", "15001", "15002", "15006"}
+    assert {r["Sys_Budget_ID"] for r in missing_rows} == {"", "ABC", "99999"}
+    for row in existing_rows + missing_rows:
+        assert not (set(row) & set(LEGACY_ONLY_COLUMNS))
+
+
+def test_run_raises_when_sys_budget_id_column_missing(db_with_bli_data, tmp_path):
     bad_input = tmp_path / "bad.tsv"
-    bad_input.write_text("Sys_Budget_ID\tComments\n15000\tsomething\n")
+    bad_input.write_text("Comments\tStatus\nsomething\tPlanned\n")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Sys_Budget_ID"):
         run(str(bad_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
+
+
+def test_run_accepts_reduced_column_export_with_unrecognized_and_blank_columns(db_with_bli_data, tmp_path):
+    """A newer MAPS export dropped several original columns (e.g. 'Effective Date',
+    'Requested by'), added a column not in EXPECTED_HEADERS ('PROC Fee Rate'), and had two
+    stray trailing tabs producing blank column names. None of that should be fatal as long as
+    Sys_Budget_ID is present: missing columns come out blank, the unrecognized column is
+    dropped, and the blank columns are ignored rather than corrupting the row data."""
+    reduced_input = tmp_path / "reduced.tsv"
+    reduced_headers = [
+        "Sys_Budget_ID",
+        "Fiscal Year",
+        "CAN",
+        "Project Title",
+        "CIG Name",
+        "CIG Type",
+        "Line Desc",
+        "Date Needed",
+        "Amount",
+        "PROC Fee Rate",
+        "PROC Fee Amount",
+        "Status",
+        "Comments",
+    ]
+    reduced_row = ["15000", "2025", "G99AB14", "A Project", "A CIG", "Contract", "A line", "1/1/2025", "15203.08"]
+    reduced_row += ["5.5", "100.00", "Planned", "A comment"]
+    header = "\t".join(reduced_headers) + "\t\t\n"
+    data_row = "\t".join(reduced_row) + "\t\t\n"
+    reduced_input.write_text(header + data_row)
+
+    existing_path = tmp_path / "existing.csv"
+    missing_path = tmp_path / "missing.csv"
+    run(str(reduced_input), str(existing_path), str(missing_path), db_with_bli_data, object())
+
+    with open(existing_path, newline="") as f:
+        existing_reader = csv.DictReader(f)
+        assert existing_reader.fieldnames == EXPECTED_HEADERS + [OBE_COLUMN]
+        rows = list(existing_reader)
+
+    assert [r["Sys_Budget_ID"] for r in rows] == ["15000"]
+    row = rows[0]
+    assert row["Amount"] == "15203.08"
+    assert row["Comments"] == "A comment"
+    assert row["Status"] == "Planned"
+    assert row[OBE_COLUMN] == "False"
+    # Columns absent from this export's header must come out blank, not raise or misalign.
+    assert row["Effective Date"] == ""
+    assert row["Requested by"] == ""
+    # "PROC Fee Rate" isn't one of EXPECTED_HEADERS, so it's read but never written out.
+    assert "PROC Fee Rate" not in row
 
 
 def test_run_handles_utf8_bom_header_transparently(db_with_bli_data, tmp_path):

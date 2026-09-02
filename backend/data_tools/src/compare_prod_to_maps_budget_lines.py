@@ -80,6 +80,24 @@ EXPECTED_HEADERS = [
 
 OBE_COLUMN = "OBE"
 
+# Columns that only ever appeared in the original (older) MAPS export format. Newer exports
+# don't carry these, so when --exclude-legacy-columns is passed they're dropped from both
+# output files instead of being written out blank on every row.
+LEGACY_ONLY_COLUMNS = [
+    "Effective Date",
+    "Requested by",
+    "How Requested",
+    "Change Reason(s)",
+    "Who Updated",
+    "New (N) vs. Continuing (C)",
+    "Applied Research (AR) vs. Evaluative (EV)",
+]
+
+# The only column this script actually depends on -- everything else is read best-effort and
+# passed through to the output CSVs. MAPS export column sets have drifted over time (columns
+# added/removed/renamed), so we no longer require an exact match against EXPECTED_HEADERS.
+REQUIRED_HEADER = "Sys_Budget_ID"
+
 
 def _normalize_sys_budget_id(raw_id: Optional[str]) -> Optional[str]:
     """Strip Excel-style thousands separators (e.g. "1,234" -> "1234") before handing off to
@@ -134,7 +152,9 @@ def get_existing_bli_obe_map(session: Session, ids: set[int]) -> dict[int, Optio
     """Return {id: is_obe} for every id in `ids` that currently exists as a live BudgetLineItem.
 
     is_obe is nullable on BudgetLineItem (pre-migration rows were never backfilled), so a live
-    id can map to None -- distinct from an explicit False. Callers must not coerce None to False.
+    id can map to None here, distinct from an explicit False. _serialize_obe is responsible for
+    coercing that None to "False" for output -- this function itself must keep returning the raw
+    nullable value so that distinction is still visible to any other caller.
     """
     result: dict[int, Optional[bool]] = {}
     for chunk in chunked(sorted(ids), CHUNK_SIZE):
@@ -184,9 +204,7 @@ def get_deleted_bli_ids(session: Session, ids: set[int]) -> set[int]:
 
 
 def _serialize_obe(is_obe: Optional[bool]) -> str:
-    """True/False render literally; None (never evaluated) renders as empty, not "None"/"False"."""
-    if is_obe is None:
-        return ""
+    """None (never evaluated, e.g. a pre-migration row never backfilled) is treated as not-OBE."""
     return "True" if is_obe else "False"
 
 
@@ -279,39 +297,60 @@ def run(
     missing_output_path: str,
     session: Session,
     config: DataToolsConfig,
+    exclude_legacy_columns: bool = False,
 ) -> None:
-    """Read the MAPS export, classify every row, and write the two output CSVs."""
+    """Read the MAPS export, classify every row, and write the two output CSVs.
+
+    exclude_legacy_columns: when True, drop LEGACY_ONLY_COLUMNS from both output files' headers
+    instead of writing them out blank on every row.
+    """
     fieldnames, rows = _read_input_file(input_path, config)
 
     if fieldnames is None:
         raise ValueError("Input file is empty or could not be read.")
 
     stripped_fieldnames = [fn.strip() if isinstance(fn, str) else fn for fn in fieldnames]
+    non_blank_fieldnames = [fn for fn in stripped_fieldnames if fn]
 
-    if stripped_fieldnames != EXPECTED_HEADERS:
-        raise ValueError(
-            "Input file header does not match the expected MAPS export columns.\n"
-            f"Expected: {EXPECTED_HEADERS}\nGot: {fieldnames}"
-        )
+    if REQUIRED_HEADER not in non_blank_fieldnames:
+        raise ValueError(f"Input file header is missing the required {REQUIRED_HEADER!r} column.\nGot: {fieldnames}")
 
-    if stripped_fieldnames != fieldnames:
-        # A column name has stray leading/trailing whitespace (a common Excel/hand-edited-export
-        # quirk) but otherwise matches. Re-key every row to the canonical header names -- rows
-        # still carry the ORIGINAL (whitespace-containing) keys at this point, so leaving them
-        # as-is would make e.g. row.get("Amount") silently return None downstream, dropping that
-        # column's data instead of raising.
+    missing_expected = [h for h in EXPECTED_HEADERS if h not in non_blank_fieldnames]
+    if missing_expected:
         logger.warning(
-            "Input file header has leading/trailing whitespace on one or more column names "
-            f"(raw: {fieldnames}); normalizing to the canonical column names before processing."
+            "Input file header is missing columns from the original MAPS export format; "
+            f"these will be blank in the output: {missing_expected}"
         )
-        rows = [dict(zip(EXPECTED_HEADERS, row.values(), strict=False)) for row in rows]
+
+    unrecognized = [fn for fn in non_blank_fieldnames if fn not in EXPECTED_HEADERS]
+    if unrecognized:
+        logger.warning(
+            f"Input file header has columns not in the original MAPS export format; ignoring them: {unrecognized}"
+        )
+
+    if stripped_fieldnames != fieldnames or len(non_blank_fieldnames) != len(fieldnames):
+        # Stray leading/trailing whitespace on a column name, and/or blank trailing columns from
+        # an extra tab in the export. Re-key every row to the stripped, non-blank header names --
+        # rows still carry the ORIGINAL keys at this point, so leaving them as-is would make e.g.
+        # row.get("Amount") silently return None downstream if "Amount " had trailing whitespace.
+        logger.warning(
+            f"Input file header has stray whitespace or blank columns (raw: {fieldnames}); "
+            "normalizing before processing."
+        )
+        field_map = [(raw, name) for raw, name in zip(fieldnames, stripped_fieldnames, strict=True) if name]
+        rows = [{name: row.get(raw) for raw, name in field_map} for row in rows]
 
     logger.info(f"Read {len(rows)} rows from {input_path}.")
 
     existing_rows, missing_rows = classify_budget_lines(session, rows)
 
-    write_rows_csv(existing_output_path, existing_rows, EXPECTED_HEADERS + [OBE_COLUMN])
-    write_rows_csv(missing_output_path, missing_rows, EXPECTED_HEADERS)
+    output_headers = EXPECTED_HEADERS
+    if exclude_legacy_columns:
+        output_headers = [h for h in EXPECTED_HEADERS if h not in LEGACY_ONLY_COLUMNS]
+        logger.info(f"Excluding legacy-only columns from output: {LEGACY_ONLY_COLUMNS}")
+
+    write_rows_csv(existing_output_path, existing_rows, output_headers + [OBE_COLUMN])
+    write_rows_csv(missing_output_path, missing_rows, output_headers)
 
     logger.info(f"Wrote {len(existing_rows)} rows to {existing_output_path}.")
     logger.info(f"Wrote {len(missing_rows)} rows to {missing_output_path}.")
@@ -332,7 +371,16 @@ def run(
     show_default=True,
     help="Output CSV path for budget lines with no matching BudgetLineItem in OPS.",
 )
-def main(env: str, input_file: str, existing_output: str, missing_output: str):
+@click.option(
+    "--exclude-legacy-columns",
+    is_flag=True,
+    default=False,
+    help=(
+        "Drop columns only present in the original MAPS export format from both output files "
+        f"(instead of writing them out blank): {', '.join(LEGACY_ONLY_COLUMNS)}."
+    ),
+)
+def main(env: str, input_file: str, existing_output: str, missing_output: str, exclude_legacy_columns: bool):
     """Compare a legacy MAPS budget-line export against OPS and split it into existing/missing CSVs."""
     logger.info(f"Environment: {env}")
     logger.info(f"Input file: {input_file}")
@@ -347,7 +395,7 @@ def main(env: str, input_file: str, existing_output: str, missing_output: str):
     session_factory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))
 
     with session_factory() as session:
-        run(input_file, existing_output, missing_output, session, script_config)
+        run(input_file, existing_output, missing_output, session, script_config, exclude_legacy_columns)
 
     logger.info("Comparison complete.")
 
