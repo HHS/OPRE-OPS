@@ -9,7 +9,9 @@ import {
     getPartnerType,
     getFundingMethod,
     isFieldVisible,
-    isNotDevelopedYet
+    isNotDevelopedYet,
+    getEditDisabledTooltip,
+    EDIT_DISABLED_TOOLTIPS
 } from "./agreement.helpers";
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
@@ -664,5 +666,58 @@ describe("cleanAgreementForApi", () => {
         };
         const { cleanData } = cleanAgreementForApi(data);
         expect(cleanData).not.toHaveProperty("services_components");
+    });
+});
+
+describe("getEditDisabledTooltip", () => {
+    it("returns the team-member message when the user cannot edit", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: false })).toBe(EDIT_DISABLED_TOOLTIPS.notTeamMember);
+    });
+
+    it("prioritizes the team-member message over every other reason", () => {
+        expect(
+            getEditDisabledTooltip({
+                canUserEdit: false,
+                isAgreementNotDeveloped: true,
+                isPreAwardInReview: true,
+                isAwardInReview: true,
+                isPostPreAwardLocked: true,
+                allBudgetLinesInReview: true
+            })
+        ).toBe(EDIT_DISABLED_TOOLTIPS.notTeamMember);
+    });
+
+    it("returns the not-developed message for a team member on an undeveloped agreement", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true, isAgreementNotDeveloped: true })).toBe(
+            EDIT_DISABLED_TOOLTIPS.notDeveloped
+        );
+    });
+
+    it("returns the pre-award message when pre-award is in review", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true, isPreAwardInReview: true })).toBe(
+            EDIT_DISABLED_TOOLTIPS.preAwardInReview
+        );
+    });
+
+    it("returns the award message when award is in review", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true, isAwardInReview: true })).toBe(
+            EDIT_DISABLED_TOOLTIPS.awardInReview
+        );
+    });
+
+    it("returns the locked message when post-pre-award locked", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true, isPostPreAwardLocked: true })).toBe(
+            EDIT_DISABLED_TOOLTIPS.postPreAwardLocked
+        );
+    });
+
+    it("returns the all-budget-lines-in-review message when only that flag is set", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true, allBudgetLinesInReview: true })).toBe(
+            EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview
+        );
+    });
+
+    it("falls back to the team-member message when no reason flag is set", () => {
+        expect(getEditDisabledTooltip({ canUserEdit: true })).toBe(EDIT_DISABLED_TOOLTIPS.notTeamMember);
     });
 });

@@ -1,5 +1,6 @@
 import { faPen, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getEditDisabledTooltip } from "../../helpers/agreement.helpers";
 import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
@@ -9,7 +10,10 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {string} [props.details] - The details to display.
  * @param {boolean} props.includeDrafts - Whether the edit mode is on.
  * @param {Function} props.setIncludeDrafts - The function to set the edit mode.
- * @param {boolean} props.isEditable - Whether the agreement is editable.
+ * @param {boolean} props.isEditable - Whether the agreement is editable (enable source of truth for the button).
+ * @param {boolean} [props.canUserEdit] - Whether the user has base edit permission (superuser or team member).
+ * @param {boolean} [props.isAgreementNotDeveloped] - Whether the agreement type is not developed yet.
+ * @param {boolean} [props.allBudgetLinesInReview] - Whether all budget lines are in review.
  * @param {boolean} [props.isEditMode] - Whether the edit mode is on.
  * @param {Function} [props.setIsEditMode] - The function to set the edit mode.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
@@ -23,24 +27,25 @@ export const AgreementBudgetLinesHeader = ({
     includeDrafts,
     setIncludeDrafts,
     isEditable,
+    canUserEdit = false,
+    isAgreementNotDeveloped = false,
+    allBudgetLinesInReview = false,
     isEditMode = false,
     setIsEditMode = () => {},
     isPreAwardInReview = false,
     isAwardInReview = false,
     isPostPreAwardLocked = false
 }) => {
-    // Editing is disabled when the agreement is in review/locked, consistent with AgreementDetailHeader.
-    const isEditDisabled = isPreAwardInReview || isAwardInReview || isPostPreAwardLocked;
-    let editDisabledTooltipLabel;
-    if (isPreAwardInReview) {
-        editDisabledTooltipLabel =
-            "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
-    } else if (isAwardInReview) {
-        editDisabledTooltipLabel =
-            "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
-    } else {
-        editDisabledTooltipLabel = "This agreement has completed Pre-Award Approval and is locked from further edits.";
-    }
+    // `isEditable` (computed by the parent) is the single source of truth for whether the button
+    // is enabled. When it is false, the button is shown disabled with a tooltip explaining why.
+    const editDisabledTooltipLabel = getEditDisabledTooltip({
+        canUserEdit,
+        isAgreementNotDeveloped,
+        isPreAwardInReview,
+        isAwardInReview,
+        isPostPreAwardLocked,
+        allBudgetLinesInReview
+    });
     return (
         <>
             <div className="display-flex flex-justify flex-align-center margin-top-6">
@@ -67,8 +72,8 @@ export const AgreementBudgetLinesHeader = ({
                         <span className="text-primary">Include Drafts</span>
                     </button>
 
-                    {/* ENABLED EDIT BUTTON */}
-                    {!isEditMode && isEditable && !isEditDisabled && (
+                    {/* ENABLED EDIT BUTTON - when not in edit mode and editing is allowed */}
+                    {!isEditMode && isEditable && (
                         <button
                             type="button"
                             id="edit"
@@ -86,17 +91,19 @@ export const AgreementBudgetLinesHeader = ({
                             <span className="text-primary">Edit</span>
                         </button>
                     )}
-                    {/* DISABLED EDIT BUTTON */}
-                    {!isEditMode && isEditable && isEditDisabled && (
+                    {/* DISABLED EDIT BUTTON - always shown (with tooltip) when editing is not allowed */}
+                    {!isEditMode && !isEditable && (
                         <Tooltip
                             label={editDisabledTooltipLabel}
                             className="display-flex flex-align-baseline"
                         >
                             <span
                                 id="edit-disabled"
-                                className="usa-button--unstyled usa-button--disabled display-flex flex-align-baseline"
+                                className="hover:text-underline cursor-not-allowed text-disabled display-flex flex-align-baseline"
                                 aria-disabled="true"
                                 data-cy="edit-disabled"
+                                role="button"
+                                tabIndex={0}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
