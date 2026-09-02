@@ -38,11 +38,27 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
     }
 };
 
-const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
+// Sentinel comparable value: rows returning this are always ordered last, regardless of
+// sort direction (see useSortData). Only the CLIN case uses it, for missing/unassigned CLINs.
+const SORT_TO_END = Symbol("sortToEnd");
+
+const getBLIDiffComparableValue = (budgetLine, condition, sortContext = 0) => {
+    // sortContext is either a number (totalFunding, used by the PERCENT_* cases) or an object
+    // carrying extra context such as { clinAssignments } for CLIN sorting.
+    const totalFunding = typeof sortContext === "number" ? sortContext : 0;
+    const clinAssignments = typeof sortContext === "object" && sortContext ? (sortContext.clinAssignments ?? {}) : {};
     switch (condition) {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER: {
             let bliLabel = BLILabel(budgetLine);
             return bliLabel == "TBD" ? 0 : bliLabel;
+        }
+        case tableSortCodes.budgetLineCodes.CLIN: {
+            // Prefer a locally-assigned (possibly unsaved) CLIN over the persisted backend value so
+            // sorting matches what the row displays. Draft/unassigned rows have no CLIN and always
+            // sink to the end (SORT_TO_END), regardless of ascending/descending.
+            const effectiveClin = clinAssignments[budgetLine.id] ?? budgetLine?.clin?.number;
+            const clinNumber = Number(effectiveClin);
+            return effectiveClin == null || Number.isNaN(clinNumber) ? SORT_TO_END : clinNumber;
         }
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement?.name ?? NO_DATA;
@@ -150,6 +166,11 @@ export const useSortData = (items, descending, sortCondition, sortType, sortCont
     return sortableItems.sort((a, b) => {
         const aVal = getComparableValue(a, sortCondition, sortContext);
         const bVal = getComparableValue(b, sortCondition, sortContext);
+        // SORT_TO_END values are pinned to the bottom in both sort directions.
+        if (aVal === SORT_TO_END || bVal === SORT_TO_END) {
+            if (aVal === bVal) return 0;
+            return aVal === SORT_TO_END ? 1 : -1;
+        }
         return compareRows(aVal, bVal, descending);
     });
 };

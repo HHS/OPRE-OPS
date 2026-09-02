@@ -10,7 +10,7 @@ export const BLI_REVIEW_HEADERS = {
     STATUS: "Status"
 };
 export const BUDGET_LINE_TABLE_HEADERS_LIST = [
-    { heading: BLI_REVIEW_HEADERS.CLIN, value: "" },
+    { heading: BLI_REVIEW_HEADERS.CLIN, value: tableSortCodes.budgetLineCodes.CLIN },
     { heading: BLI_REVIEW_HEADERS.OBLIGATE_BY, value: tableSortCodes.budgetLineCodes.OBLIGATE_BY },
     { heading: BLI_REVIEW_HEADERS.FISCAL_YEAR, value: tableSortCodes.budgetLineCodes.FISCAL_YEAR },
     { heading: BLI_REVIEW_HEADERS.CAN, value: tableSortCodes.budgetLineCodes.CAN_NUMBER },
