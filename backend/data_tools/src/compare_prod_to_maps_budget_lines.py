@@ -38,7 +38,8 @@ from models import BudgetLineItem
 load_dotenv(os.getenv("ENV_FILE", ".env"))
 
 os.environ["TZ"] = "UTC"
-time.tzset()
+if hasattr(time, "tzset"):
+    time.tzset()
 
 log_format = (
     "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
@@ -80,6 +81,19 @@ EXPECTED_HEADERS = [
 OBE_COLUMN = "OBE"
 
 
+def _normalize_sys_budget_id(raw_id: Optional[str]) -> Optional[str]:
+    """Strip Excel-style thousands separators (e.g. "1,234" -> "1234") before handing off to
+    the shared dataclass's int(float(...)) parsing, which already tolerates surrounding
+    whitespace, leading zeros, and a trailing ".0" but chokes on embedded commas. Scoped to
+    this script rather than the shared dataclass itself: this specifically legacy MAPS export
+    is the one plausibly re-saved through Excel, whereas load_remove_budget_lines's own input
+    has presumably only ever seen clean integers.
+    """
+    if isinstance(raw_id, str):
+        return raw_id.replace(",", "")
+    return raw_id
+
+
 def create_compare_budget_line_data(row: dict) -> BudgetLineItemData:
     """Map a raw TSV row (keyed by the original MAPS header text) to the reused dataclass.
 
@@ -87,7 +101,7 @@ def create_compare_budget_line_data(row: dict) -> BudgetLineItemData:
     blank/falsy, or if it's truthy but not parseable as an int.
     """
     return BudgetLineItemData(
-        SYS_BUDGET_ID=row.get("Sys_Budget_ID"),
+        SYS_BUDGET_ID=_normalize_sys_budget_id(row.get("Sys_Budget_ID")),
         EFFECTIVE_DATE=row.get("Effective Date"),
         REQUESTED_BY=row.get("Requested by"),
         HOW_REQUESTED=row.get("How Requested"),
@@ -238,6 +252,27 @@ def write_rows_csv(path: str, rows: list[dict], headers: list[str]) -> None:
         writer.writerows(rows)
 
 
+def _read_input_file(input_path: str, config: DataToolsConfig) -> tuple[Optional[list[str]], list[dict]]:
+    """Read `input_path` (local path or Azure blob URL) and return (fieldnames, rows).
+
+    get_csv() reads local files fully into memory up front (closing the file handle
+    immediately) and strips a leading UTF-8 BOM if present, so no BOM/file-handle handling is
+    needed here. A genuinely undecodable byte still raises UnicodeDecodeError, which is
+    translated into an actionable ValueError.
+    """
+    try:
+        reader: DictReader = get_csv(input_path, config, dialect="excel-tab")
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+    except UnicodeDecodeError as err:
+        raise ValueError(
+            f"Could not read the input file as UTF-8: {err}\n"
+            "The file may be saved in a different encoding (e.g. Windows-1252) -- "
+            "re-save it as UTF-8 and try again."
+        ) from err
+    return fieldnames, rows
+
+
 def run(
     input_path: str,
     existing_output_path: str,
@@ -246,29 +281,30 @@ def run(
     config: DataToolsConfig,
 ) -> None:
     """Read the MAPS export, classify every row, and write the two output CSVs."""
-    reader: DictReader = get_csv(input_path, config, dialect="excel-tab")
+    fieldnames, rows = _read_input_file(input_path, config)
 
-    try:
-        fieldnames = reader.fieldnames
-        rows = list(reader)
-    except UnicodeDecodeError as err:
-        raise ValueError(
-            f"Could not read {input_path} as UTF-8: {err}\n"
-            "The file may be saved in a different encoding (e.g. Windows-1252) -- "
-            "re-save it as UTF-8 and try again."
-        ) from err
+    if fieldnames is None:
+        raise ValueError("Input file is empty or could not be read.")
 
-    if fieldnames != EXPECTED_HEADERS:
-        bom_hint = ""
-        if fieldnames and fieldnames[0] and fieldnames[0].startswith("﻿"):
-            bom_hint = (
-                "\nThe first column name starts with a UTF-8 BOM (\\ufeff) -- "
-                're-save the file as "UTF-8" without a BOM and try again.'
-            )
+    stripped_fieldnames = [fn.strip() if isinstance(fn, str) else fn for fn in fieldnames]
+
+    if stripped_fieldnames != EXPECTED_HEADERS:
         raise ValueError(
-            "Input file header does not match the expected MAPS export columns."
-            f"{bom_hint}\nExpected: {EXPECTED_HEADERS}\nGot: {fieldnames}"
+            "Input file header does not match the expected MAPS export columns.\n"
+            f"Expected: {EXPECTED_HEADERS}\nGot: {fieldnames}"
         )
+
+    if stripped_fieldnames != fieldnames:
+        # A column name has stray leading/trailing whitespace (a common Excel/hand-edited-export
+        # quirk) but otherwise matches. Re-key every row to the canonical header names -- rows
+        # still carry the ORIGINAL (whitespace-containing) keys at this point, so leaving them
+        # as-is would make e.g. row.get("Amount") silently return None downstream, dropping that
+        # column's data instead of raising.
+        logger.warning(
+            "Input file header has leading/trailing whitespace on one or more column names "
+            f"(raw: {fieldnames}); normalizing to the canonical column names before processing."
+        )
+        rows = [dict(zip(EXPECTED_HEADERS, row.values(), strict=False)) for row in rows]
 
     logger.info(f"Read {len(rows)} rows from {input_path}.")
 

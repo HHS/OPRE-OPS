@@ -39,7 +39,7 @@ class BudgetLineItemData:
         if not self.SYS_BUDGET_ID:
             raise ValueError("SYS_BUDGET_ID is required.")
 
-        self.SYS_BUDGET_ID = int(self.SYS_BUDGET_ID) if self.SYS_BUDGET_ID else None
+        self.SYS_BUDGET_ID = int(float(self.SYS_BUDGET_ID)) if self.SYS_BUDGET_ID else None
         self.EFFECTIVE_DATE = str(self.EFFECTIVE_DATE) if self.EFFECTIVE_DATE else None
         self.REQUESTED_BY = str(self.REQUESTED_BY) if self.REQUESTED_BY else None
         self.HOW_REQUESTED = str(self.HOW_REQUESTED) if self.HOW_REQUESTED else None

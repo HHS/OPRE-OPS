@@ -8,6 +8,7 @@ from sqlalchemy.inspection import inspect as sa_inspect
 from data_tools.src.compare_prod_to_maps_budget_lines import (
     EXPECTED_HEADERS,
     OBE_COLUMN,
+    _read_input_file,
     chunked,
     classify_budget_lines,
     create_compare_budget_line_data,
@@ -102,6 +103,21 @@ def test_create_compare_budget_line_data_raises_on_blank_id():
 def test_create_compare_budget_line_data_raises_on_non_numeric_id():
     with pytest.raises(ValueError):
         create_compare_budget_line_data({"Sys_Budget_ID": "ABC"})
+
+
+def test_create_compare_budget_line_data_accepts_excel_style_float_id():
+    """A genuinely valid id exported by Excel as e.g. '15000.0' must parse successfully, not
+    get caught as "non-numeric" and misrouted to missing-lines without ever being checked
+    against the database."""
+    data = create_compare_budget_line_data({"Sys_Budget_ID": "15000.0"})
+    assert data.SYS_BUDGET_ID == 15000
+
+
+def test_create_compare_budget_line_data_accepts_excel_style_thousands_separator():
+    """Excel can also render an id with a thousands separator (e.g. '1,234'); float() alone
+    rejects that just as int() does, so it must be stripped before parsing."""
+    data = create_compare_budget_line_data({"Sys_Budget_ID": "1,234"})
+    assert data.SYS_BUDGET_ID == 1234
 
 
 def test_chunked_splits_into_correctly_sized_batches():
@@ -351,12 +367,48 @@ def test_run_raises_on_header_mismatch(db_with_bli_data, tmp_path):
         run(str(bad_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
 
 
-def test_run_gives_actionable_error_on_utf8_bom_header(db_with_bli_data, tmp_path):
+def test_run_handles_utf8_bom_header_transparently(db_with_bli_data, tmp_path):
+    """get_csv() strips a leading UTF-8 BOM (encoding="utf-8-sig"), so a BOM'd export -- a
+    common Windows/Excel artifact -- must parse and classify correctly, not just fail with a
+    clearer error."""
+    bom_row = {**{h: "" for h in EXPECTED_HEADERS}, "Sys_Budget_ID": "15000"}
     bom_input = tmp_path / "bom.tsv"
-    bom_input.write_text("﻿" + "\t".join(EXPECTED_HEADERS) + "\n15000\n", encoding="utf-8")
+    with open(bom_input, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=EXPECTED_HEADERS, dialect="excel-tab")
+        writer.writeheader()
+        writer.writerow(bom_row)
 
-    with pytest.raises(ValueError, match="BOM"):
-        run(str(bom_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
+    existing_path = tmp_path / "existing.csv"
+    missing_path = tmp_path / "missing.csv"
+    run(str(bom_input), str(existing_path), str(missing_path), db_with_bli_data, object())
+
+    with open(existing_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert [r["Sys_Budget_ID"] for r in rows] == ["15000"]
+    assert rows[0][OBE_COLUMN] == "False"
+
+
+def test_run_tolerates_whitespace_padded_header_without_dropping_column_data(db_with_bli_data, tmp_path):
+    """A real-world MAPS export had ' Amount ' (leading/trailing space) instead of 'Amount' --
+    everything else matched exactly. The header check must tolerate that, AND the row must
+    still be re-keyed to the canonical column names, or row.get("Amount") downstream would
+    silently return None and the Amount column would come out blank instead of raising or
+    preserving the real value."""
+    padded_headers = [" Amount " if h == "Amount" else h for h in EXPECTED_HEADERS]
+    padded_input = tmp_path / "padded_header.tsv"
+    with open(padded_input, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=padded_headers, dialect="excel-tab")
+        writer.writeheader()
+        writer.writerow({**{h: "" for h in padded_headers}, "Sys_Budget_ID": "15000", " Amount ": "15203.08"})
+
+    existing_path = tmp_path / "existing.csv"
+    missing_path = tmp_path / "missing.csv"
+    run(str(padded_input), str(existing_path), str(missing_path), db_with_bli_data, object())
+
+    with open(existing_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert [r["Sys_Budget_ID"] for r in rows] == ["15000"]
+    assert rows[0]["Amount"] == "15203.08"
 
 
 def test_run_gives_actionable_error_on_non_utf8_byte(db_with_bli_data, tmp_path):
@@ -384,6 +436,45 @@ def test_run_handles_header_only_file_without_crashing(db_with_bli_data, tmp_pat
         assert csv.DictReader(f).fieldnames == EXPECTED_HEADERS
 
 
+def test_run_gives_actionable_error_on_truly_empty_file(db_with_bli_data, tmp_path):
+    """A file with zero bytes (not even a header row) must not be conflated with the generic
+    header-mismatch error -- reader.fieldnames is None in this case, distinct from a
+    header-only file (which has real fieldnames and zero data rows, tested above)."""
+    empty_input = tmp_path / "empty.tsv"
+    empty_input.write_text("")
+
+    with pytest.raises(ValueError, match="empty"):
+        run(str(empty_input), str(tmp_path / "e.csv"), str(tmp_path / "m.csv"), db_with_bli_data, object())
+
+
+def test_read_input_file_delegates_to_get_csv(monkeypatch):
+    """_read_input_file is a thin wrapper: it delegates all path handling (local vs. Azure
+    blob, BOM-stripping, file-handle closing) to the shared get_csv() helper -- it doesn't
+    duplicate any of that logic itself."""
+    import data_tools.src.compare_prod_to_maps_budget_lines as module
+
+    calls = []
+
+    class _FakeReader:
+        fieldnames = EXPECTED_HEADERS
+
+        def __iter__(self):
+            return iter([])
+
+    def fake_get_csv(path, config, dialect="excel-tab"):
+        calls.append((path, config, dialect))
+        return _FakeReader()
+
+    monkeypatch.setattr(module, "get_csv", fake_get_csv)
+
+    url = "https://example.blob.core.windows.net/container/export.tsv"
+    fieldnames, rows = _read_input_file(url, "some-config")
+
+    assert calls == [(url, "some-config", "excel-tab")]
+    assert fieldnames == EXPECTED_HEADERS
+    assert rows == []
+
+
 def test_classify_budget_lines_preserves_both_rows_for_duplicate_sys_budget_id(db_with_bli_data):
     rows = [
         {**{h: "" for h in EXPECTED_HEADERS}, "Sys_Budget_ID": "15000", "Comments": "first version"},
@@ -395,3 +486,15 @@ def test_classify_budget_lines_preserves_both_rows_for_duplicate_sys_budget_id(d
     comments = {row["Comments"] for row in existing_rows}
     assert comments == {"first version", "second version"}
     assert all(row[OBE_COLUMN] == "False" for row in existing_rows)
+
+
+def test_classify_budget_lines_matches_excel_style_float_id_against_live_bli(db_with_bli_data):
+    """Regression guard: '15000.0' must match the live BudgetLineItem id=15000, not get
+    misrouted to missing-lines as if it were non-numeric."""
+    rows = [{**{h: "" for h in EXPECTED_HEADERS}, "Sys_Budget_ID": "15000.0"}]
+    existing_rows, missing_rows = classify_budget_lines(db_with_bli_data, rows)
+
+    assert len(existing_rows) == 1
+    assert existing_rows[0]["Sys_Budget_ID"] == "15000.0"
+    assert existing_rows[0][OBE_COLUMN] == "False"
+    assert missing_rows == []

@@ -82,6 +82,14 @@ def test_create_models_no_sys_budget_id():
         )
 
 
+def test_sys_budget_id_accepts_excel_style_float_string():
+    """Excel exports commonly render integer IDs as e.g. '15000.0'; int() alone rejects that
+    (ValueError: invalid literal for int() with base 10), so parsing must go through float()
+    first."""
+    data = BudgetLineItemData(SYS_BUDGET_ID="15000.0")
+    assert data.SYS_BUDGET_ID == 15000
+
+
 @pytest.fixture()
 def db_with_data(loaded_db):
     # Create test division

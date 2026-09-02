@@ -94,8 +94,16 @@ def get_csv(csv_path: str, config: DataToolsConfig = PYTEST_CONFIG, dialect: str
         else:
             raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD.")
     else:
-        # file is local
-        return csv.DictReader(open(csv_path, "r"), dialect=dialect)
+        # file is local. Read fully into memory up front (matching the remote branches above,
+        # which already hand csv.DictReader an in-memory StringIO) so the file handle is
+        # closed immediately rather than left open for the DictReader's lifetime.
+        # encoding="utf-8-sig" transparently strips a leading UTF-8 BOM if present (a common
+        # artifact of Windows/Excel-saved exports) and is otherwise identical to "utf-8".
+        # newline="" is the csv module's documented recommendation for reading, so embedded
+        # CRLFs inside quoted fields survive untouched instead of being rewritten to LF.
+        with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
+            content = f.read()
+        return csv.DictReader(StringIO(content), dialect=dialect)
 
 
 MI_CLIENT_ID = os.getenv("MI_CLIENT_ID")
