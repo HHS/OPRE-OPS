@@ -204,7 +204,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 )}
                 {!isReadOnly && (
                     <div
-                        className="flex-align-self-end margin-bottom-1"
+                        className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"
                     >
                         {changeIcons}
