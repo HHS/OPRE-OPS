@@ -428,7 +428,7 @@ export const EDIT_DISABLED_TOOLTIPS = {
  * @returns {string} - The tooltip label to display.
  */
 export const getEditDisabledTooltip = ({
-    canUserEdit,
+    canUserEdit = false,
     isAgreementNotDeveloped = false,
     isPreAwardInReview = false,
     isAwardInReview = false,

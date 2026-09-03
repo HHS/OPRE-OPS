@@ -20,6 +20,7 @@ import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledBut
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
+    EDIT_DISABLED_TOOLTIPS,
     getAgreementFeesFromBackend,
     getAgreementSubTotal
 } from "../../../helpers/agreement.helpers";
@@ -103,18 +104,20 @@ const AgreementBudgetLines = ({
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
 
+    // Reuse the centralized tooltip strings so this button stays in sync with the Edit button.
+    // The not-a-team-member default is BL-status-specific, so it keeps its own wording.
     const toolTipLabel = () => {
         switch (true) {
             case isAgreementNotDeveloped:
-                return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
+                return EDIT_DISABLED_TOOLTIPS.notDeveloped;
             case isPreAwardInReview:
-                return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+                return EDIT_DISABLED_TOOLTIPS.preAwardInReview;
             case isAwardInReview:
-                return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+                return EDIT_DISABLED_TOOLTIPS.awardInReview;
             case isPostPreAwardLocked:
-                return "This agreement has completed Pre-Award Approval and is locked from further edits.";
+                return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
             case allBudgetLinesInReview:
-                return "Budget lines In Review Status cannot be sent for status changes";
+                return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
             default:
                 return "Only team members listed on this agreement can change a BL status";
         }

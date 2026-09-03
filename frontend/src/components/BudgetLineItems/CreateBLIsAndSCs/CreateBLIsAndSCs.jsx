@@ -500,6 +500,7 @@ export const CreateBLIsAndSCs = ({
                         includeDrafts={includeDrafts}
                         setIncludeDrafts={setIncludeDrafts}
                         isEditable={false}
+                        isEditMode={isEditMode}
                     />
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard

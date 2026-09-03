@@ -58,6 +58,15 @@ describe("AgreementBudgetLinesHeader", () => {
         expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
     });
 
+    // Regression: the "Edit Budget Lines" header (CreateBLIsAndSCs) renders this with
+    // isEditMode=true and isEditable=false. Neither the enabled nor the disabled Edit button
+    // (nor its tooltip) should appear while actively editing.
+    it("renders no Edit button when in edit mode and not editable", () => {
+        renderHeader({ isEditMode: true, isEditable: false, canUserEdit: false });
+        expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        expect(screen.queryByTestId("tooltip-label")).not.toBeInTheDocument();
+    });
+
     it("shows a disabled Edit button with the team-member tooltip for a non-team-member", () => {
         renderHeader({ isEditable: false, canUserEdit: false });
 

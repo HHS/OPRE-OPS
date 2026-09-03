@@ -1,7 +1,7 @@
 import { faPen, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getEditDisabledTooltip } from "../../helpers/agreement.helpers";
-import Tooltip from "../UI/USWDS/Tooltip";
+import DisabledEditButton from "./DisabledEditButton";
 
 /**
  * @component - Agreement detail header.
@@ -93,29 +93,10 @@ export const AgreementBudgetLinesHeader = ({
                     )}
                     {/* DISABLED EDIT BUTTON - always shown (with tooltip) when editing is not allowed */}
                     {!isEditMode && !isEditable && (
-                        <Tooltip
+                        <DisabledEditButton
                             label={editDisabledTooltipLabel}
-                            className="display-flex flex-align-baseline"
-                        >
-                            <span
-                                id="edit-disabled"
-                                className="hover:text-underline cursor-not-allowed text-disabled display-flex flex-align-baseline"
-                                aria-disabled="true"
-                                data-cy="edit-disabled"
-                                role="button"
-                                tabIndex={0}
-                            >
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    size="2x"
-                                    className="height-2 width-2 margin-right-1"
-                                    style={{ position: "relative", top: "2px" }}
-                                    aria-hidden="true"
-                                    data-position="top"
-                                />
-                                <span>Edit</span>
-                            </span>
-                        </Tooltip>
+                            variant="budgetLines"
+                        />
                     )}
                 </div>
             </div>

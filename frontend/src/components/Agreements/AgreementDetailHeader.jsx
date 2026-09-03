@@ -2,7 +2,7 @@ import { faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getEditDisabledTooltip } from "../../helpers/agreement.helpers";
 import EditingIndicator from "../UI/EditingIndicator";
-import Tooltip from "../UI/USWDS/Tooltip";
+import DisabledEditButton from "./DisabledEditButton";
 
 /**
  * @component - Agreement detail header.
@@ -77,25 +77,7 @@ export const AgreementDetailHeader = ({
                     </button>
                 )}
                 {/* DISABLED EDIT BUTTON - always shown (with tooltip) when editing is not allowed */}
-                {!isEditMode && !isEditable && (
-                    <Tooltip label={editDisabledTooltipLabel}>
-                        <span
-                            id="edit-disabled"
-                            className="hover:text-underline cursor-not-allowed text-disabled display-flex flex-align-center"
-                            aria-disabled="true"
-                            data-cy="edit-disabled"
-                            tabIndex={0}
-                            role="button"
-                        >
-                            <FontAwesomeIcon
-                                icon={faPen}
-                                className="height-2 width-2 margin-right-1"
-                                aria-hidden="true"
-                            />
-                            <span>Edit</span>
-                        </span>
-                    </Tooltip>
-                )}
+                {!isEditMode && !isEditable && <DisabledEditButton label={editDisabledTooltipLabel} />}
                 {isEditMode && (
                     <div className="margin-left-auto">
                         <EditingIndicator />
