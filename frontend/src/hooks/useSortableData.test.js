@@ -450,4 +450,25 @@ describe("useSortData CLIN Sort", () => {
         // Without assignments: B(2), D(5), A(10), then C(no CLIN) last
         expect(sortedIds).toEqual([2, 4, 1, 3]);
     });
+
+    test("pins Draft rows last even when they carry a stale backend clin.number", () => {
+        // E is a Draft row with a leftover backend CLIN of 1. The row displays "N/A", so it must
+        // sort to the end alongside other CLIN-less rows rather than by that stale number.
+        const listWithStaleDraft = [
+            { id: 1, status: "PLANNED", clin: { number: 10 } },
+            { id: 2, status: "PLANNED", clin: { number: 2 } },
+            { id: 3, status: "DRAFT", clin: null },
+            { id: 5, status: "DRAFT", clin: { number: 1 } }
+        ];
+
+        const sortedIds = useSortData(
+            listWithStaleDraft,
+            false,
+            tableSortCodes.budgetLineCodes.CLIN,
+            SORT_TYPES.BLI_REVIEW
+        ).map((bli) => bli.id);
+
+        // B(2), A(10), then the two Draft rows pinned last (their relative order is preserved).
+        expect(sortedIds).toEqual([2, 1, 3, 5]);
+    });
 });
