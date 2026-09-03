@@ -717,7 +717,10 @@ describe("getEditDisabledTooltip", () => {
         );
     });
 
-    it("falls back to the team-member message when no reason flag is set", () => {
+    // Defensive fallback only — not an expected user-facing state. A team member with no reason
+    // flag set should never reach this branch in practice (see the guard comment in the helper);
+    // this test just pins the current behavior so a future change to the fallback is deliberate.
+    it("uses the defensive fallback message when canUserEdit is true but no reason flag is set", () => {
         expect(getEditDisabledTooltip({ canUserEdit: true })).toBe(EDIT_DISABLED_TOOLTIPS.notTeamMember);
     });
 });

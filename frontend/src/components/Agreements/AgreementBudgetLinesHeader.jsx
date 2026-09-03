@@ -19,6 +19,9 @@ import DisabledEditButton from "./DisabledEditButton";
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
  * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
  * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
+ * @param {boolean} [props.showEditButton] - Whether to render the Edit button at all. Set to false in
+ *   contexts that are already an edit surface (e.g. the "Edit Budget Lines" wizard header), where an
+ *   Edit button — enabled or disabled — is not meaningful.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const AgreementBudgetLinesHeader = ({
@@ -34,7 +37,8 @@ export const AgreementBudgetLinesHeader = ({
     setIsEditMode = () => {},
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isPostPreAwardLocked = false
+    isPostPreAwardLocked = false,
+    showEditButton = true
 }) => {
     // `isEditable` (computed by the parent) is the single source of truth for whether the button
     // is enabled. When it is false, the button is shown disabled with a tooltip explaining why.
@@ -73,7 +77,7 @@ export const AgreementBudgetLinesHeader = ({
                     </button>
 
                     {/* ENABLED EDIT BUTTON - when not in edit mode and editing is allowed */}
-                    {!isEditMode && isEditable && (
+                    {showEditButton && !isEditMode && isEditable && (
                         <button
                             type="button"
                             id="edit"
@@ -91,8 +95,8 @@ export const AgreementBudgetLinesHeader = ({
                             <span className="text-primary">Edit</span>
                         </button>
                     )}
-                    {/* DISABLED EDIT BUTTON - always shown (with tooltip) when editing is not allowed */}
-                    {!isEditMode && !isEditable && (
+                    {/* DISABLED EDIT BUTTON - shown (with tooltip) when editing is not allowed */}
+                    {showEditButton && !isEditMode && !isEditable && (
                         <DisabledEditButton
                             label={editDisabledTooltipLabel}
                             variant="budgetLines"

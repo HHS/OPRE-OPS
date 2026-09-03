@@ -449,6 +449,10 @@ export const getEditDisabledTooltip = ({
         case allBudgetLinesInReview:
             return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
         default:
+            // Defensive fallback: this should be unreachable. Every parent code path that makes the
+            // button disabled while `canUserEdit` is true also sets one of the reason flags above.
+            // If a new blocking reason is added without a matching flag, it lands here — treat that
+            // as a bug in the caller and add the flag rather than relying on this generic message.
             return EDIT_DISABLED_TOOLTIPS.notTeamMember;
     }
 };

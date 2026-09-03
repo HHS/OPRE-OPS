@@ -495,12 +495,13 @@ export const CreateBLIsAndSCs = ({
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
+                    {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
                         setIncludeDrafts={setIncludeDrafts}
                         isEditable={false}
-                        isEditMode={isEditMode}
+                        showEditButton={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard
