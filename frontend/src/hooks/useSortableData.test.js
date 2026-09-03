@@ -404,3 +404,71 @@ describe("useSortData BLIDiff Sort", () => {
         expect(true).toBe(true);
     });
 });
+
+describe("useSortData CLIN Sort", () => {
+    // A: backend CLIN 10, B: backend CLIN 2, C: no CLIN (draft),
+    // D: backend CLIN 5 but a local (unsaved) assignment of 1 that should win.
+    const bli_list = [
+        { id: 1, status: "PLANNED", clin: { number: 10 } },
+        { id: 2, status: "PLANNED", clin: { number: 2 } },
+        { id: 3, status: "DRAFT", clin: null },
+        { id: 4, status: "PLANNED", clin: { number: 5 } }
+    ];
+    const sortContext = { clinAssignments: { 4: 1 } };
+
+    test("sorts numerically ascending, prefers local assignment, missing CLIN last", () => {
+        const sortedIds = useSortData(
+            bli_list,
+            false,
+            tableSortCodes.budgetLineCodes.CLIN,
+            SORT_TYPES.BLI_REVIEW,
+            sortContext
+        ).map((bli) => bli.id);
+
+        // D(assigned 1), B(2), A(10), then C(no CLIN) pinned last
+        expect(sortedIds).toEqual([4, 2, 1, 3]);
+    });
+
+    test("sorts numerically descending but keeps missing CLIN last", () => {
+        const sortedIds = useSortData(
+            bli_list,
+            true,
+            tableSortCodes.budgetLineCodes.CLIN,
+            SORT_TYPES.BLI_REVIEW,
+            sortContext
+        ).map((bli) => bli.id);
+
+        // A(10), B(2), D(assigned 1), then C(no CLIN) still pinned last
+        expect(sortedIds).toEqual([1, 2, 4, 3]);
+    });
+
+    test("falls back to backend clin.number when no local assignments are provided", () => {
+        const sortedIds = useSortData(bli_list, false, tableSortCodes.budgetLineCodes.CLIN, SORT_TYPES.BLI_REVIEW).map(
+            (bli) => bli.id
+        );
+
+        // Without assignments: B(2), D(5), A(10), then C(no CLIN) last
+        expect(sortedIds).toEqual([2, 4, 1, 3]);
+    });
+
+    test("pins Draft rows last even when they carry a stale backend clin.number", () => {
+        // E is a Draft row with a leftover backend CLIN of 1. The row displays "N/A", so it must
+        // sort to the end alongside other CLIN-less rows rather than by that stale number.
+        const listWithStaleDraft = [
+            { id: 1, status: "PLANNED", clin: { number: 10 } },
+            { id: 2, status: "PLANNED", clin: { number: 2 } },
+            { id: 3, status: "DRAFT", clin: null },
+            { id: 5, status: "DRAFT", clin: { number: 1 } }
+        ];
+
+        const sortedIds = useSortData(
+            listWithStaleDraft,
+            false,
+            tableSortCodes.budgetLineCodes.CLIN,
+            SORT_TYPES.BLI_REVIEW
+        ).map((bli) => bli.id);
+
+        // B(2), A(10), then the two Draft rows pinned last (their relative order is preserved).
+        expect(sortedIds).toEqual([2, 1, 3, 5]);
+    });
+});
