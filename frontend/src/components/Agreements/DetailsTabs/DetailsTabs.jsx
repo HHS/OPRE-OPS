@@ -46,7 +46,7 @@ const DetailsTabs = ({
         isDevelopedAgreement && !isGrant
             ? [
                   {
-                      name: "TBD1",
+                      name: "/award-modifications",
                       label: "Award & Modifications",
                       disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
                       disabledTooltip: "Award & Modifications\ntab is coming soon"
