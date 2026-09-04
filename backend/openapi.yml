@@ -727,6 +727,51 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found - Agreement does not exist
+  /agreements/{id}/award-history/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementAwardHistory
+      summary: Get award & modification history for a Contract or AA agreement
+      description: |
+        Returns one flat record per completed procurement action (the initial
+        award plus each completed modification) for a Contract or AA agreement.
+        Data is aggregated from the procurement action, its completed
+        procurement tracker's AWARD and PRE_AWARD steps, the linked vendor and
+        agreement modification, and the agreement's own PO/task order/contract
+        numbers.
+
+        Only Contract and AA agreements are supported; any other agreement type
+        returns 400. Fields with no underlying data are returned as null; the
+        frontend applies its own "TBD" fallback at render time.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "200":
+          description: OK - Successfully retrieved award & modification history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AgreementAwardHistoryRecord"
+        "400":
+          description: Bad Request - Agreement is not a Contract or AA agreement
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
   /agreements/{id}/edit-bundle:
     patch:
       tags:
@@ -6906,6 +6951,58 @@ components:
             "2043": "1234567.00"
             "2044": "890000.00"
             "2045": "151217218.00"
+    AgreementAwardHistoryRecord:
+      description: |
+        One flat award/modification record for the Award & Modifications tab.
+        Fields with no underlying data are null.
+      type: object
+      properties:
+        fiscal_year_label:
+          type: string
+          description: Accordion header, e.g. "FY 2024 Award" or "FY 2025 Mod 1"
+          example: FY 2024 Award
+        award_date:
+          type: string
+          format: date
+          nullable: true
+        award_amount:
+          type: string
+          nullable: true
+          description: Decimal amount as string for precision
+        contract_total:
+          type: string
+          nullable: true
+          description: Cumulative agreement total as string for precision
+        contract_number:
+          type: string
+          nullable: true
+        modification_number:
+          type: string
+          nullable: true
+          description: '"Base" for the initial award, otherwise the modification number (e.g. "Mod 1")'
+        requisition_approval_date:
+          type: string
+          format: date
+          nullable: true
+        requisition_number:
+          type: string
+          nullable: true
+        vendor_name:
+          type: string
+          nullable: true
+        vendor_unique_entity_id:
+          type: string
+          nullable: true
+          description: Unique Entity ID (SAM.gov ID); sourced from vendor.duns
+        vendor_type:
+          type: string
+          nullable: true
+        purchase_order_number:
+          type: string
+          nullable: true
+        task_order_number:
+          type: string
+          nullable: true
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object

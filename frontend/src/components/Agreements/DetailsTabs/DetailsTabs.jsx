@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
-import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants";
+import { IS_DOCUMENTS_TAB_READY } from "../../../constants";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -46,10 +46,8 @@ const DetailsTabs = ({
         isDevelopedAgreement && !isGrant
             ? [
                   {
-                      name: "TBD1",
-                      label: "Award & Modifications",
-                      disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
-                      disabledTooltip: "Award & Modifications\ntab is coming soon"
+                      name: "/award-modifications",
+                      label: "Award & Modifications"
                   },
                   {
                       name: "/procurement-tracker",

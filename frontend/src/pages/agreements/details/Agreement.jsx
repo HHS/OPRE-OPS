@@ -25,6 +25,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
+import AgreementAwardModifications from "./AgreementAwardModifications";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import AgreementProcurementTracker from "./AgreementProcurementTracker";
@@ -155,6 +156,10 @@ const Agreement = () => {
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    // The Award & Modifications tab/endpoint only supports Contract and AA agreements.
+    // Guards the route against direct/manually-typed URLs for other types (incl. Miscellaneous).
+    const isContractOrAa =
+        agreement?.agreement_type === AgreementType.CONTRACT || agreement?.agreement_type === AgreementType.AA;
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditableForProcurementTracker =
@@ -344,6 +349,19 @@ const Agreement = () => {
                                 isAwardInReview={isAwardInReview}
                                 isPostPreAwardLocked={isPostPreAwardLocked}
                             />
+                        }
+                    />
+                    <Route
+                        path="award-modifications"
+                        element={
+                            isContractOrAa ? (
+                                <AgreementAwardModifications agreement={agreement} />
+                            ) : (
+                                <Navigate
+                                    to={`/agreements/${agreement?.id}`}
+                                    replace
+                                />
+                            )
                         }
                     />
                     <Route
