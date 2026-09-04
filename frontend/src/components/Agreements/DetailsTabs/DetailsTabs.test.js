@@ -171,7 +171,7 @@ describe("DetailsTabs", () => {
         expect(procurementTrackerButton).not.toBeDisabled();
     });
 
-    it("disables Award & Modifications tab when agreement is not awarded", () => {
+    it("enables Award & Modifications tab even when agreement is not awarded", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -186,7 +186,26 @@ describe("DetailsTabs", () => {
         );
 
         const awardButton = screen.getByText("Award & Modifications");
-        expect(awardButton).toBeDisabled();
+        expect(awardButton).not.toBeDisabled();
+    });
+
+    it("navigates to Award & Modifications when the tab is clicked while not awarded", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        hasInExecutionBli={false}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        fireEvent.click(screen.getByText("Award & Modifications"));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/award-modifications");
     });
 
     it("disables Documents tab when agreement is not awarded", () => {
@@ -292,7 +311,7 @@ describe("DetailsTabs", () => {
         expect(procurementTrackerButton).not.toBeDisabled();
     });
 
-    it("renders tooltips for Award & Modifications and Documents tabs when disabled", () => {
+    it("renders a tooltip for the Documents tab when disabled but not for Award & Modifications", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -309,7 +328,7 @@ describe("DetailsTabs", () => {
         const awardButton = screen.getByText("Award & Modifications");
         const documentsButton = screen.getByText("Documents");
 
-        expect(awardButton).toBeDisabled();
+        expect(awardButton).not.toBeDisabled();
         expect(documentsButton).toBeDisabled();
     });
 
