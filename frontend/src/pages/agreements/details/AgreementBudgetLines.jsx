@@ -239,7 +239,7 @@ const AgreementBudgetLines = ({
                                     <DisabledButtonWithTooltip
                                         label="Export coming soon"
                                         tooltipPosition="bottom"
-                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-center cursor-pointer opacity-30"
                                         dataCy="budget-line-export"
                                     >
                                         <svg
@@ -254,7 +254,7 @@ const AgreementBudgetLines = ({
                                     <button
                                         type="button"
                                         style={{ fontSize: "16px" }}
-                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-center cursor-pointer"
                                         data-cy="budget-line-export"
                                         onClick={() =>
                                             handleExport(
