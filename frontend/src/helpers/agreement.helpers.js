@@ -399,6 +399,64 @@ export const cleanBudgetLineItemForApi = (data) => {
     return { id: budgetLineId, data: cleanData };
 };
 
+/**
+ * Tooltip strings shown on a disabled Edit button, explaining why editing is blocked.
+ * Kept here so the Details and Budget Lines headers stay in sync and don't drift.
+ */
+export const EDIT_DISABLED_TOOLTIPS = {
+    notTeamMember: "Only team members can edit this agreement.",
+    notDeveloped:
+        "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.",
+    preAwardInReview:
+        "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.",
+    awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.",
+    postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits.",
+    allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes"
+};
+
+/**
+ * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.
+ * Consulted only when the button is disabled. Precedence (first match wins): not a team
+ * member, then not developed, then the review/lock states, then all-budget-lines-in-review.
+ * @param {Object} params
+ * @param {boolean} params.canUserEdit - Whether the user has base edit permission (superuser or team member).
+ * @param {boolean} [params.isAgreementNotDeveloped] - Whether the agreement type is not developed yet.
+ * @param {boolean} [params.isPreAwardInReview] - Whether pre-award approval is in review.
+ * @param {boolean} [params.isAwardInReview] - Whether award approval is in review.
+ * @param {boolean} [params.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
+ * @param {boolean} [params.allBudgetLinesInReview] - Whether all budget lines are in review (Budget Lines tab only).
+ * @returns {string} - The tooltip label to display.
+ */
+export const getEditDisabledTooltip = ({
+    canUserEdit = false,
+    isAgreementNotDeveloped = false,
+    isPreAwardInReview = false,
+    isAwardInReview = false,
+    isPostPreAwardLocked = false,
+    allBudgetLinesInReview = false
+}) => {
+    switch (true) {
+        case !canUserEdit:
+            return EDIT_DISABLED_TOOLTIPS.notTeamMember;
+        case isAgreementNotDeveloped:
+            return EDIT_DISABLED_TOOLTIPS.notDeveloped;
+        case isPreAwardInReview:
+            return EDIT_DISABLED_TOOLTIPS.preAwardInReview;
+        case isAwardInReview:
+            return EDIT_DISABLED_TOOLTIPS.awardInReview;
+        case isPostPreAwardLocked:
+            return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
+        case allBudgetLinesInReview:
+            return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
+        default:
+            // Defensive fallback: this should be unreachable. Every parent code path that makes the
+            // button disabled while `canUserEdit` is true also sets one of the reason flags above.
+            // If a new blocking reason is added without a matching flag, it lands here — treat that
+            // as a bug in the caller and add the flag rather than relying on this generic message.
+            return EDIT_DISABLED_TOOLTIPS.notTeamMember;
+    }
+};
+
 export const formatTeamMember = (team_member) => {
     return {
         id: team_member.id,

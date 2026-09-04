@@ -9,6 +9,7 @@ import store from "../../../store";
 import { vi } from "vitest";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { configureStore } from "@reduxjs/toolkit";
+import { EDIT_DISABLED_TOOLTIPS } from "../../../helpers/agreement.helpers";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
@@ -44,6 +45,18 @@ vi.mock("react", async () => {
 vi.mock("./AgreementDetailsEdit", () => ({
     __esModule: true,
     default: () => <div data-testid="agreement-details-edit" />
+}));
+
+// Render the disabled Edit button's tooltip label in a testable element without the
+// USWDS tooltip DOM mutation (which moves the title attribute into a tooltip body span).
+vi.mock("../../../components/UI/USWDS/Tooltip", () => ({
+    __esModule: true,
+    default: ({ label, children }) => (
+        <span>
+            <span data-testid="tooltip-label">{label}</span>
+            {children}
+        </span>
+    )
 }));
 
 const agreementHistoryData = [
@@ -450,7 +463,7 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
-    test("regular user cannot edit when isAgreementNotDeveloped is true", () => {
+    test("shows a disabled Edit button with a 'coming soon' tooltip for a regular user when isAgreementNotDeveloped is true", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
@@ -490,8 +503,13 @@ describe("AgreementDetails", () => {
             </Provider>
         );
 
-        // Should NOT show edit button for regular users on non-contract agreements
-        expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        // The Edit button is always shown; for a regular user on an undeveloped agreement it
+        // renders disabled with a "coming soon" tooltip instead of disappearing.
+        const editButton = screen.getByRole("button", { name: /Edit/i });
+        expect(editButton).toHaveAttribute("aria-disabled", "true");
+        expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
+        // textContent preserves the embedded newline, so compare exactly (toHaveTextContent normalizes it away).
+        expect(screen.getByTestId("tooltip-label").textContent).toBe(EDIT_DISABLED_TOOLTIPS.notDeveloped);
         expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
