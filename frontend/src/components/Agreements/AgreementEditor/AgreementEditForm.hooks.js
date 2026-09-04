@@ -630,7 +630,7 @@ const useAgreementEditForm = (
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
-                        .then((fulfilled) => {
+                        .then(() => {
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Edits Cancelled",
@@ -638,7 +638,7 @@ const useAgreementEditForm = (
                                 redirectUrl: "/agreements"
                             });
                         })
-                        .catch((rejected) => {
+                        .catch(() => {
                             setAlert({
                                 type: "error",
                                 heading: "Error",
