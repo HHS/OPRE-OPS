@@ -3840,9 +3840,12 @@ paths:
         - Total spending across all agreements
         - Spending totals by fiscal year
         - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
-        - Agreements grouped by fiscal year
+        - Agreements grouped by fiscal year (any budget line status)
+        - Agreements with non-DRAFT spending, grouped by fiscal year
 
-        Only includes non-DRAFT budget line items (or OBE items regardless of status).
+        Totals and the spending-type breakdown only include non-DRAFT budget line items
+        (or OBE items regardless of status). `agreements_by_fy` lists an agreement for
+        every fiscal year in which it has a budget line, regardless of status.
         Totals include both BLI amounts and fees.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -3879,7 +3882,16 @@ paths:
                     grant: "0.00"
                     partner: "0.00"
                     direct_obligation: "0.00"
+                  "2025":
+                    contract: "25000.00"
+                    grant: "0.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
                 agreements_by_fy:
+                  "2023": [1, 2]
+                  "2024": [1]
+                  "2025": [2, 3]
+                agreements_with_spending_by_fy:
                   "2023": [1, 2]
                   "2024": [1]
                   "2025": [2]
@@ -6845,6 +6857,7 @@ components:
         - total_by_fiscal_year
         - spending_type_by_fiscal_year
         - agreements_by_fy
+        - agreements_with_spending_by_fy
       properties:
         total:
           type: string
@@ -6878,7 +6891,22 @@ components:
               direct_obligation: "0.00"
         agreements_by_fy:
           type: object
-          description: Agreement IDs grouped by fiscal year
+          description: Agreement IDs grouped by fiscal year, for any budget line status
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+          example:
+            "2023": [1, 2]
+            "2024": [1]
+            "2025": [2, 3]
+        agreements_with_spending_by_fy:
+          type: object
+          description: >-
+            Agreement IDs grouped by fiscal year, limited to agreements with non-DRAFT
+            (or OBE) budget lines in that fiscal year. Always a subset of
+            agreements_by_fy - agreement 3 below is listed for FY 2025 but has only
+            DRAFT budget lines there, so it contributes no spending.
           additionalProperties:
             type: array
             items:
