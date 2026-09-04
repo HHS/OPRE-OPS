@@ -6,6 +6,7 @@ import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } fr
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
+import { ALN_NUMBER_OPTIONS } from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -179,7 +180,7 @@ const AgreementDetailsView = ({
                             {agreement?.aln_numbers && agreement?.aln_numbers?.length > 0 ? (
                                 <>
                                     {[...agreement.aln_numbers]
-                                        .sort((a, b) => a - b)
+                                        .sort((a, b) => parseFloat(a) - parseFloat(b))
                                         .map((alnNumber) => (
                                             <dd
                                                 key={alnNumber}
@@ -188,7 +189,10 @@ const AgreementDetailsView = ({
                                                 <Tag
                                                     dataCy={`aln-number-tag-${alnNumber}`}
                                                     tagStyle="primaryDarkTextLightBackground"
-                                                    text={String(alnNumber)}
+                                                    text={
+                                                        ALN_NUMBER_OPTIONS.find((opt) => opt.id === alnNumber)?.title ??
+                                                        String(alnNumber)
+                                                    }
                                                 />
                                             </dd>
                                         ))}

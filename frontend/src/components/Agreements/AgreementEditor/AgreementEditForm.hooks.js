@@ -389,6 +389,20 @@ const useAgreementEditForm = (
         });
     };
 
+    const addAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "ADD_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
+    const removeAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "REMOVE_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
     const saveAgreement = React.useCallback(
         async (
             redirectUrl = null,
@@ -412,8 +426,7 @@ const useAgreementEditForm = (
 
             if (id) {
                 try {
-                    const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
-                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    await updateAgreement({ id: id, data: cleanData }).unwrap();
                     if (!suppressSuccessAlert) {
                         if (shouldRequestChange) {
                             setAlert(
@@ -436,7 +449,6 @@ const useAgreementEditForm = (
                     }
                     return true;
                 } catch (rejected) {
-                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
                     if (!suppressErrorAlert) {
                         setAlert({
                             type: "error",
@@ -573,8 +585,7 @@ const useAgreementEditForm = (
                     servicing_agency_id: servicingAgency ? servicingAgency.id : null
                 };
                 const { cleanData } = cleanAgreementForApi(data);
-                const response = await addAgreement(cleanData).unwrap();
-                console.log(`CREATE: agreement draft saved: ${JSON.stringify(response, null, 2)}`);
+                await addAgreement(cleanData).unwrap();
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
@@ -619,8 +630,7 @@ const useAgreementEditForm = (
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
-                        .then((fulfilled) => {
-                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        .then(() => {
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Edits Cancelled",
@@ -628,8 +638,7 @@ const useAgreementEditForm = (
                                 redirectUrl: "/agreements"
                             });
                         })
-                        .catch((rejected) => {
-                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        .catch(() => {
                             setAlert({
                                 type: "error",
                                 heading: "Error",
@@ -743,6 +752,8 @@ const useAgreementEditForm = (
         fundingPeriodMonths,
         setNofoNumber,
         setAlnNumbers,
+        addAlnNumber,
+        removeAlnNumber,
         setFundingPeriodMonths,
         showModal,
         setShowModal,

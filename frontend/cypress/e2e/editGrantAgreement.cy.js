@@ -22,7 +22,7 @@ const seedGrant = (nameSuffix) => {
         project_id: 1000,
         project_officer_id: 500,
         nofo_number: "NOFO-ORIGINAL",
-        aln_numbers: [3],
+        aln_numbers: ["93.086"],
         funding_period_months: 12,
         team_members: [{ id: 502 }, { id: 504 }],
         grant_numbers: [{ number: 1, description: "Seeded grant number", ref: "gn-1" }]
