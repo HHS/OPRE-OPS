@@ -244,3 +244,32 @@ describe("editAgreementReducer - budget line items", () => {
         expect(next.deleted_budget_line_items_ids).toEqual([]);
     });
 });
+
+describe("editAgreementReducer - ADD_ALN_NUMBER / REMOVE_ALN_NUMBER", () => {
+    it("ADD_ALN_NUMBER appends to an existing array", () => {
+        const state = { ...defaultState, agreement: { ...defaultState.agreement, aln_numbers: ["93.086"] } };
+        const next = editAgreementReducer(state, { type: "ADD_ALN_NUMBER", payload: "93.600" });
+        expect(next.agreement.aln_numbers).toEqual(["93.086", "93.600"]);
+    });
+
+    it("ADD_ALN_NUMBER handles null aln_numbers from an existing grant loaded via API", () => {
+        const state = { ...defaultState, agreement: { ...defaultState.agreement, aln_numbers: null } };
+        const next = editAgreementReducer(state, { type: "ADD_ALN_NUMBER", payload: "93.086" });
+        expect(next.agreement.aln_numbers).toEqual(["93.086"]);
+    });
+
+    it("REMOVE_ALN_NUMBER removes the matching id", () => {
+        const state = {
+            ...defaultState,
+            agreement: { ...defaultState.agreement, aln_numbers: ["93.086", "93.600"] }
+        };
+        const next = editAgreementReducer(state, { type: "REMOVE_ALN_NUMBER", payload: "93.086" });
+        expect(next.agreement.aln_numbers).toEqual(["93.600"]);
+    });
+
+    it("REMOVE_ALN_NUMBER handles null aln_numbers from an existing grant loaded via API", () => {
+        const state = { ...defaultState, agreement: { ...defaultState.agreement, aln_numbers: null } };
+        const next = editAgreementReducer(state, { type: "REMOVE_ALN_NUMBER", payload: "93.086" });
+        expect(next.agreement.aln_numbers).toEqual([]);
+    });
+});
