@@ -23,7 +23,7 @@ Replace the placeholder integer ALN number options (1–10) in the grant agreeme
      - [ ] 93.647 (SSRD)
      - [ ] 93.671 (FVPSA)
      - [ ] 93.591 (DV)
-- [ ] Ensure the component remains multi-select
+- [ ] Ensure multiple ALN numbers can be selected (single-select dropdown + "ALN Numbers Added" list pattern, matching Team Members)
 - [ ] Ensure the component is updated in create-grant and edit-grant
 - [ ] Ensure the selected options display on the Grant Details Tab
 

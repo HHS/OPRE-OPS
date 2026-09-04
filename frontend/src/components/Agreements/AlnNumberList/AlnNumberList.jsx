@@ -19,13 +19,20 @@ const AlnNumberList = ({ selectedAlnNumbers, removeAlnNumber }) => {
                 style={{ width: "fit-content", padding: "5px" }}
             >
                 {label}
-                <svg
-                    className="height-2 width-2 text-primary-dark margin-left-05 cursor-pointer"
+                <button
+                    type="button"
+                    className="usa-button--unstyled height-2 width-2 text-primary-dark margin-left-05"
                     onClick={() => removeAlnNumber(alnId)}
-                    id={`remove-aln-${alnId.replace(".", "-")}`}
+                    aria-label={`Remove ${label}`}
                 >
-                    <use href={`${icons}#cancel`}></use>
-                </svg>
+                    <svg
+                        className="height-2 width-2"
+                        aria-hidden="true"
+                        focusable="false"
+                    >
+                        <use href={`${icons}#cancel`}></use>
+                    </svg>
+                </button>
             </div>
         );
     };

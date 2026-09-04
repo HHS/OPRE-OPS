@@ -35,7 +35,19 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # One-way migration: once string ALN values like "93.086" are written,
-    # casting back to INTEGER[] would raise a PostgreSQL type error.
-    # To downgrade, truncate or null out aln_numbers data first.
-    raise NotImplementedError("Downgrade not supported: string ALN values cannot be cast back to INTEGER[]")
+    # Null out string ALN values before altering back to INTEGER[] — "93.086"
+    # cannot be cast to integer, so any existing string data must be cleared first.
+    op.execute("UPDATE grant_agreement SET aln_numbers = NULL")
+    op.execute("UPDATE grant_agreement_version SET aln_numbers = NULL")
+    op.alter_column(
+        "grant_agreement",
+        "aln_numbers",
+        type_=postgresql.ARRAY(sa.Integer()),
+        postgresql_using="aln_numbers::INTEGER[]",
+    )
+    op.alter_column(
+        "grant_agreement_version",
+        "aln_numbers",
+        type_=postgresql.ARRAY(sa.Integer()),
+        postgresql_using="aln_numbers::INTEGER[]",
+    )
