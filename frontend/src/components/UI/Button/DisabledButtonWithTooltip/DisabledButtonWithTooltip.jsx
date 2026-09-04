@@ -15,10 +15,18 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {string} [props.tooltipPosition="top"] - Tooltip position passed to `<Tooltip>`.
  * @param {string} [props.className="usa-button"] - CSS class for the inner `<button>`.
  * @param {string} [props.dataCy] - data-cy selector for the inner `<button>`.
+ * @param {React.CSSProperties} [props.wrapperStyle] - Extra inline styles for the focusable wrapper div.
  * @param {React.ReactNode} props.children - Button label content.
  * @returns {React.ReactElement}
  */
-const DisabledButtonWithTooltip = ({ label, tooltipPosition = "top", className = "usa-button", dataCy, children }) => (
+const DisabledButtonWithTooltip = ({
+    label,
+    tooltipPosition = "top",
+    className = "usa-button",
+    dataCy,
+    wrapperStyle,
+    children
+}) => (
     <Tooltip
         label={label}
         position={tooltipPosition}
@@ -28,7 +36,7 @@ const DisabledButtonWithTooltip = ({ label, tooltipPosition = "top", className =
             tabIndex={0}
             role="button"
             aria-disabled="true"
-            style={{ display: "inline-block", cursor: "not-allowed" }}
+            style={{ ...wrapperStyle, display: "inline-block", cursor: "not-allowed" }}
         >
             <button
                 type="button"
