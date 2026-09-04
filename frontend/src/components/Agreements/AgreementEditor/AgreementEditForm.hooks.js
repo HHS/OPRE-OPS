@@ -426,8 +426,7 @@ const useAgreementEditForm = (
 
             if (id) {
                 try {
-                    const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
-                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    await updateAgreement({ id: id, data: cleanData }).unwrap();
                     if (!suppressSuccessAlert) {
                         if (shouldRequestChange) {
                             setAlert(
@@ -450,7 +449,6 @@ const useAgreementEditForm = (
                     }
                     return true;
                 } catch (rejected) {
-                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
                     if (!suppressErrorAlert) {
                         setAlert({
                             type: "error",
@@ -587,8 +585,7 @@ const useAgreementEditForm = (
                     servicing_agency_id: servicingAgency ? servicingAgency.id : null
                 };
                 const { cleanData } = cleanAgreementForApi(data);
-                const response = await addAgreement(cleanData).unwrap();
-                console.log(`CREATE: agreement draft saved: ${JSON.stringify(response, null, 2)}`);
+                await addAgreement(cleanData).unwrap();
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
@@ -634,7 +631,6 @@ const useAgreementEditForm = (
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
                         .then((fulfilled) => {
-                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Edits Cancelled",
@@ -643,7 +639,6 @@ const useAgreementEditForm = (
                             });
                         })
                         .catch((rejected) => {
-                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
                             setAlert({
                                 type: "error",
                                 heading: "Error",
