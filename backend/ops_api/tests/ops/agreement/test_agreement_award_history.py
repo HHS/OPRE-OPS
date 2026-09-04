@@ -73,6 +73,7 @@ def _completed_tracker(loaded_db, agreement_id, action_id, *, vendor=None, award
                 step_number=6,
                 step_type=ProcurementTrackerStepType.AWARD,
                 status=ProcurementTrackerStepStatus.COMPLETED,
+                award_approval_status="APPROVED",
                 award_vendor_id=vendor.id if vendor else None,
                 award_amount=award_amount,
                 award_date=date(2024, 6, 26),
