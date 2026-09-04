@@ -1,8 +1,11 @@
 """Service for the Award & Modification History tab.
 
 Aggregates award/modification data for a single Contract or AA agreement into a
-flat list of records, one per completed procurement action (initial award plus
-each completed modification). Data is stitched together from four models:
+flat list of records, one per procurement action whose award has been approved by
+the Budget Team (initial award plus each approved modification). A cycle appears as
+soon as the Budget Team approves its award — the COR need not have completed the
+final (AWARD) step, and the tracker need not be COMPLETED. Data is stitched together
+from four models:
 
 - ``ProcurementAction`` — one row per award/mod cycle (award/contract totals, award date).
 - ``ProcurementTracker`` / ``DefaultProcurementTrackerStep`` — the AWARD step carries
@@ -25,7 +28,6 @@ from models import (
     DefaultProcurementTrackerStep,
     ProcurementAction,
     ProcurementTracker,
-    ProcurementTrackerStatus,
     ProcurementTrackerStepType,
 )
 from models.utils.fiscal_year import date_to_fiscal_year
@@ -35,6 +37,11 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationEr
 # are in scope for this tab. Reading those attributes on any other subtype raises
 # AttributeError, so this check is load-bearing, not just a scoping nicety.
 _SUPPORTED_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
+
+# The AWARD step's ``award_approval_status`` value that marks a Budget Team award
+# approval. Stored as a free-form String(20) column, so the literal is the contract
+# (matches the usage in ProcurementTrackerStepService).
+_AWARD_APPROVED_STATUS = "APPROVED"
 
 
 def build_fiscal_year_label(action_date: Optional[date], is_modification: bool, mod_number: Optional[str]) -> str:
@@ -91,9 +98,10 @@ class AgreementAwardHistoryService:
         task_order_number = agreement.task_order_number
         contract_number = agreement.contract_number
 
-        # Map each procurement action to its COMPLETED tracker (if any).
-        completed_trackers_by_action = self._completed_trackers_by_action(agreement_id)
-        if not completed_trackers_by_action:
+        # Map each procurement action to the tracker whose award the Budget Team
+        # has approved (if any).
+        approved_trackers_by_action = self._approved_trackers_by_action(agreement_id)
+        if not approved_trackers_by_action:
             return []
 
         actions = self.db_session.scalars(
@@ -104,7 +112,7 @@ class AgreementAwardHistoryService:
 
         records = []
         for action in actions:
-            tracker = completed_trackers_by_action.get(action.id)
+            tracker = approved_trackers_by_action.get(action.id)
             if tracker is None:
                 continue
             records.append(
@@ -125,20 +133,24 @@ class AgreementAwardHistoryService:
             record.pop("_is_modification", None)
         return records
 
-    def _completed_trackers_by_action(self, agreement_id: int) -> dict[int, ProcurementTracker]:
-        """Return a map of procurement_action_id -> its COMPLETED tracker for the agreement.
+    def _approved_trackers_by_action(self, agreement_id: int) -> dict[int, ProcurementTracker]:
+        """Return a map of procurement_action_id -> the tracker whose AWARD step the
+        Budget Team has approved, for the agreement.
 
-        If more than one completed tracker points at the same action, the first is kept.
+        A cycle is included as soon as its AWARD step's ``award_approval_status`` is
+        ``"APPROVED"``; the tracker does NOT need to be COMPLETED (i.e. the COR need not
+        have completed the final step). Trackers with no approved AWARD step are skipped.
+
+        If more than one approved tracker points at the same action, the first is kept.
         """
         trackers = self.db_session.scalars(
             select(ProcurementTracker).where(
                 ProcurementTracker.agreement_id == agreement_id,
-                ProcurementTracker.status == ProcurementTrackerStatus.COMPLETED,
                 ProcurementTracker.procurement_action.isnot(None),
             )
-            # Eager-load steps and, for AWARD steps, the linked vendor so
-            # _build_record's vendor lookups don't trigger a query per record.
-            # award_vendor lives on the DefaultProcurementTrackerStep subclass,
+            # Eager-load steps and, for AWARD steps, the linked vendor so the approval
+            # check below and _build_record's vendor lookups don't trigger a query per
+            # record. award_vendor lives on the DefaultProcurementTrackerStep subclass,
             # so reach it through of_type().
             .options(
                 selectinload(ProcurementTracker.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
@@ -149,6 +161,11 @@ class AgreementAwardHistoryService:
 
         by_action: dict[int, ProcurementTracker] = {}
         for tracker in trackers:
+            award_step = self._find_step(tracker, ProcurementTrackerStepType.AWARD)
+            # award_approval_status lives on the DefaultProcurementTrackerStep subclass;
+            # getattr keeps this safe for any non-default step type.
+            if getattr(award_step, "award_approval_status", None) != _AWARD_APPROVED_STATUS:
+                continue
             by_action.setdefault(tracker.procurement_action, tracker)
         return by_action
 

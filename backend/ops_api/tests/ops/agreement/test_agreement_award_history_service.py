@@ -57,7 +57,7 @@ def _cleanup_award_history(loaded_db, agreement, vendor=None):
     loaded_db.commit()
 
 
-def _make_completed_tracker(
+def _make_awarded_tracker(
     loaded_db,
     agreement_id,
     action_id,
@@ -67,11 +67,21 @@ def _make_completed_tracker(
     award_date=None,
     requisition_number=None,
     requisition_approved_date=None,
+    tracker_status=ProcurementTrackerStatus.COMPLETED,
+    award_step_status=ProcurementTrackerStepStatus.COMPLETED,
+    award_approval_status="APPROVED",
 ):
-    """Create a COMPLETED tracker linked to a procurement action, with AWARD + PRE_AWARD steps."""
+    """Create a tracker linked to a procurement action, with AWARD + PRE_AWARD steps.
+
+    Defaults to a COMPLETED tracker whose AWARD step has been Budget-Team-approved —
+    the state the award-history tab surfaces. Override ``tracker_status`` /
+    ``award_step_status`` / ``award_approval_status`` to exercise the gating (e.g. an
+    in-progress tracker whose award is already approved, or a tracker whose award has
+    not yet been approved).
+    """
     tracker = DefaultProcurementTracker(
         agreement_id=agreement_id,
-        status=ProcurementTrackerStatus.COMPLETED,
+        status=tracker_status,
         procurement_action=action_id,
         active_step_number=6,
     )
@@ -90,7 +100,8 @@ def _make_completed_tracker(
         procurement_tracker=tracker,
         step_number=6,
         step_type=ProcurementTrackerStepType.AWARD,
-        status=ProcurementTrackerStepStatus.COMPLETED,
+        status=award_step_status,
+        award_approval_status=award_approval_status,
         award_vendor_id=vendor.id if vendor else None,
         award_amount=award_amount,
         award_date=award_date,
@@ -129,7 +140,7 @@ def awarded_contract(loaded_db):
     )
     loaded_db.add(award_action)
     loaded_db.flush()
-    _make_completed_tracker(
+    _make_awarded_tracker(
         loaded_db,
         agreement.id,
         award_action.id,
@@ -158,7 +169,7 @@ def awarded_contract(loaded_db):
     )
     loaded_db.add(mod_action)
     loaded_db.flush()
-    _make_completed_tracker(
+    _make_awarded_tracker(
         loaded_db,
         agreement.id,
         mod_action.id,
@@ -258,7 +269,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        _make_completed_tracker(loaded_db, agreement.id, action.id, vendor=vendor, award_amount=Decimal("2000000.00"))
+        _make_awarded_tracker(loaded_db, agreement.id, action.id, vendor=vendor, award_amount=Decimal("2000000.00"))
         loaded_db.commit()
 
         try:
@@ -288,7 +299,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        _make_completed_tracker(loaded_db, agreement.id, action.id)
+        _make_awarded_tracker(loaded_db, agreement.id, action.id)
         loaded_db.commit()
 
         try:
@@ -308,10 +319,11 @@ class TestAgreementAwardHistoryService:
         finally:
             _cleanup_award_history(loaded_db, agreement)
 
-    def test_excludes_actions_without_completed_tracker(self, loaded_db, app_ctx):
-        """An action whose tracker is still ACTIVE is not returned."""
+    def test_excludes_actions_without_approved_award(self, loaded_db, app_ctx):
+        """An action whose AWARD step has not been Budget-Team-approved is not returned,
+        even if the tracker is otherwise progressing."""
         agreement = ContractAgreement(
-            name="Award History Active Tracker Test",
+            name="Award History Unapproved Award Test",
             agreement_type=AgreementType.CONTRACT,
         )
         loaded_db.add(agreement)
@@ -323,17 +335,60 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        tracker = DefaultProcurementTracker(
-            agreement_id=agreement.id,
-            status=ProcurementTrackerStatus.ACTIVE,
-            procurement_action=action.id,
+        # AWARD step is still ACTIVE with approval pending (no APPROVED status yet).
+        _make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            action.id,
+            tracker_status=ProcurementTrackerStatus.ACTIVE,
+            award_step_status=ProcurementTrackerStepStatus.ACTIVE,
+            award_approval_status=None,
         )
-        loaded_db.add(tracker)
         loaded_db.commit()
 
         try:
             service = AgreementAwardHistoryService(loaded_db)
             assert service.get_award_history(agreement.id) == []
+        finally:
+            _cleanup_award_history(loaded_db, agreement)
+
+    def test_includes_award_approved_before_tracker_completed(self, loaded_db, app_ctx):
+        """A cycle is returned once the Budget Team approves the award, before the COR
+        completes the final step (tracker still ACTIVE, AWARD step not yet COMPLETED)."""
+        agreement = ContractAgreement(
+            name="Award History Approved Not Completed Test",
+            agreement_type=AgreementType.CONTRACT,
+            contract_number="CONTRACT-APPROVED",
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+        action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2024, 6, 26),
+            agreement_total=Decimal("3000000.00"),
+        )
+        loaded_db.add(action)
+        loaded_db.flush()
+        _make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            action.id,
+            award_amount=Decimal("500000.00"),
+            award_date=date(2024, 6, 26),
+            tracker_status=ProcurementTrackerStatus.ACTIVE,
+            award_step_status=ProcurementTrackerStepStatus.ACTIVE,
+            award_approval_status="APPROVED",
+        )
+        loaded_db.commit()
+
+        try:
+            service = AgreementAwardHistoryService(loaded_db)
+            records = service.get_award_history(agreement.id)
+            assert len(records) == 1
+            assert records[0]["contract_number"] == "CONTRACT-APPROVED"
+            assert records[0]["award_amount"] == Decimal("500000.00")
         finally:
             _cleanup_award_history(loaded_db, agreement)
 

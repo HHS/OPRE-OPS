@@ -8,7 +8,7 @@ branch: OPS-5379/show-post-award-agreement-data
 ## Story Overview
 
 **Ticket:** OPS-5379
-**Title:** Enable "Award & Modifications" tab for Awarded Contract and AA Agreements, showing an accordion per completed award/modification with a fixed set of fields (falling back to `NO_DATA` when a field is missing).
+**Title:** Enable "Award & Modifications" tab for Awarded Contract and AA Agreements, showing an accordion per Budget-Team-approved award/modification with a fixed set of fields (falling back to `NO_DATA` when a field is missing).
 **Story Points:** TBD — note that covering AA alongside Contract roughly doubles the integration/E2E/manual test surface (separate seed data, separate Cypress cases, separate empty-state checks per type; see [Testing Strategy](#testing-strategy)), which should factor into estimation.
 
 ## Background
@@ -31,7 +31,7 @@ branch: OPS-5379/show-post-award-agreement-data
 
 ### Desired State
 
-For a Contract or AA Agreement whose status is Awarded, the "Award & Modifications" tab is enabled and navigable. It renders one USWDS `Accordion` per completed procurement action (initial award + each completed modification), each showing:
+For a Contract or AA Agreement whose status is Awarded, the "Award & Modifications" tab is enabled and navigable. It renders one USWDS `Accordion` per procurement action whose AWARD tracker step has been approved by the Budget Team (initial award + each approved modification), each showing:
 
 Row 1: Award Date · Award Amount · Contract Total · Contract # · Modification #
 Row 2: Requisition Approval Date · Requisition # · Vendor · Unique Entity ID (SAM.gov ID) · Vendor Type
@@ -49,13 +49,13 @@ As an OPRE budget/procurement team member reviewing an **Awarded** Contract or A
 - [ ] The tab is disabled (as today) for Contract/AA Agreements that are not yet Awarded, and is not shown/relevant for Grant, Direct Obligation, or IAA Agreements (the existing `isDevelopedAgreement && !isGrant` gate already excludes all three — verified: `isNotDevelopedYet()` returns `true` for `DIRECT_OBLIGATION`/`IAA` — so no frontend gate change is needed for those types).
 - [ ] `AgreementType.MISCELLANEOUS` is explicitly handled (allowlisted out or in) rather than silently falling through the existing gate as a side effect — it is not excluded by either `!isGrant` or `isNotDevelopedYet()` today. See [Assumptions](#assumptions) and [Open Questions](#open-questions).
 - [ ] The new route responds correctly (redirect or graceful error, not a raw stack trace or blank page) if a user navigates directly to its URL for an agreement type the endpoint rejects — the tab-list gate alone doesn't protect a manually-typed URL, and no existing per-route guard covers this new route by default (contrast with the `procurement-tracker` route's explicit `isGrant ? <Navigate/> : ...` guard). See [Assumptions](#assumptions).
-- [ ] The tab shows one accordion per `ProcurementAction` whose linked `ProcurementTracker.status == COMPLETED`, ordered per [Open Question: sort order](#open-questions), for both Contract and AA Agreements.
+- [ ] The tab shows one accordion per `ProcurementAction` whose linked tracker's AWARD step has been Budget-Team-approved (`DefaultProcurementTrackerStep.award_approval_status == "APPROVED"`), ordered per [Open Question: sort order](#open-questions), for both Contract and AA Agreements.
 - [ ] The initial award's accordion header reads `"FY {year} Award"`; each modification's header reads `"FY {year} Mod {number}"`, using each action's own award/mod fiscal year (not necessarily the agreement's overall first-award FY).
 - [ ] Each accordion shows the 12 fields listed above, with `NO_DATA` (`"TBD"`) for any missing value.
 - [ ] "Modification #" shows the literal string `"Base"` when the action has no linked `AgreementMod`, otherwise shows `agreement_mod.number`.
 - [ ] Purchase Order # and Task Order # show the Agreement-level `po_number`/`task_order_number`, read from whichever concrete subtype (`ContractAgreement` or `AaAgreement`) the agreement actually is (same value across all accordions — see [Key Decisions](#key-decisions)).
 - [ ] "Unique Entity ID (SAM.gov ID)" shows `vendor.duns`.
-- [ ] If a Contract or AA Agreement is Awarded but has zero completed procurement actions/trackers, the tab shows an empty state instead of an empty page (see [Open Questions](#open-questions)).
+- [ ] If a Contract or AA Agreement is Awarded but has zero procurement actions with a Budget-Team-approved AWARD step, the tab shows an empty state instead of an empty page (see [Open Questions](#open-questions)).
 - [ ] All new code has tests per `docs/TESTING.md` (see [Testing Strategy](#testing-strategy)).
 
 ## Technical Context
@@ -95,12 +95,12 @@ As an OPRE budget/procurement team member reviewing an **Awarded** Contract or A
 - Contract and AA Agreements are treated identically by this story's backend and frontend logic — same query shape, same schema, same page component, same field grid. No AA-specific fields (`requesting_agency`, `servicing_agency`, `partner_type`, etc.) are added to this tab; those aren't part of the mockup's field list and aren't required for award/mod history.
 - Direct Obligation and IAA Agreements are out of scope, and — unlike an earlier draft of this plan assumed — the existing frontend tab gate already excludes them today: `isNotDevelopedYet()` returns `true` for both `DIRECT_OBLIGATION` and `IAA`, so `isDevelopedAgreement` is `false` and the tab entry never renders for those types. No frontend gate change is needed for Direct/IAA. `AgreementType.MISCELLANEOUS` is the one type this reasoning doesn't cover (neither `isGrant` nor `isNotDevelopedYet` catches it) — the backend endpoint's `agreement_type in {CONTRACT, AA}` validation ([Decision 8](#key-decisions)) is the actual scope enforcement for Miscellaneous, not the frontend gate.
 - The tab-list gate in `DetailsTabs.jsx` only controls whether the tab *button* renders — it does not stop a direct/manually-typed URL from hitting the new `<Route>` in `Agreement.jsx`. The existing `procurement-tracker` route guards itself explicitly (`isGrant ? <Navigate .../> : <AgreementProcurementTracker/>`); the new route needs an equivalent guard (or must rely entirely on the backend's type validation plus a defined frontend error/redirect state) so a Miscellaneous/Direct/IAA agreement navigated to directly doesn't hit an unhandled error.
-- It is **not yet empirically verified** that an AA Agreement can actually reach a `COMPLETED` `ProcurementTracker` with populated AWARD-step fields through the real tracker wizard — existing tests (`test_agreement_is_awarded.py`) only unit-test `is_awarded` against a bare `AaAgreement` + directly-constructed `ProcurementAction`, and no integration test under `ops_api/tests/ops/procurement_tracker/` or `procurement_action/` exercises an AA agreement end-to-end through the wizard. This should be confirmed early in implementation (e.g. via a spike or the first AA integration test), not assumed from model-level field parity alone.
+- It is **not yet empirically verified** that an AA Agreement can actually reach a Budget-Team-approved AWARD step (`award_approval_status == "APPROVED"`, the new gating milestone) with populated AWARD-step fields through the real tracker wizard — existing tests (`test_agreement_is_awarded.py`) only unit-test `is_awarded` against a bare `AaAgreement` + directly-constructed `ProcurementAction`, and no integration test under `ops_api/tests/ops/procurement_tracker/` or `procurement_action/` exercises an AA agreement end-to-end through the wizard. This should be confirmed early in implementation (e.g. via a spike or the first AA integration test), not assumed from model-level field parity alone.
 - "Unique Entity ID (SAM.gov ID)" will display `vendor.duns`, consistent with how `AwardRequestForm.jsx` and `ApproveAwardApproval.jsx` already label that field. Adding a real, distinct SAM.gov UEI column to `Vendor` is out of scope (see [Future Improvements](#future-improvements)).
-- A new backend endpoint will aggregate/join the four models server-side and return one flat record per completed procurement action, rather than having the frontend stitch together `/procurement-actions/`, `/procurement-trackers/`, `/procurement-tracker-steps/`, and vendor data client-side.
+- A new backend endpoint will aggregate/join the four models server-side and return one flat record per procurement action whose AWARD step is Budget-Team-approved, rather than having the frontend stitch together `/procurement-actions/`, `/procurement-trackers/`, `/procurement-tracker-steps/`, and vendor data client-side.
 - `IS_AWARDED_TAB_READY` will be flipped to `true` as part of this story, enabling the tab for all Awarded Contract and AA Agreements once the route/content exist.
 - Requisition # / Requisition Approval Date will be read from the PRE_AWARD tracker step's `pre_award_requisition_number` / `pre_award_requisition_approved_date` fields (the fields the current tracker wizard and existing requisition-review screens actually populate), not from the separate `Requisition` model.
-- A row is included when its `ProcurementTracker.status == COMPLETED`, regardless of the `ProcurementAction.status` value.
+- A row is included when its AWARD tracker step's `award_approval_status == "APPROVED"` (Budget Team approval), regardless of `ProcurementTracker.status` or `ProcurementAction.status`. See [Decision 5](#key-decisions).
 - "Modification #" shows the literal string `"Base"` when `ProcurementAction.agreement_mod_id` is null (i.e., the initial award), otherwise `agreement_mod.number`.
 - Accordion headers use an FY-prefixed format: `"FY {year} Award"` for the initial award, `"FY {year} Mod {number}"` for modifications, each using that action's own award/mod date via `date_to_fiscal_year()` (not necessarily the agreement's overall first-award FY).
 
@@ -110,7 +110,7 @@ As an OPRE budget/procurement team member reviewing an **Awarded** Contract or A
 
 **Backend — one new read-only aggregating endpoint.**
 
-Add a new endpoint (name/URL pattern TBD during implementation — follow whatever convention the team already uses for agreement-scoped sub-resources) that, given an `agreement_id`, returns a list of flat records, one per `ProcurementAction` whose `ProcurementTracker.status == COMPLETED`, each shaped like:
+Add a new endpoint (name/URL pattern TBD during implementation — follow whatever convention the team already uses for agreement-scoped sub-resources) that, given an `agreement_id`, returns a list of flat records, one per `ProcurementAction` whose linked tracker's AWARD step has been Budget-Team-approved (`DefaultProcurementTrackerStep.award_approval_status == "APPROVED"`; the tracker need not be `COMPLETED`), each shaped like:
 
 ```
 {
@@ -132,7 +132,7 @@ Add a new endpoint (name/URL pattern TBD during implementation — follow whatev
 
 Fields that resolve to `None` server-side are simply `null` in the response — the frontend applies `?? NO_DATA` at render time, matching the existing convention (`AgreementDetailsView.jsx` never applies `NO_DATA` server-side).
 
-Query shape: start from `ProcurementAction.agreement_id == agreement_id`, join `ProcurementTracker` (filter `status == COMPLETED`), join that tracker's AWARD step and PRE_AWARD step (`DefaultProcurementTrackerStep`, filtered by `step_type`), join `Vendor` via the AWARD step's `award_vendor_id`, and outer-join `AgreementMod` via `agreement_mod_id` (nullable). `contract_total` reads from `ProcurementAction.agreement_total`. `purchase_order_number`/`task_order_number` read from the parent Agreement's concrete subtype — either `ContractAgreement` or `AaAgreement`, both of which expose these under the same column names via a separate fetch of the base `Agreement` row (see [Decision 1a](#key-decisions)), merged into each flat record in Python rather than joined into the main aggregating query. The endpoint must validate `agreement_type in {CONTRACT, AA}` up front (404 or 400 otherwise, following the existing `_apply_agreement_specific_filters` branching pattern in `ops_api/ops/services/agreements.py`) — this isn't just about rejecting Grant/Direct/IAA/Miscellaneous cleanly, it's a hard requirement: reading `.po_number` on any other subtype raises `AttributeError`, since only `ContractAgreement`/`AaAgreement` define that column.
+Query shape: start from `ProcurementAction.agreement_id == agreement_id`, join `ProcurementTracker`, join that tracker's AWARD step and PRE_AWARD step (`DefaultProcurementTrackerStep`, filtered by `step_type`), keep only trackers whose AWARD step's `award_approval_status == "APPROVED"` (Budget Team approval), join `Vendor` via the AWARD step's `award_vendor_id`, and outer-join `AgreementMod` via `agreement_mod_id` (nullable). The AWARD-step approval filter is applied in Python against eager-loaded steps rather than in SQL. `contract_total` reads from `ProcurementAction.agreement_total`. `purchase_order_number`/`task_order_number` read from the parent Agreement's concrete subtype — either `ContractAgreement` or `AaAgreement`, both of which expose these under the same column names via a separate fetch of the base `Agreement` row (see [Decision 1a](#key-decisions)), merged into each flat record in Python rather than joined into the main aggregating query. The endpoint must validate `agreement_type in {CONTRACT, AA}` up front (404 or 400 otherwise, following the existing `_apply_agreement_specific_filters` branching pattern in `ops_api/ops/services/agreements.py`) — this isn't just about rejecting Grant/Direct/IAA/Miscellaneous cleanly, it's a hard requirement: reading `.po_number` on any other subtype raises `AttributeError`, since only `ContractAgreement`/`AaAgreement` define that column.
 
 **Frontend — new tab route + page + RTK Query hook.**
 
@@ -215,9 +215,10 @@ Query shape: start from `ProcurementAction.agreement_id == agreement_id`, join `
 - **Chosen:** Option A — these are the fields the current tracker wizard and existing review screens actually populate end-to-end.
 
 **Decision 5: Row inclusion rule**
-- Option A: `ProcurementTracker.status == COMPLETED` only.
-- Option B: COMPLETED tracker AND `ProcurementActionStatus in {AWARDED, CERTIFIED}`.
-- **Chosen:** Option A.
+- Option A: AWARD tracker step Budget-Team-approved (`DefaultProcurementTrackerStep.award_approval_status == "APPROVED"`), independent of tracker/action status.
+- Option B: `ProcurementTracker.status == COMPLETED` (i.e. the COR completed the final step 6).
+- Option C: COMPLETED tracker AND `ProcurementActionStatus in {AWARDED, CERTIFIED}`.
+- **Chosen:** Option A. The tab surfaces a cycle as soon as the Budget Team approves its award, rather than waiting for the COR to complete the final step 6. Keying off the AWARD step's `award_approval_status` (rather than `ProcurementAction.status == AWARDED`) is deliberate: Budget Team approval sets `award_approval_status = "APPROVED"` on the AWARD step for **any** award type, whereas the service only flips `ProcurementAction.status` to `AWARDED` for `NEW_AWARD` actions — so approving off the step correctly includes **modifications** too. Note: a completed-via-backfill tracker (`ProcurementTracker.mark_completed()`) sets step statuses to `COMPLETED` but does **not** set `award_approval_status`; such backfilled cycles will not appear under this rule unless the AWARD step is also marked approved.
 
 **Decision 6: "Modification #" for the initial award**
 - Option A: Hardcode `"Base"` when `agreement_mod_id` is null.
@@ -245,7 +246,7 @@ Per `docs/TESTING.md`'s decision matrix: this feature is mostly presentational (
 - [ ] Frontend: any extracted helper function(s) for label/fallback formatting (pure function, e.g. `getModificationLabel(agreementMod)`).
 
 ### Integration Tests
-- [ ] Backend: new endpoint against `loaded_db` — returns the expected shape/count for a Contract agreement with 1 award + N completed mods, **and** the same for an AA agreement (verifying `po_number`/`task_order_number`/`contract_number` resolve correctly for both subtypes); returns an empty list for an agreement with no completed trackers; respects existing auth/permission patterns (reuse `auth_client`/`no_perms_auth_client` fixtures per `docs/TESTING.md`).
+- [ ] Backend: new endpoint against `loaded_db` — returns the expected shape/count for a Contract agreement with 1 award + N Budget-Team-approved mods, **and** the same for an AA agreement (verifying `po_number`/`task_order_number`/`contract_number` resolve correctly for both subtypes); returns an empty list for an agreement with no approved AWARD steps; includes a cycle whose AWARD step is approved but whose tracker is still ACTIVE (not yet COMPLETED) and excludes a cycle whose AWARD step is not yet approved; respects existing auth/permission patterns (reuse `auth_client`/`no_perms_auth_client` fixtures per `docs/TESTING.md`).
 - [ ] Backend: endpoint called against a Grant, Direct Obligation, IAA, or Miscellaneous agreement returns the agreed-upon error (per [Decision 8](#key-decisions)) rather than silently succeeding or raising an unhandled `AttributeError` on the `po_number` lookup.
 - [ ] Frontend: RTK Query endpoint — query params/URL construction, `transformResponse` if any (MSW-backed, per `opsAPI.test.js` pattern).
 - [ ] Frontend: `AgreementAwardModifications.jsx` component (RTL) — renders one `Accordion` per record, renders `NO_DATA` tags for null fields, renders the empty state when the list is empty, tab is disabled/hidden appropriately based on `isAgreementAwarded`, for both a Contract-agreement fixture and an AA-agreement fixture.
@@ -255,9 +256,9 @@ Per `docs/TESTING.md`'s decision matrix: this feature is mostly presentational (
 - [ ] Manual: verify in `docker compose up --build` against seeded test data for both agreement types, including the empty-state case.
 
 ### Test Data Needed
-- At least one seeded Awarded Contract Agreement with a COMPLETED `ProcurementTracker` for its initial award, plus one with an additional COMPLETED modification tracker (to verify multi-accordion + "Mod #" rendering).
-- At least one seeded Awarded AA Agreement with the same shape (initial award + a completed mod), to verify the AA code path independently of Contract.
-- One seeded Awarded Contract Agreement and one seeded Awarded AA Agreement with no completed trackers (empty-state case for both types).
+- At least one seeded Awarded Contract Agreement with a Budget-Team-approved AWARD step (`award_approval_status == "APPROVED"`) for its initial award, plus one with an additional approved modification cycle (to verify multi-accordion + "Mod #" rendering).
+- At least one seeded Awarded AA Agreement with the same shape (initial award + an approved mod), to verify the AA code path independently of Contract.
+- One seeded Awarded Contract Agreement and one seeded Awarded AA Agreement with no approved AWARD steps (empty-state case for both types).
 
 ## Validation
 
@@ -281,7 +282,7 @@ Per `docs/TESTING.md`'s decision matrix: this feature is mostly presentational (
 | Flipping `IS_AWARDED_TAB_READY` globally could expose the tab on agreements with unexpected/legacy data shapes (e.g. awarded outside the tracker wizard) | Med | Med | Empty-state handling (acceptance criteria) covers the zero-completed-trackers case; QA pass on staging with a range of real Awarded agreements before flag flip ships |
 | Implementation is built/tested only against Contract Agreements, then assumed to "just work" for AA because the models happen to line up today | Med | Med | Explicit AA test data and test cases required in [Testing Strategy](#testing-strategy); AA is treated as a first-class case in the plan, not an afterthought |
 | `AgreementType.MISCELLANEOUS` isn't excluded by either `!isGrant` or `isNotDevelopedYet()`, so it could pass the frontend tab-list gate if ever Awarded, and a direct URL to the new route bypasses that gate entirely for any type | Low–Med | Low (Miscellaneous/Direct/IAA agreements aren't expected to reach Awarded via the tracker wizard today; no evidence found either way) | [Decision 8](#key-decisions) adds an explicit backend `agreement_type in {CONTRACT, AA}` check plus a route-level guard mirroring `procurement-tracker`'s `isGrant ? <Navigate/> : ...` pattern |
-| No integration test today proves an AA Agreement can reach a `COMPLETED` `ProcurementTracker` through the real wizard (existing `is_awarded` tests construct `ProcurementAction` directly, bypassing the wizard) — the "AA just works" assumption is model-level, not empirically confirmed | Med | Med | Confirm early in implementation (spike or first AA integration test) before building the aggregation on top of it; see [Assumptions](#assumptions) |
+| No integration test today proves an AA Agreement can reach a Budget-Team-approved AWARD step through the real wizard (existing `is_awarded` tests construct `ProcurementAction` directly, bypassing the wizard) — the "AA just works" assumption is model-level, not empirically confirmed | Med | Med | Confirm early in implementation (spike or first AA integration test) before building the aggregation on top of it; see [Assumptions](#assumptions) |
 
 ## Notes
 
@@ -295,7 +296,7 @@ These are UI-detail decisions not yet made, intentionally left for team review (
 - [ ] Exact URL path/naming for the new backend endpoint and exact RTK Query hook name — should follow whatever convention the backend team prefers for agreement-scoped sub-resources.
 - [ ] **AA-specific field labels** — does "Contract Total" / "Contract #" read correctly to users on an AA Agreement, or should the tab use more agreement-type-neutral labels (e.g. "Award Total")? The mockup only shows a Contract example. Existing screens (`AgreementMetaAccordion.jsx`) already reuse "Contract Type"/"Contract #" labels for AA today, so precedent favors keeping the labels as-is — needs explicit team sign-off, not an implementer's guess.
 - [ ] **`AgreementType.MISCELLANEOUS` handling** — should the new route also get its own explicit guard (like `procurement-tracker`'s `isGrant ? <Navigate/> : ...`) so a Miscellaneous agreement can't even reach an error state via direct URL navigation, or is the backend's `agreement_type in {CONTRACT, AA}` rejection (plus a defined frontend error/redirect for that response) sufficient on its own? See [Decision 8](#key-decisions).
-- [ ] **AA-through-the-wizard verification** — has anyone actually driven an AA Agreement through the tracker wizard to a `COMPLETED` tracker with populated AWARD-step data? No existing test proves this is possible today (see [Assumptions](#assumptions) and [Risks](#risks-and-mitigations)) — worth confirming before or very early in implementation, since it's foundational to the AA half of this story actually being testable end-to-end.
+- [ ] **AA-through-the-wizard verification** — has anyone actually driven an AA Agreement through the tracker wizard to a Budget-Team-approved AWARD step with populated AWARD-step data? No existing test proves this is possible today (see [Assumptions](#assumptions) and [Risks](#risks-and-mitigations)) — worth confirming before or very early in implementation, since it's foundational to the AA half of this story actually being testable end-to-end.
 
 ### Future Improvements
 
