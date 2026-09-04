@@ -262,7 +262,7 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 agreement: {
                     ...state.agreement,
-                    aln_numbers: [...state.agreement.aln_numbers, action.payload]
+                    aln_numbers: [...(state.agreement.aln_numbers ?? []), action.payload]
                 }
             };
         }
@@ -271,7 +271,7 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 agreement: {
                     ...state.agreement,
-                    aln_numbers: state.agreement.aln_numbers.filter((aln) => aln !== action.payload)
+                    aln_numbers: (state.agreement.aln_numbers ?? []).filter((aln) => aln !== action.payload)
                 }
             };
         }
