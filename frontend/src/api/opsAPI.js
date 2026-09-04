@@ -466,8 +466,9 @@ export const opsApi = createApi({
             transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
+        // NOTE: will fetch 50 agreements due to limit on backend
         getAgreementsByResearchProjectFilter: builder.query({
-            query: (id) => `/agreements/?project_id=${id}`,
+            query: (id) => `/agreements/?project_id=${id}&limit=${MAX_RESULTS_LIMIT}&offset=0`,
             transformResponse: (response) => {
                 if (Array.isArray(response)) return response;
                 if (response.data) return response.data;
