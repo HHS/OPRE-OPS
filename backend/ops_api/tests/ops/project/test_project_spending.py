@@ -33,6 +33,7 @@ class TestProjectSpendingSerialization:
         assert "total_by_fiscal_year" in data
         assert "spending_type_by_fiscal_year" in data
         assert "agreements_by_fy" in data
+        assert "agreements_with_spending_by_fy" in data
 
     def test_project_spending_field_types(self, auth_client, loaded_db):
         """Test that all fields have correct types."""
@@ -55,6 +56,9 @@ class TestProjectSpendingSerialization:
 
         # agreements_by_fy should be a dict
         assert isinstance(data["agreements_by_fy"], dict)
+
+        # agreements_with_spending_by_fy should be a dict
+        assert isinstance(data["agreements_with_spending_by_fy"], dict)
 
     def test_project_spending_total_as_string(self, auth_client, loaded_db):
         """Test that total is returned as a string to preserve decimal precision."""
@@ -170,6 +174,7 @@ class TestProjectSpendingSerialization:
         assert data["total_by_fiscal_year"] == {}
         assert data["spending_type_by_fiscal_year"] == {}
         assert data["agreements_by_fy"] == {}
+        assert data["agreements_with_spending_by_fy"] == {}
 
     def test_project_spending_with_multiple_fiscal_years(self, auth_client, loaded_db):
         """Test spending endpoint for project with BLIs across multiple fiscal years."""
@@ -247,8 +252,14 @@ class TestProjectSpendingSerialization:
         assert agreement.id in data["agreements_by_fy"]["2024"]
         assert agreement.id in data["agreements_by_fy"]["2025"]
 
-    def test_project_spending_excludes_draft_blis(self, auth_client, loaded_db):
-        """Test that DRAFT BLIs are excluded from spending calculations."""
+    def test_project_spending_excludes_draft_blis_from_totals(self, auth_client, loaded_db):
+        """DRAFT BLIs are excluded from the totals.
+
+        This agreement has non-draft spending in the same FY, so its FY membership here
+        would hold even without the #6139 fix. See
+        test_project_spending_lists_draft_only_agreement_for_its_fiscal_year for the
+        draft-only case that actually exercises the widened membership.
+        """
         # Create a new project
         project = ResearchProject(
             project_type=ProjectType.RESEARCH,
@@ -293,6 +304,104 @@ class TestProjectSpendingSerialization:
         # Total should only include the PLANNED BLI, not the DRAFT
         assert Decimal(data["total"]) == Decimal("1000.00")
         assert Decimal(data["total_by_fiscal_year"]["2023"]) == Decimal("1000.00")
+
+        # The agreement is listed for FY 2023 in both keys — it has a draft BLI *and*
+        # non-draft spending there
+        assert data["agreements_by_fy"]["2023"] == [agreement.id]
+        assert data["agreements_with_spending_by_fy"]["2023"] == [agreement.id]
+
+    def test_project_spending_lists_draft_only_agreement_for_its_fiscal_year(self, auth_client, loaded_db):
+        """An agreement whose only BLI is DRAFT is still listed for that FY (issue #6139).
+
+        The FY must be offered as a filter option and the agreement must appear under it,
+        while contributing nothing to any total.
+        """
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Draft Only Agreement Spending Test Project",
+            short_title="DOASTP",
+            description="Test project whose only agreement has only DRAFT budget lines",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        agreement = ContractAgreement(
+            name="Draft Only Agreement",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        bli_draft = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            amount=Decimal("5000.00"),
+            date_needed=date(2023, 6, 1),
+            status=BudgetLineItemStatus.DRAFT,
+        )
+        loaded_db.add(bli_draft)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.projects-spending-item", id=project.id))
+        assert response.status_code == 200
+
+        data = response.json
+
+        # FY 2023 is offered as a filter option and the draft-only agreement is listed under it
+        assert data["agreements_by_fy"] == {"2023": [agreement.id]}
+
+        # Nothing draft-only reaches any total or the type breakdown
+        assert data["agreements_with_spending_by_fy"] == {}
+        assert data["total_by_fiscal_year"] == {}
+        assert data["spending_type_by_fiscal_year"] == {}
+        assert Decimal(data["total"]) == Decimal("0")
+
+    def test_project_spending_counts_obe_draft_bli_as_spending(self, auth_client, loaded_db):
+        """An OBE budget line counts as spending even while DRAFT.
+
+        The money gate is `is_obe or status != DRAFT`. Without the `is_obe` half the
+        agreement would still be listed but carry no spending, producing a summary card
+        reading $0 above a row showing a non-zero FY total.
+        """
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="OBE Draft Spending Test Project",
+            short_title="ODSTP",
+            description="Test project whose only budget line is DRAFT but marked OBE",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        agreement = ContractAgreement(
+            name="OBE Draft Agreement",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        bli_obe_draft = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            amount=Decimal("750.00"),
+            date_needed=date(2024, 6, 1),
+            status=BudgetLineItemStatus.DRAFT,
+            is_obe=True,
+        )
+        loaded_db.add(bli_obe_draft)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.projects-spending-item", id=project.id))
+        assert response.status_code == 200
+
+        data = response.json
+
+        # Listed for FY 2024 under both keys, because OBE money counts despite DRAFT
+        assert data["agreements_by_fy"] == {"2024": [agreement.id]}
+        assert data["agreements_with_spending_by_fy"] == {"2024": [agreement.id]}
+
+        assert Decimal(data["total"]) == Decimal("750.00")
+        assert Decimal(data["total_by_fiscal_year"]["2024"]) == Decimal("750.00")
+        assert Decimal(data["spending_type_by_fiscal_year"]["2024"]["contract"]) == Decimal("750.00")
 
     def test_project_spending_includes_bli_fees(self, auth_client, loaded_db):
         """Test that BLI fees are included in spending totals."""

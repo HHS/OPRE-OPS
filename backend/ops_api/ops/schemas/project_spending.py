@@ -19,3 +19,6 @@ class ProjectSpendingMetadataSchema(Schema):
         keys=fields.Integer(), values=fields.Nested(SpendingTypeBreakdownSchema), required=True
     )
     agreements_by_fy = fields.Dict(keys=fields.Integer(), values=fields.List(fields.Integer()), required=True)
+    agreements_with_spending_by_fy = fields.Dict(
+        keys=fields.Integer(), values=fields.List(fields.Integer()), required=True
+    )
