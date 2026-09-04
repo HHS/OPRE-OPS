@@ -257,6 +257,24 @@ export function editAgreementReducer(state, action) {
                 }
             };
         }
+        case "ADD_ALN_NUMBER": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    aln_numbers: [...state.agreement.aln_numbers, action.payload]
+                }
+            };
+        }
+        case "REMOVE_ALN_NUMBER": {
+            return {
+                ...state,
+                agreement: {
+                    ...state.agreement,
+                    aln_numbers: state.agreement.aln_numbers.filter((aln) => aln !== action.payload)
+                }
+            };
+        }
         default: {
             throw Error("Unknown action: " + action.type);
         }

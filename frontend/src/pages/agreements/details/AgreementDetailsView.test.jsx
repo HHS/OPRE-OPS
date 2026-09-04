@@ -167,7 +167,7 @@ describe("AgreementDetailsView", () => {
             ...agreement,
             agreement_type: "GRANT",
             nofo_number: "NOFO-2026-01",
-            aln_numbers: [3, 7],
+            aln_numbers: ["93.086", "93.600"],
             funding_period_months: 18
         };
         const mockAlternateProjectOfficer = {
@@ -189,8 +189,8 @@ describe("AgreementDetailsView", () => {
             expect(screen.getByText("NOFO Number")).toBeInTheDocument();
             expect(screen.getByText("NOFO-2026-01")).toBeInTheDocument();
             expect(screen.getByText("ALN Numbers")).toBeInTheDocument();
-            expect(screen.getByText("3")).toBeInTheDocument();
-            expect(screen.getByText("7")).toBeInTheDocument();
+            expect(screen.getByText("93.086 (HMRF)")).toBeInTheDocument();
+            expect(screen.getByText("93.600 (Child Care)")).toBeInTheDocument();
             expect(screen.getByText("Grant Funding Period")).toBeInTheDocument();
             expect(screen.getByText("18 months")).toBeInTheDocument();
         });

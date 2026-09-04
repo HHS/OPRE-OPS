@@ -389,6 +389,20 @@ const useAgreementEditForm = (
         });
     };
 
+    const addAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "ADD_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
+    const removeAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "REMOVE_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
     const saveAgreement = React.useCallback(
         async (
             redirectUrl = null,
@@ -743,6 +757,8 @@ const useAgreementEditForm = (
         fundingPeriodMonths,
         setNofoNumber,
         setAlnNumbers,
+        addAlnNumber,
+        removeAlnNumber,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
