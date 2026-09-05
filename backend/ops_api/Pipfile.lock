@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ae4e1bb94a9d22b275028d4cc48e1ae389331f6909ad955cb409a6a313f90c11"
+            "sha256": "789c43fd5f1440356f7a47e3d20dd9052458f2ad6e21908e7004d9cdab11c3f8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -36,12 +36,12 @@
         },
         "authlib": {
             "hashes": [
-                "sha256:2cea25fefcd4e7173bdf1372c0afc265c8034b23a8cd5dcb6a9164b826c64231",
-                "sha256:3e1faedc9d87e7d56a164eca3ccb6ace0d61b94abe83e92242f8dc8bba9b4a9f"
+                "sha256:88aebbd9af6757e14e912d5dc007ae1dc1f3e27e3b2152ce7c552ee2c3b3c121",
+                "sha256:f3ecd5f1da737262fb53bf1a4d95c4ea1ad9dd509316587a255c99ab1838a4f0"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.7.2"
+            "version": "==1.8.0"
         },
         "azure-core": {
             "hashes": [
@@ -672,12 +672,12 @@
         },
         "gunicorn": {
             "hashes": [
-                "sha256:40233d26a5f0d1872916188c276e21641155111c2853f0c2cd55260aec0d24fc",
-                "sha256:ca9346f85e3a4aeeb64d491045c16b9a35647abd37ea15efe53080eb8b090baf"
+                "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447",
+                "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==26.0.0"
+            "version": "==26.2.0"
         },
         "idna": {
             "hashes": [
@@ -897,14 +897,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==5.5.0"
-        },
-        "packaging": {
-            "hashes": [
-                "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79",
-                "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
-            ],
-            "markers": "python_version >= '3.9'",
-            "version": "==26.3"
         },
         "psycopg2-binary": {
             "hashes": [
@@ -2335,12 +2327,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:4acae635506f6d352d94c4899a19d5f85f8bc4d230932342dca556fdab1c69b4",
-                "sha256:5a3d1f9a47ff216d6cf9cf863124f6a2c1a198d1354c546a4d24a370a283b64c"
+                "sha256:6d1645743cfd1a07eb695d85aa2b5fa66721f8cbae9431d4049f7084bbf06509",
+                "sha256:8919be8c27f20a6f4423145028063f6637b42a03ce57665bb12015ee1f073529"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==9.16.1"
+            "version": "==9.17.1"
         },
         "ipython-pygments-lexers": {
             "hashes": [
