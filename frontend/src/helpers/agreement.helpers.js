@@ -405,6 +405,7 @@ export const cleanBudgetLineItemForApi = (data) => {
  */
 export const EDIT_DISABLED_TOOLTIPS = {
     notTeamMember: "Only team members can edit this agreement.",
+    notTeamMemberBLStatus: "Only team members listed on this agreement can change a BL status",
     notDeveloped:
         "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.",
     preAwardInReview:

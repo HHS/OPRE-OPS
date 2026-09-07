@@ -105,7 +105,6 @@ const AgreementBudgetLines = ({
     const currentFiscalYear = getCurrentFiscalYear();
 
     // Reuse the centralized tooltip strings so this button stays in sync with the Edit button.
-    // The not-a-team-member default is BL-status-specific, so it keeps its own wording.
     const toolTipLabel = () => {
         switch (true) {
             case isAgreementNotDeveloped:
@@ -119,7 +118,7 @@ const AgreementBudgetLines = ({
             case allBudgetLinesInReview:
                 return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
             default:
-                return "Only team members listed on this agreement can change a BL status";
+                return EDIT_DISABLED_TOOLTIPS.notTeamMemberBLStatus;
         }
     };
 
