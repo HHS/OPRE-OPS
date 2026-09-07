@@ -4,7 +4,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import select
 
 from models import (
     AaAgreement,
@@ -12,16 +11,12 @@ from models import (
     AgreementType,
     AwardType,
     ContractAgreement,
-    DefaultProcurementTracker,
-    DefaultProcurementTrackerStep,
     GrantAgreement,
     ModType,
     ProcurementAction,
     ProcurementActionStatus,
-    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepStatus,
-    ProcurementTrackerStepType,
     Vendor,
     VendorType,
 )
@@ -30,160 +25,7 @@ from ops_api.ops.services.agreement_award_history import (
     build_fiscal_year_label,
 )
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
-
-
-def _cleanup_award_history(loaded_db, agreement, vendor=None):
-    """Delete committed award-history data for an agreement in FK-safe order.
-
-    Trackers reference procurement actions; actions reference agreement mods, so
-    they must be removed in that order. Deleting a tracker cascades its steps.
-    """
-    loaded_db.rollback()
-    for tracker in loaded_db.scalars(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement.id)
-    ).all():
-        loaded_db.delete(tracker)
-    loaded_db.flush()
-    for action in loaded_db.scalars(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == agreement.id)
-    ).all():
-        loaded_db.delete(action)
-    loaded_db.flush()
-    for mod in loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all():
-        loaded_db.delete(mod)
-    loaded_db.delete(agreement)
-    if vendor is not None:
-        loaded_db.delete(vendor)
-    loaded_db.commit()
-
-
-def _make_awarded_tracker(
-    loaded_db,
-    agreement_id,
-    action_id,
-    *,
-    vendor=None,
-    award_amount=None,
-    award_date=None,
-    requisition_number=None,
-    requisition_approved_date=None,
-    tracker_status=ProcurementTrackerStatus.COMPLETED,
-    award_step_status=ProcurementTrackerStepStatus.COMPLETED,
-    award_approval_status="APPROVED",
-):
-    """Create a tracker linked to a procurement action, with AWARD + PRE_AWARD steps.
-
-    Defaults to a COMPLETED tracker whose AWARD step has been Budget-Team-approved —
-    the state the award-history tab surfaces. Override ``tracker_status`` /
-    ``award_step_status`` / ``award_approval_status`` to exercise the gating (e.g. an
-    in-progress tracker whose award is already approved, or a tracker whose award has
-    not yet been approved).
-    """
-    tracker = DefaultProcurementTracker(
-        agreement_id=agreement_id,
-        status=tracker_status,
-        procurement_action=action_id,
-        active_step_number=6,
-    )
-    loaded_db.add(tracker)
-    loaded_db.flush()
-
-    pre_award_step = DefaultProcurementTrackerStep(
-        procurement_tracker=tracker,
-        step_number=5,
-        step_type=ProcurementTrackerStepType.PRE_AWARD,
-        status=ProcurementTrackerStepStatus.COMPLETED,
-        pre_award_requisition_number=requisition_number,
-        pre_award_requisition_approved_date=requisition_approved_date,
-    )
-    award_step = DefaultProcurementTrackerStep(
-        procurement_tracker=tracker,
-        step_number=6,
-        step_type=ProcurementTrackerStepType.AWARD,
-        status=award_step_status,
-        award_approval_status=award_approval_status,
-        award_vendor_id=vendor.id if vendor else None,
-        award_amount=award_amount,
-        award_date=award_date,
-    )
-    loaded_db.add_all([pre_award_step, award_step])
-    loaded_db.flush()
-    return tracker
-
-
-@pytest.fixture
-def awarded_contract(loaded_db):
-    """An awarded ContractAgreement with an initial award + one completed modification.
-
-    Yields a dict with the created objects; cleans up on teardown.
-    """
-    vendor = Vendor(name="Flexion Inc.", duns="123456789", vendor_type=VendorType.SMALL_BUSINESS)
-    loaded_db.add(vendor)
-    loaded_db.flush()
-
-    agreement = ContractAgreement(
-        name="Award History Contract Test",
-        agreement_type=AgreementType.CONTRACT,
-        contract_number="CONTRACT-001",
-        po_number="PO-001",
-        task_order_number="TO-001",
-    )
-    loaded_db.add(agreement)
-    loaded_db.flush()
-
-    award_action = ProcurementAction(
-        agreement_id=agreement.id,
-        award_type=AwardType.NEW_AWARD,
-        status=ProcurementActionStatus.AWARDED,
-        date_awarded_obligated=date(2024, 6, 26),
-        agreement_total=Decimal("5000000.00"),
-    )
-    loaded_db.add(award_action)
-    loaded_db.flush()
-    _make_awarded_tracker(
-        loaded_db,
-        agreement.id,
-        award_action.id,
-        vendor=vendor,
-        award_amount=Decimal("1000000.00"),
-        award_date=date(2024, 6, 26),
-        requisition_number="REQ-000444",
-        requisition_approved_date=date(2024, 6, 20),
-    )
-
-    mod = AgreementMod(
-        agreement_id=agreement.id,
-        number="Mod 1",
-        mod_type=ModType.ADMIN,
-        mod_date=date(2025, 1, 15),
-    )
-    loaded_db.add(mod)
-    loaded_db.flush()
-    mod_action = ProcurementAction(
-        agreement_id=agreement.id,
-        agreement_mod_id=mod.id,
-        award_type=AwardType.MODIFICATION,
-        status=ProcurementActionStatus.AWARDED,
-        date_awarded_obligated=date(2025, 1, 15),
-        agreement_total=Decimal("6000000.00"),
-    )
-    loaded_db.add(mod_action)
-    loaded_db.flush()
-    _make_awarded_tracker(
-        loaded_db,
-        agreement.id,
-        mod_action.id,
-        vendor=vendor,
-        award_amount=Decimal("1000000.00"),
-        award_date=date(2025, 1, 15),
-        requisition_number="REQ-000555",
-        requisition_approved_date=date(2025, 1, 10),
-    )
-    loaded_db.commit()
-
-    yield {"agreement": agreement, "vendor": vendor, "mod": mod}
-
-    _cleanup_award_history(loaded_db, agreement, vendor)
+from ops_api.tests.utils import cleanup_award_history, make_awarded_tracker
 
 
 class TestBuildFiscalYearLabel:
@@ -249,7 +91,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(mod_action)
         loaded_db.flush()
-        _make_awarded_tracker(loaded_db, agreement.id, mod_action.id)
+        make_awarded_tracker(loaded_db, agreement.id, mod_action.id)
         loaded_db.commit()
 
         try:
@@ -258,7 +100,7 @@ class TestAgreementAwardHistoryService:
             assert record["award_date"] == date(2024, 10, 2)
             assert record["fiscal_year_label"] == "FY 2025 Mod 1"
         finally:
-            _cleanup_award_history(loaded_db, agreement)
+            cleanup_award_history(loaded_db, agreement)
 
     def test_field_mapping_for_initial_award(self, loaded_db, app_ctx, awarded_contract):
         service = AgreementAwardHistoryService(loaded_db)
@@ -312,7 +154,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        _make_awarded_tracker(loaded_db, agreement.id, action.id, vendor=vendor, award_amount=Decimal("2000000.00"))
+        make_awarded_tracker(loaded_db, agreement.id, action.id, vendor=vendor, award_amount=Decimal("2000000.00"))
         loaded_db.commit()
 
         try:
@@ -325,7 +167,7 @@ class TestAgreementAwardHistoryService:
             assert records[0]["vendor_name"] == "AA Vendor"
             assert records[0]["modification_number"] == "Base"
         finally:
-            _cleanup_award_history(loaded_db, agreement, vendor)
+            cleanup_award_history(loaded_db, agreement, vendor)
 
     def test_missing_fields_are_none(self, loaded_db, app_ctx):
         """Fields with no underlying data resolve to None (frontend applies NO_DATA)."""
@@ -342,7 +184,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        _make_awarded_tracker(loaded_db, agreement.id, action.id)
+        make_awarded_tracker(loaded_db, agreement.id, action.id)
         loaded_db.commit()
 
         try:
@@ -360,7 +202,7 @@ class TestAgreementAwardHistoryService:
             assert record["modification_number"] == "Base"
             assert record["fiscal_year_label"] == "Award"
         finally:
-            _cleanup_award_history(loaded_db, agreement)
+            cleanup_award_history(loaded_db, agreement)
 
     def test_excludes_actions_without_approved_award(self, loaded_db, app_ctx):
         """An action whose AWARD step has not been Budget-Team-approved is not returned,
@@ -379,7 +221,7 @@ class TestAgreementAwardHistoryService:
         loaded_db.add(action)
         loaded_db.flush()
         # AWARD step is still ACTIVE with approval pending (no APPROVED status yet).
-        _make_awarded_tracker(
+        make_awarded_tracker(
             loaded_db,
             agreement.id,
             action.id,
@@ -393,7 +235,7 @@ class TestAgreementAwardHistoryService:
             service = AgreementAwardHistoryService(loaded_db)
             assert service.get_award_history(agreement.id) == []
         finally:
-            _cleanup_award_history(loaded_db, agreement)
+            cleanup_award_history(loaded_db, agreement)
 
     def test_includes_award_approved_before_tracker_completed(self, loaded_db, app_ctx):
         """A cycle is returned once the Budget Team approves the award, before the COR
@@ -414,7 +256,7 @@ class TestAgreementAwardHistoryService:
         )
         loaded_db.add(action)
         loaded_db.flush()
-        _make_awarded_tracker(
+        make_awarded_tracker(
             loaded_db,
             agreement.id,
             action.id,
@@ -433,7 +275,7 @@ class TestAgreementAwardHistoryService:
             assert records[0]["contract_number"] == "CONTRACT-APPROVED"
             assert records[0]["award_amount"] == Decimal("500000.00")
         finally:
-            _cleanup_award_history(loaded_db, agreement)
+            cleanup_award_history(loaded_db, agreement)
 
     def test_most_recently_updated_tracker_wins_when_two_share_an_action(self, loaded_db, app_ctx):
         """No DB constraint stops two approved trackers from pointing at the same
@@ -458,10 +300,10 @@ class TestAgreementAwardHistoryService:
         loaded_db.flush()
 
         # Created first (lower id), but updated again below, after the second tracker.
-        older_tracker = _make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("111.00"))
+        older_tracker = make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("111.00"))
         loaded_db.commit()
 
-        _make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("222.00"))
+        make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("222.00"))
         loaded_db.commit()
 
         # Touch the older tracker so its updated_on advances past the newer tracker's.
@@ -474,7 +316,7 @@ class TestAgreementAwardHistoryService:
             assert len(records) == 1
             assert records[0]["award_amount"] == Decimal("111.00")
         finally:
-            _cleanup_award_history(loaded_db, agreement)
+            cleanup_award_history(loaded_db, agreement)
 
     def test_empty_list_when_no_actions(self, loaded_db, app_ctx):
         agreement = ContractAgreement(
