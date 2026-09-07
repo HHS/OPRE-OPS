@@ -435,6 +435,47 @@ class TestAgreementAwardHistoryService:
         finally:
             _cleanup_award_history(loaded_db, agreement)
 
+    def test_most_recently_updated_tracker_wins_when_two_share_an_action(self, loaded_db, app_ctx):
+        """No DB constraint stops two approved trackers from pointing at the same
+        procurement action. When that happens, the most-recently-updated tracker's
+        data wins, deterministically, rather than whichever the DB happens to
+        return first."""
+        agreement = ContractAgreement(
+            name="Award History Duplicate Tracker Test",
+            agreement_type=AgreementType.CONTRACT,
+            contract_number="CONTRACT-DUP",
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+        action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2024, 6, 26),
+            agreement_total=Decimal("3000000.00"),
+        )
+        loaded_db.add(action)
+        loaded_db.flush()
+
+        # Created first (lower id), but updated again below, after the second tracker.
+        older_tracker = _make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("111.00"))
+        loaded_db.commit()
+
+        _make_awarded_tracker(loaded_db, agreement.id, action.id, award_amount=Decimal("222.00"))
+        loaded_db.commit()
+
+        # Touch the older tracker so its updated_on advances past the newer tracker's.
+        older_tracker.active_step_number = 99
+        loaded_db.commit()
+
+        try:
+            service = AgreementAwardHistoryService(loaded_db)
+            records = service.get_award_history(agreement.id)
+            assert len(records) == 1
+            assert records[0]["award_amount"] == Decimal("111.00")
+        finally:
+            _cleanup_award_history(loaded_db, agreement)
+
     def test_empty_list_when_no_actions(self, loaded_db, app_ctx):
         agreement = ContractAgreement(
             name="Award History Empty Test",

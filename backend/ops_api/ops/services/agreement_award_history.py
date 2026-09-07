@@ -145,13 +145,18 @@ class AgreementAwardHistoryService:
         ``"APPROVED"``; the tracker does NOT need to be COMPLETED (i.e. the COR need not
         have completed the final step). Trackers with no approved AWARD step are skipped.
 
-        If more than one approved tracker points at the same action, the first is kept.
+        If more than one approved tracker ever points at the same action (no DB
+        constraint rules this out), the most recently updated tracker is kept, with
+        id as a tie-break — deterministic rather than whatever order Postgres happens
+        to return.
         """
         trackers = self.db_session.scalars(
-            select(ProcurementTracker).where(
+            select(ProcurementTracker)
+            .where(
                 ProcurementTracker.agreement_id == agreement_id,
                 ProcurementTracker.procurement_action.isnot(None),
             )
+            .order_by(ProcurementTracker.updated_on.desc(), ProcurementTracker.id.desc())
             # So _build_record's vendor lookups don't trigger a query per record.
             .options(ProcurementTracker.steps_with_award_vendor_option())
         ).all()
