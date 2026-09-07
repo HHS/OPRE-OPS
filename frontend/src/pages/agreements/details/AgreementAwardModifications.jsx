@@ -1,6 +1,6 @@
 import { useGetAgreementAwardHistoryByIdQuery } from "../../../api/opsAPI";
 import Accordion from "../../../components/UI/Accordion/Accordion";
-import Tag from "../../../components/UI/Tag/Tag";
+import TermTag from "../../../components/UI/Term/TermTag";
 import { getAwardModificationSections } from "../../../helpers/awardModificationHistory.helpers";
 
 /**
@@ -94,26 +94,18 @@ const AgreementAwardModifications = ({ agreement }) => {
                                                 <h4 className="margin-0 margin-bottom-1 font-sans-3xs text-bold text-base-dark">
                                                     {group.title}
                                                 </h4>
-                                                <div
-                                                    className="display-flex flex-wrap"
+                                                <dl
+                                                    className="display-flex flex-wrap margin-0"
                                                     style={{ gap: "0.75rem 2rem" }}
                                                 >
                                                     {group.fields.map((field) => (
-                                                        <dl
+                                                        <TermTag
                                                             key={field.dataCy}
-                                                            className="margin-0 font-12px"
-                                                        >
-                                                            <dt className="margin-0 text-base-dark">{field.label}</dt>
-                                                            <dd className="margin-0 margin-top-1">
-                                                                <Tag
-                                                                    dataCy={`${field.dataCy}-tag`}
-                                                                    tagStyle="primaryDarkTextLightBackground"
-                                                                    text={field.value}
-                                                                />
-                                                            </dd>
-                                                        </dl>
+                                                            term={field.label}
+                                                            description={field.value}
+                                                        />
                                                     ))}
-                                                </div>
+                                                </dl>
                                             </div>
                                         ))}
                                     </div>
