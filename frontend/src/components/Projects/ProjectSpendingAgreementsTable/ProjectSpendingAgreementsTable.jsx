@@ -1,10 +1,14 @@
+import { useEffect, useState } from "react";
+import { ITEMS_PER_PAGE } from "../../../constants";
+import PaginationNav from "../../UI/PaginationNav";
 import styles from "../../UI/Table/table.module.css";
 import ProjectSpendingAgreementRow from "../ProjectSpendingAgreementRow";
 import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
 
 /**
  * Table of agreements for the Project Spending tab.
- * Renders one expandable row per agreement with FY-scoped totals.
+ * Renders one expandable row per agreement with FY-scoped totals, paginated to
+ * ITEMS_PER_PAGE rows like the other agreement and budget line tables.
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements
@@ -16,6 +20,13 @@ import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
  */
 const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) => {
     const headings = getTableHeadings(fiscalYear); // no empty chevron entry — rendered explicitly below
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [fiscalYear]);
+
+    const visibleAgreements = agreements.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     if (agreements.length === 0) {
         return (
@@ -29,37 +40,47 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) =>
     }
 
     return (
-        <table
-            className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}
-            data-cy="project-spending-agreements-table"
-        >
-            <thead>
-                <tr>
-                    {headings.map((heading) => (
-                        <th
-                            key={heading}
-                            scope="col"
-                            className="font-sans-xs"
-                        >
-                            {heading}
+        <>
+            <table
+                className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}
+                data-cy="project-spending-agreements-table"
+            >
+                <thead>
+                    <tr>
+                        {headings.map((heading) => (
+                            <th
+                                key={heading}
+                                scope="col"
+                                className="font-sans-xs"
+                            >
+                                {heading}
+                            </th>
+                        ))}
+                        <th scope="col">
+                            <span className="usa-sr-only">Expand row</span>
                         </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {visibleAgreements.map((agreement) => (
+                        <ProjectSpendingAgreementRow
+                            key={agreement.id}
+                            agreement={agreement}
+                            fiscalYear={fiscalYear}
+                            fyTotal={fyTotals[agreement.id] ?? null}
+                        />
                     ))}
-                    <th scope="col">
-                        <span className="usa-sr-only">Expand row</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {agreements.map((agreement) => (
-                    <ProjectSpendingAgreementRow
-                        key={agreement.id}
-                        agreement={agreement}
-                        fiscalYear={fiscalYear}
-                        fyTotal={fyTotals[agreement.id] ?? null}
-                    />
-                ))}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+            {agreements.length > ITEMS_PER_PAGE && (
+                <PaginationNav
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    items={agreements}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                />
+            )}
+        </>
     );
 };
 

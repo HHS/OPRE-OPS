@@ -1283,3 +1283,34 @@ describe("opsAPI - getVersion", () => {
         expect(result.data).toEqual({ version: "1.2.3", skip_cr_for_draft_planned: true });
     });
 });
+
+describe("opsAPI - getAgreementsByResearchProjectFilter", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("requests the project's agreements up to the backend's ceiling", async () => {
+        // The backend defaults to limit=10 and caps at 50, so without an explicit limit a
+        // project with more than 10 agreements silently loses the rest (issue #6139).
+        let capturedUrl = "";
+        const agreements = [{ id: 1 }, { id: 2 }];
+        server.use(
+            http.get("*/api/v1/agreements/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: agreements, count: 2, limit: 50, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getAgreementsByResearchProjectFilter.initiate(1001)
+        );
+
+        expect(capturedUrl).toContain("project_id=1001");
+        expect(capturedUrl).toContain("limit=50");
+        expect(capturedUrl).toContain("offset=0");
+
+        // The envelope must be unwrapped to a bare array. ProjectSpending filters this with
+        // Array.isArray, so a broken unwrap silently empties the agreements list instead of
+        // erroring anywhere.
+        expect(result.data).toEqual(agreements);
+    });
+});
