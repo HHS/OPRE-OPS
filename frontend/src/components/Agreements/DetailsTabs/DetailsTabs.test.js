@@ -84,12 +84,33 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={true}
                         hasInExecutionBli={true}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
         );
 
         expect(screen.getByText("Award & Modifications")).toBeInTheDocument();
+        expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
+        expect(screen.getByText("Documents")).toBeInTheDocument();
+    });
+
+    it("hides Award & Modifications for developed, non-grant agreements that aren't Contract or AA", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        isContractOrAa={false}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.queryByText("Award & Modifications")).not.toBeInTheDocument();
+        // Procurement Tracker and Documents aren't restricted to Contract/AA.
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
         expect(screen.getByText("Documents")).toBeInTheDocument();
     });
@@ -180,6 +201,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -198,6 +220,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -274,6 +297,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={true}
                         hasInExecutionBli={true}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -320,6 +344,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>

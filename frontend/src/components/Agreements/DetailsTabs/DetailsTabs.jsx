@@ -13,6 +13,7 @@ import { IS_DOCUMENTS_TAB_READY } from "../../../constants";
  * @param {boolean} props.isAgreementNotDeveloped - Indicates whether the agreement is not developed.
  * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
  * @param {boolean} props.isEditableForProcurementTracker - Indicates whether the current user can edit the procurement tracker.
+ * @param {boolean} props.isContractOrAa - Indicates whether the agreement is a Contract or AA — the only types the Award & Modifications tab supports.
  * @returns {JSX.Element} The rendered JSX element.
  */
 const DetailsTabs = ({
@@ -20,7 +21,8 @@ const DetailsTabs = ({
     isAgreementNotDeveloped,
     isAgreementAwarded,
     isEditableForProcurementTracker = true,
-    isGrant = false
+    isGrant = false,
+    isContractOrAa = false
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -46,10 +48,6 @@ const DetailsTabs = ({
         isDevelopedAgreement && !isGrant
             ? [
                   {
-                      name: "/award-modifications",
-                      label: "Award & Modifications"
-                  },
-                  {
                       name: "/procurement-tracker",
                       label: "Procurement Tracker",
                       disabled: !isEditableForProcurementTracker,
@@ -64,7 +62,17 @@ const DetailsTabs = ({
                   }
               ]
             : [];
-    const paths = [...basePaths, ...developedOnlyPaths];
+    // The Award & Modifications tab/endpoint only supports Contract and AA agreements
+    // (mirrors the route guard in Agreement.jsx and backend's _SUPPORTED_AGREEMENT_TYPES).
+    const contractOrAaOnlyPaths = isContractOrAa
+        ? [
+              {
+                  name: "/award-modifications",
+                  label: "Award & Modifications"
+              }
+          ]
+        : [];
+    const paths = [...basePaths, ...contractOrAaOnlyPaths, ...developedOnlyPaths];
 
     const links = paths.map((path) => {
         const pathName = `/agreements/${agreementId}${path.name}`;

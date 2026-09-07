@@ -17,7 +17,7 @@ import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tag from "../../../components/UI/Tag";
-import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
@@ -158,8 +158,7 @@ const Agreement = () => {
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     // The Award & Modifications tab/endpoint only supports Contract and AA agreements.
     // Guards the route against direct/manually-typed URLs for other types (incl. Miscellaneous).
-    const isContractOrAa =
-        agreement?.agreement_type === AgreementType.CONTRACT || agreement?.agreement_type === AgreementType.AA;
+    const isContractOrAa = isContractOrAaAgreement(agreement?.agreement_type);
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditableForProcurementTracker =
@@ -313,6 +312,7 @@ const Agreement = () => {
                         isAgreementAwarded={isAgreementAwarded ?? false}
                         isEditableForProcurementTracker={isEditableForProcurementTracker}
                         isGrant={isGrant}
+                        isContractOrAa={isContractOrAa}
                     />
                 </section>
 

@@ -35,6 +35,8 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationEr
 # Agreement types that expose po_number / task_order_number / contract_number and
 # are in scope for this tab. Reading those attributes on any other subtype raises
 # AttributeError, so this check is load-bearing, not just a scoping nicety.
+# Mirrored on the frontend by isContractOrAaAgreement in helpers/agreement.helpers.js;
+# keep both in sync.
 _SUPPORTED_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
 
 # The AWARD step's ``award_approval_status`` value that marks a Budget Team award
