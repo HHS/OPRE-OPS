@@ -16,7 +16,7 @@ from four models:
 """
 
 from datetime import date
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from flask import current_app
 from sqlalchemy import select
@@ -59,6 +59,14 @@ def build_fiscal_year_label(action_date: Optional[date], is_modification: bool, 
     if action_date is None:
         return base
     return f"FY {date_to_fiscal_year(action_date)} {base}"
+
+
+class _AwardHistoryEntry(NamedTuple):
+    """A built record paired with its sort key, kept out of the serialized dict."""
+
+    sort_date: Optional[date]
+    is_modification: bool
+    record: dict
 
 
 class AgreementAwardHistoryService:
@@ -109,12 +117,12 @@ class AgreementAwardHistoryService:
             .options(selectinload(ProcurementAction.agreement_mod))
         ).all()
 
-        records = []
+        entries = []
         for action in actions:
             tracker = approved_trackers_by_action.get(action.id)
             if tracker is None:
                 continue
-            records.append(
+            entries.append(
                 self._build_record(
                     action=action,
                     tracker=tracker,
@@ -126,11 +134,8 @@ class AgreementAwardHistoryService:
 
         # Oldest-first: initial award, then modifications in chronological order.
         # Undated cycles sort to the end; the initial award (not a mod) wins ties.
-        records.sort(key=lambda r: (r["_sort_date"] or date.max, r["_is_modification"]))
-        for record in records:
-            record.pop("_sort_date", None)
-            record.pop("_is_modification", None)
-        return records
+        entries.sort(key=lambda entry: (entry.sort_date or date.max, entry.is_modification))
+        return [entry.record for entry in entries]
 
     def _approved_trackers_by_action(self, agreement_id: int) -> dict[int, ProcurementTracker]:
         """Return a map of procurement_action_id -> the tracker whose AWARD step the
@@ -168,7 +173,7 @@ class AgreementAwardHistoryService:
         po_number: Optional[str],
         task_order_number: Optional[str],
         contract_number: Optional[str],
-    ) -> dict:
+    ) -> _AwardHistoryEntry:
         award_step = self._find_step(tracker, ProcurementTrackerStepType.AWARD)
         pre_award_step = self._find_step(tracker, ProcurementTrackerStepType.PRE_AWARD)
         vendor = award_step.award_vendor if award_step else None
@@ -178,7 +183,7 @@ class AgreementAwardHistoryService:
         mod_number = mod.number if mod else None
         action_date = mod.mod_date if (is_modification and mod) else action.date_awarded_obligated
 
-        return {
+        record = {
             "fiscal_year_label": build_fiscal_year_label(action_date, is_modification, mod_number),
             "award_date": action.date_awarded_obligated,
             "award_amount": award_step.award_amount if award_step else None,
@@ -198,6 +203,7 @@ class AgreementAwardHistoryService:
             "_sort_date": action_date,
             "_is_modification": is_modification,
         }
+        return _AwardHistoryEntry(sort_date=action_date, is_modification=is_modification, record=record)
 
     @staticmethod
     def _find_step(tracker: ProcurementTracker, step_type: ProcurementTrackerStepType):
