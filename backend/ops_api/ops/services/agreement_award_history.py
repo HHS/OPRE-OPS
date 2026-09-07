@@ -113,24 +113,23 @@ class AgreementAwardHistoryService:
 
         actions = self.db_session.scalars(
             select(ProcurementAction)
-            .where(ProcurementAction.agreement_id == agreement_id)
+            .where(
+                ProcurementAction.agreement_id == agreement_id,
+                ProcurementAction.id.in_(approved_trackers_by_action.keys()),
+            )
             .options(selectinload(ProcurementAction.agreement_mod))
         ).all()
 
-        entries = []
-        for action in actions:
-            tracker = approved_trackers_by_action.get(action.id)
-            if tracker is None:
-                continue
-            entries.append(
-                self._build_record(
-                    action=action,
-                    tracker=tracker,
-                    po_number=po_number,
-                    task_order_number=task_order_number,
-                    contract_number=contract_number,
-                )
+        entries = [
+            self._build_record(
+                action=action,
+                tracker=approved_trackers_by_action[action.id],
+                po_number=po_number,
+                task_order_number=task_order_number,
+                contract_number=contract_number,
             )
+            for action in actions
+        ]
 
         # Oldest-first: initial award, then modifications in chronological order.
         # Undated cycles sort to the end; the initial award (not a mod) wins ties.
