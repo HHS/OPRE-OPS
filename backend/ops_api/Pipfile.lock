@@ -1724,11 +1724,11 @@
         },
         "configargparse": {
             "hashes": [
-                "sha256:0dec6f0a0248b2115d549f0607c6f629acf5ae690704f3787c78b42cf076e33b",
-                "sha256:e2d2d9afcdb8a8983b3d56bca1997eb38669083fc2266d742bb87ae0c783dd57"
+                "sha256:607bea276a219912158afa1e5a716c3f8f88d542f9997dfd43bbd0b492a9f5a6",
+                "sha256:61107bb1de0b53c4eb7a475a12de6783b0dc6c51bc9859f5accbe97d66f8a4b7"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.7.6"
+            "version": "==1.7.7"
         },
         "coverage": {
             "extras": [
