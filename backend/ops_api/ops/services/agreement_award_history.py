@@ -181,11 +181,15 @@ class AgreementAwardHistoryService:
         is_modification = action.agreement_mod_id is not None
         mod = action.agreement_mod
         mod_number = mod.number if mod else None
-        action_date = mod.mod_date if (is_modification and mod) else action.date_awarded_obligated
+        # A single canonical date drives both the label and the displayed "Award Date"
+        # field, so they can't diverge. AgreementMod.mod_date is not used here: it's an
+        # independent, nullable field that isn't guaranteed to match the action's own
+        # award/obligation date.
+        action_date = action.date_awarded_obligated
 
         record = {
             "fiscal_year_label": build_fiscal_year_label(action_date, is_modification, mod_number),
-            "award_date": action.date_awarded_obligated,
+            "award_date": action_date,
             "award_amount": award_step.award_amount if award_step else None,
             "contract_total": action.agreement_total,
             "contract_number": contract_number,

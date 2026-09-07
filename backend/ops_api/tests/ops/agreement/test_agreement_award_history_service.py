@@ -217,6 +217,49 @@ class TestAgreementAwardHistoryService:
         assert records[1]["fiscal_year_label"] == "FY 2025 Mod 1"
         assert records[1]["modification_number"] == "Mod 1"
 
+    def test_mod_label_and_award_date_use_the_same_date_when_mod_date_diverges(self, loaded_db, app_ctx):
+        """A mod's fiscal-year label and its "Award Date" field must both derive from
+        ProcurementAction.date_awarded_obligated, even when AgreementMod.mod_date
+        disagrees — otherwise the accordion header and its content show different fiscal
+        years for the same cycle."""
+        agreement = ContractAgreement(
+            name="Award History Divergent Mod Date Test",
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        mod = AgreementMod(
+            agreement_id=agreement.id,
+            number="Mod 1",
+            mod_type=ModType.ADMIN,
+            # FY 2024, deliberately different from the action's own award date below.
+            mod_date=date(2024, 9, 30),
+        )
+        loaded_db.add(mod)
+        loaded_db.flush()
+        mod_action = ProcurementAction(
+            agreement_id=agreement.id,
+            agreement_mod_id=mod.id,
+            award_type=AwardType.MODIFICATION,
+            status=ProcurementActionStatus.AWARDED,
+            # FY 2025.
+            date_awarded_obligated=date(2024, 10, 2),
+            agreement_total=Decimal("6000000.00"),
+        )
+        loaded_db.add(mod_action)
+        loaded_db.flush()
+        _make_awarded_tracker(loaded_db, agreement.id, mod_action.id)
+        loaded_db.commit()
+
+        try:
+            service = AgreementAwardHistoryService(loaded_db)
+            record = service.get_award_history(agreement.id)[0]
+            assert record["award_date"] == date(2024, 10, 2)
+            assert record["fiscal_year_label"] == "FY 2025 Mod 1"
+        finally:
+            _cleanup_award_history(loaded_db, agreement)
+
     def test_field_mapping_for_initial_award(self, loaded_db, app_ctx, awarded_contract):
         service = AgreementAwardHistoryService(loaded_db)
         record = service.get_award_history(awarded_contract["agreement"].id)[0]
