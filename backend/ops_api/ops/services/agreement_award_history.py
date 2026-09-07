@@ -163,7 +163,7 @@ class AgreementAwardHistoryService:
 
         by_action: dict[int, ProcurementTracker] = {}
         for tracker in trackers:
-            award_step = self._find_step(tracker, ProcurementTrackerStepType.AWARD)
+            award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
             # award_approval_status lives on the DefaultProcurementTrackerStep subclass;
             # getattr keeps this safe for any non-default step type.
             if getattr(award_step, "award_approval_status", None) != _AWARD_APPROVED_STATUS:
@@ -179,8 +179,8 @@ class AgreementAwardHistoryService:
         task_order_number: Optional[str],
         contract_number: Optional[str],
     ) -> _AwardHistoryEntry:
-        award_step = self._find_step(tracker, ProcurementTrackerStepType.AWARD)
-        pre_award_step = self._find_step(tracker, ProcurementTrackerStepType.PRE_AWARD)
+        award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+        pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
         vendor = award_step.award_vendor if award_step else None
 
         is_modification = action.agreement_mod_id is not None
@@ -213,11 +213,3 @@ class AgreementAwardHistoryService:
             "_is_modification": is_modification,
         }
         return _AwardHistoryEntry(sort_date=action_date, is_modification=is_modification, record=record)
-
-    @staticmethod
-    def _find_step(tracker: ProcurementTracker, step_type: ProcurementTrackerStepType):
-        """Return the tracker's step of the given type, or None."""
-        for step in tracker.steps:
-            if step.step_type == step_type:
-                return step
-        return None

@@ -187,6 +187,14 @@ class ProcurementTracker(BaseModel):
                 step.step_start_date = date.today()
                 break
 
+    def get_step(self, step_type: "ProcurementTrackerStepType") -> Optional["ProcurementTrackerStep"]:
+        """Return this tracker's step of the given type, or None.
+
+        Shared by every caller that needs to look up a specific step (e.g. AWARD,
+        PRE_AWARD) so the lookup rule only has one implementation to keep in sync.
+        """
+        return next((step for step in self.steps if step.step_type == step_type), None)
+
     @classmethod
     def steps_with_award_vendor_option(cls):
         """Eager-load option for steps and, for AWARD steps, the linked vendor.
