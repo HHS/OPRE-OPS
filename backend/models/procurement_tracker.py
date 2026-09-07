@@ -17,7 +17,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship, selectinload
 
 from models.base import BaseModel
 
@@ -186,6 +186,18 @@ class ProcurementTracker(BaseModel):
                 step.status = ProcurementTrackerStepStatus.ACTIVE
                 step.step_start_date = date.today()
                 break
+
+    @classmethod
+    def steps_with_award_vendor_option(cls):
+        """Eager-load option for steps and, for AWARD steps, the linked vendor.
+
+        award_vendor lives on the DefaultProcurementTrackerStep subclass, so it's
+        reached through of_type(). Shared by every query that needs a tracker's
+        steps without triggering a query per step/vendor lookup.
+        """
+        return selectinload(cls.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
+            DefaultProcurementTrackerStep.award_vendor
+        )
 
 
 # ============================================================================

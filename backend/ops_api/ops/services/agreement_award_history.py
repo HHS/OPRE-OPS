@@ -25,7 +25,6 @@ from sqlalchemy.orm import selectinload
 from models import (
     Agreement,
     AgreementType,
-    DefaultProcurementTrackerStep,
     ProcurementAction,
     ProcurementTracker,
     ProcurementTrackerStepType,
@@ -148,15 +147,8 @@ class AgreementAwardHistoryService:
                 ProcurementTracker.agreement_id == agreement_id,
                 ProcurementTracker.procurement_action.isnot(None),
             )
-            # Eager-load steps and, for AWARD steps, the linked vendor so the approval
-            # check below and _build_record's vendor lookups don't trigger a query per
-            # record. award_vendor lives on the DefaultProcurementTrackerStep subclass,
-            # so reach it through of_type().
-            .options(
-                selectinload(ProcurementTracker.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
-                    DefaultProcurementTrackerStep.award_vendor
-                )
-            )
+            # So _build_record's vendor lookups don't trigger a query per record.
+            .options(ProcurementTracker.steps_with_award_vendor_option())
         ).all()
 
         by_action: dict[int, ProcurementTracker] = {}
