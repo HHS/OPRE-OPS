@@ -10,3 +10,7 @@ export const ALN_NUMBER_OPTIONS = [
     { id: "93.647", title: "93.647 (SSRD)", order: 9 },
     { id: "93.671", title: "93.671 (FVPSA)", order: 10 }
 ];
+
+export const getAlnTitle = (alnId) => ALN_NUMBER_OPTIONS.find((opt) => opt.id === alnId)?.title ?? String(alnId);
+
+export const sortAlnNumbers = (a, b) => parseFloat(a) - parseFloat(b);

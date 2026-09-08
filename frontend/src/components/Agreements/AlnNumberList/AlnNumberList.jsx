@@ -1,5 +1,5 @@
 import icons from "../../../uswds/img/sprite.svg";
-import { ALN_NUMBER_OPTIONS } from "../AlnNumbersComboBox/AlnNumbersComboBox.constants";
+import { getAlnTitle, sortAlnNumbers } from "../AlnNumbersComboBox/AlnNumbersComboBox.constants";
 
 /**
  * @component - Renders a list of selected ALN Numbers with remove buttons.
@@ -10,8 +10,7 @@ import { ALN_NUMBER_OPTIONS } from "../AlnNumbersComboBox/AlnNumbersComboBox.con
  */
 const AlnNumberList = ({ selectedAlnNumbers, removeAlnNumber }) => {
     const AlnTag = ({ alnId }) => {
-        const option = ALN_NUMBER_OPTIONS.find((opt) => opt.id === alnId);
-        const label = option ? option.title : alnId;
+        const label = getAlnTitle(alnId);
 
         return (
             <div
@@ -39,16 +38,14 @@ const AlnNumberList = ({ selectedAlnNumbers, removeAlnNumber }) => {
 
     return selectedAlnNumbers?.length > 0 ? (
         <ul className="add-list-reset">
-            {[...selectedAlnNumbers]
-                .sort((a, b) => parseFloat(a) - parseFloat(b))
-                .map((alnId) => (
-                    <li
-                        key={alnId}
-                        className="margin-top-105"
-                    >
-                        <AlnTag alnId={alnId} />
-                    </li>
-                ))}
+            {[...selectedAlnNumbers].sort(sortAlnNumbers).map((alnId) => (
+                <li
+                    key={alnId}
+                    className="margin-top-105"
+                >
+                    <AlnTag alnId={alnId} />
+                </li>
+            ))}
         </ul>
     ) : (
         <p>No ALN numbers</p>

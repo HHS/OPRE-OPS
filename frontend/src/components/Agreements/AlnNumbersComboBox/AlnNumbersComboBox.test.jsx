@@ -51,4 +51,21 @@ describe("AlnNumbersComboBox", () => {
         render(<AlnNumbersComboBox {...defaultProps} />);
         expect(screen.getByText("ALN Numbers")).toBeInTheDocument();
     });
+
+    it("calls addAlnNumber with the option id when an option is selected", () => {
+        const addAlnNumber = vi.fn();
+        const { container } = render(
+            <AlnNumbersComboBox
+                selectedAlnNumbers={[]}
+                addAlnNumber={addAlnNumber}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+        fireEvent.click(screen.getByText("93.320 (MIECHV)"));
+
+        expect(addAlnNumber).toHaveBeenCalledWith("93.320");
+        expect(addAlnNumber).toHaveBeenCalledTimes(1);
+    });
 });
