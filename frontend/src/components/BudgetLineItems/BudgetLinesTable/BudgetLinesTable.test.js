@@ -191,16 +191,16 @@ describe("PreviewTable", () => {
                 .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
 
         // First click on a new header sorts descending (useSetSortConditions forces descending
-        // when the sort column changes): 10, 2, then the em-dash (no CLIN) and "N/A" (Draft) last.
+        // when the sort column changes): 10, 2, then "TBD" (non-draft, no CLIN) and "N/A" (Draft) last.
         fireEvent.click(screen.getByRole("button", { name: /CLIN/ }));
         const descending = clinColumnOrder();
         expect(descending.slice(0, 2)).toEqual(["10", "2"]);
-        expect(descending.slice(2)).toEqual(expect.arrayContaining(["—", "N/A"]));
+        expect(descending.slice(2)).toEqual(expect.arrayContaining(["TBD", "N/A"]));
 
         // Second click flips to ascending but keeps CLIN-less rows pinned last.
         fireEvent.click(screen.getByRole("button", { name: /CLIN/ }));
         const ascending = clinColumnOrder();
         expect(ascending.slice(0, 2)).toEqual(["2", "10"]);
-        expect(ascending.slice(2)).toEqual(expect.arrayContaining(["—", "N/A"]));
+        expect(ascending.slice(2)).toEqual(expect.arrayContaining(["TBD", "N/A"]));
     });
 });
