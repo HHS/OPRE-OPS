@@ -186,8 +186,8 @@ describe("edit an existing Grant agreement", () => {
             cy.get("#funding_period_months").should("have.value", "12");
             cy.get("#funding_period_months").select("18");
 
-            // ALN Numbers: add 7 (seeded with [3])
-            cy.get("#aln-numbers-combobox-input").type("7{enter}");
+            // ALN Numbers: add 93.575 (Head Start) (seeded with ["93.086"])
+            cy.get("#aln-numbers-combobox-input").type("93.575{enter}");
 
             // FPO (project_officer_id): Chris Fortunato -> Dave Director
             cy.get("#project-officer-combobox-input").eq(0).type("Dave Director{enter}");
@@ -202,7 +202,7 @@ describe("edit an existing Grant agreement", () => {
                     nofo_number: "NOFO-UPDATED",
                     funding_period_months: 18
                 });
-                expect(interception.request.body.aln_numbers).to.include(7);
+                expect(interception.request.body.aln_numbers).to.include("93.575");
             });
             cy.get(".usa-alert__body").should("contain", "has been successfully updated");
 
@@ -220,7 +220,7 @@ describe("edit an existing Grant agreement", () => {
                         "Change to Grant Funding Period",
                         "changed the Grant Funding Period from 12 months to 18 months.",
                         "Change to ALN Numbers",
-                        "added ALN Number 7.",
+                        "added ALN Number 93.575.",
                         "Change to FPO",
                         "changed the FPO from Chris Fortunato to Dave Director.",
                         "Change to Project Specialist",
