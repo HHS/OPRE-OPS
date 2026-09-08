@@ -6,6 +6,10 @@ import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } fr
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
+import {
+    getAlnTitle,
+    sortAlnNumbers
+} from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -178,20 +182,18 @@ const AgreementDetailsView = ({
                             <dt className="margin-0 text-base-dark margin-top-3">ALN Numbers</dt>
                             {agreement?.aln_numbers && agreement?.aln_numbers?.length > 0 ? (
                                 <>
-                                    {[...agreement.aln_numbers]
-                                        .sort((a, b) => a - b)
-                                        .map((alnNumber) => (
-                                            <dd
-                                                key={alnNumber}
-                                                className="margin-0 margin-top-05"
-                                            >
-                                                <Tag
-                                                    dataCy={`aln-number-tag-${alnNumber}`}
-                                                    tagStyle="primaryDarkTextLightBackground"
-                                                    text={String(alnNumber)}
-                                                />
-                                            </dd>
-                                        ))}
+                                    {[...agreement.aln_numbers].sort(sortAlnNumbers).map((alnNumber) => (
+                                        <dd
+                                            key={alnNumber}
+                                            className="margin-0 margin-top-05"
+                                        >
+                                            <Tag
+                                                dataCy={`aln-number-tag-${alnNumber}`}
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={getAlnTitle(alnNumber)}
+                                            />
+                                        </dd>
+                                    ))}
                                 </>
                             ) : (
                                 <dd
