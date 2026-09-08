@@ -306,6 +306,7 @@ const AgreementBudgetLines = ({
                         selectedAgreement={agreement}
                         budgetLines={agreement?.budget_line_items ?? []}
                         isEditMode={isEditMode}
+                        isAgreementAwarded={isAgreementAwarded}
                         setIsEditMode={setIsEditMode}
                         isReviewMode={false}
                         selectedProcurementShop={agreement?.procurement_shop}

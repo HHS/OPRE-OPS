@@ -36,6 +36,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.isAgreementAwarded] - Whether the agreement is awarded (drives the contract-only CLIN column). - optional
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
@@ -65,6 +66,7 @@ export const CreateBLIsAndSCs = ({
     continueBtnText,
     continueOverRide,
     isEditMode,
+    isAgreementAwarded = false,
     canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
@@ -149,6 +151,9 @@ export const CreateBLIsAndSCs = ({
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
     const isGrant = selectedAgreement.agreement_type === AGREEMENT_TYPES.GRANT;
+    const isContract = selectedAgreement.agreement_type === AGREEMENT_TYPES.CONTRACT;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const showClinColumn = isContract && isAgreementAwarded;
 
     const handleSaveRef = useRef(handleSave);
     const onSavedRef = useRef(onSaved);
@@ -650,6 +655,7 @@ export const CreateBLIsAndSCs = ({
                                     handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                                     isEditable={isAgreementWorkflowOrCanEditBudgetLines}
                                     isReviewMode={isReviewMode}
+                                    showClinColumn={showClinColumn}
                                 />
                             </ServicesComponentAccordion>
                         </div>
