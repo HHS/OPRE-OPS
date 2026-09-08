@@ -1478,6 +1478,99 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     )
 
 
+def test_agreement_history_nofo_number_and_funding_period_changes(loaded_db, app_ctx):
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 76)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(agreement_history_list) == 2
+
+    nofo_history_item = agreement_history_list[0]
+    assert nofo_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert nofo_history_item.history_title == "Change to NOFO Number"
+    assert nofo_history_item.history_message == "Steve Tekell changed the NOFO Number from None to NOFO-2026-01."
+
+    funding_period_history_item = agreement_history_list[1]
+    assert funding_period_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert funding_period_history_item.history_title == "Change to Grant Funding Period"
+    assert (
+        funding_period_history_item.history_message
+        == "Steve Tekell changed the Grant Funding Period from 12 months to 18 months."
+    )
+
+
+def test_agreement_history_aln_numbers_added_and_removed(loaded_db, app_ctx):
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 77)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(agreement_history_list) == 2
+
+    added_history_item = agreement_history_list[0]
+    assert added_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert added_history_item.history_title == "Change to ALN Numbers"
+    assert added_history_item.history_message == "Steve Tekell added ALN Number 7."
+
+    removed_history_item = agreement_history_list[1]
+    assert removed_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert removed_history_item.history_title == "Change to ALN Numbers"
+    assert removed_history_item.history_message == "Steve Tekell removed ALN Number 3."
+
+
+def test_agreement_history_fpo_and_project_specialist_changes_on_grant(loaded_db, app_ctx):
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 78)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(agreement_history_list) == 2
+
+    fpo_history_item = agreement_history_list[0]
+    assert fpo_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert fpo_history_item.history_title == "Change to FPO"
+    assert fpo_history_item.history_message == "Steve Tekell changed the FPO from Chris Fortunato to Dave Director."
+
+    project_specialist_history_item = agreement_history_list[1]
+    assert project_specialist_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert project_specialist_history_item.history_title == "Change to Project Specialist"
+    assert (
+        project_specialist_history_item.history_message
+        == "Steve Tekell changed the Project Specialist from TBD to Amy Madigan."
+    )
+
+
 def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
     """Test that add_history_events prevents duplicate events in the same batch."""
     event1 = AgreementHistory(
