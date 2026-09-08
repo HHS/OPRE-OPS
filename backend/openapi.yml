@@ -9490,7 +9490,7 @@ components:
               type: array
               nullable: true
               items:
-                type: integer
+                type: string
             funding_period_months:
               type: integer
               nullable: true
@@ -9789,7 +9789,7 @@ components:
               type: array
               nullable: true
               items:
-                type: integer
+                type: string
             funding_period_months:
               type: integer
               nullable: true
@@ -9813,7 +9813,7 @@ components:
               type: array
               nullable: true
               items:
-                type: integer
+                type: string
             funding_period_months:
               type: integer
               nullable: true

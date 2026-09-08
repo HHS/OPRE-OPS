@@ -323,12 +323,12 @@ class TestAgreementDataNestedFields:
             "name": "Test Grant",
             "agreement_type": "GRANT",
             "nofo_number": "NOFO-2026-01",
-            "aln_numbers": [3, 7],
+            "aln_numbers": ["93.086", "93.600"],
             "funding_period_months": 18,
         }
         result = schema.load(data)
         assert result["nofo_number"] == "NOFO-2026-01"
-        assert result["aln_numbers"] == [3, 7]
+        assert result["aln_numbers"] == ["93.086", "93.600"]
         assert result["funding_period_months"] == 18
 
         none_data = {
