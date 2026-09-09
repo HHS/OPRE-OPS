@@ -365,6 +365,25 @@ const AwardRequestForm = ({
                         </div>
 
                         <div className="grid-col-4">
+                            <MemoizedDatePicker
+                                id="awardDate"
+                                name="awardDate"
+                                label="Award Date"
+                                hint="mm/dd/yyyy"
+                                value={awardDate}
+                                onChange={(e) => {
+                                    onAwardDateChange(e.target.value);
+                                    runValidate("awardDate", e.target.value);
+                                }}
+                                messages={validationResult.getErrors("awardDate") || []}
+                                isRequiredNoShow={true}
+                                dataCy="award-date-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid-row grid-gap flex-align-end">
+                        <div className="grid-col-4">
                             <label
                                 className="usa-label"
                                 htmlFor="modificationNumber"
@@ -402,9 +421,7 @@ const AwardRequestForm = ({
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    <div className="grid-row grid-gap flex-align-end">
                         <div className="grid-col-4">
                             <div
                                 className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("purchaseOrderNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
@@ -473,23 +490,6 @@ const AwardRequestForm = ({
                                     data-cy="task-order-number-input"
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid-col-4">
-                            <MemoizedDatePicker
-                                id="awardDate"
-                                name="awardDate"
-                                label="Award Date"
-                                hint="mm/dd/yyyy"
-                                value={awardDate}
-                                onChange={(e) => {
-                                    onAwardDateChange(e.target.value);
-                                    runValidate("awardDate", e.target.value);
-                                }}
-                                messages={validationResult.getErrors("awardDate") || []}
-                                isRequiredNoShow={true}
-                                dataCy="award-date-input"
-                            />
                         </div>
                     </div>
                 </fieldset>
