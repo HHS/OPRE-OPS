@@ -30,7 +30,7 @@ jobs:
           # Filename below must match this workflow's own file -- if this file is ever
           # renamed, update it too, or this 404s, run_count comes back empty, and the
           # rate limit silently stops enforcing.
-          run_count=$(gh api "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
+          run_count=$(gh api -X GET "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
             -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count')
 
           echo "run_count=${run_count}" >> "$GITHUB_ENV"
