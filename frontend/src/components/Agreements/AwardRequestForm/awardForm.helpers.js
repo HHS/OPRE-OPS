@@ -22,3 +22,22 @@ export const formatVendorType = (vendorType) => {
 
     return typeMap[cleanType] || vendorType;
 };
+
+/**
+ * Default Modification # value for a new award.
+ * @type {string}
+ */
+export const DEFAULT_MODIFICATION_NUMBER = "Base";
+
+/**
+ * Build the Modification # dropdown options for Step 6 (OPS-5892).
+ * For a new award the value is "Base"; future modification versions are P00001..P00020.
+ * @returns {string[]} Ordered option values.
+ */
+export const getModificationOptions = () => {
+    const options = [DEFAULT_MODIFICATION_NUMBER];
+    for (let i = 1; i <= 20; i++) {
+        options.push(`P${String(i).padStart(5, "0")}`);
+    }
+    return options;
+};

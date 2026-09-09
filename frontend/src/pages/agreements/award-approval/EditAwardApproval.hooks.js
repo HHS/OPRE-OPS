@@ -70,6 +70,12 @@ export default function useEditAwardApproval(agreementId) {
     const [awardDate, setAwardDate] = useState("");
     const [notes, setNotes] = useState("");
 
+    // OPS-5892: additional award fields
+    const [agreementTitle, setAgreementTitle] = useState("");
+    const [modificationNumber, setModificationNumber] = useState("Base");
+    const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
+    const [taskOrderNumber, setTaskOrderNumber] = useState("");
+
     // Auth — restrict page to Budget Team and System Owner
     // @ts-expect-error - Redux state typing in JS files
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles ?? [], shallowEqual);
@@ -159,6 +165,12 @@ export default function useEditAwardApproval(agreementId) {
         if (step6.award_date) setAwardDate(formatApiDateForDisplay(step6.award_date));
         if (step6.requestor_notes) setNotes(step6.requestor_notes);
 
+        // OPS-5892: seed additional award fields (fall back to agreement.name for legacy rows)
+        setAgreementTitle(step6.agreement_title ?? agreement.name ?? "");
+        if (step6.modification_number) setModificationNumber(step6.modification_number);
+        if (step6.purchase_order_number) setPurchaseOrderNumber(step6.purchase_order_number);
+        if (step6.task_order_number) setTaskOrderNumber(step6.task_order_number);
+
         // Seed CLIN assignments from existing budget-line clin_id values
         const existingClins = {};
         allBudgetLines.forEach((bli) => {
@@ -184,6 +196,10 @@ export default function useEditAwardApproval(agreementId) {
         const seededAmount = step6?.award_amount != null ? String(step6.award_amount) : "";
         const seededDate = formatApiDateForDisplay(step6?.award_date);
         const seededNotes = step6?.requestor_notes ?? "";
+        const seededTitle = step6?.agreement_title ?? agreement?.name ?? "";
+        const seededMod = step6?.modification_number ?? "Base";
+        const seededPO = step6?.purchase_order_number ?? "";
+        const seededTask = step6?.task_order_number ?? "";
 
         return (
             (selectedVendor?.id ?? null) !== seededVendorId ||
@@ -191,6 +207,10 @@ export default function useEditAwardApproval(agreementId) {
             awardAmount !== seededAmount ||
             awardDate !== seededDate ||
             notes !== seededNotes ||
+            agreementTitle !== seededTitle ||
+            modificationNumber !== seededMod ||
+            purchaseOrderNumber !== seededPO ||
+            taskOrderNumber !== seededTask ||
             // For CLINs, compare against the seeded assignments (only track newly added ones)
             Object.keys(clinAssignments).some(
                 (bliId) =>
@@ -200,11 +220,16 @@ export default function useEditAwardApproval(agreementId) {
     }, [
         isSeeded,
         step6,
+        agreement,
         selectedVendor,
         contractNumber,
         awardAmount,
         awardDate,
         notes,
+        agreementTitle,
+        modificationNumber,
+        purchaseOrderNumber,
+        taskOrderNumber,
         clinAssignments,
         allBudgetLines
     ]);
@@ -262,7 +287,11 @@ export default function useEditAwardApproval(agreementId) {
             vendor: selectedVendor?.id,
             contractNumber,
             awardAmount,
-            awardDate
+            awardDate,
+            agreementTitle,
+            modificationNumber,
+            purchaseOrderNumber,
+            taskOrderNumber
         };
         suite.run(allData);
         const finalValidation = suite.get();
@@ -302,7 +331,11 @@ export default function useEditAwardApproval(agreementId) {
                     contract_number: contractNumber.trim(),
                     award_amount: parseFloat(awardAmount),
                     award_date: formatDateForApi(awardDate),
-                    requestor_notes: notes.trim() || null
+                    requestor_notes: notes.trim() || null,
+                    agreement_title: agreementTitle.trim(),
+                    modification_number: modificationNumber,
+                    purchase_order_number: purchaseOrderNumber.trim(),
+                    task_order_number: taskOrderNumber.trim()
                 }
             }).unwrap();
 
@@ -377,6 +410,14 @@ export default function useEditAwardApproval(agreementId) {
         setAwardAmount,
         awardDate,
         setAwardDate,
+        agreementTitle,
+        setAgreementTitle,
+        modificationNumber,
+        setModificationNumber,
+        purchaseOrderNumber,
+        setPurchaseOrderNumber,
+        taskOrderNumber,
+        setTaskOrderNumber,
         runValidate,
         validationResult,
         MemoizedDatePicker,

@@ -31,6 +31,36 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.vendor).isNotNullish().greaterThan(0);
     });
 
+    // OPS-5892: Agreement Title is required (overwrites agreement.name on approval)
+    test("agreementTitle", "Agreement Title is required", () => {
+        enforce(data.agreementTitle).isNotEmpty();
+    });
+
+    // OPS-5892: Modification # is required (defaults to "Base")
+    test("modificationNumber", "Modification # is required", () => {
+        enforce(data.modificationNumber).isNotEmpty();
+    });
+
+    // OPS-5892: Purchase Order # (ODN) is required
+    test("purchaseOrderNumber", "Purchase Order # is required", () => {
+        enforce(data.purchaseOrderNumber).isNotEmpty();
+    });
+
+    test("purchaseOrderNumber", "Purchase Order # must be 100 characters or less", () => {
+        if (!data.purchaseOrderNumber) return;
+        enforce(data.purchaseOrderNumber).shorterThanOrEquals(100);
+    });
+
+    // OPS-5892: Task Order # is required
+    test("taskOrderNumber", "Task Order # is required", () => {
+        enforce(data.taskOrderNumber).isNotEmpty();
+    });
+
+    test("taskOrderNumber", "Task Order # must be 100 characters or less", () => {
+        if (!data.taskOrderNumber) return;
+        enforce(data.taskOrderNumber).shorterThanOrEquals(100);
+    });
+
     // Award Information validations
     test("contractNumber", "Contract # is required", () => {
         enforce(data.contractNumber).isNotEmpty();

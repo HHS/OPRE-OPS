@@ -580,6 +580,27 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         nullable=True,
     )
 
+    # AWARD additional fields (OPS-5892)
+    # Proposed agreement title; applied to agreement.name only on Budget Team approval.
+    award_agreement_title: Mapped[Optional[str]] = mapped_column(
+        String,
+        nullable=True,
+    )
+    # Modification number label ("Base" for a new award, otherwise P00001..P00020).
+    award_modification_number: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+    # Purchase Order # (ODN to the Budget Team).
+    award_purchase_order_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    award_task_order_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
     # Relationship for award completed by user
     award_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
@@ -639,6 +660,10 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         data.pop("award_contract_number", None)
         data.pop("award_amount", None)
         data.pop("award_date", None)
+        data.pop("award_agreement_title", None)
+        data.pop("award_modification_number", None)
+        data.pop("award_purchase_order_number", None)
+        data.pop("award_task_order_number", None)
 
     def to_dict(self):
         """
@@ -1054,6 +1079,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data["contract_number"] = data.pop("award_contract_number", None)
             data["award_amount"] = float(data.pop("award_amount")) if data.get("award_amount") is not None else None
             data["award_date"] = data.pop("award_date", None)
+
+            # Map additional award fields (OPS-5892)
+            data["agreement_title"] = data.pop("award_agreement_title", None)
+            data["modification_number"] = data.pop("award_modification_number", None)
+            data["purchase_order_number"] = data.pop("award_purchase_order_number", None)
+            data["task_order_number"] = data.pop("award_task_order_number", None)
 
             # Remove ACQUISITION_PLANNING-specific fields
             data.pop("acquisition_planning_task_completed_by", None)

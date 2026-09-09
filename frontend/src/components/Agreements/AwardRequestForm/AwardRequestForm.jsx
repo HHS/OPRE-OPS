@@ -7,7 +7,7 @@ import Accordion from "../../UI/Accordion";
 import CLINSelector from "../../BudgetLineItems/CLINSelector";
 import SummaryBox from "../SummaryBox";
 import FileUploadButton from "../../UI/Button/FileUploadButton";
-import { formatVendorType } from "./awardForm.helpers";
+import { formatVendorType, getModificationOptions } from "./awardForm.helpers";
 
 /**
  * @component - Shared presentational form for award request / award edit fields.
@@ -31,6 +31,14 @@ import { formatVendorType } from "./awardForm.helpers";
  * @param {Function} props.onAwardAmountChange                 - (value: string) => void
  * @param {string}   props.awardDate                           - Award Date field value
  * @param {Function} props.onAwardDateChange                   - (value: string) => void
+ * @param {string}   props.agreementTitle                      - Agreement Title field value (OPS-5892)
+ * @param {Function} props.onAgreementTitleChange              - (value: string) => void
+ * @param {string}   props.modificationNumber                  - Modification # field value (OPS-5892)
+ * @param {Function} props.onModificationNumberChange          - (value: string) => void
+ * @param {string}   props.purchaseOrderNumber                 - Purchase Order # (ODN) field value (OPS-5892)
+ * @param {Function} props.onPurchaseOrderNumberChange         - (value: string) => void
+ * @param {string}   props.taskOrderNumber                     - Task Order # field value (OPS-5892)
+ * @param {Function} props.onTaskOrderNumberChange             - (value: string) => void
  * @param {React.ComponentType} props.MemoizedDatePicker       - Memoized DatePicker component
  * @param {Array}    props.groupedBudgetLinesByServicesComponent - BLIs grouped by SC
  * @param {Map}      props.servicesComponentLookup              - SC label → SC object Map
@@ -60,6 +68,14 @@ const AwardRequestForm = ({
     onAwardAmountChange,
     awardDate,
     onAwardDateChange,
+    agreementTitle,
+    onAgreementTitleChange,
+    modificationNumber,
+    onModificationNumberChange,
+    purchaseOrderNumber,
+    onPurchaseOrderNumberChange,
+    taskOrderNumber,
+    onTaskOrderNumberChange,
     MemoizedDatePicker,
     groupedBudgetLinesByServicesComponent,
     servicesComponentLookup,
@@ -158,6 +174,58 @@ const AwardRequestForm = ({
                         }
                     )}
             </AgreementBLIAccordion>
+
+            {/* Update Agreement Title (OPS-5892) */}
+            <Accordion
+                heading="Update Agreement Title"
+                level={3}
+                isClosed={false}
+                dataCy="update-agreement-title-accordion"
+            >
+                <fieldset className="usa-fieldset">
+                    <p className="margin-top-1 margin-bottom-3">
+                        Enter the Agreement Title to match the signed award exactly. This will over write the agreement
+                        title currently entered and it will be locked from editing after this step. You will still be
+                        able to edit the Agreement Nickname at anytime.
+                    </p>
+                    <div className="grid-row grid-gap">
+                        <div className="grid-col-8">
+                            <div
+                                className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("agreementTitle")?.length > 0 ? "usa-form-group--error" : ""}`}
+                            >
+                                <label
+                                    className={`usa-label ${validationResult.getErrors("agreementTitle")?.length > 0 ? "usa-label--error" : ""}`}
+                                    htmlFor="agreementTitle"
+                                >
+                                    Agreement Title
+                                </label>
+                                {validationResult.getErrors("agreementTitle")?.length > 0 && (
+                                    <div
+                                        className="usa-error-message"
+                                        role="alert"
+                                    >
+                                        {validationResult.getErrors("agreementTitle")[0]}
+                                    </div>
+                                )}
+                                <input
+                                    id="agreementTitle"
+                                    name="agreementTitle"
+                                    className={`usa-input ${validationResult.getErrors("agreementTitle")?.length > 0 ? "usa-input--error" : ""}`}
+                                    type="text"
+                                    value={agreementTitle}
+                                    onChange={(e) => {
+                                        onAgreementTitleChange(e.target.value);
+                                        runValidate("agreementTitle", e.target.value);
+                                    }}
+                                    required
+                                    aria-required="true"
+                                    data-cy="agreement-title-input"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </Accordion>
 
             {/* Vendor Information */}
             <Accordion
@@ -294,6 +362,117 @@ const AwardRequestForm = ({
                                 isRequiredNoShow={true}
                                 dataCy="award-amount-input"
                             />
+                        </div>
+
+                        <div className="grid-col-4">
+                            <label
+                                className="usa-label"
+                                htmlFor="modificationNumber"
+                            >
+                                Modification #
+                            </label>
+                            <select
+                                id="modificationNumber"
+                                name="modificationNumber"
+                                className="usa-select"
+                                value={modificationNumber}
+                                onChange={(e) => {
+                                    onModificationNumberChange(e.target.value);
+                                    runValidate("modificationNumber", e.target.value);
+                                }}
+                                required
+                                aria-required="true"
+                                data-cy="modification-number-select"
+                            >
+                                {getModificationOptions().map((option) => (
+                                    <option
+                                        key={option}
+                                        value={option}
+                                    >
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                            {validationResult.getErrors("modificationNumber")?.length > 0 && (
+                                <div
+                                    className="usa-error-message"
+                                    role="alert"
+                                >
+                                    {validationResult.getErrors("modificationNumber")[0]}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid-row grid-gap flex-align-end">
+                        <div className="grid-col-4">
+                            <div
+                                className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("purchaseOrderNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
+                            >
+                                <label
+                                    className={`usa-label ${validationResult.getErrors("purchaseOrderNumber")?.length > 0 ? "usa-label--error" : ""}`}
+                                    htmlFor="purchaseOrderNumber"
+                                >
+                                    Purchase Order #
+                                </label>
+                                {validationResult.getErrors("purchaseOrderNumber")?.length > 0 && (
+                                    <div
+                                        className="usa-error-message"
+                                        role="alert"
+                                    >
+                                        {validationResult.getErrors("purchaseOrderNumber")[0]}
+                                    </div>
+                                )}
+                                <input
+                                    id="purchaseOrderNumber"
+                                    name="purchaseOrderNumber"
+                                    className={`usa-input ${validationResult.getErrors("purchaseOrderNumber")?.length > 0 ? "usa-input--error" : ""}`}
+                                    type="text"
+                                    value={purchaseOrderNumber}
+                                    onChange={(e) => {
+                                        onPurchaseOrderNumberChange(e.target.value);
+                                        runValidate("purchaseOrderNumber", e.target.value);
+                                    }}
+                                    required
+                                    aria-required="true"
+                                    data-cy="purchase-order-number-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid-col-4">
+                            <div
+                                className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("taskOrderNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
+                            >
+                                <label
+                                    className={`usa-label ${validationResult.getErrors("taskOrderNumber")?.length > 0 ? "usa-label--error" : ""}`}
+                                    htmlFor="taskOrderNumber"
+                                >
+                                    Task Order #
+                                </label>
+                                {validationResult.getErrors("taskOrderNumber")?.length > 0 && (
+                                    <div
+                                        className="usa-error-message"
+                                        role="alert"
+                                    >
+                                        {validationResult.getErrors("taskOrderNumber")[0]}
+                                    </div>
+                                )}
+                                <input
+                                    id="taskOrderNumber"
+                                    name="taskOrderNumber"
+                                    className={`usa-input ${validationResult.getErrors("taskOrderNumber")?.length > 0 ? "usa-input--error" : ""}`}
+                                    type="text"
+                                    value={taskOrderNumber}
+                                    onChange={(e) => {
+                                        onTaskOrderNumberChange(e.target.value);
+                                        runValidate("taskOrderNumber", e.target.value);
+                                    }}
+                                    required
+                                    aria-required="true"
+                                    data-cy="task-order-number-input"
+                                />
+                            </div>
                         </div>
 
                         <div className="grid-col-4">

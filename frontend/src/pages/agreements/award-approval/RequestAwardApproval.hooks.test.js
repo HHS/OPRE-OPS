@@ -172,3 +172,104 @@ describe("useRequestAwardApproval — navigation blocker", () => {
         });
     });
 });
+
+describe("useRequestAwardApproval — additional award fields (OPS-5892)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    it("seeds agreementTitle from the agreement name and defaults modification # to Base", async () => {
+        const { result } = setup();
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+        expect(result.current.modificationNumber).toBe("Base");
+        expect(result.current.purchaseOrderNumber).toBe("");
+        expect(result.current.taskOrderNumber).toBe("");
+    });
+
+    it("does not flag the blocker on a pristine seeded form (hasChanged regression)", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: vi.fn(), reset: vi.fn() };
+        });
+        const { result } = setup();
+        // Wait for the title to seed from agreement.name before evaluating the predicate.
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+        const shouldBlock = capturedCb({
+            currentLocation: { pathname: "/agreements/1/award" },
+            nextLocation: { pathname: "/agreements/1/details" }
+        });
+        expect(shouldBlock).toBe(false);
+    });
+
+    it("blocks navigation once a new required field is edited", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: vi.fn(), reset: vi.fn() };
+        });
+        const { result } = setup();
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+        act(() => {
+            result.current.setPurchaseOrderNumber("ODN-123");
+        });
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("includes the new award fields in the step PATCH payload on submit", async () => {
+        const store = setupStore();
+        const wrapper = ({ children }) => (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
+
+        const updateStep = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+        useGetAgreementByIdQuery.mockReturnValue({ data: buildAgreement(), isLoading: false });
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: { data: [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60 }] }] },
+            isLoading: false
+        });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([updateStep, {}]);
+        useGetServicesComponentsListQuery.mockReturnValue({ data: [], isLoading: false });
+        useGetVendorsQuery.mockReturnValue({ data: [{ id: 7, name: "Vendor 7" }], isLoading: false });
+        useUpdateBudgetLineItemMutation.mockReturnValue([vi.fn(), {}]);
+
+        const { result } = renderHook(() => useRequestAwardApproval(1), { wrapper });
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+
+        act(() => {
+            result.current.setSelectedVendor({ id: 7, name: "Vendor 7" });
+            result.current.setContractNumber("C-1");
+            result.current.setAwardAmount("1000");
+            result.current.setAwardDate("01/01/2025");
+            result.current.setAgreementTitle("Signed Award Title");
+            result.current.setModificationNumber("P00002");
+            result.current.setPurchaseOrderNumber("ODN-9");
+            result.current.setTaskOrderNumber("TO-4");
+        });
+
+        await act(async () => {
+            await result.current.handleSubmit();
+        });
+
+        expect(updateStep).toHaveBeenCalledWith(
+            expect.objectContaining({
+                stepId: 60,
+                data: expect.objectContaining({
+                    agreement_title: "Signed Award Title",
+                    modification_number: "P00002",
+                    purchase_order_number: "ODN-9",
+                    task_order_number: "TO-4"
+                })
+            })
+        );
+    });
+});

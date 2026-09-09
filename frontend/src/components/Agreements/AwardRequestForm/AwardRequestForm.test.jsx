@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
@@ -96,6 +96,14 @@ const defaultProps = {
     onAwardAmountChange: vi.fn(),
     awardDate: "",
     onAwardDateChange: vi.fn(),
+    agreementTitle: "",
+    onAgreementTitleChange: vi.fn(),
+    modificationNumber: "Base",
+    onModificationNumberChange: vi.fn(),
+    purchaseOrderNumber: "",
+    onPurchaseOrderNumberChange: vi.fn(),
+    taskOrderNumber: "",
+    onTaskOrderNumberChange: vi.fn(),
     MemoizedDatePicker: mockMemoizedDatePicker,
     groupedBudgetLinesByServicesComponent: [],
     servicesComponentLookup: new Map(),
@@ -233,6 +241,58 @@ describe("AwardRequestForm", () => {
         it("does not show error when a BLI is being edited (selector is open)", () => {
             renderForm({ hasMissingCLINs: true, selectedBudgetLineId: 101 });
             expect(screen.queryByText("This information is required to submit for approval")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Update Agreement Title accordion (OPS-5892)", () => {
+        it("renders the accordion with the instructional copy and title input", () => {
+            renderForm();
+            expect(screen.getByTestId("accordion-update-agreement-title")).toBeInTheDocument();
+            expect(
+                screen.getByText(/Enter the Agreement Title to match the signed award exactly/i)
+            ).toBeInTheDocument();
+            expect(screen.getByLabelText("Agreement Title")).toBeInTheDocument();
+        });
+
+        it("renders the title accordion in edit mode too", () => {
+            renderForm({ mode: "edit" });
+            expect(screen.getByTestId("accordion-update-agreement-title")).toBeInTheDocument();
+            expect(screen.getByLabelText("Agreement Title")).toBeInTheDocument();
+        });
+
+        it("calls onAgreementTitleChange and runValidate when the title changes", () => {
+            const onAgreementTitleChange = vi.fn();
+            const runValidate = vi.fn();
+            renderForm({ onAgreementTitleChange, runValidate });
+            fireEvent.change(screen.getByLabelText("Agreement Title"), { target: { value: "New Title" } });
+            expect(onAgreementTitleChange).toHaveBeenCalledWith("New Title");
+            expect(runValidate).toHaveBeenCalledWith("agreementTitle", "New Title");
+        });
+    });
+
+    describe("Current Award Information — new fields (OPS-5892)", () => {
+        it("renders the Modification # select defaulting to Base with P00001..P00020 options", () => {
+            renderForm();
+            const select = screen.getByLabelText("Modification #");
+            expect(select).toBeInTheDocument();
+            // 1 Base + 20 P-numbered options
+            expect(within(select).getAllByRole("option")).toHaveLength(21);
+            expect(select).toHaveValue("Base");
+            expect(screen.getByRole("option", { name: "P00001" })).toBeInTheDocument();
+            expect(screen.getByRole("option", { name: "P00020" })).toBeInTheDocument();
+        });
+
+        it("renders Purchase Order # and Task Order # inputs", () => {
+            renderForm();
+            expect(screen.getByLabelText("Purchase Order #")).toBeInTheDocument();
+            expect(screen.getByLabelText("Task Order #")).toBeInTheDocument();
+        });
+
+        it("calls onModificationNumberChange when a modification option is selected", () => {
+            const onModificationNumberChange = vi.fn();
+            renderForm({ onModificationNumberChange });
+            fireEvent.change(screen.getByLabelText("Modification #"), { target: { value: "P00003" } });
+            expect(onModificationNumberChange).toHaveBeenCalledWith("P00003");
         });
     });
 

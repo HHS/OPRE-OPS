@@ -48,6 +48,14 @@ export default function useRequestAwardApproval(agreementId) {
     const [awardAmount, setAwardAmount] = useState("");
     const [awardDate, setAwardDate] = useState("");
 
+    // OPS-5892: additional award fields
+    const [agreementTitle, setAgreementTitle] = useState("");
+    const [modificationNumber, setModificationNumber] = useState("Base");
+    const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
+    const [taskOrderNumber, setTaskOrderNumber] = useState("");
+    // Seed-once guard so refetches don't clobber user edits
+    const [isSeeded, setIsSeeded] = useState(false);
+
     // Validation
     const [validationResult, setValidationResult] = useState(suite.get());
 
@@ -123,8 +131,18 @@ export default function useRequestAwardApproval(agreementId) {
 
     const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
 
+    // OPS-5892: seed the Agreement Title from the current agreement name once, so the field is
+    // pre-filled. Guard with isSeeded so a refetch never clobbers the user's edits.
+    React.useEffect(() => {
+        if (isSeeded || !agreement) return;
+        setAgreementTitle(agreement.name ?? "");
+        setIsSeeded(true);
+    }, [isSeeded, agreement]);
+
     /**
-     * Track if any changes have been made to the form
+     * Track if any changes have been made to the form.
+     * Pre-filled/defaulted fields (agreement title, modification #) must be compared against their
+     * seeded/default values — never against "" — otherwise the blocker fires on a pristine form.
      */
     const hasChanged = useMemo(() => {
         return (
@@ -133,9 +151,25 @@ export default function useRequestAwardApproval(agreementId) {
             contractNumber.trim() !== "" ||
             awardAmount !== "" ||
             awardDate !== "" ||
+            agreementTitle.trim() !== (agreement?.name ?? "").trim() ||
+            modificationNumber !== "Base" ||
+            purchaseOrderNumber.trim() !== "" ||
+            taskOrderNumber.trim() !== "" ||
             Object.keys(clinAssignments).length > 0
         );
-    }, [notes, selectedVendor, contractNumber, awardAmount, awardDate, clinAssignments]);
+    }, [
+        notes,
+        selectedVendor,
+        contractNumber,
+        awardAmount,
+        awardDate,
+        agreementTitle,
+        modificationNumber,
+        purchaseOrderNumber,
+        taskOrderNumber,
+        agreement,
+        clinAssignments
+    ]);
 
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
@@ -190,7 +224,11 @@ export default function useRequestAwardApproval(agreementId) {
             vendor: selectedVendor?.id,
             contractNumber,
             awardAmount,
-            awardDate
+            awardDate,
+            agreementTitle,
+            modificationNumber,
+            purchaseOrderNumber,
+            taskOrderNumber
         };
         suite.run(allData);
         const finalValidation = suite.get();
@@ -228,7 +266,11 @@ export default function useRequestAwardApproval(agreementId) {
                     vendor_id: selectedVendor?.id,
                     contract_number: contractNumber.trim(),
                     award_amount: parseFloat(awardAmount),
-                    award_date: formatDateForApi(awardDate)
+                    award_date: formatDateForApi(awardDate),
+                    agreement_title: agreementTitle.trim(),
+                    modification_number: modificationNumber,
+                    purchase_order_number: purchaseOrderNumber.trim(),
+                    task_order_number: taskOrderNumber.trim()
                 }
             }).unwrap();
 
@@ -299,6 +341,14 @@ export default function useRequestAwardApproval(agreementId) {
         setAwardAmount,
         awardDate,
         setAwardDate,
+        agreementTitle,
+        setAgreementTitle,
+        modificationNumber,
+        setModificationNumber,
+        purchaseOrderNumber,
+        setPurchaseOrderNumber,
+        taskOrderNumber,
+        setTaskOrderNumber,
         runValidate,
         validationResult,
         MemoizedDatePicker,

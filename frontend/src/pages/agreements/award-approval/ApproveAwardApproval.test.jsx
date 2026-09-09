@@ -173,7 +173,8 @@ describe("ApproveAwardApproval", () => {
 
     it("renders the agreement name as subtitle", () => {
         renderPage();
-        expect(screen.getByText("Agreement Name B")).toBeInTheDocument();
+        // The name appears in the PageHeader subtitle and in the "Current Agreement Title" review row (OPS-5892).
+        expect(screen.getAllByText("Agreement Name B").length).toBeGreaterThan(0);
     });
 
     it("shows the 'Already Processed' info alert when approval already processed", () => {

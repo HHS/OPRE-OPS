@@ -76,6 +76,14 @@ export const EditAwardApproval = () => {
         setAwardAmount,
         awardDate,
         setAwardDate,
+        agreementTitle,
+        setAgreementTitle,
+        modificationNumber,
+        setModificationNumber,
+        purchaseOrderNumber,
+        setPurchaseOrderNumber,
+        taskOrderNumber,
+        setTaskOrderNumber,
         runValidate,
         validationResult,
         MemoizedDatePicker,
@@ -165,6 +173,14 @@ export const EditAwardApproval = () => {
                 onAwardAmountChange={setAwardAmount}
                 awardDate={awardDate}
                 onAwardDateChange={setAwardDate}
+                agreementTitle={agreementTitle}
+                onAgreementTitleChange={setAgreementTitle}
+                modificationNumber={modificationNumber}
+                onModificationNumberChange={setModificationNumber}
+                purchaseOrderNumber={purchaseOrderNumber}
+                onPurchaseOrderNumberChange={setPurchaseOrderNumber}
+                taskOrderNumber={taskOrderNumber}
+                onTaskOrderNumberChange={setTaskOrderNumber}
                 MemoizedDatePicker={MemoizedDatePicker}
                 groupedBudgetLinesByServicesComponent={groupedBudgetLinesByServicesComponent}
                 servicesComponentLookup={servicesComponentLookup}
@@ -198,6 +214,10 @@ export const EditAwardApproval = () => {
                         !contractNumber ||
                         !awardAmount ||
                         !awardDate ||
+                        !agreementTitle.trim() ||
+                        !modificationNumber ||
+                        !purchaseOrderNumber.trim() ||
+                        !taskOrderNumber.trim() ||
                         hasMissingCLINs
                     }
                     data-cy="save-edit-award-btn"

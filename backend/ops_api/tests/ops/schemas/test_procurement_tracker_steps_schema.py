@@ -50,6 +50,11 @@ def _award_step_dict(**overrides):
         "contract_number": "GS-123-456",
         "award_amount": 1500000.0,
         "award_date": date(2024, 9, 30),
+        # OPS-5892 additional award fields (already mapped by to_dict())
+        "agreement_title": "Signed Award Title",
+        "modification_number": "Base",
+        "purchase_order_number": "ODN-123",
+        "task_order_number": "TO-456",
     }
     base.update(overrides)
     return base
@@ -125,6 +130,29 @@ class TestAwardStepResponseSchema:
         assert "vendor_id" in result
         assert result["vendor_id"] is None
 
+    def test_additional_award_fields_are_serialized(self):
+        """OPS-5892: agreement_title, modification_number, purchase_order_number, task_order_number."""
+        data = _award_step_dict()
+        result = ProcurementTrackerStepResponseSchema().dump(data)
+        assert result["agreement_title"] == "Signed Award Title"
+        assert result["modification_number"] == "Base"
+        assert result["purchase_order_number"] == "ODN-123"
+        assert result["task_order_number"] == "TO-456"
+
+    def test_none_additional_award_fields_preserved_in_preserve_keys(self):
+        """OPS-5892: null additional award fields must survive (preserve_keys), not be dropped."""
+        data = _award_step_dict(
+            agreement_title=None,
+            modification_number=None,
+            purchase_order_number=None,
+            task_order_number=None,
+        )
+        result = ProcurementTrackerStepResponseSchema().dump(data)
+        assert result["agreement_title"] is None
+        assert result["modification_number"] is None
+        assert result["purchase_order_number"] is None
+        assert result["task_order_number"] is None
+
     def test_pre_award_step_does_not_include_award_fields(self):
         """PRE_AWARD steps must NOT get award_amount/award_date/contract_number/vendor_id."""
         data = {
@@ -153,6 +181,11 @@ class TestAwardStepResponseSchema:
         assert "award_date" not in result
         assert "contract_number" not in result
         assert "vendor_id" not in result
+        # OPS-5892 additional award fields must not leak onto PRE_AWARD steps
+        assert "agreement_title" not in result
+        assert "modification_number" not in result
+        assert "purchase_order_number" not in result
+        assert "task_order_number" not in result
 
 
 # ---------------------------------------------------------------------------
@@ -183,6 +216,43 @@ class TestPatchSchemaObligatedDate:
 # ---------------------------------------------------------------------------
 # ProcurementTrackerStepPatchRequestSchema — notes length validation
 # ---------------------------------------------------------------------------
+
+
+class TestPatchSchemaAdditionalAwardFields:
+    """OPS-5892: PATCH schema must accept the new award fields and enforce length caps."""
+
+    def test_additional_award_fields_accepted(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        result = schema.load(
+            {
+                "agreement_title": "Signed Award Title",
+                "modification_number": "P00001",
+                "purchase_order_number": "ODN-123",
+                "task_order_number": "TO-456",
+            }
+        )
+        assert result["agreement_title"] == "Signed Award Title"
+        assert result["modification_number"] == "P00001"
+        assert result["purchase_order_number"] == "ODN-123"
+        assert result["task_order_number"] == "TO-456"
+
+    def test_modification_number_over_max_length_rejected(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load({"modification_number": "x" * 21})
+        assert "modification_number" in exc_info.value.messages
+
+    def test_purchase_order_number_over_max_length_rejected(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load({"purchase_order_number": "x" * 101})
+        assert "purchase_order_number" in exc_info.value.messages
+
+    def test_additional_award_fields_allow_none(self):
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        result = schema.load({"agreement_title": None, "task_order_number": None})
+        assert result.get("agreement_title") is None
+        assert result.get("task_order_number") is None
 
 
 class TestPatchSchemaNotesLength:
