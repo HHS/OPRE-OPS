@@ -30,7 +30,7 @@ describe("agreement details", () => {
         cy.get("h1").contains("MIHOPE Check-In");
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2 (MIHOPE)");
         cy.get("span").contains("Awarded");
-        cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
+        cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.enabled");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.enabled");
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
@@ -51,6 +51,28 @@ describe("agreement details", () => {
         cy.get('[data-cy="alternate-project-officer-tag"]').contains("Dave Director");
         cy.get("h3").contains("Notes");
         cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
+    });
+
+    it("Awarded Contract opens the Award & Modifications tab", () => {
+        cy.visit("/agreements/7");
+        cy.get('[data-cy="details-tab-Award & Modifications"]', { timeout: 30000 }).should("be.enabled").click();
+        cy.url().should("include", "/agreements/7/award-modifications");
+        cy.contains("h2", "Award & Modification History").should("be.visible");
+        // Depending on seed data the agreement may or may not have completed award/mod
+        // trackers; assert the golden path when present, otherwise the empty state.
+        cy.get("body").then(($body) => {
+            if ($body.find('[data-cy="award-mod-accordion-0"]').length) {
+                cy.get('[data-cy="award-mod-accordion-0"]').find("button.usa-accordion__button").first().click();
+                cy.get('[data-cy="award-mod-accordion-0"]').within(() => {
+                    cy.contains("Award Date").should("be.visible");
+                    cy.contains("Contract Total").should("be.visible");
+                    cy.contains("Vendor").should("be.visible");
+                    cy.contains("Modification #").should("be.visible");
+                });
+            } else {
+                cy.get('[data-cy="award-mod-empty-state"]').should("be.visible");
+            }
+        });
     });
 
     it("AA type agreement loads with details", () => {

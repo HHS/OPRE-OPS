@@ -619,6 +619,11 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}/spending/`,
             providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "BudgetLineItems"]
         }),
+        getAgreementAwardHistoryById: builder.query({
+            query: (id) => `/agreements/${id}/award-history/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ProcurementTrackers"]
+        }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
             providesTags: ["Projects"]
@@ -1399,6 +1404,7 @@ export const {
     useUpdateDocumentStatusMutation,
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
+    useGetAgreementAwardHistoryByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

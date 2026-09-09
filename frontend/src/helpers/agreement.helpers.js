@@ -158,6 +158,16 @@ export const isNotDevelopedYet = (agreementType) => {
 };
 
 /**
+ * Determines if the agreement type is Contract or AA — the only types the Award &
+ * Modifications tab/endpoint supports. Mirrors backend's _SUPPORTED_AGREEMENT_TYPES
+ * in ops_api/ops/services/agreement_award_history.py; keep both in sync.
+ * @param {string} agreementType - The type of the agreement.
+ * @returns {boolean} - True if the agreement type is Contract or AA.
+ */
+export const isContractOrAaAgreement = (agreementType) =>
+    agreementType === AgreementType.CONTRACT || agreementType === AgreementType.AA;
+
+/**
  * @param {AgreementType} agreementType
  * @param {boolean} showAllPartners - Whether to show all partner types or not.
  * @returns {string} - The label for the agreement type.

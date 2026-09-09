@@ -803,6 +803,39 @@ describe("opsAPI - Agreements Pagination", () => {
             expect(capturedUrl).not.toContain("?");
         });
     });
+
+    describe("getAgreementAwardHistoryById query", () => {
+        it("builds the award-history endpoint and unwraps the data array", async () => {
+            let capturedUrl = "";
+            const records = [{ fiscal_year_label: "FY 2024 Award" }];
+            server.use(
+                http.get("*/api/v1/agreements/:id/award-history/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: records });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            const result = await storeRef.store.dispatch(opsApi.endpoints.getAgreementAwardHistoryById.initiate(42));
+
+            expect(capturedUrl).toContain("/api/v1/agreements/42/award-history/");
+            // transformResponse unwraps { data: [...] } to the bare array.
+            expect(result.data).toEqual(records);
+        });
+
+        it("returns an empty array when the response has no data", async () => {
+            server.use(
+                http.get("*/api/v1/agreements/:id/award-history/", () => {
+                    return HttpResponse.json({});
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            const result = await storeRef.store.dispatch(opsApi.endpoints.getAgreementAwardHistoryById.initiate(7));
+
+            expect(result.data).toEqual([]);
+        });
+    });
 });
 
 describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
