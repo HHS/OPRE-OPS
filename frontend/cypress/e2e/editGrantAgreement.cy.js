@@ -14,10 +14,13 @@ const HISTORY_POLL_INTERVAL_MS = 1000;
 const HISTORY_TIMEOUT_MS = 20000;
 
 /**
- * Polls the agreement history endpoint until entries appear (history is written
+ * Polls the agreement history endpoint until it contains the given text (history is written
  * by an async MessageBus subscriber, so it may not be present immediately after a PATCH).
+ * The seed POST already produces an "Agreement Created" entry, so gating on mere presence of
+ * *any* entry would short-circuit before the PATCH's update rows are written. Gating on
+ * specific update content ensures we wait for the actual new rows.
  */
-const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
+const waitForAgreementHistory = (agreementId, expectedText, startedAt = Date.now()) => {
     const historyUrl = `${API}/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
@@ -27,19 +30,22 @@ const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
             failOnStatusCode: false
         })
         .then((response) => {
-            const hasEntries =
-                response.status === 200 && Array.isArray(response.body.data) && response.body.data.length > 0;
-            if (hasEntries) {
+            const hasExpectedEntry =
+                response.status === 200 &&
+                Array.isArray(response.body.data) &&
+                response.body.data.some((entry) => entry.history_message.includes(expectedText));
+            if (hasExpectedEntry) {
                 return;
             }
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                const messages = response.body.data.map((entry) => entry.history_message);
+                expect(messages.some((m) => m.includes(expectedText)), JSON.stringify(messages)).to.be.true;
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);
-            return waitForAgreementHistory(agreementId, startedAt);
+            return waitForAgreementHistory(agreementId, expectedText, startedAt);
         });
 };
 
@@ -207,7 +213,7 @@ describe("edit an existing Grant agreement", () => {
             cy.get(".usa-alert__body").should("contain", "has been successfully updated");
 
             // ---- 1a. Verify the new field changes appear in Agreement History ----
-            waitForAgreementHistory(agreementId);
+            waitForAgreementHistory(agreementId, "NOFO-UPDATED");
             cy.visit(`/agreements/${agreementId}`);
             checkAgreementHistory();
             cy.get('[data-cy="agreement-history-list"]')
