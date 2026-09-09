@@ -10,6 +10,53 @@ const API = "http://localhost:8080/api/v1";
 
 const bearer = () => `Bearer ${window.localStorage.getItem("access_token")}`;
 
+const HISTORY_POLL_INTERVAL_MS = 1000;
+const HISTORY_TIMEOUT_MS = 20000;
+
+/**
+ * Polls the agreement history endpoint until it contains the given text (history is written
+ * by an async MessageBus subscriber, so it may not be present immediately after a PATCH).
+ * The seed POST already produces an "Agreement Created" entry, so gating on mere presence of
+ * *any* entry would short-circuit before the PATCH's update rows are written. Gating on
+ * specific update content ensures we wait for the actual new rows.
+ */
+const waitForAgreementHistory = (agreementId, expectedText, startedAt = Date.now()) => {
+    const historyUrl = `${API}/agreements/${agreementId}/history/?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: { Authorization: bearer(), Accept: "application/json" },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasExpectedEntry =
+                response.status === 200 &&
+                Array.isArray(response.body.data) &&
+                response.body.data.some((entry) => entry.history_message.includes(expectedText));
+            if (hasExpectedEntry) {
+                return;
+            }
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= HISTORY_TIMEOUT_MS) {
+                expect(response.status, "agreement history status").to.eq(200);
+                const messages = response.body.data.map((entry) => entry.history_message);
+                expect(messages.some((m) => m.includes(expectedText)), JSON.stringify(messages)).to.be.true;
+                return;
+            }
+            cy.wait(HISTORY_POLL_INTERVAL_MS);
+            return waitForAgreementHistory(agreementId, expectedText, startedAt);
+        });
+};
+
+const checkAgreementHistory = () => {
+    cy.get("h3.history-title").should("have.text", "History");
+    cy.get('[data-cy="agreement-history-container"]').should("exist");
+    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1)', { timeout: 60000 }).should("exist");
+};
+
 /**
  * Create a grant agreement with one grant number and one grant budget line via the API.
  * Returns the created ids through the yielded object.
@@ -141,12 +188,54 @@ describe("edit an existing Grant agreement", () => {
             cy.get("#nofo_number").clear();
             cy.get("#nofo_number").type("NOFO-UPDATED");
 
+            // Grant Funding Period: 12 -> 18 months
+            cy.get("#funding_period_months").should("have.value", "12");
+            cy.get("#funding_period_months").select("18");
+
+            // ALN Numbers: add 93.575 (Head Start) (seeded with ["93.086"])
+            cy.get("#aln-numbers-combobox-input").type("93.575{enter}");
+
+            // FPO (project_officer_id): Chris Fortunato -> Dave Director
+            cy.get("#project-officer-combobox-input").eq(0).type("Dave Director{enter}");
+
+            // Project Specialist (alternate_project_officer_id): TBD -> Amy Madigan
+            cy.get(".margin-left-4 #project-officer-combobox-input").type("Amy Madigan{enter}");
+
             cy.get("[data-cy='continue-btn']").click();
             cy.wait("@patchAgreement").then((interception) => {
                 expect(interception.response.statusCode).to.eq(200);
-                expect(interception.request.body).to.include({ nofo_number: "NOFO-UPDATED" });
+                expect(interception.request.body).to.include({
+                    nofo_number: "NOFO-UPDATED",
+                    funding_period_months: 18
+                });
+                expect(interception.request.body.aln_numbers).to.include("93.575");
             });
             cy.get(".usa-alert__body").should("contain", "has been successfully updated");
+
+            // ---- 1a. Verify the new field changes appear in Agreement History ----
+            waitForAgreementHistory(agreementId, "NOFO-UPDATED");
+            cy.visit(`/agreements/${agreementId}`);
+            checkAgreementHistory();
+            cy.get('[data-cy="agreement-history-list"]')
+                .invoke("text")
+                .then((text) => {
+                    const historyText = text.replace(/\s+/g, " ").trim();
+                    const expectedEntries = [
+                        "Change to NOFO Number",
+                        "changed the NOFO Number from NOFO-ORIGINAL to NOFO-UPDATED.",
+                        "Change to Grant Funding Period",
+                        "changed the Grant Funding Period from 12 months to 18 months.",
+                        "Change to ALN Numbers",
+                        "added ALN Number 93.575.",
+                        "Change to FPO",
+                        "changed the FPO from Chris Fortunato to Dave Director.",
+                        "Change to Project Specialist",
+                        "changed the Project Specialist from TBD to Amy Madigan."
+                    ];
+                    expectedEntries.forEach((entry) => {
+                        expect(historyText).to.contain(entry);
+                    });
+                });
 
             // ---- 2. Edit a grant number ----
             cy.visit(`/agreements/${agreementId}/budget-lines`);
