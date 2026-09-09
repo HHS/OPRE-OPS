@@ -8,6 +8,12 @@ permissions:
   contents: read
   actions: read
 
+# Serialize runs per commenter so the rate-limit check (which reads this workflow's own,
+# eventually-consistent run history) can't be raced by a burst of comments from one actor.
+concurrency:
+  group: notify-mention-${{ github.event.comment.user.login }}
+  cancel-in-progress: false
+
 jobs:
   notify-mention:
     runs-on: ubuntu-latest
@@ -28,14 +34,22 @@ jobs:
           # using GitHub's own run history as state, since Actions has no persistent store.
           since=$(date -u -d "${WINDOW_MINUTES} minutes ago" +%Y-%m-%dT%H:%M:%SZ)
           # Filename below must match this workflow's own file -- if this file is ever
-          # renamed, update it too, or this 404s, run_count comes back empty, and the
-          # rate limit silently stops enforcing.
-          run_count=$(gh api -X GET "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
-            -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count')
+          # renamed, update it too, or this 404s and falls into the retry loop below,
+          # which treats a persistently unverifiable count as rate-limited (fail-safe).
+          run_count=""
+          for attempt in 1 2 3; do
+            if run_count=$(gh api -X GET "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
+              -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count' 2>/dev/null); then
+              break
+            fi
+            run_count=""
+            sleep "$((attempt * 3))"
+          done
 
-          echo "run_count=${run_count}" >> "$GITHUB_ENV"
-
-          if [ "$run_count" -gt "$MAX_RUNS" ]; then
+          if [ -z "$run_count" ]; then
+            echo "::warning::Could not verify ${ACTOR}'s rate limit after retries; skipping Slack notification as a precaution."
+            echo "rate_limited=true" >> "$GITHUB_ENV"
+          elif [ "$run_count" -gt "$MAX_RUNS" ]; then
             echo "::warning::${ACTOR} has triggered this workflow ${run_count} times in the last ${WINDOW_MINUTES} minutes (limit ${MAX_RUNS}); skipping Slack notification."
             echo "rate_limited=true" >> "$GITHUB_ENV"
           fi
@@ -79,7 +93,9 @@ jobs:
           mention_text=""
           while IFS= read -r gh_user; do
             gh_user_lower=$(printf '%s' "$gh_user" | tr '[:upper:]' '[:lower:]')
-            slack_id=$(jq -r --arg u "$gh_user_lower" '.[$u] // empty' .github/slack_user_map.json)
+            # `|| slack_id=""` keeps a missing/malformed map file from aborting the whole
+            # step under set -e -- fall back to the plain @username text for that mention.
+            slack_id=$(jq -r --arg u "$gh_user_lower" '.[$u] // empty' .github/slack_user_map.json) || slack_id=""
             if [ -n "$slack_id" ]; then
               mention_text="${mention_text}<@${slack_id}> "
             else
