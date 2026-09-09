@@ -46,12 +46,17 @@ jobs:
             sleep "$((attempt * 3))"
           done
 
-          if [ -z "$run_count" ]; then
+          if [ -z "$run_count" ] || ! [[ "$run_count" =~ ^[0-9]+$ ]]; then
             echo "::warning::Could not verify ${ACTOR}'s rate limit after retries; skipping Slack notification as a precaution."
             echo "rate_limited=true" >> "$GITHUB_ENV"
-          elif [ "$run_count" -gt "$MAX_RUNS" ]; then
-            echo "::warning::${ACTOR} has triggered this workflow ${run_count} times in the last ${WINDOW_MINUTES} minutes (limit ${MAX_RUNS}); skipping Slack notification."
-            echo "rate_limited=true" >> "$GITHUB_ENV"
+          else
+            # total_count includes this run itself (already recorded as in-progress by the
+            # time this step runs), so compare prior triggers only against MAX_RUNS.
+            prior_count=$((run_count - 1))
+            if [ "$prior_count" -ge "$MAX_RUNS" ]; then
+              echo "::warning::${ACTOR} has triggered this workflow ${run_count} times in the last ${WINDOW_MINUTES} minutes (limit ${MAX_RUNS}); skipping Slack notification."
+              echo "rate_limited=true" >> "$GITHUB_ENV"
+            fi
           fi
 
       - name: Checkout (for slack_user_map.json)
@@ -79,8 +84,10 @@ jobs:
           # later mentions), and indented or ~~~-style fences aren't recognized and won't be stripped.
           body_no_code=$(printf '%s\n' "$COMMENT_BODY" | sed '/^```/,/^```/d')
 
+          # Trailing (?!/) excludes @org/team-name team mentions -- those aren't individual
+          # users and would otherwise leave a mangled "@org" fallback in the Slack message.
           mentions=$(printf '%s' "$body_no_code" \
-            | { grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b' || true; } \
+            | { grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b(?!/)' || true; } \
             | sed 's/^@//' | sort -u)
 
           if [ -z "$mentions" ]; then
@@ -115,4 +122,5 @@ jobs:
           text="*${COMMENT_AUTHOR}* mentioned ${mention_text}in a comment on ${kind} <${COMMENT_URL}|${REPO}#${ISSUE_NUMBER}: ${escaped_title}>"
 
           payload=$(jq -n --arg text "$text" '{text: $text}')
-          curl -s --fail-with-body -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+          curl -s --fail-with-body --connect-timeout 5 --max-time 10 \
+            -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
