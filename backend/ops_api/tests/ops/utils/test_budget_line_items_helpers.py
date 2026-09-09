@@ -50,6 +50,9 @@ class _FakeTracker:
         self.active_step_number = active_step_number
         self.steps = steps or []
 
+    def get_step(self, step_type):
+        return next((step for step in self.steps if step.step_type == step_type), None)
+
 
 class _FakeAgreement:
     def __init__(self, procurement_trackers=None):

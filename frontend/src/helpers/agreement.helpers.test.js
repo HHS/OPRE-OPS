@@ -10,6 +10,7 @@ import {
     getFundingMethod,
     isFieldVisible,
     isNotDevelopedYet,
+    isContractOrAaAgreement,
     getEditDisabledTooltip,
     EDIT_DISABLED_TOOLTIPS
 } from "./agreement.helpers";
@@ -483,6 +484,28 @@ describe("isNotDevelopedYet", () => {
     it("returns false for unknown agreement type", () => {
         const result = isNotDevelopedYet("UNKNOWN_TYPE");
         expect(result).toBe(false);
+    });
+});
+
+describe("isContractOrAaAgreement", () => {
+    it("returns true for CONTRACT agreement type", () => {
+        expect(isContractOrAaAgreement(AgreementType.CONTRACT)).toBe(true);
+    });
+
+    it("returns true for AA agreement type", () => {
+        expect(isContractOrAaAgreement(AgreementType.AA)).toBe(true);
+    });
+
+    it("returns false for GRANT agreement type", () => {
+        expect(isContractOrAaAgreement(AgreementType.GRANT)).toBe(false);
+    });
+
+    it("returns false for MISCELLANEOUS agreement type", () => {
+        expect(isContractOrAaAgreement(AgreementType.MISCELLANEOUS)).toBe(false);
+    });
+
+    it("returns false for undefined agreement type", () => {
+        expect(isContractOrAaAgreement(undefined)).toBe(false);
     });
 });
 

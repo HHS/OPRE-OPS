@@ -35,11 +35,13 @@ const DisabledEditButton = ({ label, variant = "detail" }) => {
                     icon={faPen}
                     size={isBudgetLines ? "2x" : undefined}
                     className="height-2 width-2 margin-right-1"
-                    style={isBudgetLines ? { position: "relative", top: "2px" } : undefined}
+                    style={{
+                        pointerEvents: "none",
+                        ...(isBudgetLines ? { position: "relative", top: "2px" } : {})
+                    }}
                     aria-hidden="true"
-                    data-position="top"
                 />
-                <span>Edit</span>
+                <span style={{ pointerEvents: "none" }}>Edit</span>
             </span>
         </Tooltip>
     );
