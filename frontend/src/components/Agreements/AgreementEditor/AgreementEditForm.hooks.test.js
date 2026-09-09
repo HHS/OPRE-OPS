@@ -709,7 +709,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
                 agreement_type: "GRANT",
                 name: "Existing Grant",
                 nofo_number: "NOFO-UPDATED",
-                aln_number: "10.001",
+                aln_numbers: ["93.600"],
                 funding_period_months: 24,
                 team_members: []
             })
@@ -726,7 +726,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
                 id: 42,
                 data: expect.objectContaining({
                     nofo_number: "NOFO-UPDATED",
-                    aln_number: "10.001",
+                    aln_numbers: ["93.600"],
                     funding_period_months: 24
                 })
             })
