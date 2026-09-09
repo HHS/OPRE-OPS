@@ -203,10 +203,8 @@ describe("ProjectsList", () => {
 
         renderComponent();
 
-        // The FY select defaults to current fiscal year; MOCK_PROJECT_1 has fiscal_year_totals
-        // with keys 2025 and 2026. We just verify the component renders a currency value.
-        // The exact FY depends on the current date, so we check for a $ amount presence.
-        // (For a deterministic assertion, see the FY select change test below.)
+        // The FY select defaults to "All"; MOCK_PROJECT_1.fiscal_year_totals has keys 2025
+        // and 2026, so no single-year total is shown. Sanity-check the row rendered.
         expect(screen.getByText("Research")).toBeInTheDocument(); // Sanity check row rendered
     });
 

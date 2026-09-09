@@ -13,7 +13,7 @@ import ProjectTableRow from "./ProjectTableRow";
  * @param {(sortCode: string, isDescending: boolean) => void} props.onClickHeader - Sort toggle handler.
  * @returns {React.ReactElement}
  */
-const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader }) => {
+const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader, disabled }) => {
     const isSelected = selectedHeader === sortCode;
 
     return (
@@ -25,7 +25,12 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
             <button
                 type="button"
                 className="usa-table__header__button cursor-pointer"
-                title={`Click to sort by ${label} in ascending or descending order`}
+                title={
+                    disabled
+                        ? `Select a specific fiscal year to sort by ${label}`
+                        : `Click to sort by ${label} in ascending or descending order`
+                }
+                disabled={disabled}
                 onClick={() => {
                     onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
                 }}
@@ -93,6 +98,7 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         selectedHeader={sortConditions}
                         sortDescending={sortDescending}
                         onClickHeader={setSortConditions}
+                        disabled={selectedFiscalYear === "All"}
                     />
                     <SortableHeader
                         label="Project Total"

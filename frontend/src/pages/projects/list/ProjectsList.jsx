@@ -12,7 +12,6 @@ import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
@@ -27,7 +26,7 @@ const ProjectsList = () => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
     const [getAllProjectsTrigger] = useLazyGetProjectsQuery();

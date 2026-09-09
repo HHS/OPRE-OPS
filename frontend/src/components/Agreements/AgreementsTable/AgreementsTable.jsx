@@ -1,6 +1,5 @@
 import Table from "../../UI/Table";
 import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementTableRow from "./AgreementTableRow";
 
 /**
@@ -20,7 +19,7 @@ export const AgreementsTable = ({
     setSortConditions,
     selectedFiscalYear
 }) => {
-    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear, getCurrentFiscalYear());
+    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear);
 
     return (
         <>
