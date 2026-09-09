@@ -32,7 +32,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } 
  * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
  * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
  * @property {boolean} [showClinColumn] - Whether to show the CLIN cell (awarded contract agreements only).
  */

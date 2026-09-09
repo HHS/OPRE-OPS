@@ -347,7 +347,6 @@ const AgreementBudgetLines = ({
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}
-                                isAgreementAwarded={isAgreementAwarded}
                                 readOnly={true}
                                 isEditable={agreement?._meta.isEditable}
                                 isGrant={true}
@@ -384,7 +383,6 @@ const AgreementBudgetLines = ({
                             {group.budgetLines.length > 0 ? (
                                 <BudgetLinesTable
                                     budgetLines={group.budgetLines}
-                                    isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
                                     showClinColumn={showClinColumn}
