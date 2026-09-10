@@ -30,9 +30,9 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
                         ? `Select a specific fiscal year to sort by ${label}`
                         : `Click to sort by ${label} in ascending or descending order`
                 }
-                disabled={disabled}
+                aria-disabled={disabled}
                 onClick={() => {
-                    onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
+                    if (!disabled) onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
                 }}
             >
                 {label}

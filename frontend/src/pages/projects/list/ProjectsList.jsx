@@ -77,6 +77,9 @@ const ProjectsList = () => {
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+        if (newValue === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+        }
     };
 
     const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;

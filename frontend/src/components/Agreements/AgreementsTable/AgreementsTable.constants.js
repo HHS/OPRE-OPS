@@ -20,8 +20,7 @@ export const TABLE_HEADINGS_LIST = [
 
 /**
  * Returns table headings with a dynamic FY column label based on the selected fiscal year.
- * @param {string} fiscalYear - The selected fiscal year (e.g., "2025" or "All").
- * @param {string} currentFiscalYear - The current fiscal year (e.g., "2026").
+ * @param {string} fiscalYear - The selected fiscal year (e.g., "2025") or "All".
  * @returns {Array<{heading: string, value: string}>} - The table headings list with dynamic FY label.
  */
 export const getTableHeadingsWithFY = (fiscalYear) => {
