@@ -34,22 +34,36 @@ describe("RequestAwardApproval.suite", () => {
         );
     });
 
-    describe("100-character caps", () => {
+    // Cap sizes differ on purpose: agreementTitle mirrors the agreement editor's name field
+    // (200), while the PO/TO numbers mirror their String(100) columns.
+    describe("length caps", () => {
         it.each([
-            ["purchaseOrderNumber", "Purchase Order # must be 100 characters or less"],
-            ["taskOrderNumber", "Task Order # must be 100 characters or less"]
-        ])("flags %s longer than 100 characters", (fieldName, message) => {
-            const res = runField(fieldName, "a".repeat(101));
+            ["agreementTitle", 200, "Agreement Title must be 200 characters or less"],
+            ["purchaseOrderNumber", 100, "Purchase Order # must be 100 characters or less"],
+            ["taskOrderNumber", 100, "Task Order # must be 100 characters or less"]
+        ])("flags %s longer than %i characters", (fieldName, cap, message) => {
+            const res = runField(fieldName, "a".repeat(cap + 1));
             expect(res.hasErrors(fieldName)).toBe(true);
             expect(res.getErrors(fieldName)).toContain(message);
         });
 
-        it.each(["purchaseOrderNumber", "taskOrderNumber"])("allows %s of exactly 100 characters", (fieldName) => {
-            const res = runField(fieldName, "a".repeat(100));
+        it.each([
+            ["agreementTitle", 200],
+            ["purchaseOrderNumber", 100],
+            ["taskOrderNumber", 100]
+        ])("allows %s of exactly %i characters", (fieldName, cap) => {
+            const res = runField(fieldName, "a".repeat(cap));
             expect(res.hasErrors(fieldName)).toBe(false);
         });
 
+        it("does not cap agreementTitle at the PO/TO limit of 100", () => {
+            // Guards against someone "harmonising" the caps and silently tightening the title.
+            const res = runField("agreementTitle", "a".repeat(150));
+            expect(res.hasErrors("agreementTitle")).toBe(false);
+        });
+
         it.each([
+            ["agreementTitle", "Agreement Title must be 200 characters or less"],
             ["purchaseOrderNumber", "Purchase Order # must be 100 characters or less"],
             ["taskOrderNumber", "Task Order # must be 100 characters or less"]
         ])("reports only the required error for an empty %s, not the length error", (fieldName, lengthMessage) => {

@@ -36,6 +36,12 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.agreementTitle).isNotEmpty();
     });
 
+    // Same 200-character cap the agreement editor enforces on the name field this overwrites
+    test("agreementTitle", "Agreement Title must be 200 characters or less", () => {
+        if (!data.agreementTitle) return;
+        enforce(data.agreementTitle).shorterThanOrEquals(200);
+    });
+
     // OPS-5892: Modification # is required (defaults to "Base")
     test("modificationNumber", "Modification # is required", () => {
         enforce(data.modificationNumber).isNotEmpty();

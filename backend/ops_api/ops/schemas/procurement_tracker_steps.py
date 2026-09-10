@@ -485,7 +485,10 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     award_date = fields.Date(required=False, allow_none=True)
 
     # OPS-5892: additional AWARD step fields
-    agreement_title = fields.String(required=False, allow_none=True)
+    # Capped at 200 to match the maxLength the agreement editor puts on the name field this
+    # overwrites on approval (AgreementEditForm.jsx) — step 6 must not be able to store a title
+    # the agreement form itself would refuse.
+    agreement_title = fields.String(required=False, allow_none=True, validate=validate.Length(max=200))
     # Fixed dropdown on the frontend ("Base", P00001..P00020) — validated here so a direct API
     # PATCH cannot store a value the <select> has no option for.
     modification_number = fields.String(

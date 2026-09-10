@@ -268,6 +268,13 @@ describe("AwardRequestForm", () => {
             expect(onAgreementTitleChange).toHaveBeenCalledWith("New Title");
             expect(runValidate).toHaveBeenCalledWith("agreementTitle", "New Title");
         });
+
+        it("caps the title input at 200 characters, matching the agreement editor's name field", () => {
+            // This value is written straight into agreement.name on approval, so it carries the
+            // same maxLength the agreement editor puts on that field.
+            renderForm();
+            expect(screen.getByLabelText("Agreement Title")).toHaveAttribute("maxlength", "200");
+        });
     });
 
     describe("Current Award Information — new fields (OPS-5892)", () => {

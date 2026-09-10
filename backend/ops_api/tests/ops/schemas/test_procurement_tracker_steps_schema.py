@@ -269,6 +269,23 @@ class TestPatchSchemaAdditionalAwardFields:
             schema.load({"purchase_order_number": "x" * 101})
         assert "purchase_order_number" in exc_info.value.messages
 
+    def test_agreement_title_at_max_length_accepted(self):
+        """200 matches the maxLength the agreement editor puts on the name field this overwrites."""
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        title = "x" * 200
+        assert schema.load({"agreement_title": title})["agreement_title"] == title
+
+    def test_agreement_title_over_max_length_rejected(self):
+        """Step 6 must not be able to store a title the agreement edit form would refuse.
+
+        The value is written straight into ``agreement.name`` on approval, so without this cap a
+        direct PATCH could produce an agreement name unreachable through the agreement editor.
+        """
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        with pytest.raises(ValidationError) as exc_info:
+            schema.load({"agreement_title": "x" * 201})
+        assert "agreement_title" in exc_info.value.messages
+
     def test_additional_award_fields_allow_none(self):
         schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
         result = schema.load({"agreement_title": None, "task_order_number": None})

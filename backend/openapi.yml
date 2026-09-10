@@ -9111,7 +9111,7 @@ components:
               type: string
               nullable: true
               description: >-
-                Proposed agreement title entered during the award request (OPS-5892).
+                Proposed agreement title entered during the award request (OPS-5892, max 200 characters).
                 Applied to the agreement name on Budget Team approval, after which it is immutable.
             modification_number:
               type: string
@@ -9250,9 +9250,10 @@ components:
         agreement_title:
           type: string
           nullable: true
+          maxLength: 200
           description: >-
-            Proposed agreement title for AWARD steps (OPS-5892). Applied to the agreement name
-            on Budget Team approval.
+            Proposed agreement title for AWARD steps (OPS-5892, max 200 characters). Applied to
+            the agreement name on Budget Team approval.
         modification_number:
           type: string
           nullable: true

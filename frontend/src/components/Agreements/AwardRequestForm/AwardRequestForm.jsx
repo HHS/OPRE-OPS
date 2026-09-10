@@ -212,6 +212,7 @@ const AwardRequestForm = ({
                                     name="agreementTitle"
                                     className={`usa-input ${validationResult.getErrors("agreementTitle")?.length > 0 ? "usa-input--error" : ""}`}
                                     type="text"
+                                    maxLength={200}
                                     value={agreementTitle}
                                     onChange={(e) => {
                                         onAgreementTitleChange(e.target.value);
