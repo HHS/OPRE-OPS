@@ -301,6 +301,28 @@ describe("AwardRequestForm", () => {
             fireEvent.change(screen.getByLabelText("Modification #"), { target: { value: "P00003" } });
             expect(onModificationNumberChange).toHaveBeenCalledWith("P00003");
         });
+
+        it("renders a Modification # error with the same form-group pattern as the text fields", () => {
+            // Error message before the control, inside an errored form group with errored label/control —
+            // matching Contract # / Purchase Order # / Task Order # in this same form.
+            mockValidationResult.getErrors.mockImplementation((field) =>
+                field === "modificationNumber" ? ["This is required information"] : []
+            );
+            renderForm();
+
+            const select = screen.getByLabelText("Modification #");
+            const label = screen.getByText("Modification #");
+            // eslint-disable-next-line testing-library/no-node-access
+            const formGroup = select.closest(".usa-form-group");
+            const errorMessage = screen.getByRole("alert");
+
+            expect(formGroup).toHaveClass("usa-form-group--error");
+            expect(label).toHaveClass("usa-label--error");
+            expect(select).toHaveClass("usa-input--error");
+            expect(errorMessage).toHaveTextContent("This is required information");
+            // Error precedes the control in the DOM, as with every other field in this form.
+            expect(errorMessage.compareDocumentPosition(select)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+        });
     });
 
     describe("vendor section", () => {

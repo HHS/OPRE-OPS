@@ -184,7 +184,7 @@ const AwardRequestForm = ({
             >
                 <fieldset className="usa-fieldset">
                     <p className="margin-top-1 margin-bottom-3">
-                        Enter the Agreement Title to match the signed award exactly. This will over write the agreement
+                        Enter the Agreement Title to match the signed award exactly. This will overwrite the agreement
                         title currently entered and it will be locked from editing after this step. You will still be
                         able to edit the Agreement Nickname at anytime.
                     </p>
@@ -385,42 +385,46 @@ const AwardRequestForm = ({
 
                     <div className="grid-row grid-gap flex-align-end">
                         <div className="grid-col-4">
-                            <label
-                                className="usa-label"
-                                htmlFor="modificationNumber"
+                            <div
+                                className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("modificationNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
                             >
-                                Modification #
-                            </label>
-                            <select
-                                id="modificationNumber"
-                                name="modificationNumber"
-                                className="usa-select"
-                                value={modificationNumber}
-                                onChange={(e) => {
-                                    onModificationNumberChange(e.target.value);
-                                    runValidate("modificationNumber", e.target.value);
-                                }}
-                                required
-                                aria-required="true"
-                                data-cy="modification-number-select"
-                            >
-                                {MODIFICATION_NUMBER_OPTIONS.map((option) => (
-                                    <option
-                                        key={option}
-                                        value={option}
-                                    >
-                                        {option}
-                                    </option>
-                                ))}
-                            </select>
-                            {validationResult.getErrors("modificationNumber")?.length > 0 && (
-                                <div
-                                    className="usa-error-message"
-                                    role="alert"
+                                <label
+                                    className={`usa-label ${validationResult.getErrors("modificationNumber")?.length > 0 ? "usa-label--error" : ""}`}
+                                    htmlFor="modificationNumber"
                                 >
-                                    {validationResult.getErrors("modificationNumber")[0]}
-                                </div>
-                            )}
+                                    Modification #
+                                </label>
+                                {validationResult.getErrors("modificationNumber")?.length > 0 && (
+                                    <div
+                                        className="usa-error-message"
+                                        role="alert"
+                                    >
+                                        {validationResult.getErrors("modificationNumber")[0]}
+                                    </div>
+                                )}
+                                <select
+                                    id="modificationNumber"
+                                    name="modificationNumber"
+                                    className={`usa-select ${validationResult.getErrors("modificationNumber")?.length > 0 ? "usa-input--error" : ""}`}
+                                    value={modificationNumber}
+                                    onChange={(e) => {
+                                        onModificationNumberChange(e.target.value);
+                                        runValidate("modificationNumber", e.target.value);
+                                    }}
+                                    required
+                                    aria-required="true"
+                                    data-cy="modification-number-select"
+                                >
+                                    {MODIFICATION_NUMBER_OPTIONS.map((option) => (
+                                        <option
+                                            key={option}
+                                            value={option}
+                                        >
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="grid-col-4">
