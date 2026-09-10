@@ -1018,7 +1018,8 @@ class ProcurementTrackerStepService:
     def _apply_proposed_agreement_title(step, agreement):
         """Apply the proposed agreement title (entered during the award request) to the agreement.
 
-        Called on award approval. After this, awarded-agreement immutability locks the name (OPS-5892).
+        Called on award approval, after which edits to the name through the agreement service are
+        blocked by awarded-agreement immutability (OPS-5892).
 
         This writes ``agreement.name`` directly rather than going through ``AgreementsService.update()``
         on purpose:
@@ -1029,10 +1030,16 @@ class ProcurementTrackerStepService:
         - ``AgreementsService.update()`` expects a full agreement update payload (including
           ``agreement_cls``) and runs the whole AgreementValidator, so an unrelated pre-existing
           agreement-level validation failure would block a valid award approval.
-        - ``ImmutableAwardedFieldsRule`` would not apply here anyway: it only fires when
-          ``agreement.is_awarded`` is already true, and this runs *before* the ProcurementAction is
-          marked AWARDED further down ``_handle_award_approval``. The name is the field the COR is
-          being asked to finalize at this step, so locking it must happen after this write, not before.
+        - ``ContractAgreement.immutable_awarded_fields`` includes ``name``, but
+          ``ImmutableAwardedFieldsRule`` is only registered on the AgreementsService update path and
+          not in the Step 6 validator chain, so nothing rejects this write. Do not assume ordering
+          protects it: a single PATCH carrying both ``status: COMPLETED`` and
+          ``approval_status: APPROVED`` runs ``_advance_active_step_if_needed`` first, which can
+          already have marked the ProcurementAction AWARDED — so ``agreement.is_awarded`` may be
+          True by the time this runs. The name is the field the COR is being asked to finalize at
+          this step, so it has to stay writable here; routing this through
+          ``AgreementsService.update()`` would start getting it rejected. Pinned by
+          test_step_6_proposed_agreement_title.py::test_name_is_written_even_though_it_is_an_immutable_awarded_field.
 
         Row-level auditing is unaffected — ``OpsDBHistory`` tracks the change via SQLAlchemy events.
         """
