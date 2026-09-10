@@ -212,9 +212,7 @@ def is_pre_award_in_review(agreement):
     if not tracker:
         return False
 
-    pre_award_step = next(
-        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
-    )
+    pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
 
     if not pre_award_step or not pre_award_step.pre_award_approval_requested:
         return False
@@ -256,7 +254,7 @@ def is_award_approval_requested(agreement) -> bool:
     # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
     # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
     for tracker in agreement.procurement_trackers:
-        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
         if not award_step or not award_step.award_approval_requested:
             continue
 
@@ -297,9 +295,7 @@ def is_post_pre_award_locked(agreement) -> bool:
     if not tracker:
         return False
 
-    pre_award_step = next(
-        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
-    )
+    pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
     if not pre_award_step:
         return False
 

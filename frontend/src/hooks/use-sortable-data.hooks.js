@@ -38,11 +38,28 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
     }
 };
 
-const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
+// Sentinel comparable value: rows returning this are always ordered last, regardless of
+// sort direction (see useSortData). Only the CLIN case uses it, for missing/unassigned CLINs.
+const SORT_TO_END = Symbol("sortToEnd");
+
+const getBLIDiffComparableValue = (budgetLine, condition, sortContext = {}) => {
+    // sortContext carries extra data some columns need: { totalFunding } for the PERCENT_* cases
+    // and { clinAssignments } for CLIN sorting.
+    const { totalFunding = 0, clinAssignments = {} } = sortContext ?? {};
     switch (condition) {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER: {
             let bliLabel = BLILabel(budgetLine);
             return bliLabel == "TBD" ? 0 : bliLabel;
+        }
+        case tableSortCodes.budgetLineCodes.CLIN: {
+            // Prefer a locally-assigned (possibly unsaved) CLIN over the persisted backend value so
+            // sorting matches what the row displays. Draft rows always display "N/A" (see
+            // BLIReviewRow), and unassigned rows have no CLIN — both sink to the end (SORT_TO_END),
+            // regardless of ascending/descending.
+            if (budgetLine?.status === BLI_STATUS.DRAFT) return SORT_TO_END;
+            const effectiveClin = clinAssignments[budgetLine.id] ?? budgetLine?.clin?.number;
+            const clinNumber = Number(effectiveClin);
+            return effectiveClin == null || Number.isNaN(clinNumber) ? SORT_TO_END : clinNumber;
         }
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement?.name ?? NO_DATA;
@@ -144,12 +161,17 @@ const compareRows = (a, b, descending) => {
     return 0;
 };
 
-export const useSortData = (items, descending, sortCondition, sortType, sortContext = 0) => {
+export const useSortData = (items, descending, sortCondition, sortType, sortContext = {}) => {
     let sortableItems = [...items];
     const getComparableValue = VALUE_RETRIEVAL_FUNCTIONS[sortType];
     return sortableItems.sort((a, b) => {
         const aVal = getComparableValue(a, sortCondition, sortContext);
         const bVal = getComparableValue(b, sortCondition, sortContext);
+        // SORT_TO_END values are pinned to the bottom in both sort directions.
+        if (aVal === SORT_TO_END || bVal === SORT_TO_END) {
+            if (aVal === bVal) return 0;
+            return aVal === SORT_TO_END ? 1 : -1;
+        }
         return compareRows(aVal, bVal, descending);
     });
 };

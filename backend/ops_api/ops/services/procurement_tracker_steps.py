@@ -1031,7 +1031,6 @@ class ProcurementTrackerStepService:
 
         When approval_status == "APPROVED":
         - IN_EXECUTION BLIs → OBLIGATED (date_needed set to the provided obligated_date)
-        - PLANNED BLIs → PLANNED_MOD
         - Sets procurement_action.date_awarded_obligated if not already set
         - Marks procurement_action status as AWARDED
 
@@ -1061,9 +1060,6 @@ class ProcurementTrackerStepService:
                 if obligated_date is not None:
                     bli.date_needed = obligated_date
                 logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
-            elif bli.status == BudgetLineItemStatus.PLANNED:
-                bli.status = BudgetLineItemStatus.PLANNED_MOD
-                logger.debug(f"Transitioned BLI {bli.id} PLANNED → PLANNED_MOD")
 
         # Set procurement action date and status — only for NEW_AWARD actions
         # (consistent with _advance_active_step_if_needed which gates on NEW_AWARD)

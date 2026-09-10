@@ -264,8 +264,8 @@ describe("AgreementBudgetLines", () => {
     });
 
     describe("Grant lifecycle locks", () => {
-        // A super user so the Edit button would render if editing were allowed; the lock, not the
-        // user's permission, is what hides it. Regular users would hide the button regardless.
+        // A super user so the Edit button would be enabled if editing were allowed; the lock, not the
+        // user's permission, is what disables it. The button is always shown (disabled with a tooltip).
         const superUserStore = configureStore({
             reducer: {
                 auth: () => ({
@@ -305,22 +305,25 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("hides the Edit button for a grant when pre-award is in review", () => {
+        test("disables the Edit button for a grant when pre-award is in review", () => {
             renderWithLock({ isPreAwardInReview: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
-        test("hides the Edit button for a grant when award is in review", () => {
+        test("disables the Edit button for a grant when award is in review", () => {
             renderWithLock({ isAwardInReview: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
-        test("hides the Edit button for a grant when post-pre-award locked", () => {
+        test("disables the Edit button for a grant when post-pre-award locked", () => {
             renderWithLock({ isPostPreAwardLocked: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
         test("enables the Edit button for a grant when no lifecycle lock is active", () => {
@@ -650,10 +653,11 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("Edit button is hidden for regular user when isPostPreAwardLocked is true", () => {
+        test("Edit button is disabled for regular user when isPostPreAwardLocked is true", () => {
             renderWith(regularUserStore);
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
         test("Change BL Status button is disabled for regular user when isPostPreAwardLocked is true", () => {
@@ -663,10 +667,11 @@ describe("AgreementBudgetLines", () => {
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
         });
 
-        test("super user is also locked when isPostPreAwardLocked is true", () => {
+        test("super user is also locked (Edit disabled) when isPostPreAwardLocked is true", () => {
             renderWith(superUserStore);
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
     });
 
