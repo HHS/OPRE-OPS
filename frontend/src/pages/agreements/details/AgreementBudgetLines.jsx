@@ -306,6 +306,7 @@ const AgreementBudgetLines = ({
                         selectedAgreement={agreement}
                         budgetLines={agreement?.budget_line_items ?? []}
                         isEditMode={isEditMode}
+                        isAgreementAwarded={isAgreementAwarded}
                         setIsEditMode={setIsEditMode}
                         isReviewMode={false}
                         selectedProcurementShop={agreement?.procurement_shop}
@@ -346,7 +347,6 @@ const AgreementBudgetLines = ({
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}
-                                isAgreementAwarded={isAgreementAwarded}
                                 readOnly={true}
                                 isEditable={agreement?._meta.isEditable}
                                 isGrant={true}
@@ -383,7 +383,6 @@ const AgreementBudgetLines = ({
                             {group.budgetLines.length > 0 ? (
                                 <BudgetLinesTable
                                     budgetLines={group.budgetLines}
-                                    isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
                                     showClinColumn={showClinColumn}

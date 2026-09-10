@@ -931,9 +931,9 @@ describe("handleExport", () => {
         expect(row[6]).toBe(42);
     });
 
-    it("exports an em-dash for a non-DRAFT budget line with no CLIN", async () => {
+    it("exports 'TBD' for a non-DRAFT budget line with no CLIN", async () => {
         const args = await runExport([makeBli()], true);
         const row = args.rowMapper(makeBli({ clin: null }));
-        expect(row[6]).toBe("—");
+        expect(row[6]).toBe("TBD");
     });
 });

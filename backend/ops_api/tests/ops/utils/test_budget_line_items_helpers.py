@@ -25,14 +25,23 @@ from ops_api.ops.utils.budget_line_items_helpers import (
 
 
 class _FakeStep:
-    """Stand-in for a ProcurementTrackerStep, exposing only the pre-award approval fields
-    that ``is_pre_award_in_review`` reads."""
+    """Stand-in for a ProcurementTrackerStep, exposing the pre-award and award approval fields
+    that ``is_pre_award_in_review`` / ``is_post_pre_award_locked`` read."""
 
-    def __init__(self, step_type, *, approval_requested=False, approval_status=None, requisition_approved_by=None):
+    def __init__(
+        self,
+        step_type,
+        *,
+        approval_requested=False,
+        approval_status=None,
+        requisition_approved_by=None,
+        award_approval_status=None,
+    ):
         self.step_type = step_type
         self.pre_award_approval_requested = approval_requested
         self.pre_award_approval_status = approval_status
         self.pre_award_requisition_approved_by = requisition_approved_by
+        self.award_approval_status = award_approval_status
 
 
 class _FakeTracker:
@@ -280,6 +289,35 @@ def test_is_post_pre_award_locked_false_when_declined():
         approval_status="DECLINED",
     )
     assert is_post_pre_award_locked(_agreement_with_pre_award_step(step)) is False
+
+
+def _agreement_with_pre_award_and_award_steps(award_approval_status):
+    """An agreement whose active tracker has a fully-approved PRE_AWARD step plus an AWARD step
+    with the given ``award_approval_status``."""
+    pre_award_step = _FakeStep(
+        ProcurementTrackerStepType.PRE_AWARD,
+        approval_requested=True,
+        approval_status="APPROVED",
+        requisition_approved_by=42,
+    )
+    award_step = _FakeStep(ProcurementTrackerStepType.AWARD, award_approval_status=award_approval_status)
+    return _FakeAgreement([_FakeTracker(ProcurementTrackerStatus.ACTIVE, 1, steps=[pre_award_step, award_step])])
+
+
+def test_is_post_pre_award_locked_false_when_award_approved():
+    # Budget Team approved the Award request — lock is released even though step 6 is incomplete.
+    assert is_post_pre_award_locked(_agreement_with_pre_award_and_award_steps("APPROVED")) is False
+
+
+def test_is_post_pre_award_locked_true_when_award_pending():
+    # Award requested but not yet decided — lock stays in place.
+    assert is_post_pre_award_locked(_agreement_with_pre_award_and_award_steps("PENDING")) is True
+    assert is_post_pre_award_locked(_agreement_with_pre_award_and_award_steps(None)) is True
+
+
+def test_is_post_pre_award_locked_true_when_award_declined():
+    # A declined Award request does not reopen editing.
+    assert is_post_pre_award_locked(_agreement_with_pre_award_and_award_steps("DECLINED")) is True
 
 
 def test_is_post_pre_award_locked_false_without_active_tracker():

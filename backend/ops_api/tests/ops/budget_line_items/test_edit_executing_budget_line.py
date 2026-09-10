@@ -119,7 +119,10 @@ def make_pre_award(loaded_db):
 
     ``state`` selects the pre-award approval situation the lock model cares about:
       - "in_review": approval requested and pending (``is_pre_award_in_review`` is True),
-      - "locked": fully approved — DD approved + requisition approved (``is_post_pre_award_locked``).
+      - "locked": fully approved — DD approved + requisition approved (``is_post_pre_award_locked``),
+      - "award_approved": fully-approved pre-award PLUS an AWARD step whose award_approval_status is
+        APPROVED — the Budget Team has approved the Award request, so the post-pre-award lock is
+        released even though the AWARD step is not yet completed.
 
     ``loaded_db``'s SAVEPOINT rollback would discard these rows on its own, but the sibling
     ``executing_agreement`` fixture ORM-deletes its agreement in teardown, which FK-fails if the
@@ -141,38 +144,56 @@ def make_pre_award(loaded_db):
         loaded_db.add(tracker)
         loaded_db.flush()
 
+        steps = []
         if state == "present":
             # Sitting at a PRE_AWARD step with no approval requested: neither in-review nor locked.
-            step = DefaultProcurementTrackerStep(
-                procurement_tracker_id=tracker.id,
-                step_number=5,
-                step_type=ProcurementTrackerStepType.PRE_AWARD,
-                pre_award_approval_requested=False,
+            steps.append(
+                DefaultProcurementTrackerStep(
+                    procurement_tracker_id=tracker.id,
+                    step_number=5,
+                    step_type=ProcurementTrackerStepType.PRE_AWARD,
+                    pre_award_approval_requested=False,
+                )
             )
         elif state == "in_review":
-            step = DefaultProcurementTrackerStep(
-                procurement_tracker_id=tracker.id,
-                step_number=5,
-                step_type=ProcurementTrackerStepType.PRE_AWARD,
-                pre_award_approval_requested=True,
-                pre_award_approval_status="PENDING",
+            steps.append(
+                DefaultProcurementTrackerStep(
+                    procurement_tracker_id=tracker.id,
+                    step_number=5,
+                    step_type=ProcurementTrackerStepType.PRE_AWARD,
+                    pre_award_approval_requested=True,
+                    pre_award_approval_status="PENDING",
+                )
             )
-        elif state == "locked":
-            step = DefaultProcurementTrackerStep(
-                procurement_tracker_id=tracker.id,
-                step_number=5,
-                step_type=ProcurementTrackerStepType.PRE_AWARD,
-                pre_award_approval_requested=True,
-                pre_award_approval_status="APPROVED",
-                pre_award_requisition_approved_by=SYSTEM_OWNER_USER_ID,
+        elif state in ("locked", "award_approved"):
+            steps.append(
+                DefaultProcurementTrackerStep(
+                    procurement_tracker_id=tracker.id,
+                    step_number=5,
+                    step_type=ProcurementTrackerStepType.PRE_AWARD,
+                    pre_award_approval_requested=True,
+                    pre_award_approval_status="APPROVED",
+                    pre_award_requisition_approved_by=SYSTEM_OWNER_USER_ID,
+                )
             )
+            if state == "award_approved":
+                steps.append(
+                    DefaultProcurementTrackerStep(
+                        procurement_tracker_id=tracker.id,
+                        step_number=6,
+                        step_type=ProcurementTrackerStepType.AWARD,
+                        award_approval_requested=True,
+                        award_approval_status="APPROVED",
+                    )
+                )
         else:
             raise ValueError(f"Unknown pre-award state: {state!r}")
 
-        loaded_db.add(step)
+        for step in steps:
+            loaded_db.add(step)
         loaded_db.commit()
         created_tracker_ids.append(tracker.id)
-        created_step_ids.append(step.id)
+        created_step_ids.extend(step.id for step in steps)
         return tracker
 
     yield _make
@@ -239,6 +260,33 @@ def test_edit_executing_bli_blocked_when_post_pre_award_locked(auth_client, exec
 
     assert response.status_code == 400
     assert "after Pre-Award Approval has been completed" in str(response.json)
+
+
+def test_edit_executing_bli_editable_after_award_approved(auth_client, executing_bli, make_pre_award, app_ctx):
+    """Once the Budget Team approves the Award request, the post-pre-award lock is released and an
+    executing BLI becomes editable again — even though the AWARD step is not yet completed.
+    A non-budget edit applies directly (200) instead of the 400 seen in the still-locked case."""
+    make_pre_award(executing_bli.agreement_id, state="award_approved")
+
+    data = _full_put_payload(executing_bli, line_description="Edited after award approval")
+    response = auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 200
+    assert response.json["line_description"] == "Edited after award approval"
+
+
+def test_edit_executing_bli_meta_editable_after_award_approved(auth_client, executing_bli, make_pre_award, app_ctx):
+    """The _meta unlocks (isEditable True, no lockedMessage) once the Award request is approved,
+    mirroring the write-path release above so the pen icon and PATCH validation stay in lockstep."""
+    make_pre_award(executing_bli.agreement_id, state="award_approved")
+
+    response = auth_client.get(url_for("api.budget-line-items-item", id=executing_bli.id))
+
+    assert response.status_code == 200
+    meta = response.json["_meta"]
+    assert meta["isEditable"] is True
+    assert meta["isDeletable"] is True
+    assert meta["lockedMessage"] is None
 
 
 def test_edit_executing_bli_editable_during_pre_award_step_not_in_review(

@@ -362,6 +362,7 @@ const EditAgreementAndBudgetLines = () => {
                 />
                 <CreateBLIsAndSCs
                     workflow="agreement"
+                    isAgreementAwarded={isAgreementAwarded}
                     budgetLines={agreement?.budget_line_items ?? []}
                     selectedAgreement={agreement}
                     selectedProcurementShop={agreement?.procurement_shop ?? {}}
