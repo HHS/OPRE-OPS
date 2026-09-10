@@ -7484,8 +7484,8 @@
                     owner_id: 3,
                     updated_by: 516,
                     aln_number_changes: {
-                        aln_numbers_added: [7],
-                        aln_numbers_removed: [3],
+                        aln_numbers_added: ["93.320"],
+                        aln_numbers_removed: ["93.086"],
                     },
                 },
             },

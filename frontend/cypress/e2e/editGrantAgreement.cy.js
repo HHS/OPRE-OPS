@@ -226,7 +226,7 @@ describe("edit an existing Grant agreement", () => {
                         "Change to Grant Funding Period",
                         "changed the Grant Funding Period from 12 months to 18 months.",
                         "Change to ALN Numbers",
-                        "added ALN Number 93.575.",
+                        "added ALN Number 93.575 (Head Start).",
                         "Change to FPO",
                         "changed the FPO from Chris Fortunato to Dave Director.",
                         "Change to Project Specialist",

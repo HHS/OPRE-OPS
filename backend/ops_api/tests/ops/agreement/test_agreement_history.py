@@ -16,6 +16,7 @@ from models.agreement_history import (
     add_history_events,
     create_agreement_update_history_event,
     create_services_component_history_event,
+    get_aln_display_name,
     get_project_display_name,
 )
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
@@ -1531,12 +1532,12 @@ def test_agreement_history_aln_numbers_added_and_removed(loaded_db, app_ctx):
     added_history_item = agreement_history_list[0]
     assert added_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert added_history_item.history_title == "Change to ALN Numbers"
-    assert added_history_item.history_message == "Steve Tekell added ALN Number 7."
+    assert added_history_item.history_message == "Steve Tekell added ALN Number 93.320 (MIECHV)."
 
     removed_history_item = agreement_history_list[1]
     assert removed_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert removed_history_item.history_title == "Change to ALN Numbers"
-    assert removed_history_item.history_message == "Steve Tekell removed ALN Number 3."
+    assert removed_history_item.history_message == "Steve Tekell removed ALN Number 93.086 (HMRF)."
 
 
 def test_agreement_history_fpo_and_project_specialist_changes_on_grant(loaded_db, app_ctx):
@@ -1804,6 +1805,14 @@ class TestGetProjectDisplayName:
             short_title = ""
 
         assert get_project_display_name(FakeProject()) == "Child Welfare Research"
+
+
+class TestGetAlnDisplayName:
+    def test_returns_number_with_description_when_known(self):
+        assert get_aln_display_name("93.086") == "93.086 (HMRF)"
+
+    def test_returns_bare_number_when_unknown(self):
+        assert get_aln_display_name("99.999") == "99.999"
 
 
 class TestAgreementHistoryAPI:
