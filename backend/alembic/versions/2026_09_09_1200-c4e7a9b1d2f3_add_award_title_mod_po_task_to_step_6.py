@@ -9,7 +9,7 @@ Adds four fields to Step 6 (Award) of the procurement tracker workflow (OPS-5892
 - award_task_order_number: Task Order #.
 
 Revision ID: c4e7a9b1d2f3
-Revises: b8c9d0e1f2a3
+Revises: c9d0e1f2a3b4
 Create Date: 2026-09-09 12:00:00.000000+00:00
 
 """
@@ -21,7 +21,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "c4e7a9b1d2f3"
-down_revision: Union[str, None] = "b8c9d0e1f2a3"
+down_revision: Union[str, None] = "c9d0e1f2a3b4"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
