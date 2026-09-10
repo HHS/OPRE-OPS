@@ -11,6 +11,7 @@ import ProjectTableRow from "./ProjectTableRow";
  * @param {string | null} props.selectedHeader - Currently selected sort code.
  * @param {boolean} props.sortDescending - Whether the selected sort is descending.
  * @param {(sortCode: string, isDescending: boolean) => void} props.onClickHeader - Sort toggle handler.
+ * @param {boolean} [props.disabled] - When true, renders as aria-disabled and blocks clicks; tooltip explains why.
  * @returns {React.ReactElement}
  */
 const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader, disabled }) => {
