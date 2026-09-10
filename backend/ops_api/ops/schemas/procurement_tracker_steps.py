@@ -4,6 +4,7 @@ from marshmallow import EXCLUDE, Schema, fields, post_dump, pre_dump, validate
 
 from models.budget_line_items import BudgetLineItemStatus
 from models.procurement_tracker import (
+    AWARD_MODIFICATION_NUMBERS,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
@@ -485,7 +486,11 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
 
     # OPS-5892: additional AWARD step fields
     agreement_title = fields.String(required=False, allow_none=True)
-    modification_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=20))
+    # Fixed dropdown on the frontend ("Base", P00001..P00020) — validated here so a direct API
+    # PATCH cannot store a value the <select> has no option for.
+    modification_number = fields.String(
+        required=False, allow_none=True, validate=validate.OneOf(AWARD_MODIFICATION_NUMBERS)
+    )
     purchase_order_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
     task_order_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
 

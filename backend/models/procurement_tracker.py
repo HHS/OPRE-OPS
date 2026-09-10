@@ -30,7 +30,20 @@ __all__ = [
     "ProcurementTrackerStep",
     "DefaultProcurementTrackerStep",
     "DefaultProcurementTracker",
+    "DEFAULT_AWARD_MODIFICATION_NUMBER",
+    "AWARD_MODIFICATION_NUMBERS",
 ]
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+# Modification # vocabulary for the AWARD step (OPS-5892). "Base" identifies the original
+# award; subsequent modification versions are P00001..P00020. This is a fixed dropdown on the
+# frontend, so it is validated server-side too — see the mirror in
+# frontend/src/components/Agreements/AwardRequestForm/awardForm.helpers.js.
+DEFAULT_AWARD_MODIFICATION_NUMBER = "Base"
+AWARD_MODIFICATION_NUMBERS: List[str] = [DEFAULT_AWARD_MODIFICATION_NUMBER] + [f"P{i:05d}" for i in range(1, 21)]
 
 # ============================================================================
 # ENUMS

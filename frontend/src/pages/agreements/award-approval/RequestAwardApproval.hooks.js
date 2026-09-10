@@ -15,6 +15,11 @@ import { getLocalISODate, formatDateForApi } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import {
+    DEFAULT_MODIFICATION_NUMBER,
+    getSeededAwardFields,
+    hasAwardFieldChanges
+} from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
 // Memoize DatePicker outside the hook to avoid recreating on every render
@@ -50,7 +55,7 @@ export default function useRequestAwardApproval(agreementId) {
 
     // OPS-5892: additional award fields
     const [agreementTitle, setAgreementTitle] = useState("");
-    const [modificationNumber, setModificationNumber] = useState("Base");
+    const [modificationNumber, setModificationNumber] = useState(DEFAULT_MODIFICATION_NUMBER);
     const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
     const [taskOrderNumber, setTaskOrderNumber] = useState("");
     // Seed-once guard so refetches don't clobber user edits
@@ -131,18 +136,28 @@ export default function useRequestAwardApproval(agreementId) {
 
     const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
 
-    // OPS-5892: seed the Agreement Title from the current agreement name once, so the field is
-    // pre-filled. Guard with isSeeded so a refetch never clobbers the user's edits.
+    // OPS-5892: baseline for the four additional award fields. Seeded from a prior step 6
+    // submission when one exists — a declined request keeps its values, so a COR resubmitting does
+    // not have to re-enter the PO # / Task Order # — and otherwise from the agreement name and the
+    // "Base" default. Shared with hasChanged so a pristine form never trips the blocker.
+    const seededAwardFields = useMemo(() => getSeededAwardFields(step6, agreement), [step6, agreement]);
+
+    // Seed once. Guard with isSeeded so a refetch never clobbers the user's edits, and wait for the
+    // tracker query so a first render without step6 does not seed the fallbacks prematurely.
     React.useEffect(() => {
-        if (isSeeded || !agreement) return;
-        setAgreementTitle(agreement.name ?? "");
+        if (isSeeded || !agreement || isLoadingTrackers) return;
+        setAgreementTitle(seededAwardFields.agreementTitle);
+        setModificationNumber(seededAwardFields.modificationNumber);
+        setPurchaseOrderNumber(seededAwardFields.purchaseOrderNumber);
+        setTaskOrderNumber(seededAwardFields.taskOrderNumber);
         setIsSeeded(true);
-    }, [isSeeded, agreement]);
+    }, [isSeeded, agreement, isLoadingTrackers, seededAwardFields]);
 
     /**
      * Track if any changes have been made to the form.
-     * Pre-filled/defaulted fields (agreement title, modification #) must be compared against their
-     * seeded/default values — never against "" — otherwise the blocker fires on a pristine form.
+     * Pre-filled/defaulted fields (agreement title, modification #, PO #, Task Order #) must be
+     * compared against their seeded/default values — never against "" — otherwise the blocker
+     * fires on a pristine form.
      */
     const hasChanged = useMemo(() => {
         return (
@@ -151,10 +166,10 @@ export default function useRequestAwardApproval(agreementId) {
             contractNumber.trim() !== "" ||
             awardAmount !== "" ||
             awardDate !== "" ||
-            agreementTitle.trim() !== (agreement?.name ?? "").trim() ||
-            modificationNumber !== "Base" ||
-            purchaseOrderNumber.trim() !== "" ||
-            taskOrderNumber.trim() !== "" ||
+            hasAwardFieldChanges(
+                { agreementTitle, modificationNumber, purchaseOrderNumber, taskOrderNumber },
+                seededAwardFields
+            ) ||
             Object.keys(clinAssignments).length > 0
         );
     }, [
@@ -167,7 +182,7 @@ export default function useRequestAwardApproval(agreementId) {
         modificationNumber,
         purchaseOrderNumber,
         taskOrderNumber,
-        agreement,
+        seededAwardFields,
         clinAssignments
     ]);
 

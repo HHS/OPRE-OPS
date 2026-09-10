@@ -10,7 +10,11 @@ from datetime import date
 import pytest
 from marshmallow import ValidationError
 
-from models.procurement_tracker import ProcurementTrackerStepStatus, ProcurementTrackerStepType
+from models.procurement_tracker import (
+    AWARD_MODIFICATION_NUMBERS,
+    ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
+)
 from ops_api.ops.schemas.procurement_tracker_steps import (
     ProcurementTrackerStepPatchRequestSchema,
     ProcurementTrackerStepResponseSchema,
@@ -219,7 +223,7 @@ class TestPatchSchemaObligatedDate:
 
 
 class TestPatchSchemaAdditionalAwardFields:
-    """OPS-5892: PATCH schema must accept the new award fields and enforce length caps."""
+    """OPS-5892: PATCH schema must accept the new award fields and constrain their values."""
 
     def test_additional_award_fields_accepted(self):
         schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
@@ -236,10 +240,27 @@ class TestPatchSchemaAdditionalAwardFields:
         assert result["purchase_order_number"] == "ODN-123"
         assert result["task_order_number"] == "TO-456"
 
-    def test_modification_number_over_max_length_rejected(self):
+    @pytest.mark.parametrize("value", AWARD_MODIFICATION_NUMBERS)
+    def test_every_dropdown_modification_number_accepted(self, value):
+        """Every value the frontend <select> can produce must load."""
+        schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
+        assert schema.load({"modification_number": value})["modification_number"] == value
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "x" * 21,  # over the column length
+            "P00021",  # past the end of the dropdown
+            "P1",  # unpadded
+            "base",  # wrong case
+            "Modification 1",  # free text
+        ],
+    )
+    def test_modification_number_outside_dropdown_rejected(self, value):
+        """A direct API PATCH must not be able to store a value the <select> has no option for."""
         schema = ProcurementTrackerStepPatchRequestSchema(partial=True)
         with pytest.raises(ValidationError) as exc_info:
-            schema.load({"modification_number": "x" * 21})
+            schema.load({"modification_number": value})
         assert "modification_number" in exc_info.value.messages
 
     def test_purchase_order_number_over_max_length_rejected(self):

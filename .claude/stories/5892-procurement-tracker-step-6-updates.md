@@ -114,7 +114,10 @@ New fields follow the same `award_*`-column → generic-API-name mapping pattern
 **Frontend — shared form (Request + Edit):**
 - `frontend/src/components/Agreements/AwardRequestForm/AwardRequestForm.jsx` (+ `.test.jsx`)
 - `frontend/src/components/Agreements/AwardRequestForm/awardForm.helpers.js` — add
-  `getModificationOptions()` (Base + P00001–P00020).
+  `MODIFICATION_NUMBER_OPTIONS` (Base + P00001–P00020), plus `getSeededAwardFields()` /
+  `hasAwardFieldChanges()` shared by both hooks. Mirrored server-side by
+  `AWARD_MODIFICATION_NUMBERS` in `backend/models/procurement_tracker.py`, which the PATCH schema
+  validates with `validate.OneOf`.
 
 **Frontend — Request page (COR):**
 - `frontend/src/pages/agreements/award-approval/RequestAwardApproval.jsx`
@@ -199,7 +202,7 @@ columns. Confirm upgrade/downgrade; run backend suite.
    Render in **both** request and edit modes (D3 — Budget Team edits it too); do NOT gate with
    `!isEditMode`.
 3. In **Current Award Information**, add: **Modification #** `<select>` (options from
-   `getModificationOptions()`, default `Base`), **Purchase Order #** text input, **Task Order #**
+   `MODIFICATION_NUMBER_OPTIONS`, default `Base`), **Purchase Order #** text input, **Task Order #**
    text input — matching the existing `grid-row grid-gap` / `grid-col-4` layout and PDF order
    (Contract #, Award Amount, Modification #, Purchase Order #, Task Order #, Award Date). All wired
    to `runValidate`.

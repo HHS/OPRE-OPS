@@ -9099,6 +9099,48 @@ components:
               format: date
               nullable: true
               description: Date the contract was awarded
+            agreement_title:
+              type: string
+              nullable: true
+              description: >-
+                Proposed agreement title entered during the award request (OPS-5892).
+                Applied to the agreement name on Budget Team approval, after which it is immutable.
+            modification_number:
+              type: string
+              nullable: true
+              enum:
+                - Base
+                - P00001
+                - P00002
+                - P00003
+                - P00004
+                - P00005
+                - P00006
+                - P00007
+                - P00008
+                - P00009
+                - P00010
+                - P00011
+                - P00012
+                - P00013
+                - P00014
+                - P00015
+                - P00016
+                - P00017
+                - P00018
+                - P00019
+                - P00020
+              description: >-
+                Modification # for the award (OPS-5892). "Base" identifies the original award;
+                subsequent modification versions are P00001..P00020.
+            purchase_order_number:
+              type: string
+              nullable: true
+              description: Purchase Order # (ODN provided to the Budget Team) (OPS-5892, max 100 characters)
+            task_order_number:
+              type: string
+              nullable: true
+              description: Task Order # from the signed award (OPS-5892, max 100 characters)
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -9197,6 +9239,50 @@ components:
           description: >-
             Obligated date entered by Budget Team on award approval (OPS-2280).
             Used to set date_needed on obligated BLIs and the ProcurementAction obligated date.
+        agreement_title:
+          type: string
+          nullable: true
+          description: >-
+            Proposed agreement title for AWARD steps (OPS-5892). Applied to the agreement name
+            on Budget Team approval.
+        modification_number:
+          type: string
+          nullable: true
+          enum:
+            - Base
+            - P00001
+            - P00002
+            - P00003
+            - P00004
+            - P00005
+            - P00006
+            - P00007
+            - P00008
+            - P00009
+            - P00010
+            - P00011
+            - P00012
+            - P00013
+            - P00014
+            - P00015
+            - P00016
+            - P00017
+            - P00018
+            - P00019
+            - P00020
+          description: >-
+            Modification # for AWARD steps (OPS-5892). "Base" identifies the original award;
+            subsequent modification versions are P00001..P00020. Any other value is rejected.
+        purchase_order_number:
+          type: string
+          nullable: true
+          maxLength: 100
+          description: Purchase Order # (ODN) for AWARD steps (OPS-5892, max 100 characters)
+        task_order_number:
+          type: string
+          nullable: true
+          maxLength: 100
+          description: Task Order # for AWARD steps (OPS-5892, max 100 characters)
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.

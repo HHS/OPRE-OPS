@@ -1019,6 +1019,22 @@ class ProcurementTrackerStepService:
         """Apply the proposed agreement title (entered during the award request) to the agreement.
 
         Called on award approval. After this, awarded-agreement immutability locks the name (OPS-5892).
+
+        This writes ``agreement.name`` directly rather than going through ``AgreementsService.update()``
+        on purpose:
+
+        - It must land in the same transaction as the rest of the approval (BLI transitions,
+          ProcurementAction status). ``AgreementsService.update()`` commits, which would split the
+          approval into two commits and leave a partially-approved state reachable on failure.
+        - ``AgreementsService.update()`` expects a full agreement update payload (including
+          ``agreement_cls``) and runs the whole AgreementValidator, so an unrelated pre-existing
+          agreement-level validation failure would block a valid award approval.
+        - ``ImmutableAwardedFieldsRule`` would not apply here anyway: it only fires when
+          ``agreement.is_awarded`` is already true, and this runs *before* the ProcurementAction is
+          marked AWARDED further down ``_handle_award_approval``. The name is the field the COR is
+          being asked to finalize at this step, so locking it must happen after this write, not before.
+
+        Row-level auditing is unaffected — ``OpsDBHistory`` tracks the change via SQLAlchemy events.
         """
         proposed_title = getattr(step, "award_agreement_title", None)
         if proposed_title and proposed_title.strip():

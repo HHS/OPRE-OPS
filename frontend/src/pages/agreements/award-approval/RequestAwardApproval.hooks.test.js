@@ -273,3 +273,115 @@ describe("useRequestAwardApproval — additional award fields (OPS-5892)", () =>
         );
     });
 });
+
+describe("useRequestAwardApproval — reseeding after a declined request (OPS-5892)", () => {
+    /**
+     * Render the hook with a step 6 that already holds a previous submission's values,
+     * as it does when the Budget Team declines and the COR returns to resubmit.
+     */
+    const setupWithStep6 = (step6Overrides) => {
+        const store = setupStore();
+        const wrapper = ({ children }) => (
+            <Provider store={store}>
+                <MemoryRouter>{children}</MemoryRouter>
+            </Provider>
+        );
+
+        useGetAgreementByIdQuery.mockReturnValue({ data: buildAgreement(), isLoading: false });
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: { data: [{ status: "ACTIVE", steps: [{ step_number: 6, id: 60, ...step6Overrides }] }] },
+            isLoading: false
+        });
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([vi.fn(), {}]);
+        useGetServicesComponentsListQuery.mockReturnValue({ data: [], isLoading: false });
+        useGetVendorsQuery.mockReturnValue({ data: [], isLoading: false });
+        useUpdateBudgetLineItemMutation.mockReturnValue([vi.fn(), {}]);
+
+        return renderHook(() => useRequestAwardApproval(1), { wrapper });
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() });
+    });
+
+    it("restores previously submitted values instead of wiping them back to defaults", async () => {
+        const { result } = setupWithStep6({
+            agreement_title: "Previously Proposed Title",
+            modification_number: "P00003",
+            purchase_order_number: "ODN-77",
+            task_order_number: "TO-88"
+        });
+
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Previously Proposed Title"));
+        expect(result.current.modificationNumber).toBe("P00003");
+        expect(result.current.purchaseOrderNumber).toBe("ODN-77");
+        expect(result.current.taskOrderNumber).toBe("TO-88");
+    });
+
+    it("does not flag the blocker on a form freshly seeded from a declined request", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: vi.fn(), reset: vi.fn() };
+        });
+
+        const { result } = setupWithStep6({
+            agreement_title: "Previously Proposed Title",
+            modification_number: "P00003",
+            purchase_order_number: "ODN-77",
+            task_order_number: "TO-88"
+        });
+        await waitFor(() => expect(result.current.taskOrderNumber).toBe("TO-88"));
+
+        const shouldBlock = capturedCb({
+            currentLocation: { pathname: "/agreements/1/award" },
+            nextLocation: { pathname: "/agreements/1/details" }
+        });
+        expect(shouldBlock).toBe(false);
+    });
+
+    it("falls back to Base when a stored modification # is an empty string", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: vi.fn(), reset: vi.fn() };
+        });
+
+        const { result } = setupWithStep6({ modification_number: "", purchase_order_number: "" });
+        await waitFor(() => expect(result.current.agreementTitle).toBe("Test Agreement"));
+
+        // An empty stored value must not leave the <select> on a value it has no option for,
+        // and must not make an untouched form look dirty.
+        expect(result.current.modificationNumber).toBe("Base");
+        expect(
+            capturedCb({
+                currentLocation: { pathname: "/agreements/1/award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            })
+        ).toBe(false);
+    });
+
+    it("ignores whitespace-only edits, which submit as trimmed no-ops", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: vi.fn(), reset: vi.fn() };
+        });
+
+        const { result } = setupWithStep6({ purchase_order_number: "ODN-77" });
+        await waitFor(() => expect(result.current.purchaseOrderNumber).toBe("ODN-77"));
+
+        act(() => {
+            result.current.setPurchaseOrderNumber("ODN-77  ");
+        });
+
+        await waitFor(() => expect(result.current.purchaseOrderNumber).toBe("ODN-77  "));
+        expect(
+            capturedCb({
+                currentLocation: { pathname: "/agreements/1/award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            })
+        ).toBe(false);
+    });
+});

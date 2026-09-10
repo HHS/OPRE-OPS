@@ -7,7 +7,7 @@ import Accordion from "../../UI/Accordion";
 import CLINSelector from "../../BudgetLineItems/CLINSelector";
 import SummaryBox from "../SummaryBox";
 import FileUploadButton from "../../UI/Button/FileUploadButton";
-import { formatVendorType, getModificationOptions } from "./awardForm.helpers";
+import { formatVendorType, MODIFICATION_NUMBER_OPTIONS } from "./awardForm.helpers";
 
 /**
  * @component - Shared presentational form for award request / award edit fields.
@@ -403,7 +403,7 @@ const AwardRequestForm = ({
                                 aria-required="true"
                                 data-cy="modification-number-select"
                             >
-                                {getModificationOptions().map((option) => (
+                                {MODIFICATION_NUMBER_OPTIONS.map((option) => (
                                     <option
                                         key={option}
                                         value={option}
