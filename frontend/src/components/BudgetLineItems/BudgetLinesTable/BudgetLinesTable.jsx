@@ -3,7 +3,11 @@ import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-import { BUDGET_LINE_TABLE_HEADERS, GRANT_BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
+import {
+    AWARDED_CONTRACT_BUDGET_LINE_TABLE_HEADERS,
+    BUDGET_LINE_TABLE_HEADERS,
+    GRANT_BUDGET_LINE_TABLE_HEADERS
+} from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
 
 /**
@@ -19,6 +23,7 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @param {Boolean} [props.isGrant] - A flag to indicate grant budget lines, which omit the Fee and Total columns (grants have no procurement shop).
+ * @param {Boolean} [props.showClinColumn] - A flag to show the CLIN column (awarded contract agreements only).
  * @returns {React.ReactElement} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -31,7 +36,8 @@ const BudgetLinesTable = ({
     isAgreementAwarded = false,
     budgetLineIdsInReview = [],
     isEditable = false,
-    isGrant = false
+    isGrant = false,
+    showClinColumn = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -54,7 +60,13 @@ const BudgetLinesTable = ({
     );
     return (
         <Table
-            tableHeadings={isGrant ? GRANT_BUDGET_LINE_TABLE_HEADERS : BUDGET_LINE_TABLE_HEADERS}
+            tableHeadings={
+                isGrant
+                    ? GRANT_BUDGET_LINE_TABLE_HEADERS
+                    : showClinColumn
+                      ? AWARDED_CONTRACT_BUDGET_LINE_TABLE_HEADERS
+                      : BUDGET_LINE_TABLE_HEADERS
+            }
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
             sortDescending={sortDescending}
@@ -72,6 +84,7 @@ const BudgetLinesTable = ({
                     isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
                     isGrant={isGrant}
+                    showClinColumn={showClinColumn}
                 />
             ))}
         </Table>

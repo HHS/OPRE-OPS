@@ -33,6 +33,13 @@ jobs:
           image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}, VITE_ENABLE_MSW=false, BUILD_STORYBOOK=true"
 
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   deploy-frontend:
     needs: build-frontend
 
@@ -49,7 +56,7 @@ jobs:
           commitChange: false
 
       - name: Log in to Azure
-        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
         with:
           creds: ${{ secrets.SDLC_AZURE_CREDS }}
 
@@ -60,3 +67,10 @@ jobs:
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
             yamlConfigPath: ./.github/container-app-suffixes.yml
+
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -7450,6 +7450,70 @@
             },
             created_by: 516,
             created_on: "2026-08-07T04:20:00.000000Z",
+        },
+        {
+            // 76 change NOFO Number and Grant Funding Period on Grant #1
+            event_type: "UPDATE_AGREEMENT",
+            event_status: "SUCCESS",
+            event_details: {
+                agreement_updates: {
+                    changes: {
+                        nofo_number: {
+                            new_value: "NOFO-2026-01",
+                            old_value: null,
+                        },
+                        funding_period_months: {
+                            new_value: 18,
+                            old_value: 12,
+                        },
+                    },
+                    owner_id: 3,
+                    updated_by: 516,
+                },
+            },
+            created_by: 516,
+            created_on: "2026-08-08T10:00:00.000000Z",
+        },
+        {
+            // 77 change ALN Numbers on Grant #1
+            event_type: "UPDATE_AGREEMENT",
+            event_status: "SUCCESS",
+            event_details: {
+                agreement_updates: {
+                    changes: {},
+                    owner_id: 3,
+                    updated_by: 516,
+                    aln_number_changes: {
+                        aln_numbers_added: [7],
+                        aln_numbers_removed: [3],
+                    },
+                },
+            },
+            created_by: 516,
+            created_on: "2026-08-08T10:05:00.000000Z",
+        },
+        {
+            // 78 change FPO and Project Specialist on Grant #1
+            event_type: "UPDATE_AGREEMENT",
+            event_status: "SUCCESS",
+            event_details: {
+                agreement_updates: {
+                    changes: {
+                        project_officer_id: {
+                            new_value: 522,
+                            old_value: 500,
+                        },
+                        alternate_project_officer_id: {
+                            new_value: 501,
+                            old_value: null,
+                        },
+                    },
+                    owner_id: 3,
+                    updated_by: 516,
+                },
+            },
+            created_by: 516,
+            created_on: "2026-08-08T10:10:00.000000Z",
         }
     ],
 }

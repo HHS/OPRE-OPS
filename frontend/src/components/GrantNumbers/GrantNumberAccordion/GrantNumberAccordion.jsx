@@ -12,6 +12,9 @@ import GrantNumberMetadata from "../GrantNumberMetadata";
  * @param {boolean} [props.withMetadata] - Whether to display PoP and description metadata.
  * @param {string} [props.periodStart] - ISO 8601 start date for the period of performance.
  * @param {string} [props.periodEnd] - ISO 8601 end date for the period of performance.
+ * @param {string} [props.granteeRecipient] - Grantee/recipient name (award-time; "TBD" when absent).
+ * @param {string} [props.organizationType] - Recipient organization type (award-time; "TBD" when absent).
+ * @param {string} [props.state] - Recipient state (award-time; "TBD" when absent).
  * @param {string} [props.description] - Description of the grant number.
  * @param {boolean} [props.isError] - When true, renders a red error border around the accordion.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
@@ -23,6 +26,9 @@ function GrantNumberAccordion({
     withMetadata = false,
     periodStart = "",
     periodEnd = "",
+    granteeRecipient = "",
+    organizationType = "",
+    state = "",
     description = "",
     isError = false,
     children
@@ -44,6 +50,9 @@ function GrantNumberAccordion({
                 <GrantNumberMetadata
                     periodStart={periodStart}
                     periodEnd={periodEnd}
+                    granteeRecipient={granteeRecipient}
+                    organizationType={organizationType}
+                    state={state}
                     description={description}
                 />
             )}

@@ -68,6 +68,12 @@ export const isDeletionRoutedToApproval = (budgetLine, isSuperUser) => {
 };
 
 /**
+ * @param {number} agreementId - The id of the agreement.
+ * @returns {string} The path to the agreement's budget lines page.
+ */
+const getBudgetLinesUrl = (agreementId) => `/agreements/${agreementId}/budget-lines`;
+
+/**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {Function} setIsEditMode - Function to set the edit mode.
@@ -524,7 +530,7 @@ const useCreateBLIsAndSCs = (
                         heading: "Changes Sent to Approval",
                         message:
                             "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                        redirectUrl: blocker.nextLocation?.pathname
+                        redirectUrl: blocker.location?.pathname
                     });
                 }
             } catch (error) {
@@ -583,7 +589,7 @@ const useCreateBLIsAndSCs = (
                                     heading: "Changes Sent to Approval",
                                     message:
                                         "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                                    redirectUrl: `/agreements/${selectedAgreement?.id}`
+                                    redirectUrl: getBudgetLinesUrl(selectedAgreement?.id)
                                 });
                                 resolve();
                             }
@@ -649,14 +655,14 @@ const useCreateBLIsAndSCs = (
                         `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                         `<strong>Pending Changes:</strong>\n` +
                         ` ${pendingChanges}`,
-                    redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
+                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             } else {
                 setAlert({
                     type: "success",
                     heading: "Agreement Updated",
                     message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
-                    redirectUrl: savedViaModal ? blocker.nextLocation : `/agreements/${selectedAgreement?.id}`
+                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
                 });
             }
         },
@@ -671,7 +677,7 @@ const useCreateBLIsAndSCs = (
             selectedAgreement?.id,
             selectedAgreement?.display_name,
             createBudgetChangeMessages,
-            blocker.nextLocation
+            blocker.location
         ]
     );
     /**
@@ -1060,7 +1066,7 @@ const useCreateBLIsAndSCs = (
                     resetForm();
                     dispatch({ type: "RESEED_BUDGET_LINE_ITEMS", payload: [] });
                     setIsEditMode(false);
-                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
+                    navigate(getBudgetLinesUrl(selectedAgreement?.id));
                     scrollToTop();
                 }
             }

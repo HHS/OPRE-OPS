@@ -17,7 +17,7 @@ import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tag from "../../../components/UI/Tag";
-import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
@@ -25,6 +25,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
+import AgreementAwardModifications from "./AgreementAwardModifications";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
 import AgreementProcurementTracker from "./AgreementProcurementTracker";
@@ -155,6 +156,9 @@ const Agreement = () => {
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    // The Award & Modifications tab/endpoint only supports Contract and AA agreements.
+    // Guards the route against direct/manually-typed URLs for other types (incl. Miscellaneous).
+    const isContractOrAa = isContractOrAaAgreement(agreement?.agreement_type);
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditableForProcurementTracker =
@@ -308,6 +312,7 @@ const Agreement = () => {
                         isAgreementAwarded={isAgreementAwarded ?? false}
                         isEditableForProcurementTracker={isEditableForProcurementTracker}
                         isGrant={isGrant}
+                        isContractOrAa={isContractOrAa}
                     />
                 </section>
 
@@ -344,6 +349,19 @@ const Agreement = () => {
                                 isAwardInReview={isAwardInReview}
                                 isPostPreAwardLocked={isPostPreAwardLocked}
                             />
+                        }
+                    />
+                    <Route
+                        path="award-modifications"
+                        element={
+                            isContractOrAa ? (
+                                <AgreementAwardModifications agreement={agreement} />
+                            ) : (
+                                <Navigate
+                                    to={`/agreements/${agreement?.id}`}
+                                    replace
+                                />
+                            )
                         }
                     />
                     <Route

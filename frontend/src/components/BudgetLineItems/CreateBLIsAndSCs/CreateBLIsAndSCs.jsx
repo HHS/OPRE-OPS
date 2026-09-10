@@ -495,11 +495,13 @@ export const CreateBLIsAndSCs = ({
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
+                    {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
                         setIncludeDrafts={setIncludeDrafts}
                         isEditable={false}
+                        showEditButton={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard
@@ -568,7 +570,10 @@ export const CreateBLIsAndSCs = ({
                         const isUnassociatedError =
                             isReviewMode && group.grantNumberNumber === 0 && group.budgetLines.length > 0;
                         return (
-                            <div key={`${group.grantNumberNumber}-${index}`}>
+                            <div
+                                key={`${group.grantNumberNumber}-${index}`}
+                                className={index > 0 ? "margin-top-1" : ""}
+                            >
                                 {isUnassociatedError && (
                                     <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                                         <span
@@ -616,7 +621,10 @@ export const CreateBLIsAndSCs = ({
                     const isUnassociatedError =
                         isReviewMode && group.servicesComponentNumber === 0 && group.budgetLines.length > 0;
                     return (
-                        <div key={`${group.servicesComponentNumber}-${index}`}>
+                        <div
+                            key={`${group.servicesComponentNumber}-${index}`}
+                            className={index > 0 ? "margin-top-1" : ""}
+                        >
                             {isUnassociatedError && (
                                 <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                                     <span

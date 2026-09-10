@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
-import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants";
+import { IS_DOCUMENTS_TAB_READY } from "../../../constants";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -13,6 +13,7 @@ import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants
  * @param {boolean} props.isAgreementNotDeveloped - Indicates whether the agreement is not developed.
  * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
  * @param {boolean} props.isEditableForProcurementTracker - Indicates whether the current user can edit the procurement tracker.
+ * @param {boolean} props.isContractOrAa - Indicates whether the agreement is a Contract or AA — the only types the Award & Modifications tab supports.
  * @returns {JSX.Element} The rendered JSX element.
  */
 const DetailsTabs = ({
@@ -20,7 +21,8 @@ const DetailsTabs = ({
     isAgreementNotDeveloped,
     isAgreementAwarded,
     isEditableForProcurementTracker = true,
-    isGrant = false
+    isGrant = false,
+    isContractOrAa = false
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -36,36 +38,41 @@ const DetailsTabs = ({
         },
         {
             name: "/budget-lines",
-            label: isGrant ? "Grant & Budget Lines" : "SCs & Budget Lines"
+            label: isGrant ? "Grants & Budget Lines" : "SCs & Budget Lines"
         }
     ];
-    // only show the these tabs if isAgreementAwarded for contracts
-    const developedOnlyPaths = isDevelopedAgreement
+    // Grants don't have Award & Modifications, Procurement Tracker, or Documents tabs yet
+    // (grants are awarded without procurement) — hide these until the design is defined.
+    // For contracts, only show these tabs when the agreement is developed.
+    const developedOnlyPaths =
+        isDevelopedAgreement && !isGrant
+            ? [
+                  {
+                      name: "/procurement-tracker",
+                      label: "Procurement Tracker",
+                      disabled: !isEditableForProcurementTracker,
+                      disabledTooltip: "Only agreement team members can edit the procurement tracker"
+                  },
+                  {
+                      name: "/documents",
+                      label: "Documents",
+                      disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
+                      disabledTooltip:
+                          "Documents tab is coming soon. For now, please\nupload to the OPRE preferred tool to share documents"
+                  }
+              ]
+            : [];
+    // The Award & Modifications tab/endpoint only supports Contract and AA agreements
+    // (mirrors the route guard in Agreement.jsx and backend's _SUPPORTED_AGREEMENT_TYPES).
+    const contractOrAaOnlyPaths = isContractOrAa
         ? [
               {
-                  name: "TBD1",
-                  label: "Award & Modifications",
-                  disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip: "Award & Modifications\ntab is coming soon"
-              },
-              {
-                  name: "/procurement-tracker",
-                  label: "Procurement Tracker",
-                  disabled: isGrant || !isEditableForProcurementTracker,
-                  disabledTooltip: isGrant
-                      ? "Procurement Tracker\ntab is coming soon"
-                      : "Only agreement team members can edit the procurement tracker"
-              },
-              {
-                  name: "/documents",
-                  label: "Documents",
-                  disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip:
-                      "Documents tab is coming soon. For now, please\nupload to the OPRE preferred tool to share documents"
+                  name: "/award-modifications",
+                  label: "Award & Modifications"
               }
           ]
         : [];
-    const paths = [...basePaths, ...developedOnlyPaths];
+    const paths = [...basePaths, ...contractOrAaOnlyPaths, ...developedOnlyPaths];
 
     const links = paths.map((path) => {
         const pathName = `/agreements/${agreementId}${path.name}`;

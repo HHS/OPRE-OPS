@@ -20,6 +20,7 @@ import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledBut
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import {
     calculateAgreementTotal,
+    EDIT_DISABLED_TOOLTIPS,
     getAgreementFeesFromBackend,
     getAgreementSubTotal
 } from "../../../helpers/agreement.helpers";
@@ -27,8 +28,11 @@ import {
     areAllBudgetLinesInReview,
     calculateProcShopFeePercentage,
     findGrantDescription,
+    findGrantee,
+    findGrantOrganizationType,
     findGrantPeriodEnd,
     findGrantPeriodStart,
+    findGrantState,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -82,6 +86,9 @@ const AgreementBudgetLines = ({
     const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement?.id });
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const isContract = agreement?.agreement_type === AgreementType.CONTRACT;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const showClinColumn = isContract && isAgreementAwarded;
 
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
@@ -97,20 +104,21 @@ const AgreementBudgetLines = ({
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
 
+    // Reuse the centralized tooltip strings so this button stays in sync with the Edit button.
     const toolTipLabel = () => {
         switch (true) {
             case isAgreementNotDeveloped:
-                return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
+                return EDIT_DISABLED_TOOLTIPS.notDeveloped;
             case isPreAwardInReview:
-                return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+                return EDIT_DISABLED_TOOLTIPS.preAwardInReview;
             case isAwardInReview:
-                return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
+                return EDIT_DISABLED_TOOLTIPS.awardInReview;
             case isPostPreAwardLocked:
-                return "This agreement has completed Pre-Award Approval and is locked from further edits.";
+                return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
             case allBudgetLinesInReview:
-                return "Budget lines In Review Status cannot be sent for status changes";
+                return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
             default:
-                return "Only team members listed on this agreement can change a BL status";
+                return EDIT_DISABLED_TOOLTIPS.notTeamMemberBLStatus;
         }
     };
 
@@ -207,6 +215,9 @@ const AgreementBudgetLines = ({
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isEditable={isAgreementEditable}
+                        canUserEdit={isSuperUser || (agreement?._meta?.isEditable ?? false)}
+                        isAgreementNotDeveloped={isAgreementNotDeveloped}
+                        allBudgetLinesInReview={allBudgetLinesInReview}
                         isPreAwardInReview={isPreAwardInReview}
                         isAwardInReview={isAwardInReview}
                         isPostPreAwardLocked={isPostPreAwardLocked}
@@ -233,7 +244,7 @@ const AgreementBudgetLines = ({
                                     <DisabledButtonWithTooltip
                                         label="Export coming soon"
                                         tooltipPosition="bottom"
-                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-center cursor-pointer opacity-30"
                                         dataCy="budget-line-export"
                                     >
                                         <svg
@@ -248,7 +259,7 @@ const AgreementBudgetLines = ({
                                     <button
                                         type="button"
                                         style={{ fontSize: "16px" }}
-                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        className="usa-button--unstyled text-primary display-flex flex-align-center cursor-pointer"
                                         data-cy="budget-line-export"
                                         onClick={() =>
                                             handleExport(
@@ -259,7 +270,8 @@ const AgreementBudgetLines = ({
                                                 budgetLineTrigger,
                                                 serviceComponentTrigger,
                                                 portfolioTrigger,
-                                                blis.length
+                                                blis.length,
+                                                showClinColumn
                                             )
                                         }
                                     >
@@ -274,7 +286,8 @@ const AgreementBudgetLines = ({
                                 ))}
                         </div>
                         <p className="font-sans-sm">
-                            This is a list of all services components and budget lines within this agreement.
+                            This is a list of all {isGrant ? "grant numbers" : "services components"} and budget lines
+                            within this agreement.
                         </p>
                     </div>
                 </>
@@ -325,6 +338,9 @@ const AgreementBudgetLines = ({
                         withMetadata={true}
                         periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
                         periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                        granteeRecipient={findGrantee(grantNumbers, group.grantNumberNumber)}
+                        organizationType={findGrantOrganizationType(grantNumbers, group.grantNumberNumber)}
+                        state={findGrantState(grantNumbers, group.grantNumberNumber)}
                         description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
                     >
                         {group.budgetLines.length > 0 ? (
@@ -370,6 +386,7 @@ const AgreementBudgetLines = ({
                                     isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
+                                    showClinColumn={showClinColumn}
                                 />
                             ) : (
                                 <p className="text-center margin-y-7">

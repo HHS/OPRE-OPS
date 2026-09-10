@@ -26,6 +26,12 @@ vi.mock("../../../api/opsAPI", () => ({
     ]
 }));
 
+// Mock BudgetLinesTable so column-gating tests assert the showClinColumn prop AgreementBudgetLines
+// passes, without pulling in the real table's hook chain (useGetAllCans, procurement shops, users).
+vi.mock("../../../components/BudgetLineItems/BudgetLinesTable", () => ({
+    default: (props) => <div data-testid="budget-lines-table">show-clin:{String(!!props.showClinColumn)}</div>
+}));
+
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return {
@@ -174,9 +180,92 @@ describe("AgreementBudgetLines", () => {
         });
     });
 
+    describe("Grant number metadata wiring", () => {
+        // A real super user so the grant accordion section renders in full.
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const renderGrantAgreement = (agreement) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={agreement}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("resolves award-time fields from the grant number onto the rendered accordion", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({
+                data: [
+                    {
+                        id: 10,
+                        number: 1,
+                        description: "Test grant description",
+                        period_start: "2026-01-15",
+                        period_end: "2026-06-30",
+                        grantee_name: "University of Example",
+                        organization_type: "Educational Institution",
+                        state: "NY"
+                    }
+                ],
+                isLoading: false
+            });
+
+            renderGrantAgreement({
+                ...mockAgreement,
+                agreement_type: "GRANT",
+                budget_line_items: []
+            });
+
+            expect(screen.getByText("Test grant description")).toBeInTheDocument();
+            expect(screen.getByText("University of Example")).toBeInTheDocument();
+            expect(screen.getByText("Educational Institution")).toBeInTheDocument();
+            expect(screen.getByText("NY")).toBeInTheDocument();
+            expect(screen.getByText("1/15/2026")).toBeInTheDocument();
+            expect(screen.getByText("6/30/2026")).toBeInTheDocument();
+        });
+
+        test("falls back to TBD when the grant number has no award-time fields yet", () => {
+            useGetGrantNumbersListQueryMock.mockReturnValue({
+                data: [{ id: 10, number: 1 }],
+                isLoading: false
+            });
+
+            renderGrantAgreement({
+                ...mockAgreement,
+                agreement_type: "GRANT",
+                budget_line_items: []
+            });
+
+            // PoP Start, PoP End, Grantee Recipient, Organization Type, State all fall back to "TBD"
+            expect(screen.getAllByText("TBD")).toHaveLength(5);
+        });
+    });
+
     describe("Grant lifecycle locks", () => {
-        // A super user so the Edit button would render if editing were allowed; the lock, not the
-        // user's permission, is what hides it. Regular users would hide the button regardless.
+        // A super user so the Edit button would be enabled if editing were allowed; the lock, not the
+        // user's permission, is what disables it. The button is always shown (disabled with a tooltip).
         const superUserStore = configureStore({
             reducer: {
                 auth: () => ({
@@ -216,22 +305,25 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("hides the Edit button for a grant when pre-award is in review", () => {
+        test("disables the Edit button for a grant when pre-award is in review", () => {
             renderWithLock({ isPreAwardInReview: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
-        test("hides the Edit button for a grant when award is in review", () => {
+        test("disables the Edit button for a grant when award is in review", () => {
             renderWithLock({ isAwardInReview: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
-        test("hides the Edit button for a grant when post-pre-award locked", () => {
+        test("disables the Edit button for a grant when post-pre-award locked", () => {
             renderWithLock({ isPostPreAwardLocked: true });
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
         test("enables the Edit button for a grant when no lifecycle lock is active", () => {
@@ -561,10 +653,11 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
-        test("Edit button is hidden for regular user when isPostPreAwardLocked is true", () => {
+        test("Edit button is disabled for regular user when isPostPreAwardLocked is true", () => {
             renderWith(regularUserStore);
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
         });
 
         test("Change BL Status button is disabled for regular user when isPostPreAwardLocked is true", () => {
@@ -574,10 +667,86 @@ describe("AgreementBudgetLines", () => {
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
         });
 
-        test("super user is also locked when isPostPreAwardLocked is true", () => {
+        test("super user is also locked (Edit disabled) when isPostPreAwardLocked is true", () => {
             renderWith(superUserStore);
-            expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+            const editButton = screen.getByRole("button", { name: /edit/i });
+            expect(editButton).toHaveAttribute("aria-disabled", "true");
+            expect(editButton).toHaveAttribute("data-cy", "edit-disabled");
+        });
+    });
+
+    describe("CLIN column", () => {
+        const editorStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+
+        const budgetLineWithClin = {
+            id: 5,
+            amount: 1000,
+            fees: 0,
+            date_needed: "2044-02-01",
+            status: "PLANNED",
+            services_component_id: 101,
+            line_description: "Test budget line",
+            can: { number: "CAN-001" },
+            clin: { id: 9, number: 42 },
+            _meta: { isEditable: true }
+        };
+
+        const renderContract = ({ agreementType = "CONTRACT", isAgreementAwarded = true } = {}) => {
+            useGetServicesComponentsListQueryMock.mockReturnValue({
+                data: [{ id: 101, number: 1, sub_component: null }],
+                isLoading: false
+            });
+
+            return render(
+                <Provider store={editorStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={{
+                                ...mockAgreement,
+                                agreement_type: agreementType,
+                                budget_line_items: [budgetLineWithClin]
+                            }}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={isAgreementAwarded}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+        };
+
+        test("passes showClinColumn=true to the table for an awarded contract agreement", () => {
+            renderContract({ agreementType: "CONTRACT", isAgreementAwarded: true });
+
+            expect(screen.getByText("show-clin:true")).toBeInTheDocument();
+        });
+
+        test("passes showClinColumn=false for a contract agreement that is not awarded", () => {
+            renderContract({ agreementType: "CONTRACT", isAgreementAwarded: false });
+
+            expect(screen.getByText("show-clin:false")).toBeInTheDocument();
+        });
+
+        test("passes showClinColumn=false for an awarded grant agreement", () => {
+            renderContract({ agreementType: "GRANT", isAgreementAwarded: true });
+
+            expect(screen.getByText("show-clin:false")).toBeInTheDocument();
         });
     });
 });

@@ -20,7 +20,6 @@ import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.help
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
-import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -93,7 +92,6 @@ const EditAgreementAndBudgetLines = () => {
     });
     // Financial-snapshot and procurement-shop changes both route through change requests
     // requiring Division Director approval — one modal covers both cases.
-    const isBudgetTeam = useIsUserBudgetTeam();
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
@@ -110,12 +108,6 @@ const EditAgreementAndBudgetLines = () => {
         refetchOnMountOrArgChange: true,
         skip: !isValidId
     });
-
-    // Budget Team direct-edit bypass applies when the agreement has a pending award
-    // approval (step 6). Read the backend-derived flag so this stays in sync with the
-    // server's is_award_approval_requested check (single source of truth) rather than
-    // inferring context from the returnTo URL.
-    const isAwardApprovalContext = agreement?.is_award_approval_requested === true;
 
     const {
         data: servicesComponents,
@@ -274,10 +266,7 @@ const EditAgreementAndBudgetLines = () => {
         if (isSaving) return;
         // Both procurement-shop and BLI financial changes route through change requests that
         // need Division Director approval — show one confirmation covering either case.
-        // Budget team bypasses the modal only when editing from the award-approval review page
-        // (step 6), matching the backend's is_award_approval_requested condition.
-        const budgetTeamBypasses = isBudgetTeam && isAwardApprovalContext;
-        if (!budgetTeamBypasses && (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval)) {
+        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
             setShowFinancialApprovalModal(true);
             return;
         }

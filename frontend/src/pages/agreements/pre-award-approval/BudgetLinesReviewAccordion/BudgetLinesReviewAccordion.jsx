@@ -102,7 +102,7 @@ export const BudgetLinesReviewAccordion = ({
                                                 isReviewMode={true}
                                                 servicesComponentNumber={group.grantNumberNumber}
                                                 action=""
-                                                showCLINColumn={showCLINColumn}
+                                                clin={{ showColumn: showCLINColumn }}
                                                 errorStatuses={
                                                     showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
                                                 }
@@ -137,7 +137,7 @@ export const BudgetLinesReviewAccordion = ({
                                             isReviewMode={true}
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
-                                            showCLINColumn={showCLINColumn}
+                                            clin={{ showColumn: showCLINColumn }}
                                             errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                         />
                                     ) : (

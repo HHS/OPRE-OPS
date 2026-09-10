@@ -57,4 +57,20 @@ describe("DisabledButtonWithTooltip", () => {
         expect(wrapper).toHaveAttribute("aria-disabled", "true");
         expect(wrapper).toHaveAttribute("tabindex", "0");
     });
+
+    it("applies wrapperStyle to the wrapper div without overriding cursor or display", () => {
+        render(
+            <DisabledButtonWithTooltip
+                label="tooltip"
+                wrapperStyle={{ opacity: 0.3 }}
+            >
+                Click me
+            </DisabledButtonWithTooltip>
+        );
+        const buttons = screen.getAllByRole("button", { name: "Click me" });
+        const wrapper = buttons.find((el) => el.tagName === "DIV");
+        expect(wrapper).toHaveStyle({ opacity: 0.3 });
+        expect(wrapper).toHaveStyle({ cursor: "not-allowed" });
+        expect(wrapper).toHaveStyle({ display: "inline-block" });
+    });
 });

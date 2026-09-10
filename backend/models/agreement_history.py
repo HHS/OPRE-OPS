@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from models import (
     CAN,
     Agreement,
+    AgreementType,
     ResearchMethodology,
     OpsEvent,
     OpsEventStatus,
@@ -265,6 +266,33 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             ops_event_id=event.id,
                             history_title="Change to Research Methodologies",
                             history_message=f"{event_user.full_name} removed Research Methodology {removed_research_methodology.name}.",
+                            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                        )
+                    )
+            if agreement_updates.get("aln_number_changes"):
+                # Handle ALN number changes
+                aln_number_changes = agreement_updates["aln_number_changes"]
+                for item in aln_number_changes.get("aln_numbers_added", []):
+                    history_events.append(
+                        AgreementHistory(
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
+                            ops_event_id=event.id,
+                            history_title="Change to ALN Numbers",
+                            history_message=f"{event_user.full_name} added ALN Number {item}.",
+                            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                            history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                        )
+                    )
+                for item in aln_number_changes.get("aln_numbers_removed", []):
+                    history_events.append(
+                        AgreementHistory(
+                            agreement_id=agreement_updates["owner_id"],
+                            agreement_id_record=agreement_updates["owner_id"],
+                            ops_event_id=event.id,
+                            history_title="Change to ALN Numbers",
+                            history_message=f"{event_user.full_name} removed ALN Number {item}.",
                             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
@@ -564,6 +592,7 @@ def create_agreement_update_history_event(
         "service_requirement_type",
         "contract_category",
         "psc_contract_specialist",
+        "nofo_number",
     ]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
@@ -627,6 +656,22 @@ def create_agreement_update_history_event(
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
+            case "funding_period_months":
+                old_funding_period = f"{old_value} months" if old_value is not None else "None"
+                new_funding_period = f"{new_value} months" if new_value is not None else "None"
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Change to Grant Funding Period",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet changed the Grant Funding Period from {old_funding_period} to {new_funding_period}."
+                        if updated_by_system_user
+                        else f"{updated_by_user.full_name} changed the Grant Funding Period from {old_funding_period} to {new_funding_period}."
+                    ),
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
             case "vendor_id":
                 from models import Vendor as vendor
 
@@ -683,15 +728,16 @@ def create_agreement_update_history_event(
                 if new_value:
                     new_po = session.get(User, new_value)
                     new_po_name = new_po.full_name if new_po else "TBD"
+                po_label = get_project_officer_display_name(agreement)
                 return AgreementHistory(
                     agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
-                    history_title="Change to COR",
+                    history_title=f"Change to {po_label}",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the COR from {old_po_name} to {new_po_name}."
+                        f"Changes made to the OPRE budget spreadsheet changed the {po_label} from {old_po_name} to {new_po_name}."
                         if updated_by_system_user
-                        else f"{updated_by_user.full_name} changed the COR from {old_po_name} to {new_po_name}."
+                        else f"{updated_by_user.full_name} changed the {po_label} from {old_po_name} to {new_po_name}."
                     ),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
@@ -705,15 +751,16 @@ def create_agreement_update_history_event(
                 if new_value:
                     new_po = session.get(User, new_value)
                     new_po_name = new_po.full_name if new_po else "TBD"
+                alt_po_label = get_alternate_project_officer_display_name(agreement)
                 return AgreementHistory(
                     agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
                     ops_event_id=ops_event_id,
-                    history_title="Change to Alternate COR",
+                    history_title=f"Change to {alt_po_label}",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the Alternate COR from {old_po_name} to {new_po_name}."
+                        f"Changes made to the OPRE budget spreadsheet changed the {alt_po_label} from {old_po_name} to {new_po_name}."
                         if updated_by_system_user
-                        else f"{updated_by_user.full_name} changed the Alternate COR from {old_po_name} to {new_po_name}."
+                        else f"{updated_by_user.full_name} changed the {alt_po_label} from {old_po_name} to {new_po_name}."
                     ),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
@@ -1334,6 +1381,7 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "contract_category": "Contract Category",
         "psc_contract_specialist": "PSC Contract Specialist",
         "agreement_reason": "Agreement Reason",
+        "nofo_number": "NOFO Number",
     }
 
     message_display_names = {
@@ -1352,12 +1400,33 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "contract_category": "contract category",
         "psc_contract_specialist": "PSC contract specialist",
         "agreement_reason": "Reason for Agreement",
+        "nofo_number": "NOFO Number",
     }
     return (
         title_display_names.get(property_name, property_name)
         if in_title
         else message_display_names.get(property_name, property_name)
     )
+
+
+def get_project_officer_display_name(agreement: Agreement) -> str:
+    """Get the agreement-type-appropriate display name for the project officer role."""
+    display_names = {
+        AgreementType.GRANT: "FPO",
+        AgreementType.DIRECT_OBLIGATION: "Project Officer",
+    }
+    agreement_type = agreement.agreement_type if agreement else None
+    return display_names.get(agreement_type, "COR")
+
+
+def get_alternate_project_officer_display_name(agreement: Agreement) -> str:
+    """Get the agreement-type-appropriate display name for the alternate project officer role."""
+    display_names = {
+        AgreementType.GRANT: "Project Specialist",
+        AgreementType.DIRECT_OBLIGATION: "Alternate Project Officer",
+    }
+    agreement_type = agreement.agreement_type if agreement else None
+    return display_names.get(agreement_type, "Alternate COR")
 
 
 def is_timespan_within_one_minute(datetime_to_check: str, reference_datetime: str) -> bool:
