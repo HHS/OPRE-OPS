@@ -7007,7 +7007,9 @@ components:
         modification_number:
           type: string
           nullable: true
-          description: '"Base" for the initial award, otherwise the modification number (e.g. "Mod 1")'
+          description: >-
+            The Modification # entered on the award step ("Base", "P00001"...) when present;
+            otherwise "Base" for the initial award, or the modification number (e.g. "Mod 1")
         requisition_approval_date:
           type: string
           format: date
@@ -7028,9 +7030,15 @@ components:
         purchase_order_number:
           type: string
           nullable: true
+          description: >-
+            The Purchase Order # entered on the award step for this cycle; falls back to the
+            agreement-level po_number when the step has none
         task_order_number:
           type: string
           nullable: true
+          description: >-
+            The Task Order # entered on the award step for this cycle; falls back to the
+            agreement-level task_order_number when the step has none
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object

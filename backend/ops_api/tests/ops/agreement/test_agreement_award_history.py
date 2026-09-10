@@ -89,6 +89,45 @@ class TestAgreementAwardHistoryEndpoint:
         finally:
             cleanup_award_history(loaded_db, agreement, vendor)
 
+    def test_step_6_award_fields_are_serialized(self, auth_client, loaded_db):
+        """OPS-5892: the Modification # / Purchase Order # / Task Order # captured on the
+        AWARD step reach the response, overriding the agreement-level columns."""
+        agreement = ContractAgreement(
+            name="Award History Endpoint Step 6",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="PO-IMPORTED",
+            task_order_number="TO-IMPORTED",
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+        action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2024, 6, 26),
+        )
+        loaded_db.add(action)
+        loaded_db.flush()
+        make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            action.id,
+            award_modification_number="P00002",
+            award_purchase_order_number="PO-STEP6",
+            award_task_order_number="TO-STEP6",
+        )
+        loaded_db.commit()
+
+        try:
+            response = auth_client.get(url_for("api.agreements-award-history-item", id=agreement.id))
+            assert response.status_code == 200
+            record = response.json["data"][0]
+            assert record["modification_number"] == "P00002"
+            assert record["purchase_order_number"] == "PO-STEP6"
+            assert record["task_order_number"] == "TO-STEP6"
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
     def test_empty_list_for_awarded_agreement_without_completed_trackers(self, auth_client, loaded_db):
         agreement = ContractAgreement(name="Award History Endpoint Empty", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)

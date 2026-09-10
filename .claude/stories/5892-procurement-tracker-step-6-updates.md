@@ -65,6 +65,9 @@ award exactly before the agreement is marked Awarded.
       existing awarded-agreement immutability).
 - [ ] Backend persists the new fields on the step and returns them on GET; Alembic migration adds
       the columns; unit tests updated; lint/format/tests pass.
+- [ ] The Award & Modification history endpoint surfaces the step's Modification # / Purchase
+      Order # / Task Order # for each cycle, falling back to the agreement-level columns
+      (Decision D5).
 
 ## Resolved Decisions
 
@@ -74,6 +77,20 @@ award exactly before the agreement is marked Awarded.
 | D2 | Required-to-submit | **All four new fields required:** Agreement Title, Modification # (defaults Base), Purchase Order #, Task Order #. |
 | D3 | Budget Team edit on Edit page | **All editable by Budget Team** — Title, Modification #, Purchase Order #, Task Order # are all editable on the Edit Award Approval page. |
 | D4 | Title write timing + lock | **Apply at approval.** Store the proposed title on step 6; write `agreement.name` only when the Budget Team approves, at which point existing awarded-agreement immutability locks it. No new lock rule needed. |
+| D5 | Reaching Award & Modification history | **Read the step, don't propagate.** `AgreementAwardHistoryService` prefers the AWARD step's `award_modification_number` / `award_purchase_order_number` / `award_task_order_number` over the agreement-level `po_number`/`task_order_number` and `AgreementMod.number`, falling back when the step value is blank/NULL. Nothing writes those agreement columns. |
+
+### Consequences of D5
+- History is **per award cycle**: each accordion shows the PO #/Task Order #/Mod # entered on *its
+  own* award, so a modification can legitimately differ from the initial award. The agreement-level
+  columns stay the fallback for cycles predating OPS-5892 and for MAPS-imported agreements.
+- The agreement-level `po_number` / `task_order_number` columns are left alone — only the legacy
+  `load_contracts` ETL writes them, and overwriting an imported value from an award step would
+  silently rewrite MAPS-sourced data. Surfacing them anywhere else in the app (e.g. agreement
+  details) from the step values is out of scope here.
+- `Modification #` still has **no** link to `AgreementMod`/`ProcurementAction` (see D1). The
+  accordion **header** therefore keeps using the prose `AgreementMod.number` ("FY 2025 Mod 1")
+  while the **Modification #** field shows the signed-award value ("P00001"). These are different
+  things and are allowed to differ.
 
 ### Consequences of D4 (important)
 - The **agreement title is stored on the step** (new column `award_agreement_title`), NOT written
