@@ -1,7 +1,25 @@
-import ExcelJS from "exceljs";
+import * as XLSX from "@e965/xlsx";
 import { getCurrentLocalTimestamp } from "./utils";
 
 const CURRENCY_FORMAT = '"$"#,##0.00_);("$"#,##0.00)';
+
+/**
+ * Apply the currency number format to numeric cells in the given columns (skips the header row).
+ * @param {import("@e965/xlsx").WorkSheet} worksheet
+ * @param {any[][]} rows
+ * @param {number[]} currencyColumns
+ */
+const applyCurrencyFormat = (worksheet, rows, currencyColumns) => {
+    currencyColumns.forEach((colIndex) => {
+        rows.forEach((_row, rowIndex) => {
+            const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
+            const cell = worksheet[cellAddress];
+            if (cell && cell.t === "n") {
+                cell.z = CURRENCY_FORMAT;
+            }
+        });
+    });
+};
 
 /**
  * Helper function to export table data to XLSX
@@ -25,23 +43,13 @@ export const exportTableToXlsx = async ({
 
     const rows = data.map(rowMapper).filter((row) => row !== undefined);
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Sheet1");
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    applyCurrencyFormat(worksheet, rows, currencyColumns);
 
-    worksheet.addRow(headers);
-    rows.forEach((row) => worksheet.addRow(row));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    currencyColumns.forEach((colIndex) => {
-        const column = worksheet.getColumn(colIndex + 1);
-        column.eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-            if (rowNumber === 1) return;
-            if (typeof cell.value === "number") {
-                cell.numFmt = CURRENCY_FORMAT;
-            }
-        });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
 
     const currentTimeStamp = getCurrentLocalTimestamp();
     const downloadFilename = `${filename}_${currentTimeStamp}.xlsx`;
@@ -71,27 +79,15 @@ export const exportMultiSheetToXlsx = async ({ sheets, filename = "export" }) =>
         throw new Error("At least one sheet is required");
     }
 
-    const workbook = new ExcelJS.Workbook();
+    const workbook = XLSX.utils.book_new();
 
     for (const sheet of sheets) {
-        const worksheet = workbook.addWorksheet(sheet.name);
-
-        worksheet.addRow(sheet.headers);
-        sheet.rows.forEach((row) => worksheet.addRow(row));
-
-        const currencyColumns = sheet.currencyColumns || [];
-        currencyColumns.forEach((colIndex) => {
-            const column = worksheet.getColumn(colIndex + 1);
-            column.eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-                if (rowNumber === 1) return;
-                if (typeof cell.value === "number") {
-                    cell.numFmt = CURRENCY_FORMAT;
-                }
-            });
-        });
+        const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows]);
+        applyCurrencyFormat(worksheet, sheet.rows, sheet.currencyColumns || []);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name);
     }
 
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
     const currentTimeStamp = getCurrentLocalTimestamp();
     const downloadFilename = `${filename}_${currentTimeStamp}.xlsx`;
     const blob = new Blob([buffer], {

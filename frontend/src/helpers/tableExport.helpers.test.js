@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import ExcelJS from "exceljs";
+import * as XLSX from "@e965/xlsx";
 import { exportTableToXlsx } from "./tableExport.helpers";
 
 const CURRENCY_FORMAT = '"$"#,##0.00_);("$"#,##0.00)';
@@ -41,22 +41,20 @@ describe("exportTableToXlsx", () => {
         /** @type {Blob} */
         const blob = createCall[0];
         const arrayBuffer = await blob.arrayBuffer();
-        const wb = new ExcelJS.Workbook();
-        await wb.xlsx.load(arrayBuffer);
-        const ws = wb.getWorksheet("Sheet1");
+        const wb = XLSX.read(new Uint8Array(arrayBuffer), { type: "array", cellStyles: true });
+        const ws = wb.Sheets["Sheet1"];
         if (!ws) throw new Error("Worksheet 'Sheet1' not found in generated workbook");
         return ws;
     };
 
     /**
-     * Read a row's values as a plain array (1-indexed values in ExcelJS; slice off the leading empty entry).
-     * @param {import("exceljs").Worksheet} ws
+     * Read a row's values as a plain array.
+     * @param {import("@e965/xlsx").WorkSheet} ws
      * @param {number} rowNumber
      */
     const rowValues = (ws, rowNumber) => {
-        const raw = ws.getRow(rowNumber).values;
-        const arr = Array.isArray(raw) ? raw : [];
-        return arr.slice(1);
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+        return rows[rowNumber - 1] ?? [];
     };
 
     it("should export table data to XLSX successfully", async () => {
@@ -92,8 +90,8 @@ describe("exportTableToXlsx", () => {
         await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [2, 3] });
 
         const ws = await readWorkbookFromBlob();
-        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
-        expect(ws.getCell("D2").numFmt).toBe(CURRENCY_FORMAT);
+        expect(ws["C2"].z).toBe(CURRENCY_FORMAT);
+        expect(ws["D2"].z).toBe(CURRENCY_FORMAT);
     });
 
     it("should handle empty currencyColumns array", async () => {
@@ -105,7 +103,7 @@ describe("exportTableToXlsx", () => {
         await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [] });
 
         const ws = await readWorkbookFromBlob();
-        expect(ws.getCell("C2").numFmt).toBeFalsy();
+        expect(ws["C2"].z).not.toBe(CURRENCY_FORMAT);
     });
 
     it("should only format numeric values in currency columns", async () => {
@@ -120,8 +118,8 @@ describe("exportTableToXlsx", () => {
         await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [2] });
 
         const ws = await readWorkbookFromBlob();
-        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
-        expect(ws.getCell("C3").numFmt).toBeFalsy();
+        expect(ws["C2"].z).toBe(CURRENCY_FORMAT);
+        expect(ws["C3"].z).not.toBe(CURRENCY_FORMAT);
     });
 });
 
@@ -158,9 +156,7 @@ describe("exportMultiSheetToXlsx", () => {
         /** @type {Blob} */
         const blob = createCall[0];
         const arrayBuffer = await blob.arrayBuffer();
-        const wb = new ExcelJS.Workbook();
-        await wb.xlsx.load(arrayBuffer);
-        return wb;
+        return XLSX.read(new Uint8Array(arrayBuffer), { type: "array", cellStyles: true });
     };
 
     it("should throw if no sheets are provided", async () => {
@@ -194,12 +190,12 @@ describe("exportMultiSheetToXlsx", () => {
         expect(anchor.click).toHaveBeenCalledOnce();
 
         const wb = await readWorkbookFromBlob();
-        expect(wb.getWorksheet("All")).toBeDefined();
-        expect(wb.getWorksheet("Step 1")).toBeDefined();
+        expect(wb.Sheets["All"]).toBeDefined();
+        expect(wb.Sheets["Step 1"]).toBeDefined();
 
-        const allSheet = wb.getWorksheet("All");
-        const row2 = allSheet.getRow(2).values;
-        expect(Array.isArray(row2) ? row2.slice(1) : []).toEqual([1, "Alice"]);
+        const allSheet = wb.Sheets["All"];
+        const rows = XLSX.utils.sheet_to_json(allSheet, { header: 1, raw: true });
+        expect(rows[1]).toEqual([1, "Alice"]);
     });
 
     it("should apply currency formatting to specified columns per sheet", async () => {
@@ -217,7 +213,7 @@ describe("exportMultiSheetToXlsx", () => {
         await exportMultiSheetToXlsx({ sheets });
 
         const wb = await readWorkbookFromBlob();
-        const ws = wb.getWorksheet("Sheet1");
-        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
+        const ws = wb.Sheets["Sheet1"];
+        expect(ws["C2"].z).toBe(CURRENCY_FORMAT);
     });
 });
