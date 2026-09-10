@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -173,8 +173,9 @@ describe("ApproveAwardApproval", () => {
 
     it("renders the agreement name as subtitle", () => {
         renderPage();
-        // The name appears in the PageHeader subtitle and in the "Current Agreement Title" review row (OPS-5892).
-        expect(screen.getAllByText("Agreement Name B").length).toBeGreaterThan(0);
+        // The name also appears in the "Current Agreement Title" review row (OPS-5892), so scope the
+        // assertion to the PageHeader — otherwise a missing subtitle would still pass.
+        expect(within(screen.getByTestId("page-header")).getByText("Agreement Name B")).toBeInTheDocument();
     });
 
     it("shows the 'Already Processed' info alert when approval already processed", () => {
