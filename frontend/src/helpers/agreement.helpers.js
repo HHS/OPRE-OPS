@@ -414,14 +414,14 @@ export const cleanBudgetLineItemForApi = (data) => {
  * Kept here so the Details and Budget Lines headers stay in sync and don't drift.
  */
 export const EDIT_DISABLED_TOOLTIPS = {
-    notTeamMember: "Only team members can edit this agreement.",
+    notTeamMember: "Only team members can edit this agreement",
     notTeamMemberBLStatus: "Only team members listed on this agreement can change a BL status",
     notDeveloped:
-        "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.",
+        "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon",
     preAwardInReview:
-        "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.",
-    awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.",
-    postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits.",
+        "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time",
+    awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time",
+    postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits",
     allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes"
 };
 
