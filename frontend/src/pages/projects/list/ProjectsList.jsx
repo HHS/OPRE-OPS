@@ -74,12 +74,18 @@ const ProjectsList = () => {
         }
     }, [isError, navigate]);
 
+    // FY_TOTAL sort is meaningless once "All" fiscal years is selected — enforce this
+    // as a standing invariant rather than only when the dropdown itself triggers the change,
+    // so any future path that sets selectedFiscalYear to "All" stays consistent.
+    React.useEffect(() => {
+        if (selectedFiscalYear === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+        }
+    }, [selectedFiscalYear, sortCondition, setSortConditions]);
+
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
-        if (newValue === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
-            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
-        }
     };
 
     const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;

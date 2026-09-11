@@ -279,6 +279,32 @@ describe("ProjectsList", () => {
         expect(screen.getByRole("columnheader", { name: /^fy total$/i })).toBeInTheDocument();
     });
 
+    it("resets sort to TITLE when fiscal year changes back to All while sorted by FY Total", async () => {
+        const user = userEvent.setup();
+
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2025");
+        await user.click(screen.getByRole("button", { name: /FY25 Total/i }));
+
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "FY_TOTAL" })
+        );
+
+        await user.selectOptions(fySelect, "All");
+
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "TITLE", fiscalYear: "All" })
+        );
+    });
+
     it("does not render pagination when total pages is 1", () => {
         mockUseGetProjectsQuery.mockReturnValue({
             data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
