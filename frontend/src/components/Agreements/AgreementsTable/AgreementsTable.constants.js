@@ -24,11 +24,17 @@ export const TABLE_HEADINGS_LIST = [
  * @returns {Array<{heading: string, value: string}>} - The table headings list with dynamic FY label.
  */
 export const getTableHeadingsWithFY = (fiscalYear) => {
-    const fyLabel = fiscalYear === "All" ? "FY Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
+    const isAllFiscalYears = fiscalYear === "All";
+    const fyLabel = isAllFiscalYears ? "FY Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
 
     return TABLE_HEADINGS_LIST.map((item) => {
         if (item.value === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            return { ...item, heading: fyLabel };
+            return {
+                ...item,
+                heading: fyLabel,
+                disabled: isAllFiscalYears,
+                disabledReason: `Select a specific fiscal year to sort by ${fyLabel}`
+            };
         }
         return item;
     });
