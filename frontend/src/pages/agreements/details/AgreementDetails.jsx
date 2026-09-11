@@ -1,5 +1,5 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useIsUserReadOnly } from "../../../hooks/user.hooks";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -36,6 +36,10 @@ const AgreementDetails = ({
     isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    // Read-only users can never edit any agreement, so the Edit button is hidden outright rather
+    // than shown disabled. `_meta.isEditable` reflects team-member association, not role, so it can
+    // be true for a read-only user who happens to be on the team — the role check has to be its own gate.
+    const isReadOnly = useIsUserReadOnly();
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
 
@@ -79,6 +83,7 @@ const AgreementDetails = ({
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
                 isPostPreAwardLocked={isPostPreAwardLocked}
+                showEditButton={!isReadOnly}
             />
 
             {isEditMode && isEditable ? (

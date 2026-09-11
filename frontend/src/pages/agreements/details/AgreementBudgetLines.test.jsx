@@ -539,10 +539,34 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
+        // NOTE: match /Edit/i, not /^edit$/i. The enabled button's FontAwesomeIcon has title="edit",
+        // so its accessible name is "editEdit" — an anchored regex silently matches nothing and the
+        // assertion passes even when the button is on screen.
         test("does not show the Edit button for a read-only user on an editable agreement", () => {
             renderReadOnly();
 
-            expect(screen.queryByRole("button", { name: /^edit$/i })).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        // _meta.isEditable reflects team-member association, not role, so it can be true for a
+        // read-only user who is on the agreement's team. Without a role gate that renders a fully
+        // clickable Edit button.
+        // The disabled variant is also role="button" with the accessible name "Edit", so this single
+        // query covers both the enabled and the disabled button.
+        test("does not show an enabled Edit button for a read-only user who is a team member", () => {
+            renderReadOnly({
+                agreement: { ...mockAgreement, _meta: { isEditable: true } }
+            });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        test("does not show the disabled Edit button for a read-only user on a non-editable agreement", () => {
+            renderReadOnly({
+                agreement: { ...mockAgreement, _meta: { isEditable: false } }
+            });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
         });
 
         test("does not show the Change BL Status button for a read-only user", () => {

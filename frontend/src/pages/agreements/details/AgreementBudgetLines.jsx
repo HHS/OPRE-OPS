@@ -221,6 +221,7 @@ const AgreementBudgetLines = ({
                         isPreAwardInReview={isPreAwardInReview}
                         isAwardInReview={isAwardInReview}
                         isPostPreAwardLocked={isPostPreAwardLocked}
+                        showEditButton={!isReadOnly}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard
