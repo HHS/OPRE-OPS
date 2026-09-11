@@ -194,7 +194,9 @@ describe("ProjectsList", () => {
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(2);
     });
 
-    it("renders fiscal year total as currency for the selected FY", () => {
+    it("renders fiscal year total as currency for the selected FY", async () => {
+        const user = userEvent.setup();
+
         mockUseGetProjectsQuery.mockReturnValue({
             data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
             isLoading: false,
@@ -203,9 +205,11 @@ describe("ProjectsList", () => {
 
         renderComponent();
 
-        // The FY select defaults to "All"; MOCK_PROJECT_1.fiscal_year_totals has keys 2025
-        // and 2026, so no single-year total is shown. Sanity-check the row rendered.
-        expect(screen.getByText("Research")).toBeInTheDocument(); // Sanity check row rendered
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2026");
+
+        // MOCK_PROJECT_1.fiscal_year_totals[2026] is "500000.00"
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
     });
 
     it("renders project total as currency", () => {
