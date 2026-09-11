@@ -123,28 +123,6 @@ it("renders without crashing", () => {
     expect(screen.getByText("FY25 Obligated")).toBeInTheDocument();
 });
 
-it("disables the FY Obligated header and blocks sorting when 'All' is selected", () => {
-    const setSortConditions = vi.fn();
-    render(
-        <Provider store={store}>
-            <BrowserRouter>
-                <AgreementsTable
-                    agreements={agreements}
-                    selectedFiscalYear="All"
-                    setSortConditions={setSortConditions}
-                />
-            </BrowserRouter>
-        </Provider>
-    );
-
-    const fyHeader = screen.getByRole("button", { name: "FY Obligated" });
-    expect(fyHeader).toHaveAttribute("aria-disabled", "true");
-
-    fireEvent.click(fyHeader);
-
-    expect(setSortConditions).not.toHaveBeenCalled();
-});
-
 it("does not render contract-only expanded fields for a GRANT agreement row", () => {
     render(
         <Provider store={store}>

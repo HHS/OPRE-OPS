@@ -62,35 +62,4 @@ describe("Table", () => {
 
         expect(screen.getByRole("columnheader", { name: "BL ID #" })).toHaveAttribute("aria-sort", "ascending");
     });
-
-    it("renders a disabled header with aria-disabled and blocks clicks", () => {
-        const onClickHeader = vi.fn();
-        render(
-            <Table
-                tableHeadings={[
-                    { heading: "BL ID #", value: "ID_NUMBER", disabled: true, disabledReason: "Not available" }
-                ]}
-                onClickHeader={onClickHeader}
-            />
-        );
-
-        const header = screen.getByRole("button", { name: "BL ID #" });
-        expect(header).toHaveAttribute("aria-disabled", "true");
-        expect(header).toHaveAttribute("title", "Not available");
-        expect(header.className).toContain("cursor-not-allowed");
-        expect(header.className).toContain("text-disabled");
-
-        fireEvent.click(header);
-
-        expect(onClickHeader).not.toHaveBeenCalled();
-    });
-
-    it("falls back to a generic tooltip when disabledReason is omitted", () => {
-        render(<Table tableHeadings={[{ heading: "BL ID #", value: "ID_NUMBER", disabled: true }]} />);
-
-        expect(screen.getByRole("button", { name: "BL ID #" })).toHaveAttribute(
-            "title",
-            "Sorting by BL ID # is unavailable"
-        );
-    });
 });

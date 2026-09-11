@@ -5,8 +5,6 @@ import styles from "./table.module.css";
  * @typedef {Object} TableHeading
  * @property {string} heading - The heading to display.
  * @property {string} value - The value to display.
- * @property {boolean} [disabled] - When true, renders the sort button as aria-disabled and blocks clicks.
- * @property {string} [disabledReason] - Tooltip text shown when `disabled` is true, explaining why sorting is unavailable.
  */
 
 /**
@@ -85,18 +83,9 @@ const Table = ({
                                     <button
                                         type="button"
                                         data-cy={header.value}
-                                        className={`usa-table__header__button ${
-                                            header.disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"
-                                        }`}
-                                        title={
-                                            header.disabled
-                                                ? (header.disabledReason ??
-                                                  `Sorting by ${header.heading} is unavailable`)
-                                                : `Click to sort by ${header.heading}`
-                                        }
-                                        aria-disabled={header.disabled}
+                                        className="usa-table__header__button cursor-pointer"
+                                        title={`Click to sort by ${header.heading}`}
                                         onClick={() => {
-                                            if (header.disabled) return;
                                             onClickHeader?.(
                                                 header.value,
                                                 sortDescending == null ? true : !sortDescending
