@@ -6,6 +6,40 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-09-11",
+        version: "1.464.3",
+        changes: [
+            {
+                id: "0001",
+                subject: "View a Grant",
+                type: "New Feature",
+                description:
+                    "You can now view a grant's details in OPS, including attributes unique to grants and a summary of budget lines organized by grant number."
+            },
+            {
+                id: "0002",
+                subject: "Edit a Grant",
+                type: "New Feature",
+                description:
+                    "You can now edit an existing grant's details, grant numbers, and budget lines whenever information changes."
+            },
+            {
+                id: "0003",
+                subject: "Procurement Tracker Step 6 — Award",
+                type: "New Feature",
+                description:
+                    "The procurement tracker now includes step 6 for award. During this step, CORs will upload the signed award and enter award information. Next the budget team will review everything before officially awarding the agreement."
+            },
+            {
+                id: "0004",
+                subject: "Grant ALN Numbers",
+                type: "Improvements",
+                description:
+                    "The ALN numbers dropdown for grants now displays the real ALN numbers from OPRE instead of placeholder values."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-08-26",
         version: "1.456.0",
         changes: [
