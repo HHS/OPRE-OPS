@@ -863,4 +863,75 @@ describe("AgreementDetails", () => {
             expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
         });
     });
+
+    describe("Read-Only User Permissions", () => {
+        const readOnlyStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Read Only User",
+                        email: "readonly@example.com",
+                        roles: [{ id: 8, name: USER_ROLES.READ_ONLY }]
+                    }
+                })
+            }
+        });
+
+        const renderReadOnly = (agreementOverrides = {}) => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+            mockIntersectionObserver();
+
+            return render(
+                <Provider store={readOnlyStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={{ ...agreement, ...agreementOverrides }}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={false}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+        };
+
+        // Read-only users can never edit, so the Edit button is hidden outright rather than shown
+        // disabled with a tooltip. Match /Edit/i, not /^edit$/i: the enabled button's FontAwesomeIcon
+        // has title="edit", making its accessible name "editEdit", so an anchored regex matches
+        // nothing and would pass even with the button on screen.
+        //
+        // _meta.isEditable reflects team-member association, not role, so it can be true for a
+        // read-only user who is on the agreement's team. Without a role gate that renders a fully
+        // clickable Edit button.
+        test("does not show an enabled Edit button for a read-only user who is a team member", () => {
+            renderReadOnly({ _meta: { isEditable: true } });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        // The disabled variant is also role="button" with the accessible name "Edit", so the same
+        // query covers it; the tooltip must not render either.
+        test("does not show the disabled Edit button or tooltip for a read-only non-team-member", () => {
+            renderReadOnly({ _meta: { isEditable: false } });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("tooltip-label")).not.toBeInTheDocument();
+        });
+
+        test("still renders the agreement details for a read-only user", () => {
+            renderReadOnly({ _meta: { isEditable: false } });
+
+            expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        });
+    });
 });
