@@ -15,6 +15,11 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import { formatDateForApi } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import {
+    DEFAULT_MODIFICATION_NUMBER,
+    getSeededAwardFields,
+    hasAwardFieldChanges
+} from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
 // Memoize DatePicker outside the hook to avoid recreating on every render
@@ -69,6 +74,12 @@ export default function useEditAwardApproval(agreementId) {
     const [awardAmount, setAwardAmount] = useState("");
     const [awardDate, setAwardDate] = useState("");
     const [notes, setNotes] = useState("");
+
+    // OPS-5892: additional award fields
+    const [agreementTitle, setAgreementTitle] = useState("");
+    const [modificationNumber, setModificationNumber] = useState(DEFAULT_MODIFICATION_NUMBER);
+    const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
+    const [taskOrderNumber, setTaskOrderNumber] = useState("");
 
     // Auth — restrict page to Budget Team and System Owner
     // @ts-expect-error - Redux state typing in JS files
@@ -145,6 +156,10 @@ export default function useEditAwardApproval(agreementId) {
 
     const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
 
+    // OPS-5892: baseline for the four additional award fields, shared with hasChanged below so a
+    // pristine page can never look dirty (falls back to agreement.name for legacy rows).
+    const seededAwardFields = useMemo(() => getSeededAwardFields(step6, agreement), [step6, agreement]);
+
     // Seed form fields from step 6 once data is available.
     // Run only once to avoid overwriting user edits on re-renders.
     useEffect(() => {
@@ -159,6 +174,14 @@ export default function useEditAwardApproval(agreementId) {
         if (step6.award_date) setAwardDate(formatApiDateForDisplay(step6.award_date));
         if (step6.requestor_notes) setNotes(step6.requestor_notes);
 
+        // OPS-5892: seed the additional award fields from the same baseline hasChanged compares
+        // against — an unconditional set, so a stored empty string can never leave state and
+        // baseline out of step and mark an untouched page dirty.
+        setAgreementTitle(seededAwardFields.agreementTitle);
+        setModificationNumber(seededAwardFields.modificationNumber);
+        setPurchaseOrderNumber(seededAwardFields.purchaseOrderNumber);
+        setTaskOrderNumber(seededAwardFields.taskOrderNumber);
+
         // Seed CLIN assignments from existing budget-line clin_id values
         const existingClins = {};
         allBudgetLines.forEach((bli) => {
@@ -171,7 +194,7 @@ export default function useEditAwardApproval(agreementId) {
         }
 
         setIsSeeded(true);
-    }, [isSeeded, step6, agreement, vendors, allBudgetLines]);
+    }, [isSeeded, step6, agreement, vendors, allBudgetLines, seededAwardFields]);
 
     /**
      * Track if any changes have been made compared to the seeded values.
@@ -191,6 +214,10 @@ export default function useEditAwardApproval(agreementId) {
             awardAmount !== seededAmount ||
             awardDate !== seededDate ||
             notes !== seededNotes ||
+            hasAwardFieldChanges(
+                { agreementTitle, modificationNumber, purchaseOrderNumber, taskOrderNumber },
+                seededAwardFields
+            ) ||
             // For CLINs, compare against the seeded assignments (only track newly added ones)
             Object.keys(clinAssignments).some(
                 (bliId) =>
@@ -205,6 +232,11 @@ export default function useEditAwardApproval(agreementId) {
         awardAmount,
         awardDate,
         notes,
+        agreementTitle,
+        modificationNumber,
+        purchaseOrderNumber,
+        taskOrderNumber,
+        seededAwardFields,
         clinAssignments,
         allBudgetLines
     ]);
@@ -262,7 +294,11 @@ export default function useEditAwardApproval(agreementId) {
             vendor: selectedVendor?.id,
             contractNumber,
             awardAmount,
-            awardDate
+            awardDate,
+            agreementTitle,
+            modificationNumber,
+            purchaseOrderNumber,
+            taskOrderNumber
         };
         suite.run(allData);
         const finalValidation = suite.get();
@@ -302,7 +338,11 @@ export default function useEditAwardApproval(agreementId) {
                     contract_number: contractNumber.trim(),
                     award_amount: parseFloat(awardAmount),
                     award_date: formatDateForApi(awardDate),
-                    requestor_notes: notes.trim() || null
+                    requestor_notes: notes.trim() || null,
+                    agreement_title: agreementTitle.trim(),
+                    modification_number: modificationNumber,
+                    purchase_order_number: purchaseOrderNumber.trim(),
+                    task_order_number: taskOrderNumber.trim()
                 }
             }).unwrap();
 
@@ -377,6 +417,14 @@ export default function useEditAwardApproval(agreementId) {
         setAwardAmount,
         awardDate,
         setAwardDate,
+        agreementTitle,
+        setAgreementTitle,
+        modificationNumber,
+        setModificationNumber,
+        purchaseOrderNumber,
+        setPurchaseOrderNumber,
+        taskOrderNumber,
+        setTaskOrderNumber,
         runValidate,
         validationResult,
         MemoizedDatePicker,

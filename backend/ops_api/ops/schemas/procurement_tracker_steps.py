@@ -4,6 +4,7 @@ from marshmallow import EXCLUDE, Schema, fields, post_dump, pre_dump, validate
 
 from models.budget_line_items import BudgetLineItemStatus
 from models.procurement_tracker import (
+    AWARD_MODIFICATION_NUMBERS,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
@@ -147,6 +148,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
     award_amount = fields.Float(allow_none=True)
     award_date = fields.Date(allow_none=True)
 
+    # OPS-5892: additional AWARD step fields
+    agreement_title = fields.String(allow_none=True)
+    modification_number = fields.String(allow_none=True)
+    purchase_order_number = fields.String(allow_none=True)
+    task_order_number = fields.String(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -258,6 +265,11 @@ class ProcurementTrackerStepResponseSchema(Schema):
             raw_amount = getattr(obj, "award_amount", None)
             data["award_amount"] = float(raw_amount) if raw_amount is not None else None
             data["award_date"] = getattr(obj, "award_date", None)
+            # OPS-5892: additional award fields
+            data["agreement_title"] = getattr(obj, "award_agreement_title", None)
+            data["modification_number"] = getattr(obj, "award_modification_number", None)
+            data["purchase_order_number"] = getattr(obj, "award_purchase_order_number", None)
+            data["task_order_number"] = getattr(obj, "award_task_order_number", None)
 
         return data
 
@@ -368,6 +380,11 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "contract_number",
                 "award_amount",
                 "award_date",
+                # OPS-5892: additional award fields
+                "agreement_title",
+                "modification_number",
+                "purchase_order_number",
+                "task_order_number",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -403,6 +420,11 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "contract_number",
                 "award_amount",
                 "award_date",
+                # OPS-5892: additional award fields
+                "agreement_title",
+                "modification_number",
+                "purchase_order_number",
+                "task_order_number",
             ]:
                 data.pop(field, None)
 
@@ -462,6 +484,19 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     award_amount = fields.Float(required=False, allow_none=True)
     award_date = fields.Date(required=False, allow_none=True)
 
+    # OPS-5892: additional AWARD step fields
+    # Capped at 200 to match the maxLength the agreement editor puts on the name field this
+    # overwrites on approval (AgreementEditForm.jsx) — step 6 must not be able to store a title
+    # the agreement form itself would refuse.
+    agreement_title = fields.String(required=False, allow_none=True, validate=validate.Length(max=200))
+    # Fixed dropdown on the frontend ("Base", P00001..P00020) — validated here so a direct API
+    # PATCH cannot store a value the <select> has no option for.
+    modification_number = fields.String(
+        required=False, allow_none=True, validate=validate.OneOf(AWARD_MODIFICATION_NUMBERS)
+    )
+    purchase_order_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
+    task_order_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
+
     # OPS-2280: Obligated date entered by Budget Team on award approval
     obligated_date = fields.Date(required=False, allow_none=True)
 
@@ -514,6 +549,12 @@ class ProcurementTrackerStepSchema(Schema):
     contract_number = fields.String(allow_none=True)
     award_amount = fields.Float(allow_none=True)
     award_date = fields.Date(allow_none=True)
+
+    # OPS-5892: additional AWARD step fields
+    agreement_title = fields.String(allow_none=True)
+    modification_number = fields.String(allow_none=True)
+    purchase_order_number = fields.String(allow_none=True)
+    task_order_number = fields.String(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
@@ -616,6 +657,11 @@ class ProcurementTrackerStepSchema(Schema):
             raw_amount = getattr(obj, "award_amount", None)
             data["award_amount"] = float(raw_amount) if raw_amount is not None else None
             data["award_date"] = getattr(obj, "award_date", None)
+            # OPS-5892: additional award fields
+            data["agreement_title"] = getattr(obj, "award_agreement_title", None)
+            data["modification_number"] = getattr(obj, "award_modification_number", None)
+            data["purchase_order_number"] = getattr(obj, "award_purchase_order_number", None)
+            data["task_order_number"] = getattr(obj, "award_task_order_number", None)
 
         return data
 
@@ -734,6 +780,11 @@ class ProcurementTrackerStepSchema(Schema):
                 "contract_number",
                 "award_amount",
                 "award_date",
+                # OPS-5892: additional award fields
+                "agreement_title",
+                "modification_number",
+                "purchase_order_number",
+                "task_order_number",
             }
             preserve_keys = base_fields | award_fields
             # Remove PRE_SOLICITATION-only fields

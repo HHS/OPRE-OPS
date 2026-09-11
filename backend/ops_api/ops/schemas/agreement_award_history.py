@@ -17,7 +17,8 @@ class AgreementAwardHistoryRecordSchema(Schema):
     award_amount = fields.Decimal(places=2, as_string=True, allow_none=True)
     contract_total = fields.Decimal(places=2, as_string=True, allow_none=True)
     contract_number = fields.String(allow_none=True)
-    # "Base" for the initial award, otherwise the AgreementMod number (e.g. "Mod 1").
+    # The AWARD step's step-6 Modification # ("Base", "P00001"…) when the COR entered one;
+    # otherwise "Base" for the initial award / the AgreementMod number (e.g. "Mod 1").
     modification_number = fields.String(allow_none=True)
     requisition_approval_date = fields.Date(allow_none=True)
     requisition_number = fields.String(allow_none=True)
