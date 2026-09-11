@@ -11,9 +11,10 @@ import ProjectTableRow from "./ProjectTableRow";
  * @param {string | null} props.selectedHeader - Currently selected sort code.
  * @param {boolean} props.sortDescending - Whether the selected sort is descending.
  * @param {(sortCode: string, isDescending: boolean) => void} props.onClickHeader - Sort toggle handler.
+ * @param {boolean} [props.disabled] - When true, renders as aria-disabled and blocks clicks; tooltip explains why.
  * @returns {React.ReactElement}
  */
-const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader }) => {
+const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader, disabled }) => {
     const isSelected = selectedHeader === sortCode;
 
     return (
@@ -24,10 +25,15 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
         >
             <button
                 type="button"
-                className="usa-table__header__button cursor-pointer"
-                title={`Click to sort by ${label} in ascending or descending order`}
+                className={`usa-table__header__button ${disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"}`}
+                title={
+                    disabled
+                        ? `Select a specific fiscal year to sort by ${label}`
+                        : `Click to sort by ${label} in ascending or descending order`
+                }
+                aria-disabled={disabled}
                 onClick={() => {
-                    onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
+                    if (!disabled) onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
                 }}
             >
                 {label}
@@ -93,6 +99,7 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         selectedHeader={sortConditions}
                         sortDescending={sortDescending}
                         onClickHeader={setSortConditions}
+                        disabled={selectedFiscalYear === "All"}
                     />
                     <SortableHeader
                         label="Project Total"
