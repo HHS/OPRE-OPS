@@ -25,7 +25,7 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
         >
             <button
                 type="button"
-                className="usa-table__header__button cursor-pointer"
+                className={`usa-table__header__button ${disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"}`}
                 title={
                     disabled
                         ? `Select a specific fiscal year to sort by ${label}`
