@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -12,14 +11,12 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TextClip from "../../UI/Text/TextClip";
 import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
-    areAllBudgetLinesInStatus,
     getAgreementContractNumber,
     getAgreementEndDate,
     getAgreementName,
     getAgreementStartDate,
     getProcurementShopDisplay,
-    getResearchProjectName,
-    isThereAnyBudgetLines
+    getResearchProjectName
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
@@ -53,20 +50,23 @@ export const AgreementTableRow = ({ agreement }) => {
     const awardType = AWARD_TYPE_LABELS[agreement?.award_type] ?? NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
-    const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
     const isReadOnly = useIsUserReadOnly();
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
-    const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess && isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
-    const canUserDeleteAgreement =
-        isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
+    const canUserDeleteAgreement = isSuccess && (agreement?._meta.isDeletable ?? false);
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
     function getLockedMessage() {
+        // The backend computes a human-readable reason the delete control is locked when the
+        // frontend cannot derive it on its own (e.g. a non-draft budget line, an awarded
+        // agreement). Prefer it when present, mirroring getTooltipLabel's pattern for BLIs.
+        if (agreement?._meta?.lockedMessage) {
+            return agreement._meta.lockedMessage;
+        }
         const lockedMessages = {
             notTeamMember: "Only team members on this agreement can edit or delete",
             notDeveloped:

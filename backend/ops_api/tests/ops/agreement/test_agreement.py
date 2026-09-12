@@ -353,6 +353,116 @@ def test_grant_agreement_grant_details_round_trip(auth_client, loaded_db, test_p
     assert delete_response.status_code == 200
 
 
+def test_agreement_delete_blocked_for_non_draft_budget_lines(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """Regression test for #5658: a team member is authorized to delete, but must still be
+    blocked from deleting an agreement whose budget lines aren't all draft."""
+    agreement = ContractAgreement(
+        name="Basic User Non-Draft Delete Attempt",
+        contract_number="CT-DEL-3",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=agreement_id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+    planned_bli_id = planned_bli.id
+
+    response = basic_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 400
+    assert "budget_line_items" in response.json["errors"]
+
+    # The blocked delete must not have partially committed.
+    assert loaded_db.get(ContractAgreement, agreement_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, planned_bli_id) is not None
+
+
+def test_get_agreement_includes_is_deletable_meta(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """GET /agreements/{id} exposes _meta.isDeletable/lockedMessage (backend-computed, see #5658)."""
+    deletable_agreement = ContractAgreement(
+        name="Meta Deletable Test",
+        contract_number="CT-META-1",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(deletable_agreement)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.get(url_for("api.agreements-item", id=deletable_agreement.id))
+
+    assert response.status_code == 200
+    assert response.json["_meta"]["isDeletable"] is True
+    assert response.json["_meta"]["lockedMessage"] is None
+
+    locked_agreement = ContractAgreement(
+        name="Meta Not Deletable Test",
+        contract_number="CT-META-2",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(locked_agreement)
+    loaded_db.commit()
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=locked_agreement.id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    locked_response = basic_user_auth_client.get(url_for("api.agreements-item", id=locked_agreement.id))
+
+    assert locked_response.status_code == 200
+    assert locked_response.json["_meta"]["isDeletable"] is False
+    assert (
+        locked_response.json["_meta"]["lockedMessage"]
+        == "Cannot delete an agreement with budget lines that are not in Draft status"
+    )
+
+
+def test_agreement_delete_succeeds_for_basic_role_team_member(
+    basic_user_auth_client, loaded_db, test_user, test_non_admin_user, test_project, app_ctx
+):
+    """Regression test for #5658: a VIEWER_EDITOR-roled team member (not the creator or project
+    officer) can delete a draft-only agreement they're authorized for via team membership alone."""
+    agreement = ContractAgreement(
+        name="Basic Role Team Member Delete Success",
+        contract_number="CT-DEL-4",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_user.id,
+        project_officer_id=test_user.id,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+
+    response = basic_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 200
+    assert loaded_db.get(ContractAgreement, agreement_id) is None
+
+
 def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db, app_ctx):
     """Test that is_awarded is properly serialized in GET /agreements/{id} endpoint."""
     # Test 1: Contract agreement with no procurement actions (should be False)

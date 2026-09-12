@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -1478,6 +1478,91 @@ class TestIsEditable:
         mock_associated.return_value = False
         assert service._is_editable(agreement1, regular_user) is False
         mock_associated.assert_called_with(agreement1.id)
+
+
+class TestIsDeletable:
+    """Tests for AgreementsService._is_deletable and _get_locked_message"""
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_deletable_when_editable_and_all_draft(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[make_bli(BudgetLineItemStatus.DRAFT)])
+        user = MagicMock(is_superuser=False)
+
+        assert service._is_deletable(agreement, user) is True
+        assert service._get_locked_message(agreement, user) is None
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_deletable_when_editable_and_no_budget_lines(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[])
+        user = MagicMock(is_superuser=False)
+
+        assert service._is_deletable(agreement, user) is True
+        assert service._get_locked_message(agreement, user) is None
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_not_deletable_when_non_draft_bli_present(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[make_bli(BudgetLineItemStatus.PLANNED)])
+        user = MagicMock(is_superuser=False)
+
+        assert service._is_deletable(agreement, user) is False
+        assert (
+            service._get_locked_message(agreement, user)
+            == "Cannot delete an agreement with budget lines that are not in Draft status"
+        )
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_super_user_bypasses_non_draft_bli_check(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[make_bli(BudgetLineItemStatus.PLANNED)])
+        user = MagicMock(is_superuser=True)
+
+        assert service._is_deletable(agreement, user) is True
+        assert service._get_locked_message(agreement, user) is None
+
+        # is_superuser short-circuits _is_editable, so association is never checked
+        mock_associated.assert_not_called()
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_not_deletable_when_not_editable(self, mock_associated, loaded_db):
+        mock_associated.return_value = False
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[])
+        user = MagicMock(is_superuser=False)
+
+        assert service._is_deletable(agreement, user) is False
+        assert service._get_locked_message(agreement, user) == "Only team members on this agreement can edit or delete"
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_not_deletable_when_awarded_even_for_super_user(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[])
+        user = MagicMock(is_superuser=True)
+
+        with patch.object(Agreement, "is_awarded", new_callable=PropertyMock, return_value=True):
+            assert service._is_deletable(agreement, user) is False
+            assert service._get_locked_message(agreement, user) == "Cannot delete an awarded agreement"
+
+        # is_superuser short-circuits _is_editable, so association is never checked
+        mock_associated.assert_not_called()
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_not_deletable_when_awarded_for_regular_user(self, mock_associated, loaded_db):
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[])
+        user = MagicMock(is_superuser=False)
+
+        with patch.object(Agreement, "is_awarded", new_callable=PropertyMock, return_value=True):
+            assert service._is_deletable(agreement, user) is False
+            assert service._get_locked_message(agreement, user) == "Cannot delete an awarded agreement"
 
 
 def _make_mock_agreement(agreement_type, total, award_type=None):

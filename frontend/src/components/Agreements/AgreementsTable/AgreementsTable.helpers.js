@@ -16,18 +16,6 @@ export const getResearchProjectName = (agreement) => {
     return agreement.project?.title;
 };
 
-export const areAllBudgetLinesInStatus = (agreement, status) => {
-    handleAgreementProp(agreement);
-
-    return agreement.budget_line_items?.every((bli) => bli.status === status);
-};
-
-export const isThereAnyBudgetLines = (agreement) => {
-    handleAgreementProp(agreement);
-
-    return agreement?.budget_line_items?.length > 0;
-};
-
 export const getAgreementContractNumber = (agreement) => {
     handleAgreementProp(agreement);
 

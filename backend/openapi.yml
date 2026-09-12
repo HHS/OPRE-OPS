@@ -9636,14 +9636,17 @@ components:
           type: boolean
           default: false
           description: >-
-            Whether the delete control should be enabled for this budget line item. DRAFT deletes
-            immediately; PLANNED/IN_EXECUTION deletions route through an approval change request.
+            Whether the delete control should be enabled for this agreement. False when the user
+            is not a team member (or otherwise associated with the agreement), the agreement is
+            awarded, or — unless the user is a super user — the agreement has any budget line
+            item that is not in Draft status.
         lockedMessage:
           type: string
           nullable: true
           description: >-
-            Server-computed reason the budget line item is locked (e.g. the agreement has reached
-            Pre-Award) that the frontend cannot derive on its own. Null when editable.
+            Server-computed human-readable reason the agreement's delete control is locked (e.g.
+            not a team member, awarded, or a non-Draft budget line) that the frontend cannot
+            derive on its own. Null when deletable.
         immutable_awarded_fields:
           type: array
           items:

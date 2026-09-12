@@ -448,6 +448,8 @@ def _serialize_agreement_with_meta(
     meta_schema = MetaSchema()
     data_for_meta = {
         "isEditable": service._is_editable(agreement, current_user),
+        "isDeletable": service._is_deletable(agreement, current_user),
+        "lockedMessage": service._get_locked_message(agreement, current_user),
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
     }
     serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)
