@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a82b09fe7f73360328bf252d17d332fe78679ae8f4268bed80a12ec9dae080b4"
+            "sha256": "2ea2456773236d34ca7f838f809ac5c5bbd65bb825ca5bb31e3a61489c831be4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -36,12 +36,12 @@
         },
         "authlib": {
             "hashes": [
-                "sha256:2cea25fefcd4e7173bdf1372c0afc265c8034b23a8cd5dcb6a9164b826c64231",
-                "sha256:3e1faedc9d87e7d56a164eca3ccb6ace0d61b94abe83e92242f8dc8bba9b4a9f"
+                "sha256:88aebbd9af6757e14e912d5dc007ae1dc1f3e27e3b2152ce7c552ee2c3b3c121",
+                "sha256:f3ecd5f1da737262fb53bf1a4d95c4ea1ad9dd509316587a255c99ab1838a4f0"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.7.2"
+            "version": "==1.8.0"
         },
         "azure-core": {
             "hashes": [
@@ -672,12 +672,12 @@
         },
         "gunicorn": {
             "hashes": [
-                "sha256:40233d26a5f0d1872916188c276e21641155111c2853f0c2cd55260aec0d24fc",
-                "sha256:ca9346f85e3a4aeeb64d491045c16b9a35647abd37ea15efe53080eb8b090baf"
+                "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447",
+                "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==26.0.0"
+            "version": "==26.2.0"
         },
         "idna": {
             "hashes": [
@@ -898,14 +898,6 @@
             "markers": "python_version >= '3.8'",
             "version": "==5.5.0"
         },
-        "packaging": {
-            "hashes": [
-                "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79",
-                "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
-            ],
-            "markers": "python_version >= '3.9'",
-            "version": "==26.3"
-        },
         "psycopg2-binary": {
             "hashes": [
                 "sha256:0405dd4d97720e7ab177aa02e493f524907c4cb3c445ac173e2627948d3d0528",
@@ -993,11 +985,11 @@
                 "crypto"
             ],
             "hashes": [
-                "sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423",
-                "sha256:66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728"
+                "sha256:77283c83fb56ecf566a886c757a714bc83668e38156de2cce8263302f42e0b86",
+                "sha256:ad0cef71c756a56e74863c2919cf0985f72decbcfcb550ee2f422e7c62b5eedc"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==2.13.0"
+            "version": "==2.14.0"
         },
         "pyyaml": {
             "hashes": [
@@ -2335,12 +2327,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:4acae635506f6d352d94c4899a19d5f85f8bc4d230932342dca556fdab1c69b4",
-                "sha256:5a3d1f9a47ff216d6cf9cf863124f6a2c1a198d1354c546a4d24a370a283b64c"
+                "sha256:6d1645743cfd1a07eb695d85aa2b5fa66721f8cbae9431d4049f7084bbf06509",
+                "sha256:8919be8c27f20a6f4423145028063f6637b42a03ce57665bb12015ee1f073529"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==9.16.1"
+            "version": "==9.17.1"
         },
         "ipython-pygments-lexers": {
             "hashes": [
@@ -3142,10 +3134,10 @@
         },
         "pure-eval": {
             "hashes": [
-                "sha256:1db8e35b67b3d218d818ae653e27f06c3aa420901fa7b081ca98cbedc874e0d0",
-                "sha256:5f4e983f40564c576c7c8635ae88db5956bb2229d7e9237d03b3c0b0190eaf42"
+                "sha256:260c2774686e651b79f8b8e7fc9d80b3599ea6a66334b47d5f4abb69fc2c0ea1",
+                "sha256:96cae060a313cfaad51bb761278bfb0e62dc0248d9315a81173752dc546cd37a"
             ],
-            "version": "==0.2.3"
+            "version": "==0.2.4"
         },
         "pycodestyle": {
             "hashes": [
