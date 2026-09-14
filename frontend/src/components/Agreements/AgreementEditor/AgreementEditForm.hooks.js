@@ -689,16 +689,13 @@ const useAgreementEditForm = (
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
-        // Any type change invalidates services components added under the previous type
-        // (e.g. a SEVERABLE-era "Base Period 1" would silently relabel to "SC1" after
-        // toggling to NON_SEVERABLE and back) and, for GRANT, would otherwise let contract
-        // services components ride along in the create payload. (issue #6230)
-        dispatch({ type: "CLEAR_SERVICES_COMPONENTS" });
-        if (value === AGREEMENT_TYPES.CONTRACT) {
-            setAgreementType(AGREEMENT_TYPES.CONTRACT);
-            clearGrantOnlyFields();
-            restoreServiceReqTypeDefault();
-        } else if (value === AGREEMENT_TYPES.GRANT) {
+        if (value === AGREEMENT_TYPES.GRANT) {
+            // Grants use grant_numbers, not services components — clear them so a component
+            // added under a prior CONTRACT/DIRECT_OBLIGATION/PARTNER selection doesn't ride
+            // along in the grant's create payload. Services Components cannot be added while
+            // already GRANT (step 3 shows the grant-numbers form instead), so this is the only
+            // branch that ever needs to clear them. (issue #6230)
+            dispatch({ type: "CLEAR_SERVICES_COMPONENTS" });
             suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
             setContractType(null);
@@ -712,14 +709,23 @@ const useAgreementEditForm = (
             dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
             dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
             dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
+            return;
+        }
+
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
-            clearGrantOnlyFields();
-            restoreServiceReqTypeDefault();
         } else {
             // PARTNER
             setAgreementType(null);
-            clearGrantOnlyFields();
+        }
+        clearGrantOnlyFields();
+        // Only restore the default when it's actually missing (i.e. the prior selection was
+        // GRANT, which nulled it). An explicit SEVERABLE choice must survive toggling among
+        // CONTRACT/DIRECT_OBLIGATION/PARTNER — those never touch service_requirement_type
+        // themselves, so unconditionally restoring here would silently discard it. (issue #6230)
+        if (!serviceReqType) {
             restoreServiceReqTypeDefault();
         }
     };

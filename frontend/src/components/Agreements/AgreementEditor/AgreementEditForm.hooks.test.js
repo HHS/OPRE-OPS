@@ -673,7 +673,9 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         // issue #6230 — GRANT nulled service_requirement_type; switching back to CONTRACT must
         // restore the Non-Severable default rather than leaving it null.
         expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
-        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+        // Services Components cannot be added while the agreement was GRANT (step 3 shows the
+        // grant-numbers form instead), so nothing to clear on the way back out.
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 
     it("handleAgreementFilterChange restores the Non-Severable default when switching to PARTNER", () => {
@@ -694,7 +696,33 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         });
 
         expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
-        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+    });
+
+    it("preserves an explicit SEVERABLE selection when toggling between non-grant types", () => {
+        // Regression guard: CONTRACT/DIRECT_OBLIGATION/PARTNER never null
+        // service_requirement_type themselves (only the GRANT branch does), so restoring the
+        // default here must not clobber a value the user already set. (issue #6230)
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setServiceReqTypeMock = vi.fn();
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", service_requirement_type: "SEVERABLE" })
+        );
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("DIRECT_OBLIGATION");
+        });
+
+        expect(setServiceReqTypeMock).not.toHaveBeenCalled();
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 });
 

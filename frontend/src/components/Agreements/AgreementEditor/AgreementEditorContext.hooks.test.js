@@ -102,6 +102,28 @@ describe("editAgreementReducer - CLEAR_SERVICES_COMPONENTS", () => {
         // A BLI with no SC link to begin with should be left untouched.
         expect(next.budget_line_items[1]).toEqual(state.budget_line_items[1]);
     });
+
+    it("reconciles a not-yet-persisted budget line that links by services_component_number only", () => {
+        // handleAddBLI never stamps services_component_id on a brand-new BLI — only
+        // services_component_number. services_component_id is stamped post-save, in
+        // addServiceComponentIdToBLI. This is the only case CLEAR_SERVICES_COMPONENTS is ever
+        // dispatched for (the type filter is disabled once an agreement exists), so the
+        // reconciliation must catch it too, not just the id-based case above.
+        const state = {
+            ...defaultState,
+            services_components: [{ number: 1 }],
+            deleted_services_components_ids: [],
+            budget_line_items: [{ id: "abc123", services_component_id: undefined, services_component_number: 1 }]
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_SERVICES_COMPONENTS" });
+
+        expect(next.budget_line_items[0]).toMatchObject({
+            services_component_id: null,
+            services_component_number: 0,
+            serviceComponentGroupingLabel: "0"
+        });
+    });
 });
 
 describe("EditAgreementProvider - officer reseed effects", () => {

@@ -135,8 +135,14 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 services_components: [],
                 deleted_services_components_ids: [...state.deleted_services_components_ids, ...clearedIds],
+                // Unlike DELETE_SERVICE_COMPONENT, this must also match on
+                // services_component_number: a not-yet-persisted BLI (the only case this action
+                // is ever dispatched for — the type filter is disabled once an agreement exists)
+                // links to its SC by number, not id. handleAddBLI never stamps
+                // services_component_id; that only happens post-save, in
+                // addServiceComponentIdToBLI.
                 budget_line_items: state.budget_line_items.map((bli) =>
-                    bli.services_component_id != null
+                    bli.services_component_id != null || bli.services_component_number
                         ? {
                               ...bli,
                               services_component_id: null,
