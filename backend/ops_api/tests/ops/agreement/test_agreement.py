@@ -442,7 +442,8 @@ def test_agreement_delete_succeeds_for_basic_role_team_member(
     basic_user_auth_client, loaded_db, test_user, test_non_admin_user, test_project, app_ctx
 ):
     """Regression test for #5658: a VIEWER_EDITOR-roled team member (not the creator or project
-    officer) can delete a draft-only agreement they're authorized for via team membership alone."""
+    officer) can delete an agreement with no budget lines that they're authorized for via team
+    membership alone."""
     agreement = ContractAgreement(
         name="Basic Role Team Member Delete Success",
         contract_number="CT-DEL-4",
@@ -458,6 +459,36 @@ def test_agreement_delete_succeeds_for_basic_role_team_member(
     agreement_id = agreement.id
 
     response = basic_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 200
+    assert loaded_db.get(ContractAgreement, agreement_id) is None
+
+
+def test_agreement_delete_succeeds_for_super_user_with_non_draft_budget_lines(
+    power_user_auth_client, loaded_db, test_can, app_ctx
+):
+    """Regression test for #5658: a super user bypasses the non-draft-budget-line delete guard
+    through the real DELETE endpoint, not just the unit-tested _is_deletable helper."""
+    agreement = ContractAgreement(
+        name="Super User Non-Draft Delete Bypass",
+        contract_number="CT-DEL-5",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=agreement_id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
 
     assert response.status_code == 200
     assert loaded_db.get(ContractAgreement, agreement_id) is None

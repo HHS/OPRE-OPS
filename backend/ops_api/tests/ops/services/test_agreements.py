@@ -1494,6 +1494,18 @@ class TestIsDeletable:
         assert service._get_locked_message(agreement, user) is None
 
     @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_deletable_when_only_null_status_bli_present(self, mock_associated, loaded_db):
+        """Regression test for #5658: a BLI with status=None must not count as non-draft (this
+        repo has a documented history of NULL-status Python/SQL divergence bugs)."""
+        mock_associated.return_value = True
+        service = AgreementsService(loaded_db)
+        agreement = make_agreement(awarding_entity_id=1, blis=[make_bli(None)])
+        user = MagicMock(is_superuser=False)
+
+        assert service._is_deletable(agreement, user) is True
+        assert service._get_locked_message(agreement, user) is None
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
     def test_deletable_when_editable_and_no_budget_lines(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)

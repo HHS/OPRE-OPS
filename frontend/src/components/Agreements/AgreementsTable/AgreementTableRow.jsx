@@ -13,6 +13,7 @@ import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/Services
 import {
     getAgreementContractNumber,
     getAgreementEndDate,
+    getAgreementLockedMessage,
     getAgreementName,
     getAgreementStartDate,
     getProcurementShopDisplay,
@@ -60,31 +61,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    function getLockedMessage() {
-        // The backend computes a human-readable reason the delete control is locked when the
-        // frontend cannot derive it on its own (e.g. a non-draft budget line, an awarded
-        // agreement). Prefer it when present, mirroring getTooltipLabel's pattern for BLIs.
-        if (agreement?._meta?.lockedMessage) {
-            return agreement._meta.lockedMessage;
-        }
-        const lockedMessages = {
-            notTeamMember: "Only team members on this agreement can edit or delete",
-            notDeveloped:
-                "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
-            default: "Disabled"
-        };
-        switch (true) {
-            case isSuperUser:
-                return "";
-            case !canUserEditAgreement:
-                return lockedMessages.notTeamMember;
-            case isAgreementTypeNotDeveloped:
-                return lockedMessages.notDeveloped;
-            default:
-                return lockedMessages.default;
-        }
-    }
-    const lockedMessage = getLockedMessage();
+    const lockedMessage = isSuccess ? getAgreementLockedMessage(agreement, isSuperUser) : "";
 
     const changeIcons = !isReadOnly ? (
         <ChangeIcons
