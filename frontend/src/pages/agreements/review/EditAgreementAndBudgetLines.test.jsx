@@ -139,6 +139,7 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
         hideFooterButtons,
         hideWizardChrome,
         isReviewMode,
+        isAgreementAwarded,
         bundleSliceRef,
         onFinancialChangeStateChange,
         onHasUnsavedChangesChange
@@ -164,6 +165,7 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
                 <span data-testid="blis-hide-footer">{String(!!hideFooterButtons)}</span>
                 <span data-testid="blis-hide-chrome">{String(!!hideWizardChrome)}</span>
                 <span data-testid="blis-review-mode">{String(!!isReviewMode)}</span>
+                <span data-testid="blis-agreement-awarded">{String(!!isAgreementAwarded)}</span>
             </div>
         );
     }
@@ -227,6 +229,21 @@ describe("EditAgreementAndBudgetLines", () => {
         expect(screen.getByTestId("blis-hide-footer")).toHaveTextContent("true");
         expect(screen.getByTestId("blis-hide-chrome")).toHaveTextContent("true");
         expect(screen.getByTestId("blis-review-mode")).toHaveTextContent("true");
+    });
+
+    it("forwards is_awarded to CreateBLIsAndSCs so the CLIN column shows for an awarded contract", () => {
+        mockAgreementResult = {
+            data: { ...mockAgreement, is_awarded: true },
+            error: null,
+            isLoading: false
+        };
+        renderPage();
+        expect(screen.getByTestId("blis-agreement-awarded")).toHaveTextContent("true");
+    });
+
+    it("defaults CreateBLIsAndSCs isAgreementAwarded to false for a non-awarded agreement", () => {
+        renderPage();
+        expect(screen.getByTestId("blis-agreement-awarded")).toHaveTextContent("false");
     });
 
     it("renders one page-level Save changes button", () => {

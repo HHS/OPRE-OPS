@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { Router } from "react-router-dom";
 import store from "../../../store";
@@ -152,5 +152,55 @@ describe("PreviewTable", () => {
         // Fee/Total are still present for non-grant awarded contracts
         expect(screen.getByText("Fee")).toBeInTheDocument();
         expect(screen.getByText("Total")).toBeInTheDocument();
+    });
+
+    test("renders the CLIN header as a sortable button when the column is shown", () => {
+        customRender(
+            <BudgetLinesTable
+                budgetLines={mockBudgetLinesOne}
+                readOnly={true}
+                showClinColumn={true}
+            />,
+            store
+        );
+        expect(screen.getByRole("button", { name: /CLIN/ })).toBeInTheDocument();
+    });
+
+    test("sorts by CLIN numerically when the CLIN header is clicked, pinning CLIN-less rows last", () => {
+        const clinBudgetLines = [
+            { id: 1, created_on: "2021-08-01", status: "PLANNED", can: { number: "001" }, clin: { number: 10 } },
+            { id: 2, created_on: "2021-08-02", status: "PLANNED", can: { number: "002" }, clin: { number: 2 } },
+            { id: 3, created_on: "2021-08-03", status: "PLANNED", can: { number: "003" }, clin: null },
+            { id: 4, created_on: "2021-08-04", status: "DRAFT", can: { number: "004" }, clin: { number: 5 } }
+        ];
+
+        customRender(
+            <BudgetLinesTable
+                budgetLines={clinBudgetLines}
+                readOnly={true}
+                showClinColumn={true}
+            />,
+            store
+        );
+
+        // Reads the CLIN cell (second column, after BL ID #) of every data row, top to bottom.
+        const clinColumnOrder = () =>
+            screen
+                .getAllByRole("row")
+                .slice(1) // drop the header row
+                .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
+
+        // First click on a new header sorts descending (useSetSortConditions forces descending
+        // when the sort column changes): 10, 2, then "TBD" (non-draft, no CLIN) and "N/A" (Draft) last.
+        fireEvent.click(screen.getByRole("button", { name: /CLIN/ }));
+        const descending = clinColumnOrder();
+        expect(descending.slice(0, 2)).toEqual(["10", "2"]);
+        expect(descending.slice(2)).toEqual(expect.arrayContaining(["TBD", "N/A"]));
+
+        // Second click flips to ascending but keeps CLIN-less rows pinned last.
+        fireEvent.click(screen.getByRole("button", { name: /CLIN/ }));
+        const ascending = clinColumnOrder();
+        expect(ascending.slice(0, 2)).toEqual(["2", "10"]);
+        expect(ascending.slice(2)).toEqual(expect.arrayContaining(["TBD", "N/A"]));
     });
 });

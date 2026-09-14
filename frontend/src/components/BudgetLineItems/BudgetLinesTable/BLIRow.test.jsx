@@ -468,21 +468,21 @@ describe("BLIRow", () => {
             expect(cells[1]).toHaveTextContent("42");
         });
 
-        it("renders an em-dash for a non-DRAFT budget line with no CLIN", () => {
+        it("renders 'TBD' for a non-DRAFT budget line with no CLIN", () => {
             renderComponent([], true, { status: "PLANNED", clin_id: null, clin: null }, true);
 
             const bliRow = screen.getByTestId("budget-line-row-1");
             const cells = within(bliRow).getAllByRole("cell");
-            expect(cells[1]).toHaveTextContent("—");
+            expect(cells[1]).toHaveTextContent("TBD");
         });
 
-        it("renders CLIN 0 (not em-dash) for a non-DRAFT budget line assigned CLIN number 0", () => {
+        it("renders CLIN 0 (not TBD) for a non-DRAFT budget line assigned CLIN number 0", () => {
             renderComponent([], true, { status: "PLANNED", clin: { id: 9, number: 0 } }, true);
 
             const bliRow = screen.getByTestId("budget-line-row-1");
             const cells = within(bliRow).getAllByRole("cell");
             expect(cells[1]).toHaveTextContent("0");
-            expect(cells[1]).not.toHaveTextContent("—");
+            expect(cells[1]).not.toHaveTextContent("TBD");
         });
 
         it("shifts the Amount/Fee/Total cells right by one when the CLIN column is shown", () => {

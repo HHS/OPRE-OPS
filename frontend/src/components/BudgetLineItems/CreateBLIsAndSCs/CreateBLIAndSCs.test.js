@@ -37,7 +37,7 @@ vi.mock("../BudgetLinesForm", () => ({
 // middleware, which the lightweight test store here doesn't wire up.
 vi.mock("../BudgetLinesTable", () => ({
     __esModule: true,
-    default: () => <div data-testid="budget-lines-table" />
+    default: (props) => <div data-testid="budget-lines-table">show-clin:{String(!!props.showClinColumn)}</div>
 }));
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
@@ -638,6 +638,74 @@ describe("CreateBLIsAndSCs", () => {
             expect(heading).not.toHaveClass("border-2px");
             expect(heading).not.toHaveClass("border-secondary-dark");
 
+            restore();
+        });
+    });
+
+    describe("CLIN column (awarded contract)", () => {
+        const renderWithScGroup = async ({ selectedAgreement, isAgreementAwarded }) => {
+            const mockStore = createMockStore();
+            const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+            const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+            vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+                ...origImpl(...args),
+                isEditMode: true,
+                groupedBudgetLinesByServicesComponent: [
+                    {
+                        serviceComponentGroupingLabel: "1",
+                        servicesComponentNumber: 1,
+                        budgetLines: [agreement.budget_line_items[0]]
+                    }
+                ]
+            }));
+
+            const utils = render(
+                <Provider store={mockStore}>
+                    <BrowserRouter>
+                        <CreateBLIsAndSCs
+                            budgetLines={[agreement.budget_line_items[0]]}
+                            selectedResearchProject={selectedAgreement}
+                            selectedAgreement={selectedAgreement}
+                            selectedProcurementShop={selectedAgreement.procurement_shop}
+                            isEditMode={true}
+                            isAgreementAwarded={isAgreementAwarded}
+                            continueBtnText="Save Changes"
+                            wizardSteps={wizardSteps}
+                            workflow="agreement"
+                            currentStep={1}
+                            isReviewMode={false}
+                            canUserEditBudgetLines={true}
+                            setIsEditMode={setIsEditMode}
+                            includeDrafts={true}
+                            setIncludeDrafts={setIncludeDrafts}
+                            hideFooterButtons={true}
+                        />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            return { ...utils, restore: () => vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl) };
+        };
+
+        test("passes showClinColumn=true for an awarded contract in edit mode", async () => {
+            const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+            const { restore } = await renderWithScGroup({
+                selectedAgreement: contractAgreement,
+                isAgreementAwarded: true
+            });
+
+            expect(screen.getByTestId("budget-lines-table")).toHaveTextContent("show-clin:true");
+            restore();
+        });
+
+        test("passes showClinColumn=false for a contract that is not awarded", async () => {
+            const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+            const { restore } = await renderWithScGroup({
+                selectedAgreement: contractAgreement,
+                isAgreementAwarded: false
+            });
+
+            expect(screen.getByTestId("budget-lines-table")).toHaveTextContent("show-clin:false");
             restore();
         });
     });

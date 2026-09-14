@@ -272,7 +272,10 @@ def is_post_pre_award_locked(agreement) -> bool:
     Check if the agreement is in the post-pre-award locked state.
 
     Returns True once pre-award has been fully approved (DD approved + Budget Team
-    submitted requisition). BLI editing is locked from this point on permanently.
+    submitted requisition) AND the Award request has not yet been approved. The lock is
+    RELEASED as soon as the Budget Team approves the Award request (step 6 AWARD approval
+    granted), even if the AWARD step itself has not been completed — this reopens BLI editing
+    for the award-completion window.
 
     Exceptions (handled by callers):
     - Budget Team is exempt from this validation lock (handled in _validation via is_budget_team check),
@@ -283,7 +286,8 @@ def is_post_pre_award_locked(agreement) -> bool:
         agreement: Agreement object to check
 
     Returns:
-        bool: True if pre-award is fully approved and BLIs should be locked.
+        bool: True if pre-award is fully approved, the Award request is not yet approved,
+        and BLIs should be locked.
     """
     if not agreement or not agreement.procurement_trackers:
         return False
@@ -299,10 +303,20 @@ def is_post_pre_award_locked(agreement) -> bool:
     if not pre_award_step:
         return False
 
-    return (
+    pre_award_fully_approved = (
         pre_award_step.pre_award_approval_status == "APPROVED"
         and pre_award_step.pre_award_requisition_approved_by is not None
     )
+    if not pre_award_fully_approved:
+        return False
+
+    # Release the lock once the Budget Team approves the Award request. A DECLINED (or not-yet-
+    # decided) Award request leaves the lock in place.
+    award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+    if award_step and award_step.award_approval_status == "APPROVED":
+        return False
+
+    return True
 
 
 def bli_associated_with_agreement(id: int) -> bool:
