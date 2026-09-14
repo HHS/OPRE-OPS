@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
@@ -546,6 +546,86 @@ describe("AgreementsList - Pagination", () => {
                     limit: 50
                 })
             );
+        });
+
+        it("should pass 'FY Obligated' column header to exportTableToXlsx when All FYs selected", async () => {
+            const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            useLazyGetAgreementsQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
+                {}
+            ]);
+            useLazyGetUserQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+                {}
+            ]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+            await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
+
+            const headers = exportTableToXlsx.mock.calls[0][0].headers;
+            expect(headers).toContain("FY Obligated");
+            expect(headers.some((h) => /FY\d{2} Obligated/.test(h))).toBe(false);
+        });
+
+        it("should pass year-specific FY column header to exportTableToXlsx when a specific year is selected", async () => {
+            const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+            exportTableToXlsx.mockClear();
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            useLazyGetAgreementsQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
+                {}
+            ]);
+            useLazyGetUserQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+                {}
+            ]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await screen.findByTestId("fiscal-year-select");
+
+            // Switch to a specific year using the same pattern as other tests in this file
+            const dropdown = screen.getByTestId("fiscal-year-dropdown");
+            dropdown.value = "2025";
+            dropdown.dispatchEvent(new Event("change", { bubbles: true }));
+
+            fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+            await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
+
+            const headers = exportTableToXlsx.mock.calls[0][0].headers;
+            expect(headers).toContain("FY25 Obligated");
+            expect(headers).not.toContain("FY Obligated");
         });
     });
 

@@ -2,9 +2,11 @@ import { Provider } from "react-redux";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AgreementsTable from "./AgreementsTable";
+import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
 import { configureStore } from "@reduxjs/toolkit";
-import { vi } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 import { opsApi } from "../../../api/opsAPI";
+import { NO_DATA } from "../../../constants";
 
 // Mock API calls
 vi.mock("../../../api/opsAPI", async () => {
@@ -143,4 +145,35 @@ it("does not render contract-only expanded fields for a GRANT agreement row", ()
     expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
     expect(screen.queryByText("Award Type")).not.toBeInTheDocument();
     expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
+});
+
+describe("getTableHeadingsWithFY", () => {
+    it("returns 'FY Obligated' when fiscalYear is 'All'", () => {
+        const headings = getTableHeadingsWithFY("All");
+        const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
+        expect(fyHeading.heading).toBe("FY Obligated");
+    });
+
+    it("returns year-specific label for a specific fiscal year", () => {
+        const headings = getTableHeadingsWithFY("2025");
+        const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
+        expect(fyHeading.heading).toBe("FY25 Obligated");
+    });
+});
+
+it("shows 'FY Obligated' column header and NO_DATA in the FY column when selectedFiscalYear is 'All'", () => {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="All"
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    expect(screen.getByText("FY Obligated")).toBeInTheDocument();
+    expect(screen.queryByText("FY26 Obligated")).not.toBeInTheDocument();
+    expect(screen.getByText(NO_DATA)).toBeInTheDocument();
 });
