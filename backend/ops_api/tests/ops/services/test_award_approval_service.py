@@ -7,6 +7,7 @@ Tests the three new methods on ProcurementTrackerStepService:
 """
 
 from datetime import date
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 from flask import Flask
@@ -263,6 +264,61 @@ class TestHandleAwardApprovalObligatedDate:
         service._handle_award_approval(step, "APPROVED", obligated_date, _make_current_user())
 
         assert proc_action.date_awarded_obligated == obligated_date
+
+
+# ---------------------------------------------------------------------------
+# _handle_award_approval: agreement_total snapshot (OPS-5379)
+# ---------------------------------------------------------------------------
+
+
+class TestHandleAwardApprovalAgreementTotalSnapshot:
+    """agreement_total is snapshotted onto the action when the award is approved."""
+
+    def test_snapshot_quantized_to_two_places(self):
+        """The live agreement total is rounded (ROUND_HALF_UP) before it is stored."""
+        from models.procurement_action import AwardType
+
+        service = _make_service()
+        agreement = _make_agreement()
+        agreement.budget_line_items = []
+        agreement.agreement_total = Decimal("1234.5678")
+        step = _make_step()
+        step.procurement_tracker.agreement = agreement
+        step.procurement_tracker.procurement_action = 1
+
+        proc_action = MagicMock()
+        proc_action.award_type = AwardType.NEW_AWARD
+        proc_action.date_awarded_obligated = None
+        proc_action.agreement_total = None
+        service.db_session.get.return_value = proc_action
+
+        service._handle_award_approval(step, "APPROVED", date(2024, 9, 30), _make_current_user())
+
+        assert proc_action.agreement_total == Decimal("1234.57")
+
+    def test_zero_total_leaves_snapshot_null(self):
+        """A zero-dollar total must not be written — write-once + no-backfill would make a
+        stored $0.00 permanently uncorrectable, and formatCurrency renders it as "$0"
+        rather than "TBD"."""
+        from models.procurement_action import AwardType
+
+        service = _make_service()
+        agreement = _make_agreement()
+        agreement.budget_line_items = []
+        agreement.agreement_total = Decimal("0")
+        step = _make_step()
+        step.procurement_tracker.agreement = agreement
+        step.procurement_tracker.procurement_action = 1
+
+        proc_action = MagicMock()
+        proc_action.award_type = AwardType.NEW_AWARD
+        proc_action.date_awarded_obligated = None
+        proc_action.agreement_total = None
+        service.db_session.get.return_value = proc_action
+
+        service._handle_award_approval(step, "APPROVED", date(2024, 9, 30), _make_current_user())
+
+        assert proc_action.agreement_total is None
 
 
 # ---------------------------------------------------------------------------
