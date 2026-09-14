@@ -79,6 +79,9 @@ const ProjectsList = () => {
     // so any future path that sets selectedFiscalYear to "All" stays consistent.
     React.useEffect(() => {
         if (selectedFiscalYear === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
+            // useSetSortConditions hardcodes sortDescending=true on a column change, ignoring
+            // the second arg. Call twice: first to switch column, then same column to set ascending.
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
             setSortConditions(PROJECT_SORT_CODES.TITLE, false);
         }
     }, [selectedFiscalYear, sortCondition, setSortConditions]);

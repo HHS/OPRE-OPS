@@ -28,7 +28,7 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
                 className={`usa-table__header__button ${disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"}`}
                 title={
                     disabled
-                        ? `Select a specific fiscal year to sort by ${label}`
+                        ? `Sorting by ${label} is only meaningful when a specific fiscal year is selected`
                         : `Click to sort by ${label} in ascending or descending order`
                 }
                 aria-disabled={disabled}

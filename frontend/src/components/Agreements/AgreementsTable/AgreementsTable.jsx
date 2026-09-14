@@ -1,5 +1,6 @@
 import Table from "../../UI/Table";
 import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
+import { tableSortCodes } from "../../../helpers/utils";
 import AgreementTableRow from "./AgreementTableRow";
 
 /**
@@ -20,13 +21,19 @@ export const AgreementsTable = ({
     selectedFiscalYear
 }) => {
     const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear);
+    const isFYAll = selectedFiscalYear === "All";
+
+    const handleClickHeader = (headerValue, isDescending) => {
+        if (isFYAll && headerValue === tableSortCodes.agreementCodes.FY_OBLIGATED) return;
+        setSortConditions(headerValue, isDescending);
+    };
 
     return (
         <>
             <Table
                 tableHeadings={tableHeadings}
                 selectedHeader={sortConditions}
-                onClickHeader={setSortConditions}
+                onClickHeader={handleClickHeader}
                 sortDescending={sortDescending}
             >
                 {agreements.length > 0 &&
@@ -34,6 +41,7 @@ export const AgreementsTable = ({
                         <AgreementTableRow
                             key={agreement?.id}
                             agreement={agreement}
+                            selectedFiscalYear={selectedFiscalYear}
                         />
                     ))}
             </Table>
