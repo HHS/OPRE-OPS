@@ -92,6 +92,34 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
         const result = suite.run(validContractData);
         expect(result.hasErrors("nofo_number")).toBe(false);
     });
+
+    it("fails a null service_requirement_type when creating a new agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: null,
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails an empty-string service_requirement_type when creating a new agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: "",
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("does not fail a null service_requirement_type when editing an existing agreement", () => {
+        // Some existing non-grant agreements legitimately have no service_requirement_type;
+        // isNewAgreement is unset (falsy) so editing them must not block Save Changes.
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: null
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(false);
+    });
 });
 
 describe("AgreementEditFormSuite — IAA still blocked", () => {

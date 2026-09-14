@@ -22,7 +22,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
-import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -220,13 +220,18 @@ const useAgreementEditForm = (
             suite.run(
                 {
                     ...agreement,
+                    // Only enforce service_requirement_type presence while creating (see suite).
+                    // Some existing non-grant agreements legitimately have no
+                    // service_requirement_type; failing here would disable Save Changes on the
+                    // edit screens for a field the user never touched. (issue #6230)
+                    isNewAgreement: !isAgreementCreated,
                     ...overrides,
                     [name]: value
                 },
                 name
             );
         },
-        [agreement]
+        [agreement, isAgreementCreated]
     );
 
     React.useEffect(() => {
@@ -684,9 +689,15 @@ const useAgreementEditForm = (
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
+        // Any type change invalidates services components added under the previous type
+        // (e.g. a SEVERABLE-era "Base Period 1" would silently relabel to "SC1" after
+        // toggling to NON_SEVERABLE and back) and, for GRANT, would otherwise let contract
+        // services components ride along in the create payload. (issue #6230)
+        dispatch({ type: "CLEAR_SERVICES_COMPONENTS" });
         if (value === AGREEMENT_TYPES.CONTRACT) {
             setAgreementType(AGREEMENT_TYPES.CONTRACT);
             clearGrantOnlyFields();
+            restoreServiceReqTypeDefault();
         } else if (value === AGREEMENT_TYPES.GRANT) {
             suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
@@ -704,10 +715,12 @@ const useAgreementEditForm = (
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
             clearGrantOnlyFields();
+            restoreServiceReqTypeDefault();
         } else {
             // PARTNER
             setAgreementType(null);
             clearGrantOnlyFields();
+            restoreServiceReqTypeDefault();
         }
     };
 
@@ -719,6 +732,15 @@ const useAgreementEditForm = (
         setNofoNumber(null);
         setAlnNumbers([]);
         setFundingPeriodMonths(null);
+    };
+
+    // Re-apply the Non-Severable default when switching to a non-grant type. The GRANT branch
+    // nulls service_requirement_type to shape the grant payload, but defaultState's default is
+    // only ever applied as useReducer's initial argument, so nothing restores it on the way
+    // back. Must not be left null: AaAgreementData rejects null (400) and formatServiceComponent
+    // returns undefined for any other value. (issue #6230)
+    const restoreServiceReqTypeDefault = () => {
+        setServiceReqType(SERVICE_REQ_TYPES.NON_SEVERABLE);
     };
 
     return {

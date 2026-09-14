@@ -44,6 +44,66 @@ describe("editAgreementReducer - RESEED_GRANT_NUMBERS", () => {
     });
 });
 
+describe("editAgreementReducer - CLEAR_SERVICES_COMPONENTS", () => {
+    it("empties services_components and appends their ids to deleted_services_components_ids", () => {
+        const state = {
+            ...defaultState,
+            services_components: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            deleted_services_components_ids: [99],
+            budget_line_items: []
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_SERVICES_COMPONENTS" });
+
+        expect(next.services_components).toEqual([]);
+        // Prior deletions must be preserved, not replaced — they still need to reach the API.
+        expect(next.deleted_services_components_ids).toEqual([99, 10, 11]);
+    });
+
+    it("does not record an id for an unsaved (not-yet-persisted) services component", () => {
+        const state = {
+            ...defaultState,
+            services_components: [{ number: 1 }], // no id — never saved to the API
+            deleted_services_components_ids: [],
+            budget_line_items: []
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_SERVICES_COMPONENTS" });
+
+        expect(next.deleted_services_components_ids).toEqual([]);
+    });
+
+    it("reconciles budget lines that referenced a cleared services component", () => {
+        const state = {
+            ...defaultState,
+            services_components: [{ id: 10, number: 1 }],
+            deleted_services_components_ids: [],
+            budget_line_items: [
+                {
+                    id: 1,
+                    services_component_id: 10,
+                    services_component_number: 1,
+                    serviceComponentGroupingLabel: "1"
+                },
+                { id: 2, services_component_id: null, services_component_number: 0 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_SERVICES_COMPONENTS" });
+
+        expect(next.budget_line_items[0]).toMatchObject({
+            services_component_id: null,
+            services_component_number: 0,
+            serviceComponentGroupingLabel: "0"
+        });
+        // A BLI with no SC link to begin with should be left untouched.
+        expect(next.budget_line_items[1]).toEqual(state.budget_line_items[1]);
+    });
+});
+
 describe("EditAgreementProvider - officer reseed effects", () => {
     const mockAgreement = {
         id: 1,

@@ -631,6 +631,8 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         expect(dispatchMock).toHaveBeenCalledWith({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });
+        // issue #6230 — a component added under the previous type must not ride along.
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 
     it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
@@ -641,11 +643,13 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         const setFundingPeriodMonthsMock = vi.fn();
         const setSelectedAlternateProjectOfficerMock = vi.fn();
         const setAlternateProjectOfficerIdMock = vi.fn();
+        const setServiceReqTypeMock = vi.fn();
 
         useUpdateAgreementMock.mockImplementation((key) => {
             if (key === "nofo_number") return setNofoNumberMock;
             if (key === "funding_period_months") return setFundingPeriodMonthsMock;
             if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
             return vi.fn();
         });
         useSetStateMock.mockImplementation((key) => {
@@ -666,6 +670,31 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
         expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
         expect(setAlternateProjectOfficerIdMock).not.toHaveBeenCalled();
+        // issue #6230 — GRANT nulled service_requirement_type; switching back to CONTRACT must
+        // restore the Non-Severable default rather than leaving it null.
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+    });
+
+    it("handleAgreementFilterChange restores the Non-Severable default when switching to PARTNER", () => {
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setServiceReqTypeMock = vi.fn();
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("PARTNER");
+        });
+
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 });
 

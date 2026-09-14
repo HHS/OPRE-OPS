@@ -123,6 +123,30 @@ export function editAgreementReducer(state, action) {
                 })
             };
         }
+        // Clears every services component at once, e.g. when the agreement type changes and
+        // components added under the previous type/shape no longer apply. Mirrors
+        // DELETE_SERVICE_COMPONENT's bookkeeping (record ids for backend deletion, reconcile
+        // BLI links) rather than RESEED_SERVICES_COMPONENTS, which blanks
+        // deleted_services_components_ids and would orphan already-persisted components.
+        // (issue #6230)
+        case "CLEAR_SERVICES_COMPONENTS": {
+            const clearedIds = state.services_components.map((sc) => sc.id).filter(Boolean);
+            return {
+                ...state,
+                services_components: [],
+                deleted_services_components_ids: [...state.deleted_services_components_ids, ...clearedIds],
+                budget_line_items: state.budget_line_items.map((bli) =>
+                    bli.services_component_id != null
+                        ? {
+                              ...bli,
+                              services_component_id: null,
+                              services_component_number: 0,
+                              serviceComponentGroupingLabel: "0"
+                          }
+                        : bli
+                )
+            };
+        }
         case "REMOVE_TEAM_MEMBER": {
             return {
                 ...state,
