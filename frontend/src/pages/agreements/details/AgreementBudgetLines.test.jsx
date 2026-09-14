@@ -582,6 +582,41 @@ describe("AgreementBudgetLines", () => {
 
             expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
         });
+
+        // `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER. The superuser
+        // override wins here, as it does for every other editability check on this page.
+        test("keeps the Edit and Change BL Status buttons for a user who holds both READ_ONLY and SUPER_USER", () => {
+            const readOnlySuperUserStore = configureStore({
+                reducer: {
+                    auth: () => ({
+                        activeUser: {
+                            id: 1,
+                            full_name: "Read Only Super User",
+                            email: "readonly.super@example.com",
+                            roles: [{ name: USER_ROLES.READ_ONLY }, { name: USER_ROLES.SUPER_USER }],
+                            is_superuser: true
+                        }
+                    })
+                }
+            });
+
+            render(
+                <Provider store={readOnlySuperUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={{ ...mockAgreement, _meta: { isEditable: false } }}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
+            expect(screen.getByText("Change BL Status")).toBeInTheDocument();
+        });
     });
 
     test("super user permissions override agreement restrictions", () => {

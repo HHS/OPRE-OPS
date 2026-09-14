@@ -80,6 +80,10 @@ const AgreementBudgetLines = ({
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
     const isReadOnly = useIsUserReadOnly();
+    // Read-only users can never edit, regardless of team-member association (`_meta.isEditable` is
+    // role-independent). `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER;
+    // superuser wins, matching the rest of the editability logic below.
+    const canEditByRole = isSuperUser || !isReadOnly;
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
@@ -95,7 +99,11 @@ const AgreementBudgetLines = ({
 
     // All users (including superusers) are blocked by pre-award, award review, or post-pre-award lock
     const isAgreementEditable =
-        !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
+        canEditByRole &&
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || canRegularUserEdit);
     const canRequestStatusChange = isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
 
@@ -221,7 +229,7 @@ const AgreementBudgetLines = ({
                         isPreAwardInReview={isPreAwardInReview}
                         isAwardInReview={isAwardInReview}
                         isPostPreAwardLocked={isPostPreAwardLocked}
-                        showEditButton={!isReadOnly}
+                        showEditButton={canEditByRole}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard
@@ -405,7 +413,7 @@ const AgreementBudgetLines = ({
                     <p className="text-center">You have not added any Budget Lines yet.</p>
                 )}
 
-            {!isEditMode && !isReadOnly && (
+            {!isEditMode && canEditByRole && (
                 <div className="grid-row flex-justify-end margin-top-1">
                     {canRequestStatusChange ? (
                         <Link

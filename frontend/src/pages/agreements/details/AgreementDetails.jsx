@@ -39,7 +39,10 @@ const AgreementDetails = ({
     // Read-only users can never edit any agreement, so the Edit button is hidden outright rather
     // than shown disabled. `_meta.isEditable` reflects team-member association, not role, so it can
     // be true for a read-only user who happens to be on the team — the role check has to be its own gate.
+    // `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER; superuser wins, matching
+    // every other editability check here.
     const isReadOnly = useIsUserReadOnly();
+    const canEditByRole = isSuperUser || !isReadOnly;
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
 
@@ -63,7 +66,11 @@ const AgreementDetails = ({
     // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
     // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
     // states, the form should not be reachable via URL params either.
+    // The role gate belongs here, not only on the button: `isEditMode` comes from the `?mode=edit`
+    // URL param (see Agreement.jsx) with no role check, so without it a read-only team member could
+    // reach the live edit form by URL even with the Edit button hidden.
     const isEditable =
+        canEditByRole &&
         !isPreAwardInReview &&
         !isAwardInReview &&
         !isPostPreAwardLocked &&
@@ -83,7 +90,7 @@ const AgreementDetails = ({
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
                 isPostPreAwardLocked={isPostPreAwardLocked}
-                showEditButton={!isReadOnly}
+                showEditButton={canEditByRole}
             />
 
             {isEditMode && isEditable ? (
