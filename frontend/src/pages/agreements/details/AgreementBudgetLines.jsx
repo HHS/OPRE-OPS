@@ -105,6 +105,8 @@ const AgreementBudgetLines = ({
         !isPostPreAwardLocked &&
         (isSuperUser || canRegularUserEdit);
     const canRequestStatusChange = isAgreementEditable;
+    // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
+    const showEditWizard = isEditMode && isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -213,7 +215,7 @@ const AgreementBudgetLines = ({
     }
     return (
         <>
-            {!isEditMode && (
+            {!showEditWizard && (
                 <>
                     <AgreementBudgetLinesHeader
                         heading="Budget Lines Summary"
@@ -302,7 +304,7 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {isEditMode && (
+            {showEditWizard && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}
@@ -335,9 +337,9 @@ const AgreementBudgetLines = ({
                 </EditAgreementProvider>
             )}
 
-            {!isEditMode && isServicesComponentsLoading && <BudgetLinesTableLoading />}
+            {!showEditWizard && isServicesComponentsLoading && <BudgetLinesTableLoading />}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 isGrant &&
                 groupedBudgetLinesByGrantNumber.length > 0 &&
                 groupedBudgetLinesByGrantNumber.map((group, index) => (
@@ -368,7 +370,7 @@ const AgreementBudgetLines = ({
                     </GrantNumberAccordion>
                 ))}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 !isGrant &&
                 !isServicesComponentsLoading &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
@@ -405,7 +407,7 @@ const AgreementBudgetLines = ({
                     );
                 })}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 !isServicesComponentsLoading &&
                 (isGrant
                     ? groupedBudgetLinesByGrantNumber.length === 0
@@ -413,7 +415,7 @@ const AgreementBudgetLines = ({
                     <p className="text-center">You have not added any Budget Lines yet.</p>
                 )}
 
-            {!isEditMode && canEditByRole && (
+            {!showEditWizard && canEditByRole && (
                 <div className="grid-row flex-justify-end margin-top-1">
                     {canRequestStatusChange ? (
                         <Link
