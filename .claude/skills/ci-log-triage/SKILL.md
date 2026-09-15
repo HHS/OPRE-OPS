@@ -144,8 +144,20 @@ Then scan for **real failure** markers (see taxonomy).
 
 Verdicts:
 - **Likely flake** — infra regex matched, OR the same test passed on an earlier retry within this run.
-- **Likely real** — real-failure regex matched; infra regexes absent.
+- **Likely real** — real-failure regex matched; infra regexes absent. Before recommending a fix, sweep for siblings — see below.
 - **Indeterminate** — neither side matched strongly; link to run and recommend manual log review.
+
+## Fail-Fast Hides the Rest of the Matrix
+
+The E2E Tests workflow runs `fail-fast: true` across its Cypress spec-file matrix: the instant one spec fails, every other in-progress job in that run gets cancelled. A single CI run can only ever surface its *first* failure — if the same regression exists in five spec files, you'll see them one at a time, each only after the previous one is fixed and pushed. That's a slow way to find out something affects more than one file.
+
+So once a failure gets a **Likely real** verdict, don't stop at the one file CI happened to hit first. Decompose the confirmed cause into a search pattern (the same API call, assertion shape, error string, or code pattern that caused it) and grep or read through the rest of the suite for the same shape before handing off to a fix:
+
+```bash
+grep -rl "<pattern that caused the confirmed failure>" frontend/cypress/e2e/*.cy.js
+```
+
+Report every match, not just the one from the log — that turns "push, wait ~15 min, discover the next casualty, repeat" into a single pass. This is especially worth doing when the root cause is a backend/behavior change rather than a one-off typo, since those tend to hit every spec file that exercises the same code path.
 
 ## Failure-Class Taxonomy
 

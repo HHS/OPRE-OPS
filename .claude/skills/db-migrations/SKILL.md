@@ -1,7 +1,7 @@
 ---
 name: db-migrations
-description: Create, review, test, and rollback Alembic database migrations for OPRE OPS. Use this skill whenever the user mentions database migrations, alembic, schema changes, adding/modifying columns or tables, model changes that need migration, or "migrate the database". Also use when a model change has been made and the user needs to generate the corresponding migration.
-argument-hint: "[create <message> | review | upgrade | downgrade | status | history]"
+description: Create, review, test, rebase, and rollback Alembic database migrations for OPRE OPS. Use this skill whenever the user mentions database migrations, alembic, schema changes, adding/modifying columns or tables, model changes that need migration, "migrate the database", or a migration chain conflict / divergent heads after main has moved forward. Also use when a model change has been made and the user needs to generate the corresponding migration.
+argument-hint: "[create <message> | review | rebase | upgrade | downgrade | status | history]"
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 disable-model-invocation: false
 ---
@@ -102,7 +102,55 @@ Check for the same issues listed in Step 4 above. Also check:
 - That the migration is idempotent where possible (e.g., `if not` guards for index creation)
 - That the migration doesn't break existing data (e.g., adding a NOT NULL column without a default)
 
-### 3. Upgrade: `$ARGUMENTS` is `upgrade` or `upgrade <target>`
+### 3. Rebase: `$ARGUMENTS` is `rebase`
+
+Fixes a migration chain conflict: another PR merged a new migration to `main` after this branch's own migration was written, and both point at the same `down_revision`. Left alone, this creates two divergent heads the moment this branch merges — `alembic upgrade head` becomes ambiguous.
+
+**Step 1: Find what main added that this branch doesn't have**
+```bash
+cd backend
+git fetch origin main
+git diff --name-status HEAD origin/main -- alembic/versions/
+```
+Files marked `A` exist on `origin/main` but not on this branch yet.
+
+**Step 2: Confirm the conflict**
+
+For each new file, check its `down_revision`:
+```bash
+git show origin/main:backend/alembic/versions/<new-file>.py | grep -m1 "^down_revision"
+```
+If it matches the `down_revision` this branch's own new migration already declares, they're siblings claiming the same parent. `alembic heads` will report more than one head once both exist together — the branch's own migration is almost always the one that needs to move, since the other side is already merged and shouldn't be rewritten.
+
+**Step 3: Decide how to bring the new file in**
+
+Read the new migration before touching anything. If it only calls `op.*`/`sa.*` (pure DDL or raw SQL, no imports of `models` or other application code), it's safe to cherry-pick on its own — a migration that only talks to the database doesn't care what else has or hasn't landed on this branch:
+```bash
+git show origin/main:backend/alembic/versions/<new-file>.py > backend/alembic/versions/<new-file>.py
+```
+If it imports application code, don't cherry-pick a single file into an inconsistent state — merge `main` into the branch instead so the code it depends on comes along with it.
+
+**Step 4: Repoint this branch's migration onto the new head**
+
+Update this branch's own migration's `down_revision` (and the `Revises:` line in its docstring) to the newly-added file's revision id. Confirm with `alembic heads` — it should report exactly one head, and `alembic history -r <old-parent>:<this-branch's-revision> --verbose` should show a single unbroken chain.
+
+**Step 5: Verify with a real downgrade/upgrade round-trip**
+
+Don't trust `alembic current` alone here — it only reports what the `alembic_version` table says, not what's actually in the schema. And if test data is seeded through a Docker image (e.g. `data-import`), that image has its own baked-in copy of the repo from whenever it was last built — if the new migration file from Step 3 didn't exist yet at build time, the container's own `alembic upgrade head` never touched it, even though the database ends up stamped at head. That produces a very convincing false failure on downgrade (a column reported as missing that should be there) that looks like a real migration bug but is actually just a stale image. Rebuild before testing:
+```bash
+docker compose down
+docker compose --profile setup up db data-import --build
+```
+Then walk the chain for real and check the actual schema/data at each step (e.g. `\d <table>` in psql), not just the reported revision:
+```bash
+cd backend
+alembic downgrade <old-parent-revision>
+# confirm the new migration's columns/data are gone
+alembic upgrade head
+# confirm they're back
+```
+
+### 4. Upgrade: `$ARGUMENTS` is `upgrade` or `upgrade <target>`
 
 Apply migrations:
 ```bash
@@ -118,7 +166,7 @@ alembic upgrade <target>
 alembic current
 ```
 
-### 4. Downgrade: `$ARGUMENTS` is `downgrade` or `downgrade <target>`
+### 5. Downgrade: `$ARGUMENTS` is `downgrade` or `downgrade <target>`
 
 Roll back migrations:
 ```bash
@@ -134,7 +182,7 @@ alembic downgrade <target>
 alembic current
 ```
 
-### 5. Status: `$ARGUMENTS` is `status`
+### 6. Status: `$ARGUMENTS` is `status`
 
 Show the current migration state:
 ```bash
@@ -152,7 +200,7 @@ alembic heads
 
 Report whether the database is up to date or has pending migrations.
 
-### 6. History: `$ARGUMENTS` is `history`
+### 7. History: `$ARGUMENTS` is `history`
 
 Show recent migration history:
 ```bash
@@ -162,7 +210,7 @@ cd backend
 alembic history -r -10:current --verbose
 ```
 
-### 7. Default: `$ARGUMENTS` is empty or unrecognized
+### 8. Default: `$ARGUMENTS` is empty or unrecognized
 
 Show help:
 ```
@@ -171,6 +219,7 @@ Database Migration Skill - Available Commands:
   /db-migrations create <message>   Generate a new migration from model changes
   /db-migrations review             Review the most recent migration for correctness
   /db-migrations review <file>      Review a specific migration file
+  /db-migrations rebase             Fix a migration chain conflict against origin/main
   /db-migrations upgrade            Apply all pending migrations (alembic upgrade head)
   /db-migrations downgrade          Roll back one migration (alembic downgrade -1)
   /db-migrations status             Show current migration state and pending changes
