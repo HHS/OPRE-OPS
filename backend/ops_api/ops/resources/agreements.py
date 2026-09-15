@@ -446,8 +446,7 @@ def _serialize_agreement_with_meta(
 
     # Add _meta to the agreement itself. is_editable is computed once and reused so
     # _get_locked_message doesn't have to re-derive it; isDeletable is derived from
-    # locked_message rather than calling _is_deletable separately, to avoid a third
-    # redundant _is_editable/associated_with_agreement traversal per agreement.
+    # locked_message rather than a separate predicate, so the two can never drift apart.
     meta_schema = MetaSchema()
     is_editable = service._is_editable(agreement, current_user)
     locked_message = service._get_locked_message(agreement, current_user, is_editable)

@@ -468,7 +468,7 @@ def test_agreement_delete_succeeds_for_super_user_with_non_draft_budget_lines(
     power_user_auth_client, loaded_db, test_can, app_ctx
 ):
     """Regression test for #5658: a super user bypasses the non-draft-budget-line delete guard
-    through the real DELETE endpoint, not just the unit-tested _is_deletable helper."""
+    through the real DELETE endpoint, not just the unit-tested _get_locked_message helper."""
     agreement = ContractAgreement(
         name="Super User Non-Draft Delete Bypass",
         contract_number="CT-DEL-5",

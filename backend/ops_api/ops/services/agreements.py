@@ -865,28 +865,12 @@ class AgreementsService(OpsService[Agreement]):
         """
         return user.is_superuser or associated_with_agreement(agreement.id)
 
-    def _is_deletable(self, agreement: Agreement, user: User, is_editable: bool | None = None) -> bool:
-        """
-        Determine if the delete control should be enabled for a particular user.
-
-        Mirrors the write-path checks in ``delete`` (team membership, non-awarded, and — unless
-        the user is a super user — no non-draft budget lines) so the trash-icon meta and the
-        DELETE endpoint can never drift apart. ``is_editable`` may be passed in when the caller
-        has already computed it, to avoid a redundant ``_is_editable`` traversal.
-        """
-        if is_editable is None:
-            is_editable = self._is_editable(agreement, user)
-        if not is_editable:
-            return False
-        if agreement.is_awarded:
-            return False
-        if user.is_superuser:
-            return True
-        return not agreement.has_non_draft_budget_lines
-
     def _get_locked_message(self, agreement: Agreement, user: User, is_editable: bool | None = None) -> str | None:
         """
-        Human-readable reason the delete control is locked, mirroring ``_is_deletable``.
+        Human-readable reason the delete control is locked (team membership, non-awarded, and —
+        unless the user is a super user — no non-draft budget lines), or None if it isn't locked.
+        The resource layer derives ``isDeletable`` from ``locked_message is None`` so the
+        trash-icon meta and the DELETE endpoint can never drift apart.
         """
         if is_editable is None:
             is_editable = self._is_editable(agreement, user)
