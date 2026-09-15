@@ -98,7 +98,8 @@ const baseAgreement = {
     notes: "Test notes",
     created_on: "2021-10-21T03:24:00",
     _meta: {
-        isEditable: true
+        isEditable: true,
+        isDeletable: true
     }
 };
 
@@ -268,7 +269,7 @@ describe("AgreementTableRow", () => {
                 budget_line_items: [
                     { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED", fiscal_year: 2025 }
                 ],
-                _meta: { isEditable: true } // API returns true for super users
+                _meta: { isEditable: true, isDeletable: true } // API returns true for super users
             };
 
             renderComponent(
@@ -287,6 +288,23 @@ describe("AgreementTableRow", () => {
             const deleteButton = screen.getByTestId("delete-row");
             expect(deleteButton).toBeInTheDocument();
             expect(deleteButton).not.toBeDisabled();
+        });
+
+        test("super user cannot delete when the backend says it's not deletable (no client-side bypass)", async () => {
+            const lockedAgreement = {
+                ...baseAgreement,
+                _meta: { isEditable: true, isDeletable: false }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], lockedAgreement, true);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
         });
     });
 
@@ -415,6 +433,59 @@ describe("AgreementTableRow", () => {
             const editButton = screen.getByTestId("edit-row");
             expect(editButton).toBeInTheDocument();
             expect(editButton).not.toBeDisabled();
+        });
+
+        test("regular team member can delete an agreement when the backend says it's deletable", async () => {
+            // baseAgreement._meta already has isDeletable: true
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).not.toBeDisabled();
+        });
+
+        test("regular team member cannot delete an agreement when the backend says it's not deletable", async () => {
+            // All budget lines are DRAFT here (the old client-side rule would have allowed delete) —
+            // isDeletable: false alone must be what disables the button.
+            const nonDeletableAgreement = {
+                ...baseAgreement,
+                budget_line_items: [{ amount: 100, fees: 5, status: "DRAFT", fiscal_year: 2025 }],
+                _meta: { isEditable: true, isDeletable: false }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], nonDeletableAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
+        });
+
+        test("regular team member cannot delete when _meta.isDeletable is omitted", async () => {
+            const agreementMissingIsDeletable = {
+                ...baseAgreement,
+                _meta: { isEditable: true } // no isDeletable key at all
+            };
+
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
+                agreementMissingIsDeletable
+            );
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
         });
     });
 });

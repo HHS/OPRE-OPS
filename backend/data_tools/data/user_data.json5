@@ -130,6 +130,7 @@
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
+        "DELETE_AGREEMENT",
         "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
@@ -188,6 +189,7 @@
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
+        "DELETE_AGREEMENT",
         "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",

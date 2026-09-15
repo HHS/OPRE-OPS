@@ -505,6 +505,12 @@ class AgreementsService(OpsService[Agreement]):
         if agreement.is_awarded:
             raise ValidationError({"is_awarded": ["Cannot delete an awarded agreement."]})
 
+        user = get_current_user()
+        if not user.is_superuser and agreement.has_non_draft_budget_lines:
+            raise ValidationError(
+                {"budget_line_items": ["Cannot delete an agreement with budget lines that are not in Draft status."]}
+            )
+
         self.db_session.delete(agreement)
         self.db_session.commit()
 
@@ -858,6 +864,23 @@ class AgreementsService(OpsService[Agreement]):
         this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
         """
         return user.is_superuser or associated_with_agreement(agreement.id)
+
+    def _get_locked_message(self, agreement: Agreement, user: User, is_editable: bool | None = None) -> str | None:
+        """
+        Human-readable reason the delete control is locked (team membership, non-awarded, and —
+        unless the user is a super user — no non-draft budget lines), or None if it isn't locked.
+        The resource layer derives ``isDeletable`` from ``locked_message is None`` so the
+        trash-icon meta and the DELETE endpoint can never drift apart.
+        """
+        if is_editable is None:
+            is_editable = self._is_editable(agreement, user)
+        if not is_editable:
+            return "Only team members on this agreement can edit or delete"
+        if agreement.is_awarded:
+            return "Cannot delete an awarded agreement"
+        if not user.is_superuser and agreement.has_non_draft_budget_lines:
+            return "Cannot delete an agreement with budget lines that are not in Draft status"
+        return None
 
 
 def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
