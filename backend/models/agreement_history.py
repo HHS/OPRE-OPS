@@ -280,7 +280,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to ALN Numbers",
-                            history_message=f"{event_user.full_name} added ALN Number {item}.",
+                            history_message=f"{event_user.full_name} added ALN Number {get_aln_display_name(item)}.",
                             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
@@ -292,7 +292,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             agreement_id_record=agreement_updates["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to ALN Numbers",
-                            history_message=f"{event_user.full_name} removed ALN Number {item}.",
+                            history_message=f"{event_user.full_name} removed ALN Number {get_aln_display_name(item)}.",
                             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
@@ -926,6 +926,27 @@ def get_project_display_name(project) -> str:
     if project.short_title:
         return f"{project.title} ({project.short_title})"
     return project.title
+
+
+# Mirrors ALN_NUMBER_OPTIONS in frontend/src/components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants.js
+ALN_NUMBER_DESCRIPTIONS = {
+    "93.086": "HMRF",
+    "93.320": "MIECHV",
+    "93.493": "Congressionally Directed",
+    "93.575": "Head Start",
+    "93.591": "DV",
+    "93.595": "Welfare research",
+    "93.600": "Child Care",
+    "93.643": "Child Welfare",
+    "93.647": "SSRD",
+    "93.671": "FVPSA",
+}
+
+
+def get_aln_display_name(aln_number: str) -> str:
+    """Format an ALN number for display, including its descriptive label if known."""
+    description = ALN_NUMBER_DESCRIPTIONS.get(aln_number)
+    return f"{aln_number} ({description})" if description else aln_number
 
 
 def get_agreement_id_from_agreement(agreement: Agreement) -> int | None:

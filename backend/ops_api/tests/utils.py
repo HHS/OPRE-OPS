@@ -50,6 +50,9 @@ def make_awarded_tracker(
     tracker_status=ProcurementTrackerStatus.COMPLETED,
     award_step_status=ProcurementTrackerStepStatus.COMPLETED,
     award_approval_status="APPROVED",
+    award_modification_number=None,
+    award_purchase_order_number=None,
+    award_task_order_number=None,
 ):
     """Create a tracker linked to a procurement action, with AWARD + PRE_AWARD steps.
 
@@ -58,6 +61,10 @@ def make_awarded_tracker(
     ``award_step_status`` / ``award_approval_status`` to exercise the gating (e.g. an
     in-progress tracker whose award is already approved, or a tracker whose award has
     not yet been approved).
+
+    The ``award_modification_number`` / ``award_purchase_order_number`` /
+    ``award_task_order_number`` kwargs are the step-6 fields (OPS-5892); they default to
+    None, i.e. a step saved before those fields existed.
     """
     tracker = DefaultProcurementTracker(
         agreement_id=agreement_id,
@@ -85,6 +92,9 @@ def make_awarded_tracker(
         award_vendor_id=vendor.id if vendor else None,
         award_amount=award_amount,
         award_date=award_date,
+        award_modification_number=award_modification_number,
+        award_purchase_order_number=award_purchase_order_number,
+        award_task_order_number=award_task_order_number,
     )
     loaded_db.add_all([pre_award_step, award_step])
     loaded_db.flush()

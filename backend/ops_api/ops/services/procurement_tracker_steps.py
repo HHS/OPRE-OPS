@@ -214,6 +214,11 @@ class ProcurementTrackerStepService:
                 "contract_number": "award_contract_number",
                 "award_amount": "award_amount",
                 "award_date": "award_date",
+                # OPS-5892: additional award fields
+                "agreement_title": "award_agreement_title",
+                "modification_number": "award_modification_number",
+                "purchase_order_number": "award_purchase_order_number",
+                "task_order_number": "award_task_order_number",
             },
         }
 
@@ -1009,6 +1014,40 @@ class ProcurementTrackerStepService:
 
         return list(self.db_session.scalars(stmt).all())
 
+    @staticmethod
+    def _apply_proposed_agreement_title(step, agreement):
+        """Apply the proposed agreement title (entered during the award request) to the agreement.
+
+        Called on award approval, after which edits to the name through the agreement service are
+        blocked by awarded-agreement immutability (OPS-5892).
+
+        This writes ``agreement.name`` directly rather than going through ``AgreementsService.update()``
+        on purpose:
+
+        - It must land in the same transaction as the rest of the approval (BLI transitions,
+          ProcurementAction status). ``AgreementsService.update()`` commits, which would split the
+          approval into two commits and leave a partially-approved state reachable on failure.
+        - ``AgreementsService.update()`` expects a full agreement update payload (including
+          ``agreement_cls``) and runs the whole AgreementValidator, so an unrelated pre-existing
+          agreement-level validation failure would block a valid award approval.
+        - ``ContractAgreement.immutable_awarded_fields`` includes ``name``, but
+          ``ImmutableAwardedFieldsRule`` is only registered on the AgreementsService update path and
+          not in the Step 6 validator chain, so nothing rejects this write. Do not assume ordering
+          protects it: a single PATCH carrying both ``status: COMPLETED`` and
+          ``approval_status: APPROVED`` runs ``_advance_active_step_if_needed`` first, which can
+          already have marked the ProcurementAction AWARDED — so ``agreement.is_awarded`` may be
+          True by the time this runs. The name is the field the COR is being asked to finalize at
+          this step, so it has to stay writable here; routing this through
+          ``AgreementsService.update()`` would start getting it rejected. Pinned by
+          test_step_6_proposed_agreement_title.py::test_name_is_written_even_though_it_is_an_immutable_awarded_field.
+
+        Row-level auditing is unaffected — ``OpsDBHistory`` tracks the change via SQLAlchemy events.
+        """
+        proposed_title = getattr(step, "award_agreement_title", None)
+        if proposed_title and proposed_title.strip():
+            agreement.name = proposed_title.strip()
+            logger.debug(f"Applied proposed award title to agreement {agreement.id} via award approval")
+
     def _handle_award_approval(self, step, approval_status, obligated_date, current_user):
         """
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
@@ -1032,6 +1071,10 @@ class ProcurementTrackerStepService:
         # AwardApprovalObligatedDateRequiredRule) and must never be assumed to be today —
         # it is generally first documented in another system.
         agreement = step.procurement_tracker.agreement
+
+        # OPS-5892: apply the proposed agreement title exactly at approval.
+        self._apply_proposed_agreement_title(step, agreement)
+
         for bli in agreement.budget_line_items:
             if bli.status == BudgetLineItemStatus.IN_EXECUTION:
                 bli.status = BudgetLineItemStatus.OBLIGATED
