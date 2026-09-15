@@ -25,7 +25,8 @@ class ProjectSpendingItemAPI(BaseItemAPI):
         - Total spending across all agreements
         - Spending totals by fiscal year
         - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
-        - Agreements grouped by fiscal year
+        - Agreements grouped by fiscal year (any budget line status)
+        - Agreements with non-DRAFT spending, grouped by fiscal year
 
         Args:
             id: Project ID

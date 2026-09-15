@@ -17,7 +17,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship, selectinload
 
 from models.base import BaseModel
 
@@ -30,7 +30,20 @@ __all__ = [
     "ProcurementTrackerStep",
     "DefaultProcurementTrackerStep",
     "DefaultProcurementTracker",
+    "DEFAULT_AWARD_MODIFICATION_NUMBER",
+    "AWARD_MODIFICATION_NUMBERS",
 ]
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+# Modification # vocabulary for the AWARD step (OPS-5892). "Base" identifies the original
+# award; subsequent modification versions are P00001..P00020. This is a fixed dropdown on the
+# frontend, so it is validated server-side too — see the mirror in
+# frontend/src/components/Agreements/AwardRequestForm/awardForm.helpers.js.
+DEFAULT_AWARD_MODIFICATION_NUMBER = "Base"
+AWARD_MODIFICATION_NUMBERS: List[str] = [DEFAULT_AWARD_MODIFICATION_NUMBER] + [f"P{i:05d}" for i in range(1, 21)]
 
 # ============================================================================
 # ENUMS
@@ -186,6 +199,26 @@ class ProcurementTracker(BaseModel):
                 step.status = ProcurementTrackerStepStatus.ACTIVE
                 step.step_start_date = date.today()
                 break
+
+    def get_step(self, step_type: "ProcurementTrackerStepType") -> Optional["ProcurementTrackerStep"]:
+        """Return this tracker's step of the given type, or None.
+
+        Shared by every caller that needs to look up a specific step (e.g. AWARD,
+        PRE_AWARD) so the lookup rule only has one implementation to keep in sync.
+        """
+        return next((step for step in self.steps if step.step_type == step_type), None)
+
+    @classmethod
+    def steps_with_award_vendor_option(cls):
+        """Eager-load option for steps and, for AWARD steps, the linked vendor.
+
+        award_vendor lives on the DefaultProcurementTrackerStep subclass, so it's
+        reached through of_type(). Shared by every query that needs a tracker's
+        steps without triggering a query per step/vendor lookup.
+        """
+        return selectinload(cls.steps.of_type(DefaultProcurementTrackerStep)).selectinload(
+            DefaultProcurementTrackerStep.award_vendor
+        )
 
 
 # ============================================================================
@@ -580,6 +613,27 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         nullable=True,
     )
 
+    # AWARD additional fields (OPS-5892)
+    # Proposed agreement title; applied to agreement.name only on Budget Team approval.
+    award_agreement_title: Mapped[Optional[str]] = mapped_column(
+        String,
+        nullable=True,
+    )
+    # Modification number label ("Base" for a new award, otherwise P00001..P00020).
+    award_modification_number: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+    # Purchase Order # (ODN to the Budget Team).
+    award_purchase_order_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    award_task_order_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
     # Relationship for award completed by user
     award_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
@@ -639,6 +693,10 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         data.pop("award_contract_number", None)
         data.pop("award_amount", None)
         data.pop("award_date", None)
+        data.pop("award_agreement_title", None)
+        data.pop("award_modification_number", None)
+        data.pop("award_purchase_order_number", None)
+        data.pop("award_task_order_number", None)
 
     def to_dict(self):
         """
@@ -1054,6 +1112,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data["contract_number"] = data.pop("award_contract_number", None)
             data["award_amount"] = float(data.pop("award_amount")) if data.get("award_amount") is not None else None
             data["award_date"] = data.pop("award_date", None)
+
+            # Map additional award fields (OPS-5892)
+            data["agreement_title"] = data.pop("award_agreement_title", None)
+            data["modification_number"] = data.pop("award_modification_number", None)
+            data["purchase_order_number"] = data.pop("award_purchase_order_number", None)
+            data["task_order_number"] = data.pop("award_task_order_number", None)
 
             # Remove ACQUISITION_PLANNING-specific fields
             data.pop("acquisition_planning_task_completed_by", None)

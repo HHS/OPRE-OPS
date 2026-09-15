@@ -37,7 +37,7 @@ import {
     ApprovePreAwardApproval,
     ReviewBudgetTeamRequisition
 } from "./pages/agreements/pre-award-approval";
-import { RequestAwardApproval, ApproveAwardApproval } from "./pages/agreements/award-approval";
+import { RequestAwardApproval, ApproveAwardApproval, EditAwardApproval } from "./pages/agreements/award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
@@ -372,6 +372,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/:id/review-award"
                     element={<ApproveAwardApproval />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/edit-award"
+                    element={<EditAwardApproval />}
                     handle={{
                         crumb: () => (
                             <Link

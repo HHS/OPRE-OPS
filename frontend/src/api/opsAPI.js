@@ -466,8 +466,9 @@ export const opsApi = createApi({
             transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
+        // NOTE: will fetch 50 agreements due to limit on backend
         getAgreementsByResearchProjectFilter: builder.query({
-            query: (id) => `/agreements/?project_id=${id}`,
+            query: (id) => `/agreements/?project_id=${id}&limit=${MAX_RESULTS_LIMIT}&offset=0`,
             transformResponse: (response) => {
                 if (Array.isArray(response)) return response;
                 if (response.data) return response.data;
@@ -617,6 +618,11 @@ export const opsApi = createApi({
         getAgreementSpendingById: builder.query({
             query: (id) => `/agreements/${id}/spending/`,
             providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "BudgetLineItems"]
+        }),
+        getAgreementAwardHistoryById: builder.query({
+            query: (id) => `/agreements/${id}/award-history/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ProcurementTrackers"]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
@@ -1398,6 +1404,7 @@ export const {
     useUpdateDocumentStatusMutation,
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
+    useGetAgreementAwardHistoryByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

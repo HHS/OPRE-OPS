@@ -33,7 +33,7 @@ def test_grant_agreement(loaded_db, test_admin_user):
         project_officer_id=test_admin_user.id,
         awarding_entity_id=1,
         nofo_number="NOFO-2026-01",
-        aln_numbers=[3, 7],
+        aln_numbers=["93.086", "93.600"],
         funding_period_months=18,
     )
     loaded_db.add(grant)

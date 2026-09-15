@@ -6,6 +6,10 @@ import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } fr
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
+import {
+    getAlnTitle,
+    sortAlnNumbers
+} from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -178,25 +182,23 @@ const AgreementDetailsView = ({
                             <dt className="margin-0 text-base-dark margin-top-3">ALN Numbers</dt>
                             {agreement?.aln_numbers && agreement?.aln_numbers?.length > 0 ? (
                                 <>
-                                    {[...agreement.aln_numbers]
-                                        .sort((a, b) => a - b)
-                                        .map((alnNumber) => (
-                                            <dd
-                                                key={alnNumber}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
-                                            >
-                                                <Tag
-                                                    dataCy={`aln-number-tag-${alnNumber}`}
-                                                    tagStyle="primaryDarkTextLightBackground"
-                                                    text={String(alnNumber)}
-                                                />
-                                            </dd>
-                                        ))}
+                                    {[...agreement.aln_numbers].sort(sortAlnNumbers).map((alnNumber) => (
+                                        <dd
+                                            key={alnNumber}
+                                            className="margin-0 margin-top-05"
+                                        >
+                                            <Tag
+                                                dataCy={`aln-number-tag-${alnNumber}`}
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={getAlnTitle(alnNumber)}
+                                            />
+                                        </dd>
+                                    ))}
                                 </>
                             ) : (
                                 <dd
                                     key="no-data-aln-number"
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className="margin-0 margin-top-05"
                                 >
                                     <Tag
                                         dataCy="no-data-aln-number"
@@ -417,7 +419,7 @@ const AgreementDetailsView = ({
                                         .map((methodology) => (
                                             <dd
                                                 key={methodology.id}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                                className="margin-0 margin-top-05"
                                             >
                                                 <Tag
                                                     dataCy={`methodology-tag-${methodology.id}`}
@@ -430,7 +432,7 @@ const AgreementDetailsView = ({
                             ) : (
                                 <dd
                                     key="no-data-methodology"
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className="margin-0 margin-top-05"
                                 >
                                     <Tag
                                         dataCy="no-data-methodology"
@@ -451,7 +453,7 @@ const AgreementDetailsView = ({
                                         .map((specialTopic) => (
                                             <dd
                                                 key={specialTopic.id}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                                className="margin-0 margin-top-05"
                                             >
                                                 <Tag
                                                     dataCy={`special-topic-tag-${specialTopic.id}`}
@@ -464,7 +466,7 @@ const AgreementDetailsView = ({
                             ) : (
                                 <dd
                                     key="no-data-special-topic"
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className="margin-0 margin-top-05"
                                 >
                                     <Tag
                                         dataCy="no-data-special-topic"
@@ -486,7 +488,7 @@ const AgreementDetailsView = ({
                                             {agreement.division_directors.map((director, index) => (
                                                 <dd
                                                     key={index}
-                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                    className="margin-0 margin-top-05"
                                                 >
                                                     <Tag
                                                         dataCy="division-director-tag"
@@ -518,7 +520,7 @@ const AgreementDetailsView = ({
                                             {agreement.team_leaders.map((leader, index) => (
                                                 <dd
                                                     key={index}
-                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                    className="margin-0 margin-top-05"
                                                 >
                                                     <Tag
                                                         dataCy="team-leader-tag"
@@ -587,7 +589,7 @@ const AgreementDetailsView = ({
                                     .map((member) => (
                                         <dd
                                             key={member.id}
-                                            className="margin-0 margin-top-1 margin-bottom-2"
+                                            className="margin-0 margin-top-05"
                                         >
                                             <Tag
                                                 dataCy={`team-member-tag-${member.id}`}
@@ -598,7 +600,7 @@ const AgreementDetailsView = ({
                                     ))}
                             </>
                         ) : (
-                            <dd className="margin-0 margin-top-1 margin-bottom-2">
+                            <dd className="margin-0 margin-top-05">
                                 <Tag
                                     dataCy="team-member-tag-no-data"
                                     tagStyle="primaryDarkTextLightBackground"

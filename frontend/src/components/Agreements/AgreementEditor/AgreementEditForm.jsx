@@ -18,6 +18,7 @@ import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import SummaryBox from "../SummaryBox";
 import AlnNumbersComboBox from "../AlnNumbersComboBox";
+import AlnNumberList from "../AlnNumberList/AlnNumberList";
 import GrantFundingPeriodSelect from "../GrantFundingPeriodSelect";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
@@ -101,7 +102,8 @@ const AgreementEditForm = ({
         alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumbers,
+        addAlnNumber,
+        removeAlnNumber,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
@@ -468,11 +470,17 @@ const AgreementEditForm = ({
                             onChange={(name, value) => setFundingPeriodMonths(value)}
                         />
                     </div>
-                    <AlnNumbersComboBox
+                    <div className="margin-top-3 width-card-lg">
+                        <AlnNumbersComboBox
+                            selectedAlnNumbers={alnNumbers}
+                            addAlnNumber={addAlnNumber}
+                            overrideStyles={{ width: "15em" }}
+                        />
+                    </div>
+                    <h3 className="font-sans-sm text-semibold">ALN Numbers Added</h3>
+                    <AlnNumberList
                         selectedAlnNumbers={alnNumbers}
-                        setSelectedAlnNumbers={setAlnNumbers}
-                        legendClassName="usa-label margin-top-0"
-                        overrideStyles={{ width: "15em" }}
+                        removeAlnNumber={removeAlnNumber}
                     />
                     <div className="display-flex margin-top-3">
                         <ProjectOfficerComboBox

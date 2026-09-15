@@ -36,6 +36,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.isAgreementAwarded] - Whether the agreement is awarded (drives the contract-only CLIN column). - optional
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
@@ -65,6 +66,7 @@ export const CreateBLIsAndSCs = ({
     continueBtnText,
     continueOverRide,
     isEditMode,
+    isAgreementAwarded = false,
     canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
@@ -149,6 +151,9 @@ export const CreateBLIsAndSCs = ({
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
     const isGrant = selectedAgreement.agreement_type === AGREEMENT_TYPES.GRANT;
+    const isContract = selectedAgreement.agreement_type === AGREEMENT_TYPES.CONTRACT;
+    // CLIN column is contract-only and only meaningful once the agreement is awarded.
+    const showClinColumn = isContract && isAgreementAwarded;
 
     const handleSaveRef = useRef(handleSave);
     const onSavedRef = useRef(onSaved);
@@ -495,11 +500,13 @@ export const CreateBLIsAndSCs = ({
                                 nonDraftBudgetLines={nonDraftBudgetLines}
                             />
                         ))}
+                    {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
                         includeDrafts={includeDrafts}
                         setIncludeDrafts={setIncludeDrafts}
                         isEditable={false}
+                        showEditButton={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
                         <AgreementTotalCard
@@ -568,7 +575,10 @@ export const CreateBLIsAndSCs = ({
                         const isUnassociatedError =
                             isReviewMode && group.grantNumberNumber === 0 && group.budgetLines.length > 0;
                         return (
-                            <div key={`${group.grantNumberNumber}-${index}`}>
+                            <div
+                                key={`${group.grantNumberNumber}-${index}`}
+                                className={index > 0 ? "margin-top-1" : ""}
+                            >
                                 {isUnassociatedError && (
                                     <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                                         <span
@@ -616,7 +626,10 @@ export const CreateBLIsAndSCs = ({
                     const isUnassociatedError =
                         isReviewMode && group.servicesComponentNumber === 0 && group.budgetLines.length > 0;
                     return (
-                        <div key={`${group.servicesComponentNumber}-${index}`}>
+                        <div
+                            key={`${group.servicesComponentNumber}-${index}`}
+                            className={index > 0 ? "margin-top-1" : ""}
+                        >
                             {isUnassociatedError && (
                                 <div className="font-12px usa-form-group usa-form-group--error margin-left-0 margin-bottom-2">
                                     <span
@@ -642,6 +655,7 @@ export const CreateBLIsAndSCs = ({
                                     handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                                     isEditable={isAgreementWorkflowOrCanEditBudgetLines}
                                     isReviewMode={isReviewMode}
+                                    showClinColumn={showClinColumn}
                                 />
                             </ServicesComponentAccordion>
                         </div>

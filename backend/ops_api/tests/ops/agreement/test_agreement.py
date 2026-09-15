@@ -334,7 +334,7 @@ def test_grant_agreement_grant_details_round_trip(auth_client, loaded_db, test_p
             "project_officer_id": 500,
             "alternate_project_officer_id": 501,
             "nofo_number": "NOFO-2026-01",
-            "aln_numbers": [3, 7],
+            "aln_numbers": ["93.086", "93.600"],
             "funding_period_months": 18,
         },
     )
@@ -344,7 +344,7 @@ def test_grant_agreement_grant_details_round_trip(auth_client, loaded_db, test_p
     get_response = auth_client.get(url_for("api.agreements-item", id=grant_id))
     assert get_response.status_code == 200
     assert get_response.json["nofo_number"] == "NOFO-2026-01"
-    assert get_response.json["aln_numbers"] == [3, 7]
+    assert get_response.json["aln_numbers"] == ["93.086", "93.600"]
     assert get_response.json["funding_period_months"] == 18
     # Project Specialist reuses alternate_project_officer_id
     assert get_response.json["alternate_project_officer_id"] == 501
@@ -1400,7 +1400,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
         agreement_type=AgreementType.GRANT,
         project_id=test_project.id,
         nofo_number="NOFO-ORIGINAL",
-        aln_numbers=[3],
+        aln_numbers=["93.086"],
         funding_period_months=12,
         created_by=4,
     )
@@ -1413,7 +1413,7 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
         json={
             "agreement_type": "GRANT",
             "nofo_number": "NOFO-UPDATED",
-            "aln_numbers": [3, 7],
+            "aln_numbers": ["93.086", "93.600"],
             "funding_period_months": 18,
         },
     )
@@ -1422,13 +1422,13 @@ def test_agreements_patch_by_id_grant_details_round_trip(auth_client, loaded_db,
     loaded_db.expire_all()
     agreement = loaded_db.get(GrantAgreement, ga_id)
     assert agreement.nofo_number == "NOFO-UPDATED"
-    assert agreement.aln_numbers == [3, 7]
+    assert agreement.aln_numbers == ["93.086", "93.600"]
     assert agreement.funding_period_months == 18
 
     get_response = auth_client.get(url_for("api.agreements-item", id=ga_id))
     assert get_response.status_code == 200
     assert get_response.json["nofo_number"] == "NOFO-UPDATED"
-    assert get_response.json["aln_numbers"] == [3, 7]
+    assert get_response.json["aln_numbers"] == ["93.086", "93.600"]
     assert get_response.json["funding_period_months"] == 18
 
     loaded_db.delete(agreement)

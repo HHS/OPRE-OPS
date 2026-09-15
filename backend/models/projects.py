@@ -206,6 +206,8 @@ class Project(BaseModel):
         - project_start: Earliest period_start across all services_components in all agreements
         - project_end: Latest period_end across all services_components in all agreements
         - agreement_name_list: List of dicts with agreement id and name (nick_name if available, otherwise title)
+        - agreements_by_fy: Dict mapping fiscal year to agreement ids that have any BLI in that year (any status)
+        - agreements_with_spending_by_fy: Same, but limited to agreements with non-DRAFT (or OBE) BLIs
         """
         from collections import defaultdict
         from models.budget_line_items import BudgetLineItemStatus
@@ -225,6 +227,7 @@ class Project(BaseModel):
         end_dates = []
         agreement_name_list = []
         agreements_by_fy = defaultdict(set)
+        agreements_with_spending_by_fy = defaultdict(set)
 
         for agreement in self.agreements:
             # Add agreement total to overall total
@@ -235,14 +238,24 @@ class Project(BaseModel):
                 agreement_name_list.append({"id": agreement.id, "name": agreement.name})
 
             for bli in agreement.budget_line_items:
-                # Include BLIs that are: (1) OBE items (regardless of status), OR (2) non-DRAFT items
-                # AND must have a fiscal_year assigned
-                if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                # No date_needed means no fiscal year, so this BLI can't be bucketed by FY.
+                # It still counts toward `total` above, which has no FY filter -- OBE lines
+                # land here because marking a BLI as OBE clears its date_needed.
+                if bli.fiscal_year is None:
+                    continue
+
+                # Any budget line places its agreement in that fiscal year, regardless of
+                # status. DRAFT-only agreements must still be listed and must still make
+                # their fiscal year available as a filter option (issue #6139).
+                agreements_by_fy[bli.fiscal_year].add(agreement.id)
+
+                # Money only counts for OBE items (any status) or non-DRAFT items
+                if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT:
                     # Include amount + fees for the BLI
                     bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
                     total_by_fiscal_year[bli.fiscal_year] += bli_total
-                    # Track which agreements have spending in a given fiscal year
-                    agreements_by_fy[bli.fiscal_year].add(agreement.id)
+                    # Track which agreements have actual spending in a given fiscal year
+                    agreements_with_spending_by_fy[bli.fiscal_year].add(agreement.id)
                     # Track spending type breakdown by fiscal year
                     match agreement.agreement_type.name:
                         case "CONTRACT":
@@ -271,6 +284,9 @@ class Project(BaseModel):
             "agreement_name_list": agreement_name_list,
             "spending_type_by_fiscal_year": dict(spending_type_by_fiscal_year),
             "agreements_by_fy": {fy: sorted(list(agreement_ids)) for fy, agreement_ids in agreements_by_fy.items()},
+            "agreements_with_spending_by_fy": {
+                fy: sorted(list(agreement_ids)) for fy, agreement_ids in agreements_with_spending_by_fy.items()
+            },
         }
 
     def get_project_funding(self, fiscal_year: int) -> dict:

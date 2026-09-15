@@ -631,6 +631,8 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         expect(dispatchMock).toHaveBeenCalledWith({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
         expect(dispatchMock).toHaveBeenCalledWith({ type: "SET_SPECIAL_TOPICS", payload: [] });
+        // issue #6230 — a component added under the previous type must not ride along.
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 
     it("handleAgreementFilterChange clears grant-only fields when switching away from GRANT", () => {
@@ -641,11 +643,13 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         const setFundingPeriodMonthsMock = vi.fn();
         const setSelectedAlternateProjectOfficerMock = vi.fn();
         const setAlternateProjectOfficerIdMock = vi.fn();
+        const setServiceReqTypeMock = vi.fn();
 
         useUpdateAgreementMock.mockImplementation((key) => {
             if (key === "nofo_number") return setNofoNumberMock;
             if (key === "funding_period_months") return setFundingPeriodMonthsMock;
             if (key === "alternate_project_officer_id") return setAlternateProjectOfficerIdMock;
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
             return vi.fn();
         });
         useSetStateMock.mockImplementation((key) => {
@@ -666,6 +670,62 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         // Alternate PO / Project Specialist is a SHARED field — must NOT be cleared on this transition.
         expect(setSelectedAlternateProjectOfficerMock).not.toHaveBeenCalled();
         expect(setAlternateProjectOfficerIdMock).not.toHaveBeenCalled();
+        // issue #6230 — GRANT nulled service_requirement_type; switching back to CONTRACT must
+        // restore the Non-Severable default rather than leaving it null.
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
+        // Services Components cannot be added while the agreement was GRANT (step 3 shows the
+        // grant-numbers form instead), so nothing to clear on the way back out.
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+        // issue #6230 — a grant number added under the previous GRANT selection must not ride
+        // along in the non-grant create payload.
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_GRANT_NUMBERS" });
+    });
+
+    it("handleAgreementFilterChange restores the Non-Severable default when switching to PARTNER", () => {
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setServiceReqTypeMock = vi.fn();
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("PARTNER");
+        });
+
+        expect(setServiceReqTypeMock).toHaveBeenCalledWith("NON_SEVERABLE");
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+    });
+
+    it("preserves an explicit SEVERABLE selection when toggling between non-grant types", () => {
+        // Regression guard: CONTRACT/DIRECT_OBLIGATION/PARTNER never null
+        // service_requirement_type themselves (only the GRANT branch does), so restoring the
+        // default here must not clobber a value the user already set. (issue #6230)
+        const dispatchMock = vi.fn();
+        useEditAgreementDispatchMock.mockReturnValue(dispatchMock);
+
+        const setServiceReqTypeMock = vi.fn();
+        useUpdateAgreementMock.mockImplementation((key) => {
+            if (key === "service_requirement_type") return setServiceReqTypeMock;
+            return vi.fn();
+        });
+
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", service_requirement_type: "SEVERABLE" })
+        );
+        const { result } = renderUseAgreementEditForm();
+
+        act(() => {
+            result.current.handleAgreementFilterChange("DIRECT_OBLIGATION");
+        });
+
+        expect(setServiceReqTypeMock).not.toHaveBeenCalled();
+        expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
     });
 });
 
@@ -709,7 +769,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
                 agreement_type: "GRANT",
                 name: "Existing Grant",
                 nofo_number: "NOFO-UPDATED",
-                aln_number: "10.001",
+                aln_numbers: ["93.600"],
                 funding_period_months: 24,
                 team_members: []
             })
@@ -726,7 +786,7 @@ describe("useAgreementEditForm - grant details pre-populate and save", () => {
                 id: 42,
                 data: expect.objectContaining({
                     nofo_number: "NOFO-UPDATED",
-                    aln_number: "10.001",
+                    aln_numbers: ["93.600"],
                     funding_period_months: 24
                 })
             })
@@ -780,6 +840,25 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
         rerender();
 
         const errors = result.current.res.getErrors("project_officer");
+        expect(errors).toContain("This is required information");
+    });
+
+    it("isReviewMode effect flags a new unsaved agreement so the required service_requirement_type check fires", () => {
+        // Regression guard: this effect's suite.run() must pass isNewAgreement like runValidate
+        // does, or the AgreementEditFormSuite required-field rule (gated on data.isNewAgreement)
+        // silently never runs for it. (issue #6230)
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: undefined,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isReviewMode: true });
+        rerender();
+
+        const errors = result.current.res.getErrors("service_requirement_type");
         expect(errors).toContain("This is required information");
     });
 });

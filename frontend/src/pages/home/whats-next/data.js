@@ -10,30 +10,20 @@ export const data = [
     {
         id: 1,
         priority: 1,
-        title: "Continue Procurement Tracker",
+        title: "Finish Procurement Tracker",
         levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
-        expandedDescription: "Continue Procurement Tracker through pre-award / step 5 and award / step 6."
+        expandedDescription:
+            "The Procurement Tracker is available up through pre-award / step 5. We are still finishing up the pre-award requisition for the budget team, and then will continue onto award/step 6 which will complete the procurement tracker."
     },
     {
         id: 2,
         priority: 2,
-        title: "Projects Spending & Funding",
+        title: "View & Edit Grants",
         levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
-        expandedDescription:
-            "Each project now has its own page that will include a tab for details, spending and funding. The spending and funding tabs are currently in-progress to display what agreements are included within each project and where the funding is coming from."
-    },
-    {
-        id: 3,
-        priority: 3,
-        title: "Procurement Dashboard",
-        levelOfEffort: "Medium",
-        status: "In Progress-Development",
-        expandedHeading: "Description",
-        expandedDescription:
-            "The procurement dashboard will enable the procurement team to monitor procurement progress across all agreements and procurement steps."
+        expandedDescription: ""
     }
 ];

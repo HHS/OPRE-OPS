@@ -212,9 +212,7 @@ def is_pre_award_in_review(agreement):
     if not tracker:
         return False
 
-    pre_award_step = next(
-        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
-    )
+    pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
 
     if not pre_award_step or not pre_award_step.pre_award_approval_requested:
         return False
@@ -238,8 +236,10 @@ def is_award_approval_requested(agreement) -> bool:
     """
     Check if the agreement's award approval (step 6) has been requested and is pending.
 
-    Returns True when a budget team user's BLI financial edits should bypass the
-    change-request workflow — i.e. the agreement is in the award-approval review flow.
+    Returns True while the award-approval request is submitted but not yet resolved
+    (i.e. approval_status is not APPROVED or DECLINED). Used by:
+      - The Agreement model hybrid property (agreements.py) to expose the flag to the API.
+      - The frontend "Award Approval In Review" banner and edit-lock on the details page.
 
     Args:
         agreement: Agreement object to check
@@ -254,7 +254,7 @@ def is_award_approval_requested(agreement) -> bool:
     # not filtered: the AWARD step can be pending while the tracker is ACTIVE, and edge
     # cases (COMPLETED/INACTIVE trackers) should still honor a not-yet-resolved request.
     for tracker in agreement.procurement_trackers:
-        award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+        award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
         if not award_step or not award_step.award_approval_requested:
             continue
 
@@ -272,17 +272,22 @@ def is_post_pre_award_locked(agreement) -> bool:
     Check if the agreement is in the post-pre-award locked state.
 
     Returns True once pre-award has been fully approved (DD approved + Budget Team
-    submitted requisition). BLI editing is locked from this point on permanently.
+    submitted requisition) AND the Award request has not yet been approved. The lock is
+    RELEASED as soon as the Budget Team approves the Award request (step 6 AWARD approval
+    granted), even if the AWARD step itself has not been completed — this reopens BLI editing
+    for the award-completion window.
 
     Exceptions (handled by callers):
-    - Budget Team bypass during active award-approval (handled in update_with_change_request_ids)
+    - Budget Team is exempt from this validation lock (handled in _validation via is_budget_team check),
+      but their financial edits still route through the change-request workflow (HTTP 202).
     - clin_id-only edits are allowed for any authorized user (CLIN assignment for award workflow)
 
     Args:
         agreement: Agreement object to check
 
     Returns:
-        bool: True if pre-award is fully approved and BLIs should be locked.
+        bool: True if pre-award is fully approved, the Award request is not yet approved,
+        and BLIs should be locked.
     """
     if not agreement or not agreement.procurement_trackers:
         return False
@@ -294,16 +299,24 @@ def is_post_pre_award_locked(agreement) -> bool:
     if not tracker:
         return False
 
-    pre_award_step = next(
-        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
-    )
+    pre_award_step = tracker.get_step(ProcurementTrackerStepType.PRE_AWARD)
     if not pre_award_step:
         return False
 
-    return (
+    pre_award_fully_approved = (
         pre_award_step.pre_award_approval_status == "APPROVED"
         and pre_award_step.pre_award_requisition_approved_by is not None
     )
+    if not pre_award_fully_approved:
+        return False
+
+    # Release the lock once the Budget Team approves the Award request. A DECLINED (or not-yet-
+    # decided) Award request leaves the lock in place.
+    award_step = next((step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.AWARD), None)
+    if award_step and award_step.award_approval_status == "APPROVED":
+        return False
+
+    return True
 
 
 def bli_associated_with_agreement(id: int) -> bool:

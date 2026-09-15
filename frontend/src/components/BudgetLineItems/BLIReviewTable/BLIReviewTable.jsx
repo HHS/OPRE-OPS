@@ -67,8 +67,18 @@ const AgreementBLIReviewTable = ({
         [budgetLines]
     );
 
+    // Pass local (possibly unsaved) CLIN assignments so sorting by the CLIN column matches the
+    // displayed value rather than only the persisted backend clin.number.
+    const sortContext = useMemo(() => ({ clinAssignments: clinAssignments ?? {} }), [clinAssignments]);
+
     // Use shallow copy instead of deep clone - useSortData doesn't mutate nested properties
-    const copiedBudgetLines = useSortData([...sortedBudgetLines], sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW);
+    const copiedBudgetLines = useSortData(
+        [...sortedBudgetLines],
+        sortDescending,
+        sortCondition,
+        SORT_TYPES.BLI_REVIEW,
+        sortContext
+    );
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
     const showCheckboxes = !!setSelectedBLIs;

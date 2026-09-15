@@ -11,4 +11,9 @@ export type GrantNumber = {
     period_start: string;
     updated_by: number;
     updated_on: Date;
+    // Award-time fields: not captured until the grant is awarded and not yet serialized by the
+    // backend. Optional so the view can bind to them now and fall back to "TBD" until data exists.
+    grantee_name?: string;
+    organization_type?: string;
+    state?: string;
 };

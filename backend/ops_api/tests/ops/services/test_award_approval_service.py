@@ -83,7 +83,7 @@ class TestHandleAwardApprovalBLITransitions:
 
         assert bli.status == BudgetLineItemStatus.OBLIGATED
 
-    def test_planned_bli_set_to_planned_mod(self):
+    def test_planned_bli_not_changed(self):
         service = _make_service()
         bli = _make_bli(BudgetLineItemStatus.PLANNED)
         agreement = _make_agreement()
@@ -93,7 +93,7 @@ class TestHandleAwardApprovalBLITransitions:
 
         service._handle_award_approval(step, "APPROVED", None, _make_current_user())
 
-        assert bli.status == BudgetLineItemStatus.PLANNED_MOD
+        assert bli.status == BudgetLineItemStatus.PLANNED
 
     def test_draft_bli_not_changed(self):
         service = _make_service()
@@ -132,7 +132,7 @@ class TestHandleAwardApprovalBLITransitions:
         service._handle_award_approval(step, "APPROVED", None, _make_current_user())
 
         assert bli_exec.status == BudgetLineItemStatus.OBLIGATED
-        assert bli_planned.status == BudgetLineItemStatus.PLANNED_MOD
+        assert bli_planned.status == BudgetLineItemStatus.PLANNED
         assert bli_draft.status == BudgetLineItemStatus.DRAFT
 
 

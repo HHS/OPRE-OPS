@@ -275,6 +275,22 @@ export const findGrantDescription = (grantNumbers, number) => {
     return findGrantNumberByNumber(grantNumbers, number)?.description;
 };
 
+// Award-time grant-number fields. These are not captured until the grant is awarded, and the
+// backend does not yet serialize them on a grant number, so today they resolve to undefined and
+// the display falls back to "TBD". Binding here (rather than hardcoding "TBD") means the values
+// render automatically once the API starts returning them — same pattern as the find helpers above.
+export const findGrantee = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.grantee_name;
+};
+
+export const findGrantOrganizationType = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.organization_type;
+};
+
+export const findGrantState = (grantNumbers, number) => {
+    return findGrantNumberByNumber(grantNumbers, number)?.state;
+};
+
 /**
  * Returns whether the given budget line is permanent.
  * @param {BudgetLine} budgetLine - The budget line to check.
@@ -307,13 +323,14 @@ export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine
 /**
  * Returns the display value for a budget line's CLIN column (awarded contract agreements only).
  * @param {BudgetLine} budgetLine - The budget line to get the CLIN display value from.
- * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or an em dash.
+ * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or "TBD" when a
+ * non-draft (planned/executing/obligated) budget line has no CLIN yet.
  */
 export const getClinDisplayValue = (budgetLine) => {
-    if (budgetLine?.status === "DRAFT") {
+    if (budgetLine?.status === BLI_STATUS.DRAFT) {
         return "N/A";
     }
-    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "—";
+    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "TBD";
 };
 
 /**

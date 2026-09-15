@@ -71,13 +71,13 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(screen.getByText("$3,298,795,497.00")).toBeInTheDocument();
     });
 
-    it("shows -- for FY total when fyTotal is null and endpoint has no data", () => {
+    it("shows TBD while the spending query is in flight and no fyTotal prop is given", () => {
         renderRow({ fyTotal: null });
         const cells = screen.getAllByRole("cell");
         expect(cells[4]).toHaveTextContent("TBD");
     });
 
-    it("shows currency when fyTotal prop is provided and endpoint has no data", () => {
+    it("falls back to the fyTotal prop while the spending query is in flight", () => {
         renderRow({ fyTotal: 151217218 });
         const cells = screen.getAllByRole("cell");
         expect(cells[4]).toHaveTextContent("$151,217,218.00");
@@ -93,13 +93,30 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(cells[4]).not.toHaveTextContent("$151,217,218.00");
     });
 
-    it("falls back to fyTotal prop when endpoint has no entry for the selected FY", () => {
+    it("shows $0 when the endpoint loaded but has no entry for the selected FY", () => {
+        // The agreement spending endpoint omits an FY key when none of that FY's budget
+        // lines count toward spending. That is zero spending, not unknown (issue #6139).
         useGetAgreementSpendingByIdQuery.mockReturnValue({
             data: { fy_total: { 2044: "5000.00" } }
         });
         renderRow({ fyTotal: 151217218, fiscalYear: 2043 });
         const cells = screen.getAllByRole("cell");
-        expect(cells[4]).toHaveTextContent("$151,217,218.00");
+        expect(cells[4]).toHaveTextContent("$0");
+        expect(cells[4]).not.toHaveTextContent("$151,217,218.00");
+    });
+
+    it("shows $0 when the agreement has no non-draft spending in any fiscal year", () => {
+        // The response for a fully-DRAFT agreement: `fy_total` is required by the schema
+        // so the key is always present, but the aggregation groups only over budget lines
+        // that count toward spending, so the map comes back empty. This is the shape the
+        // draft-only agreements surfaced by issue #6139 actually return.
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: {} }
+        });
+        renderRow({ fyTotal: 151217218, fiscalYear: 2043 });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$0");
+        expect(cells[4]).not.toHaveTextContent("$151,217,218.00");
     });
 
     it("coerces Decimal-string values from the endpoint to formatted currency", () => {

@@ -4,7 +4,7 @@ import Table from "./Table";
 
 const headings = [
     { heading: "BL ID #", value: "ID_NUMBER" },
-    { heading: "CLIN", value: "" }
+    { heading: "Notes", value: "" }
 ];
 
 describe("Table", () => {
@@ -12,8 +12,8 @@ describe("Table", () => {
         render(<Table tableHeadings={headings} />);
 
         expect(screen.getByRole("button", { name: /BL ID #/ })).toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "CLIN" })).not.toBeInTheDocument();
-        expect(screen.getByText("CLIN")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Notes" })).not.toBeInTheDocument();
+        expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
     it("keeps aria-sort none on a non-sortable header even when selectedHeader matches its empty value", () => {
@@ -25,7 +25,7 @@ describe("Table", () => {
             />
         );
 
-        expect(screen.getByRole("columnheader", { name: "CLIN" })).toHaveAttribute("aria-sort", "none");
+        expect(screen.getByRole("columnheader", { name: "Notes" })).toHaveAttribute("aria-sort", "none");
     });
 
     it("does not call onClickHeader when a non-sortable header is clicked", () => {
@@ -37,7 +37,7 @@ describe("Table", () => {
             />
         );
 
-        fireEvent.click(screen.getByText("CLIN"));
+        fireEvent.click(screen.getByText("Notes"));
 
         expect(onClickHeader).not.toHaveBeenCalled();
     });

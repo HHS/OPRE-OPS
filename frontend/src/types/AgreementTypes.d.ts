@@ -49,7 +49,7 @@ export type Agreement = {
     research_methodologies?: ResearchMethodology[];
     special_topics?: SpecialTopic[];
     nofo_number?: string | null;
-    aln_numbers?: number[] | null;
+    aln_numbers?: string[] | null;
     funding_period_months?: number | null;
     grant_numbers?: GrantNumber[];
     sc_start_date?: string | null;

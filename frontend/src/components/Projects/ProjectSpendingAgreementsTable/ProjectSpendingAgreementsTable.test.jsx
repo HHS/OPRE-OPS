@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { ITEMS_PER_PAGE } from "../../../constants";
 import ProjectSpendingAgreementsTable from "./ProjectSpendingAgreementsTable";
 
 vi.mock("../ProjectSpendingAgreementRow", () => ({
@@ -10,6 +12,16 @@ const mockAgreements = [
     { id: 1, display_name: "Contract A" },
     { id: 2, display_name: "Contract B" }
 ];
+
+// Derived from ITEMS_PER_PAGE rather than hard-coded, so these tests keep describing
+// "one page plus one" if the page size ever changes.
+const LAST_ON_PAGE_ONE = ITEMS_PER_PAGE;
+const FIRST_ON_PAGE_TWO = ITEMS_PER_PAGE + 1;
+
+const manyAgreements = Array.from({ length: FIRST_ON_PAGE_TWO }, (_, index) => ({
+    id: index + 1,
+    display_name: `Contract ${index + 1}`
+}));
 
 describe("ProjectSpendingAgreementsTable", () => {
     it("renders column headings with dynamic FY label", () => {
@@ -93,5 +105,67 @@ describe("ProjectSpendingAgreementsTable", () => {
             />
         );
         expect(screen.getByRole("table")).toBeInTheDocument();
+    });
+
+    it("does not paginate when the agreements exactly fill one page", () => {
+        // The boundary case: the gate must be `> ITEMS_PER_PAGE`, not `>=`, or a list that
+        // fits on one page renders a pointless single-page nav.
+        render(
+            <ProjectSpendingAgreementsTable
+                agreements={manyAgreements.slice(0, ITEMS_PER_PAGE)}
+                fiscalYear={2043}
+                fyTotals={{}}
+            />
+        );
+        expect(screen.queryByRole("navigation", { name: "Pagination" })).not.toBeInTheDocument();
+    });
+
+    it("paginates when there are more agreements than fit on one page", async () => {
+        const user = userEvent.setup();
+        render(
+            <ProjectSpendingAgreementsTable
+                agreements={manyAgreements}
+                fiscalYear={2043}
+                fyTotals={{}}
+            />
+        );
+
+        expect(screen.getByRole("navigation", { name: "Pagination" })).toBeInTheDocument();
+        expect(screen.getByTestId(`row-${LAST_ON_PAGE_ONE}`)).toBeInTheDocument();
+        expect(screen.queryByTestId(`row-${FIRST_ON_PAGE_TWO}`)).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "Page 2" }));
+
+        expect(screen.getByTestId(`row-${FIRST_ON_PAGE_TWO}`)).toBeInTheDocument();
+        // Page 2 must hold ONLY the overflow row. Asserting row-1 is gone is not enough —
+        // a slice whose start index is merely too small still drops row-1 while wrongly
+        // repeating everything else from page 1.
+        expect(screen.queryByTestId(`row-${LAST_ON_PAGE_ONE}`)).not.toBeInTheDocument();
+        expect(screen.queryByTestId("row-1")).not.toBeInTheDocument();
+    });
+
+    it("returns to the first page when the fiscal year changes", async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <ProjectSpendingAgreementsTable
+                agreements={manyAgreements}
+                fiscalYear={2043}
+                fyTotals={{}}
+            />
+        );
+
+        await user.click(screen.getByRole("button", { name: "Page 2" }));
+        expect(screen.getByTestId(`row-${FIRST_ON_PAGE_TWO}`)).toBeInTheDocument();
+
+        rerender(
+            <ProjectSpendingAgreementsTable
+                agreements={manyAgreements}
+                fiscalYear={2044}
+                fyTotals={{}}
+            />
+        );
+
+        expect(screen.getByTestId("row-1")).toBeInTheDocument();
+        expect(screen.queryByTestId(`row-${FIRST_ON_PAGE_TWO}`)).not.toBeInTheDocument();
     });
 });

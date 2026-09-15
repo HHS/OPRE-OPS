@@ -86,6 +86,11 @@ export type ProcurementTrackerAwardStep = ProcurementTrackerStep & {
     contract_number?: string | null;
     award_amount?: number | null;
     award_date?: string | null;
+    // Additional award fields (OPS-5892)
+    agreement_title?: string | null;
+    modification_number?: string | null;
+    purchase_order_number?: string | null;
+    task_order_number?: string | null;
 };
 
 export type ProcurementTrackerResponseStep =

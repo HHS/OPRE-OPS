@@ -85,7 +85,35 @@ describe("GrantNumberAccordion", () => {
         );
         expect(screen.getByText("Period of Performance - Start")).toBeInTheDocument();
         expect(screen.getByText("Period of Performance - End")).toBeInTheDocument();
+        expect(screen.getByText("Grantee Recipient")).toBeInTheDocument();
+        expect(screen.getByText("Organization Type")).toBeInTheDocument();
+        expect(screen.getByText("State")).toBeInTheDocument();
+        // Grantee Recipient, Organization Type, and State are award-time fields with no data here,
+        // so all three fall back to "TBD".
+        expect(screen.getAllByText("TBD")).toHaveLength(3);
         expect(screen.getByText("Description")).toBeInTheDocument();
+    });
+
+    it("renders award-time field values when provided instead of the TBD fallback", () => {
+        render(
+            <GrantNumberAccordion
+                grantNumberNumber={1}
+                withMetadata={true}
+                periodStart="2026-01-01"
+                periodEnd="2026-12-31"
+                granteeRecipient="University of Example"
+                organizationType="Educational Institution"
+                state="NY"
+                description="Test description"
+            >
+                <div>child content</div>
+            </GrantNumberAccordion>
+        );
+        expect(screen.getByText("University of Example")).toBeInTheDocument();
+        expect(screen.getByText("Educational Institution")).toBeInTheDocument();
+        expect(screen.getByText("NY")).toBeInTheDocument();
+        // No award-time field falls back, so "TBD" should not appear.
+        expect(screen.queryByText("TBD")).not.toBeInTheDocument();
     });
 
     it("does not render GrantNumberMetadata for the unassociated bucket even when withMetadata is true", () => {
