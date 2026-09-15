@@ -44,7 +44,7 @@ import {
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { AgreementType } from "../agreements.constants";
-import { useIsUserSuperUser, useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
@@ -79,11 +79,7 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
-    const isReadOnly = useIsUserReadOnly();
-    // Read-only users can never edit, regardless of team-member association (`_meta.isEditable` is
-    // role-independent). `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER;
-    // superuser wins, matching the rest of the editability logic below.
-    const canEditByRole = isSuperUser || !isReadOnly;
+    const canEditByRole = useCanEditByRole();
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
