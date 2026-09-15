@@ -22,7 +22,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
-import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -220,6 +220,11 @@ const useAgreementEditForm = (
             suite.run(
                 {
                     ...agreement,
+                    // Only enforce service_requirement_type presence while creating (see suite).
+                    // Some existing non-grant agreements legitimately have no
+                    // service_requirement_type; failing here would disable Save Changes on the
+                    // edit screens for a field the user never touched. (issue #6230)
+                    isNewAgreement: !agreement?.id,
                     ...overrides,
                     [name]: value
                 },
@@ -233,6 +238,7 @@ const useAgreementEditForm = (
         if (isReviewMode) {
             suite.run({
                 ...agreement,
+                isNewAgreement: !agreement?.id,
                 "procurement-shop-select": selectedProcurementShop
             });
         }
@@ -684,10 +690,13 @@ const useAgreementEditForm = (
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
-        if (value === AGREEMENT_TYPES.CONTRACT) {
-            setAgreementType(AGREEMENT_TYPES.CONTRACT);
-            clearGrantOnlyFields();
-        } else if (value === AGREEMENT_TYPES.GRANT) {
+        if (value === AGREEMENT_TYPES.GRANT) {
+            // Grants use grant_numbers, not services components — clear them so a component
+            // added under a prior CONTRACT/DIRECT_OBLIGATION/PARTNER selection doesn't ride
+            // along in the grant's create payload. Services Components cannot be added while
+            // already GRANT (step 3 shows the grant-numbers form instead), so this is the only
+            // branch that ever needs to clear them. (issue #6230)
+            dispatch({ type: "CLEAR_SERVICES_COMPONENTS" });
             suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
             setContractType(null);
@@ -701,13 +710,29 @@ const useAgreementEditForm = (
             dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
             dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
             dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
+            return;
+        }
+
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
-            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
-            clearGrantOnlyFields();
+        }
+        // Contracts/Direct Obligations/Partner use services components, not grant numbers —
+        // clear them so a grant number added under a prior GRANT selection doesn't ride along
+        // in the non-grant create payload. Grant Numbers cannot be added unless already GRANT,
+        // so this is the only branch that ever needs to clear them. (issue #6230)
+        dispatch({ type: "CLEAR_GRANT_NUMBERS" });
+        clearGrantOnlyFields();
+        // Only restore the default when it's actually missing (i.e. the prior selection was
+        // GRANT, which nulled it). An explicit SEVERABLE choice must survive toggling among
+        // CONTRACT/DIRECT_OBLIGATION/PARTNER — those never touch service_requirement_type
+        // themselves, so unconditionally restoring here would silently discard it. (issue #6230)
+        if (!serviceReqType) {
+            restoreServiceReqTypeDefault();
         }
     };
 
@@ -719,6 +744,15 @@ const useAgreementEditForm = (
         setNofoNumber(null);
         setAlnNumbers([]);
         setFundingPeriodMonths(null);
+    };
+
+    // Re-apply the Non-Severable default when switching to a non-grant type. The GRANT branch
+    // nulls service_requirement_type to shape the grant payload, but defaultState's default is
+    // only ever applied as useReducer's initial argument, so nothing restores it on the way
+    // back. Must not be left null: AaAgreementData rejects null (400) and formatServiceComponent
+    // returns undefined for any other value. (issue #6230)
+    const restoreServiceReqTypeDefault = () => {
+        setServiceReqType(SERVICE_REQ_TYPES.NON_SEVERABLE);
     };
 
     return {
