@@ -56,6 +56,19 @@ describe("AgreementDetailHeader", () => {
         expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
     });
 
+    // Read-only users can never edit any agreement, so the page passes showEditButton={false} and
+    // neither the enabled button nor the disabled button-plus-tooltip should render.
+    it("renders no Edit button or tooltip when showEditButton is false", () => {
+        renderHeader({ showEditButton: false, isEditable: false, canUserEdit: false });
+        expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        expect(screen.queryByTestId("tooltip-label")).not.toBeInTheDocument();
+    });
+
+    it("renders no Edit button when showEditButton is false even if editable", () => {
+        renderHeader({ showEditButton: false, isEditable: true });
+        expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+    });
+
     it("shows a disabled Edit button with the team-member tooltip for a non-team-member", () => {
         renderHeader({ isEditable: false, canUserEdit: false });
 

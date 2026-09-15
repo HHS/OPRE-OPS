@@ -231,7 +231,8 @@ vi.mock("../../../constants", () => ({
 vi.mock("../../../hooks/user.hooks", () => ({
     default: vi.fn(),
     useIsUserSuperUser: vi.fn(),
-    useIsUserOnlyProcurementTeam: vi.fn().mockReturnValue(false)
+    useIsUserOnlyProcurementTeam: vi.fn().mockReturnValue(false),
+    useCanEditByRole: vi.fn().mockReturnValue(true)
 }));
 
 // Mock vest suite for Step One
@@ -283,7 +284,7 @@ import {
     useUpdateProcurementTrackerStepMutation,
     useGetUsersQuery
 } from "../../../api/opsAPI";
-import useGetUserFullNameFromId, { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 
 describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
@@ -1483,8 +1484,9 @@ describe("AgreementProcurementTracker", () => {
                 isLoading: false,
                 isError: false
             });
-            // Default to non-super user
+            // Default to non-super user, can edit by role
             useIsUserSuperUser.mockReturnValue(false);
+            useCanEditByRole.mockReturnValue(true);
         });
 
         it("should disable Step 2 when user is not authorized", () => {
@@ -1509,6 +1511,21 @@ describe("AgreementProcurementTracker", () => {
             const stepTwo = screen.getByTestId("procurement-step-two");
             // hasActiveTracker=true && isEditable=true => isDisabled=false
             expect(stepTwo).toHaveAttribute("data-is-disabled", "false");
+        });
+
+        it("should disable Step 2 for a read-only user who is a team member", () => {
+            useCanEditByRole.mockReturnValue(false);
+            const agreementWithMeta = {
+                id: 13,
+                authorized_user_ids: [1],
+                _meta: { isEditable: true }
+            };
+
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
+
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            // _meta.isEditable reflects team membership, not role; role gate must still block editing
+            expect(stepTwo).toHaveAttribute("data-is-disabled", "true");
         });
 
         it("should enable Step 2 when user is super user", () => {
