@@ -148,6 +148,35 @@ describe("ProjectsTable", () => {
         expect(setSortConditions).toHaveBeenCalledWith(PROJECT_SORT_CODES.PROJECT_TYPE, expect.any(Boolean));
     });
 
+    it("disables the FY Total header and blocks sorting when 'All' is selected", async () => {
+        const user = userEvent.setup();
+        const setSortConditions = vi.fn();
+        renderTable({ selectedFiscalYear: "All", setSortConditions });
+
+        const fyTotalHeader = screen.getByRole("button", { name: /^FY Total$/i });
+        expect(fyTotalHeader).toHaveAttribute("aria-disabled", "true");
+        expect(fyTotalHeader.className).toContain("cursor-not-allowed");
+        expect(fyTotalHeader.className).toContain("text-disabled");
+
+        await user.click(fyTotalHeader);
+
+        expect(setSortConditions).not.toHaveBeenCalled();
+    });
+
+    it("enables the FY Total header and allows sorting when a specific fiscal year is selected", async () => {
+        const user = userEvent.setup();
+        const setSortConditions = vi.fn();
+        renderTable({ selectedFiscalYear: "2026", setSortConditions });
+
+        const fyTotalHeader = screen.getByRole("button", { name: /FY26 Total/i });
+        expect(fyTotalHeader).toHaveAttribute("aria-disabled", "false");
+        expect(fyTotalHeader.className).toContain("cursor-pointer");
+
+        await user.click(fyTotalHeader);
+
+        expect(setSortConditions).toHaveBeenCalledWith(PROJECT_SORT_CODES.FY_TOTAL, expect.any(Boolean));
+    });
+
     it("renders multiple rows when given multiple projects", () => {
         renderTable({ projects: [MOCK_PROJECT_1, MOCK_PROJECT_2] });
         expect(screen.getByText("Project Alpha")).toBeInTheDocument();

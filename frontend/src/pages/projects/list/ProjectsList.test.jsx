@@ -194,7 +194,9 @@ describe("ProjectsList", () => {
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(2);
     });
 
-    it("renders fiscal year total as currency for the selected FY", () => {
+    it("renders fiscal year total as currency for the selected FY", async () => {
+        const user = userEvent.setup();
+
         mockUseGetProjectsQuery.mockReturnValue({
             data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
             isLoading: false,
@@ -203,11 +205,11 @@ describe("ProjectsList", () => {
 
         renderComponent();
 
-        // The FY select defaults to current fiscal year; MOCK_PROJECT_1 has fiscal_year_totals
-        // with keys 2025 and 2026. We just verify the component renders a currency value.
-        // The exact FY depends on the current date, so we check for a $ amount presence.
-        // (For a deterministic assertion, see the FY select change test below.)
-        expect(screen.getByText("Research")).toBeInTheDocument(); // Sanity check row rendered
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2026");
+
+        // MOCK_PROJECT_1.fiscal_year_totals[2026] is "500000.00"
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
     });
 
     it("renders project total as currency", () => {
@@ -279,6 +281,32 @@ describe("ProjectsList", () => {
         await user.selectOptions(fySelect, "All");
 
         expect(screen.getByRole("columnheader", { name: /^fy total$/i })).toBeInTheDocument();
+    });
+
+    it("resets sort to TITLE when fiscal year changes back to All while sorted by FY Total", async () => {
+        const user = userEvent.setup();
+
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2025");
+        await user.click(screen.getByRole("button", { name: /FY25 Total/i }));
+
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "FY_TOTAL" })
+        );
+
+        await user.selectOptions(fySelect, "All");
+
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "TITLE", fiscalYear: "All" })
+        );
     });
 
     it("does not render pagination when total pages is 1", () => {

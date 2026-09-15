@@ -20,13 +20,11 @@ export const TABLE_HEADINGS_LIST = [
 
 /**
  * Returns table headings with a dynamic FY column label based on the selected fiscal year.
- * @param {string} fiscalYear - The selected fiscal year (e.g., "2025" or "All").
- * @param {string} currentFiscalYear - The current fiscal year (e.g., "2026").
+ * @param {string} fiscalYear - The selected fiscal year (e.g., "2025") or "All".
  * @returns {Array<{heading: string, value: string}>} - The table headings list with dynamic FY label.
  */
-export const getTableHeadingsWithFY = (fiscalYear, currentFiscalYear) => {
-    const effectiveFY = fiscalYear === "All" ? currentFiscalYear : fiscalYear;
-    const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
+export const getTableHeadingsWithFY = (fiscalYear) => {
+    const fyLabel = fiscalYear === "All" ? "FY Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
 
     return TABLE_HEADINGS_LIST.map((item) => {
         if (item.value === tableSortCodes.agreementCodes.FY_OBLIGATED) {

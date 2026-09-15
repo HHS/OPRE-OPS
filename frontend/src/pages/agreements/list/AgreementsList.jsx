@@ -27,7 +27,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, formatDate, getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -61,7 +61,7 @@ const AgreementsList = () => {
     );
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -221,11 +221,6 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
-            const effectiveFY =
-                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
-
-            const agreementResponses = allAgreementsList;
-
             const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
@@ -241,7 +236,8 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
+            const fyLabel =
+                selectedFiscalYear === "All" ? "FY Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
 
             const tableHeader = [
                 "Agreement",
@@ -261,7 +257,7 @@ const AgreementsList = () => {
                 "COR"
             ];
             await exportTableToXlsx({
-                data: agreementResponses,
+                data: allAgreementsList,
                 headers: tableHeader,
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);
