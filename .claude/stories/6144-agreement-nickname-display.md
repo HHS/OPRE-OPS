@@ -1,8 +1,10 @@
 # Issue #6144 — Show agreement nickname instead of full name
 
-**Status:** Ready for developer review
+**Status:** Ready for developer review (revised after 3-reviewer adversarial pass — see below)
 **Issue:** [HHS/OPRE-OPS#6144](https://github.com/HHS/OPRE-OPS/issues/6144)
 **Suggested branch:** `OPS-6144/agreement-nickname-display`
+
+> **Revision note:** this plan was independently reviewed by three adversarial passes (technical correctness, requirements coverage, risk/regressions) against the live codebase. Fixes folded in: trap 4 (string-keyed dedupe collisions in F2/B10, now keyed by `id`), a corrected fixture citation, a corrected/removed open question (AA nicknames are in fact editable), added negative-case unit tests for the details page and meta-accordion, a whitespace-parametrization fix for the SQL/Python guardrail test, and clarifying notes on B2/B3's actual (non-)role in AC 3, `ProcurementAction.display_name`'s exception to the "single chokepoint" claim, two more schemas that silently inherit the change, the `AgreementSelect` native-`<select>` limitation, and the feature-flag DoD item. Everything else in the three reviews checked out against the real code and needed no change.
 
 ---
 
@@ -35,15 +37,18 @@ Every other agreement-page breadcrumb is a static string. Redefining `display_na
 
 ---
 
-## Three traps to know before you start
+## Four traps to know before you start
 
 **1. The BLI filter round trip will silently return zero rows.** *(verified)*
 `services/budget_line_items.py:1157-1163` emits BLI filter options as `{"id", "name": agreement.display_name}`. The frontend posts that string straight back as `agreement_name=`, and `_apply_agreement_name_filter` (`:468-471`) matches it against `Agreement.name`. The moment `display_name` becomes the nickname, **the BLI agreement filter returns nothing for every nicknamed agreement** — no error, no failing test. Steps **B1, B6, B7, F5 must land in the same commit.**
 
 **2. Do NOT add `nick_name` to the *exact-match* branch of the `name` filter.** *(verified)*
-`AgreementEditForm.hooks.js:270-275` implements agreement-title uniqueness as `GET /agreements?name=<typed>&agreement_type=<type>&limit=1`, with `exact_match` defaulting to `True`. If that branch ORs `nick_name`, typing a title that happens to equal a *different* agreement's nickname returns `count >= 1` → spurious "title must be unique" → blocked save. Add `nick_name` to the `ilike` (partial) branch only, and leave a comment on the exact branch saying why.
+`AgreementEditForm.hooks.js:272-276` implements agreement-title uniqueness as `GET /agreements?name=<typed>&agreement_type=<type>&limit=1`, with `exact_match` defaulting to `True`. If that branch ORs `nick_name`, typing a title that happens to equal a *different* agreement's nickname returns `count >= 1` → spurious "title must be unique" → blocked save. Add `nick_name` to the `ilike` (partial) branch only, and leave a comment on the exact branch saying why. **Note:** verified that `exact_match=false` is never actually sent by any current frontend caller, so this branch is inert from the product's perspective today — see the callout on B2/B3 below. The fix still belongs in the plan as hardening against the next caller that does flip it.
 
 **3. Inserting an export column shifts `currencyColumns`.** `AgreementsList.jsx:303` hard-codes `[4,5,8,9,10]`. Forget to shift it and the export silently loses currency formatting.
+
+**4. String-keyed dedupe lets one agreement silently disappear from a picker.** *(found in adversarial review — not covered by trap 1–3 or by B13)*
+`AgreementNameComboBox.jsx:61-72`'s derived-fetch path dedupes options with `new Map()` keyed by the **rendered display string**, and `services/projects.py:729-737` (B10's target) keys its options dict the same way. Neither `nick_name` (`unique=True` column constraint) nor `name` (`func.lower(name)` index) is checked against *the other field on a different agreement* — so agreement A's nickname can collide with agreement B's full name (or vice versa), and whichever loses the Map/dict key silently vanishes from the dropdown. No error, no test. This is a distinct bug from B13's nickname-uniqueness gaps (which are about two nicknames colliding with each other). **Fix: key F2's and B10's dedupe structures by agreement `id`, not by the display string.** See F2 and B10 below — both must be built this way from the start, not patched later.
 
 ---
 
@@ -74,12 +79,16 @@ def display_name_expression(cls):
 - `func` is already imported in this file (used by `ix_agreement_name_type_lower` at `:392`).
 - **Do not make `display_name` a `hybrid_property`.** `models/base.py:189-198` defines it as a plain property *with a deliberate no-op setter* that marshmallow binding relies on, and `to_dict()` (`base.py:145`) reads the instance value. The classmethod keeps the SQL and Python definitions adjacent without touching the descriptor contract.
 - `full_name` is **not** added to response schemas — `name` is already dumped by `AgreementData:49`. The alias exists for backend-internal intent clarity, so the API surface is unchanged.
+- **`func.trim()` and Python `.strip()` are not the same operation.** Postgres's `TRIM()` strips only spaces by default; Python's `.strip()` strips all whitespace (tabs, newlines, etc.). A `nick_name` of `"\t"` would fall back to `name` in the Python property but survive as a truthy `"\t"` through `display_name_expression()`. Low real-world likelihood (nicknames are short human-typed acronyms), but the guardrail test below must include a non-space whitespace case, not just `"   "`, or it won't catch this drift.
+- **`ProcurementAction.display_name`** (`models/procurement_action.py:197-203`) is a separate `@BaseModel.display_name.getter` override that builds its string from `self.agreement.name` directly, not `self.agreement.display_name` — so it does **not** pick up this change. This means the "single chokepoint" framing in the decisions table above is narrower than it sounds: it's the single chokepoint for `Agreement.display_name`, not for every place a display name touches an agreement. No live frontend renderer of this field was found (only `frontend/src/mocks/handlers.js`), so this is a documentation note rather than a fix — flag it in the PR description so nobody is later surprised that an Award/Mod-history string still shows the full title.
 
 ### B2–B9. Remaining backend changes
 
+> **B2 and B3 are hardening, not the AC 3 delivery mechanism.** Verified: no current frontend caller ever sends `exact_match=false` or `search=` to `/agreements` (`opsAPI.js` builds only `name=` / `nick_name=`; the only `search=` calls target the unrelated `/projects/` endpoint). So today, B2's `ilike` branch and B3's widened `ilike` branch are exercised only by the new backend tests below, not by any live UI path. **AC 3 is satisfied entirely by F3** (client-side `createFilter`). Keep B2/B3 — they're the correct API-surface hardening for the next caller that does flip `exact_match` — but don't describe them to a reviewer as "how AC 3 works today," and don't expect step 3 of the manual smoke test to exercise them.
+
 | # | File / location | Change |
 |---|---|---|
-| **B2** | `services/agreements.py:1313-1324` `_apply_search_filter` | `or_(name.ilike(...), nick_name.ilike(...))`. Keep the falsy-term → `name.is_(None)` sentinel branch. `or_` already imported. **This is what satisfies AC 3 server-side.** |
+| **B2** | `services/agreements.py:1313-1324` `_apply_search_filter` | `or_(name.ilike(...), nick_name.ilike(...))`. Keep the falsy-term → `name.is_(None)` sentinel branch. `or_` already imported. |
 | **B3** | `services/agreements.py:1260-1278` `name` filter | Add `nick_name` to the **`ilike` branch only**. Add a comment on the exact branch citing trap 2. |
 | **B4** | `services/agreements.py:1336-1339` `_sort_agreements` | `key=lambda a: (a.display_name or "").casefold()`. Python sort over materialized rows, so the property works directly. The `or ""` also fixes a latent `AttributeError` on a null name. |
 | **B5** | `services/agreements.py:734-743` (filter options, Step 6) | Select `id, name, nick_name`; emit `{"id", "name": <full>, "nick_name", "display_name": <nick or name>}`; sort by `display_name` casefolded. **Keep `name` = the full name** — that is what the frontend posts back as `name=`, which is what makes B3's strict branch safe. No schema change needed: `schemas/agreements.py:361` is already `fields.List(fields.Dict(values=fields.Raw()))`, so extra keys pass through. |
@@ -88,13 +97,15 @@ def display_name_expression(cls):
 | **B8** | `services/budget_line_items.py:265-270` and `:487-492` (`AGREEMENT_NAME` sort) | Use `Agreement.display_name_expression()` so SQL sort matches the rendered column and the client-side sort (F6). |
 | **B9** | `schemas/budget_line_items.py:266-282` `SimpleAgreementSchema` | Add `nick_name = fields.String(allow_none=True)` and `display_name = fields.String(dump_only=True)`. Keep `name`. **One schema unlocks three surfaces** — `BudgetLineItemResponseSchema.agreement` (`:343`) is nested by both the BLI list *and* `schemas/cans.py:268`. |
 
+**Two more nested-agreement schemas already have a `display_name` field and need zero code change to start returning the nickname:** `MinimalAgreementSchema` (`schemas/procurement_actions.py:12-17`, nested at `:59` and `:111`) and `NestedAgreementSchema` (`schemas/procurement_tracker_steps.py:23-30`). Unlike B9, these aren't missing a field — they'll pick up the new value automatically the instant B1 ships. Call this out in the PR description and add them to the Phase 4 OpenAPI-description sweep; neither is currently covered by a test in either direction.
+
 **Do not reuse `add_search_list_multi_column`** (`ops_api/ops/utils/query_helpers.py:32-54`) despite its `[Agreement.name, Agreement.nick_name]` docstring. It is a method on `QueryHelper`, which `services/agreements.py` does not use at all — wrapping the `Select` for one clause is more code than the inline `or_`. It has zero call sites; leave it dead or delete it separately.
 
 ### B10. Projects filter options — needs product confirmation
 
 `services/projects.py:723-743` currently inserts **both** the name and the nickname as *separate options for the same agreement* (verified: two `if` blocks keyed by string into `agreement_values_dict`). That contradicts "the nickname displays instead of the full agreement name … in dropdowns and filters."
 
-Collapse to one nickname-preferred entry per agreement with the same four-key shape. Downstream is already compatible — `opsAPI.js:548-551` sends `agreement_search=${agreement.title}`, `services/projects.py:317,403` already `or_` both fields, and `ProjectFilterTags.hooks.js:25,66-69` keys off `title` for both tag text and removal. **Zero frontend edits.** ~15 lines; roughly halves the option count.
+Collapse to one nickname-preferred entry per agreement, **keyed by agreement `id`, not by the name/nickname string** — see trap 4 above. Keying by the display string is what causes the current double-entry bug in the first place, and reusing that same kind of string key for the "collapsed" version would just trade a visible duplicate for an invisible collision (agreement A's nickname silently overwriting agreement B's entry if the strings happen to match). Emit the same four-key shape as B5/B6. Downstream is already compatible — `opsAPI.js:548-551` sends `agreement_search=${agreement.title}`, `services/projects.py:317,403` already `or_` both fields, and `ProjectFilterTags.hooks.js:25,66-69` keys off `title` for both tag text and removal. **Zero frontend edits.** ~15 lines; roughly halves the option count.
 
 This is beyond the literal issue text but required by the AC. Flag it on the issue rather than shipping silently.
 
@@ -110,6 +121,8 @@ Both become more likely once nicknames are the primary display string. Companion
 - `nick_name`'s `unique=True` has no friendly handler. `is_agreement_name_unique_violation` (`ops_api/ops/utils/agreements_helpers.py:39-47`) covers only the name index, so a duplicate nickname raises a raw `IntegrityError` → 500 instead of 400.
 - `nick_name` uniqueness is case-**sensitive** (plain constraint), unlike `name` (functional `lower()` index). `"HS"` and `"hs"` can coexist and would render as two near-identical rows.
 
+**Checked and ruled out during adversarial review:** whether AA agreements can carry ETL-copied nicknames they can't edit through the UI. Confirmed false — the nickname `Input` in `AgreementEditForm.jsx:331-346` has no `isDisabled` prop and no `isFieldVisible`/`AGREEMENT_TYPE_VISIBLE_FIELDS` gate; it renders unconditionally for all 5 agreement types. `isFieldVisible` only gates the **read-only** meta-accordion display (`agreement.helpers.js:258-318`), not this edit form. No further action needed; don't re-investigate.
+
 ---
 
 ## Phase 2 — Frontend
@@ -120,6 +133,7 @@ Both become more likely once nicknames are the primary display string. Companion
 - `hooks/lookup.hooks.js:75-86` `useGetAgreementName` → all three review cards (`ReviewCard.jsx:48`, `AwardReviewCard.jsx:27`, `ApprovalFlowReviewCard.jsx:59`)
 - `hooks/use-sortable-data.hooks.js:125` — procurement-details sort
 - Alert copy already on `display_name`: `ApproveAgreement.hooks.js:463-523`, `ApproveAwardApproval.hooks.js:151`, `ApprovePreAwardApproval.hooks.js:182,185`, `CreateBLIsAndSCs.hooks.js:664`, `ChangeIcons.jsx:87`
+- **Already satisfies AC 5, independent of this whole change:** `pages/projects/list/ProjectsList.helpers.js:105-107` builds its "Agreements" export column from the backend's `agreement_name_list` (`models/projects.py:232-238`), which already prefers `nick_name` over `name`. This predates this story and isn't touched by it — but it has no regression test today, and none is added anywhere else in this plan. Add one alongside the other AC 5 test in Phase 3 (`helpers/budgetLines.helpers.test.js`'s neighbor, or a new case in `pages/projects/list/ProjectsList.test.jsx`) so a future refactor of `agreement_name_list` can't silently regress this AC.
 
 ### Group B — explicit edits
 
@@ -139,7 +153,7 @@ Lenient on null by design — it is called on `budgetLine.agreement`, which can 
   searchText: [name, nick_name].filter(Boolean).join(" ") }
 ```
 
-where `display = option.display_name ?? (option.nick_name?.trim() || option.name)`. In the derived path (`:61-72`) change the dedupe key from `agreement.display_name` to `display` and carry `name` / `nick_name` through.
+where `display = option.display_name ?? (option.nick_name?.trim() || option.name)`. In the derived path (`:61-72`) change the dedupe key from `agreement.display_name` to **`agreement.id`** — not to `display` — and carry `name` / `nick_name` through. See trap 4 above: keying by the rendered string (even the corrected nickname-preferred string) still lets one agreement's nickname collide with a different agreement's full name and silently disappear from the `Map`. Keying by `id` removes the collision entirely, since duplicate labels among distinct ids are a legitimate (if confusing) UI state, not a data-loss bug.
 
 > Keeping `title` === the visible label is load-bearing: it is exactly what `AgreementsFilterTags.hooks.js:70-73` (`tagText: item.title`) and `:142-145` (removal on `name.title !== tag.tagText`) key on — **so that file and `ProjectFilterTags.hooks.js` need zero edits.**
 
@@ -167,7 +181,7 @@ Using `createFilter` rather than a hand-rolled predicate preserves react-select'
 
 - `components/BudgetLineItems/AllBudgetLinesTable/AllBLIRow.jsx:47-49` — both `agreementName` and `agreementLinkLabel`
 - `components/CANs/CANBudgetLineTable/CANBudgetLineTable.jsx:62` — the `agreementName` prop (row component needs no edit)
-- `components/Agreements/AgreementSelect/AgreementSelect.jsx:142` — native `<select>` option text
+- `components/Agreements/AgreementSelect/AgreementSelect.jsx:142` — native `<select>` option text. **Known limitation, not fixable by this change:** native `<select>` type-ahead jumps to an option by matching its *rendered* text. Once the option text is nickname-preferred, typing the full title will no longer jump to it — only typing the nickname will. This is a real, narrower reading of AC 3 for this one surface; call it out in the PR description rather than silently accepting it, since `AgreementNameComboBox`/`ComboBox` (F2/F3) don't have this limitation and a reviewer may reasonably ask why this surface is different.
 - `hooks/use-sortable-data.hooks.js:23` **and** `:65` — so client sort matches the rendered column and B8
 - `pages/procurementDashboard/ProcurementDashboardPage.jsx:93` — export cell (no column inserted, currency indices untouched)
 - `helpers/budgetLines.helpers.js:563` — the "Agreement" cell of the BLI export (**AC 5**: other exports show a single nickname-preferred value). Header at `:526` unchanged.
@@ -199,7 +213,7 @@ Per [`docs/TESTING.md`](../../docs/TESTING.md): test at the lowest appropriate l
 
 ### Backend
 
-**New — `tests/ops/agreement/test_agreement_display_name.py`** (pure unit): nickname preferred; falls back to name for `None` / `""` / whitespace-only; strips surrounding whitespace; plus `test_display_name_expression_matches_python_property`, parametrized over those nick_name shapes — **this is the only thing keeping B1's SQL and Python definitions from drifting.**
+**New — `tests/ops/agreement/test_agreement_display_name.py`** (pure unit): nickname preferred; falls back to name for `None` / `""` / whitespace-only; strips surrounding whitespace; plus `test_display_name_expression_matches_python_property`, parametrized over those nick_name shapes — **this is the only thing keeping B1's SQL and Python definitions from drifting.** The parametrization **must include a non-space whitespace value (e.g. `"\t"` or `"\n"`)**, not just `"   "` — Postgres `TRIM()` strips only spaces by default while Python `.strip()` strips all whitespace, so a space-only test case would pass even if the SQL and Python definitions silently disagree on tabs/newlines.
 
 **Extend — `tests/ops/agreement/test_agreement.py`**
 - `test_agreements_search_matches_nick_name` / `..._matches_name` (B2)
@@ -234,8 +248,15 @@ Per [`docs/TESTING.md`](../../docs/TESTING.md): test at the lowest appropriate l
 | `helpers/budgetLines.helpers.test.js` | **AC 5**: nickname in the Agreement column; full-name fallback |
 | `hooks/useSortableData.test.js` | sorts all-BLI rows by nickname when present |
 | `components/Agreements/AgreementEditor/AgreementEditForm.helpers.test.js` + one component test | **AC 6**: `isFieldDisabled(NickName, ["name"], false, true) === false`; and with `is_awarded: true` + `immutable_awarded_fields: ["name"]`, the title input is disabled while the nickname input is **enabled** |
+| `pages/agreements/details/Agreement.test.js` | **Negative AC — details page.** Render with a nicknamed agreement; assert the `<h1>` text and the `breadCrumbName` prop passed to `App` both equal `agreement.name`, never `agreement.nick_name` or `display_name`. F7's source comment alone doesn't fail CI if a future edit routes this through `getAgreementDisplayName` — this test does. |
+| `components/Agreements/AgreementMetaAccordion/AgreementMetaAccordion.test.jsx` | **Negative AC — side-by-side fields unchanged.** With a nicknamed agreement, assert the "Agreement" term renders `agreement.name` and the nickname term renders `agreement.nick_name`, not a nickname-preferred value in either slot. |
+| `pages/agreements/details/AgreementDetailsView.test.jsx` | **Negative AC — nickname Tag unchanged.** Assert the nickname `Tag` (`dataCy="agreement-nickname-tag"`) still renders raw `agreement.nick_name`. |
 
-**Fixture fix — `frontend/src/tests/data.js`:** the main `agreement` fixture (`:65-216`) has `nick_name: "AACFRC"` *and* `display_name: "Contract #1: African American Child and Family Research Center"`, which after B1 is an impossible server response. Set `display_name: "AACFRC"`. That flips expectations in `ProjectSpendingAgreementRow.test.jsx`. Keep `:699`'s `nick_name: ""` as the blank-fallback fixture.
+Without these three, the only coverage for the issue's explicitly-named negative cases ("details page heading/breadcrumb continues to show the full name," "the existing side-by-side Name and Nickname fields... are unchanged") is a source comment and one Cypress assertion on the `<h1>` alone — neither the breadcrumb nor the meta-accordion pair nor the details-view Tag is locked in by a fast test.
+
+**Fixture fix — `frontend/src/tests/data.js`:** the main `agreement` fixture (`:65-216`) has `nick_name: "AACFRC"` *and* `display_name: "Contract #1: African American Child and Family Research Center"`, which after B1 is an impossible server response. Set `display_name: "AACFRC"`. That flips expectations in `ProjectSpendingAgreementRow.test.jsx`.
+
+**Correction — there is no existing blank-nickname Agreement fixture.** An earlier draft of this plan pointed at `:699`'s `nick_name: ""` as "the blank-fallback fixture" — verified wrong: that line belongs to a nested **CAN** object inside a budget-line fixture, not an Agreement (same for the only other bare `nick_name: ""` in the file, on a nested CAN at `:2424`). There is currently no Agreement fixture anywhere in `data.js` with a blank or whitespace-only nickname. Add one — e.g. clone the main `agreement` fixture with `nick_name: null` (or `nick_name: "   "` for the whitespace case) — so the None/blank/whitespace fallback path in the `getAgreementDisplayName` tests above is actually exercised against a fixture, not just against inline test literals.
 
 ### E2E — no new spec
 
@@ -252,10 +273,13 @@ Every AC is reachable at unit/component/API level. One worthwhile addition: ~10 
 - `openapi.yml:954-969` — agreements filter-options item: add `nick_name` (nullable) + `display_name`; fix the "sorted by name" description
 - `openapi.yml:4069-4088` — projects filter-options: rewrite the "names and nicknames" description if B10 lands
 - `openapi.yml:7772-7793` `SimpleAgreementSchema` — add `nick_name` (nullable) + `display_name`
+- `MinimalAgreementSchema` (`schemas/procurement_actions.py:12-17`) and `NestedAgreementSchema` (`schemas/procurement_tracker_steps.py:23-30`) — both already document a `display_name` field; update the description on each to note it is now nickname-preferred. No shape change, so `/sync-openapi` won't flag these on its own.
 - the `display_name` property on each agreement response schema — add `description: Nickname if set, otherwise the full name`. **The only place the semantic change is discoverable.**
 - `openapi.yml:104` (`nick_name` param) and the `/agreements/` `name` / `search` params — document that `search` matches name **or** nickname while `name` is name-only. This is where the next developer looks before re-breaking trap 2.
 
 **No Alembic migration.** No column or index changes; `display_name` stays a Python property and `display_name_expression()` is a classmethod returning an expression, not a mapped column. Confirm with an empty autogenerate diff via the `/db-migrations` skill. (The two excluded follow-ups from B13 *would* need one.)
+
+**Definition of Done — "Feature flags/toggles created."** Record the decision explicitly rather than letting the checklist item go unaddressed: this plan proposes **no feature flag**. The change ships as a single coordinated release (commit-ordering constraint from trap 1 already requires B1/B6/B7/F5 together), it's a display-only change with no data loss on rollback, and a flag would add branching complexity to a `display_name` property that's read in dozens of places for no corresponding benefit — reverting the commits is the rollback plan. State this in the PR description so the DoD box is checked with a reason, not silently skipped.
 
 ---
 
@@ -313,7 +337,7 @@ docker compose up --build
 
 ### Open questions for the issue thread
 
-- **F6b** — do the 8 review/approval page sub-titles count as "the agreement's own page"? Needs UX sign-off.
-- **B10** — the projects filter currently lists the name *and* the nickname as separate options for one agreement. The AC requires collapsing it, but it isn't in the issue text.
+- **F6b** — do the 8 review/approval page sub-titles count as "the agreement's own page"? Needs UX sign-off. **Note the consequence of deferring:** the issue's out-of-scope list names exactly two exceptions (the details page heading/breadcrumb; the side-by-side Name/Nickname fields) — these 8 subtitles aren't among them. If F6b ships as a separate, later, sign-off-gated commit and that sign-off doesn't happen promptly, AC 1 ("everywhere... except the agreement's own page") remains genuinely unsatisfied for these 8 surfaces, not just conservatively scoped. Get the sign-off before merge if at all possible, rather than treating this as a nice-to-have follow-up.
+- **B10** — the projects filter currently lists the name *and* the nickname as separate options for one agreement. The AC requires collapsing it, but it isn't in the issue text. Same consequence as F6b: if deferred past this PR, AC 1 is unsatisfied for the projects filter specifically.
 - **B13** — duplicate-nickname 500 and case-sensitive nickname uniqueness. Both get more likely once nicknames are the primary display string. Separate ticket?
-- AA agreements can carry ETL-copied nicknames they cannot edit through the UI, because `isFieldVisible` hides the nickname input for some types.
+- **`AgreementSelect.jsx`'s native `<select>`** — see the F6 note above. Once its option text is nickname-preferred, browser type-ahead can no longer jump to an option by typing its full title. Worth a line in the PR description acknowledging this is a narrower AC 3 outcome for this one surface.
