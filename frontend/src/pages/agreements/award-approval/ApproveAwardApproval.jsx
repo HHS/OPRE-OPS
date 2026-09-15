@@ -214,6 +214,52 @@ export const ApproveAwardApproval = () => {
                         </dl>
                     </div>
                 </div>
+                {/* OPS-5892: Modification #, Purchase Order #, Task Order # */}
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Modification #</dt>
+                            <dd className="margin-0 text-bold">{step6?.modification_number || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Purchase Order #</dt>
+                            <dd className="margin-0 text-bold">{step6?.purchase_order_number || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Task Order #</dt>
+                            <dd className="margin-0 text-bold">{step6?.task_order_number || "—"}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </Accordion>
+
+            {/* OPS-5892: Review Agreement Title — proposed title overwrites the current one on approval */}
+            <Accordion
+                heading="Review Agreement Title"
+                level={2}
+            >
+                <p>
+                    Please confirm the updated Agreement Title matches the signed award exactly. On approval, this title
+                    will overwrite the current agreement title and be locked from editing.
+                </p>
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-6">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Current Agreement Title</dt>
+                            <dd className="margin-0 text-bold">{agreement?.name || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-6">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Updated Agreement Title</dt>
+                            <dd className="margin-0 text-bold">{step6?.agreement_title || "—"}</dd>
+                        </dl>
+                    </div>
+                </div>
             </Accordion>
 
             {/* Review Signed Award — upload disabled (feature-flagged) */}
