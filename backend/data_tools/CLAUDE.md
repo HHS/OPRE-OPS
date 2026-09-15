@@ -208,6 +208,19 @@ Typical variables (used by configs and scripts):
 - **LOG_LEVEL**: Logging level (default `INFO`).
 - **ENV**: Passed to scripts (e.g. `local` vs non-local) for connection and schema behavior.
 
+## Scheduled Usage Metrics Report (OPS-4148)
+
+A weekly Azure Container App Job aggregates `ops_event` activity into a two-sheet `.xlsx`
+(per-day/division/role counts + a per-user sign-in list) and uploads it to Blob storage under
+`reports/` for the UX team; it can optionally email a time-limited SAS download link via ACS.
+Code: `src/usage_metrics/`; wrapper: `scripts/usage_metrics.sh`; create/deploy script:
+`scripts/azure/create_usage_metrics_job.sh`.
+
+**Note:** the per-user sheet contains named user data — treat `reports/` as sensitive.
+
+Full runbook (staging/prod enablement steps, verified env values, SAS/email wiring, cron) lives in
+`scripts/azure/USAGE_METRICS_JOB.md`. Read it before enabling or deploying the job.
+
 ## Integration with ops_api and Docker
 
 - **ops_api** tests and app use the same `models` and same DB schema; `data_tools` fills the DB (initial_data + import_test_data or load_data).
