@@ -1,7 +1,7 @@
 """add delete agreement permission
 
 Revision ID: 38e2556364d7
-Revises: c9d0e1f2a3b4
+Revises: c4e7a9b1d2f3
 Create Date: 2026-09-12 03:46:42.048527+00:00
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "38e2556364d7"
-down_revision: Union[str, None] = "c9d0e1f2a3b4"
+down_revision: Union[str, None] = "c4e7a9b1d2f3"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
