@@ -108,11 +108,14 @@ class DataToolsConfig(Protocol):
 
     @property
     @abstractmethod
-    def usage_metrics_acs_endpoint(self) -> str | None:
+    def usage_metrics_acs_connection_string_secret(self) -> str | None:
         """
-        Returns the Azure Communication Services endpoint used to email the report download link,
-        e.g. "https://<resource>.communication.azure.com". Returns None when email delivery is
-        not configured (local/dev), in which case the link is only logged, not emailed.
+        Returns the name of the Key Vault secret holding the Azure Communication Services
+        connection string used to email the report download link, e.g.
+        "opre-ops-sdlc-comms-acs-connection-string". The secret is provisioned by the
+        infrastructure repo and read from ``vault_url`` at run time, so the connection string
+        itself is never stored in the job's environment. Returns None when email delivery is not
+        configured (local/dev), in which case the report is uploaded but no email is sent.
         """
         ...
 

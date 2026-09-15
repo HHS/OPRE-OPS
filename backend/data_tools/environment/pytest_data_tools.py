@@ -55,7 +55,7 @@ class PytestDataToolsConfig(DataToolsConfig):
         return "90"
 
     @property
-    def usage_metrics_acs_endpoint(self) -> str | None:
+    def usage_metrics_acs_connection_string_secret(self) -> str | None:
         return None
 
     @property

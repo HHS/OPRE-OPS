@@ -90,8 +90,8 @@ class AzureConfig(DataToolsConfig):
         return os.getenv("USAGE_METRICS_SAS_EXPIRY_DAYS", "90")
 
     @property
-    def usage_metrics_acs_endpoint(self) -> str | None:
-        return os.getenv("USAGE_METRICS_ACS_ENDPOINT") or None
+    def usage_metrics_acs_connection_string_secret(self) -> str | None:
+        return os.getenv("USAGE_METRICS_ACS_CONNECTION_STRING_SECRET") or None
 
     @property
     def usage_metrics_email_sender(self) -> str | None:

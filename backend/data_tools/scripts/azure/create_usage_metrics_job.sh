@@ -32,19 +32,25 @@
 #   USAGE_METRICS_LOOKBACK_DAYS  (optional, default "7")    -- reporting window; keep >= cron period
 #
 # Email delivery (optional -- when set, the job emails the UX team a SAS download link to that
-# week's report via Azure Communication Services, authenticated by the same managed identity):
-#   USAGE_METRICS_ACS_ENDPOINT                              -- e.g. https://<res>.communication.azure.com
+# week's report via Azure Communication Services):
+#   USAGE_METRICS_ACS_CONNECTION_STRING_SECRET              -- Key Vault secret name holding the ACS
+#                                                              connection string, e.g.
+#                                                              opre-ops-sdlc-comms-acs-connection-string
 #   USAGE_METRICS_EMAIL_SENDER                              -- verified ACS MailFrom address
 #   USAGE_METRICS_EMAIL_RECIPIENTS                          -- comma-separated recipient addresses
 #   USAGE_METRICS_SAS_EXPIRY_DAYS (optional, default "90")  -- how long the download link stays valid
 #   VAULT_URL, VAULT_FILE_STORAGE_KEY                       -- Key Vault URL + secret name of the
 #                                                              storage account key (used to sign the SAS)
 #
-# The SAS download link is signed with the storage account key, which the MI reads from Key Vault
-# at run time -- the key is never stored on the job. Email delivery is skipped (report is still
-# uploaded to Blob) unless ACS_ENDPOINT, EMAIL_SENDER, and EMAIL_RECIPIENTS are all set. When email
-# is enabled, the MI also needs the ACS sender role and read access to the VAULT_FILE_STORAGE_KEY
-# secret.
+# Both secrets the email path needs are read from Key Vault by the MI at run time, so neither is
+# stored on the job: the storage account key that signs the SAS link, and the ACS connection string
+# that authenticates the send. ACS's AAD/RBAC data-plane auth is deliberately not used -- it needs
+# the Contributor role on the ACS resource, which the infra repo does not grant (it provisions the
+# connection string into each environment's Key Vault instead).
+#
+# Email delivery is skipped (report is still uploaded to Blob) unless ACS_CONNECTION_STRING_SECRET,
+# EMAIL_SENDER, and EMAIL_RECIPIENTS are all set. When email is enabled, the MI needs Key Vault
+# "get" on secrets -- see USAGE_METRICS_JOB.md for the az keyvault set-policy step.
 #
 # The managed identity must have WRITE access (Storage Blob Data Contributor) on the target
 # container -- read access (used for data import) is not sufficient for upload. The staging
@@ -116,7 +122,7 @@ az containerapp job create \
     USAGE_METRICS_CONTAINER_NAME="${USAGE_METRICS_CONTAINER_NAME:-data}" \
     USAGE_METRICS_REPORT_PREFIX="${USAGE_METRICS_REPORT_PREFIX:-reports}" \
     USAGE_METRICS_LOOKBACK_DAYS="${USAGE_METRICS_LOOKBACK_DAYS:-7}" \
-    USAGE_METRICS_ACS_ENDPOINT="${USAGE_METRICS_ACS_ENDPOINT:-}" \
+    USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="${USAGE_METRICS_ACS_CONNECTION_STRING_SECRET:-}" \
     USAGE_METRICS_EMAIL_SENDER="${USAGE_METRICS_EMAIL_SENDER:-}" \
     USAGE_METRICS_EMAIL_RECIPIENTS="${USAGE_METRICS_EMAIL_RECIPIENTS:-}" \
     USAGE_METRICS_SAS_EXPIRY_DAYS="${USAGE_METRICS_SAS_EXPIRY_DAYS:-90}" \

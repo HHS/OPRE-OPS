@@ -296,7 +296,7 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
     config.usage_metrics_report_prefix = "reports"
     config.usage_metrics_lookback_days = "30"
     # Email delivery not configured in this test -> deliver_report_link should no-op.
-    config.usage_metrics_acs_endpoint = None
+    config.usage_metrics_acs_connection_string_secret = None
     config.usage_metrics_email_sender = None
     config.usage_metrics_email_recipients = None
 
@@ -432,7 +432,9 @@ def test_build_workbook_has_two_sheets_with_expected_columns():
 def _email_config(**overrides):
     """A MagicMock config with email delivery fully configured; override per test."""
     config = MagicMock()
-    config.usage_metrics_acs_endpoint = "https://acs.communication.azure.com"
+    config.usage_metrics_acs_connection_string_secret = (
+        "acs-connection-string"  # noqa: S105 (secret NAME, not a secret value)
+    )
     config.usage_metrics_email_sender = "DoNotReply@example.com"
     config.usage_metrics_email_recipients = "ux1@example.com, ux2@example.com"
     config.usage_metrics_sas_expiry_days = "90"
@@ -444,8 +446,12 @@ def _email_config(**overrides):
 
 
 def test_deliver_report_link_sends_when_configured(mocker):
-    """With ACS fully configured, a SAS link is minted from the vault key and emailed."""
-    get_secret = mocker.patch("data_tools.src.usage_metrics.utils.get_secret", return_value="the-account-key")
+    """With ACS fully configured, both secrets come from the vault and the SAS link is emailed."""
+    secrets = {"storage-key-secret": "the-account-key", "acs-connection-string": "the-connection-string"}
+    get_secret = mocker.patch(
+        "data_tools.src.usage_metrics.utils.get_secret",
+        side_effect=lambda vault_url, key_name: secrets[key_name],
+    )
     build_sas = mocker.patch(
         "data_tools.src.usage_metrics.utils.build_blob_sas_url",
         return_value="https://acct.blob.core.windows.net/data/reports/usage-metrics-2026-08-19.xlsx?sig=x",
@@ -455,15 +461,19 @@ def test_deliver_report_link_sends_when_configured(mocker):
     config = _email_config()
     deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
 
-    # Vault supplies the storage key (no key in job env); SAS built for the dated blob with expiry.
-    get_secret.assert_called_once_with("https://vault.example.com", "storage-key-secret")
+    # Both the storage key and the ACS connection string are read from the vault -- neither is in
+    # the job env. Fetched before the link is signed so an inaccessible secret fails the run early.
+    assert get_secret.call_args_list == [
+        mocker.call("https://vault.example.com", "storage-key-secret"),
+        mocker.call("https://vault.example.com", "acs-connection-string"),
+    ]
     build_sas.assert_called_once_with(
         "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx", "the-account-key", 90
     )
     # Email is sent to both parsed recipients with the minted link.
     send_email.assert_called_once()
     args = send_email.call_args.args
-    assert args[0] == "https://acs.communication.azure.com"
+    assert args[0] == "the-connection-string"
     assert args[1] == "DoNotReply@example.com"
     assert args[2] == ["ux1@example.com", "ux2@example.com"]
     assert args[3] == build_sas.return_value
@@ -473,14 +483,14 @@ def test_deliver_report_link_sends_when_configured(mocker):
 @pytest.mark.parametrize(
     "overrides",
     [
-        {"usage_metrics_acs_endpoint": None},
+        {"usage_metrics_acs_connection_string_secret": None},  # noqa: S105 (config key name)
         {"usage_metrics_email_sender": None},
         {"usage_metrics_email_recipients": None},
         {"usage_metrics_email_recipients": ""},
     ],
 )
 def test_deliver_report_link_noops_when_not_configured(mocker, overrides):
-    """Missing any of endpoint/sender/recipients skips email entirely (no vault read, no send)."""
+    """Missing any of secret name/sender/recipients skips email entirely (no vault read, no send)."""
     get_secret = mocker.patch("data_tools.src.usage_metrics.utils.get_secret")
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 

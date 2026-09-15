@@ -67,9 +67,18 @@ link** to that week's dated report (`reports/usage-metrics-<date>.xlsx`) via **A
 Services (ACS)**. Code: `deliver_report_link` in `src/usage_metrics/utils.py` →
 `build_blob_sas_url` in `src/azure_utils/utils.py` (mints the SAS) →
 `send_report_link_email` in `src/usage_metrics/email_delivery.py` (sends via ACS). Email delivery
-**no-ops** (report still uploads to Blob) unless `USAGE_METRICS_ACS_ENDPOINT`,
+**no-ops** (report still uploads to Blob) unless `USAGE_METRICS_ACS_CONNECTION_STRING_SECRET`,
 `USAGE_METRICS_EMAIL_SENDER`, and `USAGE_METRICS_EMAIL_RECIPIENTS` are all set — so local/dev/staging
 runs stay silent until wired.
+
+**Auth design (why connection string, not AAD/RBAC):** the ACS resources are provisioned by
+[OPRE-OPS-Data#59](https://github.com/HHS/OPRE-OPS-Data/pull/59), which distributes the ACS
+**connection string as a Key Vault secret** into each environment's vault (the same convention
+`pg-server` uses for DB creds) and deliberately leaves RBAC auth out of scope. ACS's AAD data-plane
+auth would require the **`Contributor`** role on the ACS resource — ACS has no narrower built-in
+send role — and the job's MI holds no role there. So the job reads the connection string from Key
+Vault via its MI at run time (`get_secret(vault_url, usage_metrics_acs_connection_string_secret)`),
+exactly like the storage account key below. Neither secret is stored on the job.
 
 **SAS design (why account-key, not user-delegation):** a user-delegation SAS (MI-signed) is capped
 at **7 days** by Azure; the link needs ~90 days, so the SAS is signed with the **storage account
@@ -82,21 +91,56 @@ recipient list tight. Dated files accumulate in Blob for history; only the *link
 
 | Var | Purpose | Default |
 |---|---|---|
-| `USAGE_METRICS_ACS_ENDPOINT` | ACS resource endpoint (`https://<res>.communication.azure.com`) | — (unset = no email) |
+| `USAGE_METRICS_ACS_CONNECTION_STRING_SECRET` | Key Vault secret name holding the ACS connection string | — (unset = no email) |
 | `USAGE_METRICS_EMAIL_SENDER` | Verified ACS `MailFrom` address | — |
 | `USAGE_METRICS_EMAIL_RECIPIENTS` | Comma-separated recipient addresses | — |
 | `USAGE_METRICS_SAS_EXPIRY_DAYS` | Days the download link stays valid | `90` |
 | `VAULT_URL`, `VAULT_FILE_STORAGE_KEY` | Key Vault URL + secret name of the storage account key (used to sign the SAS) | — |
 
-**One-time Azure prerequisites (per environment, do in the target subscription):**
-1. Provision an **ACS resource** + an **Email Communication Service** with a verified sender domain
-   (Azure-managed subdomain is quickest; custom domain needs DNS).
-2. Grant the `storageAccountUser` MI the **ACS sender role** (for Entra-auth email send).
-3. Ensure the MI can **read `VAULT_FILE_STORAGE_KEY` from Key Vault** (get-secret access) and that
-   the secret holds the storage account key.
+### Verified ACS values (provisioned by OPRE-OPS-Data#59, applied 2026-09-10)
 
-Auth uses `DefaultAzureCredential(managed_identity_client_id=MI_CLIENT_ID)` — the same MI the job
-already uses for Blob — so no ACS connection string is stored.
+Dev and staging **share one** ACS instance (the `sdlc` stack, shared at the `eus/` level); prod has
+its own. Values below were read from Azure on 2026-09-15.
+
+| Thing | dev + staging (`opre-ops-services-sdlc`) | production (`opre-ops-services-prod`) |
+|---|---|---|
+| Resource group | `opre-ops-sdlc-comms-rg` | `opre-ops-prod-comms-rg` |
+| ACS resource | `opre-ops-sdlc-comms-acs` | `opre-ops-prod-comms-acs` |
+| Key Vault secret name | `opre-ops-sdlc-comms-acs-connection-string` | `opre-ops-prod-comms-acs-connection-string` |
+| Key Vault holding it | `opre-ops-dev-app-kv` **and** `opre-ops-stg-app-kv` | `opre-ops-prod-app-kv` |
+| Sender address | `DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net` | (read from that stack's `defaultSenderAddress` output) |
+| Sender display name | `OPRE Portfolio Management System (OPS)` | same |
+
+The prod resource-group / ACS / secret names follow the same label pattern; confirm them against the
+prod stack rather than assuming, since only `sdlc` was inspected directly.
+
+**One-time Azure prerequisite: grant the job's MI Key Vault access.** `opre-ops-stg-app-kv` uses
+**access policies**, not RBAC (`enableRbacAuthorization: false`), and the `storageAccountUser` MI is
+**not** in its policy list — so it currently cannot read *any* secret from that vault. This blocks
+both the SAS-signing storage key and the ACS connection string. Secret permissions are vault-wide,
+so one grant covers both:
+
+```bash
+MI_PRINCIPAL_ID=$(az identity show -n storageAccountUser -g opre-ops-stg-app-rg --query principalId -o tsv)
+az keyvault set-policy -n opre-ops-stg-app-kv --object-id "$MI_PRINCIPAL_ID" --secret-permissions get
+```
+
+Then wire the email vars into the create/update invocation:
+
+```bash
+export VAULT_URL="https://opre-ops-stg-app-kv.vault.azure.net/"
+export VAULT_FILE_STORAGE_KEY='<secret name holding the storage account key>'
+export USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="opre-ops-sdlc-comms-acs-connection-string"
+export USAGE_METRICS_EMAIL_SENDER="DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net"
+export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
+```
+
+**Deliverability caveats to expect on the first send:**
+- The sender is an Azure-managed `*.azurecomm.net` subdomain, which ACF mail filtering is likely to
+  treat as unfamiliar — tell recipients to check junk on the first run. A custom domain would need
+  DNS ownership proof through ACF Tech's formal process (see OPRE-OPS-Data#59 for why it was skipped).
+- Newly created ACS Email resources start on a **low-volume trial sending tier**. A weekly report to
+  a handful of recipients fits comfortably; raising the quota needs a manual Azure support ticket.
 
 ## Ongoing image updates
 
