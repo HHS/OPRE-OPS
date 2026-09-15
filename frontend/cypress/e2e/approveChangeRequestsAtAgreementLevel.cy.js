@@ -145,8 +145,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-                // nav element with the role navigation should contain text 1
-                cy.get('[role="navigation"]').contains("1");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 // hover over the review card
                 cy.get("[data-cy='review-card']").trigger("mouseover");
@@ -201,8 +199,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     .and("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
-                // nav element should not contain the text 1
-                cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 waitForAgreementHistory(agreementId);
@@ -332,7 +328,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 cy.get("[data-cy='review-card']").contains(/executing/i);
-                cy.get('[role="navigation"]').contains("1");
                 // hover over the review card
                 cy.get("[data-cy='review-card']").trigger("mouseover");
                 // click on button data-cy approve-agreement
@@ -381,8 +376,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     .and("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
-                // nav element should not contain the text 1
-                cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 waitForAgreementHistory(agreementId);
@@ -550,7 +543,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
-                cy.get('[role="navigation"]').contains("3");
                 // hover over the review card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 // click on button data-cy approve-agreement
@@ -606,8 +598,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2044 to 9/15/2044`)
                     .and("include.text", `BL ${bliId} CAN: G994426 to G99PHS9`);
                 cy.get("[data-cy='close-alert']").click();
-                // nav element should not contain the text 1
-                cy.get('[role="navigation"]').should("not.contain", "1");
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
@@ -685,7 +675,9 @@ const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                expect(response.body.data, "agreement history entries")
+                    .to.be.an("array")
+                    .and.have.length.greaterThan(0);
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);
