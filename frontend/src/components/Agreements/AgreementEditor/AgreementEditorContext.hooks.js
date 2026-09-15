@@ -48,6 +48,16 @@ export const defaultState = {
 };
 export let initialState = { ...defaultState };
 
+const clearBliServiceComponentLink = (bli) => ({
+    ...bli,
+    services_component_id: null,
+    services_component_number: 0,
+    serviceComponentGroupingLabel: "0"
+});
+
+const reconcileBudgetLineServiceComponents = (budgetLineItems, shouldClear) =>
+    budgetLineItems.map((bli) => (shouldClear(bli) ? clearBliServiceComponentLink(bli) : bli));
+
 export function useEditAgreement() {
     return useContext(AgreementEditorContext);
 }
@@ -110,17 +120,10 @@ export function editAgreementReducer(state, action) {
                     : [...state.deleted_services_components_ids],
                 // Reconcile BLIs: clear link to deleted SC by ID so sub-components sharing
                 // a number don't incorrectly retain stale links.
-                budget_line_items: state.budget_line_items.map((bli) => {
-                    if (bli.services_component_id != null && !remainingScIds.has(bli.services_component_id)) {
-                        return {
-                            ...bli,
-                            services_component_id: null,
-                            services_component_number: 0,
-                            serviceComponentGroupingLabel: "0"
-                        };
-                    }
-                    return bli;
-                })
+                budget_line_items: reconcileBudgetLineServiceComponents(
+                    state.budget_line_items,
+                    (bli) => bli.services_component_id != null && !remainingScIds.has(bli.services_component_id)
+                )
             };
         }
         // Clears every services component at once, e.g. when the agreement type changes and
@@ -141,15 +144,9 @@ export function editAgreementReducer(state, action) {
                 // links to its SC by number, not id. handleAddBLI never stamps
                 // services_component_id; that only happens post-save, in
                 // addServiceComponentIdToBLI.
-                budget_line_items: state.budget_line_items.map((bli) =>
-                    bli.services_component_id != null || bli.services_component_number
-                        ? {
-                              ...bli,
-                              services_component_id: null,
-                              services_component_number: 0,
-                              serviceComponentGroupingLabel: "0"
-                          }
-                        : bli
+                budget_line_items: reconcileBudgetLineServiceComponents(
+                    state.budget_line_items,
+                    (bli) => bli.services_component_id != null || bli.services_component_number
                 )
             };
         }

@@ -224,14 +224,14 @@ const useAgreementEditForm = (
                     // Some existing non-grant agreements legitimately have no
                     // service_requirement_type; failing here would disable Save Changes on the
                     // edit screens for a field the user never touched. (issue #6230)
-                    isNewAgreement: !isAgreementCreated,
+                    isNewAgreement: !agreement?.id,
                     ...overrides,
                     [name]: value
                 },
                 name
             );
         },
-        [agreement, isAgreementCreated]
+        [agreement]
     );
 
     React.useEffect(() => {
