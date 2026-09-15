@@ -68,14 +68,14 @@ describe("AgreementsTable helpers", () => {
     describe("getAgreementLockedMessage", () => {
         it("returns the not-team-member message when the user cannot edit the agreement", () => {
             const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: false } };
-            expect(getAgreementLockedMessage(agreement, false)).toBe(
+            expect(getAgreementLockedMessage(agreement, false, false)).toBe(
                 "Only team members on this agreement can edit or delete"
             );
         });
 
         it("returns the not-developed message for a non-super team member on a not-developed type", () => {
             const agreement = { agreement_type: "IAA", _meta: { isEditable: true } };
-            expect(getAgreementLockedMessage(agreement, false)).toBe(
+            expect(getAgreementLockedMessage(agreement, false, true)).toBe(
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team."
             );
         });
@@ -90,14 +90,14 @@ describe("AgreementsTable helpers", () => {
                     lockedMessage: "Cannot delete an agreement with budget lines that are not in Draft status"
                 }
             };
-            expect(getAgreementLockedMessage(agreement, false)).toBe(
+            expect(getAgreementLockedMessage(agreement, false, true)).toBe(
                 "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team."
             );
         });
 
         it("does not apply the not-developed message to a super user", () => {
             const agreement = { agreement_type: "IAA", _meta: { isEditable: true } };
-            expect(getAgreementLockedMessage(agreement, true)).toBe("");
+            expect(getAgreementLockedMessage(agreement, true, true)).toBe("");
         });
 
         it("defers to the backend lockedMessage for a developed-type team member", () => {
@@ -108,7 +108,7 @@ describe("AgreementsTable helpers", () => {
                     lockedMessage: "Cannot delete an agreement with budget lines that are not in Draft status"
                 }
             };
-            expect(getAgreementLockedMessage(agreement, false)).toBe(
+            expect(getAgreementLockedMessage(agreement, false, false)).toBe(
                 "Cannot delete an agreement with budget lines that are not in Draft status"
             );
         });
@@ -118,17 +118,17 @@ describe("AgreementsTable helpers", () => {
                 agreement_type: "CONTRACT",
                 _meta: { isEditable: true, lockedMessage: "Cannot delete an awarded agreement" }
             };
-            expect(getAgreementLockedMessage(agreement, true)).toBe("Cannot delete an awarded agreement");
+            expect(getAgreementLockedMessage(agreement, true, false)).toBe("Cannot delete an awarded agreement");
         });
 
         it("falls back to the default disabled message for a non-super team member with no backend message", () => {
             const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: true } };
-            expect(getAgreementLockedMessage(agreement, false)).toBe("Disabled");
+            expect(getAgreementLockedMessage(agreement, false, false)).toBe("Disabled");
         });
 
         it("falls back to an empty string for a super user with no backend message", () => {
             const agreement = { agreement_type: "CONTRACT", _meta: { isEditable: true } };
-            expect(getAgreementLockedMessage(agreement, true)).toBe("");
+            expect(getAgreementLockedMessage(agreement, true, false)).toBe("");
         });
     });
 });

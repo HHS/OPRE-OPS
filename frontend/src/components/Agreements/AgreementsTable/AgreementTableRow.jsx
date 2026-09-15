@@ -61,7 +61,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    const lockedMessage = isSuccess ? getAgreementLockedMessage(agreement, isSuperUser) : "";
+    const lockedMessage = isSuccess
+        ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
+        : "";
 
     const changeIcons = !isReadOnly ? (
         <ChangeIcons

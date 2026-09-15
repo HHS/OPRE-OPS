@@ -1,4 +1,3 @@
-import { isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { formatDate } from "../../../helpers/utils";
 
 const handleAgreementProp = (agreement) => {
@@ -54,11 +53,10 @@ export const getProcurementShopDisplay = (agreement) => {
  * @param {boolean} isSuperUser
  * @returns {string}
  */
-export const getAgreementLockedMessage = (agreement, isSuperUser) => {
+export const getAgreementLockedMessage = (agreement, isSuperUser, isAgreementTypeNotDeveloped) => {
     handleAgreementProp(agreement);
 
     const canUserEditAgreement = agreement._meta?.isEditable ?? false;
-    const isAgreementTypeNotDeveloped = isNotDevelopedYet(agreement.agreement_type ?? "");
 
     if (!canUserEditAgreement) {
         return "Only team members on this agreement can edit or delete";
