@@ -126,6 +126,76 @@ describe("editAgreementReducer - CLEAR_SERVICES_COMPONENTS", () => {
     });
 });
 
+describe("editAgreementReducer - CLEAR_GRANT_NUMBERS", () => {
+    it("empties grant_numbers and appends their ids to deleted_grant_numbers_ids", () => {
+        const state = {
+            ...defaultState,
+            grant_numbers: [
+                { id: 10, number: 1 },
+                { id: 11, number: 2 }
+            ],
+            deleted_grant_numbers_ids: [99],
+            budget_line_items: []
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_GRANT_NUMBERS" });
+
+        expect(next.grant_numbers).toEqual([]);
+        // Prior deletions must be preserved, not replaced — they still need to reach the API.
+        expect(next.deleted_grant_numbers_ids).toEqual([99, 10, 11]);
+    });
+
+    it("does not record an id for an unsaved (not-yet-persisted) grant number", () => {
+        const state = {
+            ...defaultState,
+            grant_numbers: [{ number: 1 }], // no id — never saved to the API
+            deleted_grant_numbers_ids: [],
+            budget_line_items: []
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_GRANT_NUMBERS" });
+
+        expect(next.deleted_grant_numbers_ids).toEqual([]);
+    });
+
+    it("reconciles budget lines that referenced a cleared grant number", () => {
+        const state = {
+            ...defaultState,
+            grant_numbers: [{ id: 10, number: 1 }],
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [
+                { id: 1, grant_number_id: 10, grant_number_number: 1 },
+                { id: 2, grant_number_id: null, grant_number_number: 0 }
+            ]
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_GRANT_NUMBERS" });
+
+        expect(next.budget_line_items[0]).toMatchObject({
+            grant_number_id: null,
+            grant_number_number: 0
+        });
+        // A BLI with no grant-number link to begin with should be left untouched.
+        expect(next.budget_line_items[1]).toEqual(state.budget_line_items[1]);
+    });
+
+    it("reconciles a not-yet-persisted budget line that links by grant_number_number only", () => {
+        const state = {
+            ...defaultState,
+            grant_numbers: [{ number: 1 }],
+            deleted_grant_numbers_ids: [],
+            budget_line_items: [{ id: "abc123", grant_number_id: undefined, grant_number_number: 1 }]
+        };
+
+        const next = editAgreementReducer(state, { type: "CLEAR_GRANT_NUMBERS" });
+
+        expect(next.budget_line_items[0]).toMatchObject({
+            grant_number_id: null,
+            grant_number_number: 0
+        });
+    });
+});
+
 describe("EditAgreementProvider - officer reseed effects", () => {
     const mockAgreement = {
         id: 1,

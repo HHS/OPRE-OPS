@@ -55,8 +55,14 @@ const clearBliServiceComponentLink = (bli) => ({
     serviceComponentGroupingLabel: "0"
 });
 
-const reconcileBudgetLineServiceComponents = (budgetLineItems, shouldClear) =>
-    budgetLineItems.map((bli) => (shouldClear(bli) ? clearBliServiceComponentLink(bli) : bli));
+const clearBliGrantNumberLink = (bli) => ({
+    ...bli,
+    grant_number_id: null,
+    grant_number_number: 0
+});
+
+const reconcileBudgetLines = (budgetLineItems, shouldClear, clearLink) =>
+    budgetLineItems.map((bli) => (shouldClear(bli) ? clearLink(bli) : bli));
 
 export function useEditAgreement() {
     return useContext(AgreementEditorContext);
@@ -120,9 +126,10 @@ export function editAgreementReducer(state, action) {
                     : [...state.deleted_services_components_ids],
                 // Reconcile BLIs: clear link to deleted SC by ID so sub-components sharing
                 // a number don't incorrectly retain stale links.
-                budget_line_items: reconcileBudgetLineServiceComponents(
+                budget_line_items: reconcileBudgetLines(
                     state.budget_line_items,
-                    (bli) => bli.services_component_id != null && !remainingScIds.has(bli.services_component_id)
+                    (bli) => bli.services_component_id != null && !remainingScIds.has(bli.services_component_id),
+                    clearBliServiceComponentLink
                 )
             };
         }
@@ -144,9 +151,10 @@ export function editAgreementReducer(state, action) {
                 // links to its SC by number, not id. handleAddBLI never stamps
                 // services_component_id; that only happens post-save, in
                 // addServiceComponentIdToBLI.
-                budget_line_items: reconcileBudgetLineServiceComponents(
+                budget_line_items: reconcileBudgetLines(
                     state.budget_line_items,
-                    (bli) => bli.services_component_id != null || bli.services_component_number
+                    (bli) => bli.services_component_id != null || bli.services_component_number,
+                    clearBliServiceComponentLink
                 )
             };
         }
@@ -212,12 +220,11 @@ export function editAgreementReducer(state, action) {
                     : [...state.deleted_grant_numbers_ids],
                 // Reconcile BLIs: clear link to deleted grant number so the BLI moves
                 // to the "not associated" group rather than rendering under a phantom accordion.
-                budget_line_items: state.budget_line_items.map((bli) => {
-                    if (bli.grant_number_id != null && !remainingGnIds.has(bli.grant_number_id)) {
-                        return { ...bli, grant_number_id: null, grant_number_number: 0 };
-                    }
-                    return bli;
-                })
+                budget_line_items: reconcileBudgetLines(
+                    state.budget_line_items,
+                    (bli) => bli.grant_number_id != null && !remainingGnIds.has(bli.grant_number_id),
+                    clearBliGrantNumberLink
+                )
             };
         }
         case "RESEED_GRANT_NUMBERS": {
@@ -225,6 +232,24 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 grant_numbers: action.payload ?? [],
                 deleted_grant_numbers_ids: []
+            };
+        }
+        // Clears every grant number at once, e.g. when the agreement type changes away from
+        // GRANT and numbers added under the previous GRANT selection no longer apply. Mirrors
+        // CLEAR_SERVICES_COMPONENTS's bookkeeping (record ids for backend deletion, reconcile
+        // BLI links) rather than RESEED_GRANT_NUMBERS, which blanks deleted_grant_numbers_ids
+        // and would orphan already-persisted grant numbers. (issue #6230)
+        case "CLEAR_GRANT_NUMBERS": {
+            const clearedIds = state.grant_numbers.map((gn) => gn.id).filter(Boolean);
+            return {
+                ...state,
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [...state.deleted_grant_numbers_ids, ...clearedIds],
+                budget_line_items: reconcileBudgetLines(
+                    state.budget_line_items,
+                    (bli) => bli.grant_number_id != null || bli.grant_number_number,
+                    clearBliGrantNumberLink
+                )
             };
         }
         case "ADD_BUDGET_LINE_ITEM": {

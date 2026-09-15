@@ -238,6 +238,7 @@ const useAgreementEditForm = (
         if (isReviewMode) {
             suite.run({
                 ...agreement,
+                isNewAgreement: !agreement?.id,
                 "procurement-shop-select": selectedProcurementShop
             });
         }
@@ -720,6 +721,11 @@ const useAgreementEditForm = (
             // PARTNER
             setAgreementType(null);
         }
+        // Contracts/Direct Obligations/Partner use services components, not grant numbers —
+        // clear them so a grant number added under a prior GRANT selection doesn't ride along
+        // in the non-grant create payload. Grant Numbers cannot be added unless already GRANT,
+        // so this is the only branch that ever needs to clear them. (issue #6230)
+        dispatch({ type: "CLEAR_GRANT_NUMBERS" });
         clearGrantOnlyFields();
         // Only restore the default when it's actually missing (i.e. the prior selection was
         // GRANT, which nulled it). An explicit SEVERABLE choice must survive toggling among

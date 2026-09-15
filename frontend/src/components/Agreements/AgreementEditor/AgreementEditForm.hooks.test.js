@@ -676,6 +676,9 @@ describe("useAgreementEditForm - isGrant and handleAgreementFilterChange", () =>
         // Services Components cannot be added while the agreement was GRANT (step 3 shows the
         // grant-numbers form instead), so nothing to clear on the way back out.
         expect(dispatchMock).not.toHaveBeenCalledWith({ type: "CLEAR_SERVICES_COMPONENTS" });
+        // issue #6230 — a grant number added under the previous GRANT selection must not ride
+        // along in the non-grant create payload.
+        expect(dispatchMock).toHaveBeenCalledWith({ type: "CLEAR_GRANT_NUMBERS" });
     });
 
     it("handleAgreementFilterChange restores the Non-Severable default when switching to PARTNER", () => {
@@ -837,6 +840,25 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
         rerender();
 
         const errors = result.current.res.getErrors("project_officer");
+        expect(errors).toContain("This is required information");
+    });
+
+    it("isReviewMode effect flags a new unsaved agreement so the required service_requirement_type check fires", () => {
+        // Regression guard: this effect's suite.run() must pass isNewAgreement like runValidate
+        // does, or the AgreementEditFormSuite required-field rule (gated on data.isNewAgreement)
+        // silently never runs for it. (issue #6230)
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: undefined,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isReviewMode: true });
+        rerender();
+
+        const errors = result.current.res.getErrors("service_requirement_type");
         expect(errors).toContain("This is required information");
     });
 });
