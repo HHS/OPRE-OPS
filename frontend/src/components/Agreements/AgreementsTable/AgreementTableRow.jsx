@@ -31,9 +31,10 @@ import { useIsUserReadOnly } from "../../../hooks/user.hooks";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" suppresses the FY Obligated value.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement }) => {
+export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -42,7 +43,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const fyObligatedAmount = isSuccess ? Number(agreement?.fy_obligated ?? 0) : 0;
+    const fyObligatedAmount = isSuccess && selectedFiscalYear !== "All" ? Number(agreement?.fy_obligated ?? 0) : null;
 
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
@@ -119,8 +120,10 @@ export const AgreementTableRow = ({ agreement }) => {
             <td data-cy="fy-obligated-amount">
                 {isRowActive && !isExpanded && !isReadOnly ? (
                     <div>{changeIcons}</div>
-                ) : (
+                ) : fyObligatedAmount !== null ? (
                     formatCurrency(fyObligatedAmount)
+                ) : (
+                    NO_DATA
                 )}
             </td>
         </>
