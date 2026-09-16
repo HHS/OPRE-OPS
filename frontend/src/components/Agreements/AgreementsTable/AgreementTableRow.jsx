@@ -117,7 +117,11 @@ export const AgreementTableRow = ({ agreement }) => {
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : formatCurrency(fyObligatedAmount)}
+                {isRowActive && !isExpanded && !isReadOnly ? (
+                    <div>{changeIcons}</div>
+                ) : (
+                    formatCurrency(fyObligatedAmount)
+                )}
             </td>
         </>
     );

@@ -21,9 +21,13 @@ const DateValue = ({ value }) => (
  * Read-only details view for a project, mirroring the two-column layout of AgreementDetailsView.
  * @param {Object} props
  * @param {import("../../../types/ProjectTypes").Project} props.project
+ * @param {boolean} [props.isEditMode] - Whether the edit form is currently shown.
+ * @param {() => void} [props.toggleEditMode] - Toggles between the details view and the edit form.
+ * @param {boolean} [props.canEdit] - Whether the current user may edit this project (from `_meta.isEditable`).
+ * @param {boolean} [props.isReadOnly] - Whether the current user has the read-only role; suppresses the edit button entirely.
  * @returns {React.ReactElement}
  */
-const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEdit = false }) => {
+const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEdit = false, isReadOnly = false }) => {
     if (!project) {
         return <p>No project data.</p>;
     }
@@ -59,7 +63,7 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
         <section>
             <div className="display-flex flex-justify flex-align-center margin-top-4">
                 <h2 className="font-sans-lg margin-0">{isEditMode ? "Edit Project" : "Project Details"}</h2>
-                {canEdit && !isEditMode && (
+                {!isReadOnly && canEdit && !isEditMode && (
                     <button
                         type="button"
                         data-cy="project-details-edit-button"
@@ -76,7 +80,7 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
                         <span className="text-primary">Edit</span>
                     </button>
                 )}
-                {!canEdit && !isEditMode && (
+                {!isReadOnly && !canEdit && !isEditMode && (
                     <Tooltip
                         label="You do not have permission to edit this project"
                         position="top"

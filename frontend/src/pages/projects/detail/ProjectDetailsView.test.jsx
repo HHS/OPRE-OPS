@@ -53,7 +53,7 @@ const defaultToggleEditMode = vi.fn();
 
 const renderComponent = (
     project,
-    { canEdit = false, isEditMode = false, toggleEditMode = defaultToggleEditMode } = {}
+    { canEdit = false, isEditMode = false, isReadOnly = false, toggleEditMode = defaultToggleEditMode } = {}
 ) => {
     const router = createMemoryRouter([
         {
@@ -63,6 +63,7 @@ const renderComponent = (
                     project={project}
                     canEdit={canEdit}
                     isEditMode={isEditMode}
+                    isReadOnly={isReadOnly}
                     toggleEditMode={toggleEditMode}
                 />
             )
@@ -215,6 +216,14 @@ describe("ProjectDetailsView", () => {
         renderComponent(baseProject, { canEdit: true });
         const editButton = screen.getByRole("button", { name: /edit/i });
         expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("hides the edit button entirely for read-only users, even when canEdit is true", () => {
+        renderComponent(baseProject, { canEdit: true, isReadOnly: true });
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: "You do not have permission to edit this project" })
+        ).not.toBeInTheDocument();
     });
 
     it("calls toggleEditMode when the edit button is clicked", async () => {
