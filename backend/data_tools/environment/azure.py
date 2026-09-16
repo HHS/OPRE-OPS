@@ -83,7 +83,15 @@ class AzureConfig(DataToolsConfig):
 
     @property
     def usage_metrics_lookback_days(self) -> str:
-        return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "7")
+        return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "14")
+
+    @property
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        return os.getenv("USAGE_METRICS_SPRINT_ANCHOR_DATE", "2026-09-11")
+
+    @property
+    def usage_metrics_force_run(self) -> bool:
+        return os.getenv("USAGE_METRICS_FORCE_RUN", "").strip().lower() in ("1", "true", "yes")
 
     @property
     def usage_metrics_sas_expiry_days(self) -> str:

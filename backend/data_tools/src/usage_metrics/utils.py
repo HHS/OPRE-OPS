@@ -14,6 +14,11 @@ must be granted with that in mind.
 Follows the ``cleanup_user_sessions`` template: ``__main__`` -> ``get_config(ENV)`` ->
 ``init_db_from_config`` -> run, with loguru logging.
 
+**Schedule.** One report per sprint, on the last Friday of each two-week sprint. Azure cron cannot
+express "every other Friday", so the job fires every Friday and ``should_generate_report`` exits
+early on the off-sprint ones (see ``usage_metrics_sprint_anchor_date``). The reporting window is
+14 days to match, so consecutive reports tile the calendar with no gap or overlap.
+
 Attribution / counting notes (see the #4148 plan for the full rationale):
 - **Only SUCCESS events are counted.** A failed/aborted request still persists an OpsEvent
   (``OpsEventHandler.__exit__`` sets ``event_status = FAILED`` but keeps the event_type), so
@@ -43,7 +48,7 @@ import io
 import os
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import sqlalchemy
 from loguru import logger
@@ -139,6 +144,12 @@ USER_SHEET_COLUMNS = ["name", "email", "division", "roles", "sign_in_count", "la
 # MIME type so a browser downloading the .xlsx via a SAS link saves it correctly rather than
 # treating it as application/octet-stream.
 XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+# The team's sprint length. The report runs on the last Friday of each sprint, i.e. every other
+# Friday -- a cadence plain cron cannot express (cron has no notion of "every other week"), so the
+# job's cron fires weekly on Friday and off-sprint runs exit early via ``is_sprint_end``.
+SPRINT_LENGTH_DAYS = 14
+FRIDAY = 4  # date.weekday(): Monday is 0
 
 
 def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
@@ -381,6 +392,61 @@ def parse_lookback_days(lookback_days: str) -> int:
     return days
 
 
+def parse_sprint_anchor_date(anchor_date: str) -> date:
+    """Validate and convert the configured sprint-anchor value to a ``date``.
+
+    The anchor identifies which Fridays end a sprint. A non-Friday anchor would shift every
+    scheduled run off the Friday the cron fires on -- the report would then never generate -- so
+    that is rejected here rather than silently producing a job that no-ops forever.
+    """
+    try:
+        anchor = date.fromisoformat(anchor_date.strip())
+    except (AttributeError, TypeError, ValueError) as e:
+        raise ValueError(
+            f"Invalid usage_metrics_sprint_anchor_date value: {anchor_date!r}. Must be an ISO date, e.g. 2026-09-11."
+        ) from e
+    if anchor.weekday() != FRIDAY:
+        raise ValueError(
+            f"usage_metrics_sprint_anchor_date must be a Friday (a sprint-end date), got {anchor.isoformat()} "
+            f"({anchor.strftime('%A')})."
+        )
+    return anchor
+
+
+def is_sprint_end(today: date, anchor: date) -> bool:
+    """Return whether ``today`` is the last Friday of a sprint, counting from ``anchor``.
+
+    Sprint ends fall every ``SPRINT_LENGTH_DAYS`` from the anchor in both directions, so this holds
+    for dates before the anchor too (Python's ``%`` is non-negative for a positive modulus). Since
+    the anchor is validated as a Friday and the period is a whole number of weeks, a date matching
+    this is necessarily a Friday.
+    """
+    return (today - anchor).days % SPRINT_LENGTH_DAYS == 0
+
+
+def should_generate_report(config: DataToolsConfig, today: date) -> bool:
+    """Return whether this run should generate a report.
+
+    The job's cron fires every Friday but the report is wanted only on the last Friday of each
+    two-week sprint, so off-sprint runs are skipped here. ``usage_metrics_force_run`` bypasses the
+    check for local runs and for test-firing the scheduled job off-schedule.
+    """
+    if config.usage_metrics_force_run:
+        logger.info("usage_metrics_force_run is set; generating report regardless of the sprint schedule.")
+        return True
+
+    anchor = parse_sprint_anchor_date(config.usage_metrics_sprint_anchor_date)
+    if is_sprint_end(today, anchor):
+        return True
+
+    next_end = today + timedelta(days=-(today - anchor).days % SPRINT_LENGTH_DAYS)
+    logger.info(
+        f"{today.isoformat()} is not a sprint-end Friday (anchor {anchor.isoformat()}, "
+        f"next sprint end {next_end.isoformat()}); skipping this run."
+    )
+    return False
+
+
 def deliver_report_link(config: DataToolsConfig, account_url: str, container: str, blob_name: str) -> None:
     """Email a time-limited SAS download link for ``blob_name`` to the UX team.
 
@@ -423,17 +489,23 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
     send_report_link_email(connection_string, sender, recipients, download_url, expiry_days)
 
 
-def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes:
+def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes | None:
     """Generate the usage report and deliver it (Blob upload or local file).
 
-    Produces a single two-sheet **.xlsx** each run: an "Aggregate" sheet (per-day x division x
+    Produces a single two-sheet **.xlsx** per sprint: an "Aggregate" sheet (per-day x division x
     role counts) and a "Per-user" sign-in sheet. When ``usage_metrics_storage_account_url`` is set
     (remote/azure), the workbook is uploaded to Blob storage as both a dated file (trend history)
     and a ``-latest`` file (a stable link) -- two blobs total. Otherwise (local/dev/pytest) it is
     written to the working directory.
 
-    Returns the generated workbook bytes.
+    The scheduled job's cron fires every Friday; on the Fridays that do not end a sprint this
+    returns ``None`` without touching the database or Blob storage. Otherwise returns the generated
+    workbook bytes.
     """
+    today_utc = datetime.now(timezone.utc).date()
+    if not should_generate_report(config, today_utc):
+        return None
+
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
     with Session(conn) as session:
         counts = aggregate_events(session, lookback_days)
@@ -444,7 +516,7 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     )
     workbook_bytes = build_workbook(counts, user_rows)
 
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = today_utc.isoformat()
     prefix = config.usage_metrics_report_prefix
     dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
     latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
@@ -456,7 +528,7 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
         upload_blob(account_url, container, dated_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         logger.info(f"Uploaded usage report workbook ({latest_xlsx_blob}).")
-        # Email the UX team a download link to this week's dated report (no-ops unless ACS is set).
+        # Email the UX team a download link to this sprint's dated report (no-ops unless ACS is set).
         deliver_report_link(config, account_url, container, dated_xlsx_blob)
     else:
         local_xlsx_path = f"usage-metrics-{today}.xlsx"

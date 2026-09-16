@@ -2,13 +2,20 @@
 
 # Creates the scheduled Usage Metrics report Container App Job (#4148).
 #
-# This is the first *scheduled* job in the repo. It runs weekly and uploads a usage report CSV
+# This is the first *scheduled* job in the repo. It runs once per sprint and uploads a usage report
 # to Blob storage for the UX team. Deploy to STAGING first (staging DB / storage account / MI),
 # gather UX feedback, then rerun against production values.
 #
-# Cron: "50 4 * * 1" == 04:50 UTC Monday. Azure cron is UTC-only, so this is a fixed UTC time
-# that lands late Sunday night US Central (23:50 CDT in summer / 22:50 CST in winter) -- always
-# Sunday night Central, well before Monday morning. Do NOT try to encode Central directly.
+# Cron: "50 23 * * 5" == 23:50 UTC Friday. Azure cron is UTC-only, so this is a fixed UTC time that
+# lands Friday evening US Central (18:50 CDT in summer / 17:50 CST in winter) -- after the workday,
+# still on the Friday. Do NOT try to encode Central directly.
+#
+# The report is wanted on the LAST FRIDAY OF EACH SPRINT (sprints are two weeks), i.e. every other
+# Friday. Cron cannot express that -- it has no notion of "every other week", and restricting
+# day-of-month alongside day-of-week makes standard cron parsers OR the two fields rather than AND
+# them. So the cron fires EVERY Friday and the job itself exits early on the Fridays that do not end
+# a sprint (see should_generate_report / USAGE_METRICS_SPRINT_ANCHOR_DATE below). A skipped run
+# starts a container, logs why it is skipping, and exits 0 without touching the DB or Blob storage.
 #
 # This mirrors how the OTHER staging data-tools jobs are actually configured (verified against
 # opre-ops-stg-app-* jobs), which differs from create_container_app_job.sh:
@@ -29,10 +36,16 @@
 #   USAGE_METRICS_STORAGE_ACCOUNT_URL                       -- e.g. https://opreopsstgappsa.blob.core.windows.net
 #   USAGE_METRICS_CONTAINER_NAME (optional, default "data")
 #   USAGE_METRICS_REPORT_PREFIX  (optional, default "reports")
-#   USAGE_METRICS_LOOKBACK_DAYS  (optional, default "7")    -- reporting window; keep >= cron period
+#   USAGE_METRICS_LOOKBACK_DAYS  (optional, default "14")   -- reporting window; keep == sprint length
+#                                                              so consecutive reports tile with no gap
+#   USAGE_METRICS_SPRINT_ANCHOR_DATE (optional,             -- a known sprint-end FRIDAY; sprint ends
+#     default "2026-09-11")                                    are every 14 days from it. Update if the
+#                                                              team's sprint boundary ever shifts.
+#   USAGE_METRICS_FORCE_RUN (optional, default unset)       -- "true" makes every Friday run generate a
+#                                                              report, ignoring the sprint schedule
 #
 # Email delivery (optional -- when set, the job emails the UX team a SAS download link to that
-# week's report via Azure Communication Services):
+# sprint's report via Azure Communication Services):
 #   USAGE_METRICS_ACS_CONNECTION_STRING_SECRET              -- Key Vault secret name holding the ACS
 #                                                              connection string, e.g.
 #                                                              opre-ops-sdlc-comms-acs-connection-string
@@ -63,7 +76,7 @@ MI_NAME=$2
 CAE_NAME=$3
 
 # Fail fast if a required value is missing, rather than creating a job with an empty pgpassword
-# secret / blank connection that only fails DB auth on the first weekly cron run.
+# secret / blank connection that only fails DB auth on the first scheduled run.
 missing=()
 for var in RESOURCE_GROUP_NAME MI_NAME CAE_NAME \
            PGUSER PGPASSWORD PGHOST PGPORT PGDATABASE USAGE_METRICS_STORAGE_ACCOUNT_URL; do
@@ -100,7 +113,7 @@ az containerapp job create \
   --cpu 0.25 \
   --memory 0.5Gi \
   --trigger-type Schedule \
-  --cron-expression "50 4 * * 1" \
+  --cron-expression "50 23 * * 5" \
   --args "/bin/sh" "./data_tools/scripts/usage_metrics.sh" \
   --parallelism 1 \
   --replica-timeout 1800 \
@@ -121,7 +134,9 @@ az containerapp job create \
     USAGE_METRICS_STORAGE_ACCOUNT_URL="${USAGE_METRICS_STORAGE_ACCOUNT_URL}" \
     USAGE_METRICS_CONTAINER_NAME="${USAGE_METRICS_CONTAINER_NAME:-data}" \
     USAGE_METRICS_REPORT_PREFIX="${USAGE_METRICS_REPORT_PREFIX:-reports}" \
-    USAGE_METRICS_LOOKBACK_DAYS="${USAGE_METRICS_LOOKBACK_DAYS:-7}" \
+    USAGE_METRICS_LOOKBACK_DAYS="${USAGE_METRICS_LOOKBACK_DAYS:-14}" \
+    USAGE_METRICS_SPRINT_ANCHOR_DATE="${USAGE_METRICS_SPRINT_ANCHOR_DATE:-2026-09-11}" \
+    USAGE_METRICS_FORCE_RUN="${USAGE_METRICS_FORCE_RUN:-}" \
     USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="${USAGE_METRICS_ACS_CONNECTION_STRING_SECRET:-}" \
     USAGE_METRICS_EMAIL_SENDER="${USAGE_METRICS_EMAIL_SENDER:-}" \
     USAGE_METRICS_EMAIL_RECIPIENTS="${USAGE_METRICS_EMAIL_RECIPIENTS:-}" \

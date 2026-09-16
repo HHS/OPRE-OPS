@@ -1,9 +1,10 @@
 # Scheduled Usage Metrics Report Job (OPS-4148)
 
-A weekly Azure Container App Job aggregates `ops_event` activity and uploads it to Blob storage for
-the UX team as a single two-sheet **`.xlsx`** each run: an "Aggregate" sheet (per-day x division x
-role counts) and a "Per-user" sheet listing each named user who signed in during the reporting
-window (`name, email, division, roles, sign_in_count, last_sign_in_utc`). Code:
+An Azure Container App Job aggregates `ops_event` activity once per sprint — on the **last Friday of
+each two-week sprint** — and uploads it to Blob storage for the UX team as a single two-sheet
+**`.xlsx`** each run: an "Aggregate" sheet (per-day x division x role counts) and a "Per-user" sheet
+listing each named user who signed in during the reporting window
+(`name, email, division, roles, sign_in_count, last_sign_in_utc`). Code:
 `src/usage_metrics/utils.py`; wrapper: `scripts/usage_metrics.sh`; create script:
 `scripts/azure/create_usage_metrics_job.sh`.
 
@@ -47,14 +48,31 @@ export USAGE_METRICS_STORAGE_ACCOUNT_URL="https://opreopsstgappsa.blob.core.wind
 ```
 
 Container name and report prefix default to `data` / `reports`; override with
-`USAGE_METRICS_CONTAINER_NAME` / `USAGE_METRICS_REPORT_PREFIX` if needed.
+`USAGE_METRICS_CONTAINER_NAME` / `USAGE_METRICS_REPORT_PREFIX` if needed. Schedule defaults
+(`50 23 * * 5` cron, 14-day window, `2026-09-11` sprint anchor) are baked into the create script —
+see [Schedule](#schedule-last-friday-of-each-sprint).
 
-## Test-fire and verify (don't wait for the Monday cron)
+## Test-fire and verify (don't wait for the sprint-end Friday)
+
+A manual start on any other day hits the sprint filter and no-ops, so force the run for the test,
+then put it back on schedule:
 
 ```bash
+# 1. force-run, so this start generates a report regardless of the date
+az containerapp job update -n usage-metrics-job -g opre-ops-stg-app-rg \
+  --set-env-vars USAGE_METRICS_FORCE_RUN=true
+
 az containerapp job start -n usage-metrics-job -g opre-ops-stg-app-rg
 az containerapp job execution list -n usage-metrics-job -g opre-ops-stg-app-rg -o table
+
+# 2. restore the sprint schedule when you are done verifying
+az containerapp job update -n usage-metrics-job -g opre-ops-stg-app-rg \
+  --set-env-vars USAGE_METRICS_FORCE_RUN=""
 ```
+
+**Leaving `USAGE_METRICS_FORCE_RUN=true` set turns the job back into a weekly report** (every Friday
+generates and emails), so step 2 is not optional. The lookback window would also still be 14 days,
+producing overlapping reports week over week.
 
 Then confirm the report appears at `data/reports/usage-metrics-latest.xlsx` (the two-sheet
 workbook with the Aggregate and Per-user sheets). The UX team needs read access to that container
@@ -63,7 +81,7 @@ workbook with the Aggregate and Per-user sheets). The UX team needs read access 
 ## Emailing a download link to the UX team (OPS-4148, no Azure ID needed)
 
 The UX team has no Azure/Entra identity, so the job can email them a **time-limited SAS download
-link** to that week's dated report (`reports/usage-metrics-<date>.xlsx`) via **Azure Communication
+link** to that sprint's dated report (`reports/usage-metrics-<date>.xlsx`) via **Azure Communication
 Services (ACS)**. Code: `deliver_report_link` in `src/usage_metrics/utils.py` →
 `build_blob_sas_url` in `src/azure_utils/utils.py` (mints the SAS) →
 `send_report_link_email` in `src/usage_metrics/email_delivery.py` (sends via ACS). Email delivery
@@ -139,16 +157,45 @@ export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
 - The sender is an Azure-managed `*.azurecomm.net` subdomain, which ACF mail filtering is likely to
   treat as unfamiliar — tell recipients to check junk on the first run. A custom domain would need
   DNS ownership proof through ACF Tech's formal process (see OPRE-OPS-Data#59 for why it was skipped).
-- Newly created ACS Email resources start on a **low-volume trial sending tier**. A weekly report to
-  a handful of recipients fits comfortably; raising the quota needs a manual Azure support ticket.
+- Newly created ACS Email resources start on a **low-volume trial sending tier**. One report per
+  sprint to a handful of recipients fits comfortably; raising the quota needs a manual Azure support
+  ticket.
 
 ## Ongoing image updates
 
 `.github/workflows/stg_be_build_and_deploy.yml` (staging) and `prod_be_build_and_deploy.yml`
 (production) both update `usage-metrics-job` to the new image on deploy — guarded with
 `|| echo ... skipping` so each is a no-op until that environment's job is created. Staging redeploys
-automatically on merge to `main`; production is a manual `workflow_dispatch`. The cron is
-`50 4 * * 1` (04:50 UTC Monday = Sunday night US Central) — Azure cron is UTC-only.
+automatically on merge to `main`; production is a manual `workflow_dispatch`.
+
+## Schedule: last Friday of each sprint
+
+The report is wanted **once per sprint, on the sprint's last Friday** (sprints are two weeks). Cron
+cannot express "every other Friday" — there is no week-parity field, and restricting day-of-month
+alongside day-of-week makes standard cron parsers **OR** the two fields rather than AND them (a
+`50 23 8-14,22-28 * 5` would fire on every day in those ranges *and* every Friday). So:
+
+| Piece | Value | Why |
+|---|---|---|
+| Cron | `50 23 * * 5` | 23:50 UTC **every** Friday. Azure cron is UTC-only; this lands Friday evening US Central (18:50 CDT / 17:50 CST) — after the workday, still on the Friday. |
+| Sprint filter | `should_generate_report` in `src/usage_metrics/utils.py` | Off-sprint Fridays log why they are skipping and exit 0 without touching the DB or Blob storage. |
+| `USAGE_METRICS_SPRINT_ANCHOR_DATE` | `2026-09-11` (default) | A known sprint-end Friday; sprint ends are every 14 days from it in both directions. Validated as a Friday at run time — a non-Friday anchor would never line up with the cron, so it raises instead of silently no-opping forever. |
+| `USAGE_METRICS_LOOKBACK_DAYS` | `14` (default) | Matches the sprint length, so consecutive reports tile the calendar with no gap or overlap. Keep these two in step. |
+
+The anchor came from the team's own sprint boundaries — the sprint 106 and 107 release-note commits
+landed Friday 2026-08-28 and Friday 2026-09-11, exactly 14 days apart. **If the team's sprint
+boundary ever shifts, update `USAGE_METRICS_SPRINT_ANCHOR_DATE`** to any Friday that ends a sprint
+(an `az containerapp job update --set-env-vars` is enough; no code change).
+
+Two consequences worth knowing:
+
+- Roughly half the scheduled runs are deliberate no-ops. A skipped run still starts a container and
+  shows up in `az containerapp job execution list` as `Succeeded` — check the logs for the "not a
+  sprint-end Friday" line before treating a run as a missed report.
+- Activity after ~18:50 Central on the sprint's last Friday falls into the *next* sprint's report.
+  Nothing is lost (the 14-day windows tile exactly), it just lands one report later.
+
+To test-fire off-schedule, set `USAGE_METRICS_FORCE_RUN=true` — see below.
 
 ## Enable on production (one-time creation)
 
@@ -184,7 +231,8 @@ export USAGE_METRICS_STORAGE_ACCOUNT_URL="https://opreopsprodappsa.blob.core.win
 
 ./scripts/azure/create_usage_metrics_job.sh opre-ops-prod-app-rg storageAccountUser opre-ops-prod-app-cae
 
-# test-fire without waiting for the Monday cron:
+# test-fire without waiting for the sprint-end Friday (see the staging test-fire section for the
+# USAGE_METRICS_FORCE_RUN=true / reset dance this needs):
 az containerapp job start -n usage-metrics-job -g opre-ops-prod-app-rg
 ```
 

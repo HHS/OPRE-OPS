@@ -48,7 +48,16 @@ class PytestConfig(DataToolsConfig):
 
     @property
     def usage_metrics_lookback_days(self) -> str:
-        return "7"
+        return "14"
+
+    @property
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        return "2026-09-11"
+
+    @property
+    def usage_metrics_force_run(self) -> bool:
+        # Not on the sprint schedule -- a manual run here should always produce a report.
+        return True
 
     @property
     def usage_metrics_sas_expiry_days(self) -> str:

@@ -1,6 +1,6 @@
 """Email delivery for the usage-metrics report download link (OPS-4148).
 
-Sends the UX team a short email containing a time-limited SAS download link to the weekly report
+Sends the UX team a short email containing a time-limited SAS download link to the sprint's report
 via Azure Communication Services (ACS).
 
 Authentication uses the ACS **connection string**, which the infrastructure repo provisions as a

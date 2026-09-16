@@ -1,5 +1,5 @@
 import io
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -8,14 +8,18 @@ from sqlalchemy import text
 
 from data_tools.src.usage_metrics.utils import (
     METRIC_COLUMNS,
+    SPRINT_LENGTH_DAYS,
     aggregate_events,
     aggregate_user_sign_ins,
     build_workbook,
     deliver_report_link,
     is_deactivating_update,
+    is_sprint_end,
     parse_lookback_days,
+    parse_sprint_anchor_date,
     resolve_actor_id,
     run_usage_metrics,
+    should_generate_report,
 )
 from models import Division, OpsEvent, OpsEventStatus, OpsEventType, Role, User, UserStatus
 
@@ -295,6 +299,8 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
     config.usage_metrics_container_name = "data"
     config.usage_metrics_report_prefix = "reports"
     config.usage_metrics_lookback_days = "30"
+    # Bypass the sprint-schedule guard so this test does not depend on the day it runs on.
+    config.usage_metrics_force_run = True
     # Email delivery not configured in this test -> deliver_report_link should no-op.
     config.usage_metrics_acs_connection_string_secret = None
     config.usage_metrics_email_sender = None
@@ -319,6 +325,94 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
         and c.kwargs.get("content_type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         for c in upload_mock.call_args_list
     )
+
+
+# ---------------------------------------------------------------------------
+# Sprint schedule guard: the cron fires every Friday, the report is per sprint.
+# ---------------------------------------------------------------------------
+
+# A real sprint-end Friday for this team (the sprint 107 boundary).
+ANCHOR = date(2026, 9, 11)
+
+
+def _schedule_config(**overrides):
+    """A MagicMock config with the sprint schedule enforced; override per test."""
+    config = MagicMock()
+    config.usage_metrics_sprint_anchor_date = ANCHOR.isoformat()
+    config.usage_metrics_force_run = False
+    for key, value in overrides.items():
+        setattr(config, key, value)
+    return config
+
+
+def test_parse_sprint_anchor_date_accepts_a_friday():
+    assert parse_sprint_anchor_date(" 2026-09-11 ") == ANCHOR
+
+
+@pytest.mark.parametrize("bad_anchor", ["", "not-a-date", "2026-13-01", None])
+def test_parse_sprint_anchor_date_rejects_non_dates(bad_anchor):
+    with pytest.raises(ValueError, match="Invalid usage_metrics_sprint_anchor_date"):
+        parse_sprint_anchor_date(bad_anchor)
+
+
+@pytest.mark.parametrize("not_friday", ["2026-09-10", "2026-09-12", "2026-09-14"])
+def test_parse_sprint_anchor_date_rejects_non_friday(not_friday):
+    """A non-Friday anchor would silently never line up with the Friday cron; fail loudly instead."""
+    with pytest.raises(ValueError, match="must be a Friday"):
+        parse_sprint_anchor_date(not_friday)
+
+
+def test_is_sprint_end_on_anchor_and_multiples():
+    assert is_sprint_end(ANCHOR, ANCHOR)
+    assert is_sprint_end(ANCHOR + timedelta(days=SPRINT_LENGTH_DAYS), ANCHOR)
+    assert is_sprint_end(ANCHOR + timedelta(days=4 * SPRINT_LENGTH_DAYS), ANCHOR)
+
+
+def test_is_sprint_end_works_before_the_anchor():
+    """Sprint ends run backwards from the anchor too, so an older anchor date stays valid."""
+    assert is_sprint_end(ANCHOR - timedelta(days=SPRINT_LENGTH_DAYS), ANCHOR)
+    assert not is_sprint_end(ANCHOR - timedelta(days=7), ANCHOR)
+
+
+def test_is_sprint_end_false_on_the_off_sprint_friday():
+    """The Friday in the middle of a sprint is the one the job must skip."""
+    assert not is_sprint_end(ANCHOR + timedelta(days=7), ANCHOR)
+    assert not is_sprint_end(ANCHOR + timedelta(days=21), ANCHOR)
+
+
+def test_should_generate_report_on_sprint_end_friday():
+    assert should_generate_report(_schedule_config(), ANCHOR + timedelta(days=SPRINT_LENGTH_DAYS))
+
+
+def test_should_generate_report_false_on_off_sprint_friday():
+    assert not should_generate_report(_schedule_config(), ANCHOR + timedelta(days=7))
+
+
+def test_should_generate_report_force_run_bypasses_schedule():
+    """Force-run is how a scheduled job gets test-fired off-schedule."""
+    assert should_generate_report(_schedule_config(usage_metrics_force_run=True), ANCHOR + timedelta(days=7))
+
+
+def test_should_generate_report_force_run_skips_anchor_validation():
+    """Forced runs must not fail on an unset/garbage anchor -- the schedule is not consulted."""
+    config = _schedule_config(usage_metrics_force_run=True, usage_metrics_sprint_anchor_date="")
+    assert should_generate_report(config, ANCHOR + timedelta(days=7))
+
+
+def test_run_usage_metrics_skips_off_sprint_friday(mocker):
+    """An off-sprint run touches neither the database nor Blob storage, and returns None."""
+    upload_mock = mocker.patch("data_tools.src.usage_metrics.utils.upload_blob")
+    session_mock = mocker.patch("data_tools.src.usage_metrics.utils.Session")
+    mocker.patch(
+        "data_tools.src.usage_metrics.utils.datetime",
+        **{"now.return_value": datetime(2026, 9, 18, 23, 50, tzinfo=timezone.utc)},
+    )
+
+    config = _schedule_config(usage_metrics_storage_account_url="https://acct.blob.core.windows.net")
+
+    assert run_usage_metrics(MagicMock(), config) is None
+    upload_mock.assert_not_called()
+    session_mock.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

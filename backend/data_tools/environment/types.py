@@ -92,7 +92,31 @@ class DataToolsConfig(Protocol):
         """
         Returns the number of days of activity the usage metrics report covers (the reporting
         window). Only ops_event rows created within this many days of the run are aggregated,
-        so the report is scoped to a period rather than re-reading the entire audit log.
+        so the report is scoped to a period rather than re-reading the entire audit log. Keep this
+        equal to the sprint length (14) so consecutive reports tile the calendar with no gap or
+        overlap.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        """
+        Returns a known sprint-end Friday as an ISO date (e.g. "2026-09-11"), used to decide
+        whether today's scheduled run is a sprint end. The job's cron fires every Friday, but the
+        report is only generated on every other one -- the last Friday of each two-week sprint --
+        which plain cron cannot express. Any Friday that ends a sprint works as the anchor, since
+        sprint ends are every 14 days from it in both directions. Must be a Friday.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_force_run(self) -> bool:
+        """
+        Returns whether to generate the report regardless of the sprint schedule. True for local
+        and test environments (so a manual run always produces a report) and settable on the
+        scheduled job via USAGE_METRICS_FORCE_RUN=true to test-fire it off-schedule.
         """
         ...
 
