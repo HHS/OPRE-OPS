@@ -190,3 +190,25 @@ az containerapp job start -n usage-metrics-job -g opre-ops-prod-app-rg
 
 Then confirm `data/reports/usage-metrics-latest.xlsx` appears in `opreopsprodappsa`. The prod
 storage holds **real** named-user data — grant `reports/` read access only to intended recipients.
+
+### Email delivery on production
+
+Same two prerequisites as staging, with prod names — check whether `opre-ops-prod-app-kv` uses
+access policies or RBAC before picking the grant command, and confirm the prod ACS values against
+the `opre-ops-services-prod` stack (only `sdlc` was inspected directly):
+
+```bash
+# grant the job's MI read access to secrets (access-policy vault; use a role assignment if the
+# prod vault has enableRbacAuthorization: true)
+MI_PRINCIPAL_ID=$(az identity show -n storageAccountUser -g opre-ops-prod-app-rg --query principalId -o tsv)
+az keyvault set-policy -n opre-ops-prod-app-kv --object-id "$MI_PRINCIPAL_ID" --secret-permissions get
+
+export VAULT_URL="https://opre-ops-prod-app-kv.vault.azure.net/"
+export VAULT_FILE_STORAGE_KEY='<secret name holding the prod storage account key>'
+export USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="opre-ops-prod-comms-acs-connection-string"
+export USAGE_METRICS_EMAIL_SENDER='<prod stack defaultSenderAddress>'
+export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
+```
+
+Prod uses its **own** ACS instance (`opre-ops-prod-comms-acs` in `opre-ops-prod-comms-rg`), not the
+shared `sdlc` one — do not reuse the dev/staging secret name or sender address here.
