@@ -20,8 +20,8 @@ export const AgreementsTable = ({
     setSortConditions,
     selectedFiscalYear
 }) => {
-    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear);
     const isFYAll = selectedFiscalYear === "All";
+    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear, isFYAll);
 
     const handleClickHeader = (headerValue, isDescending) => {
         if (isFYAll && headerValue === tableSortCodes.agreementCodes.FY_OBLIGATED) return;

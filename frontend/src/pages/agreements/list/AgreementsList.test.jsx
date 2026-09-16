@@ -909,3 +909,141 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         expect(dropdown.value).toBe("All");
     });
 });
+
+// ─── Regression specs for OPS-6140 bugs (should FAIL until fixed) ────────────
+
+describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
+    // Finding 1: switching to "All" FYs while sorted by FY_OBLIGATED should
+    // reset the sort to the default. ProjectsList has this guard; AgreementsList
+    // does not. This test should FAIL until the reset is added.
+    beforeEach(() => {
+        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
+        useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: [], count: 0, limit: 10, offset: 0 },
+            isLoading: false
+        });
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            isLoading: false
+        });
+        useGetAgreementsQuery.mockReturnValue({
+            data: mockAgreementsResponse,
+            error: undefined,
+            isLoading: false,
+            isFetching: false
+        });
+    });
+
+    it("resets sortCondition to default when switching from a specific FY to All while sorted by FY_OBLIGATED", async () => {
+        const setSortConditionsMock = vi.fn();
+        useSetSortConditions.mockReturnValue({
+            sortDescending: false,
+            sortCondition: tableSortCodes.agreementCodes.FY_OBLIGATED,
+            setSortConditions: setSortConditionsMock
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-dropdown")).toBeInTheDocument();
+        });
+
+        // Switch to "All" while the active sort is FY_OBLIGATED
+        fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "All" } });
+
+        // Should reset the sort to the default (AGREEMENT) because FY_OBLIGATED
+        // is meaningless under All FYs. Currently fails — no reset guard exists.
+        expect(setSortConditionsMock).toHaveBeenCalledWith(tableSortCodes.agreementCodes.AGREEMENT, false);
+    });
+});
+
+describe("AgreementsList - Export FY Obligated value under All FYs", () => {
+    // Finding 2: the export rowMapper unconditionally writes fy_obligated even
+    // when selectedFiscalYear is "All". It should emit null/empty instead so the
+    // spreadsheet matches the NO_DATA the table shows. This test should FAIL until fixed.
+    beforeEach(() => {
+        useLazyGetUserQuery.mockReturnValue([
+            vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+            {}
+        ]);
+        useLazyGetAgreementsQuery.mockReturnValue([
+            vi.fn(() => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [
+                            {
+                                ...mockAgreementsResponse.agreements[0],
+                                fy_obligated: "50000"
+                            }
+                        ],
+                        count: 1
+                    })
+            })),
+            {}
+        ]);
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: [], count: 0, limit: 10, offset: 0 },
+            isLoading: false
+        });
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            isLoading: false
+        });
+        useGetAgreementsQuery.mockReturnValue({
+            data: { ...mockAgreementsResponse, count: 1 },
+            error: undefined,
+            isLoading: false,
+            isFetching: false
+        });
+    });
+
+    it("emits null/empty for the FY Obligated cell in the export when All FYs is selected", async () => {
+        const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+        exportTableToXlsx.mockClear();
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+        await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled(), { timeout: 5000 });
+
+        const rowMapper = exportTableToXlsx.mock.calls[0][0].rowMapper;
+        const row = rowMapper({ ...mockAgreementsResponse.agreements[0], fy_obligated: "50000" });
+
+        // "FY Obligated" is the 6th column (index 5).
+        // When All FYs is selected the table shows NO_DATA; the export must
+        // match — not emit $50,000. Currently fails because rowMapper always
+        // calls Number(agreement.fy_obligated ?? 0).
+        const fyObligatedCell = row[5];
+        expect(fyObligatedCell == null || fyObligatedCell === "").toBe(true);
+    });
+});

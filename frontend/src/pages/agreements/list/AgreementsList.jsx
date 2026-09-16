@@ -157,6 +157,9 @@ const AgreementsList = () => {
             awardType: []
         });
         setSelectedFiscalYear(newValue);
+        if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
+            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        }
     };
 
     const [trigger] = useLazyGetUserQuery();
@@ -271,7 +274,7 @@ const AgreementsList = () => {
                     const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
                     const agreementFees = Number(agreement.total_agreement_fees ?? 0);
                     const total = Number(agreement.agreement_total ?? 0);
-                    const fyObligated = Number(agreement.fy_obligated ?? 0);
+                    const fyObligated = selectedFiscalYear === "All" ? null : Number(agreement.fy_obligated ?? 0);
                     const project = getResearchProjectName(agreement);
                     const procurementShop = getProcurementShopDisplay(agreement);
                     const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);

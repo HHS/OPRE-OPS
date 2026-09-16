@@ -161,6 +161,31 @@ describe("getTableHeadingsWithFY", () => {
     });
 });
 
+// Finding 3: FY Obligated header has no disabled state when "All" is selected.
+// AgreementsTable silently no-ops the click but passes no disabled prop to the
+// column header, unlike ProjectsTable which sets disabled={true} on SortableHeader.
+// This test should FAIL until the disabled prop (and aria/cursor treatment) is wired up.
+it("marks the FY Obligated column header as disabled when selectedFiscalYear is 'All'", () => {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="All"
+                    sortConditions="AGREEMENT"
+                    sortDescending={false}
+                    setSortConditions={vi.fn()}
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    // The FY Obligated <th> button should be aria-disabled so screen readers
+    // and sighted users know it is not interactive under "All FYs".
+    const fyHeader = screen.getByRole("button", { name: /FY Obligated/i });
+    expect(fyHeader).toHaveAttribute("aria-disabled", "true");
+});
+
 it("shows 'FY Obligated' column header and NO_DATA in the FY column when selectedFiscalYear is 'All'", () => {
     render(
         <Provider store={store}>

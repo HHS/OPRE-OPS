@@ -21,14 +21,15 @@ export const TABLE_HEADINGS_LIST = [
 /**
  * Returns table headings with a dynamic FY column label based on the selected fiscal year.
  * @param {string} fiscalYear - The selected fiscal year (e.g., "2025") or "All".
- * @returns {Array<{heading: string, value: string}>} - The table headings list with dynamic FY label.
+ * @param {boolean} [fyDisabled] - When true, marks the FY Obligated column as non-sortable.
+ * @returns {Array<{heading: string, value: string, disabled?: boolean}>} - The table headings list.
  */
-export const getTableHeadingsWithFY = (fiscalYear) => {
+export const getTableHeadingsWithFY = (fiscalYear, fyDisabled = false) => {
     const fyLabel = fiscalYear === "All" ? "FY Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
 
     return TABLE_HEADINGS_LIST.map((item) => {
         if (item.value === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            return { ...item, heading: fyLabel };
+            return { ...item, heading: fyLabel, disabled: fyDisabled || undefined };
         }
         return item;
     });
