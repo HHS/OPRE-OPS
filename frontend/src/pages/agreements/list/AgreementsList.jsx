@@ -14,7 +14,6 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementsTableLoading from "../../../components/Agreements/AgreementsTable/AgreementsTableLoading";
 import {
     getAgreementContractNumber,
-    getAgreementName,
     getProcurementShopDisplay,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
@@ -245,6 +244,7 @@ const AgreementsList = () => {
 
             const tableHeader = [
                 "Agreement",
+                "Agreement Nickname",
                 "Type",
                 "Start Date",
                 "End Date",
@@ -264,7 +264,10 @@ const AgreementsList = () => {
                 data: agreementResponses,
                 headers: tableHeader,
                 rowMapper: (agreement) => {
-                    const agreementName = getAgreementName(agreement);
+                    // Raw full name — deliberately NOT getAgreementName, which is now nickname-preferred.
+                    // The export shows the full title and the nickname as two separate columns (AC 4).
+                    const agreementName = agreement.name ?? "";
+                    const agreementNickname = agreement.nick_name ?? "";
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
                     const startDate = agreement.sc_start_date
                         ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z"))
@@ -283,6 +286,7 @@ const AgreementsList = () => {
 
                     return [
                         agreementName,
+                        agreementNickname,
                         agreementType,
                         startDate,
                         endDate,
@@ -300,7 +304,11 @@ const AgreementsList = () => {
                     ];
                 },
                 filename: "agreements",
-                currencyColumns: [4, 5, 8, 9, 10] // Total, FY Obligated, Subtotal, Fees, Lifetime Obligated
+                // Derived from the header array (rather than hard-coded indices) so a future column
+                // insertion can't silently break currency formatting. Ref: issue #6144 trap 3.
+                currencyColumns: ["Total", fyLabel, "Subtotal", "Fees", "Lifetime Obligated"].map((header) =>
+                    tableHeader.indexOf(header)
+                )
             });
         } catch (error) {
             console.error("Failed to export data:", error);

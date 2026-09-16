@@ -11,6 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import store from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -546,6 +547,74 @@ describe("AgreementsList - Pagination", () => {
                     limit: 50
                 })
             );
+        });
+
+        it("exports the Agreement Nickname header/column and derives currencyColumns from the header array (issue #6144 AC 4)", async () => {
+            exportTableToXlsx.mockClear();
+
+            const nicknamedAgreement = {
+                id: 1,
+                name: "Full Legal Title For Testing",
+                nick_name: "NICK",
+                display_name: "NICK",
+                agreement_type: "CONTRACT",
+                project_officer_id: null
+            };
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: {
+                    agreements: [nicknamedAgreement],
+                    count: 1,
+                    limit: 10,
+                    offset: 0
+                },
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            const mockGetAllAgreementsTrigger = vi.fn(() => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [nicknamedAgreement],
+                        count: 1,
+                        limit: 50,
+                        offset: 0
+                    })
+            }));
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+            useLazyGetUserQuery.mockReturnValue([vi.fn(() => ({ unwrap: () => Promise.resolve({}) })), {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText("Export")).toBeInTheDocument();
+            });
+
+            const exportButton = screen.getByRole("button", { name: /export/i });
+            exportButton.click();
+
+            await waitFor(() => {
+                expect(exportTableToXlsx).toHaveBeenCalled();
+            });
+
+            const callArgs = exportTableToXlsx.mock.calls[exportTableToXlsx.mock.calls.length - 1][0];
+
+            expect(callArgs.headers[0]).toBe("Agreement");
+            expect(callArgs.headers[1]).toBe("Agreement Nickname");
+            expect(callArgs.currencyColumns).toEqual([5, 6, 9, 10, 11]);
+
+            const row = callArgs.rowMapper(nicknamedAgreement);
+            // Column 0 is the raw full name (NOT getAgreementName, which is now nickname-preferred);
+            // column 1 is the raw nickname.
+            expect(row[0]).toBe("Full Legal Title For Testing");
+            expect(row[1]).toBe("NICK");
         });
     });
 
