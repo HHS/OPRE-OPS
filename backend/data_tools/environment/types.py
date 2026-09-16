@@ -57,3 +57,105 @@ class DataToolsConfig(Protocol):
         """
         Returns the number of days after which the user sessions should be deleted.
         """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_storage_account_url(self) -> str | None:
+        """
+        Returns the Azure Blob Storage account URL that the usage metrics report is uploaded to,
+        e.g. "https://<account>.blob.core.windows.net". Returns None when the environment writes
+        the report to the local file system instead of Blob storage.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_container_name(self) -> str:
+        """
+        Returns the name of the Blob container the usage metrics report is uploaded to.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_report_prefix(self) -> str:
+        """
+        Returns the blob-name prefix (folder) the usage metrics report is written under,
+        e.g. "reports".
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_lookback_days(self) -> str:
+        """
+        Returns the number of days of activity the usage metrics report covers (the reporting
+        window). Only ops_event rows created within this many days of the run are aggregated,
+        so the report is scoped to a period rather than re-reading the entire audit log. Keep this
+        equal to the sprint length (14) so consecutive reports tile the calendar with no gap or
+        overlap.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        """
+        Returns a known sprint-end Friday as an ISO date (e.g. "2026-09-11"), used to decide
+        whether today's scheduled run is a sprint end. The job's cron fires every Friday, but the
+        report is only generated on every other one -- the last Friday of each two-week sprint --
+        which plain cron cannot express. Any Friday that ends a sprint works as the anchor, since
+        sprint ends are every 14 days from it in both directions. Must be a Friday.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_force_run(self) -> bool:
+        """
+        Returns whether to generate the report regardless of the sprint schedule. True for local
+        and test environments (so a manual run always produces a report) and settable on the
+        scheduled job via USAGE_METRICS_FORCE_RUN=true to test-fire it off-schedule.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_sas_expiry_days(self) -> str:
+        """
+        Returns the number of days a shared download link (SAS) for the report stays valid.
+        The link is emailed to the UX team; after this many days it expires and a new run's
+        email must be used. Ignored when no ACS email delivery is configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_acs_connection_string_secret(self) -> str | None:
+        """
+        Returns the name of the Key Vault secret holding the Azure Communication Services
+        connection string used to email the report download link, e.g.
+        "opre-ops-sdlc-comms-acs-connection-string". The secret is provisioned by the
+        infrastructure repo and read from ``vault_url`` at run time, so the connection string
+        itself is never stored in the job's environment. Returns None when email delivery is not
+        configured (local/dev), in which case the report is uploaded but no email is sent.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_email_sender(self) -> str | None:
+        """
+        Returns the verified ACS sender ("MailFrom") address the report email is sent from,
+        e.g. "DoNotReply@<verified-domain>". Returns None when email delivery is not configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_email_recipients(self) -> str | None:
+        """
+        Returns a comma-separated list of recipient addresses for the report email. Returns None
+        (or empty) when email delivery is not configured, in which case no email is sent.
+        """

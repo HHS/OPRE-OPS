@@ -33,3 +33,44 @@ class DevConfig(DataToolsConfig):
     @property
     def cleanup_user_sessions_cutoff_days(self) -> str | None:
         return "90"
+
+    @property
+    def usage_metrics_storage_account_url(self) -> str | None:
+        return None
+
+    @property
+    def usage_metrics_container_name(self) -> str:
+        return "data"
+
+    @property
+    def usage_metrics_report_prefix(self) -> str:
+        return "reports"
+
+    @property
+    def usage_metrics_lookback_days(self) -> str:
+        return "14"
+
+    @property
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        return "2026-09-11"
+
+    @property
+    def usage_metrics_force_run(self) -> bool:
+        # Not on the sprint schedule -- a manual run here should always produce a report.
+        return True
+
+    @property
+    def usage_metrics_sas_expiry_days(self) -> str:
+        return "90"
+
+    @property
+    def usage_metrics_acs_connection_string_secret(self) -> str | None:
+        return None
+
+    @property
+    def usage_metrics_email_sender(self) -> str | None:
+        return None
+
+    @property
+    def usage_metrics_email_recipients(self) -> str | None:
+        return None
