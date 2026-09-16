@@ -23,6 +23,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementType } from "../agreements.constants";
@@ -160,7 +161,7 @@ export const ReviewAgreement = () => {
                 ) : (
                     <PageHeader
                         title="Change Budget Line Status"
-                        subTitle={agreement?.name}
+                        subTitle={getAgreementDisplayName(agreement)}
                     />
                 )}
             </div>
