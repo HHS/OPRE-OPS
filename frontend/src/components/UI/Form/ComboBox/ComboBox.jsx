@@ -24,10 +24,13 @@ const LoadingMessage = (props) => (
 
 // Widens react-select's default filter to also match against a hidden `searchText` field
 // (e.g. an agreement's full name/nickname pair) so typing either resolves to the same option.
-// Using createFilter (rather than a hand-rolled predicate) preserves react-select's exact
-// default semantics (ignoreCase, ignoreAccents, trim, substring) — options without
-// `searchText` filter exactly as before. Ref: issue #6144 AC 3.
-const filterOption = createFilter({ stringify: (option) => `${option.label} ${option.data?.searchText ?? ""}` });
+// Must keep `option.value` in the stringify — react-select's own defaultStringify is
+// `${label} ${value}` (Select-ef7c0426.esm.js), and several ComboBoxes (e.g.
+// ProjectTypeComboBox) use a human-typeable code as the id/value with no `searchText`, so
+// dropping `value` here breaks matching on it for every ComboBox in the app. Ref: issue #6144 AC 3.
+const filterOption = createFilter({
+    stringify: (option) => `${option.label} ${option.value} ${option.data?.searchText ?? ""}`
+});
 
 /**
  * @typedef {Object} DataProps

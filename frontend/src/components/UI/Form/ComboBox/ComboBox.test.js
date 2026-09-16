@@ -222,6 +222,29 @@ describe("ComboBox", () => {
             expect(screen.queryByText("No Search Text Option")).not.toBeInTheDocument();
         });
 
+        it("still matches on the option's id/value when it is a human-typeable code (e.g. ProjectTypeComboBox)", () => {
+            // Mirrors ProjectTypeComboBox: id is a typeable code string, not shown in the label,
+            // and no searchText is set. react-select's own defaultStringify includes option.value,
+            // so this must keep matching even after the searchText override — regression guard for
+            // the override accidentally dropping option.value from the searchable text.
+            const projectTypeOptions = [
+                { id: "ADMINISTRATIVE_AND_SUPPORT", title: "Admin & Support" },
+                { id: "RESEARCH", title: "Research" }
+            ];
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={projectTypeOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            fireEvent.change(screen.getByRole("combobox"), { target: { value: "administrative" } });
+
+            expect(screen.getByText("Admin & Support")).toBeInTheDocument();
+            expect(screen.queryByText("Research")).not.toBeInTheDocument();
+        });
+
         it("regression guard: filtering is unchanged for options without searchText", () => {
             // researchProjects (used throughout this file) has no searchText field on any option —
             // this pins that every other ComboBox usage in the app filters exactly as before.
