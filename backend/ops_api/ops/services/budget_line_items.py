@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, String, case, cast, func, or_, select
+from sqlalchemy import Select, String, case, cast, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -468,11 +468,13 @@ class BudgetLineItemService:
     def _apply_agreement_name_filter(self, query, agreement_names):
         """Apply agreement name filter if provided.
 
-        Matches against either the full name or the nick_name, since the filter
-        options endpoint (and the frontend) may round-trip either value. Ref: #6144.
+        Matches against the full name only. The frontend always sends the full name
+        (opsAPI.js), never the nick_name — matching nick_name here would let one
+        agreement's nickname collide with a different agreement's full name and pull
+        in that other agreement's budget lines. Ref: #6144.
         """
         if agreement_names:
-            query = query.where(or_(Agreement.name.in_(agreement_names), Agreement.nick_name.in_(agreement_names)))
+            query = query.where(Agreement.name.in_(agreement_names))
         return query
 
     def create_sort_query(

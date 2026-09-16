@@ -401,8 +401,10 @@ export const opsApi = createApi({
                     );
                 }
                 if (agreementTitles) {
-                    // Either the full name or the nickname resolves this filter (B7 `or_`s both
-                    // fields) — prefer `name` for symmetry with the strict `getAgreements` `name=` param.
+                    // Must send the full `name`, never the nickname/display label — the backend
+                    // filter matches `agreement_name` against Agreement.name only. Matching on
+                    // nick_name too would let one agreement's nickname collide with a different
+                    // agreement's full name and pull in that other agreement's budget lines.
                     agreementTitles.forEach((title) =>
                         queryParams.push(
                             `agreement_name=${encodeURIComponent(title.name ?? title.display_name ?? title.title)}`

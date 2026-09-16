@@ -2862,42 +2862,91 @@ def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db, 
     assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have agreement name '{agreement_name}'"
 
 
-def test_bli_agreement_name_filter_matches_nick_name(auth_client, loaded_db, app_ctx):
-    """B7 / trap-1 regression: the BLI agreement_name filter must match either the full
-    name or the nick_name — the filter-options endpoint (B6) now emits the nickname-
-    preferred display_name, and the frontend posts that value straight back.
+def test_bli_agreement_name_filter_does_not_match_nick_name(
+    auth_client, loaded_db, test_cans, test_project, test_admin_user, app_ctx
+):
+    """Regression guard: the BLI agreement_name filter must match ONLY the full name.
+
+    The frontend always sends the full name (opsAPI.js), never the nick_name. If the
+    backend also matched nick_name, an agreement B whose nick_name equals a different
+    agreement A's full name would leak B's budget lines into a filter the user applied
+    for A — inflating counts/totals for an agreement the user never selected.
     """
-    stmt = (
-        select(Agreement)
-        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
-        .where(Agreement.nick_name.isnot(None))
-        .distinct()
-    )
-    agreement = loaded_db.scalars(stmt).first()
-    if agreement is None:
-        pytest.skip("No agreement with both a nick_name and budget line items found")
+    common_title = "ABC Study Regression Test"
 
-    stmt = select(BudgetLineItem).where(BudgetLineItem.agreement_id == agreement.id)
-    expected_ids = {bli.id for bli in loaded_db.scalars(stmt).all()}
-    assert len(expected_ids) > 0
-
-    # Filter by nick_name
-    response = auth_client.get(
-        url_for("api.budget-line-items-group"),
-        query_string={"agreement_name": agreement.nick_name, "enable_obe": True, "limit": 50, "offset": 0},
+    agreement_a = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=common_title,
+        nick_name=None,
+        description="Agreement A — full name equals agreement B's nickname",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
     )
-    assert response.status_code == 200
-    returned_ids_by_nick = {item["id"] for item in response.json}
-    assert expected_ids.issubset(returned_ids_by_nick)
-
-    # Filter by the full name should also still work
-    response = auth_client.get(
-        url_for("api.budget-line-items-group"),
-        query_string={"agreement_name": agreement.name, "enable_obe": True, "limit": 50, "offset": 0},
+    agreement_b = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Longer Title Regression Test",
+        nick_name=common_title,
+        description="Agreement B — nick_name equals agreement A's full name",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
     )
-    assert response.status_code == 200
-    returned_ids_by_name = {item["id"] for item in response.json}
-    assert expected_ids.issubset(returned_ids_by_name)
+    loaded_db.add(agreement_a)
+    loaded_db.add(agreement_b)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+    bli_a = ContractBudgetLineItem(
+        line_description="BLI on agreement A",
+        agreement_id=agreement_a.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        amount=1000,
+    )
+    bli_b = ContractBudgetLineItem(
+        line_description="BLI on agreement B",
+        agreement_id=agreement_b.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        amount=2000,
+    )
+    loaded_db.add(bli_a)
+    loaded_db.add(bli_b)
+    loaded_db.commit()
+
+    try:
+        # Filtering by A's full name (which is also B's nick_name) must return only A's BLI.
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"agreement_name": common_title, "enable_obe": True, "limit": 50, "offset": 0},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert bli_a.id in returned_ids
+        assert bli_b.id not in returned_ids
+
+        # Filtering by B's nick_name directly must return nothing (nick_name is not matched).
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"agreement_name": agreement_b.nick_name, "enable_obe": True, "limit": 50, "offset": 0},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert bli_a.id in returned_ids
+        assert bli_b.id not in returned_ids
+    finally:
+        loaded_db.delete(bli_a)
+        loaded_db.delete(bli_b)
+        loaded_db.delete(agreement_a)
+        loaded_db.delete(agreement_b)
+        loaded_db.commit()
 
 
 def test_bli_response_agreement_includes_nick_name_and_display_name(auth_client, loaded_db, app_ctx):
