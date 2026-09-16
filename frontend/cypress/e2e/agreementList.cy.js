@@ -34,7 +34,7 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(3)").should("have.text", "Start");
         cy.get("thead > tr > :nth-child(4)").should("have.text", "End");
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Total");
-        cy.get("thead > tr > :nth-child(6)").should("have.text", "FY26 Obligated");
+        cy.get("thead > tr > :nth-child(6)").should("have.text", "FY Obligated");
 
         cy.get("#fiscal-year-select").select("2044");
         // select the row with data-testid="agreement-table-row-9"

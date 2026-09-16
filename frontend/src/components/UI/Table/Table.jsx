@@ -83,13 +83,19 @@ const Table = ({
                                     <button
                                         type="button"
                                         data-cy={header.value}
-                                        className="usa-table__header__button cursor-pointer"
-                                        title={`Click to sort by ${header.heading}`}
+                                        className={`usa-table__header__button ${header.disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"}`}
+                                        title={
+                                            header.disabled
+                                                ? `Sorting by ${header.heading} is only meaningful when a specific fiscal year is selected`
+                                                : `Click to sort by ${header.heading}`
+                                        }
+                                        aria-disabled={header.disabled || undefined}
                                         onClick={() => {
-                                            onClickHeader?.(
-                                                header.value,
-                                                sortDescending == null ? true : !sortDescending
-                                            );
+                                            if (!header.disabled)
+                                                onClickHeader?.(
+                                                    header.value,
+                                                    sortDescending == null ? true : !sortDescending
+                                                );
                                         }}
                                     >
                                         {header.heading}
