@@ -24,7 +24,7 @@ import {
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
-import { useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useCanEditByRole } from "../../../hooks/user.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -56,7 +56,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
 
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
-    const isReadOnly = useIsUserReadOnly();
+    const canEditByRole = useCanEditByRole();
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
@@ -87,7 +87,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
     }
     const lockedMessage = getLockedMessage();
 
-    const changeIcons = !isReadOnly ? (
+    const changeIcons = canEditByRole ? (
         <ChangeIcons
             item={agreement ?? {}}
             isItemEditable={isEditable ?? false}
@@ -118,7 +118,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded && !isReadOnly ? (
+                {isRowActive && !isExpanded && canEditByRole ? (
                     <div>{changeIcons}</div>
                 ) : fyObligatedAmount !== null ? (
                     formatCurrency(fyObligatedAmount)
@@ -209,7 +209,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
                         </dl>
                     </>
                 )}
-                {!isReadOnly && (
+                {canEditByRole && (
                     <div
                         className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"

@@ -62,13 +62,13 @@ const mockProject = {
     _meta: { isEditable: true }
 };
 
-const buildStore = (roles = []) =>
+const buildStore = (roles = [], isSuperUser = false) =>
     configureStore({
         reducer: {
             [opsApi.reducerPath]: opsApi.reducer,
             auth: () => ({
                 isLoggedIn: true,
-                activeUser: { id: 1, roles }
+                activeUser: { id: 1, roles, is_superuser: isSuperUser }
             }),
             alert: () => ({
                 isActive: false,
@@ -253,6 +253,20 @@ describe("ProjectDetail", () => {
         renderComponent("1000", readOnlyStore);
 
         expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    });
+
+    it("shows an enabled edit button for a user with both SUPER_USER and READ_ONLY roles", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        const superUserReadOnlyStore = buildStore([{ name: "SUPER_USER" }, { name: "READ_ONLY" }], true);
+        renderComponent("1000", superUserReadOnlyStore);
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
     });
 
     it("switches to edit mode when edit button is clicked", async () => {

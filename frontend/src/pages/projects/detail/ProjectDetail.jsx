@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery } from "../../../api/opsAPI";
-import { useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useCanEditByRole } from "../../../hooks/user.hooks";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectDetailsView from "./ProjectDetailsView";
 
@@ -28,7 +28,7 @@ const ProjectDetail = () => {
         skip: !projectId || projectId === -1
     });
 
-    const isReadOnly = useIsUserReadOnly();
+    const canEditByRole = useCanEditByRole();
     const is404 = error?.status === 404;
     const canEdit = project?._meta?.isEditable ?? false;
 
@@ -71,7 +71,7 @@ const ProjectDetail = () => {
                 isEditMode={isEditMode}
                 toggleEditMode={toggleEditMode}
                 canEdit={canEdit}
-                isReadOnly={isReadOnly}
+                canEditByRole={canEditByRole}
             />
         </App>
     );
