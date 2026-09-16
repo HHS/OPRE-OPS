@@ -123,9 +123,12 @@ export const opsApi = createApi({
                 }
                 if (agreementName) {
                     agreementName.forEach((name) => {
-                        const agreementDisplayName = name.display_name ?? name.name ?? name.title;
-                        if (agreementDisplayName) {
-                            queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
+                        // `name=` is a strict full-name param (backend's exact-match branch, trap 2) —
+                        // prefer the raw full name over the nickname-preferred display_name/title so
+                        // this filter keeps matching Agreement.name regardless of nickname. Ref: issue #6144 F5.
+                        const agreementFullName = name.name ?? name.display_name ?? name.title;
+                        if (agreementFullName) {
+                            queryParams.push(`name=${encodeURIComponent(agreementFullName)}`);
                         }
                     });
                 }
@@ -398,8 +401,12 @@ export const opsApi = createApi({
                     );
                 }
                 if (agreementTitles) {
+                    // Either the full name or the nickname resolves this filter (B7 `or_`s both
+                    // fields) — prefer `name` for symmetry with the strict `getAgreements` `name=` param.
                     agreementTitles.forEach((title) =>
-                        queryParams.push(`agreement_name=${encodeURIComponent(title.name)}`)
+                        queryParams.push(
+                            `agreement_name=${encodeURIComponent(title.name ?? title.display_name ?? title.title)}`
+                        )
                     );
                 }
                 if (canActivePeriods) {

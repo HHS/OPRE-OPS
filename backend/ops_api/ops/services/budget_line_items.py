@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy import Select, String, case, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -466,9 +466,13 @@ class BudgetLineItemService:
         return query
 
     def _apply_agreement_name_filter(self, query, agreement_names):
-        """Apply agreement name filter if provided."""
+        """Apply agreement name filter if provided.
+
+        Matches against either the full name or the nick_name, since the filter
+        options endpoint (and the frontend) may round-trip either value. Ref: #6144.
+        """
         if agreement_names:
-            query = query.where(Agreement.name.in_(agreement_names))
+            query = query.where(or_(Agreement.name.in_(agreement_names), Agreement.nick_name.in_(agreement_names)))
         return query
 
     def create_sort_query(
@@ -1152,11 +1156,13 @@ class BudgetLineItemService:
             if result.agreement and result.agreement.agreement_type
         }
 
-        # Collect agreement names (display_name)
+        # Collect agreement names (id, full name, nick_name, display_name)
         agreement_name_dict = {
             result.agreement.id: {
                 "id": result.agreement.id,
-                "name": result.agreement.display_name,
+                "name": result.agreement.name,
+                "nick_name": result.agreement.nick_name,
+                "display_name": result.agreement.display_name,
             }
             for result in results
             if result.agreement and result.agreement.display_name
@@ -1200,7 +1206,7 @@ class BudgetLineItemService:
             "portfolios": sorted(portfolios, key=lambda x: x["name"]),
             "budget_line_total_range": {"min": budget_line_total_min, "max": budget_line_total_max},
             "agreement_types": sorted([at.name for at in agreement_types]),
-            "agreement_names": sorted(agreement_names, key=lambda x: x["name"]),
+            "agreement_names": sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold()),
             "can_active_periods": sorted(can_active_periods),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
