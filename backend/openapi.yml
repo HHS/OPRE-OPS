@@ -94,6 +94,11 @@ paths:
           explode: true
         - in: query
           name: name
+          description: >-
+            Filter by full agreement title. With `exact_match=true` (the default), matches
+            the title only — never the nickname, so a title collision with a different
+            agreement's nickname cannot produce a false "already exists" match. With
+            `exact_match=false`, also matches partial nickname text.
           schema:
             type: array
             items:
@@ -108,7 +113,9 @@ paths:
           style: form
         - in: query
           name: search
-          description: Search terms for finding agreements by name (case-insensitive)
+          description: >-
+            Search terms for finding agreements by full name OR nickname (case-insensitive,
+            partial match).
           schema:
             type: array
             items:
@@ -963,12 +970,23 @@ paths:
                           type: integer
                         name:
                           type: string
-                    description: List of agreement names (sorted by name)
+                          description: The agreement's full title, never the nickname
+                        nick_name:
+                          type: string
+                          nullable: true
+                        display_name:
+                          type: string
+                          description: Nickname if set, otherwise the full name
+                    description: List of agreements (sorted by display_name, nickname-preferred)
                     example:
                       - id: 1
                         name: "Agreement 001"
+                        nick_name: "AG1"
+                        display_name: "AG1"
                       - id: 2
                         name: "Agreement 002"
+                        nick_name: null
+                        display_name: "Agreement 002"
                   contract_numbers:
                     type: array
                     items:
@@ -7781,6 +7799,15 @@ components:
         name:
           type: string
           example: 'DIRECT ALLOCATION #2: African American Child and Family Research Center'
+        nick_name:
+          type: string
+          nullable: true
+          example: 'AACFRC'
+        display_name:
+          type: string
+          readOnly: true
+          description: Nickname if set, otherwise the full name
+          example: 'AACFRC'
         awarding_entity_id:
           type: integer
           example: 3
@@ -8714,7 +8741,9 @@ components:
           description: Cumulative agreement total after this action (decimal as string)
         display_name:
           type: string
-          description: Computed display name showing action type and agreement
+          description: >-
+            Computed display name showing action type and agreement. Built from the
+            agreement's full name, not its nickname (unlike Agreement.display_name).
         mod_number:
           type: string
           nullable: true
@@ -8773,7 +8802,7 @@ components:
           type: string
         display_name:
           type: string
-          description: Computed display name for the agreement
+          description: Nickname if set, otherwise the full name
         agreement_type:
           type: string
       required:
