@@ -60,10 +60,15 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
                 });
                 break;
             case "agreementTitles":
+                // Must match the tagText expression below exactly (title.title ?? title.display_name ?? title.name) —
+                // otherwise the removal predicate can't find the tag that's actually rendered and the X button
+                // silently stops removing it. Ref: issue #6144 F4.
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        agreementTitles: (prevState.agreementTitles ?? []).filter((title) => title.name !== tag.tagText)
+                        agreementTitles: (prevState.agreementTitles ?? []).filter(
+                            (title) => (title.title ?? title.display_name ?? title.name) !== tag.tagText
+                        )
                     };
                 });
                 break;
@@ -124,8 +129,9 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
 
     const agreementTitleTags = useMemo(() => {
         if (!Array.isArray(filters.agreementTitles)) return [];
+        // Nickname-preferred tag text — must match the removal predicate in removeFilter exactly.
         return filters.agreementTitles.map((title) => ({
-            tagText: title.name,
+            tagText: title.title ?? title.display_name ?? title.name,
             filter: "agreementTitles"
         }));
     }, [filters.agreementTitles]);

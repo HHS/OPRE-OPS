@@ -49,6 +49,12 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             if (item.order !== undefined) {
                 option.order = item.order;
             }
+            // Only include searchText if explicitly present on the item — this is what widens
+            // react-select's filter (via ComboBox.jsx's createFilter) to also match the hidden
+            // full name/nickname. Additive/opt-in: items without it filter exactly as before.
+            if (item.searchText !== undefined) {
+                option.searchText = item.searchText;
+            }
             return option;
         });
 

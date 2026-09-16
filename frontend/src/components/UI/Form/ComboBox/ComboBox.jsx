@@ -1,4 +1,4 @@
-import Select, { components } from "react-select";
+import Select, { components, createFilter } from "react-select";
 import useComboBox from "./ComboBox.hooks";
 import Tooltip from "../../USWDS/Tooltip";
 import styles from "./ComboBox.module.css";
@@ -21,6 +21,13 @@ const LoadingMessage = (props) => (
         </div>
     </components.LoadingMessage>
 );
+
+// Widens react-select's default filter to also match against a hidden `searchText` field
+// (e.g. an agreement's full name/nickname pair) so typing either resolves to the same option.
+// Using createFilter (rather than a hand-rolled predicate) preserves react-select's exact
+// default semantics (ignoreCase, ignoreAccents, trim, substring) — options without
+// `searchText` filter exactly as before. Ref: issue #6144 AC 3.
+const filterOption = createFilter({ stringify: (option) => `${option.label} ${option.data?.searchText ?? ""}` });
 
 /**
  * @typedef {Object} DataProps
@@ -105,6 +112,7 @@ const ComboBox = ({
                     placeholder={defaultString}
                     styles={customStyles}
                     components={{ LoadingMessage }}
+                    filterOption={filterOption}
                     isSearchable={true}
                     isClearable={true}
                     isMulti={isMulti}
