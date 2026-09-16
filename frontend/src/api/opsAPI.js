@@ -554,10 +554,13 @@ export const opsApi = createApi({
                         });
                     }
 
-                    // agreement_search filter
+                    // agreement_id filter — send the id, not the nickname-preferred title. The
+                    // backend matches Agreement.id directly; matching on name/nick_name strings
+                    // could let one agreement's nickname collide with a different agreement's
+                    // full name and surface the wrong project.
                     if (filters.agreementSearch && filters.agreementSearch.length > 0) {
                         filters.agreementSearch.forEach((agreement) => {
-                            queryParams.push(`agreement_search=${encodeURIComponent(agreement.title)}`);
+                            queryParams.push(`agreement_id=${agreement.id}`);
                         });
                     }
 

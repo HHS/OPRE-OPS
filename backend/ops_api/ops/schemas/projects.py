@@ -18,7 +18,7 @@ class ProjectListGetRequestSchema(PaginationListSchema):
     fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
     portfolio_id = fields.List(fields.Integer(), required=False, load_default=[])
     project_search = fields.List(fields.String(), required=False, load_default=[])
-    agreement_search = fields.List(fields.String(), required=False, load_default=[])
+    agreement_id = fields.List(fields.Integer(), required=False, load_default=[])
     project_type = fields.List(fields.Enum(ProjectType), required=False, load_default=[])
     sort_field = fields.List(fields.Enum(ProjectSortCondition), required=False, load_default=[])
     sort_descending = fields.List(fields.Boolean(), required=False, load_default=[])

@@ -3536,16 +3536,16 @@ paths:
           style: form
           explode: true
           example: ["HSS", "RFH", "Human Services Interoperability Support"]
-        - name: agreement_search
+        - name: agreement_id
           in: query
-          description: Filter by exact agreement name or nickname (can specify multiple values, OR logic - matches projects that have agreements with exactly matching names or nicknames)
+          description: Filter by agreement id (can specify multiple values, OR logic - matches projects that have any of these agreements). Matching by id (not name/nickname) avoids false-positive matches when one agreement's nickname collides with another agreement's full name.
           schema:
             type: array
             items:
-              type: string
+              type: integer
           style: form
           explode: true
-          example: ["Contract #1: African American Child and Family Research Center", "Grant Beta"]
+          example: [1, 5]
         - name: project_type
           in: query
           description: Filter projects by type (can specify multiple, OR logic)
