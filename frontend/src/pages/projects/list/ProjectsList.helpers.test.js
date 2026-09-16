@@ -184,6 +184,44 @@ describe("handleProjectsExport", () => {
         ]);
     });
 
+    it("joins whatever the backend puts in each agreement_name_list entry's `name` field — already nickname-preferred per issue #6144 AC 5, with zero frontend code change", async () => {
+        // agreement_name_list is built server-side by models/projects.py, which already prefers
+        // nick_name over the full name for each entry's `name` field. This test locks in that the
+        // export's Agreements column is a simple join of that field, so a future refactor of
+        // agreement_name_list can't silently regress AC 5 without this test catching it.
+        const projectsWithNicknamedAgreements = [
+            {
+                ...mockProjects[0],
+                // Simulates the backend having already resolved nickname preference: the first
+                // entry's `name` is a nickname, the second's is a full title (no nickname set).
+                agreement_name_list: [
+                    { id: 1, name: "HS" },
+                    { id: 2, name: "Full Title With No Nickname" }
+                ]
+            }
+        ];
+        mockTrigger.mockReturnValue({
+            unwrap: () => Promise.resolve({ projects: projectsWithNicknamedAgreements })
+        });
+
+        await handleProjectsExport(
+            mockExportTableToXlsx,
+            mockSetIsExporting,
+            mockSetAlert,
+            mockTrigger,
+            2026,
+            "TITLE",
+            false,
+            1
+        );
+
+        const callArgs = mockExportTableToXlsx.mock.calls[0][0];
+        const rowMapper = callArgs.rowMapper;
+        const result = rowMapper(projectsWithNicknamedAgreements[0]);
+
+        expect(result[7]).toBe("HS, Full Title With No Nickname");
+    });
+
     it("should map empty FY total when FY is All", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,

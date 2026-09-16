@@ -1,7 +1,38 @@
 import { describe, it, expect } from "vitest";
-import { getAgreementStartDate, getAgreementEndDate, getProcurementShopDisplay } from "./AgreementsTable.helpers";
+import {
+    getAgreementName,
+    getAgreementStartDate,
+    getAgreementEndDate,
+    getProcurementShopDisplay
+} from "./AgreementsTable.helpers";
 
 describe("AgreementsTable helpers", () => {
+    describe("getAgreementName", () => {
+        it("prefers the nickname when present", () => {
+            const agreement = { nick_name: "HS", name: "Head Start Contract" };
+            expect(getAgreementName(agreement)).toBe("HS");
+        });
+
+        it("prefers the server-computed display_name over a local nick_name computation", () => {
+            const agreement = { display_name: "AACFRC", nick_name: "AACFRC", name: "Full Title" };
+            expect(getAgreementName(agreement)).toBe("AACFRC");
+        });
+
+        it("falls back to name when there is no nickname", () => {
+            const agreement = { nick_name: null, name: "Head Start Contract" };
+            expect(getAgreementName(agreement)).toBe("Head Start Contract");
+        });
+
+        it("falls back to name when nick_name is whitespace-only", () => {
+            const agreement = { nick_name: "   ", name: "Head Start Contract" };
+            expect(getAgreementName(agreement)).toBe("Head Start Contract");
+        });
+
+        it("throws when agreement is not an object", () => {
+            expect(() => getAgreementName("not-an-object")).toThrowError(/Agreement must be an object/i);
+        });
+    });
+
     describe("getAgreementStartDate", () => {
         it("returns formatted date when sc_start_date exists", () => {
             const agreement = { sc_start_date: "2025-01-15" };

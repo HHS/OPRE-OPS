@@ -26,6 +26,21 @@ const handleAgreementProp = (agreement) => {
 };
 
 /**
+ * Nickname-preferred display label for an agreement. Prefers the server-computed
+ * `display_name` (which itself prefers `nick_name`); falls back to a local
+ * `nick_name`/`name` computation when `display_name` is absent (e.g. ~30 fixtures in
+ * `src/tests/data.js` set `name`/`nick_name` but not `display_name`).
+ *
+ * Deliberately lenient on null/undefined input — unlike most helpers in this file, this
+ * does NOT route through `handleAgreementProp` (which throws), because it is called on
+ * `budgetLine.agreement`, which can legitimately be absent. Ref: issue #6144.
+ * @param {import("../types/AgreementTypes").Agreement | null | undefined} agreement - The agreement object.
+ * @returns {string} - The nickname-preferred display label, or "" when agreement is absent.
+ */
+export const getAgreementDisplayName = (agreement) =>
+    agreement?.display_name ?? (agreement?.nick_name?.trim() || agreement?.name) ?? "";
+
+/**
  * Calculates the agreement subtotal based on the agreement and non-DRAFT budget lines.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @returns {number} - The agreement subtotal.
