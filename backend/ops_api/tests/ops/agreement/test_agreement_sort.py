@@ -3,8 +3,9 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 from models import BudgetLineItemStatus
-from models.agreements import Agreement
+from models.agreements import Agreement, AgreementSortCondition
 from ops_api.ops.services.agreements import (
+    _sort_agreements,
     agreement_total_sort,
     fy_obligated_sort,
     next_budget_line_sort,
@@ -283,3 +284,42 @@ def test_resolve_fiscal_year_multiple_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
     assert resolve_fiscal_year(["2025", "2026"]) == expected
+
+
+# --- _sort_agreements AGREEMENT (display_name) sort tests ---
+
+
+def test_sort_agreements_by_agreement_uses_display_name():
+    """B4: sorting by AGREEMENT should use display_name (nickname-preferred), not raw name."""
+    agreement_apple = MagicMock()
+    agreement_apple.name = "Apple Agreement"
+    agreement_apple.nick_name = "Zulu"
+    agreement_apple.display_name = "Zulu"
+
+    agreement_zebra = MagicMock()
+    agreement_zebra.name = "Zebra Agreement"
+    agreement_zebra.nick_name = "Alpha"
+    agreement_zebra.display_name = "Alpha"
+
+    results = [agreement_apple, agreement_zebra]
+
+    sorted_results = _sort_agreements(results, AgreementSortCondition.AGREEMENT, False)
+
+    # Sorting by raw `name` would keep this order (Apple before Zebra); sorting by
+    # `display_name` (nickname-preferred) inverts it, since "Alpha" < "Zulu".
+    assert sorted_results == [agreement_zebra, agreement_apple]
+
+
+def test_sort_agreements_by_agreement_handles_none_display_name():
+    """Guards the `or ""` fallback in B4, which fixes a latent AttributeError on a null name."""
+    agreement_with_none = MagicMock()
+    agreement_with_none.display_name = None
+
+    agreement_with_value = MagicMock()
+    agreement_with_value.display_name = "Alpha"
+
+    results = [agreement_with_value, agreement_with_none]
+
+    sorted_results = _sort_agreements(results, AgreementSortCondition.AGREEMENT, False)
+
+    assert sorted_results == [agreement_with_none, agreement_with_value]

@@ -1557,6 +1557,8 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client, app_ctx)
     if len(response.json["agreement_names"]) > 0:
         assert "id" in response.json["agreement_names"][0]
         assert "name" in response.json["agreement_names"][0]
+        assert "nick_name" in response.json["agreement_names"][0]
+        assert "display_name" in response.json["agreement_names"][0]
 
     # Verify can_active_periods is present and is a list
     assert "can_active_periods" in response.json
@@ -2860,6 +2862,64 @@ def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db, 
     assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have agreement name '{agreement_name}'"
 
 
+def test_bli_agreement_name_filter_matches_nick_name(auth_client, loaded_db, app_ctx):
+    """B7 / trap-1 regression: the BLI agreement_name filter must match either the full
+    name or the nick_name — the filter-options endpoint (B6) now emits the nickname-
+    preferred display_name, and the frontend posts that value straight back.
+    """
+    stmt = (
+        select(Agreement)
+        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
+        .where(Agreement.nick_name.isnot(None))
+        .distinct()
+    )
+    agreement = loaded_db.scalars(stmt).first()
+    if agreement is None:
+        pytest.skip("No agreement with both a nick_name and budget line items found")
+
+    stmt = select(BudgetLineItem).where(BudgetLineItem.agreement_id == agreement.id)
+    expected_ids = {bli.id for bli in loaded_db.scalars(stmt).all()}
+    assert len(expected_ids) > 0
+
+    # Filter by nick_name
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_name": agreement.nick_name, "enable_obe": True, "limit": 50, "offset": 0},
+    )
+    assert response.status_code == 200
+    returned_ids_by_nick = {item["id"] for item in response.json}
+    assert expected_ids.issubset(returned_ids_by_nick)
+
+    # Filter by the full name should also still work
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"agreement_name": agreement.name, "enable_obe": True, "limit": 50, "offset": 0},
+    )
+    assert response.status_code == 200
+    returned_ids_by_name = {item["id"] for item in response.json}
+    assert expected_ids.issubset(returned_ids_by_name)
+
+
+def test_bli_response_agreement_includes_nick_name_and_display_name(auth_client, loaded_db, app_ctx):
+    """B9: SimpleAgreementSchema should dump nick_name and display_name alongside name."""
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+        .where(Agreement.nick_name.isnot(None))
+    )
+    bli = loaded_db.scalars(stmt).first()
+    if bli is None:
+        pytest.skip("No BLI with a nicknamed agreement found in the database")
+
+    response = auth_client.get(f"/api/v1/budget-line-items/{bli.id}")
+    assert response.status_code == 200
+    agreement = response.json["agreement"]
+    assert agreement["name"] == bli.agreement.name
+    assert agreement["nick_name"] == bli.agreement.nick_name
+    assert agreement["display_name"] == bli.agreement.display_name
+    assert agreement["display_name"] == bli.agreement.nick_name
+
+
 def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by CAN active period.
@@ -3011,6 +3071,24 @@ def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, lo
         assert agreement_types == sorted(
             agreement_types, reverse=True
         ), "BLIs should be sorted by agreement type descending"
+
+
+def test_get_budget_line_items_sort_by_agreement_name_uses_display_name(auth_client, loaded_db, app_ctx):
+    """B8: sorting by AGREEMENT_NAME should use display_name_expression() (nickname-preferred)."""
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "AGREEMENT_NAME", "sort_descending": False, "enable_obe": True, "limit": 50},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    display_names = [item.get("agreement", {}).get("display_name") for item in response.json if item.get("agreement")]
+    display_names = [d for d in display_names if d is not None]
+
+    if len(display_names) > 1:
+        assert display_names == sorted(display_names, key=lambda s: s.casefold())
 
 
 def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db, app_ctx):

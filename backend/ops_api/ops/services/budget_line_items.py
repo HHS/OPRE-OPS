@@ -262,7 +262,7 @@ class BudgetLineItemService:
         else:
             # The default behavior when no sort condition is specified is to sort by agreement name
             query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                Agreement.name, BudgetLineItem.service_component_name_for_sort
+                Agreement.display_name_expression(), BudgetLineItem.service_component_name_for_sort
             )
             agreement_already_joined = True
 
@@ -490,7 +490,9 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.AGREEMENT_NAME:
                 query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                    Agreement.name.desc() if sort_descending else Agreement.name
+                    Agreement.display_name_expression().desc()
+                    if sort_descending
+                    else Agreement.display_name_expression()
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.AGREEMENT_TYPE:

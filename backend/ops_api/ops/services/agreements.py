@@ -731,16 +731,22 @@ class AgreementsService(OpsService[Agreement]):
         )
         agreement_types = sorted([at.name for at in self.db_session.scalars(agreement_types_query).all()])
 
-        # Step 6: Agreement names - Query id and name from agreements
+        # Step 6: Agreement names - Query id, full name, and nick_name from agreements
         agreement_names_query = (
-            select(Agreement.id, Agreement.name)
+            select(Agreement.id, Agreement.name, Agreement.nick_name)
             .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
         agreement_names = [
-            {"id": a_id, "name": a_name} for a_id, a_name in self.db_session.execute(agreement_names_query).all()
+            {
+                "id": a_id,
+                "name": a_name,
+                "nick_name": a_nick_name,
+                "display_name": (a_nick_name or "").strip() or a_name,
+            }
+            for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all()
         ]
-        agreement_names = sorted(agreement_names, key=lambda x: x["name"])
+        agreement_names = sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
 
         # Step 7: Contract numbers - UNION query on contract_agreement and aa_agreement
         # These are stored in subclass tables, not the base agreement table
@@ -1267,12 +1273,23 @@ def _apply_agreement_filters(
                 name_conditions.append(agreement_cls.name.is_(None))
             else:
                 if exact_match:
-                    # Use exact case-insensitive match
+                    # Exact match is used by the frontend's title-uniqueness check
+                    # (GET /agreements?name=<typed>&exact_match=true). Do NOT OR in
+                    # nick_name here: typing a title that happens to equal a *different*
+                    # agreement's nickname would otherwise return count >= 1, triggering
+                    # a spurious "title must be unique" error and blocking the save.
+                    # Ref: issue #6144.
                     name_conditions.append(func.lower(agreement_cls.name) == func.lower(name))
                 else:
-                    # Use ilike for case-insensitive partial match
+                    # Use ilike for case-insensitive partial match against either the
+                    # full name or the nick_name.
                     pattern = f"%{name}%"
-                    name_conditions.append(func.lower(agreement_cls.name).like(func.lower(pattern), escape="\\"))
+                    name_conditions.append(
+                        or_(
+                            func.lower(agreement_cls.name).like(func.lower(pattern), escape="\\"),
+                            func.lower(agreement_cls.nick_name).like(func.lower(pattern), escape="\\"),
+                        )
+                    )
 
         if name_conditions:
             query = query.where(or_(*name_conditions))
@@ -1313,13 +1330,18 @@ def _apply_agreement_specific_filters(
 def _apply_search_filter(
     query: Select[Agreement], agreement_cls: Type[Agreement], search_terms: list[str]
 ) -> Select[Agreement]:
-    """Apply search filter to agreement names."""
+    """Apply search filter to agreement names. Matches either the full name or the nick_name."""
     if search_terms:
         for search_term in search_terms:
             if not search_term:
                 query = query.where(agreement_cls.name.is_(None))
             else:
-                query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
+                query = query.where(
+                    or_(
+                        agreement_cls.name.ilike(f"%{search_term}%"),
+                        agreement_cls.nick_name.ilike(f"%{search_term}%"),
+                    )
+                )
 
     return query
 
@@ -1336,7 +1358,9 @@ def _filter_by_ownership(results, only_my):
 def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
     match (sort_condition):
         case AgreementSortCondition.AGREEMENT:
-            return sorted(results, key=lambda agreement: agreement.name.casefold(), reverse=sort_descending)
+            return sorted(
+                results, key=lambda agreement: (agreement.display_name or "").casefold(), reverse=sort_descending
+            )
         case AgreementSortCondition.PROJECT:
             return sorted(results, key=project_sort, reverse=sort_descending)
         case AgreementSortCondition.TYPE:

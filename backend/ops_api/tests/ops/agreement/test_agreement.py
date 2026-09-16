@@ -897,6 +897,63 @@ def test_agreement_name_filter_exact_match_multiple_names(auth_client, loaded_db
         assert agreement["name"].lower() in [name1.lower(), name2.lower()]
 
 
+def test_agreements_search_matches_nick_name(auth_client, loaded_db):
+    """B2: search should match on nick_name as well as name."""
+    stmt = select(Agreement).distinct().where(Agreement.nick_name.ilike("%AA1%"))
+    expected_ids = {a.id for a in loaded_db.scalars(stmt).all()}
+    assert len(expected_ids) > 0
+
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"search": "AA1"},
+    )
+    assert response.status_code == 200
+    returned_ids = {a["id"] for a in response.json["data"]}
+    assert expected_ids.issubset(returned_ids)
+
+
+def test_agreements_search_matches_name(auth_client, loaded_db):
+    """B2: search should still match on the full name (existing behavior preserved)."""
+    stmt = select(Agreement).distinct().where(Agreement.name.ilike("%Fathers and Continuous%"))
+    expected_ids = {a.id for a in loaded_db.scalars(stmt).all()}
+    assert len(expected_ids) > 0
+
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"search": "Fathers and Continuous"},
+    )
+    assert response.status_code == 200
+    returned_ids = {a["id"] for a in response.json["data"]}
+    assert expected_ids.issubset(returned_ids)
+
+
+def test_agreements_name_filter_partial_matches_nick_name(auth_client, loaded_db):
+    """B3: the partial (ilike) branch of the name filter should also match nick_name."""
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "AA1", "exact_match": "false"},
+    )
+    assert response.status_code == 200
+    returned_ids = {a["id"] for a in response.json["data"]}
+    assert 5 in returned_ids
+
+
+def test_agreements_name_filter_exact_does_not_match_nick_name(auth_client, loaded_db):
+    """Trap 2 guard: the exact-match name filter must NOT OR in nick_name.
+
+    This protects the frontend's title-uniqueness check
+    (GET /agreements?name=<typed>&exact_match=true) from a false-positive "unique"
+    match when a typed title happens to equal a *different* agreement's nickname.
+    Agreement 5's nick_name is exactly "AA1"; no agreement is named exactly "AA1".
+    """
+    response = auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": "AA1", "exact_match": "true"},
+    )
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 0
+
+
 def test_agreements_get_by_id_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 401
@@ -3696,13 +3753,28 @@ class TestAgreementFilterOptions:
             assert "name" in name_entry
 
     def test_filter_options_agreement_names_sorted_by_name(self, auth_client, loaded_db, app_ctx):
-        """Agreement names should be sorted alphabetically by name."""
+        """Agreement names should be sorted alphabetically by display_name (nickname-preferred)."""
         response = auth_client.get(url_for("api.agreements-filters"))
         assert response.status_code == 200
 
         agreement_names = response.json["agreement_names"]
-        names = [a["name"] for a in agreement_names]
-        assert names == sorted(names)
+        display_names = [a["display_name"] for a in agreement_names]
+        assert display_names == sorted(display_names, key=lambda s: (s or "").casefold())
+
+    def test_filter_options_agreement_names_include_nick_name_and_display_name(self, auth_client, loaded_db, app_ctx):
+        """Agreement filter options should include nick_name and display_name, with name always the full title."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        assert len(agreement_names) > 0
+        for name_entry in agreement_names:
+            assert "id" in name_entry
+            assert "name" in name_entry
+            assert "nick_name" in name_entry
+            assert "display_name" in name_entry
+            expected_display = (name_entry["nick_name"] or "").strip() or name_entry["name"]
+            assert name_entry["display_name"] == expected_display
 
     def test_filter_options_contract_numbers_sorted(self, auth_client, loaded_db, app_ctx):
         """Contract numbers should be sorted alphabetically."""
