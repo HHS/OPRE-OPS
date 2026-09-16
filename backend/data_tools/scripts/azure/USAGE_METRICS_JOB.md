@@ -187,6 +187,23 @@ landed Friday 2026-08-28 and Friday 2026-09-11, exactly 14 days apart. **If the 
 boundary ever shifts, update `USAGE_METRICS_SPRINT_ANCHOR_DATE`** to any Friday that ends a sprint
 (an `az containerapp job update --set-env-vars` is enough; no code change).
 
+### Rescheduling a job that already exists
+
+The cron and env vars above are applied at **job creation**. The deploy workflows only update the
+job's *image*, so a job created before this schedule change keeps its old cron and lookback — and
+because the old cron fires on **Monday** while the sprint filter expects a **Friday** anchor, no
+Monday will ever match a sprint end and the job would **silently skip every run**. Any already-created
+job therefore needs a one-time update alongside the image (staging shown; swap the RG for prod):
+
+```bash
+az containerapp job update -n usage-metrics-job -g opre-ops-stg-app-rg \
+  --cron-expression "50 23 * * 5" \
+  --set-env-vars USAGE_METRICS_LOOKBACK_DAYS=14 USAGE_METRICS_SPRINT_ANCHOR_DATE=2026-09-11
+```
+
+Verify with `az containerapp job show -n usage-metrics-job -g opre-ops-stg-app-rg --query
+"properties.configuration.scheduleTriggerConfig.cronExpression"` before the next sprint-end Friday.
+
 Two consequences worth knowing:
 
 - Roughly half the scheduled runs are deliberate no-ops. A skipped run still starts a container and
