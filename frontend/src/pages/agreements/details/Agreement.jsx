@@ -229,6 +229,8 @@ const Agreement = () => {
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (
+        // Must stay raw agreement.name (never nickname-preferred) — this is the agreement's own
+        // page, the explicit AC exception to issue #6144's nickname-display change.
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (
                 <AgreementChangesAlert
@@ -299,6 +301,8 @@ const Agreement = () => {
                     </svg>
                 </Tag>
             )}
+            {/* Must stay raw agreement.name (never nickname-preferred) — same AC exception as the
+                breadCrumbName above. Ref: issue #6144 F7. */}
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                 {`${agreement?.project?.title ?? ""}${agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}`}

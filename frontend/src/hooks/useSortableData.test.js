@@ -342,6 +342,25 @@ describe("useSortData BLIDiff Sort", () => {
         ]);
     });
 
+    test("sort by agreement name uses the nickname-preferred display, falling back to the full name (issue #6144)", () => {
+        const bliListWithAgreements = [
+            { id: 1, agreement: { name: "Zebra Full Title", nick_name: "Alpha" } },
+            { id: 2, agreement: { name: "Beta Full Title", nick_name: null } },
+            { id: 3, agreement: { name: "Gamma Full Title", nick_name: "Zulu" } }
+        ];
+
+        const sortedIds = useSortData(
+            bliListWithAgreements,
+            false,
+            tableSortCodes.budgetLineCodes.AGREEMENT_NAME,
+            SORT_TYPES.BLI_DIFF
+        ).map((bli) => bli.id);
+
+        // Ascending by display value: "Alpha" (id 1, nickname), "Beta Full Title" (id 2, no
+        // nickname so falls back to the full name), "Zulu" (id 3, nickname).
+        expect(sortedIds).toEqual([1, 2, 3]);
+    });
+
     test("sort by can id", () => {
         let sortedData = useSortData(bli_list, false, tableSortCodes.budgetLineCodes.CAN_NUMBER, SORT_TYPES.BLI_DIFF);
 

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -44,9 +45,9 @@ const AllBLIRow = ({ budgetLine }) => {
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const awardType = AWARD_TYPE_LABELS[budgetLine?.agreement?.award_type] ?? NO_DATA;
     const vendor = budgetLine?.agreement?.vendor ?? NO_DATA;
-    const agreementName = budgetLine?.agreement?.name?.trim() || NO_DATA;
+    const agreementName = getAgreementDisplayName(budgetLine?.agreement).trim() || NO_DATA;
     const agreementLinkLabel =
-        budgetLine?.agreement?.name?.trim() ||
+        getAgreementDisplayName(budgetLine?.agreement).trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
 
     const TableRowData = (

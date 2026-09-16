@@ -2,6 +2,7 @@ import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
 import { convertCodeForDisplay, formatDateNeeded, formatDateToMonthDayYear } from "./utils";
 import { setAlert } from "../components/UI/Alert/alertSlice.js";
+import { getAgreementDisplayName } from "./agreement.helpers";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
 /**
@@ -560,7 +561,7 @@ export const handleExport = async (
                         budgetLine.agreement?.project?.project_type
                             ? convertCodeForDisplay("project", budgetLine.agreement.project.project_type)
                             : NO_DATA,
-                        budgetLine.agreement?.name ?? NO_DATA,
+                        getAgreementDisplayName(budgetLine.agreement) || NO_DATA,
                         // Grant BLIs show their grant number in the SC column (grant numbers are the
                         // grant analog of services components); other BLIs show the SC display name.
                         budgetLine.agreement?.agreement_type === "GRANT"

@@ -9,6 +9,7 @@ import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
+import { getAgreementDisplayName } from "../../helpers/agreement.helpers";
 import ProcurementDashboardFilterButton from "./ProcurementDashboardFilterButton";
 import ProcurementDashboardFilterTags from "./ProcurementDashboardFilterTags";
 import ProcurementDashboardTabs from "./summary/ProcurementDashboardTabs";
@@ -90,7 +91,7 @@ const ProcurementDashboard = () => {
                     const fees = bli.fees ?? 0;
                     rows.push([
                         agreement.id,
-                        agreement.name ?? "",
+                        getAgreementDisplayName(agreement),
                         agreement.agreement_type ?? "",
                         agreement.procurement_shop?.abbr ?? "",
                         agreement.award_type ?? "",

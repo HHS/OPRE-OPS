@@ -444,6 +444,8 @@ const useAgreementEditForm = (
                                 })
                             );
                         } else {
+                            // Must stay raw agreement.name (never nickname-preferred) — this success
+                            // alert echoes the field the user just edited. Ref: issue #6144 F7.
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Updated",

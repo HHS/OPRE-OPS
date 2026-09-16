@@ -909,6 +909,23 @@ describe("handleExport", () => {
         expect(args.headers[13]).toBe("Procurement shop fee");
     });
 
+    it("shows the nickname in the Agreement column when present (issue #6144 AC 5)", async () => {
+        const args = await runExport([makeBli({ agreement: { name: "Full Legal Title", nick_name: "NICK" } })], false);
+        const row = args.rowMapper(makeBli({ agreement: { name: "Full Legal Title", nick_name: "NICK" } }));
+        expect(row[4]).toBe("NICK");
+    });
+
+    it("falls back to the full name in the Agreement column when there is no nickname", async () => {
+        const args = await runExport([makeBli({ agreement: { name: "Full Legal Title", nick_name: null } })], false);
+        const row = args.rowMapper(makeBli({ agreement: { name: "Full Legal Title", nick_name: null } }));
+        expect(row[4]).toBe("Full Legal Title");
+    });
+
+    it("keeps the 'Agreement' header unchanged regardless of nickname preference", async () => {
+        const args = await runExport([makeBli()], false);
+        expect(args.headers[4]).toBe("Agreement");
+    });
+
     it("inserts the CLIN column after SC and shifts currencyColumns to [12, 14] when includeClin is true", async () => {
         const args = await runExport([makeBli()], true);
 
