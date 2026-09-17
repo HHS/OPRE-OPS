@@ -5,6 +5,24 @@ import { useGetAllAgreements } from "../../../hooks/useGetAllAgreements";
 import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 
 /**
+ * Builds the shared option shape used by both the pre-fetched-options branch and the
+ * derived-fetch branch of computedAgreementNameOptions below, so a future field addition
+ * only needs to change one place. Ref: issue #6144.
+ * @param {{id: number, name?: string, nick_name?: string}} agreement
+ */
+const buildAgreementNameOption = (agreement) => {
+    const display = getAgreementDisplayName(agreement);
+    return {
+        id: agreement.id,
+        title: display,
+        name: agreement.name,
+        nick_name: agreement.nick_name,
+        display_name: display,
+        searchText: [agreement.name, agreement.nick_name].filter(Boolean).join(" ")
+    };
+};
+
+/**
  * A comboBox for choosing Agreement Name(s).
  * Fetches all agreements and extracts unique names for the filter options.
  * @param {Object} props - The component props.
@@ -46,21 +64,11 @@ export const AgreementNameComboBox = ({
 
     // Extract unique agreement names and create options
     const computedAgreementNameOptions = useMemo(() => {
-        // If options provided via props, use them directly. Both this path and the derived-fetch
-        // path below produce the same option shape so downstream consumers (AgreementsFilterTags,
-        // BLIFilterTags) don't need to special-case which path produced the option.
+        // Both branches below build the same option shape so downstream consumers
+        // (AgreementsFilterTags, BLIFilterTags) don't need to special-case which path
+        // produced the option — see buildAgreementNameOption.
         if (agreementNameOptions !== null) {
-            return agreementNameOptions.map((option) => {
-                const display = getAgreementDisplayName(option);
-                return {
-                    id: option.id,
-                    title: display,
-                    name: option.name,
-                    nick_name: option.nick_name,
-                    display_name: display,
-                    searchText: [option.name, option.nick_name].filter(Boolean).join(" ")
-                };
-            });
+            return agreementNameOptions.map(buildAgreementNameOption);
         }
 
         // Otherwise, fetch from agreements
@@ -74,16 +82,8 @@ export const AgreementNameComboBox = ({
         const uniqueAgreements = new Map();
 
         agreements.forEach((agreement) => {
-            const display = getAgreementDisplayName(agreement);
-            if (display && !uniqueAgreements.has(agreement.id)) {
-                uniqueAgreements.set(agreement.id, {
-                    id: agreement.id,
-                    title: display,
-                    name: agreement.name,
-                    nick_name: agreement.nick_name,
-                    display_name: display,
-                    searchText: [agreement.name, agreement.nick_name].filter(Boolean).join(" ")
-                });
+            if (getAgreementDisplayName(agreement) && !uniqueAgreements.has(agreement.id)) {
+                uniqueAgreements.set(agreement.id, buildAgreementNameOption(agreement));
             }
         });
 
