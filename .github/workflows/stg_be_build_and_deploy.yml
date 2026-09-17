@@ -86,8 +86,13 @@ jobs:
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-down-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             # Keep the scheduled usage-metrics report job on the latest image (created out-of-band via
-            # scripts/azure/create_usage_metrics_job.sh; skip if it doesn't exist yet).
-            az containerapp job update -n usage-metrics-job -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }} || echo "usage-metrics-job not found; skipping"
+            # scripts/azure/create_usage_metrics_job.sh; skip if it doesn't exist yet, but still fail
+            # on a genuine update error for a job that does exist).
+            if az containerapp job show -n usage-metrics-job -g opre-ops-${{ env.ENVIRONMENT }}-app-rg &>/dev/null; then
+              az containerapp job update -n usage-metrics-job -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            else
+              echo "usage-metrics-job not found; skipping"
+            fi
             # Start the DB schema update job
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
