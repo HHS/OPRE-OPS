@@ -393,32 +393,23 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         "have.text",
                         `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Budget Team.`
                     )
-                    // TODO: add more tests
+                    // Deleting an EXECUTING BLI directly submits a delete change request instead
+                    // of deleting it (202, still IN_REVIEW) — that request would otherwise linger
+                    // forever as a stray review-card for every later division-director review flow.
+                    // Deleting the agreement cascades through the BLI to that change request too,
+                    // so skip the BLI delete and clean up via the agreement instead.
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(202);
+                            expect(response.status).to.eq(200);
                         });
                     });
-                // TODO: unable to delete agreement?
-                // .then(() => {
-                //     cy.request({
-                //         method: "DELETE",
-                //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                //         headers: {
-                //             Authorization: bearer_token,
-                //             Accept: "application/json"
-                //         }
-                //     }).then((response) => {
-                //         expect(response.status).to.eq(200);
-                //     });
-                // });
             });
     });
     it("review Budget Change change", () => {
