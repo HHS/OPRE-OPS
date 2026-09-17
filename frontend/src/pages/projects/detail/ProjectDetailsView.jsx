@@ -113,7 +113,7 @@ const ProjectDetailsView = ({
                     </Tooltip>
                 )}
             </div>
-            {isEditMode ? (
+            {isEditMode && canEditByRole ? (
                 <ProjectDetailForm
                     projectId={project.id}
                     projectTitle={project.title ?? ""}

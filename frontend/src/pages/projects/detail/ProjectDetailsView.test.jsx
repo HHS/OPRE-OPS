@@ -275,4 +275,10 @@ describe("ProjectDetailsView", () => {
         renderComponent(baseProject, { canEdit: true, isEditMode: true });
         expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     });
+
+    it("falls back to the read-only view instead of the edit form when isEditMode is true but canEditByRole is false", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true, canEditByRole: false });
+        expect(screen.queryByLabelText(/project title/i)).not.toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
+    });
 });
