@@ -25,7 +25,7 @@ export const TABLE_HEADINGS_LIST = [
  * @returns {Array<{heading: string, value: string, disabled?: boolean}>} - The table headings list.
  */
 export const getTableHeadingsWithFY = (fiscalYear, fyDisabled = false) => {
-    const fyLabel = fiscalYear === "All" ? "FY Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
+    const fyLabel = fiscalYear === "All" ? "Lifetime Obligated" : `FY${String(fiscalYear).slice(-2)} Obligated`;
 
     return TABLE_HEADINGS_LIST.map((item) => {
         if (item.value === tableSortCodes.agreementCodes.FY_OBLIGATED) {

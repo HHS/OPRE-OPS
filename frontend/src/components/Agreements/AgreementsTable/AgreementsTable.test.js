@@ -148,10 +148,10 @@ it("does not render contract-only expanded fields for a GRANT agreement row", ()
 });
 
 describe("getTableHeadingsWithFY", () => {
-    it("returns 'FY Obligated' when fiscalYear is 'All'", () => {
+    it("returns 'Lifetime Obligated' when fiscalYear is 'All'", () => {
         const headings = getTableHeadingsWithFY("All");
         const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
-        expect(fyHeading.heading).toBe("FY Obligated");
+        expect(fyHeading.heading).toBe("Lifetime Obligated");
     });
 
     it("returns year-specific label for a specific fiscal year", () => {
@@ -180,13 +180,13 @@ it("marks the FY Obligated column header as disabled when selectedFiscalYear is 
         </Provider>
     );
 
-    // The FY Obligated <th> button should be aria-disabled so screen readers
+    // The Lifetime Obligated <th> button should be aria-disabled so screen readers
     // and sighted users know it is not interactive under "All FYs".
-    const fyHeader = screen.getByRole("button", { name: /FY Obligated/i });
+    const fyHeader = screen.getByRole("button", { name: /Lifetime Obligated/i });
     expect(fyHeader).toHaveAttribute("aria-disabled", "true");
 });
 
-it("shows 'FY Obligated' column header and NO_DATA in the FY column when selectedFiscalYear is 'All'", () => {
+it("shows 'Lifetime Obligated' column header and lifetime obligated value in the FY column when selectedFiscalYear is 'All'", () => {
     render(
         <Provider store={store}>
             <BrowserRouter>
@@ -198,7 +198,7 @@ it("shows 'FY Obligated' column header and NO_DATA in the FY column when selecte
         </Provider>
     );
 
-    expect(screen.getByText("FY Obligated")).toBeInTheDocument();
+    expect(screen.getByText("Lifetime Obligated")).toBeInTheDocument();
     expect(screen.queryByText("FY26 Obligated")).not.toBeInTheDocument();
-    expect(screen.getByText(NO_DATA)).toBeInTheDocument();
+    expect(screen.queryByText(NO_DATA)).not.toBeInTheDocument();
 });

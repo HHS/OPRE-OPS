@@ -239,9 +239,12 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const fyLabel =
-                selectedFiscalYear === "All" ? "FY Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
+            const isAllFY = selectedFiscalYear === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
 
+            // When "All" FYs is selected, the dynamic column (index 5) already shows
+            // lifetime_obligated, so the static "Lifetime Obligated" column is omitted
+            // to avoid a duplicate column with identical data.
             const tableHeader = [
                 "Agreement",
                 "Type",
@@ -253,7 +256,7 @@ const AgreementsList = () => {
                 "Procurement Shop",
                 "Subtotal",
                 "Fees",
-                "Lifetime Obligated",
+                ...(isAllFY ? [] : ["Lifetime Obligated"]),
                 "Contract Number",
                 "Award Type",
                 "Vendor",
@@ -274,7 +277,9 @@ const AgreementsList = () => {
                     const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
                     const agreementFees = Number(agreement.total_agreement_fees ?? 0);
                     const total = Number(agreement.agreement_total ?? 0);
-                    const fyObligated = selectedFiscalYear === "All" ? null : Number(agreement.fy_obligated ?? 0);
+                    const fyObligated = isAllFY
+                        ? Number(agreement.lifetime_obligated ?? 0)
+                        : Number(agreement.fy_obligated ?? 0);
                     const project = getResearchProjectName(agreement);
                     const procurementShop = getProcurementShopDisplay(agreement);
                     const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);
@@ -291,7 +296,7 @@ const AgreementsList = () => {
                         procurementShop,
                         agreementSubTotal ?? 0,
                         agreementFees ?? 0,
-                        lifetimeObligated,
+                        ...(isAllFY ? [] : [lifetimeObligated]),
                         contractNumber ?? "",
                         agreement?.award_type ?? "",
                         agreement?.vendor ?? "",
@@ -299,7 +304,8 @@ const AgreementsList = () => {
                     ];
                 },
                 filename: "agreements",
-                currencyColumns: [4, 5, 8, 9, 10] // Total, FY Obligated, Subtotal, Fees, Lifetime Obligated
+                // Total, FY Obligated/Lifetime Obligated, Subtotal, Fees[, Lifetime Obligated when specific FY]
+                currencyColumns: isAllFY ? [4, 5, 8, 9] : [4, 5, 8, 9, 10]
             });
         } catch (error) {
             console.error("Failed to export data:", error);
