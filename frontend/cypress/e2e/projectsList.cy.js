@@ -25,7 +25,8 @@ describe("Projects List Page", () => {
         cy.get("table thead th").eq(1).should("contain", "Type");
         cy.get("table thead th").eq(2).should("contain", "Start");
         cy.get("table thead th").eq(3).should("contain", "End");
-        cy.get("table thead th").eq(5).should("contain", "Project Total");
+        // FY Total column is hidden when All FYs is selected (default), so Project Total is at index 4
+        cy.get("table thead th").eq(4).should("contain", "Project Total");
     });
 
     it("clicking a project name navigates to the project detail page", () => {

@@ -59,7 +59,8 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
  * @returns {React.ReactElement}
  */
 const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortConditions, selectedFiscalYear }) => {
-    const fyLabel = selectedFiscalYear === "All" ? "FY Total" : `FY${String(selectedFiscalYear).slice(-2)} Total`;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyLabel = `FY${String(selectedFiscalYear).slice(-2)} Total`;
 
     return (
         <table className="usa-table usa-table--borderless width-full">
@@ -93,14 +94,15 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         sortDescending={sortDescending}
                         onClickHeader={setSortConditions}
                     />
-                    <SortableHeader
-                        label={fyLabel}
-                        sortCode={PROJECT_SORT_CODES.FY_TOTAL}
-                        selectedHeader={sortConditions}
-                        sortDescending={sortDescending}
-                        onClickHeader={setSortConditions}
-                        disabled={selectedFiscalYear === "All"}
-                    />
+                    {!isAllFY && (
+                        <SortableHeader
+                            label={fyLabel}
+                            sortCode={PROJECT_SORT_CODES.FY_TOTAL}
+                            selectedHeader={sortConditions}
+                            sortDescending={sortDescending}
+                            onClickHeader={setSortConditions}
+                        />
+                    )}
                     <SortableHeader
                         label="Project Total"
                         sortCode={PROJECT_SORT_CODES.PROJECT_TOTAL}

@@ -127,7 +127,7 @@ describe("handleProjectsExport", () => {
         });
     });
 
-    it("should call exportTableToXlsx with generic FY Total header when All is selected", async () => {
+    it("should omit FY Total column from export when All is selected", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -146,12 +146,12 @@ describe("handleProjectsExport", () => {
                     "Type",
                     "Start Date",
                     "End Date",
-                    "FY Total",
                     "Project Total",
                     "Total Agreements",
                     "Agreements"
                 ],
-                filename: "projects_all"
+                filename: "projects_all",
+                currencyColumns: [4]
             })
         );
     });
@@ -184,7 +184,7 @@ describe("handleProjectsExport", () => {
         ]);
     });
 
-    it("should map empty FY total when FY is All", async () => {
+    it("should map row without FY Total slot when FY is All (Project Total at index 4)", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -200,7 +200,9 @@ describe("handleProjectsExport", () => {
         const rowMapper = callArgs.rowMapper;
 
         const result = rowMapper(mockProjects[0]);
-        expect(result[4]).toBe("");
+        // Row: [title, type, start, end, projectTotal, totalAgreements, agreementNames]
+        expect(result.length).toBe(7);
+        expect(result[4]).toBe(800000); // Project Total at index 4 (no FY Total slot)
     });
 
     it("should map empty FY total when project has no data for selected FY", async () => {
@@ -243,7 +245,7 @@ describe("handleProjectsExport", () => {
         expect(result[3]).toBe("TBD");
     });
 
-    it("should export empty string for zero project_total", async () => {
+    it("should export 0 for zero project_total (not empty string — a real zero value)", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -258,9 +260,9 @@ describe("handleProjectsExport", () => {
         const callArgs = mockExportTableToXlsx.mock.calls[0][0];
         const rowMapper = callArgs.rowMapper;
 
-        // mockProjects[1] has project_total: "0"
+        // mockProjects[1] has project_total: "0" — a real zero, not missing data
         const result = rowMapper(mockProjects[1]);
-        expect(result[5]).toBe("");
+        expect(result[5]).toBe(0);
     });
 
     it("should preserve zero FY total as 0 (not blank)", async () => {

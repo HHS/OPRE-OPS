@@ -7,8 +7,10 @@ import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 
-/** Number of visible data columns — used for colSpan on the expanded row. */
-const COL_COUNT = 6;
+/** Number of visible data columns when a specific FY is selected (Project, Type, Start, End, FY Total, Project Total). */
+const COL_COUNT_WITH_FY = 6;
+/** Number of visible data columns when All FYs is selected (FY Total column hidden). */
+const COL_COUNT_ALL_FY = 5;
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -33,12 +35,14 @@ const truncateAgreementName = (name) => {
  */
 const ProjectTableRow = ({ project, selectedFiscalYear }) => {
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
+    const isAllFY = selectedFiscalYear === "All";
 
     const fyTotalRaw =
-        selectedFiscalYear !== "All" && project.fiscal_year_totals
+        !isAllFY && project.fiscal_year_totals
             ? (project.fiscal_year_totals[Number(selectedFiscalYear)] ?? null)
             : null;
     const fyTotal = fyTotalRaw !== null ? Number(fyTotalRaw) : null;
+    // project_total is always a number in the data (0 or positive); null only if field is missing
     const projectTotal =
         project.project_total !== null && project.project_total !== undefined ? Number(project.project_total) : null;
 
@@ -57,14 +61,14 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             <td>{convertCodeForDisplay("project", project.project_type)}</td>
             <td>{formatProjectDate(project.start_date)}</td>
             <td>{formatProjectDate(project.end_date)}</td>
-            <td>{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>
-            <td>{projectTotal !== null && projectTotal > 0 ? formatCurrency(projectTotal) : NO_DATA}</td>
+            {!isAllFY && <td>{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>}
+            <td>{projectTotal !== null ? formatCurrency(projectTotal) : NO_DATA}</td>
         </>
     );
 
     const expandedData = (
         <td
-            colSpan={COL_COUNT + 1}
+            colSpan={(isAllFY ? COL_COUNT_ALL_FY : COL_COUNT_WITH_FY) + 1}
             className="border-top-none"
             style={expandedRowBGColor}
         >
