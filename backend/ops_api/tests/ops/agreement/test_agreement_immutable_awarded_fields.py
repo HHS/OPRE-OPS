@@ -513,4 +513,3 @@ class TestAgreementImmutableAwardedFields:
         # Cleanup
         loaded_db.delete(agreement)
         loaded_db.commit()
-        loaded_db.commit()

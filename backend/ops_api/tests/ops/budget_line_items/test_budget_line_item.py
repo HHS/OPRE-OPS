@@ -2966,7 +2966,6 @@ def test_bli_response_agreement_includes_nick_name_and_display_name(auth_client,
     assert agreement["name"] == bli.agreement.name
     assert agreement["nick_name"] == bli.agreement.nick_name
     assert agreement["display_name"] == bli.agreement.display_name
-    assert agreement["display_name"] == bli.agreement.nick_name
 
 
 def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db, app_ctx):
