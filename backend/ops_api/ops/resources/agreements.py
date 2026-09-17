@@ -444,10 +444,16 @@ def _serialize_agreement_with_meta(
     # Add _meta to each budget line item
     get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
 
-    # Add _meta to the agreement itself
+    # Add _meta to the agreement itself. is_editable is computed once and reused so
+    # _get_locked_message doesn't have to re-derive it; isDeletable is derived from
+    # locked_message rather than a separate predicate, so the two can never drift apart.
     meta_schema = MetaSchema()
+    is_editable = service._is_editable(agreement, current_user)
+    locked_message = service._get_locked_message(agreement, current_user, is_editable)
     data_for_meta = {
-        "isEditable": service._is_editable(agreement, current_user),
+        "isEditable": is_editable,
+        "isDeletable": locked_message is None,
+        "lockedMessage": locked_message,
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
     }
     serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)

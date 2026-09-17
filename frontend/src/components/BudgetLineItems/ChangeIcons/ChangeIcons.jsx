@@ -124,7 +124,7 @@ const ChangeIcons = ({
                         </Tooltip>
                         <Tooltip
                             position="left"
-                            label={tooltipLabel}
+                            label={isItemDeletable ? "Delete" : tooltipLabel || "This budget line can't be deleted"}
                             className="line-height-body-1"
                         >
                             <button
@@ -134,11 +134,21 @@ const ChangeIcons = ({
                                 aria-label="Delete"
                                 data-cy="delete-row"
                                 data-testid="delete-row"
-                                disabled={true}
+                                disabled={!isItemDeletable}
+                                onClick={(e) => {
+                                    if (!isItemDeletable) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    handleDeleteItem(item.id, item.display_name);
+                                }}
                             >
                                 <FontAwesomeIcon
+                                    title="Delete"
                                     icon={faTrash}
-                                    className={disabledClasses}
+                                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
+                                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                                    }`}
                                     aria-hidden="true"
                                 />
                             </button>

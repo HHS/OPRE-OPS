@@ -242,16 +242,28 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId is now PLANNED (the status change CR was approved above, and the
+                        // earlier delete only created a pending deletion CR), so only a super user
+                        // can clean up the agreement directly (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -638,16 +650,28 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId was created directly as PLANNED, and budget-change CRs never touch
+                        // status, so it's still PLANNED at cleanup time; only a super user can
+                        // clean up the agreement directly (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });

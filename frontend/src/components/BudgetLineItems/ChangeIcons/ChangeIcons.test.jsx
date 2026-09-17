@@ -73,6 +73,31 @@ describe("ChangeIcons", () => {
         expect(deleteButton).toBeDisabled();
     });
 
+    // Regression test: an agreement can be isItemEditable=false (e.g. a non-superuser on a
+    // not-developed-yet agreement type) while still isItemDeletable=true per the backend. The
+    // delete icon must stay enabled and functional in that combination, independent of the
+    // edit icon being locked.
+    it("keeps the delete button enabled and functional when not editable but still deletable", async () => {
+        const user = userEvent.setup();
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={false}
+                isItemDeletable={true}
+            />
+        );
+
+        const editButton = screen.getByTestId("edit-row");
+        const deleteButton = screen.getByTestId("delete-row");
+
+        expect(editButton).toBeDisabled();
+        expect(deleteButton).not.toBeDisabled();
+        expect(getDeleteTooltip()).toHaveAttribute("data-label", "Delete");
+
+        await user.click(deleteButton);
+        expect(defaultProps.handleDeleteItem).toHaveBeenCalledWith(123, "Test Item");
+    });
+
     it("falls back to the static tooltip while locked message data is loading", () => {
         render(
             <ChangeIcons
