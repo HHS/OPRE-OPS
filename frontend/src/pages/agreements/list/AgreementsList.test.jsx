@@ -626,6 +626,7 @@ describe("AgreementsList - Pagination", () => {
 
             const headers = exportTableToXlsx.mock.calls[0][0].headers;
             expect(headers[5]).toBe("FY25 Obligated");
+            expect(headers[10]).toBe("Lifetime Obligated");
         });
     });
 

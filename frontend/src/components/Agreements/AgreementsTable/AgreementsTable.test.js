@@ -65,7 +65,7 @@ const agreements = [
         agreement_subtotal: 300,
         total_agreement_fees: 15,
         agreement_total: 315,
-        lifetime_obligated: 0,
+        lifetime_obligated: 75000,
         fy_obligated: "0",
         created_by: 1,
         notes: "Test notes",
@@ -201,4 +201,5 @@ it("shows 'Lifetime Obligated' column header and lifetime obligated value in the
     expect(screen.getByText("Lifetime Obligated")).toBeInTheDocument();
     expect(screen.queryByText("FY26 Obligated")).not.toBeInTheDocument();
     expect(screen.queryByText(NO_DATA)).not.toBeInTheDocument();
+    expect(screen.getByText("$75,000.00")).toBeInTheDocument();
 });
