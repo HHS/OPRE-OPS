@@ -18,6 +18,10 @@ afterEach(() => {
 
 describe("Projects List Page", () => {
     it("loads the projects list with correct headings", () => {
+        // Reset to All FYs — beforeEach selects 2044, but this test checks the All FYs column layout
+        cy.get("#fiscal-year-select").select("All");
+        cy.get("table tbody tr", { timeout: 30000 }).should("have.length.greaterThan", 0);
+
         cy.url().should("include", "/projects");
         cy.get("h1").should("have.text", "Projects");
         cy.get("h2").should("contain.text", "All Projects");
@@ -25,8 +29,10 @@ describe("Projects List Page", () => {
         cy.get("table thead th").eq(1).should("contain", "Type");
         cy.get("table thead th").eq(2).should("contain", "Start");
         cy.get("table thead th").eq(3).should("contain", "End");
-        // FY Total column is hidden when All FYs is selected (default), so Project Total is at index 4
+        // FY Total column is hidden when All FYs is selected, so Project Total is at index 4
         cy.get("table thead th").eq(4).should("contain", "Project Total");
+        // FY Total must not appear at all
+        cy.contains("th", "FY Total").should("not.exist");
     });
 
     it("clicking a project name navigates to the project detail page", () => {
