@@ -29,6 +29,7 @@ const convertTypeCountsObjToArray = (countsObj) => {
 const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
     const totalCount = totals?.total_agreements_count ?? 0;
     const typeCounts = totals?.type_counts ? convertTypeCountsObjToArray(totals.type_counts) : [];
+    const isAllFYs = fiscalYear === "All FYs";
 
     const newCount = totals?.new_count ?? 0;
     const newTypeCounts = totals?.new_type_counts ? convertTypeCountsObjToArray(totals.new_type_counts) : [];
@@ -61,43 +62,47 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                     </div>
                 </article>
 
-                <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
-                        {`${fiscalYear} New`}
-                    </h3>
-                    <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
-                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
-                            {newTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
+                {!isAllFYs && (
+                    <article>
+                        <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                            {`${fiscalYear} New`}
+                        </h3>
+                        <div>
+                            <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
+                            <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
+                                {newTypeCounts.map(({ type, count }, index) => (
+                                    <Tag
+                                        key={type}
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        className={`${index > 0 ? "margin-top-1" : ""}`}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </article>
+                    </article>
+                )}
 
-                <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
-                        {`${fiscalYear} Continuing`}
-                    </h3>
-                    <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
-                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
-                            {continuingTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
+                {!isAllFYs && (
+                    <article>
+                        <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                            {`${fiscalYear} Continuing`}
+                        </h3>
+                        <div>
+                            <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
+                            <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
+                                {continuingTypeCounts.map(({ type, count }, index) => (
+                                    <Tag
+                                        key={type}
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        className={`${index > 0 ? "margin-top-1" : ""}`}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </article>
+                    </article>
+                )}
             </div>
         </RoundedBox>
     );
