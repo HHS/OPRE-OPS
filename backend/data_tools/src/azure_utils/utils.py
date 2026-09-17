@@ -229,7 +229,10 @@ def build_blob_sas_url(
     if expiry_days <= 0:
         raise ValueError(f"expiry_days must be > 0, got {expiry_days}.")
 
-    account_name = urlparse(account_url).hostname.split(".")[0]
+    parsed_account_url = urlparse(account_url if "://" in account_url else f"https://{account_url}")
+    if not parsed_account_url.hostname:
+        raise ValueError(f"account_url must include a hostname, got {account_url!r}.")
+    account_name = parsed_account_url.hostname.split(".")[0]
     expiry = datetime.now(timezone.utc) + timedelta(days=expiry_days)
     sas_token = generate_blob_sas(
         account_name=account_name,
