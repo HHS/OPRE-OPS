@@ -104,7 +104,7 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         />
                     )}
                     <SortableHeader
-                        label="Project Total"
+                        label="Lifetime Total"
                         sortCode={PROJECT_SORT_CODES.PROJECT_TOTAL}
                         selectedHeader={sortConditions}
                         sortDescending={sortDescending}

@@ -29,8 +29,8 @@ describe("Projects List Page", () => {
         cy.get("table thead th").eq(1).should("contain", "Type");
         cy.get("table thead th").eq(2).should("contain", "Start");
         cy.get("table thead th").eq(3).should("contain", "End");
-        // FY Total column is hidden when All FYs is selected, so Project Total is at index 4
-        cy.get("table thead th").eq(4).should("contain", "Project Total");
+        // FY Total column is hidden when All FYs is selected, so Lifetime Total is at index 4
+        cy.get("table thead th").eq(4).should("contain", "Lifetime Total");
         // FY Total must not appear at all
         cy.contains("th", "FY Total").should("not.exist");
     });

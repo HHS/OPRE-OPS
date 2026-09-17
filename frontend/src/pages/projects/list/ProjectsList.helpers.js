@@ -81,7 +81,7 @@ export const handleProjectsExport = async (
             "Start Date",
             "End Date",
             ...(isSpecificFY ? [`FY${String(selectedFiscalYear).slice(-2)} Total`] : []),
-            "Project Total",
+            "Lifetime Total",
             "Total Agreements",
             "Agreements"
         ];

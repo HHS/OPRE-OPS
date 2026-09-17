@@ -7,7 +7,7 @@ import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 
-/** Number of visible data columns when a specific FY is selected (Project, Type, Start, End, FY Total, Project Total). */
+/** Number of visible data columns when a specific FY is selected (Project, Type, Start, End, FY Total, Lifetime Total). */
 const COL_COUNT_WITH_FY = 6;
 /** Number of visible data columns when All FYs is selected (FY Total column hidden). */
 const COL_COUNT_ALL_FY = 5;

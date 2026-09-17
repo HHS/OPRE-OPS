@@ -16,7 +16,7 @@ describe("ProjectsTableLoading", () => {
 
     it("renders 5 project column headings when All FYs selected (no FY Total)", () => {
         render(<ProjectsTableLoading selectedFiscalYear="All" />);
-        const expectedHeadings = ["Project", "Type", "Start", "End", "Project Total"];
+        const expectedHeadings = ["Project", "Type", "Start", "End", "Lifetime Total"];
         expectedHeadings.forEach((heading) => {
             expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
         });
@@ -25,7 +25,7 @@ describe("ProjectsTableLoading", () => {
 
     it("renders 6 project column headings when a specific FY is selected (includes FY Total)", () => {
         render(<ProjectsTableLoading selectedFiscalYear="2026" />);
-        const expectedHeadings = ["Project", "Type", "Start", "End", "FY Total", "Project Total"];
+        const expectedHeadings = ["Project", "Type", "Start", "End", "FY Total", "Lifetime Total"];
         expectedHeadings.forEach((heading) => {
             expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
         });

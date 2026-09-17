@@ -140,7 +140,7 @@ describe("ProjectsList", () => {
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /End/ })).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: /Project Total/ })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: /Lifetime Total/ })).toBeInTheDocument();
     });
 
     it("renders project link with correct href", () => {

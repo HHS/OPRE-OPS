@@ -58,7 +58,7 @@ describe("ProjectsTable", () => {
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /End/ })).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: /Project Total/ })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: /Lifetime Total/ })).toBeInTheDocument();
     });
 
     it("shows 'FY26 Total' label when a specific fiscal year is selected", () => {

@@ -117,7 +117,7 @@ describe("handleProjectsExport", () => {
                 "Start Date",
                 "End Date",
                 "FY26 Total",
-                "Project Total",
+                "Lifetime Total",
                 "Total Agreements",
                 "Agreements"
             ],
@@ -146,7 +146,7 @@ describe("handleProjectsExport", () => {
                     "Type",
                     "Start Date",
                     "End Date",
-                    "Project Total",
+                    "Lifetime Total",
                     "Total Agreements",
                     "Agreements"
                 ],
@@ -184,7 +184,7 @@ describe("handleProjectsExport", () => {
         ]);
     });
 
-    it("should map row without FY Total slot when FY is All (Project Total at index 4)", async () => {
+    it("should map row without FY Total slot when FY is All (Lifetime Total at index 4)", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -202,7 +202,7 @@ describe("handleProjectsExport", () => {
         const result = rowMapper(mockProjects[0]);
         // Row: [title, type, start, end, projectTotal, totalAgreements, agreementNames]
         expect(result.length).toBe(7);
-        expect(result[4]).toBe(800000); // Project Total at index 4 (no FY Total slot)
+        expect(result[4]).toBe(800000); // Lifetime Total at index 4 (no FY Total slot)
     });
 
     it("should map empty FY total when project has no data for selected FY", async () => {

@@ -14,7 +14,7 @@ const PROJECT_TOTAL_WIDTH = "65%";
  */
 const ProjectsTableLoading = ({ selectedFiscalYear }) => {
     const isAllFY = selectedFiscalYear === "All";
-    const headings = [...BASE_HEADINGS, ...(isAllFY ? [] : ["FY Total"]), "Project Total"];
+    const headings = [...BASE_HEADINGS, ...(isAllFY ? [] : ["FY Total"]), "Lifetime Total"];
     const columnWidths = [...BASE_WIDTHS, ...(isAllFY ? [] : [FY_TOTAL_WIDTH]), PROJECT_TOTAL_WIDTH];
 
     return (
