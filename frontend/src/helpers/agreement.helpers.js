@@ -41,6 +41,28 @@ export const getAgreementDisplayName = (agreement) =>
     agreement?.display_name ?? (agreement?.nick_name?.trim() || agreement?.name) ?? "";
 
 /**
+ * Resolves the raw full name from an agreement-title filter option (e.g. an
+ * AgreementNameComboBox selection), for sending to backend endpoints whose `name`/
+ * `agreement_name` query params match `Agreement.name` only — never the nickname. Falls
+ * back to `display_name`/`title` only for option shapes that don't carry a raw `name`.
+ * Used by both `getAgreements` and `getBudgetLines` query builders in opsAPI.js — keep
+ * them in sync by calling this instead of re-deriving inline. Ref: issue #6144 F5.
+ * @param {{name?: string, display_name?: string, title?: string} | null | undefined} option
+ * @returns {string | undefined}
+ */
+export const getAgreementFilterFullName = (option) => option?.name ?? option?.display_name ?? option?.title;
+
+/**
+ * Resolves the nickname-preferred tag text for an agreement-title filter option, used to
+ * both render a filter tag and match it for removal. The tag-rendering and tag-removal
+ * call sites must resolve to the same value or the remove ("x") button silently stops
+ * working — call this from both instead of re-deriving inline. Ref: issue #6144 F4.
+ * @param {{title?: string, display_name?: string, name?: string} | null | undefined} option
+ * @returns {string | undefined}
+ */
+export const getAgreementFilterTagText = (option) => option?.title ?? option?.display_name ?? option?.name;
+
+/**
  * Calculates the agreement subtotal based on the agreement and non-DRAFT budget lines.
  * @param {import("../types/AgreementTypes").Agreement} agreement - The agreement object.
  * @returns {number} - The agreement subtotal.

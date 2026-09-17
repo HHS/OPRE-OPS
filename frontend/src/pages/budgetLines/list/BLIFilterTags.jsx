@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
+import { getAgreementFilterTagText } from "../../../helpers/agreement.helpers";
 
 /**
  * A filter tags.
@@ -60,14 +61,14 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
                 });
                 break;
             case "agreementTitles":
-                // Must match the tagText expression below exactly (title.title ?? title.display_name ?? title.name) —
-                // otherwise the removal predicate can't find the tag that's actually rendered and the X button
-                // silently stops removing it. Ref: issue #6144 F4.
+                // Must resolve tagText via getAgreementFilterTagText, same as the tag-rendering
+                // memo below — otherwise the removal predicate can't find the tag that's
+                // actually rendered and the X button silently stops removing it. Ref: issue #6144 F4.
                 setFilters((prevState) => {
                     return {
                         ...prevState,
                         agreementTitles: (prevState.agreementTitles ?? []).filter(
-                            (title) => (title.title ?? title.display_name ?? title.name) !== tag.tagText
+                            (title) => getAgreementFilterTagText(title) !== tag.tagText
                         )
                     };
                 });
@@ -131,7 +132,7 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
         if (!Array.isArray(filters.agreementTitles)) return [];
         // Nickname-preferred tag text — must match the removal predicate in removeFilter exactly.
         return filters.agreementTitles.map((title) => ({
-            tagText: title.title ?? title.display_name ?? title.name,
+            tagText: getAgreementFilterTagText(title),
             filter: "agreementTitles"
         }));
     }, [filters.agreementTitles]);

@@ -10,6 +10,7 @@ import {
     normalizeProjectUsers,
     normalizeUser
 } from "../helpers/users.helpers";
+import { getAgreementFilterFullName } from "../helpers/agreement.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -126,7 +127,7 @@ export const opsApi = createApi({
                         // `name=` is a strict full-name param (backend's exact-match branch, trap 2) —
                         // prefer the raw full name over the nickname-preferred display_name/title so
                         // this filter keeps matching Agreement.name regardless of nickname. Ref: issue #6144 F5.
-                        const agreementFullName = name.name ?? name.display_name ?? name.title;
+                        const agreementFullName = getAgreementFilterFullName(name);
                         if (agreementFullName) {
                             queryParams.push(`name=${encodeURIComponent(agreementFullName)}`);
                         }
@@ -406,9 +407,7 @@ export const opsApi = createApi({
                     // nick_name too would let one agreement's nickname collide with a different
                     // agreement's full name and pull in that other agreement's budget lines.
                     agreementTitles.forEach((title) =>
-                        queryParams.push(
-                            `agreement_name=${encodeURIComponent(title.name ?? title.display_name ?? title.title)}`
-                        )
+                        queryParams.push(`agreement_name=${encodeURIComponent(getAgreementFilterFullName(title))}`)
                     );
                 }
                 if (canActivePeriods) {
