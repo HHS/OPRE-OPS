@@ -73,20 +73,14 @@ class TestAgreementDisplayNameExpression:
         ["\t", "\n"],
         ids=["tab", "newline"],
     )
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Known, documented gap (see Agreement.display_name docstring / issue #6144 plan): "
-            "Postgres TRIM() strips only spaces by default, while Python .strip() strips all "
-            "whitespace. A tab-only or newline-only nick_name therefore falls back to `name` in "
-            "the Python property but survives as a truthy value through display_name_expression(). "
-            "This test is xfail(strict=True) so that if a future change makes the two definitions "
-            "agree (or disagree differently), the test result flips and flags it for review."
-        ),
-    )
-    def test_display_name_expression_diverges_from_python_property_for_non_space_whitespace(
+    def test_display_name_expression_matches_python_property_for_non_space_whitespace(
         self, loaded_db, app_ctx, nick_name
     ):
+        """A tab-only or newline-only nick_name must fall back to `name` on both sides.
+
+        display_name_expression() uses regexp_replace (not TRIM()) specifically so that
+        Postgres's whitespace definition matches Python's str.strip(). Ref: issue #6144.
+        """
         agreement = ContractAgreement(name="Full Title", nick_name=nick_name, agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
         loaded_db.commit()

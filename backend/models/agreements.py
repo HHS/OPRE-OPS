@@ -275,8 +275,14 @@ class Agreement(BaseModel):
 
     @classmethod
     def display_name_expression(cls):
-        """SQL analogue of `display_name`, for ORDER BY / WHERE."""
-        return func.coalesce(func.nullif(func.trim(cls.nick_name), ""), cls.name)
+        """SQL analogue of `display_name`, for ORDER BY / WHERE.
+
+        Uses regexp_replace rather than TRIM() because Postgres's TRIM() strips only
+        spaces by default, while Python's str.strip() strips all whitespace (tabs,
+        newlines, etc.) — regexp_replace with \\s keeps the two definitions in sync.
+        """
+        trimmed = func.regexp_replace(cls.nick_name, r"^\s+|\s+$", "", "g")
+        return func.coalesce(func.nullif(trimmed, ""), cls.name)
 
     @property
     def sc_start_date(self) -> Optional[date]:
