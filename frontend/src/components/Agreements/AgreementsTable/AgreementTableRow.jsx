@@ -54,10 +54,10 @@ export const AgreementTableRow = ({ agreement }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
     const isReadOnly = useIsUserReadOnly();
 
-    const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
+    const canUserEditAgreement = isSuccess && agreement?._meta?.isEditable;
     const isAgreementTypeNotDeveloped = isSuccess && isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
-    const canUserDeleteAgreement = isSuccess && (agreement?._meta.isDeletable ?? false);
+    const canUserDeleteAgreement = isSuccess && (agreement?._meta?.isDeletable ?? false);
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
