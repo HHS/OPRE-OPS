@@ -731,9 +731,12 @@ class AgreementsService(OpsService[Agreement]):
         )
         agreement_types = sorted([at.name for at in self.db_session.scalars(agreement_types_query).all()])
 
-        # Step 6: Agreement names - Query id, full name, and nick_name from agreements
+        # Step 6: Agreement names - Query id, full name, nick_name, and display_name from
+        # agreements. display_name comes from Agreement.display_name_expression() (not
+        # reimplemented here) so this stays in sync with Agreement.display_name if the
+        # nickname-fallback rule ever changes.
         agreement_names_query = (
-            select(Agreement.id, Agreement.name, Agreement.nick_name)
+            select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.display_name_expression())
             .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
@@ -742,9 +745,9 @@ class AgreementsService(OpsService[Agreement]):
                 "id": a_id,
                 "name": a_name,
                 "nick_name": a_nick_name,
-                "display_name": (a_nick_name or "").strip() or a_name,
+                "display_name": a_display_name,
             }
-            for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all()
+            for a_id, a_name, a_nick_name, a_display_name in self.db_session.execute(agreement_names_query).all()
         ]
         agreement_names = sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
 
