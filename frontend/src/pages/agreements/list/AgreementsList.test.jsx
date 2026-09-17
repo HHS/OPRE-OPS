@@ -1108,11 +1108,10 @@ describe("AgreementsList - Export FY Obligated value under All FYs", () => {
         const rowMapper = exportTableToXlsx.mock.calls[0][0].rowMapper;
         const row = rowMapper({ ...mockAgreementsResponse.agreements[0], fy_obligated: "50000" });
 
-        // "FY Obligated" is the 6th column (index 5).
+        // "FY Obligated" is the 7th column (index 6), after Agreement Nickname.
         // When All FYs is selected the table shows NO_DATA; the export must
-        // match — not emit $50,000. Currently fails because rowMapper always
-        // calls Number(agreement.fy_obligated ?? 0).
-        const fyObligatedCell = row[5];
+        // match — not emit $50,000.
+        const fyObligatedCell = row[6];
         expect(fyObligatedCell == null || fyObligatedCell === "").toBe(true);
     });
 });
