@@ -32,7 +32,13 @@ describe("Procurement Dashboard - Summary/Details Consistency", () => {
         cy.get("[data-cy='procurement-overview-card']", { timeout: 30000 }).should("exist");
     });
 
-    it("step accordion agreement counts match summary card counts", () => {
+    it("step accordion agreement counts never exceed the summary card total", () => {
+        // The overview total counts every agreement with a PLANNED, IN_EXECUTION, or OBLIGATED
+        // BLI (see _compute_procurement_overview), while the step accordions only count
+        // agreements that also have an active procurement tracker AND an executing BLI
+        // (_compute_procurement_step_summary — see test_skips_agreement_with_no_executing_blis).
+        // An agreement can legitimately be PLANNED-only and not yet tracked in any step, so the
+        // step-accordion sum is a subset of the overview total, not necessarily equal to it.
         getAgreementCount().then((totalFromOverview) => {
             // Expand all detail accordions
             cy.get("[data-cy^='step-builder-accordion-']").each(($accordion) => {
@@ -45,7 +51,7 @@ describe("Procurement Dashboard - Summary/Details Consistency", () => {
                 $counts.each((_, el) => {
                     totalFromDetails += parseInt(el.textContent, 10) || 0;
                 });
-                expect(totalFromDetails).to.equal(totalFromOverview);
+                expect(totalFromDetails).to.be.at.most(totalFromOverview);
             });
         });
     });
