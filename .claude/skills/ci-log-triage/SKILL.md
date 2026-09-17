@@ -154,10 +154,12 @@ The E2E Tests workflow runs `fail-fast: true` across its Cypress spec-file matri
 So once a failure gets a **Likely real** verdict, don't stop at the one file CI happened to hit first. Decompose the confirmed cause into a search pattern (the same API call, assertion shape, error string, or code pattern that caused it) and grep or read through the rest of the suite for the same shape before handing off to a fix:
 
 ```bash
-grep -rl "<pattern that caused the confirmed failure>" frontend/cypress/e2e/*.cy.js
+grep -rl "<pattern that caused the confirmed failure>" frontend/cypress/e2e/
 ```
 
-Report every match, not just the one from the log — that turns "push, wait ~15 min, discover the next casualty, repeat" into a single pass. This is especially worth doing when the root cause is a backend/behavior change rather than a one-off typo, since those tend to hit every spec file that exercises the same code path.
+Pass the directory, not a glob like `*.cy.js` — a glob is pre-expanded by the shell into a flat file list before `grep` ever sees it, which silently defeats `-r` if specs ever move into subdirectories.
+
+Report every match, not just the one from the log — that turns "push, wait ~15 min, discover the next casualty, repeat" into a single pass. This is especially worth doing when the root cause is a backend/behavior change rather than a one-off typo, since those tend to hit every spec file that exercises the same code path. List the affected specs in the `### Sibling specs affected` field of the Output Contract below.
 
 ## Failure-Class Taxonomy
 
@@ -175,7 +177,7 @@ Report every match, not just the one from the log — that turns "push, wait ~15
 
 ## Output Contract
 
-Every mode emits this exact structure. No exceptions. If Evidence is empty, write `(none found)` and set Verdict to `insufficient evidence`.
+Every mode emits this exact structure, with one conditional exception noted inline (`Sibling specs affected`). If Evidence is empty, write `(none found)` and set Verdict to `insufficient evidence`.
 
 ```markdown
 ## CI Triage — <mode>
@@ -196,6 +198,12 @@ Every mode emits this exact structure. No exceptions. If Evidence is empty, writ
 
 ### Verdict
 <Supported | Contradicted | Likely real | Likely flake | Insufficient evidence>
+
+### Sibling specs affected
+<omit this section entirely if no sweep was performed — e.g. flake verdicts, or a real failure not
+yet swept. When a sweep was done, list every matching file plus a one-line note per file:
+- `<spec>.cy.js` — <why it matches / what would break>
+- ...>
 
 ### Recommended next action
 <one or two sentences — plan a fix | reproduce locally | re-run CI | escalate to infra>

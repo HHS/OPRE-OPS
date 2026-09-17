@@ -122,24 +122,30 @@ git show origin/main:backend/alembic/versions/<new-file>.py | grep -m1 "^down_re
 ```
 If it matches the `down_revision` this branch's own new migration already declares, they're siblings claiming the same parent. `alembic heads` will report more than one head once both exist together — the branch's own migration is almost always the one that needs to move, since the other side is already merged and shouldn't be rewritten.
 
-**Step 3: Decide how to bring the new file in**
+Note this matched value somewhere durable (a scratch note, a task description) as `<old-parent-revision>` — it's needed again in Step 5, but Step 4 overwrites the only file in the tree that currently shows it, so it won't be recoverable from a fresh `grep` after that point.
 
-Read the new migration before touching anything. If it only calls `op.*`/`sa.*` (pure DDL or raw SQL, no imports of `models` or other application code), it's safe to cherry-pick on its own — a migration that only talks to the database doesn't care what else has or hasn't landed on this branch:
+If `main` added more than one new migration since this branch was cut, they may form their own chain (e.g. `A → B`, both new). Only the file whose `down_revision` equals the old parent will match this check — that's `A`, not the true new head `B`. Read every new file from Step 1's diff and follow each one's `down_revision` forward until you reach the file nothing else points to; that's the real target for Steps 3–4, not just the first match.
+
+**Step 3: Decide how to bring the new file(s) in**
+
+Read each new migration before touching anything. If it only calls `op.*`/`sa.*` (pure DDL or raw SQL, no imports of `models` or other application code), it's safe to cherry-pick on its own — a migration that only talks to the database doesn't care what else has or hasn't landed on this branch:
 ```bash
 git show origin/main:backend/alembic/versions/<new-file>.py > backend/alembic/versions/<new-file>.py
 ```
-If it imports application code, don't cherry-pick a single file into an inconsistent state — merge `main` into the branch instead so the code it depends on comes along with it.
+If more than one new migration was found in Step 2, copy all of them in chain order (the one built on the old parent first, then whatever's built on that, and so on) — copying only the first link leaves the later ones missing and the conflict unresolved.
+
+If any of them imports application code, don't cherry-pick a single file into an inconsistent state — merge `main` into the branch instead so the code it depends on comes along with it.
 
 **Step 4: Repoint this branch's migration onto the new head**
 
-Update this branch's own migration's `down_revision` (and the `Revises:` line in its docstring) to the newly-added file's revision id. Confirm with `alembic heads` — it should report exactly one head, and `alembic history -r <old-parent>:<this-branch's-revision> --verbose` should show a single unbroken chain.
+Update this branch's own migration's `down_revision` (and the `Revises:` line in its docstring) to the true new head's revision id — the final file in the chain from Step 2/3, not necessarily the first new file found. Confirm with `alembic heads` — it should report exactly one head, and `alembic history -r <old-parent-revision>:<this-branch's-revision> --verbose` should show a single unbroken chain.
 
 **Step 5: Verify with a real downgrade/upgrade round-trip**
 
 Don't trust `alembic current` alone here — it only reports what the `alembic_version` table says, not what's actually in the schema. And if test data is seeded through a Docker image (e.g. `data-import`), that image has its own baked-in copy of the repo from whenever it was last built — if the new migration file from Step 3 didn't exist yet at build time, the container's own `alembic upgrade head` never touched it, even though the database ends up stamped at head. That produces a very convincing false failure on downgrade (a column reported as missing that should be there) that looks like a real migration bug but is actually just a stale image. Rebuild before testing:
 ```bash
 docker compose down
-docker compose --profile setup up db data-import --build
+docker compose --profile setup up db data-import --build -d
 ```
 Then walk the chain for real and check the actual schema/data at each step (e.g. `\d <table>` in psql), not just the reported revision:
 ```bash
