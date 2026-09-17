@@ -321,6 +321,54 @@ describe("AgreementTableRow", () => {
             expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
             expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
         });
+
+        test("read-only user sees the FY Obligated amount (not blank) on hover", async () => {
+            renderComponent([{ id: 1, name: USER_ROLES.READ_ONLY, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByText("$0")).toBeInTheDocument();
+        });
+    });
+
+    describe("Super User with Read-Only Role Permissions", () => {
+        test("super user who also holds the read-only role still sees edit/delete icons on hover", async () => {
+            renderComponent(
+                [
+                    { id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                    { id: 2, name: USER_ROLES.READ_ONLY, is_superuser: true }
+                ],
+                baseAgreement,
+                true
+            );
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByTestId("edit-row")).toBeInTheDocument();
+            expect(screen.getByTestId("delete-row")).toBeInTheDocument();
+        });
+
+        test("super user who also holds the read-only role still sees change icons in the expanded row", async () => {
+            renderComponent(
+                [
+                    { id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                    { id: 2, name: USER_ROLES.READ_ONLY, is_superuser: true }
+                ],
+                baseAgreement,
+                true
+            );
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.getByTestId("edit-row")).toBeInTheDocument();
+            expect(screen.getByTestId("delete-row")).toBeInTheDocument();
+        });
     });
 
     describe("Regular User Edit Permissions", () => {
