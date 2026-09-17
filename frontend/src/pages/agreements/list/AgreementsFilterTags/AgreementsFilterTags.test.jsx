@@ -110,4 +110,34 @@ describe("AgreementsFilterTags", () => {
         expect(result.agreementName).toHaveLength(1);
         expect(result.agreementName[0].id).toBe(2);
     });
+
+    it("removes only the clicked agreement when two selections render an identical tag (nickname/name collision)", async () => {
+        const user = userEvent.setup();
+        // Agreement A's nick_name equals agreement B's full name — both render the tag text "ABC".
+        const filters = {
+            ...mockFilters,
+            agreementName: [
+                { id: 1, title: "ABC", name: "Agreement With Nickname ABC", nick_name: "ABC" },
+                { id: 2, title: "ABC", name: "ABC" }
+            ]
+        };
+
+        render(
+            <AgreementsFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        const removeIcons = screen.getAllByLabelText("Remove ABC filter");
+        expect(removeIcons).toHaveLength(2);
+        await user.click(removeIcons[0]);
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({ agreementName: filters.agreementName });
+
+        // Only the id-1 selection should be removed; the id-2 collision survives.
+        expect(result.agreementName).toHaveLength(1);
+        expect(result.agreementName[0].id).toBe(2);
+    });
 });

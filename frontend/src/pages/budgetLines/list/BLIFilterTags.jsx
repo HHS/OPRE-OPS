@@ -61,15 +61,14 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
                 });
                 break;
             case "agreementTitles":
-                // Must resolve tagText via getAgreementFilterTagText, same as the tag-rendering
-                // memo below — otherwise the removal predicate can't find the tag that's
-                // actually rendered and the X button silently stops removing it. Ref: issue #6144 F4.
+                // Key removal on id, not tagText — nickname-preferred display text isn't unique
+                // (agreement A's nick_name can equal agreement B's full name), so two distinct
+                // selections can render identical chips. Matching by tagText would remove both
+                // when only one "x" is clicked.
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        agreementTitles: (prevState.agreementTitles ?? []).filter(
-                            (title) => getAgreementFilterTagText(title) !== tag.tagText
-                        )
+                        agreementTitles: (prevState.agreementTitles ?? []).filter((title) => title.id !== tag.id)
                     };
                 });
                 break;
@@ -130,10 +129,12 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
 
     const agreementTitleTags = useMemo(() => {
         if (!Array.isArray(filters.agreementTitles)) return [];
-        // Nickname-preferred tag text — must match the removal predicate in removeFilter exactly.
+        // Nickname-preferred tag text — carries id so removeFilter can key on it instead of
+        // this (possibly non-unique) display text.
         return filters.agreementTitles.map((title) => ({
             tagText: getAgreementFilterTagText(title),
-            filter: "agreementTitles"
+            filter: "agreementTitles",
+            id: title.id
         }));
     }, [filters.agreementTitles]);
 

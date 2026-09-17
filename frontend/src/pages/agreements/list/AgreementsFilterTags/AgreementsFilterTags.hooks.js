@@ -65,6 +65,17 @@ export const useTagsList = (filters) => {
                         filter: filterName
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            } else if (filterKey == "agreementName") {
+                // Nickname-preferred display text (item.title) isn't unique — agreement A's
+                // nick_name can equal agreement B's full name — so carry id for removeFilter to
+                // key on instead of the (possibly duplicate) tagText.
+                const selectedTags =
+                    filters[filterKey]?.map((item) => ({
+                        tagText: item.title,
+                        filter: filterName,
+                        id: item.id
+                    })) ?? [];
+                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else {
                 const selectedTags =
                     filters[filterKey]?.map((item) => ({
@@ -140,9 +151,13 @@ export const removeFilter = (tag, setFilters) => {
             }));
             break;
         case "agreementName":
+            // Key on id, not tagText — nickname-preferred display text isn't unique (agreement
+            // A's nick_name can equal agreement B's full name), so two distinct selections can
+            // render identical chips. Matching by tagText would remove both when only one "x" is
+            // clicked.
             setFilters((prevState) => ({
                 ...prevState,
-                agreementName: prevState.agreementName.filter((name) => name.title !== tag.tagText)
+                agreementName: prevState.agreementName.filter((name) => name.id !== tag.id)
             }));
             break;
         case "contractNumber":

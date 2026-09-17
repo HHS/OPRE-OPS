@@ -442,6 +442,40 @@ describe("BLIFilterTags", () => {
         expect(result.agreementTitles[0].id).toBe(2);
     });
 
+    it("removes only the clicked agreement when two selections render an identical tag (nickname/name collision)", async () => {
+        // Agreement A's nick_name equals agreement B's full name — both render the tag text "ABC".
+        const filters = {
+            ...defaultFilters,
+            agreementTitles: [
+                { id: 1, title: "ABC", name: "Agreement With Nickname ABC", nick_name: "ABC" },
+                { id: 2, title: "ABC", name: "ABC" }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+
+        const removeButtons = screen.getAllByTestId("remove-tag-ABC");
+        expect(removeButtons).toHaveLength(2);
+        fireEvent.click(removeButtons[0]);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({ agreementTitles: filters.agreementTitles });
+
+        // Only the id-1 selection should be removed; the id-2 collision survives.
+        expect(result.agreementTitles).toHaveLength(1);
+        expect(result.agreementTitles[0].id).toBe(2);
+    });
+
     it("renders CAN active period tags", () => {
         const filters = {
             ...defaultFilters,
