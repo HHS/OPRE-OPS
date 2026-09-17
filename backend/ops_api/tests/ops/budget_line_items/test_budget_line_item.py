@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy_continuum import parent_class, version_class
 
 from models import (
@@ -3136,7 +3136,15 @@ def test_get_budget_line_items_sort_by_agreement_name_uses_display_name(auth_cli
     display_names = [d for d in display_names if d is not None]
 
     if len(display_names) > 1:
-        assert display_names == sorted(display_names, key=lambda s: s.casefold())
+        # Compare against Postgres's own default text collation (what display_name_expression()
+        # actually sorts with) rather than Python's str.casefold() — the two aren't guaranteed to
+        # agree (e.g. mixed-case ASCII orders differently under "C"/default collations).
+        db_sorted_names = (
+            loaded_db.execute(text("SELECT unnest(:names ::text[]) AS name ORDER BY name"), {"names": display_names})
+            .scalars()
+            .all()
+        )
+        assert display_names == db_sorted_names
 
 
 def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db, app_ctx):
