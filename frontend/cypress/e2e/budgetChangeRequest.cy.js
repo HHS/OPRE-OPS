@@ -142,17 +142,28 @@ describe("Budget Change Requests", () => {
                     // The BLI is PLANNED with an in-review budget change request, so a direct
                     // DELETE is now blocked (#5819). Cleanup relies on the agreement delete below,
                     // which cascade-removes the BLI and its change request.
+                    // BLI is non-Draft (testBli hardcodes status: PLANNED), so only a super user
+                    // can delete the agreement directly (#5658).
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -215,16 +226,27 @@ describe("Budget Change Requests", () => {
                     expect(response.status).to.eq(202);
                 });
 
-                cy.request({
-                    method: "DELETE",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(200);
-                });
+                // BLI is non-Draft (testBli hardcodes status: PLANNED), so only a super user
+                // can delete the agreement directly (#5658).
+                cy.contains("Sign-Out")
+                    .click()
+                    .then(() => {
+                        localStorage.clear();
+                        testLogin("power-user");
+                    })
+                    .then(() => {
+                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: powerUserBearerToken,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
             });
     });
 
@@ -304,17 +326,28 @@ describe("Budget Change Requests", () => {
                 )
                     // BLI is PLANNED with an in-review budget change request, so a direct
                     // DELETE is blocked (#5819); the agreement delete below cascades cleanup.
+                    // BLI is non-Draft (testBli hardcodes status: PLANNED), so only a super user
+                    // can delete the agreement directly (#5658).
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -393,17 +426,28 @@ describe("Budget Change Requests", () => {
                 )
                     // BLI is PLANNED with an in-review budget change request, so a direct
                     // DELETE is blocked (#5819); the agreement delete below cascades cleanup.
+                    // BLI is non-Draft (testBli hardcodes status: PLANNED), so only a super user
+                    // can delete the agreement directly (#5658).
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -514,17 +558,29 @@ describe("Budget Change Requests", () => {
                             expect(response.status).to.eq(200);
                         });
                     })
+                    // BLI remains PLANNED (non-Draft) even after the draft BLI cleanup above
+                    // (testBli hardcodes status: PLANNED), so only a super user can delete the
+                    // agreement directly (#5658).
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
