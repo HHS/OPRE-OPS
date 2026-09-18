@@ -128,7 +128,7 @@ const ProjectsList = () => {
                             />
                         </div>
                     }
-                    TableSection={<ProjectsTableLoading />}
+                    TableSection={<ProjectsTableLoading selectedFiscalYear={selectedFiscalYear} />}
                 />
             </App>
         );

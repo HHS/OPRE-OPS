@@ -72,15 +72,16 @@ export const handleProjectsExport = async (
         const allProjects = allResponses.flatMap((response) => response?.projects || []);
 
         const isSpecificFY = selectedFiscalYear && selectedFiscalYear !== "All";
-        const fyLabel = isSpecificFY ? `FY${String(selectedFiscalYear).slice(-2)} Total` : "FY Total";
 
+        // FY Total column is omitted from the export when All FYs is selected — it has no
+        // meaningful per-FY value and Project Total already covers the all-time figure.
         const tableHeaders = [
             "Project",
             "Type",
             "Start Date",
             "End Date",
-            fyLabel,
-            "Project Total",
+            ...(isSpecificFY ? [`FY${String(selectedFiscalYear).slice(-2)} Total`] : []),
+            "Lifetime Total",
             "Total Agreements",
             "Agreements"
         ];
@@ -98,18 +99,26 @@ export const handleProjectsExport = async (
                         ? project.fiscal_year_totals[Number(selectedFiscalYear)]
                         : null;
                 const fyTotal = rawFyTotal != null ? Number(rawFyTotal) : "";
-                const projectTotal =
-                    project.project_total != null && Number(project.project_total) > 0
-                        ? Number(project.project_total)
-                        : "";
+                // project_total is always numeric (0 or positive); null only if field missing
+                const projectTotal = project.project_total != null ? Number(project.project_total) : "";
                 const agreementList = project.agreement_name_list ?? [];
                 const totalAgreements = agreementList.length;
                 const agreementNames = agreementList.map((a) => a.name).join(", ");
 
-                return [title, type, startDate, endDate, fyTotal, projectTotal, totalAgreements, agreementNames];
+                return [
+                    title,
+                    type,
+                    startDate,
+                    endDate,
+                    ...(isSpecificFY ? [fyTotal] : []),
+                    projectTotal,
+                    totalAgreements,
+                    agreementNames
+                ];
             },
             filename: isSpecificFY ? `projects_FY${selectedFiscalYear}` : "projects_all",
-            currencyColumns: [4, 5]
+            // Project Total is at index 4 under All FYs (FY Total column absent), index 5 with specific FY
+            currencyColumns: isSpecificFY ? [4, 5] : [4]
         });
     } catch (error) {
         console.error("Failed to export project data:", error);

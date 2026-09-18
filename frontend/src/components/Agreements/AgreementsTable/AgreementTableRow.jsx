@@ -41,7 +41,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const fyObligatedAmount = isSuccess && selectedFiscalYear !== "All" ? Number(agreement?.fy_obligated ?? 0) : null;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyObligatedAmount = isSuccess && !isAllFY ? Number(agreement?.fy_obligated ?? 0) : null;
 
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
@@ -99,6 +100,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
             <td data-cy="fy-obligated-amount">
                 {isRowActive && !isExpanded && canEditByRole ? (
                     <div>{changeIcons}</div>
+                ) : isAllFY ? (
+                    formatCurrency(lifetimeObligated)
                 ) : fyObligatedAmount !== null ? (
                     formatCurrency(fyObligatedAmount)
                 ) : (

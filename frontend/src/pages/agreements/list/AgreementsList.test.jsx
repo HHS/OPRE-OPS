@@ -548,7 +548,7 @@ describe("AgreementsList - Pagination", () => {
             );
         });
 
-        it("should pass 'FY Obligated' column header to exportTableToXlsx when All FYs selected", async () => {
+        it("should pass 'Lifetime Obligated' column header to exportTableToXlsx when All FYs selected", async () => {
             const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
 
             useGetAgreementsQuery.mockReturnValue({
@@ -580,7 +580,8 @@ describe("AgreementsList - Pagination", () => {
             await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
 
             const headers = exportTableToXlsx.mock.calls[0][0].headers;
-            expect(headers).toContain("FY Obligated");
+            expect(headers).toContain("Lifetime Obligated");
+            expect(headers.filter((h) => h === "Lifetime Obligated")).toHaveLength(1);
             expect(headers.some((h) => /FY\d{2} Obligated/.test(h))).toBe(false);
         });
 
@@ -624,8 +625,8 @@ describe("AgreementsList - Pagination", () => {
             await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
 
             const headers = exportTableToXlsx.mock.calls[0][0].headers;
-            expect(headers).toContain("FY25 Obligated");
-            expect(headers).not.toContain("FY Obligated");
+            expect(headers[5]).toBe("FY25 Obligated");
+            expect(headers[10]).toBe("Lifetime Obligated");
         });
     });
 
@@ -972,10 +973,7 @@ describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
     });
 });
 
-describe("AgreementsList - Export FY Obligated value under All FYs", () => {
-    // Finding 2: the export rowMapper unconditionally writes fy_obligated even
-    // when selectedFiscalYear is "All". It should emit null/empty instead so the
-    // spreadsheet matches the NO_DATA the table shows. This test should FAIL until fixed.
+describe("AgreementsList - Export Lifetime Obligated value under All FYs", () => {
     beforeEach(() => {
         useLazyGetUserQuery.mockReturnValue([
             vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
@@ -1020,7 +1018,7 @@ describe("AgreementsList - Export FY Obligated value under All FYs", () => {
         });
     });
 
-    it("emits null/empty for the FY Obligated cell in the export when All FYs is selected", async () => {
+    it("emits lifetime_obligated for the Lifetime Obligated cell in the export when All FYs is selected", async () => {
         const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
         exportTableToXlsx.mockClear();
 
@@ -1037,13 +1035,14 @@ describe("AgreementsList - Export FY Obligated value under All FYs", () => {
         await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled(), { timeout: 5000 });
 
         const rowMapper = exportTableToXlsx.mock.calls[0][0].rowMapper;
-        const row = rowMapper({ ...mockAgreementsResponse.agreements[0], fy_obligated: "50000" });
+        const row = rowMapper({
+            ...mockAgreementsResponse.agreements[0],
+            fy_obligated: "50000",
+            lifetime_obligated: 75000
+        });
 
-        // "FY Obligated" is the 6th column (index 5).
-        // When All FYs is selected the table shows NO_DATA; the export must
-        // match — not emit $50,000. Currently fails because rowMapper always
-        // calls Number(agreement.fy_obligated ?? 0).
-        const fyObligatedCell = row[5];
-        expect(fyObligatedCell == null || fyObligatedCell === "").toBe(true);
+        // "Lifetime Obligated" is the 6th column (index 5) when All FYs is selected.
+        // The export must emit lifetime_obligated, not fy_obligated.
+        expect(row[5]).toBe(75000);
     });
 });

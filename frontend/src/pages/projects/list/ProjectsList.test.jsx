@@ -134,12 +134,13 @@ describe("ProjectsList", () => {
         expect(screen.getByText("All Projects")).toBeInTheDocument();
         expect(screen.getByRole("table")).toBeInTheDocument();
         // "Project" header button text is exactly "Project" (with arrow icon); use exact false to catch it
-        expect(screen.getAllByRole("columnheader").length).toBe(7);
+        // Default FY is "All" → FY Total column hidden, 5 data columns + expand = 6 total
+        expect(screen.getAllByRole("columnheader").length).toBe(6);
         expect(screen.getByRole("columnheader", { name: /^Project$/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /End/ })).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: /Project Total/ })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: /Lifetime Total/ })).toBeInTheDocument();
     });
 
     it("renders project link with correct href", () => {
@@ -266,7 +267,7 @@ describe("ProjectsList", () => {
         expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(expect.objectContaining({ fiscalYear: "2025" }));
     });
 
-    it("renders FY Total in the table header when All is selected", async () => {
+    it("hides FY Total column when All is selected and shows it for a specific FY", async () => {
         const user = userEvent.setup();
 
         mockUseGetProjectsQuery.mockReturnValue({
@@ -277,10 +278,14 @@ describe("ProjectsList", () => {
 
         renderComponent();
 
-        const fySelect = screen.getByLabelText("Fiscal Year");
-        await user.selectOptions(fySelect, "All");
+        // Default is All — FY Total column should not be present
+        expect(screen.queryByRole("columnheader", { name: /fy total/i })).not.toBeInTheDocument();
 
-        expect(screen.getByRole("columnheader", { name: /^fy total$/i })).toBeInTheDocument();
+        // Select a specific year — FY Total column should appear
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2044");
+
+        expect(screen.getByRole("columnheader", { name: /FY44 Total/i })).toBeInTheDocument();
     });
 
     it("resets sort to TITLE when fiscal year changes back to All while sorted by FY Total", async () => {
