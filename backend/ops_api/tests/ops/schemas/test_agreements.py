@@ -514,6 +514,8 @@ class TestSimpleAgreementSchema:
             "id",
             "agreement_type",
             "name",
+            "nick_name",
+            "display_name",
             "awarding_entity_id",
             "project",
             "procurement_shop",

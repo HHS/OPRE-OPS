@@ -1,4 +1,5 @@
 import { formatDate } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
@@ -6,9 +7,15 @@ const handleAgreementProp = (agreement) => {
     }
 };
 
+/**
+ * Nickname-preferred agreement label for the agreements table row. Delegates to the
+ * shared `getAgreementDisplayName` helper (see agreement.helpers.js) so all callers of
+ * this table (AgreementTableRow, ProjectSpendingAgreementRow, ProcurementDetailsTableRow)
+ * pick up the nickname-preference for free. Ref: issue #6144.
+ */
 export const getAgreementName = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.display_name;
+    return getAgreementDisplayName(agreement);
 };
 
 export const getResearchProjectName = (agreement) => {

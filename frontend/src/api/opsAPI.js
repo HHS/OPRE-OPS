@@ -10,6 +10,7 @@ import {
     normalizeProjectUsers,
     normalizeUser
 } from "../helpers/users.helpers";
+import { getAgreementFilterFullName } from "../helpers/agreement.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -123,9 +124,12 @@ export const opsApi = createApi({
                 }
                 if (agreementName) {
                     agreementName.forEach((name) => {
-                        const agreementDisplayName = name.display_name ?? name.name ?? name.title;
-                        if (agreementDisplayName) {
-                            queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
+                        // `name=` is a strict full-name param (backend's exact-match branch, trap 2) —
+                        // prefer the raw full name over the nickname-preferred display_name/title so
+                        // this filter keeps matching Agreement.name regardless of nickname. Ref: issue #6144 F5.
+                        const agreementFullName = getAgreementFilterFullName(name);
+                        if (agreementFullName) {
+                            queryParams.push(`name=${encodeURIComponent(agreementFullName)}`);
                         }
                     });
                 }
@@ -398,8 +402,12 @@ export const opsApi = createApi({
                     );
                 }
                 if (agreementTitles) {
+                    // Must send the full `name`, never the nickname/display label — the backend
+                    // filter matches `agreement_name` against Agreement.name only. Matching on
+                    // nick_name too would let one agreement's nickname collide with a different
+                    // agreement's full name and pull in that other agreement's budget lines.
                     agreementTitles.forEach((title) =>
-                        queryParams.push(`agreement_name=${encodeURIComponent(title.name)}`)
+                        queryParams.push(`agreement_name=${encodeURIComponent(getAgreementFilterFullName(title))}`)
                     );
                 }
                 if (canActivePeriods) {
@@ -545,10 +553,13 @@ export const opsApi = createApi({
                         });
                     }
 
-                    // agreement_search filter
+                    // agreement_id filter — send the id, not the nickname-preferred title. The
+                    // backend matches Agreement.id directly; matching on name/nick_name strings
+                    // could let one agreement's nickname collide with a different agreement's
+                    // full name and surface the wrong project.
                     if (filters.agreementSearch && filters.agreementSearch.length > 0) {
                         filters.agreementSearch.forEach((agreement) => {
-                            queryParams.push(`agreement_search=${encodeURIComponent(agreement.title)}`);
+                            queryParams.push(`agreement_id=${agreement.id}`);
                         });
                     }
 

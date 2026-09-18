@@ -8,6 +8,7 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 
 const MemoizedDatePicker = React.memo(DatePicker);
 const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
@@ -237,7 +238,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
-                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
+                        message: `"${getAgreementDisplayName(agreement)}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
                     });
                     scrollToTop();
                     // Use flushSync to ensure state update completes before navigation

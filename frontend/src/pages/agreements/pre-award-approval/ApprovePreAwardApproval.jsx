@@ -9,6 +9,7 @@ import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
@@ -98,7 +99,7 @@ export const ApprovePreAwardApproval = () => {
 
             <PageHeader
                 title="Approval for Pre-Award"
-                subTitle={agreement?.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
 
             <p className="margin-y-3">

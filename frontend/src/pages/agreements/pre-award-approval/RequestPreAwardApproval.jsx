@@ -11,6 +11,7 @@ import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
@@ -132,7 +133,7 @@ export const RequestPreAwardApproval = () => {
 
             <PageHeader
                 title="Request Pre-Award Approval"
-                subTitle={agreement?.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
 
             {hasValidationErrors && (

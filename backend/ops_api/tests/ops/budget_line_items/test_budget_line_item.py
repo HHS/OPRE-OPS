@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy_continuum import parent_class, version_class
 
 from models import (
@@ -1557,6 +1557,8 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client, app_ctx)
     if len(response.json["agreement_names"]) > 0:
         assert "id" in response.json["agreement_names"][0]
         assert "name" in response.json["agreement_names"][0]
+        assert "nick_name" in response.json["agreement_names"][0]
+        assert "display_name" in response.json["agreement_names"][0]
 
     # Verify can_active_periods is present and is a list
     assert "can_active_periods" in response.json
@@ -2860,6 +2862,112 @@ def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db, 
     assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have agreement name '{agreement_name}'"
 
 
+def test_bli_agreement_name_filter_does_not_match_nick_name(
+    auth_client, loaded_db, test_cans, test_project, test_admin_user, app_ctx
+):
+    """Regression guard: the BLI agreement_name filter must match ONLY the full name.
+
+    The frontend always sends the full name (opsAPI.js), never the nick_name. If the
+    backend also matched nick_name, an agreement B whose nick_name equals a different
+    agreement A's full name would leak B's budget lines into a filter the user applied
+    for A — inflating counts/totals for an agreement the user never selected.
+    """
+    common_title = "ABC Study Regression Test"
+
+    agreement_a = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name=common_title,
+        nick_name=None,
+        description="Agreement A — full name equals agreement B's nickname",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    agreement_b = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Longer Title Regression Test",
+        nick_name=common_title,
+        description="Agreement B — nick_name equals agreement A's full name",
+        project_id=test_project.id,
+        product_service_code_id=loaded_db.get(ProductServiceCode, 1).id,
+        awarding_entity_id=loaded_db.get(ProcurementShop, 1).id,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_admin_user.id,
+    )
+    loaded_db.add(agreement_a)
+    loaded_db.add(agreement_b)
+    loaded_db.commit()
+
+    test_can = test_cans[0]
+    bli_a = ContractBudgetLineItem(
+        line_description="BLI on agreement A",
+        agreement_id=agreement_a.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        amount=1000,
+    )
+    bli_b = ContractBudgetLineItem(
+        line_description="BLI on agreement B",
+        agreement_id=agreement_b.id,
+        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.DRAFT,
+        amount=2000,
+    )
+    loaded_db.add(bli_a)
+    loaded_db.add(bli_b)
+    loaded_db.commit()
+
+    try:
+        # Filtering by A's full name (which is also B's nick_name) must return only A's BLI.
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"agreement_name": common_title, "enable_obe": True, "limit": 50, "offset": 0},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert bli_a.id in returned_ids
+        assert bli_b.id not in returned_ids
+
+        # Filtering by B's nick_name directly must return nothing (nick_name is not matched).
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"agreement_name": agreement_b.nick_name, "enable_obe": True, "limit": 50, "offset": 0},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert bli_a.id in returned_ids
+        assert bli_b.id not in returned_ids
+    finally:
+        loaded_db.delete(bli_a)
+        loaded_db.delete(bli_b)
+        loaded_db.delete(agreement_a)
+        loaded_db.delete(agreement_b)
+        loaded_db.commit()
+
+
+def test_bli_response_agreement_includes_nick_name_and_display_name(auth_client, loaded_db, app_ctx):
+    """B9: SimpleAgreementSchema should dump nick_name and display_name alongside name."""
+    stmt = (
+        select(BudgetLineItem)
+        .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+        .where(Agreement.nick_name.isnot(None))
+    )
+    bli = loaded_db.scalars(stmt).first()
+    if bli is None:
+        pytest.skip("No BLI with a nicknamed agreement found in the database")
+
+    response = auth_client.get(f"/api/v1/budget-line-items/{bli.id}")
+    assert response.status_code == 200
+    agreement = response.json["agreement"]
+    assert agreement["name"] == bli.agreement.name
+    assert agreement["nick_name"] == bli.agreement.nick_name
+    assert agreement["display_name"] == bli.agreement.display_name
+
+
 def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by CAN active period.
@@ -3011,6 +3119,32 @@ def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, lo
         assert agreement_types == sorted(
             agreement_types, reverse=True
         ), "BLIs should be sorted by agreement type descending"
+
+
+def test_get_budget_line_items_sort_by_agreement_name_uses_display_name(auth_client, loaded_db, app_ctx):
+    """B8: sorting by AGREEMENT_NAME should use display_name_expression() (nickname-preferred)."""
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"sort_conditions": "AGREEMENT_NAME", "sort_descending": False, "enable_obe": True, "limit": 50},
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+
+    display_names = [item.get("agreement", {}).get("display_name") for item in response.json if item.get("agreement")]
+    display_names = [d for d in display_names if d is not None]
+
+    if len(display_names) > 1:
+        # Compare against Postgres's own default text collation (what display_name_expression()
+        # actually sorts with) rather than Python's str.casefold() — the two aren't guaranteed to
+        # agree (e.g. mixed-case ASCII orders differently under "C"/default collations).
+        db_sorted_names = (
+            loaded_db.execute(text("SELECT unnest(:names ::text[]) AS name ORDER BY name"), {"names": display_names})
+            .scalars()
+            .all()
+        )
+        assert display_names == db_sorted_names
 
 
 def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db, app_ctx):

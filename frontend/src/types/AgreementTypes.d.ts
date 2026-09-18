@@ -73,6 +73,8 @@ type ProductServiceCode = {
 type SimpleAgreement = {
     agreement_type: string;
     name: string;
+    nick_name?: string | null;
+    display_name?: string;
     awarding_entity_id?: number;
     award_type?: string | null;
     vendor?: string | null;

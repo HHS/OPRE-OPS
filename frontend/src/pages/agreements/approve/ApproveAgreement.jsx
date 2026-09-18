@@ -27,6 +27,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 import { Navigate } from "react-router-dom";
@@ -113,7 +114,7 @@ const ApproveAgreement = () => {
 
             <PageHeader
                 title={title}
-                subTitle={agreement.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
             <ReviewChangeRequestAccordion
                 changeType={changeRequestType}

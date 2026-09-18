@@ -49,8 +49,22 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             if (item.order !== undefined) {
                 option.order = item.order;
             }
+            // Only include searchText if explicitly present on the item — this is what widens
+            // react-select's filter (via ComboBox.jsx's createFilter) to also match the hidden
+            // full name/nickname. Additive/opt-in: items without it filter exactly as before.
+            if (item.searchText !== undefined) {
+                option.searchText = item.searchText;
+            }
             return option;
         });
+
+        // Only treat this as a numeric list (e.g. plain fiscal years) when EVERY label is a
+        // whole number — checking pairwise would misfire on lists like agreement names/nicknames
+        // that happen to contain a few purely-numeric labels (e.g. "24", "100"), silently
+        // overriding their intended alphabetical sort. Ref: issue #6144.
+        const allLabelsNumeric =
+            mappedOptions.length > 0 &&
+            mappedOptions.every((option) => option.label !== "" && Number.isInteger(Number(option.label)));
 
         // Sort by order field if present, otherwise fall back to default sorting
         return mappedOptions.sort((a, b) => {
@@ -58,8 +72,8 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             if (a.order !== undefined && b.order !== undefined) {
                 return a.order - b.order;
             }
-            // if the label is a number, sort by number
-            if (Number.isInteger(Number(a.label)) && Number.isInteger(Number(b.label))) {
+            // if every label in the list is a whole number, sort numerically
+            if (allLabelsNumeric) {
                 return Number(b.label) - Number(a.label);
             }
             // default is to sort alphabetically

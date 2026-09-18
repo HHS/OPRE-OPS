@@ -11,6 +11,7 @@ import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAn
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import useApproveAwardApproval from "./ApproveAwardApproval.hooks";
 
 /**
@@ -102,7 +103,7 @@ export const ApproveAwardApproval = () => {
 
             <PageHeader
                 title="Award Approval"
-                subTitle={agreement?.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
 
             <p className="margin-y-3">
@@ -250,6 +251,9 @@ export const ApproveAwardApproval = () => {
                     <div className="grid-col-6">
                         <dl className="font-12px margin-0">
                             <dt className="text-base-dark">Current Agreement Title</dt>
+                            {/* Must stay raw agreement.name (never nickname-preferred) — rendered
+                                beside the proposed step6.agreement_title for a full-title comparison.
+                                Ref: issue #6144 F7. */}
                             <dd className="margin-0 text-bold">{agreement?.name || "—"}</dd>
                         </dl>
                     </div>

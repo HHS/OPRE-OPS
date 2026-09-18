@@ -267,6 +267,8 @@ class SimpleAgreementSchema(Schema):
     id = fields.Integer(required=True)
     agreement_type = fields.String(allow_none=False)
     name = fields.String(allow_none=False)
+    nick_name = fields.String(allow_none=True)
+    display_name = fields.String(dump_only=True)
     awarding_entity_id = fields.Integer(allow_none=True)
     project = fields.Nested(SimpleProjectSchema, required=True)
     procurement_shop = fields.Nested(

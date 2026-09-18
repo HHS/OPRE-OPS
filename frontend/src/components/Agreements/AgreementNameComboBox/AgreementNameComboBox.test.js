@@ -16,10 +16,14 @@ vi.mock("react-router-dom", async () => {
     };
 });
 
+// Each fixture sets name (full title) and nick_name — never display_name directly — matching
+// what the backend actually sends (issue #6144: display_name is a computed nickname-preferred
+// field, never an independent input). The nick_name values match the pre-#6144 fixture's
+// `display_name` strings so most rendered-text assertions below are unaffected.
 const sampleAgreements = [
-    { id: 1, display_name: "Contract #001" },
-    { id: 2, display_name: "Grant ABC" },
-    { id: 3, display_name: "Contract #002" }
+    { id: 1, name: "Full Title For Contract 001", nick_name: "Contract #001" },
+    { id: 2, name: "Full Title For Grant ABC", nick_name: "Grant ABC" },
+    { id: 3, name: "Full Title For Contract 002", nick_name: "Contract #002" }
 ];
 
 describe("AgreementNameComboBox", () => {
@@ -117,19 +121,34 @@ describe("AgreementNameComboBox", () => {
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("Grant ABC"));
         expect(setSelectedAgreementNames).toHaveBeenCalledWith([
-            { id: 1, display_name: "Contract #001", title: "Contract #001" },
-            { id: 2, display_name: "Grant ABC", title: "Grant ABC" }
+            {
+                id: 1,
+                title: "Contract #001",
+                name: "Full Title For Contract 001",
+                nick_name: "Contract #001",
+                display_name: "Contract #001",
+                searchText: "Full Title For Contract 001 Contract #001"
+            },
+            {
+                id: 2,
+                title: "Grant ABC",
+                name: "Full Title For Grant ABC",
+                nick_name: "Grant ABC",
+                display_name: "Grant ABC",
+                searchText: "Full Title For Grant ABC Grant ABC"
+            }
         ]);
     });
 
-    it("removes duplicate agreement names", () => {
-        const duplicateAgreements = [
-            { id: 1, display_name: "Contract #001" },
-            { id: 2, display_name: "Contract #001" },
-            { id: 3, display_name: "Grant ABC" }
+    it("dedupes by agreement id, not by the rendered display string", () => {
+        // Two agreements with the SAME id sharing a display string should collapse to one option.
+        const trueDuplicateAgreements = [
+            { id: 1, name: "Contract #001", nick_name: null },
+            { id: 1, name: "Contract #001", nick_name: null },
+            { id: 3, name: "Grant ABC", nick_name: null }
         ];
         useGetAllAgreements.mockReturnValue({
-            agreements: duplicateAgreements,
+            agreements: trueDuplicateAgreements,
             isLoading: false,
             isError: false,
             error: null
@@ -146,9 +165,42 @@ describe("AgreementNameComboBox", () => {
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
-        // Should only show "Contract #001" once
+        // Should only show "Contract #001" once — same id twice collapses to one option.
         const options = screen.getAllByText("Contract #001");
         expect(options).toHaveLength(1);
+    });
+
+    it("does NOT drop an agreement when its display string collides with a different agreement's (trap 4 regression)", () => {
+        // Agreement 1's nickname happens to equal agreement 2's full name. Keying the dedupe
+        // Map by the rendered display string (the pre-fix behavior) would let id 2 silently
+        // overwrite id 1's entry in the Map, making agreement 1 vanish from the dropdown with
+        // no error. Keying by `id` (the fix) must keep both. Ref: issue #6144 trap 4.
+        const collidingAgreements = [
+            { id: 1, name: "A Very Different Full Title", nick_name: "Shared Label" },
+            { id: 2, name: "Shared Label", nick_name: null }
+        ];
+        useGetAllAgreements.mockReturnValue({
+            agreements: collidingAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={null}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // Both agreement 1 (nickname "Shared Label") and agreement 2 (full name "Shared Label")
+        // must still be present as two distinct options.
+        const options = screen.getAllByText("Shared Label");
+        expect(options).toHaveLength(2);
     });
 
     it("displays loading state while fetching agreements", () => {
@@ -313,8 +365,10 @@ describe("AgreementNameComboBox", () => {
             {
                 id: 10,
                 name: "MIHOPE Check-In",
+                nick_name: undefined,
                 display_name: "MIHOPE Check-In",
-                title: "MIHOPE Check-In"
+                title: "MIHOPE Check-In",
+                searchText: "MIHOPE Check-In"
             }
         ]);
     });
@@ -430,6 +484,92 @@ describe("AgreementNameComboBox", () => {
 
         expect(screen.getByText("Agreement Title")).toBeInTheDocument();
         expect(screen.getByRole("combobox")).toBeInTheDocument();
+    });
+
+    it("shows the nickname as the label when present, and the full name when absent", () => {
+        const mixedAgreements = [
+            { id: 1, name: "Full Title With Nickname", nick_name: "NICK" },
+            { id: 2, name: "Full Title Without Nickname", nick_name: null }
+        ];
+        useGetAllAgreements.mockReturnValue({
+            agreements: mixedAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={null}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByText("NICK")).toBeInTheDocument();
+        expect(screen.getByText("Full Title Without Nickname")).toBeInTheDocument();
+        expect(screen.queryByText("Full Title With Nickname")).not.toBeInTheDocument();
+    });
+
+    it("finds the option by typing the full name even though the nickname is the visible label", () => {
+        const mixedAgreements = [{ id: 1, name: "MIHOPE Full Evaluation Title", nick_name: "MIHOPE" }];
+        useGetAllAgreements.mockReturnValue({
+            agreements: mixedAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+        render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={null}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        const input = screen.getByRole("combobox");
+        fireEvent.change(input, { target: { value: "Full Evaluation" } });
+
+        expect(screen.getByText("MIHOPE")).toBeInTheDocument();
+    });
+
+    it("setSelectedAgreementNames receives {name, nick_name, title === display} for the derived-fetch path", () => {
+        const setSelectedAgreementNames = mockFn;
+        const mixedAgreements = [{ id: 1, name: "Full Title", nick_name: "NICK" }];
+        useGetAllAgreements.mockReturnValue({
+            agreements: mixedAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={null}
+                    setSelectedAgreementNames={setSelectedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.focus(container.querySelector("input"));
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+        fireEvent.click(screen.getByText("NICK"));
+
+        expect(setSelectedAgreementNames).toHaveBeenCalledWith([
+            expect.objectContaining({
+                id: 1,
+                name: "Full Title",
+                nick_name: "NICK",
+                title: "NICK",
+                display_name: "NICK"
+            })
+        ]);
     });
 
     it("handles undefined agreements", () => {

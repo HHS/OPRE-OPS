@@ -1030,6 +1030,32 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("enable_obe=true");
     });
 
+    it("builds getProjects agreement filter using agreement_id, not the nickname-preferred title", async () => {
+        // Regression guard (#6144): must send the agreement's id, not its display title.
+        // Sending the title let one agreement's nickname collide with a different agreement's
+        // full name on the backend and surface the wrong project.
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/projects/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getProjects.initiate({
+                filters: {
+                    agreementSearch: [{ id: 42, title: "ABC Study", name: "Longer Title", nick_name: "ABC Study" }]
+                }
+            })
+        );
+
+        expect(capturedUrl).toContain("agreement_id=42");
+        expect(capturedUrl).not.toContain("agreement_search");
+        expect(capturedUrl).not.toContain("ABC");
+    });
+
     it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {
         let capturedUrl = "";
         server.use(

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
+import { getAgreementFilterTagText } from "../../../helpers/agreement.helpers";
 
 /**
  * A filter tags.
@@ -60,10 +61,14 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
                 });
                 break;
             case "agreementTitles":
+                // Key removal on id, not tagText — nickname-preferred display text isn't unique
+                // (agreement A's nick_name can equal agreement B's full name), so two distinct
+                // selections can render identical chips. Matching by tagText would remove both
+                // when only one "x" is clicked.
                 setFilters((prevState) => {
                     return {
                         ...prevState,
-                        agreementTitles: (prevState.agreementTitles ?? []).filter((title) => title.name !== tag.tagText)
+                        agreementTitles: (prevState.agreementTitles ?? []).filter((title) => title.id !== tag.id)
                     };
                 });
                 break;
@@ -124,9 +129,12 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
 
     const agreementTitleTags = useMemo(() => {
         if (!Array.isArray(filters.agreementTitles)) return [];
+        // Nickname-preferred tag text — carries id so removeFilter can key on it instead of
+        // this (possibly non-unique) display text.
         return filters.agreementTitles.map((title) => ({
-            tagText: title.name,
-            filter: "agreementTitles"
+            tagText: getAgreementFilterTagText(title),
+            filter: "agreementTitles",
+            id: title.id
         }));
     }, [filters.agreementTitles]);
 

@@ -2,9 +2,27 @@ import React from "react";
 import { render, waitFor, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import store from "../../../store";
+import Agreement from "./Agreement";
+
+// --- Negative-AC coverage (issue #6144): the agreement's own details page must keep showing
+// the raw full name — never the nickname-preferred display_name — in the <h1> and the
+// breadcrumb, even when the agreement has a nickname. ---
+vi.mock("../../../api/opsAPI");
+vi.mock("../../../App", () => ({
+    default: ({ breadCrumbName, children }) => (
+        <div
+            data-testid="app-mock"
+            data-breadcrumb={breadCrumbName ?? ""}
+        >
+            {children}
+        </div>
+    )
+}));
+vi.mock("./AgreementDetails", () => ({ default: () => <div data-testid="agreement-details-mock" /> }));
+vi.mock("../../../hooks/useChangeRequests.hooks", () => ({ useChangeRequestsForAgreement: () => [] }));
 
 // Simple test component that demonstrates the memoization behavior
 const TestMemoizationComponent = () => {
@@ -542,5 +560,62 @@ describe("Agreement memoization functionality", () => {
 
             expect(screen.getByTestId("project-title")).toHaveTextContent("");
         });
+    });
+});
+
+describe("Agreement page — details page nickname negative AC (issue #6144)", () => {
+    const nicknamedAgreement = {
+        id: 42,
+        name: "Full Legal Title For Testing",
+        nick_name: "FLT",
+        display_name: "FLT",
+        agreement_type: "CONTRACT",
+        project: { title: "Some Project" },
+        budget_line_items: [],
+        is_awarded: false,
+        change_requests_in_review: []
+    };
+
+    beforeEach(async () => {
+        const opsAPI = await import("../../../api/opsAPI");
+        opsAPI.useGetAgreementByIdQuery.mockReturnValue({
+            data: nicknamedAgreement,
+            error: undefined,
+            isLoading: false,
+            isSuccess: true
+        });
+        opsAPI.useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: [] });
+        opsAPI.useGetProcurementShopByIdQuery.mockReturnValue({ data: undefined });
+        opsAPI.useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({ data: { data: [] } });
+    });
+
+    const renderAgreementPage = () =>
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/42"]}>
+                    <Routes>
+                        <Route
+                            path="/agreements/:id/*"
+                            element={<Agreement />}
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+
+    it("renders the <h1> as the raw full name, never the nickname or display_name", async () => {
+        renderAgreementPage();
+
+        const heading = await screen.findByRole("heading", { level: 1 });
+        expect(heading).toHaveTextContent(nicknamedAgreement.name);
+        expect(heading).not.toHaveTextContent(nicknamedAgreement.nick_name);
+    });
+
+    it("passes the raw full name as breadCrumbName, never the nickname or display_name", async () => {
+        renderAgreementPage();
+
+        const appMock = await screen.findByTestId("app-mock");
+        expect(appMock.dataset.breadcrumb).toBe(nicknamedAgreement.name);
+        expect(appMock.dataset.breadcrumb).not.toBe(nicknamedAgreement.nick_name);
     });
 });

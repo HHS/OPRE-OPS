@@ -148,6 +148,128 @@ describe("ComboBox", () => {
         expect(input).toBeDisabled();
     });
 
+    describe("searchText filtering (issue #6144 AC 3)", () => {
+        const agreementOptions = [
+            { id: 1, title: "HS", searchText: "Head Start Contract HS" },
+            {
+                id: 2,
+                title: "AACFRC",
+                searchText: "Contract #1: African American Child and Family Research Center AACFRC"
+            },
+            { id: 3, title: "No Search Text Option" }
+        ];
+
+        it("matches when the typed text appears only in searchText, not in the visible label", () => {
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={agreementOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            const input = screen.getByRole("combobox");
+            fireEvent.change(input, { target: { value: "Head Start" } });
+
+            expect(screen.getByText("HS")).toBeInTheDocument();
+            expect(screen.queryByText("AACFRC")).not.toBeInTheDocument();
+        });
+
+        it("resolves the same single option whether the user types the nickname or the full name", () => {
+            const { unmount } = render(
+                <ComboBox
+                    namespace="test"
+                    data={agreementOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            const input = screen.getByRole("combobox");
+
+            fireEvent.change(input, { target: { value: "AACFRC" } });
+            expect(screen.getByText("AACFRC")).toBeInTheDocument();
+            expect(screen.queryByText("HS")).not.toBeInTheDocument();
+            unmount();
+
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={agreementOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            fireEvent.change(screen.getByRole("combobox"), {
+                target: { value: "African American Child" }
+            });
+            expect(screen.getByText("AACFRC")).toBeInTheDocument();
+            expect(screen.queryByText("HS")).not.toBeInTheDocument();
+        });
+
+        it("does not match unrelated text", () => {
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={agreementOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            fireEvent.change(screen.getByRole("combobox"), { target: { value: "zzz-no-match-zzz" } });
+
+            expect(screen.queryByText("HS")).not.toBeInTheDocument();
+            expect(screen.queryByText("AACFRC")).not.toBeInTheDocument();
+            expect(screen.queryByText("No Search Text Option")).not.toBeInTheDocument();
+        });
+
+        it("still matches on the option's id/value when it is a human-typeable code (e.g. ProjectTypeComboBox)", () => {
+            // Mirrors ProjectTypeComboBox: id is a typeable code string, not shown in the label,
+            // and no searchText is set. react-select's own defaultStringify includes option.value,
+            // so this must keep matching even after the searchText override — regression guard for
+            // the override accidentally dropping option.value from the searchable text.
+            const projectTypeOptions = [
+                { id: "ADMINISTRATIVE_AND_SUPPORT", title: "Admin & Support" },
+                { id: "RESEARCH", title: "Research" }
+            ];
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={projectTypeOptions}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            fireEvent.change(screen.getByRole("combobox"), { target: { value: "administrative" } });
+
+            expect(screen.getByText("Admin & Support")).toBeInTheDocument();
+            expect(screen.queryByText("Research")).not.toBeInTheDocument();
+        });
+
+        it("regression guard: filtering is unchanged for options without searchText", () => {
+            // researchProjects (used throughout this file) has no searchText field on any option —
+            // this pins that every other ComboBox usage in the app filters exactly as before.
+            render(
+                <ComboBox
+                    namespace="test"
+                    data={researchProjects}
+                    selectedData={null}
+                    setSelectedData={mockSetSelectedProject}
+                />
+            );
+            const input = screen.getByRole("combobox");
+
+            fireEvent.change(input, { target: { value: "Project 2" } });
+            expect(screen.getByText("Project 2")).toBeInTheDocument();
+            expect(screen.queryByText("Project 1")).not.toBeInTheDocument();
+            expect(screen.queryByText("Project 3")).not.toBeInTheDocument();
+
+            fireEvent.change(input, { target: { value: "Description 1" } });
+            // "Description 1" only appears in the description field, which is not part of the
+            // option label and has no searchText fallback for this dataset — must not match.
+            expect(screen.queryByText("Project 1")).not.toBeInTheDocument();
+        });
+    });
+
     it("renders a loading skeleton in the dropdown menu", () => {
         const { container } = render(
             <ComboBox

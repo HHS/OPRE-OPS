@@ -364,6 +364,118 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-Agreement 2")).toBeInTheDocument();
     });
 
+    it("shows the nickname (title) as the agreement title tag text when present (issue #6144 F4)", () => {
+        const filters = {
+            ...defaultFilters,
+            agreementTitles: [{ id: 1, title: "HS", name: "Head Start Contract", nick_name: "HS" }]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+
+        expect(screen.getByTestId("remove-tag-HS")).toBeInTheDocument();
+        expect(screen.queryByTestId("remove-tag-Head Start Contract")).not.toBeInTheDocument();
+    });
+
+    it("falls back to display_name, then name, for the agreement title tag text", () => {
+        const filtersWithDisplayName = {
+            ...defaultFilters,
+            agreementTitles: [{ id: 1, display_name: "Display Name Only", name: "Full Name" }]
+        };
+        const { rerender } = render(
+            <BLIFilterTags
+                filters={filtersWithDisplayName}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+        expect(screen.getByTestId("remove-tag-Display Name Only")).toBeInTheDocument();
+
+        const filtersWithNameOnly = {
+            ...defaultFilters,
+            agreementTitles: [{ id: 2, name: "Full Name Only" }]
+        };
+        rerender(
+            <BLIFilterTags
+                filters={filtersWithNameOnly}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+        expect(screen.getByTestId("remove-tag-Full Name Only")).toBeInTheDocument();
+    });
+
+    it("removes an agreement title tag by its nickname-preferred tag text — the X button must find the same field it rendered (issue #6144 F4)", async () => {
+        const filters = {
+            ...defaultFilters,
+            agreementTitles: [
+                { id: 1, title: "HS", name: "Head Start Contract", nick_name: "HS" },
+                { id: 2, title: "AACFRC", name: "African American Child and Family Research Center" }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+
+        const removeButton = screen.getByTestId("remove-tag-HS");
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({ agreementTitles: filters.agreementTitles });
+
+        // Removing the "HS" tag must remove exactly the HS agreement and keep AACFRC.
+        expect(result.agreementTitles).toHaveLength(1);
+        expect(result.agreementTitles[0].id).toBe(2);
+    });
+
+    it("removes only the clicked agreement when two selections render an identical tag (nickname/name collision)", async () => {
+        // Agreement A's nick_name equals agreement B's full name — both render the tag text "ABC".
+        const filters = {
+            ...defaultFilters,
+            agreementTitles: [
+                { id: 1, title: "ABC", name: "Agreement With Nickname ABC", nick_name: "ABC" },
+                { id: 2, title: "ABC", name: "ABC" }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+
+        const removeButtons = screen.getAllByTestId("remove-tag-ABC");
+        expect(removeButtons).toHaveLength(2);
+        fireEvent.click(removeButtons[0]);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({ agreementTitles: filters.agreementTitles });
+
+        // Only the id-1 selection should be removed; the id-2 collision survives.
+        expect(result.agreementTitles).toHaveLength(1);
+        expect(result.agreementTitles[0].id).toBe(2);
+    });
+
     it("renders CAN active period tags", () => {
         const filters = {
             ...defaultFilters,

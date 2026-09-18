@@ -9,6 +9,7 @@ import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -59,7 +60,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         key={budgetLine.id}
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
-                        agreementName={budgetLine.agreement?.name ?? NO_DATA}
+                        agreementName={getAgreementDisplayName(budgetLine.agreement) || NO_DATA}
                         obligateDate={formatDateNeeded(budgetLine?.date_needed ?? "")}
                         fiscalYear={budgetLine.fiscal_year || NO_DATA}
                         amount={budgetLine.amount ?? 0}
