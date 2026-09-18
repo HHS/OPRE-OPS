@@ -605,11 +605,16 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(deleteAgreementMock).not.toHaveBeenCalled();
-        expect(setAlertMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 
-    it("deletes the agreement and navigates to the agreements list if one was already persisted before reaching step 3", async () => {
+    it("deletes the agreement and shows the cancel-agreement success alert if one was already persisted before reaching step 3", async () => {
         const { result } = renderHook(() =>
             useCreateBLIsAndSCs(
                 false, // isEditMode
@@ -638,8 +643,13 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(deleteAgreementMock).toHaveBeenCalledWith(1);
-        expect(setAlertMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 
     it("uses the latest review-mode suite result for page validation", async () => {
