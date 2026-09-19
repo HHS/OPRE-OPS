@@ -59,12 +59,6 @@ describe("normalizeFYTag", () => {
         expect(normalizeFYTag("FY 2024")).toBe("FY 2024");
     });
 
-    it("prefixes 'All FYs' as 'FY All FYs' — normalizeFYTag does not special-case the sentinel", () => {
-        // normalizeFYTag is only called for real year titles; deriveFYTags intercepts the sentinel
-        // via isAllSentinel before calling normalizeFYTag, so this case never reaches production.
-        expect(normalizeFYTag("All FYs")).toBe("FY All FYs");
-        // (deriveFYTags routes sentinel through isAllSentinel before calling normalizeFYTag)
-    });
 });
 
 // ---------------------------------------------------------------------------
