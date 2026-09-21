@@ -58,7 +58,6 @@ describe("normalizeFYTag", () => {
     it("is idempotent — does not double-prefix an already-prefixed title", () => {
         expect(normalizeFYTag("FY 2024")).toBe("FY 2024");
     });
-
 });
 
 // ---------------------------------------------------------------------------
