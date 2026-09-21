@@ -7,11 +7,6 @@ import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 
-/** Number of visible data columns when a specific FY is selected (Project, Type, Start, End, FY Total, Lifetime Total). */
-const COL_COUNT_WITH_FY = 6;
-/** Number of visible data columns when All FYs is selected (FY Total column hidden). */
-const COL_COUNT_ALL_FY = 5;
-
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
 
@@ -48,27 +43,27 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
 
     const agreementList = project.agreement_name_list ?? [];
 
-    const tableRowData = (
-        <>
-            <td>
-                <Link
-                    className="text-ink text-no-underline"
-                    to={`/projects/${project.id}`}
-                >
-                    {project.title}
-                </Link>
-            </td>
-            <td>{convertCodeForDisplay("project", project.project_type)}</td>
-            <td>{formatProjectDate(project.start_date)}</td>
-            <td>{formatProjectDate(project.end_date)}</td>
-            {!isAllFY && <td>{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>}
-            <td>{projectTotal !== null ? formatCurrency(projectTotal) : NO_DATA}</td>
-        </>
-    );
+    const visibleColumns = [
+        <td key="title">
+            <Link
+                className="text-ink text-no-underline"
+                to={`/projects/${project.id}`}
+            >
+                {project.title}
+            </Link>
+        </td>,
+        <td key="type">{convertCodeForDisplay("project", project.project_type)}</td>,
+        <td key="start-date">{formatProjectDate(project.start_date)}</td>,
+        <td key="end-date">{formatProjectDate(project.end_date)}</td>,
+        ...(isAllFY ? [] : [<td key="fy-total">{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>]),
+        <td key="project-total">{projectTotal !== null ? formatCurrency(projectTotal) : NO_DATA}</td>
+    ];
+
+    const tableRowData = <>{visibleColumns}</>;
 
     const expandedData = (
         <td
-            colSpan={(isAllFY ? COL_COUNT_ALL_FY : COL_COUNT_WITH_FY) + 1}
+            colSpan={visibleColumns.length + 1}
             className="border-top-none"
             style={expandedRowBGColor}
         >
