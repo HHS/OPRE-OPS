@@ -1046,8 +1046,12 @@ const useCreateBLIsAndSCs = (
                             .unwrap()
                             .then((fulfilled) => {
                                 console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                                navigate("/agreements");
-                                scrollToTop();
+                                setAlert({
+                                    type: "success",
+                                    heading: "Create New Agreement Cancelled",
+                                    message: "Your agreement has been cancelled.",
+                                    redirectUrl: "/agreements"
+                                });
                             })
                             .catch((rejected) => {
                                 console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
@@ -1063,8 +1067,12 @@ const useCreateBLIsAndSCs = (
                             });
                     } else {
                         resetForm();
-                        navigate("/agreements");
-                        scrollToTop();
+                        setAlert({
+                            type: "success",
+                            heading: "Create New Agreement Cancelled",
+                            message: "Your agreement has been cancelled.",
+                            redirectUrl: "/agreements"
+                        });
                     }
                 } else {
                     // For editing existing agreements or when user can't edit
