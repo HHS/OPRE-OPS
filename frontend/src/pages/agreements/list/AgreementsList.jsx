@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PacmanLoader } from "react-spinners";
@@ -115,11 +115,29 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
+    // Track when the dropdown shortcut itself cleared filters.fiscalYear so we don't
+    // double-reset selectedFiscalYear back to "All" in the effect below.
+    const dropdownChangedFY = useRef(false);
+
+    // When all FY filter tags are removed (filters.fiscalYear empties) and that wasn't caused
+    // by the dropdown shortcut, revert selectedFiscalYear to "All" per the business rule:
+    // "If all filters applied are removed, the page defaults back to All FYs."
+    useEffect(() => {
+        if (dropdownChangedFY.current) {
+            dropdownChangedFY.current = false;
+            return;
+        }
+        if (filters.fiscalYear.length === 0) {
+            setSelectedFiscalYear("All");
+        }
+    }, [filters.fiscalYear]);
+
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
     // The dropdown display (dropdownValue) is derived from selectedFiscalYear + filters.fiscalYear,
     // so no sync effect is needed — deriveDropdownValue handles All/Multi/year display.
     const handleChangeFiscalYear = (newValue) => {
+        dropdownChangedFY.current = true;
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
         if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
