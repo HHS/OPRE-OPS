@@ -205,7 +205,7 @@ describe("AllBudgetLinesTable", () => {
                 </Provider>
             );
 
-            const blIdHeader = screen.getByRole("button", { name: "BL ID #" });
+            const blIdHeader = screen.getByTitle("Click to sort by BL ID #");
             await user.click(blIdHeader);
 
             expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[0].value, false);
@@ -230,7 +230,7 @@ describe("AllBudgetLinesTable", () => {
                 </Provider>
             );
 
-            const agreementHeader = screen.getByRole("button", { name: "Agreement" });
+            const agreementHeader = screen.getByTitle("Click to sort by Agreement");
 
             // First click - should sort descending (false because it toggles the current true)
             await user.click(agreementHeader);
@@ -253,7 +253,7 @@ describe("AllBudgetLinesTable", () => {
             );
 
             // Second click - should sort ascending (true)
-            const agreementHeaderAfterRerender = screen.getByRole("button", { name: "Agreement" });
+            const agreementHeaderAfterRerender = screen.getByTitle("Click to sort by Agreement");
             await user.click(agreementHeaderAfterRerender);
             expect(mockSetSortConditions).toHaveBeenCalledWith(All_BUDGET_LINES_TABLE_HEADINGS_LIST[1].value, true);
         });
@@ -274,7 +274,7 @@ describe("AllBudgetLinesTable", () => {
                 </Provider>
             );
 
-            const blIdHeader = screen.getByRole("button", { name: "BL ID #" });
+            const blIdHeader = screen.getByTitle("Click to sort by BL ID #");
             // SVG icons have role="img" but are hidden, so we need to include hidden elements
             const sortIcon = within(blIdHeader).queryByRole("img", { hidden: true });
 
@@ -338,7 +338,7 @@ describe("AllBudgetLinesTable", () => {
 
             for (let i = 0; i < columnHeaders.length; i++) {
                 mockSetSortConditions.mockClear();
-                const header = screen.getByRole("button", { name: columnHeaders[i] });
+                const header = screen.getByTitle(`Click to sort by ${columnHeaders[i]}`);
                 await user.click(header);
 
                 expect(mockSetSortConditions).toHaveBeenCalledWith(
