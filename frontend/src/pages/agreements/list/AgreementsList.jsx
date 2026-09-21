@@ -115,19 +115,20 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Track when the dropdown shortcut itself cleared filters.fiscalYear so we don't
-    // double-reset selectedFiscalYear back to "All" in the effect below.
-    const dropdownChangedFY = useRef(false);
+    // Track the previous length of filters.fiscalYear to detect the "all tags removed"
+    // transition (non-zero → zero), ignoring spurious writes of a new [] reference when
+    // the array was already empty (e.g. applyFilter after resetFilter).
+    const prevFYLengthRef = useRef(0);
 
-    // When all FY filter tags are removed (filters.fiscalYear empties) and that wasn't caused
-    // by the dropdown shortcut, revert selectedFiscalYear to "All" per the business rule:
-    // "If all filters applied are removed, the page defaults back to All FYs."
+    // When all FY filter tags are removed (non-zero → zero), revert selectedFiscalYear
+    // to "All" per the business rule: "If all filters applied are removed, the page
+    // defaults back to All FYs." The prev-length guard prevents Apply-of-empty-modal
+    // (which writes a new [] reference without actually changing the logical state) from
+    // incorrectly resetting a dropdown year the user explicitly selected.
     useEffect(() => {
-        if (dropdownChangedFY.current) {
-            dropdownChangedFY.current = false;
-            return;
-        }
-        if (filters.fiscalYear.length === 0) {
+        const prevLen = prevFYLengthRef.current;
+        prevFYLengthRef.current = filters.fiscalYear.length;
+        if (filters.fiscalYear.length === 0 && prevLen > 0) {
             setSelectedFiscalYear("All");
         }
     }, [filters.fiscalYear]);
@@ -137,7 +138,6 @@ const AgreementsList = () => {
     // The dropdown display (dropdownValue) is derived from selectedFiscalYear + filters.fiscalYear,
     // so no sync effect is needed — deriveDropdownValue handles All/Multi/year display.
     const handleChangeFiscalYear = (newValue) => {
-        dropdownChangedFY.current = true;
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
         if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {

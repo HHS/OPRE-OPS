@@ -1,12 +1,13 @@
 import React from "react";
-import { getCurrentFiscalYear } from "../../../../helpers/utils";
 
 /**
- * A filter for CANs list.
  * @param {import ('./AgreementsFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
+ * @param {boolean} showModal - Whether the filter modal is currently open.
+ *   Used to reseed local buffers from parent state on each modal open, so that
+ *   a Reset-without-Apply followed by re-opening shows the correct current filters.
  */
-export const useAgreementsFilterButton = (filters, setFilters) => {
+export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
     const [fiscalYear, setFiscalYear] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
     const [projectTitle, setProjectTitle] = React.useState([]);
@@ -14,12 +15,25 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     const [agreementName, setAgreementName] = React.useState([]);
     const [contractNumber, setContractNumber] = React.useState([]);
     const [awardType, setAwardType] = React.useState([]);
-    const currentFiscalYear = getCurrentFiscalYear();
+
+    // Reseed all local buffers from parent filters when the modal opens.
+    // This ensures that a Reset-without-Apply followed by re-opening the modal
+    // shows the current active filters, not the cleared-but-unapplied state.
+    React.useEffect(() => {
+        if (showModal) {
+            setFiscalYear(filters.fiscalYear ?? []);
+            setPortfolio(filters.portfolio ?? []);
+            setProjectTitle(filters.projectTitle ?? []);
+            setAgreementType(filters.agreementType ?? []);
+            setAgreementName(filters.agreementName ?? []);
+            setContractNumber(filters.contractNumber ?? []);
+            setAwardType(filters.awardType ?? []);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showModal]);
 
     // Sync local buffers from parent filters whenever parent state changes.
-    // This keeps the modal in sync when filter tags are removed (X clicked) externally,
-    // and also re-seeds the buffers from parent state when the modal is reopened after
-    // a Reset-without-Apply (which clears buffers without touching parent state).
+    // This keeps the modal in sync when filter tags are removed (X clicked) externally.
     React.useEffect(() => {
         setFiscalYear(filters.fiscalYear ?? []);
     }, [filters.fiscalYear]);
@@ -92,8 +106,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         awardType,
         setAwardType,
         applyFilter,
-        resetFilter,
-        currentFiscalYear
+        resetFilter
     };
 };
 
