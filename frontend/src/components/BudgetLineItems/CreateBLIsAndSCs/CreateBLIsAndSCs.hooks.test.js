@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import useCreateBLIsAndSCs, { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.helpers";
 
 const setAlertMock = vi.fn();
 const navigateMock = vi.fn();
