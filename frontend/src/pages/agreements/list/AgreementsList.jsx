@@ -27,7 +27,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, formatDate, getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -61,7 +61,7 @@ const AgreementsList = () => {
     );
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -157,6 +157,9 @@ const AgreementsList = () => {
             awardType: []
         });
         setSelectedFiscalYear(newValue);
+        if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
+            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        }
     };
 
     const [trigger] = useLazyGetUserQuery();
@@ -221,11 +224,6 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
-            const effectiveFY =
-                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
-
-            const agreementResponses = allAgreementsList;
-
             const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
@@ -241,66 +239,70 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
+            const isAllFY = selectedFiscalYear === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
 
-            const tableHeader = [
-                "Agreement",
-                "Type",
-                "Start Date",
-                "End Date",
-                "Total",
-                fyLabel,
-                "Project",
-                "Procurement Shop",
-                "Subtotal",
-                "Fees",
-                "Lifetime Obligated",
-                "Contract Number",
-                "Award Type",
-                "Vendor",
-                "COR"
-            ];
-            await exportTableToXlsx({
-                data: agreementResponses,
-                headers: tableHeader,
-                rowMapper: (agreement) => {
-                    const agreementName = getAgreementName(agreement);
-                    const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-                    const startDate = agreement.sc_start_date
-                        ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z"))
-                        : "TBD";
-                    const endDate = agreement.sc_end_date
-                        ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z"))
-                        : "TBD";
-                    const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
-                    const agreementFees = Number(agreement.total_agreement_fees ?? 0);
-                    const total = Number(agreement.agreement_total ?? 0);
-                    const fyObligated = Number(agreement.fy_obligated ?? 0);
-                    const project = getResearchProjectName(agreement);
-                    const procurementShop = getProcurementShopDisplay(agreement);
-                    const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);
-                    const contractNumber = getAgreementContractNumber(agreement);
-
-                    return [
-                        agreementName,
-                        agreementType,
-                        startDate,
-                        endDate,
-                        total,
-                        fyObligated,
-                        project ?? "",
-                        procurementShop,
-                        agreementSubTotal ?? 0,
-                        agreementFees ?? 0,
-                        lifetimeObligated,
-                        contractNumber ?? "",
-                        agreement?.award_type ?? "",
-                        agreement?.vendor ?? "",
-                        agreementDataMap[agreement.id]?.cor ?? ""
-                    ];
+            // The "Lifetime Obligated" column is omitted when "All" FYs is selected because the
+            // fyLabel column above already shows lifetime_obligated — this avoids a duplicate
+            // column with identical data. Deriving headers/values/currencyColumns from one list
+            // of column definitions keeps them from drifting out of sync with each other.
+            const columnDefs = [
+                { header: "Agreement", getValue: (agreement) => getAgreementName(agreement) },
+                {
+                    header: "Type",
+                    getValue: (agreement) => convertCodeForDisplay("agreementType", agreement?.agreement_type)
                 },
+                {
+                    header: "Start Date",
+                    getValue: (agreement) =>
+                        agreement.sc_start_date ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z")) : "TBD"
+                },
+                {
+                    header: "End Date",
+                    getValue: (agreement) =>
+                        agreement.sc_end_date ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z")) : "TBD"
+                },
+                { header: "Total", currency: true, getValue: (agreement) => Number(agreement.agreement_total ?? 0) },
+                {
+                    header: fyLabel,
+                    currency: true,
+                    getValue: (agreement) =>
+                        isAllFY ? Number(agreement.lifetime_obligated ?? 0) : Number(agreement.fy_obligated ?? 0)
+                },
+                { header: "Project", getValue: (agreement) => getResearchProjectName(agreement) ?? "" },
+                { header: "Procurement Shop", getValue: (agreement) => getProcurementShopDisplay(agreement) },
+                {
+                    header: "Subtotal",
+                    currency: true,
+                    getValue: (agreement) => Number(agreement.agreement_subtotal ?? 0)
+                },
+                {
+                    header: "Fees",
+                    currency: true,
+                    getValue: (agreement) => Number(agreement.total_agreement_fees ?? 0)
+                },
+                {
+                    header: "Lifetime Obligated",
+                    currency: true,
+                    omitWhenAllFY: true,
+                    getValue: (agreement) => Number(agreement.lifetime_obligated ?? 0)
+                },
+                { header: "Contract Number", getValue: (agreement) => getAgreementContractNumber(agreement) ?? "" },
+                { header: "Award Type", getValue: (agreement) => agreement?.award_type ?? "" },
+                { header: "Vendor", getValue: (agreement) => agreement?.vendor ?? "" },
+                { header: "COR", getValue: (agreement) => agreementDataMap[agreement.id]?.cor ?? "" }
+            ];
+            const activeColumnDefs = columnDefs.filter((column) => !(column.omitWhenAllFY && isAllFY));
+
+            await exportTableToXlsx({
+                data: allAgreementsList,
+                headers: activeColumnDefs.map((column) => column.header),
+                rowMapper: (agreement) => activeColumnDefs.map((column) => column.getValue(agreement)),
                 filename: "agreements",
-                currencyColumns: [4, 5, 8, 9, 10] // Total, FY Obligated, Subtotal, Fees, Lifetime Obligated
+                currencyColumns: activeColumnDefs.reduce(
+                    (indices, column, index) => (column.currency ? [...indices, index] : indices),
+                    []
+                )
             });
         } catch (error) {
             console.error("Failed to export data:", error);

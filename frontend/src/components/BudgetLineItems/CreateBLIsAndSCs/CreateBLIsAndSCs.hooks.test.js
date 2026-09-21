@@ -566,6 +566,92 @@ describe("useCreateBLIsAndSCs", () => {
         expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines");
     });
 
+    it("treats step 3 of the create-agreement wizard as a new agreement, not an edit, on cancel (OPS-6076)", () => {
+        // Regression: the wizard passes workflow="agreement" but never passes
+        // canUserEditBudgetLines, so isCreatingNewAgreement must not depend on that
+        // prop alone or cancel wrongly falls into the edit-mode branch and navigates
+        // to /agreements/undefined/budget-lines.
+        //
+        // The agreement isn't persisted until the user clicks "Create Agreement" on
+        // this step, so selectedAgreement.id is still undefined here — cancel must
+        // not call deleteAgreement(undefined) (DELETE /agreements/undefined -> 404).
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                false, // isEditMode
+                false, // isReviewMode
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { agreement_type: "GRANT", display_name: "AGR-1" }, // no id yet
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement", // workflow
+                true,
+                false, // canUserEditBudgetLines
+                "Create Agreement",
+                3
+            )
+        );
+
+        act(() => {
+            result.current.handleCancel();
+        });
+
+        expect(result.current.modalProps.actionButtonText).toBe("Cancel Agreement");
+
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        expect(deleteAgreementMock).not.toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
+    });
+
+    it("deletes the agreement and shows the cancel-agreement success alert if one was already persisted before reaching step 3", async () => {
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                false, // isEditMode
+                false, // isReviewMode
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "agreement", // workflow
+                true,
+                false, // canUserEditBudgetLines
+                "Create Agreement",
+                3
+            )
+        );
+
+        act(() => {
+            result.current.handleCancel();
+        });
+
+        await act(async () => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        expect(deleteAgreementMock).toHaveBeenCalledWith(1);
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
+    });
+
     it("uses the latest review-mode suite result for page validation", async () => {
         const suiteModule = await import("./suite");
         const reviewErrors = {

@@ -1023,7 +1023,8 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
+        const isCreatingNewAgreement =
+            !isEditMode && !isReviewMode && (workflow === "agreement" || canUserEditBudgetLines);
         const heading = isCreatingNewAgreement
             ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
             : "Are you sure you want to cancel editing? Your changes will not be saved.";
@@ -1037,30 +1038,42 @@ const useCreateBLIsAndSCs = (
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 if (isCreatingNewAgreement) {
-                    // Only allow deleting the agreement if creating a new one
-                    deleteAgreement(selectedAgreement?.id)
-                        .unwrap()
-                        .then((fulfilled) => {
-                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                            setAlert({
-                                type: "success",
-                                heading: "Create New Agreement Cancelled",
-                                message: "Your agreement has been cancelled.",
-                                redirectUrl: "/agreements"
+                    // The agreement is only persisted once the user clicks "Create Agreement" on
+                    // this step, so at this point selectedAgreement.id may not exist yet — only
+                    // call deleteAgreement when there's an actual persisted agreement to remove.
+                    if (selectedAgreement?.id) {
+                        deleteAgreement(selectedAgreement.id)
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                                setAlert({
+                                    type: "success",
+                                    heading: "Create New Agreement Cancelled",
+                                    message: "Your agreement has been cancelled.",
+                                    redirectUrl: "/agreements"
+                                });
+                            })
+                            .catch((rejected) => {
+                                console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred while deleting the agreement.",
+                                    redirectUrl: "/error"
+                                });
+                            })
+                            .finally(() => {
+                                resetForm();
                             });
-                        })
-                        .catch((rejected) => {
-                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred while deleting the agreement.",
-                                redirectUrl: "/error"
-                            });
-                        })
-                        .finally(() => {
-                            resetForm();
+                    } else {
+                        resetForm();
+                        setAlert({
+                            type: "success",
+                            heading: "Create New Agreement Cancelled",
+                            message: "Your agreement has been cancelled.",
+                            redirectUrl: "/agreements"
                         });
+                    }
                 } else {
                     // For editing existing agreements or when user can't edit
                     resetForm();

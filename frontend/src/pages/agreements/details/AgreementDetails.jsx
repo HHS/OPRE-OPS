@@ -1,5 +1,5 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -36,6 +36,7 @@ const AgreementDetails = ({
     isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    const canEditByRole = useCanEditByRole();
     const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
 
@@ -59,7 +60,11 @@ const AgreementDetails = ({
     // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
     // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
     // states, the form should not be reachable via URL params either.
+    // The role gate belongs here, not only on the button: `isEditMode` comes from the `?mode=edit`
+    // URL param (see Agreement.jsx) with no role check, so without it a read-only team member could
+    // reach the live edit form by URL even with the Edit button hidden.
     const isEditable =
+        canEditByRole &&
         !isPreAwardInReview &&
         !isAwardInReview &&
         !isPostPreAwardLocked &&
@@ -79,6 +84,7 @@ const AgreementDetails = ({
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
                 isPostPreAwardLocked={isPostPreAwardLocked}
+                showEditButton={canEditByRole}
             />
 
             {isEditMode && isEditable ? (

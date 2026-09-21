@@ -9,7 +9,7 @@ import ProcurementTrackerStepSix from "../../../components/Agreements/Procuremen
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
-import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useIsUserOnlyProcurementTeam, useCanEditByRole } from "../../../hooks/user.hooks";
 import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 
@@ -70,7 +70,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
-    const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
+    const canEditByRole = useCanEditByRole();
+    const isEditable = canEditByRole && (isSuperUser || (agreement?._meta?.isEditable ?? false));
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId,
         refetchOnMountOrArgChange: true

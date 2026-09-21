@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from typing import Any, List, Optional, Sequence, Type
+from typing import Any, List, Literal, Optional, Sequence, Type
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
@@ -496,14 +496,19 @@ class AgreementsService(OpsService[Agreement]):
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        if not associated_with_agreement(id):
+        user = get_current_user()
+        reason = self._deletion_blocked_reason(agreement, user)
+        if reason == "not_associated":
             raise AuthorizationError(
                 f"User is not associated with the agreement for id: {id}.",
                 "Agreement",
             )
-
-        if agreement.is_awarded:
+        if reason == "awarded":
             raise ValidationError({"is_awarded": ["Cannot delete an awarded agreement."]})
+        if reason == "non_draft_bli":
+            raise ValidationError(
+                {"budget_line_items": ["Cannot delete an agreement with budget lines that are not in Draft status."]}
+            )
 
         self.db_session.delete(agreement)
         self.db_session.commit()
@@ -858,6 +863,41 @@ class AgreementsService(OpsService[Agreement]):
         this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
         """
         return user.is_superuser or associated_with_agreement(agreement.id)
+
+    def _deletion_blocked_reason(
+        self, agreement: Agreement, user: User, is_editable: bool | None = None
+    ) -> Literal["not_associated", "awarded", "non_draft_bli"] | None:
+        """
+        Which single rule (if any) blocks deleting this agreement for this user, or None if
+        deletion is allowed. This is the one place the delete-guard conditions live — ``delete``
+        and ``_get_locked_message`` both branch on this instead of each re-checking the same
+        conditions independently, so a future guard only has to be added here once instead of
+        risking drift between the DELETE endpoint and the trash-icon meta.
+        """
+        if is_editable is None:
+            is_editable = self._is_editable(agreement, user)
+        if not is_editable:
+            return "not_associated"
+        if agreement.is_awarded:
+            return "awarded"
+        if not user.is_superuser and agreement.has_non_draft_budget_lines:
+            return "non_draft_bli"
+        return None
+
+    def _get_locked_message(self, agreement: Agreement, user: User, is_editable: bool | None = None) -> str | None:
+        """
+        Human-readable reason the delete control is locked, or None if it isn't locked. The
+        resource layer derives ``isDeletable`` from ``locked_message is None`` so the trash-icon
+        meta and the DELETE endpoint can never drift apart.
+        """
+        reason = self._deletion_blocked_reason(agreement, user, is_editable)
+        if reason == "not_associated":
+            return "Only team members on this agreement can edit or delete"
+        if reason == "awarded":
+            return "Cannot delete an awarded agreement"
+        if reason == "non_draft_bli":
+            return "Cannot delete an agreement with budget lines that are not in Draft status"
+        return None
 
 
 def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:

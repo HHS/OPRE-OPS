@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
@@ -10,7 +10,7 @@ import {
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import { getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
+import { tableSortCodes } from "../../../helpers/utils";
 import store from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -547,6 +547,87 @@ describe("AgreementsList - Pagination", () => {
                 })
             );
         });
+
+        it("should pass 'Lifetime Obligated' column header to exportTableToXlsx when All FYs selected", async () => {
+            const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            useLazyGetAgreementsQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
+                {}
+            ]);
+            useLazyGetUserQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+                {}
+            ]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+            await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
+
+            const headers = exportTableToXlsx.mock.calls[0][0].headers;
+            expect(headers).toContain("Lifetime Obligated");
+            expect(headers.filter((h) => h === "Lifetime Obligated")).toHaveLength(1);
+            expect(headers.some((h) => /FY\d{2} Obligated/.test(h))).toBe(false);
+        });
+
+        it("should pass year-specific FY column header to exportTableToXlsx when a specific year is selected", async () => {
+            const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+            exportTableToXlsx.mockClear();
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            useLazyGetAgreementsQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
+                {}
+            ]);
+            useLazyGetUserQuery.mockReturnValue([
+                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+                {}
+            ]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await screen.findByTestId("fiscal-year-select");
+
+            // Switch to a specific year using the same pattern as other tests in this file
+            const dropdown = screen.getByTestId("fiscal-year-dropdown");
+            dropdown.value = "2025";
+            dropdown.dispatchEvent(new Event("change", { bubbles: true }));
+
+            fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+            await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
+
+            const headers = exportTableToXlsx.mock.calls[0][0].headers;
+            expect(headers[5]).toBe("FY25 Obligated");
+            expect(headers[10]).toBe("Lifetime Obligated");
+        });
     });
 
     describe("Response Format Compatibility", () => {
@@ -666,7 +747,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         expect(screen.getByRole("option", { name: "2025" })).toBeInTheDocument();
     });
 
-    it("should default to current fiscal year", async () => {
+    it("should default to all fiscal years", async () => {
         render(
             <Provider store={store}>
                 <BrowserRouter>
@@ -680,8 +761,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         });
 
         const dropdown = screen.getByTestId("fiscal-year-dropdown");
-        // Should have a value (current fiscal year from getCurrentFiscalYear())
-        expect(dropdown.value).toBeTruthy();
+        expect(dropdown.value).toBe("All");
     });
 
     it("should pass fiscal years from API to query params when no filters applied", async () => {
@@ -768,22 +848,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
     });
 
-    it("should use current fiscal year as default filter regardless of API options", async () => {
-        // Mock fiscal year options that don't include the current year
-        useGetAgreementsFilterOptionsQuery.mockReturnValue({
-            data: {
-                fiscal_years: [2020, 2021, 2022],
-                portfolios: [],
-                project_titles: [],
-                agreement_types: [],
-                agreement_names: [],
-                contract_numbers: [],
-                research_types: []
-            },
-            error: undefined,
-            isLoading: false
-        });
-
+    it("should send empty fiscalYear filter by default (all fiscal years)", async () => {
         const mockQuery = vi.fn();
         useGetAgreementsQuery.mockImplementation((params) => {
             mockQuery(params);
@@ -803,12 +868,6 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             </Provider>
         );
 
-        await waitFor(() => {
-            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
-        });
-
-        // The component always defaults to the current fiscal year from the dropdown
-        const currentFY = Number(getCurrentFiscalYear());
         await waitFor(
             () => {
                 expect(mockQuery).toHaveBeenCalled();
@@ -817,50 +876,13 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         );
 
         const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-        expect(lastCall[0].filters.fiscalYear).toEqual([{ id: currentFY, title: currentFY }]);
+        expect(lastCall[0].filters.fiscalYear).toEqual([]);
     });
 
-    it("should send empty fiscalYear filter when 'All' is selected from dropdown", async () => {
-        const mockQuery = vi.fn();
-        useGetAgreementsQuery.mockImplementation((params) => {
-            mockQuery(params);
-            return {
-                data: mockAgreementsResponse,
-                error: undefined,
-                isLoading: false,
-                isFetching: false
-            };
-        });
-
-        render(
-            <Provider store={store}>
-                <BrowserRouter>
-                    <AgreementsList />
-                </BrowserRouter>
-            </Provider>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
-        });
-
-        // Select "All" from the fiscal year dropdown
-        const dropdown = screen.getByTestId("fiscal-year-dropdown");
-        dropdown.value = "All";
-        dropdown.dispatchEvent(new Event("change", { bubbles: true }));
-
-        await waitFor(() => {
-            const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-            expect(lastCall[0].filters.fiscalYear).toEqual([]);
-        });
-    });
-
-    it("should keep selected fiscal year when it exists in options list", async () => {
-        // Include the current fiscal year in the options so it stays selected
-        const currentFY = Number(getCurrentFiscalYear());
+    it("should default to All regardless of which fiscal year options the API returns", async () => {
         useGetAgreementsFilterOptionsQuery.mockReturnValue({
             data: {
-                fiscal_years: [currentFY - 1, currentFY, currentFY + 1],
+                fiscal_years: [2020, 2021, 2022, 2023, 2024, 2025],
                 portfolios: [],
                 project_titles: [],
                 agreement_types: [],
@@ -872,16 +894,6 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             isLoading: false
         });
 
-        const mockQuery = vi.fn();
-        useGetAgreementsQuery.mockImplementation((params) => {
-            mockQuery(params);
-            return {
-                data: mockAgreementsResponse,
-                error: undefined,
-                isLoading: false
-            };
-        });
-
         render(
             <Provider store={store}>
                 <BrowserRouter>
@@ -894,9 +906,143 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
         });
 
-        // The dropdown should maintain the current fiscal year
         const dropdown = screen.getByTestId("fiscal-year-dropdown");
-        const selectedYear = Number(dropdown.value);
-        expect([currentFY - 1, currentFY, currentFY + 1]).toContain(selectedYear);
+        expect(dropdown.value).toBe("All");
+    });
+});
+
+// ─── Regression specs for OPS-6140 bugs (should FAIL until fixed) ────────────
+
+describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
+    // Finding 1: switching to "All" FYs while sorted by FY_OBLIGATED should
+    // reset the sort to the default. ProjectsList has this guard; AgreementsList
+    // does not. This test should FAIL until the reset is added.
+    beforeEach(() => {
+        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
+        useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: [], count: 0, limit: 10, offset: 0 },
+            isLoading: false
+        });
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            isLoading: false
+        });
+        useGetAgreementsQuery.mockReturnValue({
+            data: mockAgreementsResponse,
+            error: undefined,
+            isLoading: false,
+            isFetching: false
+        });
+    });
+
+    it("resets sortCondition to default when switching from a specific FY to All while sorted by FY_OBLIGATED", async () => {
+        const setSortConditionsMock = vi.fn();
+        useSetSortConditions.mockReturnValue({
+            sortDescending: false,
+            sortCondition: tableSortCodes.agreementCodes.FY_OBLIGATED,
+            setSortConditions: setSortConditionsMock
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-dropdown")).toBeInTheDocument();
+        });
+
+        // Switch to "All" while the active sort is FY_OBLIGATED
+        fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "All" } });
+
+        // Should reset the sort to the default (AGREEMENT) because FY_OBLIGATED
+        // is meaningless under All FYs. Currently fails — no reset guard exists.
+        expect(setSortConditionsMock).toHaveBeenCalledWith(tableSortCodes.agreementCodes.AGREEMENT, false);
+    });
+});
+
+describe("AgreementsList - Export Lifetime Obligated value under All FYs", () => {
+    beforeEach(() => {
+        useLazyGetUserQuery.mockReturnValue([
+            vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
+            {}
+        ]);
+        useLazyGetAgreementsQuery.mockReturnValue([
+            vi.fn(() => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [
+                            {
+                                ...mockAgreementsResponse.agreements[0],
+                                fy_obligated: "50000"
+                            }
+                        ],
+                        count: 1
+                    })
+            })),
+            {}
+        ]);
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: [], count: 0, limit: 10, offset: 0 },
+            isLoading: false
+        });
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            isLoading: false
+        });
+        useGetAgreementsQuery.mockReturnValue({
+            data: { ...mockAgreementsResponse, count: 1 },
+            error: undefined,
+            isLoading: false,
+            isFetching: false
+        });
+    });
+
+    it("emits lifetime_obligated for the Lifetime Obligated cell in the export when All FYs is selected", async () => {
+        const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
+        exportTableToXlsx.mockClear();
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+
+        await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled(), { timeout: 5000 });
+
+        const rowMapper = exportTableToXlsx.mock.calls[0][0].rowMapper;
+        const row = rowMapper({
+            ...mockAgreementsResponse.agreements[0],
+            fy_obligated: "50000",
+            lifetime_obligated: 75000
+        });
+
+        // "Lifetime Obligated" is the 6th column (index 5) when All FYs is selected.
+        // The export must emit lifetime_obligated, not fy_obligated.
+        expect(row[5]).toBe(75000);
     });
 });

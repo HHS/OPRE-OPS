@@ -11,9 +11,10 @@ import ProjectTableRow from "./ProjectTableRow";
  * @param {string | null} props.selectedHeader - Currently selected sort code.
  * @param {boolean} props.sortDescending - Whether the selected sort is descending.
  * @param {(sortCode: string, isDescending: boolean) => void} props.onClickHeader - Sort toggle handler.
+ * @param {boolean} [props.disabled] - When true, renders as aria-disabled and blocks clicks; tooltip explains why.
  * @returns {React.ReactElement}
  */
-const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader }) => {
+const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onClickHeader, disabled }) => {
     const isSelected = selectedHeader === sortCode;
 
     return (
@@ -24,10 +25,15 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
         >
             <button
                 type="button"
-                className="usa-table__header__button cursor-pointer"
-                title={`Click to sort by ${label} in ascending or descending order`}
+                className={`usa-table__header__button ${disabled ? "cursor-not-allowed text-disabled" : "cursor-pointer"}`}
+                title={
+                    disabled
+                        ? `Sorting by ${label} is only meaningful when a specific fiscal year is selected`
+                        : `Click to sort by ${label} in ascending or descending order`
+                }
+                aria-disabled={disabled}
                 onClick={() => {
-                    onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
+                    if (!disabled) onClickHeader?.(sortCode, sortDescending == null ? true : !sortDescending);
                 }}
             >
                 {label}
@@ -53,7 +59,8 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
  * @returns {React.ReactElement}
  */
 const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortConditions, selectedFiscalYear }) => {
-    const fyLabel = selectedFiscalYear === "All" ? "FY Total" : `FY${String(selectedFiscalYear).slice(-2)} Total`;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyLabel = `FY${String(selectedFiscalYear).slice(-2)} Total`;
 
     return (
         <table className="usa-table usa-table--borderless width-full">
@@ -87,15 +94,17 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         sortDescending={sortDescending}
                         onClickHeader={setSortConditions}
                     />
+                    {!isAllFY && (
+                        <SortableHeader
+                            label={fyLabel}
+                            sortCode={PROJECT_SORT_CODES.FY_TOTAL}
+                            selectedHeader={sortConditions}
+                            sortDescending={sortDescending}
+                            onClickHeader={setSortConditions}
+                        />
+                    )}
                     <SortableHeader
-                        label={fyLabel}
-                        sortCode={PROJECT_SORT_CODES.FY_TOTAL}
-                        selectedHeader={sortConditions}
-                        sortDescending={sortDescending}
-                        onClickHeader={setSortConditions}
-                    />
-                    <SortableHeader
-                        label="Project Total"
+                        label="Lifetime Total"
                         sortCode={PROJECT_SORT_CODES.PROJECT_TOTAL}
                         selectedHeader={sortConditions}
                         sortDescending={sortDescending}

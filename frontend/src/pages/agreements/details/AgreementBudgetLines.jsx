@@ -44,7 +44,7 @@ import {
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { AgreementType } from "../agreements.constants";
-import { useIsUserSuperUser, useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
@@ -79,7 +79,7 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
-    const isReadOnly = useIsUserReadOnly();
+    const canEditByRole = useCanEditByRole();
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
@@ -95,8 +95,14 @@ const AgreementBudgetLines = ({
 
     // All users (including superusers) are blocked by pre-award, award review, or post-pre-award lock
     const isAgreementEditable =
-        !isPreAwardInReview && !isAwardInReview && !isPostPreAwardLocked && (isSuperUser || canRegularUserEdit);
+        canEditByRole &&
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || canRegularUserEdit);
     const canRequestStatusChange = isAgreementEditable;
+    // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
+    const showEditWizard = isEditMode && isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -205,7 +211,7 @@ const AgreementBudgetLines = ({
     }
     return (
         <>
-            {!isEditMode && (
+            {!showEditWizard && (
                 <>
                     <AgreementBudgetLinesHeader
                         heading="Budget Lines Summary"
@@ -221,6 +227,7 @@ const AgreementBudgetLines = ({
                         isPreAwardInReview={isPreAwardInReview}
                         isAwardInReview={isAwardInReview}
                         isPostPreAwardLocked={isPostPreAwardLocked}
+                        showEditButton={canEditByRole}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard
@@ -293,7 +300,7 @@ const AgreementBudgetLines = ({
                 </>
             )}
 
-            {isEditMode && (
+            {showEditWizard && (
                 <EditAgreementProvider
                     agreement={agreement}
                     projectOfficer={""}
@@ -306,6 +313,7 @@ const AgreementBudgetLines = ({
                         selectedAgreement={agreement}
                         budgetLines={agreement?.budget_line_items ?? []}
                         isEditMode={isEditMode}
+                        isAgreementAwarded={isAgreementAwarded}
                         setIsEditMode={setIsEditMode}
                         isReviewMode={false}
                         selectedProcurementShop={agreement?.procurement_shop}
@@ -325,9 +333,9 @@ const AgreementBudgetLines = ({
                 </EditAgreementProvider>
             )}
 
-            {!isEditMode && isServicesComponentsLoading && <BudgetLinesTableLoading />}
+            {!showEditWizard && isServicesComponentsLoading && <BudgetLinesTableLoading />}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 isGrant &&
                 groupedBudgetLinesByGrantNumber.length > 0 &&
                 groupedBudgetLinesByGrantNumber.map((group, index) => (
@@ -346,7 +354,6 @@ const AgreementBudgetLines = ({
                         {group.budgetLines.length > 0 ? (
                             <BudgetLinesTable
                                 budgetLines={group.budgetLines}
-                                isAgreementAwarded={isAgreementAwarded}
                                 readOnly={true}
                                 isEditable={agreement?._meta.isEditable}
                                 isGrant={true}
@@ -359,7 +366,7 @@ const AgreementBudgetLines = ({
                     </GrantNumberAccordion>
                 ))}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 !isGrant &&
                 !isServicesComponentsLoading &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
@@ -383,7 +390,6 @@ const AgreementBudgetLines = ({
                             {group.budgetLines.length > 0 ? (
                                 <BudgetLinesTable
                                     budgetLines={group.budgetLines}
-                                    isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
                                     showClinColumn={showClinColumn}
@@ -397,7 +403,7 @@ const AgreementBudgetLines = ({
                     );
                 })}
 
-            {!isEditMode &&
+            {!showEditWizard &&
                 !isServicesComponentsLoading &&
                 (isGrant
                     ? groupedBudgetLinesByGrantNumber.length === 0
@@ -405,7 +411,7 @@ const AgreementBudgetLines = ({
                     <p className="text-center">You have not added any Budget Lines yet.</p>
                 )}
 
-            {!isEditMode && !isReadOnly && (
+            {!showEditWizard && canEditByRole && (
                 <div className="grid-row flex-justify-end margin-top-1">
                     {canRequestStatusChange ? (
                         <Link

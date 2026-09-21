@@ -19,7 +19,6 @@ import "./BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @param {Boolean} [props.isGrant] - A flag to indicate grant budget lines, which omit the Fee and Total columns (grants have no procurement shop).
@@ -33,7 +32,6 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    isAgreementAwarded = false,
     budgetLineIdsInReview = [],
     isEditable = false,
     isGrant = false,
@@ -81,7 +79,6 @@ const BudgetLinesTable = ({
                     isReviewMode={isReviewMode}
                     readOnly={readOnly}
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
-                    isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
                     isGrant={isGrant}
                     showClinColumn={showClinColumn}

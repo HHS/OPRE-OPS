@@ -323,13 +323,14 @@ export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine
 /**
  * Returns the display value for a budget line's CLIN column (awarded contract agreements only).
  * @param {BudgetLine} budgetLine - The budget line to get the CLIN display value from.
- * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or an em dash.
+ * @returns {string|number} "N/A" for draft budget lines, the CLIN number if assigned, or "TBD" when a
+ * non-draft (planned/executing/obligated) budget line has no CLIN yet.
  */
 export const getClinDisplayValue = (budgetLine) => {
-    if (budgetLine?.status === "DRAFT") {
+    if (budgetLine?.status === BLI_STATUS.DRAFT) {
         return "N/A";
     }
-    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "—";
+    return budgetLine?.clin?.number != null ? budgetLine.clin.number : "TBD";
 };
 
 /**

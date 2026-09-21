@@ -9,10 +9,15 @@ from four models:
 
 - ``ProcurementAction`` — one row per award/mod cycle (award/contract totals, award date).
 - ``ProcurementTracker`` / ``DefaultProcurementTrackerStep`` — the AWARD step carries
-  vendor + award amount/date; the PRE_AWARD step carries requisition number/approval date.
+  vendor + award amount/date, plus the per-cycle Modification # / Purchase Order # /
+  Task Order # the COR entered at step 6 (OPS-5892); the PRE_AWARD step carries
+  requisition number/approval date.
 - ``AgreementMod`` — modification number (null for the initial award).
 - ``ContractAgreement`` / ``AaAgreement`` — agreement-level ``po_number`` /
   ``task_order_number`` / ``contract_number`` (single value repeated across every row).
+
+Where the AWARD step and the agreement/mod both carry a value (Modification #, PO #,
+Task Order #), the step wins — see ``_prefer_step_value``.
 """
 
 from datetime import date
@@ -23,6 +28,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from models import (
+    DEFAULT_AWARD_MODIFICATION_NUMBER,
     Agreement,
     AgreementType,
     ProcurementAction,
@@ -43,6 +49,24 @@ _SUPPORTED_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
 # approval. Stored as a free-form String(20) column, so the literal is the contract
 # (matches the usage in ProcurementTrackerStepService).
 _AWARD_APPROVED_STATUS = "APPROVED"
+
+
+def _prefer_step_value(step_value: Optional[str], fallback: Optional[str]) -> Optional[str]:
+    """Return the AWARD step's value for a field, falling back when it is empty.
+
+    The step values (OPS-5892) are captured per award cycle by the COR at step 6 and
+    approved as-entered by the Budget Team, so they describe *this* award. The fallbacks
+    do not: the agreement-level ``po_number`` / ``task_order_number`` columns hold one
+    value shared by every cycle, only ever written by the legacy MAPS import, so on an
+    imported agreement they can predate the award being displayed.
+
+    Blank/whitespace-only step values count as absent — the columns are free-form
+    ``String`` with no NOT NULL or CHECK constraint, and a step saved before OPS-5892
+    has them NULL.
+    """
+    if step_value and step_value.strip():
+        return step_value.strip()
+    return fallback
 
 
 def build_fiscal_year_label(action_date: Optional[date], is_modification: bool, mod_number: Optional[str]) -> str:
@@ -103,6 +127,9 @@ class AgreementAwardHistoryService:
         # Agreement-level fields resolve directly off the polymorphic instance —
         # SQLAlchemy returns a live ContractAgreement/AaAgreement, so these "just work".
         # They are the same value on every accordion (see Decision 1 in the story).
+        # po_number/task_order_number are now only the fallback for a cycle whose AWARD
+        # step has no step-6 value of its own (OPS-5892); contract_number has no
+        # step-level counterpart and always comes from here.
         po_number = agreement.po_number
         task_order_number = agreement.task_order_number
         contract_number = agreement.contract_number
@@ -193,13 +220,27 @@ class AgreementAwardHistoryService:
         # award/obligation date.
         action_date = action.date_awarded_obligated
 
+        # OPS-5892: step 6 captures Modification # / Purchase Order # / Task Order # per
+        # award cycle, so those beat the agreement-level (and AgreementMod) fallbacks —
+        # see _prefer_step_value. getattr keeps this safe for a non-default step type,
+        # matching _approved_trackers_by_action, and for award_step being None.
+        step_mod_number = getattr(award_step, "award_modification_number", None)
+        step_po_number = getattr(award_step, "award_purchase_order_number", None)
+        step_task_order_number = getattr(award_step, "award_task_order_number", None)
+
         record = {
+            # The header stays on AgreementMod.number: it is the prose cycle label
+            # ("Mod 1"), whereas the step value is the modification number off the signed
+            # award ("P00001"), which does not read as a header. They are allowed to differ.
             "fiscal_year_label": build_fiscal_year_label(action_date, is_modification, mod_number),
             "award_date": action_date,
             "award_amount": award_step.award_amount if award_step else None,
             "contract_total": action.agreement_total,
             "contract_number": contract_number,
-            "modification_number": mod_number if is_modification else "Base",
+            "modification_number": _prefer_step_value(
+                step_mod_number,
+                mod_number if is_modification else DEFAULT_AWARD_MODIFICATION_NUMBER,
+            ),
             "requisition_approval_date": (
                 pre_award_step.pre_award_requisition_approved_date if pre_award_step else None
             ),
@@ -207,8 +248,8 @@ class AgreementAwardHistoryService:
             "vendor_name": vendor.name if vendor else None,
             "vendor_unique_entity_id": vendor.duns if vendor else None,
             "vendor_type": vendor.vendor_type if vendor else None,
-            "purchase_order_number": po_number,
-            "task_order_number": task_order_number,
+            "purchase_order_number": _prefer_step_value(step_po_number, po_number),
+            "task_order_number": _prefer_step_value(step_task_order_number, task_order_number),
             # Internal sort keys, stripped before returning.
             "_sort_date": action_date,
             "_is_modification": is_modification,

@@ -539,10 +539,34 @@ describe("AgreementBudgetLines", () => {
                 </Provider>
             );
 
+        // NOTE: match /Edit/i, not /^edit$/i. The enabled button's FontAwesomeIcon has title="edit",
+        // so its accessible name is "editEdit" — an anchored regex silently matches nothing and the
+        // assertion passes even when the button is on screen.
         test("does not show the Edit button for a read-only user on an editable agreement", () => {
             renderReadOnly();
 
-            expect(screen.queryByRole("button", { name: /^edit$/i })).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        // _meta.isEditable reflects team-member association, not role, so it can be true for a
+        // read-only user who is on the agreement's team. Without a role gate that renders a fully
+        // clickable Edit button.
+        // The disabled variant is also role="button" with the accessible name "Edit", so this single
+        // query covers both the enabled and the disabled button.
+        test("does not show an enabled Edit button for a read-only user who is a team member", () => {
+            renderReadOnly({
+                agreement: { ...mockAgreement, _meta: { isEditable: true } }
+            });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        test("does not show the disabled Edit button for a read-only user on a non-editable agreement", () => {
+            renderReadOnly({
+                agreement: { ...mockAgreement, _meta: { isEditable: false } }
+            });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
         });
 
         test("does not show the Change BL Status button for a read-only user", () => {
@@ -557,6 +581,41 @@ describe("AgreementBudgetLines", () => {
             });
 
             expect(screen.queryByText("Change BL Status")).not.toBeInTheDocument();
+        });
+
+        // `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER. The superuser
+        // override wins here, as it does for every other editability check on this page.
+        test("keeps the Edit and Change BL Status buttons for a user who holds both READ_ONLY and SUPER_USER", () => {
+            const readOnlySuperUserStore = configureStore({
+                reducer: {
+                    auth: () => ({
+                        activeUser: {
+                            id: 1,
+                            full_name: "Read Only Super User",
+                            email: "readonly.super@example.com",
+                            roles: [{ name: USER_ROLES.READ_ONLY }, { name: USER_ROLES.SUPER_USER }],
+                            is_superuser: true
+                        }
+                    })
+                }
+            });
+
+            render(
+                <Provider store={readOnlySuperUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            agreement={{ ...mockAgreement, _meta: { isEditable: false } }}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
+            expect(screen.getByText("Change BL Status")).toBeInTheDocument();
         });
     });
 

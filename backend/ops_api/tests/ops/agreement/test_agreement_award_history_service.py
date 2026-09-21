@@ -127,6 +127,122 @@ class TestAgreementAwardHistoryService:
             assert record["task_order_number"] == "TO-001"
             assert record["contract_number"] == "CONTRACT-001"
 
+    def test_step_6_values_win_over_agreement_level_and_vary_per_cycle(self, loaded_db, app_ctx):
+        """OPS-5892: Purchase Order # / Task Order # / Modification # entered on the AWARD
+        step describe that specific award, so they beat the agreement-level columns (which
+        the MAPS import may have populated before this award) and may differ per cycle."""
+        agreement = ContractAgreement(
+            name="Award History Step 6 Values Test",
+            agreement_type=AgreementType.CONTRACT,
+            contract_number="CONTRACT-STEP6",
+            po_number="PO-IMPORTED",
+            task_order_number="TO-IMPORTED",
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        award_action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2024, 6, 26),
+        )
+        loaded_db.add(award_action)
+        loaded_db.flush()
+        make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            award_action.id,
+            award_modification_number="Base",
+            award_purchase_order_number="PO-AWARD",
+            # Padding is stripped — the columns are free-form String.
+            award_task_order_number="  TO-AWARD  ",
+        )
+
+        mod = AgreementMod(
+            agreement_id=agreement.id,
+            number="Mod 1",
+            mod_type=ModType.ADMIN,
+            mod_date=date(2025, 1, 15),
+        )
+        loaded_db.add(mod)
+        loaded_db.flush()
+        mod_action = ProcurementAction(
+            agreement_id=agreement.id,
+            agreement_mod_id=mod.id,
+            award_type=AwardType.MODIFICATION,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2025, 1, 15),
+        )
+        loaded_db.add(mod_action)
+        loaded_db.flush()
+        make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            mod_action.id,
+            award_modification_number="P00001",
+            award_purchase_order_number="PO-MOD",
+            award_task_order_number="TO-MOD",
+        )
+        loaded_db.commit()
+
+        try:
+            service = AgreementAwardHistoryService(loaded_db)
+            award, modification = service.get_award_history(agreement.id)
+
+            assert award["purchase_order_number"] == "PO-AWARD"
+            assert award["task_order_number"] == "TO-AWARD"
+            assert award["modification_number"] == "Base"
+
+            assert modification["purchase_order_number"] == "PO-MOD"
+            assert modification["task_order_number"] == "TO-MOD"
+            assert modification["modification_number"] == "P00001"
+            # The header keeps the prose cycle label from AgreementMod.number.
+            assert modification["fiscal_year_label"] == "FY 2025 Mod 1"
+
+            # contract_number has no step-level counterpart.
+            assert award["contract_number"] == "CONTRACT-STEP6"
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
+    def test_blank_step_6_values_fall_back_to_agreement_level(self, loaded_db, app_ctx):
+        """A step saved before OPS-5892 has these columns NULL, and nothing stops a blank
+        string being stored, so both fall back to the prior behavior."""
+        agreement = ContractAgreement(
+            name="Award History Blank Step 6 Values Test",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="PO-FALLBACK",
+            task_order_number="TO-FALLBACK",
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+        action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+            date_awarded_obligated=date(2024, 6, 26),
+        )
+        loaded_db.add(action)
+        loaded_db.flush()
+        make_awarded_tracker(
+            loaded_db,
+            agreement.id,
+            action.id,
+            award_modification_number="",
+            award_purchase_order_number="   ",
+            award_task_order_number=None,
+        )
+        loaded_db.commit()
+
+        try:
+            service = AgreementAwardHistoryService(loaded_db)
+            record = service.get_award_history(agreement.id)[0]
+            assert record["purchase_order_number"] == "PO-FALLBACK"
+            assert record["task_order_number"] == "TO-FALLBACK"
+            assert record["modification_number"] == "Base"
+        finally:
+            cleanup_award_history(loaded_db, agreement)
+
     def test_resolves_fields_for_aa_agreement(self, loaded_db, app_ctx):
         """The Contract/AA subtype resolution works for AaAgreement too (Decision 1a)."""
         vendor = Vendor(name="AA Vendor", duns="999888777", vendor_type=VendorType.LARGE_BUSINESS)

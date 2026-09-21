@@ -12,7 +12,6 @@ import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
@@ -27,7 +26,7 @@ const ProjectsList = () => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
     const [getAllProjectsTrigger] = useLazyGetProjectsQuery();
@@ -75,9 +74,25 @@ const ProjectsList = () => {
         }
     }, [isError, navigate]);
 
+    // FY_TOTAL sort is meaningless once "All" fiscal years is selected — enforce this
+    // as a standing invariant rather than only when the dropdown itself triggers the change,
+    // so any future path that sets selectedFiscalYear to "All" stays consistent.
+    React.useEffect(() => {
+        if (selectedFiscalYear === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
+            // useSetSortConditions hardcodes sortDescending=true on a column change, ignoring
+            // the second arg. Call twice: first to switch column, then same column to set ascending.
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+        }
+    }, [selectedFiscalYear, sortCondition, setSortConditions]);
+
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+        if (newValue === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+        }
     };
 
     const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;
@@ -113,7 +128,7 @@ const ProjectsList = () => {
                             />
                         </div>
                     }
-                    TableSection={<ProjectsTableLoading />}
+                    TableSection={<ProjectsTableLoading selectedFiscalYear={selectedFiscalYear} />}
                 />
             </App>
         );

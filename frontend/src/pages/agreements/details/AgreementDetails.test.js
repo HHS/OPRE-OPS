@@ -863,4 +863,120 @@ describe("AgreementDetails", () => {
             expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
         });
     });
+
+    describe("Read-Only User Permissions", () => {
+        const readOnlyStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Read Only User",
+                        email: "readonly@example.com",
+                        roles: [{ id: 8, name: USER_ROLES.READ_ONLY }]
+                    }
+                })
+            }
+        });
+
+        // A user can hold READ_ONLY alongside SUPER_USER, since `roles` is a list and nothing
+        // prevents the combination. The superuser override must win.
+        const readOnlySuperUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Read Only Super User",
+                        email: "readonly.super@example.com",
+                        roles: [
+                            { id: 8, name: USER_ROLES.READ_ONLY },
+                            { id: 7, name: USER_ROLES.SUPER_USER }
+                        ],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        const renderWithStore = (testStore, agreementOverrides = {}, props = {}) => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+            mockIntersectionObserver();
+
+            return render(
+                <Provider store={testStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={{ ...agreement, ...agreementOverrides }}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={false}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+        };
+
+        const renderReadOnly = (agreementOverrides = {}, props = {}) =>
+            renderWithStore(readOnlyStore, agreementOverrides, props);
+
+        // Read-only users can never edit, so the Edit button is hidden outright rather than shown
+        // disabled with a tooltip. Match /Edit/i, not /^edit$/i: the enabled button's FontAwesomeIcon
+        // has title="edit", making its accessible name "editEdit", so an anchored regex matches
+        // nothing and would pass even with the button on screen.
+        //
+        // _meta.isEditable reflects team-member association, not role, so it can be true for a
+        // read-only user who is on the agreement's team. Without a role gate that renders a fully
+        // clickable Edit button.
+        test("does not show an enabled Edit button for a read-only user who is a team member", () => {
+            renderReadOnly({ _meta: { isEditable: true } });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+        });
+
+        // The disabled variant is also role="button" with the accessible name "Edit", so the same
+        // query covers it; the tooltip must not render either.
+        test("does not show the disabled Edit button or tooltip for a read-only non-team-member", () => {
+            renderReadOnly({ _meta: { isEditable: false } });
+
+            expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("tooltip-label")).not.toBeInTheDocument();
+        });
+
+        test("still renders the agreement details for a read-only user", () => {
+            renderReadOnly({ _meta: { isEditable: false } });
+
+            expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        });
+
+        // `isEditMode` comes from the `?mode=edit` URL param (Agreement.jsx) with no role check, so
+        // hiding the button is not enough — the edit form itself has to stay unreachable.
+        test("renders the read-only view instead of the edit form for a read-only team member in edit mode", () => {
+            renderReadOnly({ _meta: { isEditable: true } }, { isEditMode: true });
+
+            expect(screen.queryByTestId("agreement-details-edit")).not.toBeInTheDocument();
+            expect(screen.getByText("Test Description")).toBeInTheDocument();
+        });
+
+        test("keeps the Edit button and edit form for a user who holds both READ_ONLY and SUPER_USER", () => {
+            renderWithStore(readOnlySuperUserStore, { _meta: { isEditable: false } });
+
+            const editButton = screen.getByRole("button", { name: /Edit/i });
+            expect(editButton).not.toHaveAttribute("aria-disabled");
+        });
+
+        test("renders the edit form in edit mode for a user who holds both READ_ONLY and SUPER_USER", () => {
+            renderWithStore(readOnlySuperUserStore, { _meta: { isEditable: false } }, { isEditMode: true });
+
+            expect(screen.getByTestId("agreement-details-edit")).toBeInTheDocument();
+        });
+    });
 });

@@ -134,12 +134,13 @@ describe("ProjectsList", () => {
         expect(screen.getByText("All Projects")).toBeInTheDocument();
         expect(screen.getByRole("table")).toBeInTheDocument();
         // "Project" header button text is exactly "Project" (with arrow icon); use exact false to catch it
-        expect(screen.getAllByRole("columnheader").length).toBe(7);
+        // Default FY is "All" → FY Total column hidden, 5 data columns + expand = 6 total
+        expect(screen.getAllByRole("columnheader").length).toBe(6);
         expect(screen.getByRole("columnheader", { name: /^Project$/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /End/ })).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: /Project Total/ })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: /Lifetime Total/ })).toBeInTheDocument();
     });
 
     it("renders project link with correct href", () => {
@@ -194,7 +195,9 @@ describe("ProjectsList", () => {
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(2);
     });
 
-    it("renders fiscal year total as currency for the selected FY", () => {
+    it("renders fiscal year total as currency for the selected FY", async () => {
+        const user = userEvent.setup();
+
         mockUseGetProjectsQuery.mockReturnValue({
             data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
             isLoading: false,
@@ -203,11 +206,11 @@ describe("ProjectsList", () => {
 
         renderComponent();
 
-        // The FY select defaults to current fiscal year; MOCK_PROJECT_1 has fiscal_year_totals
-        // with keys 2025 and 2026. We just verify the component renders a currency value.
-        // The exact FY depends on the current date, so we check for a $ amount presence.
-        // (For a deterministic assertion, see the FY select change test below.)
-        expect(screen.getByText("Research")).toBeInTheDocument(); // Sanity check row rendered
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2026");
+
+        // MOCK_PROJECT_1.fiscal_year_totals[2026] is "500000.00"
+        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
     });
 
     it("renders project total as currency", () => {
@@ -264,7 +267,28 @@ describe("ProjectsList", () => {
         expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(expect.objectContaining({ fiscalYear: "2025" }));
     });
 
-    it("renders FY Total in the table header when All is selected", async () => {
+    it("hides FY Total column when All is selected and shows it for a specific FY", async () => {
+        const user = userEvent.setup();
+
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        // Default is All — FY Total column should not be present
+        expect(screen.queryByRole("columnheader", { name: /fy total/i })).not.toBeInTheDocument();
+
+        // Select a specific year — FY Total column should appear
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2044");
+
+        expect(screen.getByRole("columnheader", { name: /FY44 Total/i })).toBeInTheDocument();
+    });
+
+    it("resets sort to TITLE when fiscal year changes back to All while sorted by FY Total", async () => {
         const user = userEvent.setup();
 
         mockUseGetProjectsQuery.mockReturnValue({
@@ -276,9 +300,18 @@ describe("ProjectsList", () => {
         renderComponent();
 
         const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2025");
+        await user.click(screen.getByRole("button", { name: /FY25 Total/i }));
+
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "FY_TOTAL" })
+        );
+
         await user.selectOptions(fySelect, "All");
 
-        expect(screen.getByRole("columnheader", { name: /^fy total$/i })).toBeInTheDocument();
+        expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({ sortConditions: "TITLE", fiscalYear: "All" })
+        );
     });
 
     it("does not render pagination when total pages is 1", () => {
