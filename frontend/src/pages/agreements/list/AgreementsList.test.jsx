@@ -1129,9 +1129,9 @@ describe("AgreementsList - Model B FY behavior (OPS-6256)", () => {
 
     it("changing dropdown clears only filters.fiscalYear, not other filters", async () => {
         baseBeforeEach();
-        const mockQuery = vi.fn();
+        const queryParams = [];
         useGetAgreementsQuery.mockImplementation((params) => {
-            mockQuery(params);
+            queryParams.push(params);
             return { data: mockAgreementsResponse, error: undefined, isLoading: false, isFetching: false };
         });
 
@@ -1145,18 +1145,27 @@ describe("AgreementsList - Model B FY behavior (OPS-6256)", () => {
 
         await screen.findByTestId("fiscal-year-dropdown");
 
-        // Simulate active non-FY filter state by checking query params after dropdown change.
-        // The new handleChangeFiscalYear only clears filters.fiscalYear, so initial filters
-        // (all empty arrays) remain unchanged — other filter keys still present as [].
+        // Capture query params before the dropdown change
+        const callsBefore = queryParams.length;
+        expect(callsBefore).toBeGreaterThan(0);
+        const paramsBefore = queryParams[callsBefore - 1];
+
+        // Change dropdown — should only clear filters.fiscalYear
         fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "2024" } });
 
-        await waitFor(() => {
-            const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-            // Non-FY filter keys must still be present (not wiped)
-            expect(lastCall[0].filters.portfolio).toEqual([]);
-            expect(lastCall[0].filters.agreementType).toEqual([]);
-            expect(lastCall[0].filters.agreementName).toEqual([]);
-        });
+        await waitFor(() => expect(queryParams.length).toBeGreaterThan(callsBefore));
+        const paramsAfter = queryParams[queryParams.length - 1];
+
+        // fiscalYear changes to the selected year
+        expect(paramsAfter.filters.fiscalYear).toEqual([{ id: 2024, title: 2024 }]);
+
+        // All non-FY filter keys must be identical to before the change (not wiped)
+        expect(paramsAfter.filters.portfolio).toEqual(paramsBefore.filters.portfolio);
+        expect(paramsAfter.filters.projectTitle).toEqual(paramsBefore.filters.projectTitle);
+        expect(paramsAfter.filters.agreementType).toEqual(paramsBefore.filters.agreementType);
+        expect(paramsAfter.filters.agreementName).toEqual(paramsBefore.filters.agreementName);
+        expect(paramsAfter.filters.contractNumber).toEqual(paramsBefore.filters.contractNumber);
+        expect(paramsAfter.filters.awardType).toEqual(paramsBefore.filters.awardType);
     });
 
     it("default query sends empty fiscalYear with All selected (resolveForAPI: All → [])", async () => {

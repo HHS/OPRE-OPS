@@ -16,47 +16,36 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     const [awardType, setAwardType] = React.useState([]);
     const currentFiscalYear = getCurrentFiscalYear();
 
-    // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
+    // Sync local buffers from parent filters whenever parent state changes.
+    // This keeps the modal in sync when filter tags are removed (X clicked) externally,
+    // and also re-seeds the buffers from parent state when the modal is reopened after
+    // a Reset-without-Apply (which clears buffers without touching parent state).
     React.useEffect(() => {
-        if (filters.fiscalYear) {
-            setFiscalYear(filters.fiscalYear);
-        }
+        setFiscalYear(filters.fiscalYear ?? []);
     }, [filters.fiscalYear]);
 
     React.useEffect(() => {
-        if (filters.portfolio) {
-            setPortfolio(filters.portfolio);
-        }
+        setPortfolio(filters.portfolio ?? []);
     }, [filters.portfolio]);
 
     React.useEffect(() => {
-        if (filters.projectTitle) {
-            setProjectTitle(filters.projectTitle);
-        }
+        setProjectTitle(filters.projectTitle ?? []);
     }, [filters.projectTitle]);
 
     React.useEffect(() => {
-        if (filters.agreementType) {
-            setAgreementType(filters.agreementType);
-        }
+        setAgreementType(filters.agreementType ?? []);
     }, [filters.agreementType]);
 
     React.useEffect(() => {
-        if (filters.agreementName) {
-            setAgreementName(filters.agreementName);
-        }
+        setAgreementName(filters.agreementName ?? []);
     }, [filters.agreementName]);
 
     React.useEffect(() => {
-        if (filters.contractNumber) {
-            setContractNumber(filters.contractNumber);
-        }
+        setContractNumber(filters.contractNumber ?? []);
     }, [filters.contractNumber]);
 
     React.useEffect(() => {
-        if (filters.awardType) {
-            setAwardType(filters.awardType);
-        }
+        setAwardType(filters.awardType ?? []);
     }, [filters.awardType]);
 
     const applyFilter = () => {
