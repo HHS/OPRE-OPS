@@ -29,7 +29,7 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
- * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" suppresses the FY Obligated value.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
