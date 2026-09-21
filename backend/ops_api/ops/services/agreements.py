@@ -36,7 +36,6 @@ from models import (
 )
 from models.agreements import AgreementType
 from models.procurement_tracker import ProcurementTrackerStatus
-from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import (
@@ -1393,6 +1392,9 @@ def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None
             return sorted(results, key=end_date_sort, reverse=sort_descending)
         case AgreementSortCondition.FY_OBLIGATED:
             fy = resolve_fiscal_year(fiscal_years)
+            if fy is None:
+                # All FYs selected — sort by lifetime obligated (sum across all FYs)
+                return sorted(results, key=lambda a: a.lifetime_obligated, reverse=sort_descending)
             return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
@@ -1432,12 +1434,17 @@ def end_date_sort(agreement):
 
 
 def resolve_fiscal_year(fiscal_years):
-    """Get the effective fiscal year from filter list, defaulting to current FY."""
+    """Return the single fiscal year from the filter list, or None when ambiguous.
+
+    Returns an int when exactly one fiscal year is provided. Returns None for an
+    empty list, None, or multiple fiscal years — callers should treat None as
+    "all fiscal years" and choose an appropriate fallback (e.g. lifetime totals).
+    """
     if fiscal_years and len(fiscal_years) == 1:
         return int(fiscal_years[0])
     if fiscal_years and len(fiscal_years) > 1:
-        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); falling back to current FY.")
-    return get_current_fiscal_year()
+        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); no single FY resolved.")
+    return None
 
 
 def fy_obligated_sort(agreement, fiscal_year):

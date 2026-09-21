@@ -3,8 +3,9 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 from models import BudgetLineItemStatus
-from models.agreements import Agreement
+from models.agreements import Agreement, AgreementSortCondition
 from ops_api.ops.services.agreements import (
+    _sort_agreements,
     agreement_total_sort,
     fy_obligated_sort,
     next_budget_line_sort,
@@ -267,19 +268,56 @@ def test_resolve_fiscal_year_single_value():
     assert resolve_fiscal_year(["2025"]) == 2025
 
 
-def test_resolve_fiscal_year_none_defaults_to_current():
-    today = date.today()
-    expected = today.year + 1 if today.month >= 10 else today.year
-    assert resolve_fiscal_year(None) == expected
+def test_resolve_fiscal_year_none_returns_none():
+    assert resolve_fiscal_year(None) is None
 
 
-def test_resolve_fiscal_year_empty_defaults_to_current():
-    today = date.today()
-    expected = today.year + 1 if today.month >= 10 else today.year
-    assert resolve_fiscal_year([]) == expected
+def test_resolve_fiscal_year_empty_returns_none():
+    assert resolve_fiscal_year([]) is None
 
 
-def test_resolve_fiscal_year_multiple_defaults_to_current():
-    today = date.today()
-    expected = today.year + 1 if today.month >= 10 else today.year
-    assert resolve_fiscal_year(["2025", "2026"]) == expected
+def test_resolve_fiscal_year_multiple_returns_none():
+    assert resolve_fiscal_year(["2025", "2026"]) is None
+
+
+# --- _sort_agreements FY_OBLIGATED with All FYs ---
+
+
+def _make_agreement_mock_with_lifetime_obligated(budget_line_items):
+    """Helper to create a mock agreement with lifetime_obligated computed via the real property."""
+    agreement = MagicMock()
+    agreement.budget_line_items = budget_line_items
+    agreement.lifetime_obligated = Agreement.lifetime_obligated.fget(agreement)
+    return agreement
+
+
+def test_sort_agreements_fy_obligated_all_fys_sorts_by_lifetime_obligated():
+    """When fiscal_years=[] (All FYs), FY_OBLIGATED sort uses lifetime_obligated, not current FY."""
+    obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300000.00"), fees=Decimal("0"))
+    low_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("50000.00"), fees=Decimal("0"))
+    no_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("800000.00"), fees=Decimal("0"))
+
+    a1 = _make_agreement_mock_with_lifetime_obligated([obligated])  # lifetime = 300,000
+    a2 = _make_agreement_mock_with_lifetime_obligated([low_obligated])  # lifetime = 50,000
+    a3 = _make_agreement_mock_with_lifetime_obligated([no_obligated])  # lifetime = 800,000
+
+    # Ascending
+    result = _sort_agreements([a1, a2, a3], AgreementSortCondition.FY_OBLIGATED, False, fiscal_years=[])
+    assert result == [a2, a1, a3]
+
+    # Descending
+    result = _sort_agreements([a1, a2, a3], AgreementSortCondition.FY_OBLIGATED, True, fiscal_years=[])
+    assert result == [a3, a1, a2]
+
+
+def test_sort_agreements_fy_obligated_specific_fy_uses_fy_obligated():
+    """When a specific FY is provided, FY_OBLIGATED sort uses fy_obligated(), not lifetime."""
+    a1 = MagicMock()
+    a1.fy_obligated.return_value = Decimal("100000.00")
+    a2 = MagicMock()
+    a2.fy_obligated.return_value = Decimal("500000.00")
+    a3 = MagicMock()
+    a3.fy_obligated.return_value = Decimal("200000.00")
+
+    result = _sort_agreements([a1, a2, a3], AgreementSortCondition.FY_OBLIGATED, False, fiscal_years=["2025"])
+    assert result == [a1, a3, a2]
