@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYearFilter.helpers";
 /**
  * @typedef {Object} FYFilterItem
  * @property {string} title
@@ -59,11 +60,9 @@ export const useTagsList = (filters) => {
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else if (filterKey == "fiscalYear") {
-                const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: "FY " + item.title,
-                        filter: filterName
-                    })) ?? [];
+                // deriveFYTags handles: correct "FY XXXX" prefix (no double-prefix),
+                // "All FYs" sentinel display, and deduplication.
+                const selectedTags = deriveFYTags(filters[filterKey]);
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else {
                 const selectedTags =
@@ -118,7 +117,7 @@ export const removeFilter = (tag, setFilters) => {
         case "fiscalYear":
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => "FY " + fiscalYear.title !== tag.tagText)
+                fiscalYear: handleFYTagRemoval(prevState.fiscalYear, tag.tagText)
             }));
             break;
         case "portfolio":

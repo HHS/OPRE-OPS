@@ -75,15 +75,16 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     };
 
     const resetFilter = () => {
-        setFilters({
-            fiscalYear: [],
-            portfolio: [],
-            projectTitle: [],
-            agreementType: [],
-            agreementName: [],
-            contractNumber: [],
-            awardType: []
-        });
+        // Clear local buffers only — do NOT call setFilters here. This ensures Reset
+        // does not fire a query and leaves the page-level FY dropdown unchanged.
+        // The cleared state takes effect when the user clicks Apply.
+        setFiscalYear([]);
+        setPortfolio([]);
+        setProjectTitle([]);
+        setAgreementType([]);
+        setAgreementName([]);
+        setContractNumber([]);
+        setAwardType([]);
     };
 
     return {
