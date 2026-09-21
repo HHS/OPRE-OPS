@@ -911,12 +911,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
     });
 });
 
-// ─── Regression specs for OPS-6140 bugs (should FAIL until fixed) ────────────
-
 describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
-    // Finding 1: switching to "All" FYs while sorted by FY_OBLIGATED should
-    // reset the sort to the default. ProjectsList has this guard; AgreementsList
-    // does not. This test should FAIL until the reset is added.
     beforeEach(() => {
         useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
@@ -967,8 +962,7 @@ describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
         // Switch to "All" while the active sort is FY_OBLIGATED
         fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "All" } });
 
-        // Should reset the sort to the default (AGREEMENT) because FY_OBLIGATED
-        // is meaningless under All FYs. Currently fails — no reset guard exists.
+        // Switching to "All" while sorted by FY_OBLIGATED resets to default sort
         expect(setSortConditionsMock).toHaveBeenCalledWith(tableSortCodes.agreementCodes.AGREEMENT, false);
     });
 });

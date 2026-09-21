@@ -293,13 +293,13 @@ def _make_agreement_mock_with_lifetime_obligated(budget_line_items):
 
 def test_sort_agreements_fy_obligated_all_fys_sorts_by_lifetime_obligated():
     """When fiscal_years=[] (All FYs), FY_OBLIGATED sort uses lifetime_obligated, not current FY."""
-    obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300000.00"), fees=Decimal("0"))
+    mid_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("300000.00"), fees=Decimal("0"))
     low_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("50000.00"), fees=Decimal("0"))
-    no_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("800000.00"), fees=Decimal("0"))
+    high_obligated = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("800000.00"), fees=Decimal("0"))
 
-    a1 = _make_agreement_mock_with_lifetime_obligated([obligated])  # lifetime = 300,000
+    a1 = _make_agreement_mock_with_lifetime_obligated([mid_obligated])  # lifetime = 300,000
     a2 = _make_agreement_mock_with_lifetime_obligated([low_obligated])  # lifetime = 50,000
-    a3 = _make_agreement_mock_with_lifetime_obligated([no_obligated])  # lifetime = 800,000
+    a3 = _make_agreement_mock_with_lifetime_obligated([high_obligated])  # lifetime = 800,000
 
     # Ascending
     result = _sort_agreements([a1, a2, a3], AgreementSortCondition.FY_OBLIGATED, False, fiscal_years=[])
