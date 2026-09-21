@@ -27,6 +27,7 @@ import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { deriveDropdownValue, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
 import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
@@ -69,40 +70,15 @@ const AgreementsList = () => {
     const { data: agreementFilterOptions, isLoading: isLoadingAgreementFilterOptions } =
         useGetAgreementsFilterOptionsQuery({ onlyMy: myAgreementsUrl });
 
-    // Determine fiscal year filter based on selection
-    const hasOtherFilters =
-        filters.portfolio.length > 0 ||
-        filters.projectTitle.length > 0 ||
-        filters.agreementType.length > 0 ||
-        filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0 ||
-        filters.awardType.length > 0;
-
-    const getFiscalYearFilter = () => {
-        // If explicit filters are set via filter modal, use those
-        if ((filters.fiscalYear ?? []).length > 0) {
-            // "All FYs" means no fiscal year filter
-            if (filters.fiscalYear.some((fy) => fy.id === "all")) {
-                return [];
-            }
-            return filters.fiscalYear;
-        }
-        // If other filters are active but no fiscal year was selected, don't default
-        if (hasOtherFilters) {
-            return [];
-        }
-        // If "All" is selected from the page dropdown, no fiscal year filter
-        if (selectedFiscalYear === "All") {
-            return [];
-        }
-        // Otherwise, use the selected fiscal year
-        return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
-    };
+    // Derive the dropdown display value and the API-ready FY array from the two FY inputs:
+    // selectedFiscalYear (shortcut dropdown) and filters.fiscalYear (Compare Fiscal Years panel).
+    // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
+    const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
 
     const queryParams = {
         filters: {
             ...filters,
-            fiscalYear: getFiscalYearFilter()
+            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
         },
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
@@ -133,29 +109,12 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Sync fiscal year filter modal with page-level dropdown
-    // When "All FYs" is selected in the filter modal, change page dropdown to "All"
-    useEffect(() => {
-        if (filters.fiscalYear && filters.fiscalYear.length > 0) {
-            const hasAllFYs = filters.fiscalYear.some((fy) => fy.id === "all");
-
-            if (hasAllFYs && selectedFiscalYear !== "All") {
-                setSelectedFiscalYear("All");
-            }
-        }
-    }, [filters.fiscalYear, selectedFiscalYear]);
-
-    // Handle fiscal year change - clear filters when changing fiscal year selection
+    // Handle fiscal year shortcut dropdown change.
+    // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
+    // The dropdown display (dropdownValue) is derived from selectedFiscalYear + filters.fiscalYear,
+    // so no sync effect is needed — deriveDropdownValue handles All/Multi/year display.
     const handleChangeFiscalYear = (newValue) => {
-        setFilters({
-            portfolio: [],
-            fiscalYear: [],
-            projectTitle: [],
-            agreementType: [],
-            agreementName: [],
-            contractNumber: [],
-            awardType: []
-        });
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
         if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
             setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
@@ -207,7 +166,7 @@ const AgreementsList = () => {
                     getAllAgreementsTrigger({
                         filters: {
                             ...filters,
-                            fiscalYear: getFiscalYearFilter()
+                            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
                         },
                         onlyMy: myAgreementsUrl,
                         sortConditions: sortCondition,
@@ -239,8 +198,10 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const isAllFY = selectedFiscalYear === "All";
-            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
+            // Use dropdownValue (not selectedFiscalYear) so the export reflects "Multi" or
+            // panel-driven "All FYs" correctly. Capture here since dropdownValue is render-scope.
+            const isAllFY = dropdownValue === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${dropdownValue.slice(-2)} Obligated`;
 
             // The "Lifetime Obligated" column is omitted when "All" FYs is selected because the
             // fyLabel column above already shows lifetime_obligated — this avoids a duplicate
@@ -379,7 +340,7 @@ const AgreementsList = () => {
                     }
                     FYSelect={
                         <FiscalYear
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={dropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
                             showAllOption={true}
                         />
@@ -388,14 +349,14 @@ const AgreementsList = () => {
                         !isTableLoading &&
                         totalCount > 0 && (
                             <AgreementSummaryCardsSection
-                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                fiscalYear={dropdownValue === "All" ? "All FYs" : `FY ${dropdownValue}`}
                                 totals={totals}
                             />
                         )
                     }
                     TableSection={
                         isTableLoading ? (
-                            <AgreementsTableLoading selectedFiscalYear={selectedFiscalYear} />
+                            <AgreementsTableLoading selectedFiscalYear={dropdownValue} />
                         ) : (
                             <>
                                 <AgreementsTable
@@ -403,7 +364,7 @@ const AgreementsList = () => {
                                     sortConditions={sortCondition}
                                     sortDescending={sortDescending}
                                     setSortConditions={setSortConditions}
-                                    selectedFiscalYear={selectedFiscalYear}
+                                    selectedFiscalYear={dropdownValue}
                                 />
                                 {totalPages > 1 && (
                                     <div className="margin-top-3">
