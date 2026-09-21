@@ -911,7 +911,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
     });
 });
 
-describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
+describe("AgreementsList - FY Obligated sort preserved when switching to All FYs", () => {
     beforeEach(() => {
         useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
@@ -939,7 +939,7 @@ describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
         });
     });
 
-    it("resets sortCondition to default when switching from a specific FY to All while sorted by FY_OBLIGATED", async () => {
+    it("preserves FY_OBLIGATED sort when switching to All FYs (backend handles lifetime sort)", async () => {
         const setSortConditionsMock = vi.fn();
         useSetSortConditions.mockReturnValue({
             sortDescending: false,
@@ -962,8 +962,8 @@ describe("AgreementsList - FY Obligated sort reset on All FYs", () => {
         // Switch to "All" while the active sort is FY_OBLIGATED
         fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "All" } });
 
-        // Switching to "All" while sorted by FY_OBLIGATED resets to default sort
-        expect(setSortConditionsMock).toHaveBeenCalledWith(tableSortCodes.agreementCodes.AGREEMENT, false);
+        // Sort should NOT be reset — FY_OBLIGATED is valid under All FYs (backend sorts by lifetime_obligated)
+        expect(setSortConditionsMock).not.toHaveBeenCalled();
     });
 });
 

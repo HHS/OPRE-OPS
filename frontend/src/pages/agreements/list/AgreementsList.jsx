@@ -157,9 +157,6 @@ const AgreementsList = () => {
             awardType: []
         });
         setSelectedFiscalYear(newValue);
-        if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
-        }
     };
 
     const [trigger] = useLazyGetUserQuery();

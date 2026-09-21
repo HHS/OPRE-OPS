@@ -1393,7 +1393,13 @@ def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None
         case AgreementSortCondition.FY_OBLIGATED:
             fy = resolve_fiscal_year(fiscal_years)
             if fy is None:
-                # All FYs selected — sort by lifetime obligated (sum across all FYs)
+                # All FYs selected (empty filter) — sort by lifetime obligated (sum across all FYs).
+                # TODO: when multiple FYs are selected via the Compare Fiscal Years filter, this also
+                # falls through here and sorts by lifetime_obligated rather than the sum of fy_obligated
+                # for only the selected years. This is a known limitation: it only produces a misleading
+                # order when an agreement has large obligations outside the selected comparison window that
+                # outweigh its in-window obligations. Address in a follow-up if Compare FY sort becomes a
+                # user-reported issue.
                 return sorted(results, key=lambda a: a.lifetime_obligated, reverse=sort_descending)
             return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
