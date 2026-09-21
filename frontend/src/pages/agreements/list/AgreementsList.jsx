@@ -75,6 +75,12 @@ const AgreementsList = () => {
     // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
     const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
 
+    // Child components (AgreementsTable, AgreementsTableLoading, SummaryCardsSection, export)
+    // only understand "All" or a specific year string — they have no "Multi" branch. Under
+    // Multi, show lifetime_obligated columns and "Multiple Years" labels, same as "All".
+    const isMultiFY = dropdownValue === "Multi";
+    const displayFY = isMultiFY ? "All" : dropdownValue;
+
     const queryParams = {
         filters: {
             ...filters,
@@ -198,10 +204,9 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            // Use dropdownValue (not selectedFiscalYear) so the export reflects "Multi" or
-            // panel-driven "All FYs" correctly. Capture here since dropdownValue is render-scope.
-            const isAllFY = dropdownValue === "All";
-            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${dropdownValue.slice(-2)} Obligated`;
+            // displayFY collapses "Multi" → "All" so export columns match the table columns.
+            const isAllFY = displayFY === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${displayFY.slice(-2)} Obligated`;
 
             // The "Lifetime Obligated" column is omitted when "All" FYs is selected because the
             // fyLabel column above already shows lifetime_obligated — this avoids a duplicate
@@ -349,14 +354,14 @@ const AgreementsList = () => {
                         !isTableLoading &&
                         totalCount > 0 && (
                             <AgreementSummaryCardsSection
-                                fiscalYear={dropdownValue === "All" ? "All FYs" : `FY ${dropdownValue}`}
+                                fiscalYear={isMultiFY ? "Multi" : displayFY === "All" ? "All FYs" : `FY ${displayFY}`}
                                 totals={totals}
                             />
                         )
                     }
                     TableSection={
                         isTableLoading ? (
-                            <AgreementsTableLoading selectedFiscalYear={dropdownValue} />
+                            <AgreementsTableLoading selectedFiscalYear={displayFY} />
                         ) : (
                             <>
                                 <AgreementsTable
@@ -364,7 +369,7 @@ const AgreementsList = () => {
                                     sortConditions={sortCondition}
                                     sortDescending={sortDescending}
                                     setSortConditions={setSortConditions}
-                                    selectedFiscalYear={dropdownValue}
+                                    selectedFiscalYear={displayFY}
                                 />
                                 {totalPages > 1 && (
                                     <div className="margin-top-3">
