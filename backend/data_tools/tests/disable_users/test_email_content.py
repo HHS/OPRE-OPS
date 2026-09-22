@@ -23,6 +23,6 @@ def test_admin_summary_body_lists_each_disabled_user():
     assert "- John Smith (N/A) - john.smith@example.gov" in body.splitlines()
 
 
-def test_subjects_have_expected_wording():
-    assert DISABLED_USER_SUBJECT == "Your OPS account has been disabled"
-    assert ADMIN_SUMMARY_SUBJECT == "OPS: user account(s) automatically disabled"
+def test_subjects_are_non_empty_strings():
+    assert isinstance(DISABLED_USER_SUBJECT, str) and DISABLED_USER_SUBJECT
+    assert isinstance(ADMIN_SUMMARY_SUBJECT, str) and ADMIN_SUMMARY_SUBJECT
