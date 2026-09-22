@@ -115,29 +115,48 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Track the previous length of filters.fiscalYear to detect the "all tags removed"
-    // transition (non-zero → zero), ignoring spurious writes of a new [] reference when
-    // the array was already empty (e.g. applyFilter after resetFilter).
+    // Track when the dropdown shortcut itself clears filters.fiscalYear so the effect
+    // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
+    const dropdownChangedFYRef = useRef(false);
+
+    // Track the previous length to distinguish "non-zero → zero" (tag removal) from
+    // a no-op write of a new [] reference when the array was already empty
+    // (e.g. Apply after Reset when no FY was selected). Combined with the ref guard,
+    // this ensures we only revert to "All" when the user explicitly removes all FY tags.
     const prevFYLengthRef = useRef(0);
 
-    // When all FY filter tags are removed (non-zero → zero), revert selectedFiscalYear
-    // to "All" per the business rule: "If all filters applied are removed, the page
-    // defaults back to All FYs." The prev-length guard prevents Apply-of-empty-modal
-    // (which writes a new [] reference without actually changing the logical state) from
-    // incorrectly resetting a dropdown year the user explicitly selected.
+    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown),
+    // revert selectedFiscalYear to "All" per the business rule.
+    // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
     useEffect(() => {
+        const normalizedFYs = filters.fiscalYear ?? [];
         const prevLen = prevFYLengthRef.current;
-        prevFYLengthRef.current = filters.fiscalYear.length;
-        if (filters.fiscalYear.length === 0 && prevLen > 0) {
+        prevFYLengthRef.current = normalizedFYs.length;
+        if (dropdownChangedFYRef.current) {
+            dropdownChangedFYRef.current = false;
+            return;
+        }
+        if (normalizedFYs.length === 0 && prevLen > 0) {
             setSelectedFiscalYear("All");
         }
     }, [filters.fiscalYear]);
 
+    // Reset FY_OBLIGATED sort whenever displayFY enters "All" mode (All FYs or Multi)
+    // from any cause — dropdown shortcut, panel sentinel, Multi, or tag removal.
+    // FY_OBLIGATED is meaningless when showing all/multiple fiscal years.
+    const prevDisplayFYRef = useRef(displayFY);
+    useEffect(() => {
+        const prev = prevDisplayFYRef.current;
+        prevDisplayFYRef.current = displayFY;
+        if (displayFY === "All" && prev !== "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
+            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        }
+    }, [displayFY, sortCondition, setSortConditions]);
+
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
-    // The dropdown display (dropdownValue) is derived from selectedFiscalYear + filters.fiscalYear,
-    // so no sync effect is needed — deriveDropdownValue handles All/Multi/year display.
     const handleChangeFiscalYear = (newValue) => {
+        dropdownChangedFYRef.current = true;
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
     };
