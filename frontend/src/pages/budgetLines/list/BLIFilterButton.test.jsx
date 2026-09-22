@@ -130,7 +130,6 @@ describe("BLIFilterButton", () => {
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
                 filterOptions={mockFilterOptions}
             />
         );
@@ -158,7 +157,6 @@ describe("BLIFilterButton", () => {
                 <BLIFilterButton
                     filters={filtersWithNullish}
                     setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
                     filterOptions={mockFilterOptions}
                 />
             );
@@ -183,7 +181,6 @@ describe("BLIFilterButton", () => {
                 <BLIFilterButton
                     filters={allNullFilters}
                     setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
                     filterOptions={mockFilterOptions}
                 />
             );
@@ -197,7 +194,6 @@ describe("BLIFilterButton", () => {
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
                 filterOptions={mockFilterOptions}
             />
         );
@@ -210,12 +206,11 @@ describe("BLIFilterButton", () => {
         });
     });
 
-    it("sets fiscalYears to null when fiscal years are cleared (All)", async () => {
+    it("sets fiscalYears to [] when fiscal years are cleared (All) under Model B", async () => {
         render(
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
                 filterOptions={mockFilterOptions}
             />
         );
@@ -230,15 +225,14 @@ describe("BLIFilterButton", () => {
 
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback(defaultFilters);
-        expect(result.fiscalYears).toBeNull();
+        expect(result.fiscalYears).toEqual([]);
     });
 
-    it("sets fiscalYears to null when Compare Fiscal Years is cleared on apply", async () => {
+    it("sets fiscalYears to [] when Compare Fiscal Years is cleared on apply under Model B", async () => {
         render(
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
                 filterOptions={mockFilterOptions}
             />
         );
@@ -252,17 +246,15 @@ describe("BLIFilterButton", () => {
 
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback(defaultFilters);
-        // Empty array in modal becomes null ("All") when applied
-        expect(result.fiscalYears).toBeNull();
+        // Empty array in modal stays [] under Model B
+        expect(result.fiscalYears).toEqual([]);
     });
 
-    it("reset button restores local state to current filters - Approach A (does not call setFilters)", () => {
+    it("reset button clears local state without calling setFilters", () => {
         render(
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
-                useApproachB={false}
                 filterOptions={mockFilterOptions}
             />
         );
@@ -279,7 +271,7 @@ describe("BLIFilterButton", () => {
         expect(mockSetFilters).not.toHaveBeenCalled();
     });
 
-    it("reset button clears all selections - Approach B (does not call setFilters)", () => {
+    it("reset then apply commits empty buffers, results revert to dropdown FY", () => {
         const filtersWithSelections = {
             ...defaultFilters,
             fiscalYears: [{ id: 2024, title: "FY 2024" }],
@@ -290,27 +282,24 @@ describe("BLIFilterButton", () => {
             <BLIFilterButton
                 filters={filtersWithSelections}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
-                useApproachB={true}
                 filterOptions={mockFilterOptions}
             />
         );
 
-        // Reset clears all selections (not restore to current filters)
         const resetButton = screen.getByTestId("reset-filter-btn");
         fireEvent.click(resetButton);
 
-        // Reset doesn't call setFilters - it just clears local modal state
+        // Reset doesn't call setFilters — no query fires
         expect(mockSetFilters).not.toHaveBeenCalled();
 
-        // After reset, applying empty selections should revert to default
+        // Apply after reset commits empty buffers
         fireEvent.click(screen.getByTestId("apply-filter-btn"));
         expect(mockSetFilters).toHaveBeenCalled();
 
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback(filtersWithSelections);
-        // Empty selections after reset → null (reverts to default)
-        expect(result.fiscalYears).toBeNull();
+        // Empty selections → [] under Model B (resolveForAPI falls back to dropdown FY)
+        expect(result.fiscalYears).toEqual([]);
     });
 
     it("handles missing filter options data", () => {
@@ -319,32 +308,18 @@ describe("BLIFilterButton", () => {
                 <BLIFilterButton
                     filters={defaultFilters}
                     setFilters={mockSetFilters}
-                    selectedFiscalYear={2024}
                     filterOptions={undefined}
                 />
             );
         }).not.toThrow();
     });
 
-    it("includes selectedFiscalYear in options when not in filterOptions", () => {
+    it("includes currently selected FY years in options even if not in filterOptions", () => {
         render(
             <BLIFilterButton
-                filters={defaultFilters}
+                filters={{ ...defaultFilters, fiscalYears: [{ id: 2026, title: 2026 }] }}
                 setFilters={mockSetFilters}
-                selectedFiscalYear={2024}
                 filterOptions={{ ...mockFilterOptions, fiscal_years: [2023, 2025] }}
-            />
-        );
-
-        expect(screen.getByTestId("filter-button")).toBeInTheDocument();
-    });
-
-    it("handles 'Multi' as selectedFiscalYear", () => {
-        render(
-            <BLIFilterButton
-                filters={defaultFilters}
-                setFilters={mockSetFilters}
-                selectedFiscalYear="Multi"
             />
         );
 
@@ -357,7 +332,6 @@ describe("BLIFilterButton", () => {
                 <BLIFilterButton
                     filters={defaultFilters}
                     setFilters={mockSetFilters}
-                    selectedFiscalYear={2025}
                 />
             );
 
@@ -365,32 +339,7 @@ describe("BLIFilterButton", () => {
             expect(screen.getByTestId("default-string")).toHaveTextContent("");
         });
 
-        it("shows no placeholder text when 'All' is selected", () => {
-            render(
-                <BLIFilterButton
-                    filters={defaultFilters}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear="All"
-                />
-            );
-
-            expect(screen.getByTestId("default-string")).toHaveTextContent("");
-        });
-
-        it("shows no placeholder text when 'Multi' is selected", () => {
-            render(
-                <BLIFilterButton
-                    filters={defaultFilters}
-                    setFilters={mockSetFilters}
-                    selectedFiscalYear="Multi"
-                />
-            );
-
-            // No placeholder text
-            expect(screen.getByTestId("default-string")).toHaveTextContent("");
-        });
-
-        it("shows no placeholder text when selectedFiscalYear is not provided", () => {
+        it("shows no placeholder text in any state", () => {
             render(
                 <BLIFilterButton
                     filters={defaultFilters}
@@ -400,6 +349,35 @@ describe("BLIFilterButton", () => {
 
             // No placeholder text
             expect(screen.getByTestId("default-string")).toHaveTextContent("");
+        });
+    });
+
+    describe("applyFiredFYRef seam", () => {
+        it("applyFilter sets applyFiredFYRef before calling setFilters", () => {
+            // Regression guard: applyFiredFYRef must be set to true BEFORE setFilters is called
+            // so the page-level reset effect sees the flag and skips resetting selectedFiscalYear
+            // to "All". If the order is reversed (setFilters before ref set), the effect fires
+            // before the flag is in place and incorrectly resets the dropdown year to "All".
+            const applyFiredFYRef = { current: false };
+            const setFilters = vi.fn(() => {
+                // Capture whether the ref was set at the moment setFilters is called
+                applyFiredFYRef._wasSetWhenCalled = applyFiredFYRef.current;
+            });
+
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={setFilters}
+                    applyFiredFYRef={applyFiredFYRef}
+                    filterOptions={mockFilterOptions}
+                />
+            );
+
+            fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+            expect(setFilters).toHaveBeenCalled();
+            // The ref must have been true at the moment setFilters was called
+            expect(applyFiredFYRef._wasSetWhenCalled).toBe(true);
         });
     });
 });

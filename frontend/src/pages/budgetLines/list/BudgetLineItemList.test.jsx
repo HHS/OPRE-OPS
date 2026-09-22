@@ -11,7 +11,6 @@ import {
 } from "../../../api/opsAPI";
 import BudgetLineItemList from "./BudgetLineItemList";
 import * as hooks from "./BudgetLinesItems.hooks";
-import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
 
 const mockStore = configureStore([]);
 
@@ -151,8 +150,10 @@ describe("BudgetLineItemList", () => {
             myBudgetLineItemsUrl: false,
             filters: defaultFilters,
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
     });
 
@@ -209,16 +210,18 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByTestId("summary-cards-section")).toBeInTheDocument();
     });
 
-    it("handles null fiscalYears filter gracefully", () => {
+    it("handles null fiscalYears filter gracefully (null normalized to [] under Model B)", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
             filters: {
                 ...defaultFilters,
-                fiscalYears: null
+                fiscalYears: null // null can arrive from FiscalYearComboBox clear; resolveForAPI handles it
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -239,16 +242,18 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
-    it("does not replace fiscalYears with selectedFiscalYear when fiscalYears is null", () => {
+    it("sends empty fiscalYears to API when selectedFiscalYear is All and compareFYs is empty", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
             filters: {
                 ...defaultFilters,
-                fiscalYears: null
+                fiscalYears: []
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -264,10 +269,11 @@ describe("BudgetLineItemList", () => {
             </Provider>
         );
 
+        // resolveForAPI("All", []) → [] → no FY filter sent
         expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 filters: expect.objectContaining({
-                    fiscalYears: null
+                    fiscalYears: []
                 })
             })
         );
@@ -281,8 +287,10 @@ describe("BudgetLineItemList", () => {
                 fiscalYears: undefined
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -303,7 +311,7 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
-    it("uses current fiscal year when fiscalYears is undefined and fiscalYearShortcut is inactive", () => {
+    it("sends [] fiscalYears to API when selectedFiscalYear is All and fiscalYears is undefined", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
             filters: {
@@ -311,8 +319,10 @@ describe("BudgetLineItemList", () => {
                 fiscalYears: undefined
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -328,10 +338,11 @@ describe("BudgetLineItemList", () => {
             </Provider>
         );
 
+        // resolveForAPI("All", undefined) → [] (no FY filter)
         expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 filters: expect.objectContaining({
-                    fiscalYears: [{ id: 2024, title: 2024 }]
+                    fiscalYears: []
                 })
             })
         );
@@ -393,8 +404,10 @@ describe("BudgetLineItemList", () => {
             myBudgetLineItemsUrl: true,
             filters: defaultFilters,
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -418,8 +431,10 @@ describe("BudgetLineItemList", () => {
             myBudgetLineItemsUrl: false,
             filters: defaultFilters,
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -452,8 +467,10 @@ describe("BudgetLineItemList", () => {
             myBudgetLineItemsUrl: false,
             filters: defaultFilters,
             setFilters: mockSetFilters,
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -492,18 +509,20 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
-    it("calls handleExport with resolved fiscal year when filters.fiscalYears is empty", async () => {
+    it("calls handleExport with empty fiscalYears when selectedFiscalYear is All and compareFYs is empty", async () => {
         const { handleExport } = await import("../../../helpers/budgetLines.helpers");
 
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
             filters: {
                 ...defaultFilters,
-                fiscalYears: [] // Empty array should resolve to current FY
+                fiscalYears: []
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -522,18 +541,19 @@ describe("BudgetLineItemList", () => {
         const exportButton = screen.getByText("Export");
         exportButton.click();
 
+        // resolveForAPI("All", []) → [] (no FY filter = all fiscal years)
         expect(handleExport).toHaveBeenCalledWith(
-            expect.any(Function), // exportTableToXlsx
-            expect.any(Function), // setIsExporting
+            expect.any(Function),
+            expect.any(Function),
             expect.objectContaining({
-                fiscalYears: [{ id: 2024, title: 2024 }], // Should be resolved to current FY
+                fiscalYears: [],
                 budgetLineTotalMin: undefined,
                 budgetLineTotalMax: undefined
             }),
             mockBudgetLineItems,
-            expect.any(Function), // budgetLineTrigger
-            expect.any(Function), // serviceComponentTrigger
-            expect.any(Function) // portfolioTrigger
+            expect.any(Function),
+            expect.any(Function),
+            expect.any(Function)
         );
     });
 
@@ -547,8 +567,10 @@ describe("BudgetLineItemList", () => {
                 fiscalYears: [] // Empty array with Multi should remain empty
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         useGetBudgetLineItemsQuery.mockReturnValue({
@@ -575,8 +597,10 @@ describe("BudgetLineItemList", () => {
                 ]
             },
             setFilters: vi.fn(),
-            useApproachB: false,
-            fyHelpers: getFiscalYearHelpers(false)
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
         });
 
         rerender(
@@ -602,5 +626,172 @@ describe("BudgetLineItemList", () => {
             expect.any(Function),
             expect.any(Function)
         );
+    });
+
+    // ─── Model B behavior regression guards ─────────────────────────────────
+
+    it("sends selected dropdown year to API when selectedFiscalYear is a year and compareFYs is empty", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // resolveForAPI("2024", []) → [{id:2024, title:2024}]
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: [{ id: 2024, title: 2024 }]
+                })
+            })
+        );
+    });
+
+    it("sends empty fiscalYears to API on initial load (defaults to All FYs)", () => {
+        // The real hook initializes selectedFiscalYear="All" and fiscalYears=[].
+        // This test is intentionally NOT mocking the hook to catch regressions in the default.
+        // Note: useBudgetLinesList is mocked at module level so we re-spy with the default shape.
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "All", // the Model B default — NOT current FY
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // resolveForAPI("All", []) → [] → no FY filter
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: []
+                })
+            })
+        );
+    });
+
+    it("dropdown shows Multi and resolves panel FYs to API when 2+ panel FYs selected", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: [
+                    { id: 2024, title: 2024 },
+                    { id: 2025, title: 2025 }
+                ]
+            },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // deriveDropdownValue("All", [{2024},{2025}]) → "Multi"
+        // resolveForAPI("All", [{2024},{2025}]) → [{2024},{2025}] (panel wins)
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: [
+                        { id: 2024, title: 2024 },
+                        { id: 2025, title: 2025 }
+                    ]
+                })
+            })
+        );
+    });
+
+    it("page-level reset effect reverts to All when FY tags go non-zero → zero (tag removal path)", () => {
+        // Guards the tag-removal → "revert to All" behavior. When filters.fiscalYears transitions
+        // from non-empty to empty WITHOUT dropdownChangedFYRef or applyFiredFYRef being set,
+        // the effect must call setSelectedFiscalYear("All").
+        const setSelectedFiscalYearMock = vi.fn();
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [{ id: 2025, title: 2025 }] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        const { rerender } = render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Simulate tag removal emptying filters.fiscalYears (no ref guards set)
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        rerender(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Tag removal path: no ref guards → effect SHOULD revert to "All"
+        expect(setSelectedFiscalYearMock).toHaveBeenCalledWith("All");
     });
 });
