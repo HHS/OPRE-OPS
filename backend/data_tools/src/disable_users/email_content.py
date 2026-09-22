@@ -4,7 +4,7 @@ Edit the strings and functions below to change what gets sent -- this file has n
 sending logic, only text.
 """
 
-DISABLED_USER_SUBJECT = "Your OPS account has been disabled"
+DISABLED_USER_SUBJECT = "Your OPS user account has been disabled"
 
 ADMIN_SUMMARY_SUBJECT = "OPS: user account(s) automatically disabled"
 
@@ -12,10 +12,9 @@ ADMIN_SUMMARY_SUBJECT = "OPS: user account(s) automatically disabled"
 def disabled_user_body(email: str) -> str:
     """Body of the email sent to a user whose own account was just disabled."""
     return (
-        f"Your OPRE OPS account ({email}) has been automatically disabled due to prolonged "
+        f"Your OPRE OPS user account associated with the email address ({email}) has been automatically disabled due to prolonged "
         "inactivity.\n\n"
-        "If you need continued access, please contact your organization's OPS User Admin to "
-        "have your account reactivated."
+        "If you need continued access to OPS, please create an ORBIT ticket to request reactivation. Do not reply to this email."
     )
 
 
@@ -27,7 +26,7 @@ def admin_summary_body(disabled_users: list[dict]) -> str:
     (a string, e.g. "Division of Data and Improvement", or "N/A" if the user has none) --
     not the numeric Division foreign key.
     """
-    lines = ["The automated inactivity check disabled the following OPS user account(s):", ""]
+    lines = ["The automated inactivity check just disabled the following OPS user account(s):", ""]
     for user in disabled_users:
         lines.append(f"- {user['full_name']} ({user['division']}) - {user['email']}")
     lines.append("")
