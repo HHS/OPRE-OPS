@@ -17,9 +17,12 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
  * @param {boolean} props.showModal - Controlled modal visibility (for reseed-on-open).
  * @param {Function} props.setShowModal - Controlled modal setter.
  * @param {import("../../../types/BudgetLineTypes").Filters} [props.filterOptions] - Prefetched filter options.
+ * @param {React.MutableRefObject<boolean>} [props.applyFiredFYRef] - Ref set to true immediately
+ *   before applyFilter writes to parent state. Lets the page-level FY reset effect distinguish
+ *   tag removal (should revert to "All") from Apply (should preserve the dropdown's current year).
  * @returns {React.ReactElement}
  */
-export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, filterOptions }) => {
+export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, filterOptions, applyFiredFYRef }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -96,6 +99,9 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
     }, [filterOptions]);
 
     const applyFilter = () => {
+        // Signal to the page-level FY reset effect that this emptying came from Apply,
+        // not from tag removal — so it should NOT revert selectedFiscalYear to "All".
+        if (applyFiredFYRef) applyFiredFYRef.current = true;
         setFilters((prevState) => ({
             ...prevState,
             fiscalYears: Array.isArray(fiscalYears) ? fiscalYears : [],
