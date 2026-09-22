@@ -32,10 +32,11 @@ export const formatProjectDate = (isoDate) => {
  * @param {Function} setIsExporting - State setter for export loading state
  * @param {Function} setAlert - Function to display user-facing alerts
  * @param {Function} getAllProjectsTrigger - Lazy query trigger for fetching projects
- * @param {string|number} selectedFiscalYear - Current selected fiscal year or "All"
+ * @param {string|number} selectedFiscalYear - Display-collapsed fiscal year ("All" or a year string; "Multi" already collapsed to "All" by the caller)
  * @param {string} sortCondition - Current sort field
  * @param {boolean} sortDescending - Current sort direction
  * @param {number} totalCount - Total number of projects
+ * @param {import('./ProjectFilterButton/ProjectFilterTypes').Filters} filters - The resolved filters (fiscalYear already resolved via resolveForAPI), so export respects the same portfolio/search/type filters as the live query
  * @returns {Promise<void>}
  */
 export const handleProjectsExport = async (
@@ -46,7 +47,8 @@ export const handleProjectsExport = async (
     selectedFiscalYear,
     sortCondition,
     sortDescending,
-    totalCount
+    totalCount,
+    filters
 ) => {
     try {
         setIsExporting(true);
@@ -59,11 +61,11 @@ export const handleProjectsExport = async (
         for (let page = 0; page < totalPages; page++) {
             fetchPromises.push(
                 getAllProjectsTrigger({
+                    filters,
                     sortConditions: sortCondition,
                     sortDescending,
                     page,
-                    limit: maxLimit,
-                    fiscalYear: selectedFiscalYear
+                    limit: maxLimit
                 }).unwrap()
             );
         }

@@ -267,7 +267,7 @@ describe("ProjectFilterButton", () => {
         expect(mockSetFilters).toHaveBeenCalled();
     });
 
-    it("should reset filters when Reset is clicked", async () => {
+    it("clears local buffers without calling setFilters when Reset is clicked", async () => {
         const user = userEvent.setup();
         const filtersWithSelections = {
             fiscalYear: [{ id: 2023, title: "2023" }],
@@ -296,13 +296,9 @@ describe("ProjectFilterButton", () => {
         const resetButton = screen.getByRole("button", { name: /reset/i });
         await user.click(resetButton);
 
-        expect(mockSetFilters).toHaveBeenCalledWith({
-            fiscalYear: [],
-            portfolio: [],
-            projectSearch: [],
-            agreementSearch: [],
-            projectType: []
-        });
+        // Reset only clears the modal's local buffers — it must not fire a query.
+        // The cleared state only takes effect once the user clicks Apply.
+        expect(mockSetFilters).not.toHaveBeenCalled();
     });
 
     it("should close modal when Apply is clicked", async () => {

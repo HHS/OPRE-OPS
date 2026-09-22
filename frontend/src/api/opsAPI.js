@@ -518,7 +518,7 @@ export const opsApi = createApi({
             providesTags: ["Projects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, filters } = {}) => {
                 const queryParams = [];
 
                 // Add filter parameters if they exist and are not empty
@@ -526,9 +526,7 @@ export const opsApi = createApi({
                     // fiscal_year filter
                     if (filters.fiscalYear && filters.fiscalYear.length > 0) {
                         filters.fiscalYear.forEach((fy) => {
-                            if (fy.id !== "all") {
-                                queryParams.push(`fiscal_year=${fy.id}`);
-                            }
+                            queryParams.push(`fiscal_year=${fy.id}`);
                         });
                     }
 
@@ -561,21 +559,12 @@ export const opsApi = createApi({
                     }
                 }
 
-                // Legacy fiscal year parameter (when not using filters)
-                if (
-                    fiscalYear &&
-                    fiscalYear !== "All" &&
-                    (!filters || !filters.fiscalYear || filters.fiscalYear.length === 0)
-                ) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
-                }
-
                 if (sortConditions) {
                     queryParams.push(`sort_field=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
-                    // FY_TOTAL sort requires a fiscal year to sort by
-                    if (sortConditions === "FY_TOTAL" && fiscalYear && fiscalYear !== "All") {
-                        queryParams.push(`sort_fiscal_year=${fiscalYear}`);
+                    // FY_TOTAL sort requires a single resolved fiscal year to sort by
+                    if (sortConditions === "FY_TOTAL" && filters?.fiscalYear?.length === 1) {
+                        queryParams.push(`sort_fiscal_year=${filters.fiscalYear[0].id}`);
                     }
                 }
                 if (limit !== undefined && limit !== null) {
