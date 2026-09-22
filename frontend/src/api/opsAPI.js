@@ -526,7 +526,9 @@ export const opsApi = createApi({
                     // fiscal_year filter
                     if (filters.fiscalYear && filters.fiscalYear.length > 0) {
                         filters.fiscalYear.forEach((fy) => {
-                            queryParams.push(`fiscal_year=${fy.id}`);
+                            if (fy.id !== "all") {
+                                queryParams.push(`fiscal_year=${fy.id}`);
+                            }
                         });
                     }
 
