@@ -14,7 +14,7 @@ vi.mock("../../components/Portfolios/PortfoliosComboBox", () => ({
 }));
 
 vi.mock("../../components/UI/FilterButton/FilterButton", () => ({
-    default: ({ applyFilter, resetFilter, fieldsetList }) => (
+    default: ({ applyFilter, resetFilter, fieldsetList, setShowModal }) => (
         <div data-testid="filter-button">
             {fieldsetList}
             <button
@@ -28,6 +28,18 @@ vi.mock("../../components/UI/FilterButton/FilterButton", () => ({
                 onClick={resetFilter}
             >
                 Reset
+            </button>
+            <button
+                data-testid="open-modal-btn"
+                onClick={() => setShowModal?.(true)}
+            >
+                Open
+            </button>
+            <button
+                data-testid="close-modal-btn"
+                onClick={() => setShowModal?.(false)}
+            >
+                Close
             </button>
         </div>
     )
@@ -81,6 +93,32 @@ describe("ReportingFilterButton", () => {
 
         fireEvent.click(screen.getByTestId("apply-btn"));
         expect(mockSetFilters).toHaveBeenCalled();
+    });
+
+    it("reopen after Reset-without-Apply reseeds modal from active filters", () => {
+        // Scenario: user has portfolio filter active, opens modal, clicks Reset (clears buffer),
+        // closes modal without applying, reopens modal — should show active filter, not cleared state.
+        render(
+            <ReportingFilterButton
+                filters={{ portfolios: [{ id: 1, name: "OPRE" }] }}
+                setFilters={vi.fn()}
+            />
+        );
+
+        // Modal opens → reseed fires → buffer = [{id:1, name:"OPRE"}] → shows "Selected"
+        fireEvent.click(screen.getByTestId("open-modal-btn"));
+        expect(screen.getByTestId("portfolios-combobox")).toHaveTextContent("Selected");
+
+        // Reset clears buffer → shows placeholder
+        fireEvent.click(screen.getByTestId("reset-btn"));
+        expect(screen.getByTestId("portfolios-combobox")).toHaveTextContent("All Portfolios");
+
+        // Close modal without applying (showModal → false)
+        fireEvent.click(screen.getByTestId("close-modal-btn"));
+
+        // Reopen modal → showModal transitions false→true → reseed fires from parent filters
+        fireEvent.click(screen.getByTestId("open-modal-btn"));
+        expect(screen.getByTestId("portfolios-combobox")).toHaveTextContent("Selected");
     });
 
     it("reset then apply commits empty portfolios to parent", () => {
