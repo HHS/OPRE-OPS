@@ -32,8 +32,8 @@ format = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
-logger.add(sys.stdout, format=format, level="INFO")
-logger.add(sys.stderr, format=format, level="INFO")
+logger.add(sys.stdout, format=format, level="INFO", diagnose=False)
+logger.add(sys.stderr, format=format, level="INFO", diagnose=False)
 
 
 def get_ids_from_oidc_ids(se, oidc_ids: list):
@@ -106,7 +106,6 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
 
         disabled_user_details = [
             {
-                "id": uid,
                 "email": users_by_id[uid].email,
                 "full_name": users_by_id[uid].display_name,
                 "division_id": users_by_id[uid].division,
@@ -135,10 +134,13 @@ def send_disable_notifications(
 
     The admin summary is sent FIRST, deliberately: by the time this runs the disable/commit has
     already happened, so "these accounts were disabled" is already true, and there's no downside
-    to sending the compliance-relevant admin summary before the individual notifications. If a
-    later individual send fails and the job exits non-zero, the admin summary has still gone out
-    -- sending user emails first would let one bad recipient permanently lose the summary instead,
-    since a failed run is not idempotent (see below).
+    to sending the compliance-relevant admin summary before the individual notifications.
+
+    Each individual send is attempted independently -- one bad recipient (or a transient ACS
+    error) is logged and collected, but does not stop the remaining sends in the batch. If any
+    individual sends failed, a single RuntimeError is raised after all of them have been
+    attempted, so the job still exits non-zero (and the failure is visible), but a single bad
+    recipient can no longer silently drop every notification after it in the batch.
 
     ``admin_emails`` must be captured by the caller before any user in this run was disabled (see
     the comment in update_disabled_users_status) so a just-disabled admin isn't silently dropped
@@ -146,10 +148,11 @@ def send_disable_notifications(
     return already guarantees this). No-ops (with a log line) unless ACS email is configured --
     this keeps local/dev/pytest runs from attempting to send mail.
 
-    Note: this is not idempotent. If a send fails partway through, already-disabled users stay
-    disabled but some notifications may never go out -- re-running the job will not resend them,
-    since those users are no longer selected as stale. The job's non-zero exit is the signal to
-    investigate manually.
+    Note: this is not idempotent. If the admin summary send fails, or if an individual send is
+    still failing after the batch completes (see above), already-disabled users stay disabled but
+    some notifications may never go out -- re-running the job will not resend them, since those
+    users are no longer selected as stale. The job's non-zero exit is the signal to investigate
+    manually.
     """
     if not config.acs_connection_string or not config.email_sender_address:
         logger.warning(
@@ -175,8 +178,18 @@ def send_disable_notifications(
         ]
         send_admin_summary_email(email_client, sender, admin_emails, summary_rows)
 
+    failed_recipients = []
     for user in disabled_user_details:
-        send_disabled_user_email(email_client, sender, user["email"])
+        try:
+            send_disabled_user_email(email_client, sender, user["email"])
+        except Exception as e:
+            logger.error(f"Failed to send disable notification email to {user['email']}: {e}")
+            failed_recipients.append(user["email"])
+
+    if failed_recipients:
+        raise RuntimeError(
+            f"Failed to send disable notification email to {len(failed_recipients)} user(s): {failed_recipients}"
+        )
 
 
 if __name__ == "__main__":

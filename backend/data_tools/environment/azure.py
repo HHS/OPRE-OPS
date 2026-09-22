@@ -64,8 +64,9 @@ class AzureConfig(DataToolsConfig):
 
         return cutoff_days
 
-    # `or None` coerces an unset/empty env var to None (not a no-op) so callers can rely on
-    # a clean falsy check rather than an empty string.
+    # `or None` coerces an empty-string env var to None (for an unset var, os.getenv already
+    # returns None, so this is a no-op there) so callers can rely on a clean falsy check rather
+    # than an empty string.
     @property
     def acs_connection_string(self) -> str | None:
         return os.getenv("ACS_CONNECTION_STRING") or None

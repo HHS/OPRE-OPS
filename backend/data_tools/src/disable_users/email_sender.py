@@ -1,14 +1,17 @@
 """Sends the disable_users notification emails via Azure Communication Services (OPS-2102).
 
 Message text lives in email_content.py -- this file only builds the ACS message payload,
-sends it, and logs who each email went to and why. Failures are not caught here; by the time
-this runs, the disable/commit has already succeeded, so a send failure should surface loudly
-(non-zero exit) rather than being silently swallowed.
+sends it, and logs who each email went to and why. This module itself never catches send
+failures -- disable_users.py's caller decides whether to catch and continue (it does, for the
+per-recipient batch loop) or let a failure propagate (it does, for the admin summary send).
 
-The caller is responsible for constructing the ``EmailClient`` (via
-``EmailClient.from_connection_string(...)``) and passing it in -- this module never sees the
-connection string itself, so it can't end up in this module's stack frames (and therefore
-can't leak via a future ``logger.exception(...)`` with ``diagnose=True``).
+Takes an already-constructed EmailClient (not a connection string) so the raw ACS secret never
+sits in *this module's* stack frames. That alone is not a complete guarantee against leaking via
+a logger configured with loguru's diagnose=True: a failure deep inside the ACS SDK/stdlib (e.g. a
+malformed-key base64 decode error) can still print raw key material from *those* frames, which
+this module's design does not reach. The actual backstop is disable_users.py's logger sinks being
+configured with diagnose=False -- this module's client-injection pattern is good defense-in-depth,
+not the sole protection.
 """
 
 from __future__ import annotations
