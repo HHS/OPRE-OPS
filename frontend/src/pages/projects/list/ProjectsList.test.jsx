@@ -80,6 +80,25 @@ vi.mock("./ProjectFilterTags/ProjectFilterTags", async () => {
     };
 });
 
+// Mocked to exactly reproduce useProjectFilterButton's real applyFilter behavior — setting
+// applyFiredFYRef.current before writing back the SAME filters.fiscalYear array reference
+// (as happens when the user applies without touching Compare FYs) — without driving the
+// real modal/comboboxes. This is what regression-tests the applyFiredFYRef staleness bug.
+vi.mock("./ProjectFilterButton/ProjectFilterButton", () => ({
+    default: ({ setFilters, applyFiredFYRef }) => (
+        <button
+            type="button"
+            data-testid="apply-without-touching-fy"
+            onClick={() => {
+                if (applyFiredFYRef) applyFiredFYRef.current = true;
+                setFilters((prev) => ({ ...prev, portfolio: [{ id: 9, name: "Other Portfolio" }] }));
+            }}
+        >
+            Apply without touching FY
+        </button>
+    )
+}));
+
 /** Two projects with the full set of new fields from the API */
 const MOCK_PROJECT_1 = {
     id: 10,
@@ -483,6 +502,12 @@ describe("ProjectsList - Model B FY behavior (OPS-6257)", () => {
             isLoading: false,
             isError: false
         });
+        // Self-contained default so this describe block doesn't depend on the sibling
+        // "ProjectsList" describe's beforeEach having already run first in file order.
+        mockUseGetProjectsFilterOptionsQuery.mockReturnValue({
+            data: { fiscal_years: [2023, 2024, 2025], portfolios: [], project_types: [] },
+            isLoading: false
+        });
     });
 
     const renderComponent = () =>
@@ -582,6 +607,32 @@ describe("ProjectsList - Model B FY behavior (OPS-6257)", () => {
         // Compare FYs is now empty, so the dropdown falls back to selectedFiscalYear.
         // The revert-to-"All" effect must reset it — otherwise this would show the
         // stale "2024" the dropdown shortcut was left on before Compare FYs took over.
+        await waitFor(() => expect(fySelect).toHaveValue("All"));
+    });
+
+    it("still reverts to All on tag removal after an unrelated Apply that leaves fiscalYear's reference unchanged (regression for stale applyFiredFYRef)", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Set the dropdown shortcut to a specific year first.
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+        await waitFor(() => expect(fySelect).toHaveValue("2024"));
+
+        // Apply a Compare FYs selection, overriding the displayed value to 2025.
+        await user.click(screen.getByTestId("seed-fy-tag"));
+        await waitFor(() => expect(fySelect).toHaveValue("2025"));
+
+        // Simulate applying the filter modal WITHOUT touching Compare FYs — this writes
+        // back the same filters.fiscalYear array reference while still setting
+        // applyFiredFYRef.current, exactly like the real useProjectFilterButton.applyFilter.
+        await user.click(screen.getByTestId("apply-without-touching-fy"));
+
+        // Now remove the FY tag. If applyFiredFYRef were left stuck `true` by the no-op
+        // Apply above, this removal would be wrongly treated as Apply-caused and the
+        // dropdown would stay stale on "2024" instead of reverting to "All".
+        await user.click(screen.getByTestId("remove-fy-tag-2025"));
+
         await waitFor(() => expect(fySelect).toHaveValue("All"));
     });
 

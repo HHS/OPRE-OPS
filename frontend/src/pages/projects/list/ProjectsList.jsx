@@ -124,6 +124,16 @@ const ProjectsList = () => {
         }
     }, [filters.fiscalYear]);
 
+    // Apply can write back the same filters.fiscalYear array reference (e.g. the user
+    // applied without touching Compare FYs) — the effect above then never re-runs to
+    // consume applyFiredFYRef, leaving it stuck `true` and wrongly suppressing the NEXT
+    // (unrelated) tag-removal revert-to-All. This effect has no dependency array, so it
+    // runs after every commit and clears the flag once the Apply-triggered render has
+    // been processed, regardless of whether filters.fiscalYear's reference changed.
+    React.useEffect(() => {
+        applyFiredFYRef.current = false;
+    });
+
     // FY_TOTAL is meaningless when showing all/multiple fiscal years — reset the sort
     // to the default whenever that happens. Shared by the displayFY effect below (covers
     // panel sentinel, Multi, and tag removal) and handleChangeFiscalYear (covers the dropdown
