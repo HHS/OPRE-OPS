@@ -327,7 +327,8 @@ describe("ProjectFilterButton", () => {
         });
     });
 
-    it("should sync state with filters prop via useEffect", async () => {
+    it("syncs local buffers when parent filters change externally (e.g. tag removal)", async () => {
+        const user = userEvent.setup();
         const { rerender } = renderWithRouter(
             <ProjectFilterButton
                 filters={defaultFilters}
@@ -337,25 +338,21 @@ describe("ProjectFilterButton", () => {
             />
         );
 
-        const updatedFilters = {
-            fiscalYear: [{ id: 2023, title: "2023" }],
-            portfolio: [{ id: 1, name: "Portfolio A" }],
-            projectSearch: [{ title: "Project Alpha" }],
-            agreementSearch: [{ title: "Agreement 1" }],
-            projectType: [{ title: "RESEARCH" }]
-        };
-
         rerender(
             <ProjectFilterButton
-                filters={updatedFilters}
+                filters={{ ...defaultFilters, portfolio: [{ id: 1, name: "Portfolio A" }] }}
                 setFilters={mockSetFilters}
                 projectFilterOptions={mockProjectFilterOptions}
                 isLoadingOptions={false}
             />
         );
 
-        // Internal state should sync with updated filters
-        expect(screen.getByText("Filters")).toBeInTheDocument();
+        // Open the modal so we can observe the synced buffer state
+        await user.click(screen.getByRole("button", { name: /filters/i }));
+        expect(await screen.findByTestId("modal")).toBeInTheDocument();
+
+        // The portfolios combobox must reflect the externally-updated filter
+        expect(screen.getByLabelText("Portfolio")).toHaveValue(["1"]);
     });
 
     it("should handle loading state for filter options", () => {
