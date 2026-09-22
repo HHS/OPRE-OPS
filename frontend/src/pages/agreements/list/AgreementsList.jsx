@@ -124,14 +124,17 @@ const AgreementsList = () => {
     // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
     const dropdownChangedFYRef = useRef(false);
 
+    // Track when applyFilter caused the emptying so the effect below doesn't revert
+    // selectedFiscalYear to "All" — Apply means "fall back to the current dropdown year",
+    // not "reset to All". This ref is set by useAgreementsFilterButton's applyFilter.
+    const applyFiredFYRef = useRef(false);
+
     // Track the previous length to distinguish "non-zero → zero" (tag removal) from
-    // a no-op write of a new [] reference when the array was already empty
-    // (e.g. Apply after Reset when no FY was selected). Combined with the ref guard,
-    // this ensures we only revert to "All" when the user explicitly removes all FY tags.
+    // a no-op write of a new [] reference when the array was already empty.
     const prevFYLengthRef = useRef(0);
 
-    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown),
-    // revert selectedFiscalYear to "All" per the business rule.
+    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown
+    // or Apply), revert selectedFiscalYear to "All" per the business rule.
     // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
     useEffect(() => {
         const normalizedFYs = filters.fiscalYear ?? [];
@@ -139,6 +142,10 @@ const AgreementsList = () => {
         prevFYLengthRef.current = normalizedFYs.length;
         if (dropdownChangedFYRef.current) {
             dropdownChangedFYRef.current = false;
+            return;
+        }
+        if (applyFiredFYRef.current) {
+            applyFiredFYRef.current = false;
             return;
         }
         if (normalizedFYs.length === 0 && prevLen > 0) {
@@ -390,6 +397,7 @@ const AgreementsList = () => {
                                         setFilters={setFilters}
                                         agreementFilterOptions={agreementFilterOptions}
                                         isLoadingOptions={isLoadingAgreementFilterOptions}
+                                        applyFiredFYRef={applyFiredFYRef}
                                     />
                                 </div>
                             </div>
