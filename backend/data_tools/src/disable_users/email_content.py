@@ -31,7 +31,7 @@ def admin_summary_body(disabled_users: list[dict]) -> str:
         lines.append(f"- {user['full_name']} ({user['division']}) - {user['email']}")
     lines.append("")
     lines.append(
-        "This is an automated compliance notification. No action is required unless one of "
+        "This is an automated compliance notification. You are receiving this notification because you are a User Admin in OPS. No action is required unless one of "
         "these accounts should be reactivated."
     )
     return "\n".join(lines)
