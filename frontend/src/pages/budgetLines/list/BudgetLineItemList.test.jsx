@@ -744,4 +744,54 @@ describe("BudgetLineItemList", () => {
             })
         );
     });
+
+    it("page-level reset effect reverts to All when FY tags go non-zero → zero (tag removal path)", () => {
+        // Guards the tag-removal → "revert to All" behavior. When filters.fiscalYears transitions
+        // from non-empty to empty WITHOUT dropdownChangedFYRef or applyFiredFYRef being set,
+        // the effect must call setSelectedFiscalYear("All").
+        const setSelectedFiscalYearMock = vi.fn();
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [{ id: 2025, title: 2025 }] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        const { rerender } = render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Simulate tag removal emptying filters.fiscalYears (no ref guards set)
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        rerender(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Tag removal path: no ref guards → effect SHOULD revert to "All"
+        expect(setSelectedFiscalYearMock).toHaveBeenCalledWith("All");
+    });
 });
