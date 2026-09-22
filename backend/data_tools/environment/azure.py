@@ -63,3 +63,13 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
 
         return cutoff_days
+
+    # `or None` coerces an unset/empty env var to None (not a no-op) so callers can rely on
+    # a clean falsy check rather than an empty string.
+    @property
+    def acs_connection_string(self) -> str | None:
+        return os.getenv("ACS_CONNECTION_STRING") or None
+
+    @property
+    def email_sender_address(self) -> str | None:
+        return os.getenv("EMAIL_SENDER_ADDRESS") or None
