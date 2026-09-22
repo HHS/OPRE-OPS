@@ -1400,7 +1400,7 @@ def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None
                 # order when an agreement has large obligations outside the selected comparison window that
                 # outweigh its in-window obligations. Address in a follow-up if Compare FY sort becomes a
                 # user-reported issue.
-                return sorted(results, key=lambda a: a.lifetime_obligated, reverse=sort_descending)
+                return sorted(results, key=lifetime_obligated_sort, reverse=sort_descending)
             return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
@@ -1412,6 +1412,10 @@ def project_sort(agreement):
 
 def agreement_total_sort(agreement):
     return agreement.agreement_total
+
+
+def lifetime_obligated_sort(agreement):
+    return agreement.lifetime_obligated
 
 
 def next_budget_line_sort(agreement):

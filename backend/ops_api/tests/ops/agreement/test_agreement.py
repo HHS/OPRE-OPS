@@ -3186,7 +3186,12 @@ class TestAgreementsPaginationAPI:
         )
 
         assert response.status_code == 200
-        assert len(response.json["data"]) > 0
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by fy_obligated (for the requested FY) ascending
+        fy_obligated_values = [Decimal(a["fy_obligated"]) for a in data]
+        assert fy_obligated_values == sorted(fy_obligated_values)
 
 
 # ==================== AWARDED AGREEMENT PATCH TESTS ====================
