@@ -141,17 +141,27 @@ const AgreementsList = () => {
         }
     }, [filters.fiscalYear]);
 
+    // FY_OBLIGATED is meaningless when showing all/multiple fiscal years — reset the sort
+    // to the default whenever that happens. Shared by the displayFY effect below (covers
+    // panel sentinel, Multi, and tag removal) and handleChangeFiscalYear (covers the dropdown
+    // re-selecting "All" while already on "All", which isn't a displayFY transition).
+    const resetFYObligatedSort = () => {
+        if (sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
+            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        }
+    };
+
     // Reset FY_OBLIGATED sort whenever displayFY enters "All" mode (All FYs or Multi)
     // from any cause — dropdown shortcut, panel sentinel, Multi, or tag removal.
-    // FY_OBLIGATED is meaningless when showing all/multiple fiscal years.
     const prevDisplayFYRef = useRef(displayFY);
     useEffect(() => {
         const prev = prevDisplayFYRef.current;
         prevDisplayFYRef.current = displayFY;
-        if (displayFY === "All" && prev !== "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        if (displayFY === "All" && prev !== "All") {
+            resetFYObligatedSort();
         }
-    }, [displayFY, sortCondition, setSortConditions]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displayFY]);
 
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
@@ -159,8 +169,8 @@ const AgreementsList = () => {
         dropdownChangedFYRef.current = true;
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
-        if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        if (newValue === "All") {
+            resetFYObligatedSort();
         }
     };
 
