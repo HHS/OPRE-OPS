@@ -78,6 +78,7 @@ export const opsApi = createApi({
         "SpecialTopics",
         "ServicesComponents",
         "GrantNumbers",
+        "ProductServiceCodes",
         "ChangeRequests",
         "Divisions",
         "Documents",
