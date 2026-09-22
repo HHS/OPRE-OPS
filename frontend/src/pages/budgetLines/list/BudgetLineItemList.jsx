@@ -113,16 +113,6 @@ const BudgetLineItemList = () => {
         }
     }, [filters.fiscalYears, setSelectedFiscalYear]);
 
-    // Reset FY_OBLIGATED sort whenever displayFY enters "All" mode from any cause.
-    const prevDisplayFYRef = useRef(displayFY);
-    useEffect(() => {
-        const prev = prevDisplayFYRef.current;
-        prevDisplayFYRef.current = displayFY;
-        if (displayFY === "All" && prev !== "All" && sortCondition === "FY_OBLIGATED") {
-            setSortConditions("AGREEMENT", false);
-        }
-    }, [displayFY, sortCondition, setSortConditions]);
-
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so other filters are preserved.
     const handleChangeFiscalYear = (selectedValue) => {
