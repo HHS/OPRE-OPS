@@ -123,12 +123,15 @@ const ProjectSpending = () => {
     // Fallback per-agreement FY total, passed to each row while the per-agreement
     // spending query is in flight. Only populated when exactly one agreement exists
     // in the FY (where the project-level total equals the agreement-level total).
+    // Uses the raw (un-defaulted) value so a missing `total_by_fiscal_year` entry
+    // — e.g. a draft-only FY — is left out rather than treated as a real $0 total.
     const fyTotals = React.useMemo(() => {
-        if (agreementsForFY.length === 1 && fyTotal != null) {
-            return { [agreementsForFY[0].id]: Number(fyTotal) };
+        const rawFyTotal = isAllFYs ? fyTotal : spendingData?.total_by_fiscal_year?.[selectedFY];
+        if (agreementsForFY.length === 1 && rawFyTotal != null) {
+            return { [agreementsForFY[0].id]: Number(rawFyTotal) };
         }
         return {};
-    }, [agreementsForFY, fyTotal]);
+    }, [agreementsForFY, isAllFYs, fyTotal, spendingData, selectedFY]);
 
     // Donut chart data — spending by agreement type for selected FY (or summed across all FYs)
     const donutData = React.useMemo(() => {
