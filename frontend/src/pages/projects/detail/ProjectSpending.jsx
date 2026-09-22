@@ -94,36 +94,52 @@ const ProjectSpending = () => {
         [spendingData]
     );
 
+    const isAllFYs = selectedFY === "All";
+
     // Filter the full agreement list to only those active in the selected FY — must be before early returns
     // allAgreements is a plain array after transformResponse normalisation in opsAPI.js
+    // Under "All FYs" every linked agreement is shown, including ones with zero budget line
+    // items — those never get a key in agreements_by_fy, so a single-FY filter would hide them.
     const agreementsForFY = React.useMemo(() => {
         if (!Array.isArray(allAgreements) || !selectedFY) return [];
+        if (isAllFYs) return allAgreements;
         const fyIds = new Set(spendingData?.agreements_by_fy?.[selectedFY] ?? []);
         return allAgreements.filter((a) => fyIds.has(a.id));
-    }, [allAgreements, selectedFY, spendingData]);
+    }, [allAgreements, selectedFY, isAllFYs, spendingData]);
+
+    // Summary card values. Under "All FYs", aggregate every FY-keyed field instead of
+    // indexing a single FY.
+    const fyTotal = isAllFYs
+        ? Object.values(spendingData?.total_by_fiscal_year ?? {}).reduce((sum, v) => sum + Number(v), 0)
+        : Number(spendingData?.total_by_fiscal_year?.[selectedFY] ?? 0);
+    const lifetimeTotal = Number(spendingData?.total ?? 0);
+    // Counts only agreements with non-draft spending. `agreements_by_fy` is deliberately
+    // not used here: it includes draft-only agreements, which must appear in the list
+    // below but must not change this summary number (issue #6139).
+    const fyAgreementCount = isAllFYs
+        ? new Set(Object.values(spendingData?.agreements_with_spending_by_fy ?? {}).flat()).size
+        : (spendingData?.agreements_with_spending_by_fy?.[selectedFY]?.length ?? 0);
 
     // Fallback per-agreement FY total, passed to each row while the per-agreement
     // spending query is in flight. Only populated when exactly one agreement exists
     // in the FY (where the project-level total equals the agreement-level total).
     const fyTotals = React.useMemo(() => {
-        const fyTotal = spendingData?.total_by_fiscal_year?.[selectedFY];
         if (agreementsForFY.length === 1 && fyTotal != null) {
             return { [agreementsForFY[0].id]: Number(fyTotal) };
         }
         return {};
-    }, [agreementsForFY, spendingData, selectedFY]);
+    }, [agreementsForFY, fyTotal]);
 
-    // Summary card values
-    const fyTotal = Number(spendingData?.total_by_fiscal_year?.[selectedFY] ?? 0);
-    const lifetimeTotal = Number(spendingData?.total ?? 0);
-    // Counts only agreements with non-draft spending. `agreements_by_fy` is deliberately
-    // not used here: it includes draft-only agreements, which must appear in the list
-    // below but must not change this summary number (issue #6139).
-    const fyAgreementCount = spendingData?.agreements_with_spending_by_fy?.[selectedFY]?.length ?? 0;
-
-    // Donut chart data — spending by agreement type for selected FY
+    // Donut chart data — spending by agreement type for selected FY (or summed across all FYs)
     const donutData = React.useMemo(() => {
-        const typeBreakdown = spendingData?.spending_type_by_fiscal_year?.[selectedFY];
+        const typeBreakdown = isAllFYs
+            ? Object.values(spendingData?.spending_type_by_fiscal_year ?? {}).reduce((acc, breakdown) => {
+                  for (const [type, amount] of Object.entries(breakdown)) {
+                      acc[type] = (acc[type] ?? 0) + Number(amount);
+                  }
+                  return acc;
+              }, {})
+            : spendingData?.spending_type_by_fiscal_year?.[selectedFY];
         if (!typeBreakdown || !fyTotal) return [];
 
         // Map backend snake_case keys to AGREEMENT_TYPE_ORDER config
@@ -152,7 +168,9 @@ const ProjectSpending = () => {
         }));
 
         return computeDisplayPercents(rawItems);
-    }, [spendingData, selectedFY, fyTotal]);
+    }, [spendingData, selectedFY, isAllFYs, fyTotal]);
+
+    const fyLabel = isAllFYs ? "All FYs" : `FY ${selectedFY}`;
 
     const is404 = projectError?.status === 404 || spendingError?.status === 404;
     const isLoading = isProjectLoading || isSpendingLoading;
@@ -193,8 +211,9 @@ const ProjectSpending = () => {
                 {availableFYs.length > 0 && selectedFY !== null && (
                     <FiscalYear
                         fiscalYear={selectedFY}
-                        handleChangeFiscalYear={(val) => setSelectedFY(Number(val))}
+                        handleChangeFiscalYear={(val) => setSelectedFY(val === "All" ? val : Number(val))}
                         fiscalYears={availableFYs}
+                        showAllOption={true}
                     />
                 )}
             </div>
@@ -217,7 +236,7 @@ const ProjectSpending = () => {
                             />
                             <DonutGraphWithLegendCard
                                 data={donutData}
-                                title={`FY ${selectedFY} Project Spending By Agreement Type`}
+                                title={`${fyLabel} Project Spending By Agreement Type`}
                             />
                         </div>
                         <p className="font-12px text-base-dark margin-top-1">

@@ -3,14 +3,10 @@
  * Does NOT include the empty chevron column — the main table appends "" itself
  * and the skeleton loading component uses hasExpandableRows instead.
  *
- * @param {number} fiscalYear
+ * @param {number | "All"} fiscalYear
  * @returns {string[]}
  */
-export const getTableHeadings = (fiscalYear) => [
-    "Agreement",
-    "Type",
-    "Start",
-    "End",
-    `FY ${fiscalYear} Total`,
-    "Agreement Total"
-];
+export const getTableHeadings = (fiscalYear) => {
+    const fyLabel = fiscalYear === "All" ? "All FYs" : `FY ${fiscalYear}`;
+    return ["Agreement", "Type", "Start", "End", `${fyLabel} Total`, "Agreement Total"];
+};
