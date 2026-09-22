@@ -95,10 +95,16 @@ const BudgetLineItemList = () => {
     // Track when the dropdown shortcut itself clears filters.fiscalYears so the effect
     // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
     const dropdownChangedFYRef = useRef(false);
+
+    // Track when applyFilter caused the emptying so the effect below doesn't revert
+    // selectedFiscalYear to "All" — Apply means "fall back to the current dropdown year",
+    // not "reset to All". This ref is set by BLIFilterButton's applyFilter.
+    const applyFiredFYRef = useRef(false);
+
     const prevFYLengthRef = useRef(0);
 
-    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown),
-    // revert selectedFiscalYear to "All" per the business rule.
+    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown
+    // or Apply), revert selectedFiscalYear to "All" per the business rule.
     // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
     useEffect(() => {
         const normalizedFYs = filters.fiscalYears ?? [];
@@ -106,6 +112,10 @@ const BudgetLineItemList = () => {
         prevFYLengthRef.current = normalizedFYs.length;
         if (dropdownChangedFYRef.current) {
             dropdownChangedFYRef.current = false;
+            return;
+        }
+        if (applyFiredFYRef.current) {
+            applyFiredFYRef.current = false;
             return;
         }
         if (normalizedFYs.length === 0 && prevLen > 0) {
@@ -210,6 +220,7 @@ const BudgetLineItemList = () => {
                                     filterOptions={bliFilterOptions}
                                     showModal={showModal}
                                     setShowModal={setShowModal}
+                                    applyFiredFYRef={applyFiredFYRef}
                                 />
                             </div>
                         </div>
