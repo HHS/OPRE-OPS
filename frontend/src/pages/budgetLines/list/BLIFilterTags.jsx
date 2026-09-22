@@ -2,30 +2,24 @@ import { useMemo } from "react";
 import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
+import { deriveFYTags, handleFYTagRemoval } from "../../../helpers/fiscalYearFilter.helpers";
 
 /**
  * A filter tags.
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @param {Object} props.fyHelpers - Fiscal year helper functions (approach-specific).
  * @returns {React.JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
+export const BLIFilterTags = ({ filters, setFilters }) => {
     // Tag removal is a quick action - immediately updates filters
     const removeFilter = (tag) => {
         switch (tag.filter) {
             case "fiscalYears":
-                // ============================================
-                // TEMPORARY: A/B Testing - Use approach-specific tag removal
-                // ============================================
-                setFilters((prevState) => {
-                    const updated = fyHelpers.handleTagRemoval(prevState.fiscalYears, tag.tagText);
-                    return {
-                        ...prevState,
-                        fiscalYears: updated
-                    };
-                });
+                setFilters((prevState) => ({
+                    ...prevState,
+                    fiscalYears: handleFYTagRemoval(prevState.fiscalYears, tag.tagText)
+                }));
                 break;
             case "portfolios":
                 setFilters((prevState) => {
@@ -80,10 +74,7 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
         }
     };
 
-    // ============================================
-    // TEMPORARY: A/B Testing - Derive tags using approach-specific helper
-    // ============================================
-    const fiscalYearTags = useMemo(() => fyHelpers.deriveTags(filters.fiscalYears), [filters.fiscalYears, fyHelpers]);
+    const fiscalYearTags = useMemo(() => deriveFYTags(filters.fiscalYears, "fiscalYears"), [filters.fiscalYears]);
 
     const portfolioTags = useMemo(() => {
         if (!Array.isArray(filters.portfolios)) return [];
