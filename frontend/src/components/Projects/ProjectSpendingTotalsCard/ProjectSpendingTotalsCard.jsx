@@ -1,6 +1,7 @@
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../UI/RoundedBox";
+import { getFyLabel } from "../ProjectSpending.helpers";
 
 /**
  * Left summary card for the Project Spending tab.
@@ -14,7 +15,7 @@ import RoundedBox from "../../UI/RoundedBox";
  * @returns {React.ReactElement}
  */
 const ProjectSpendingTotalsCard = ({ fiscalYear, fyTotal, lifetimeTotal, fyAgreementCount }) => {
-    const fyLabel = fiscalYear === "All" ? "All FYs" : `FY ${fiscalYear}`;
+    const fyLabel = getFyLabel(fiscalYear);
 
     return (
         <RoundedBox

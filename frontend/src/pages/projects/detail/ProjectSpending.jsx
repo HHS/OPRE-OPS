@@ -14,6 +14,7 @@ import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
 import ProjectSpendingAgreementsTableLoading from "../../../components/Projects/ProjectSpendingAgreementsTable/ProjectSpendingAgreementsTableLoading";
 import ProjectSpendingTotalsCard from "../../../components/Projects/ProjectSpendingTotalsCard";
+import { getFyLabel, sumAcrossFy } from "../../../components/Projects/ProjectSpending.helpers";
 
 /**
  * Derives the default fiscal year to display.
@@ -109,16 +110,21 @@ const ProjectSpending = () => {
 
     // Summary card values. Under "All FYs", aggregate every FY-keyed field instead of
     // indexing a single FY.
-    const fyTotal = isAllFYs
-        ? Object.values(spendingData?.total_by_fiscal_year ?? {}).reduce((sum, v) => sum + Number(v), 0)
-        : Number(spendingData?.total_by_fiscal_year?.[selectedFY] ?? 0);
+    const fyTotal = React.useMemo(
+        () => sumAcrossFy(spendingData?.total_by_fiscal_year, selectedFY),
+        [spendingData, selectedFY]
+    );
     const lifetimeTotal = Number(spendingData?.total ?? 0);
     // Counts only agreements with non-draft spending. `agreements_by_fy` is deliberately
     // not used here: it includes draft-only agreements, which must appear in the list
     // below but must not change this summary number (issue #6139).
-    const fyAgreementCount = isAllFYs
-        ? new Set(Object.values(spendingData?.agreements_with_spending_by_fy ?? {}).flat()).size
-        : (spendingData?.agreements_with_spending_by_fy?.[selectedFY]?.length ?? 0);
+    const fyAgreementCount = React.useMemo(
+        () =>
+            isAllFYs
+                ? new Set(Object.values(spendingData?.agreements_with_spending_by_fy ?? {}).flat()).size
+                : (spendingData?.agreements_with_spending_by_fy?.[selectedFY]?.length ?? 0),
+        [spendingData, selectedFY, isAllFYs]
+    );
 
     // Fallback per-agreement FY total, passed to each row while the per-agreement
     // spending query is in flight. Only populated when exactly one agreement exists
@@ -173,7 +179,7 @@ const ProjectSpending = () => {
         return computeDisplayPercents(rawItems);
     }, [spendingData, selectedFY, isAllFYs, fyTotal]);
 
-    const fyLabel = isAllFYs ? "All FYs" : `FY ${selectedFY}`;
+    const fyLabel = getFyLabel(selectedFY);
 
     const is404 = projectError?.status === 404 || spendingError?.status === 404;
     const isLoading = isProjectLoading || isSpendingLoading;

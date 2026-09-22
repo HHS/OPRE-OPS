@@ -1,3 +1,5 @@
+import { getFyLabel } from "../ProjectSpending.helpers";
+
 /**
  * Returns column headings for the Project Spending Agreements table.
  * Does NOT include the empty chevron column — the main table appends "" itself
@@ -7,6 +9,6 @@
  * @returns {string[]}
  */
 export const getTableHeadings = (fiscalYear) => {
-    const fyLabel = fiscalYear === "All" ? "All FYs" : `FY ${fiscalYear}`;
+    const fyLabel = getFyLabel(fiscalYear);
     return ["Agreement", "Type", "Start", "End", `${fyLabel} Total`, "Agreement Total"];
 };

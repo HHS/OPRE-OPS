@@ -4,6 +4,7 @@ import PaginationNav from "../../UI/PaginationNav";
 import styles from "../../UI/Table/table.module.css";
 import ProjectSpendingAgreementRow from "../ProjectSpendingAgreementRow";
 import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
+import { getFyLabel } from "../ProjectSpending.helpers";
 
 /**
  * Table of agreements for the Project Spending tab.
@@ -29,7 +30,7 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) =>
     const visibleAgreements = agreements.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     if (agreements.length === 0) {
-        const fyLabel = fiscalYear === "All" ? "All FYs" : `FY ${fiscalYear}`;
+        const fyLabel = getFyLabel(fiscalYear);
         return (
             <p
                 className="font-sans-sm text-base"

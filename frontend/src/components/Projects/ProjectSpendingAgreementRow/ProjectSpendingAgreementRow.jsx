@@ -15,6 +15,7 @@ import {
     getProcurementShopDisplay
 } from "../../Agreements/AgreementsTable/AgreementsTable.helpers";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
+import { sumAcrossFy } from "../ProjectSpending.helpers";
 
 const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Total, chevron
 
@@ -43,11 +44,9 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
     const { data: agreementSpending } = useGetAgreementSpendingByIdQuery(agreement?.id, {
         skip: !agreement?.id
     });
-    const fyTotalFromEndpoint =
-        fiscalYear === "All"
-            ? agreementSpending?.fy_total &&
-              Object.values(agreementSpending.fy_total).reduce((sum, v) => sum + Number(v), 0)
-            : agreementSpending?.fy_total?.[fiscalYear];
+    const fyTotalFromEndpoint = agreementSpending?.fy_total
+        ? sumAcrossFy(agreementSpending.fy_total, fiscalYear)
+        : undefined;
     let resolvedFyTotal = fyTotal;
     if (fyTotalFromEndpoint != null) {
         resolvedFyTotal = Number(fyTotalFromEndpoint);
