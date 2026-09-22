@@ -351,4 +351,33 @@ describe("BLIFilterButton", () => {
             expect(screen.getByTestId("default-string")).toHaveTextContent("");
         });
     });
+
+    describe("applyFiredFYRef seam", () => {
+        it("applyFilter sets applyFiredFYRef before calling setFilters", () => {
+            // Regression guard: applyFiredFYRef must be set to true BEFORE setFilters is called
+            // so the page-level reset effect sees the flag and skips resetting selectedFiscalYear
+            // to "All". If the order is reversed (setFilters before ref set), the effect fires
+            // before the flag is in place and incorrectly resets the dropdown year to "All".
+            const applyFiredFYRef = { current: false };
+            const setFilters = vi.fn(() => {
+                // Capture whether the ref was set at the moment setFilters is called
+                applyFiredFYRef._wasSetWhenCalled = applyFiredFYRef.current;
+            });
+
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={setFilters}
+                    applyFiredFYRef={applyFiredFYRef}
+                    filterOptions={mockFilterOptions}
+                />
+            );
+
+            fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+            expect(setFilters).toHaveBeenCalled();
+            // The ref must have been true at the moment setFilters was called
+            expect(applyFiredFYRef._wasSetWhenCalled).toBe(true);
+        });
+    });
 });
