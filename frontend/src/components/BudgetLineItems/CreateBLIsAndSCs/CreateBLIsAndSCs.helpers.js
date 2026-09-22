@@ -1,7 +1,123 @@
 import cryptoRandomString from "crypto-random-string";
 import { cleanAgreementForApi, cleanBudgetLineItemsForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, renderField } from "../../../helpers/utils";
+
+/**
+ * Strip UI-only fields from a services component or grant number before sending it to the API.
+ * @param entity - A services component or grant number, possibly carrying form-only fields.
+ */
+export const stripFormOnlyFields = (entity) => {
+    // eslint-disable-next-line no-unused-vars
+    const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = entity;
+    return clean;
+};
+
+/**
+ * Split services components / grant numbers into not-yet-persisted (new), persisted (existing),
+ * and persisted-but-edited (changed) groups, ahead of sending create/update requests for each.
+ * @param items - Services components or grant numbers.
+ */
+export const partitionNewAndChanged = (items) => {
+    const newItems = items.filter((item) => !("created_on" in item));
+    const existingItems = items.filter((item) => "created_on" in item);
+    const changedItems = existingItems.filter((item) => item.has_changed);
+    return { newItems, existingItems, changedItems };
+};
+
+/**
+ * Get the total fees for the cards
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
+ * @returns {number} - The total fees
+ */
+export const feesForCards = (budgetLines) =>
+    budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
+
+/**
+ * Get the sub total for the cards
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
+ * @returns {number} - The sub total
+ */
+export const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
+
+/**
+ * Get the totals for the cards
+ * @param {number} subTotal - The sub total
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
+ * @returns {number} - The total
+ */
+export const totalsForCards = (subTotal, budgetLines) => subTotal + feesForCards(budgetLines);
+
+/**
+ * Attach each BLI's current services-component PoP window (sc_period_start/sc_period_end) for the
+ * "Obligate By must fall within PoP" validation. Prefers services_component_number over
+ * services_component_id when resolving the SC — the same precedence groupByServicesComponent uses —
+ * so the validated PoP window always matches the SC the BLI is grouped under. Grant BLIs have no SC,
+ * so they get null and the PoP rule skips them.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} tempBudgetLines
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
+ * @returns {import("../../../types/BudgetLineTypes").BudgetLine[]}
+ */
+export const attachScPeriodToBudgetLines = (tempBudgetLines, servicesComponents) =>
+    tempBudgetLines.map((bli) => {
+        const sc =
+            bli.services_component_number != null
+                ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
+                : servicesComponents.find((sc) => sc.id === bli.services_component_id);
+        return {
+            ...bli,
+            sc_period_start: sc?.period_start ?? null,
+            sc_period_end: sc?.period_end ?? null
+        };
+    });
+
+/**
+ * Derive the effective SC window across all services components (saved and unsaved).
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
+ * @returns {{start: string|null, end: string|null}}
+ */
+export const getEffectiveScDateRange = (servicesComponents) => {
+    const startDates = servicesComponents.map((sc) => sc.period_start).filter(Boolean);
+    const endDates = servicesComponents.map((sc) => sc.period_end).filter(Boolean);
+    return {
+        start: startDates.length > 0 ? startDates.reduce((min, d) => (d < min ? d : min)) : null,
+        end: endDates.length > 0 ? endDates.reduce((max, d) => (d > max ? d : max)) : null
+    };
+};
+
+/**
+ * Filter page-level suite errors down to "Budget line item" errors from associated BLIs, and
+ * consolidate them into a single message. Excludes BLIs in the "unassociated" (SC/grant number 0)
+ * bucket in review mode, since that bucket already renders its own "This is required information"
+ * message above its accordion, and would otherwise duplicate it (OPS-6094).
+ * @param {Object} args
+ * @param {Object} args.pageErrors - The suite's getErrors() result.
+ * @param {boolean} args.isGrant
+ * @param {Array<Object>} args.groupedByGrantNumber
+ * @param {Array<Object>} args.groupedByServicesComponent
+ * @param {boolean} args.isReviewMode
+ * @returns {{budgetLinePageErrors: Array, budgetLinePageErrorsExist: boolean}}
+ */
+export const computeBudgetLinePageErrors = ({
+    pageErrors,
+    isGrant,
+    groupedByGrantNumber,
+    groupedByServicesComponent,
+    isReviewMode
+}) => {
+    const unassociatedGroup = isGrant
+        ? groupedByGrantNumber.find((group) => group.grantNumberNumber === 0)
+        : groupedByServicesComponent.find((group) => group.servicesComponentNumber === 0);
+    const unassociatedBliIds = new Set(
+        isReviewMode ? (unassociatedGroup?.budgetLines ?? []).map((bli) => String(bli.id)) : []
+    );
+    const bliIdFromErrorKey = (key) => key.match(/^Budget line item \((.+)\)$/)?.[1] ?? null;
+    const budgetLineErrors = Object.entries(pageErrors).filter(
+        (error) => error[0].includes("Budget line item") && !unassociatedBliIds.has(bliIdFromErrorKey(error[0]))
+    );
+    const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
+    return { budgetLinePageErrors, budgetLinePageErrorsExist: budgetLinePageErrors.length > 0 };
+};
 
 /**
  * Whether deleting this budget line routes through an approval change request instead of an
@@ -154,21 +270,15 @@ export const buildNewAgreementBudgetPayload = ({
     tempBudgetLines,
     isGrant
 }) => {
-    const newServicesComponents = servicesComponents
-        .filter((sc) => !("created_on" in sc))
-        // eslint-disable-next-line no-unused-vars
-        .map(({ display_title, has_changed, popStartDate, popEndDate, mode, ...sc }) => ({
-            ...sc,
-            ref: display_title
-        }));
+    const newServicesComponents = partitionNewAndChanged(servicesComponents).newItems.map((sc) => ({
+        ...stripFormOnlyFields(sc),
+        ref: sc.display_title
+    }));
 
-    const newGrantNumbers = grantNumbers
-        .filter((gn) => !("created_on" in gn))
-        // eslint-disable-next-line no-unused-vars
-        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
-            ...gn,
-            ref: display_title
-        }));
+    const newGrantNumbers = partitionNewAndChanged(grantNumbers).newItems.map((gn) => ({
+        ...stripFormOnlyFields(gn),
+        ref: gn.display_title
+    }));
 
     const newBudgetLineItems = tempBudgetLines
         .filter((budgetLineItem) => !("created_on" in budgetLineItem))

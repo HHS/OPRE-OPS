@@ -19,7 +19,6 @@ import { cleanBudgetLineItemForApi, isNotDevelopedYet } from "../../../helpers/a
 import {
     BLI_STATUS,
     BLILabel,
-    budgetLinesTotal,
     getNonDRAFTBudgetLines,
     groupByGrantNumber,
     groupByServicesComponent
@@ -39,15 +38,24 @@ import budgetFormSuite from "../BudgetLinesForm/suite";
 import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 import {
+    attachScPeriodToBudgetLines,
     buildBudgetChangeMessages,
     buildDuplicatedBudgetLineItem,
     buildEditedBudgetLinePayload,
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
+    computeBudgetLinePageErrors,
+    feesForCards,
     getBudgetLinesUrl,
+    getEffectiveScDateRange,
     isDeletionRoutedToApproval,
-    linkBudgetLinesToApi
+    linkBudgetLinesToApi,
+    partitionNewAndChanged,
+    stripFormOnlyFields,
+    subTotalForCards,
+    totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
+import useCreateBLIsAndSCsSaveBlocker from "./useCreateBLIsAndSCsSaveBlocker";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -186,15 +194,10 @@ const useCreateBLIsAndSCs = (
     // All SCs (saved or unsaved) carry period_start/period_end in YYYY-MM-DD format.
     // Unsaved SCs also have popStartDate/popEndDate (MM/DD/YYYY) from the form, but
     // period_start/period_end is always populated by the time the SC is dispatched.
-    const effectiveScStartDate = React.useMemo(() => {
-        const dates = servicesComponents.map((sc) => sc.period_start).filter(Boolean);
-        return dates.length > 0 ? dates.reduce((min, d) => (d < min ? d : min)) : null;
-    }, [servicesComponents]);
-
-    const effectiveScEndDate = React.useMemo(() => {
-        const dates = servicesComponents.map((sc) => sc.period_end).filter(Boolean);
-        return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
-    }, [servicesComponents]);
+    const { start: effectiveScStartDate, end: effectiveScEndDate } = React.useMemo(
+        () => getEffectiveScDateRange(servicesComponents),
+        [servicesComponents]
+    );
 
     // Disable this blocker once the wizard advances past step 0. The review-screen
     // caller (EditAgreementAndBudgetLines) never passes currentStep, so it stays 0 and
@@ -228,19 +231,10 @@ const useCreateBLIsAndSCs = (
     // via linkBliToSc, also keyed by number); matching on the stale id here would validate against
     // the BLI's OLD SC window while it's grouped under the new one, producing a spurious
     // "outside PoP" error. Fall back to the id only when no number is present (e.g. undecorated data).
-    const budgetLinesWithScPeriod = React.useMemo(() => {
-        return tempBudgetLines.map((bli) => {
-            const sc =
-                bli.services_component_number != null
-                    ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
-                    : servicesComponents.find((sc) => sc.id === bli.services_component_id);
-            return {
-                ...bli,
-                sc_period_start: sc?.period_start ?? null,
-                sc_period_end: sc?.period_end ?? null
-            };
-        });
-    }, [tempBudgetLines, servicesComponents]);
+    const budgetLinesWithScPeriod = React.useMemo(
+        () => attachScPeriodToBudgetLines(tempBudgetLines, servicesComponents),
+        [tempBudgetLines, servicesComponents]
+    );
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(budgetLinesWithScPeriod));
@@ -269,53 +263,23 @@ const useCreateBLIsAndSCs = (
               agreement_type: selectedAgreement?.agreement_type
           })
         : pageSuiteResult;
-    const pageErrors = res.getErrors();
     // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
     // already renders its own "This is required information" message and red border above its accordion
     // in review mode. Exclude those BLIs' errors here so the same BLI doesn't surface two identical
     // messages (page-level + per-accordion) (OPS-6094). Derive the ids from the SAME grouped array the
     // accordion renders from, so the suppression always stays in lockstep with what shows the bucket-0
     // message (both read the same state, so there's no transient mismatch).
-    const unassociatedGroup = isGrant
-        ? groupedBudgetLinesByGrantNumber.find((group) => group.grantNumberNumber === 0)
-        : groupedBudgetLinesByServicesComponent.find((group) => group.servicesComponentNumber === 0);
-    const unassociatedBliIds = new Set(
-        isReviewMode ? (unassociatedGroup?.budgetLines ?? []).map((bli) => String(bli.id)) : []
-    );
-    const bliIdFromErrorKey = (key) => key.match(/^Budget line item \((.+)\)$/)?.[1] ?? null;
-    // Filter page errors to only include "Budget line item" errors (from associated BLIs) and
-    // consolidate into a single message.
-    const budgetLineErrors = Object.entries(pageErrors).filter(
-        (error) => error[0].includes("Budget line item") && !unassociatedBliIds.has(bliIdFromErrorKey(error[0]))
-    );
-
-    const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
-    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
+    const { budgetLinePageErrors, budgetLinePageErrorsExist } = computeBudgetLinePageErrors({
+        pageErrors: res.getErrors(),
+        isGrant,
+        groupedByGrantNumber: groupedBudgetLinesByGrantNumber,
+        groupedByServicesComponent: groupedBudgetLinesByServicesComponent,
+        isReviewMode
+    });
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
     const nonDraftBudgetLines = notDraftBLIs;
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
-    /**
-     * Get the total fees for the cards
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The total fees
-     */
-    const feesForCards = (budgetLines) =>
-        budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
-
-    /**
-     * Get the sub total for the cards
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The sub total
-     * */
-    const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
-    /**
-     * Get the totals for the cards
-     * @param {number} subTotal - The sub total
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The total
-     * */
-    const totalsForCards = (subTotal, budgetLines) => subTotal + feesForCards(budgetLines);
 
     /**
      * NOTE: 1st useCallback in this file
@@ -842,41 +806,36 @@ const useCreateBLIsAndSCs = (
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
                 } else {
                     // editing existing agreement
-                    const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
+                    const {
+                        newItems: newServicesComponents,
+                        existingItems: existingServicesComponents,
+                        changedItems: changedServicesComponents
+                    } = partitionNewAndChanged(servicesComponents);
 
-                    const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
-                    const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
-
-                    const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
-                        return addServicesComponent(cleanSc).unwrap();
-                    });
-                    const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
-                        return updateServicesComponent({ id: sc.id, data: cleanSc }).unwrap();
-                    });
+                    const serviceComponentsCreationPromises = newServicesComponents.map((sc) =>
+                        addServicesComponent(stripFormOnlyFields(sc)).unwrap()
+                    );
+                    const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) =>
+                        updateServicesComponent({ id: sc.id, data: stripFormOnlyFields(sc) }).unwrap()
+                    );
 
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
                     await Promise.all(serviceComponentsUpdatePromises);
 
                     // Grant numbers, mirroring the SC create/update above. They must be persisted
                     // BEFORE the BLIs so grant BLIs can resolve grant_number_id. See plan §11.
-                    const newGrantNumbers = grantNumbers.filter((gn) => !("created_on" in gn));
-                    const existingGrantNumbers = grantNumbers.filter((gn) => "created_on" in gn);
-                    const changedGrantNumbers = existingGrantNumbers.filter((gn) => gn.has_changed);
+                    const {
+                        newItems: newGrantNumbers,
+                        existingItems: existingGrantNumbers,
+                        changedItems: changedGrantNumbers
+                    } = partitionNewAndChanged(grantNumbers);
 
-                    const grantNumberCreationPromises = newGrantNumbers.map((gn) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
-                        return addGrantNumber(cleanGn).unwrap();
-                    });
-                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
-                        return updateGrantNumber({ id: gn.id, data: cleanGn }).unwrap();
-                    });
+                    const grantNumberCreationPromises = newGrantNumbers.map((gn) =>
+                        addGrantNumber(stripFormOnlyFields(gn)).unwrap()
+                    );
+                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) =>
+                        updateGrantNumber({ id: gn.id, data: stripFormOnlyFields(gn) }).unwrap()
+                    );
 
                     const createdGrantNumbers = await Promise.all(grantNumberCreationPromises);
                     await Promise.all(grantNumberUpdatePromises);
@@ -965,78 +924,16 @@ const useCreateBLIsAndSCs = (
         .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
-    const handleSaveRef = React.useRef(handleSave);
-
-    React.useEffect(() => {
-        handleSaveRef.current = handleSave;
-    }, [handleSave]);
-
-    const blockerRef = React.useRef(blocker);
-
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
-
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
-    };
-
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            const destination = blocker.location?.pathname;
-            // Only surface the "require approval" wording when the changes actually route for
-            // review. With the capability ON (and the edits in the flag's scope) they apply
-            // immediately, so fall through to the neutral "Save Changes" copy.
-            const modalContent = requiresFinancialApproval
-                ? {
-                      heading: "Save changes before leaving?",
-                      description:
-                          "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save & Send to Approval",
-                      secondaryButtonText: "Leave without saving"
-                  }
-                : {
-                      heading: "Save changes before leaving?",
-                      description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save Changes",
-                      secondaryButtonText: "Leave without saving"
-                  };
-            setShowSaveChangesModal(true);
-            setModalProps({
-                ...modalContent,
-                handleConfirm: async () => {
-                    await handleSaveRef.current(true);
-                    setShowSaveChangesModal(false);
-                    blocker.reset();
-                    if (destination) {
-                        navigate(destination);
-                    }
-                },
-                handleSecondary: async () => {
-                    setHasUnsavedChanges(false);
-                    setShowSaveChangesModal(false);
-                    setIsEditMode(false);
-                    await proceedIfBlocked();
-                },
-                closeModal: () => {
-                    blocker.reset();
-                }
-            });
-        }
-    }, [blocker, requiresFinancialApproval, setIsEditMode, navigate]);
+    useCreateBLIsAndSCsSaveBlocker({
+        blocker,
+        handleSave,
+        requiresFinancialApproval,
+        navigate,
+        setIsEditMode,
+        setHasUnsavedChanges,
+        setShowSaveChangesModal,
+        setModalProps
+    });
 
     return {
         blocker,
