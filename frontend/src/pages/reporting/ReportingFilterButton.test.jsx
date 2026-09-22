@@ -57,7 +57,7 @@ describe("ReportingFilterButton", () => {
         expect(screen.getByText("All Portfolios")).toBeInTheDocument();
     });
 
-    it("should call setFilters with empty portfolios on reset", () => {
+    it("should NOT call setFilters on reset — Reset only clears the local buffer", () => {
         const mockSetFilters = vi.fn();
         render(
             <ReportingFilterButton
@@ -67,7 +67,7 @@ describe("ReportingFilterButton", () => {
         );
 
         fireEvent.click(screen.getByTestId("reset-btn"));
-        expect(mockSetFilters).toHaveBeenCalledWith({ portfolios: [] });
+        expect(mockSetFilters).not.toHaveBeenCalled();
     });
 
     it("should call setFilters on apply", () => {
@@ -81,5 +81,23 @@ describe("ReportingFilterButton", () => {
 
         fireEvent.click(screen.getByTestId("apply-btn"));
         expect(mockSetFilters).toHaveBeenCalled();
+    });
+
+    it("reset then apply commits empty portfolios to parent", () => {
+        const mockSetFilters = vi.fn();
+        render(
+            <ReportingFilterButton
+                filters={{ portfolios: [{ id: 1, name: "OPRE" }] }}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        fireEvent.click(screen.getByTestId("reset-btn"));
+        expect(mockSetFilters).not.toHaveBeenCalled(); // Reset fires nothing
+
+        fireEvent.click(screen.getByTestId("apply-btn"));
+        expect(mockSetFilters).toHaveBeenCalled(); // Apply commits []
+        const updater = mockSetFilters.mock.calls[0][0];
+        expect(updater({ portfolios: [{ id: 1, name: "OPRE" }] }).portfolios).toEqual([]);
     });
 });
