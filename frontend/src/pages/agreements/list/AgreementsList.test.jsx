@@ -75,6 +75,13 @@ vi.mock("./AgreementsFilterTags/AgreementsFilterTags", async () => {
                 >
                     Seed FY tag
                 </button>
+                <button
+                    type="button"
+                    data-testid="seed-fy-tag-outside-window"
+                    onClick={() => setFilters((prev) => ({ ...prev, fiscalYear: [{ id: 2010, title: 2010 }] }))}
+                >
+                    Seed FY tag outside default window
+                </button>
                 {(filters?.fiscalYear ?? []).map((fy) => (
                     <button
                         type="button"
@@ -1249,5 +1256,39 @@ describe("AgreementsList - Model B FY behavior (OPS-6256)", () => {
         // The revert-to-"All" effect must have reset it — otherwise this would show the
         // stale "2024" the dropdown shortcut was left on before Compare FYs took over.
         await waitFor(() => expect(screen.getByTestId("fiscal-year-dropdown").value).toBe("All"));
+    });
+
+    it("renders an <option> for a Compare FY outside the default rolling window", async () => {
+        baseBeforeEach();
+        // 2010 is well outside constants.fiscalYears' current-year±5 window, but it's a
+        // real year returned by the filter-options API (e.g. an old agreement's FY).
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2010, 2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            isLoading: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+        await screen.findByTestId("fiscal-year-dropdown");
+
+        fireEvent.click(screen.getByTestId("seed-fy-tag-outside-window"));
+
+        await waitFor(() => expect(screen.getByTestId("fiscal-year-dropdown").value).toBe("2010"));
+        // The dropdown's value must match a rendered <option> — otherwise the <select>
+        // silently shows blank instead of the selected Compare FY.
+        expect(screen.getByRole("option", { name: "2010" })).toBeInTheDocument();
     });
 });

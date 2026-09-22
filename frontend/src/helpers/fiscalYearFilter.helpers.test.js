@@ -4,6 +4,7 @@ import {
     normalizeFYTag,
     deriveDropdownValue,
     resolveForAPI,
+    mergeFiscalYearOptions,
     deriveFYTags,
     handleFYTagRemoval
 } from "./fiscalYearFilter.helpers";
@@ -161,6 +162,41 @@ describe("resolveForAPI", () => {
                 { id: 2024, title: 2024 }
             ])
         ).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// mergeFiscalYearOptions
+// ---------------------------------------------------------------------------
+describe("mergeFiscalYearOptions", () => {
+    it("returns the base years unchanged when there are no extra years", () => {
+        expect(mergeFiscalYearOptions([2025, 2024], [])).toEqual([2025, 2024]);
+        expect(mergeFiscalYearOptions([2025, 2024], null)).toEqual([2025, 2024]);
+        expect(mergeFiscalYearOptions([2025, 2024], undefined)).toEqual([2025, 2024]);
+    });
+
+    it("includes an extra year that falls outside the base window", () => {
+        // Reproduces the bug: a Compare FY selection outside the default rolling
+        // window must still appear as a <select> option, or the dropdown value
+        // won't match any rendered <option>.
+        expect(mergeFiscalYearOptions([2025, 2024, 2023], [2010])).toEqual([2025, 2024, 2023, 2010]);
+    });
+
+    it("deduplicates years present in both lists", () => {
+        expect(mergeFiscalYearOptions([2025, 2024], [2024, 2023])).toEqual([2025, 2024, 2023]);
+    });
+
+    it("coerces string extra years to numbers before merging/sorting", () => {
+        expect(mergeFiscalYearOptions([2025], ["2010"])).toEqual([2025, 2010]);
+    });
+
+    it("always sorts descending regardless of input order", () => {
+        expect(mergeFiscalYearOptions([2023, 2025, 2024], [2010, 2030])).toEqual([2030, 2025, 2024, 2023, 2010]);
+    });
+
+    it("treats a missing base list as empty", () => {
+        expect(mergeFiscalYearOptions(null, [2024])).toEqual([2024]);
+        expect(mergeFiscalYearOptions(undefined, [2024])).toEqual([2024]);
     });
 });
 

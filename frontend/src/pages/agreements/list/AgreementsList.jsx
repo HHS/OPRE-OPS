@@ -25,9 +25,9 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
-import { ITEMS_PER_PAGE } from "../../../constants";
+import constants, { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { deriveDropdownValue, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
+import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
 import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
@@ -74,6 +74,11 @@ const AgreementsList = () => {
     // selectedFiscalYear (shortcut dropdown) and filters.fiscalYear (Compare Fiscal Years panel).
     // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
     const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
+
+    // A single Compare FY can fall outside the default rolling window (constants.fiscalYears),
+    // e.g. an older year that still has agreements. Include every year the API knows about so
+    // the <select>'s value always matches a rendered <option>.
+    const fiscalYearOptions = mergeFiscalYearOptions(constants.fiscalYears, agreementFilterOptions?.fiscal_years);
 
     // Child components (AgreementsTable, AgreementsTableLoading, SummaryCardsSection, export)
     // only understand "All" or a specific year string — they have no "Multi" branch. Under
@@ -394,6 +399,7 @@ const AgreementsList = () => {
                         <FiscalYear
                             fiscalYear={dropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
+                            fiscalYears={fiscalYearOptions}
                             showAllOption={true}
                         />
                     }

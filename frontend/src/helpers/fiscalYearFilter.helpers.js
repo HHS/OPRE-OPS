@@ -96,6 +96,22 @@ export const resolveForAPI = (selectedFiscalYear, compareFYs) => {
 };
 
 /**
+ * Merges the rolling FY window shown by default with any additional years that must be
+ * selectable (e.g. years actually present in the data). Ensures a dropdown's <option> list
+ * always contains whatever value deriveDropdownValue can produce, even for a Compare FYs
+ * selection outside the default window — otherwise the <select> would show blank/mismatched
+ * since no <option> would match its value.
+ *
+ * @param {Array<number>} baseYears - The default rolling FY window (e.g. constants.fiscalYears).
+ * @param {Array<number|string>} extraYears - Additional years that must be present as options.
+ * @returns {Array<number>} Deduplicated years, sorted descending.
+ */
+export const mergeFiscalYearOptions = (baseYears, extraYears) => {
+    const combined = new Set([...(baseYears ?? []), ...(extraYears ?? []).map(Number)]);
+    return Array.from(combined).sort((a, b) => b - a);
+};
+
+/**
  * Derives the filter tags array from the Compare FYs selection only.
  * Dropdown-only FY changes never produce a tag because they don't touch compareFYs.
  * Deduplicates tags by tagText.
