@@ -73,6 +73,14 @@ describe("handleProjectsExport", () => {
     });
 
     it("should batch-fetch all projects with correct params", async () => {
+        const filters = {
+            fiscalYear: [{ id: 2026, title: 2026 }],
+            portfolio: [],
+            projectSearch: [],
+            agreementSearch: [],
+            projectType: []
+        };
+
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -81,17 +89,18 @@ describe("handleProjectsExport", () => {
             2026,
             "TITLE",
             false,
-            120
+            120,
+            filters
         );
 
         // 120 / 50 = 3 pages
         expect(mockTrigger).toHaveBeenCalledTimes(3);
         expect(mockTrigger).toHaveBeenCalledWith({
+            filters,
             sortConditions: "TITLE",
             sortDescending: false,
             page: 0,
-            limit: 50,
-            fiscalYear: 2026
+            limit: 50
         });
         expect(mockTrigger).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
         expect(mockTrigger).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));

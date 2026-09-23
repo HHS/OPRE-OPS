@@ -267,7 +267,7 @@ describe("ProjectFilterButton", () => {
         expect(mockSetFilters).toHaveBeenCalled();
     });
 
-    it("should reset filters when Reset is clicked", async () => {
+    it("clears local buffers without calling setFilters when Reset is clicked", async () => {
         const user = userEvent.setup();
         const filtersWithSelections = {
             fiscalYear: [{ id: 2023, title: "2023" }],
@@ -296,13 +296,9 @@ describe("ProjectFilterButton", () => {
         const resetButton = screen.getByRole("button", { name: /reset/i });
         await user.click(resetButton);
 
-        expect(mockSetFilters).toHaveBeenCalledWith({
-            fiscalYear: [],
-            portfolio: [],
-            projectSearch: [],
-            agreementSearch: [],
-            projectType: []
-        });
+        // Reset only clears the modal's local buffers — it must not fire a query.
+        // The cleared state only takes effect once the user clicks Apply.
+        expect(mockSetFilters).not.toHaveBeenCalled();
     });
 
     it("should close modal when Apply is clicked", async () => {
@@ -331,7 +327,8 @@ describe("ProjectFilterButton", () => {
         });
     });
 
-    it("should sync state with filters prop via useEffect", async () => {
+    it("syncs local buffers when parent filters change externally (e.g. tag removal)", async () => {
+        const user = userEvent.setup();
         const { rerender } = renderWithRouter(
             <ProjectFilterButton
                 filters={defaultFilters}
@@ -341,25 +338,21 @@ describe("ProjectFilterButton", () => {
             />
         );
 
-        const updatedFilters = {
-            fiscalYear: [{ id: 2023, title: "2023" }],
-            portfolio: [{ id: 1, name: "Portfolio A" }],
-            projectSearch: [{ title: "Project Alpha" }],
-            agreementSearch: [{ title: "Agreement 1" }],
-            projectType: [{ title: "RESEARCH" }]
-        };
-
         rerender(
             <ProjectFilterButton
-                filters={updatedFilters}
+                filters={{ ...defaultFilters, portfolio: [{ id: 1, name: "Portfolio A" }] }}
                 setFilters={mockSetFilters}
                 projectFilterOptions={mockProjectFilterOptions}
                 isLoadingOptions={false}
             />
         );
 
-        // Internal state should sync with updated filters
-        expect(screen.getByText("Filters")).toBeInTheDocument();
+        // Open the modal so we can observe the synced buffer state
+        await user.click(screen.getByRole("button", { name: /filters/i }));
+        expect(await screen.findByTestId("modal")).toBeInTheDocument();
+
+        // The portfolios combobox must reflect the externally-updated filter
+        expect(screen.getByLabelText("Portfolio")).toHaveValue(["1"]);
     });
 
     it("should handle loading state for filter options", () => {

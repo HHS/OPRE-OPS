@@ -9,6 +9,7 @@ import { opsApi } from "../../../api/opsAPI";
 
 const mockNavigate = vi.fn();
 const mockUseGetProjectsQuery = vi.fn();
+const mockUseGetProjectsFilterOptionsQuery = vi.fn();
 const mockLazyTrigger = vi.fn().mockReturnValue({ unwrap: () => Promise.resolve({ projects: [] }) });
 
 vi.mock("react-router-dom", async () => {
@@ -24,12 +25,78 @@ vi.mock("../../../api/opsAPI", async () => {
     return {
         ...actual,
         useGetProjectsQuery: (args) => mockUseGetProjectsQuery(args),
-        useLazyGetProjectsQuery: () => [mockLazyTrigger]
+        useLazyGetProjectsQuery: () => [mockLazyTrigger],
+        useGetProjectsFilterOptionsQuery: () => mockUseGetProjectsFilterOptionsQuery()
     };
 });
 
 vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
+}));
+
+// Mocked with real removeFilter wiring (not a static stub) so tests can exercise the
+// actual tag-removal codepath that drives ProjectsList's FY revert logic, while still
+// providing lightweight seed buttons to set up filter state without driving the real
+// Compare Fiscal Years combobox UI.
+vi.mock("./ProjectFilterTags/ProjectFilterTags", async () => {
+    const { removeFilter } = await vi.importActual("./ProjectFilterTags/ProjectFilterTags.hooks");
+    return {
+        default: ({ filters, setFilters }) => (
+            <div data-testid="filter-tags">
+                Filter Tags
+                <button
+                    type="button"
+                    data-testid="seed-fy-tag"
+                    onClick={() => setFilters((prev) => ({ ...prev, fiscalYear: [{ id: 2025, title: 2025 }] }))}
+                >
+                    Seed FY tag
+                </button>
+                <button
+                    type="button"
+                    data-testid="seed-fy-tag-outside-window"
+                    onClick={() => setFilters((prev) => ({ ...prev, fiscalYear: [{ id: 2010, title: 2010 }] }))}
+                >
+                    Seed FY tag outside default window
+                </button>
+                <button
+                    type="button"
+                    data-testid="seed-portfolio-tag"
+                    onClick={() => setFilters((prev) => ({ ...prev, portfolio: [{ id: 1, name: "OPRE" }] }))}
+                >
+                    Seed portfolio tag
+                </button>
+                {(filters?.fiscalYear ?? []).map((fy) => (
+                    <button
+                        type="button"
+                        key={fy.id}
+                        data-testid={`remove-fy-tag-${fy.id}`}
+                        onClick={() => removeFilter({ filter: "fiscalYear", tagText: `FY ${fy.title}` }, setFilters)}
+                    >
+                        Remove FY {fy.title}
+                    </button>
+                ))}
+            </div>
+        )
+    };
+});
+
+// Mocked to exactly reproduce useProjectFilterButton's real applyFilter behavior — setting
+// applyFiredFYRef.current before writing back the SAME filters.fiscalYear array reference
+// (as happens when the user applies without touching Compare FYs) — without driving the
+// real modal/comboboxes. This is what regression-tests the applyFiredFYRef staleness bug.
+vi.mock("./ProjectFilterButton/ProjectFilterButton", () => ({
+    default: ({ setFilters, applyFiredFYRef }) => (
+        <button
+            type="button"
+            data-testid="apply-without-touching-fy"
+            onClick={() => {
+                if (applyFiredFYRef) applyFiredFYRef.current = true;
+                setFilters((prev) => ({ ...prev, portfolio: [{ id: 9, name: "Other Portfolio" }] }));
+            }}
+        >
+            Apply without touching FY
+        </button>
+    )
 }));
 
 /** Two projects with the full set of new fields from the API */
@@ -66,6 +133,10 @@ describe("ProjectsList", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockUseGetProjectsFilterOptionsQuery.mockReturnValue({
+            data: { fiscal_years: [2023, 2024, 2025], portfolios: [], project_types: [] },
+            isLoading: false
+        });
         mockStore = configureStore({
             reducer: {
                 [opsApi.reducerPath]: opsApi.reducer,
@@ -263,8 +334,12 @@ describe("ProjectsList", () => {
         const fySelect = screen.getByLabelText("Fiscal Year");
         await user.selectOptions(fySelect, "2025");
 
-        // Verify the query was called with the new FY value
-        expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(expect.objectContaining({ fiscalYear: "2025" }));
+        // Verify the query was called with the new FY value, resolved into filters.fiscalYear
+        expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({ fiscalYear: [{ id: 2025, title: 2025 }] })
+            })
+        );
     });
 
     it("hides FY Total column when All is selected and shows it for a specific FY", async () => {
@@ -310,7 +385,10 @@ describe("ProjectsList", () => {
         await user.selectOptions(fySelect, "All");
 
         expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
-            expect.objectContaining({ sortConditions: "TITLE", fiscalYear: "All" })
+            expect.objectContaining({
+                sortConditions: "TITLE",
+                filters: expect.objectContaining({ fiscalYear: [] })
+            })
         );
     });
 
@@ -412,5 +490,166 @@ describe("ProjectsList", () => {
         renderComponent();
 
         expect(screen.queryByText("Export")).not.toBeInTheDocument();
+    });
+});
+
+// ─── Model B FY filter behavior (OPS-6257) ──────────────────────────────────
+
+describe("ProjectsList - Model B FY behavior (OPS-6257)", () => {
+    beforeEach(() => {
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+        // Self-contained default so this describe block doesn't depend on the sibling
+        // "ProjectsList" describe's beforeEach having already run first in file order.
+        mockUseGetProjectsFilterOptionsQuery.mockReturnValue({
+            data: { fiscal_years: [2023, 2024, 2025], portfolios: [], project_types: [] },
+            isLoading: false
+        });
+    });
+
+    const renderComponent = () =>
+        render(
+            <Provider
+                store={configureStore({
+                    reducer: {
+                        [opsApi.reducerPath]: opsApi.reducer,
+                        auth: () => ({ isLoggedIn: true, activeUser: { id: 1, roles: [] } }),
+                        alert: () => ({ isActive: false, type: "", heading: "", message: "", redirectUrl: "" })
+                    },
+                    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
+                })}
+            >
+                <MemoryRouter>
+                    <ProjectsList />
+                </MemoryRouter>
+            </Provider>
+        );
+
+    it("dropdown-only FY change passes correct year to query via resolveForAPI", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+
+        await waitFor(() => {
+            expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    filters: expect.objectContaining({ fiscalYear: [{ id: 2024, title: 2024 }] })
+                })
+            );
+        });
+    });
+
+    it("default query sends empty fiscalYear with All selected (resolveForAPI: All → [])", async () => {
+        renderComponent();
+
+        await waitFor(() => {
+            expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    filters: expect.objectContaining({ fiscalYear: [] })
+                })
+            );
+        });
+    });
+
+    it("changing dropdown clears only filters.fiscalYear, not other filters", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Seed a non-FY filter via the mocked ProjectFilterTags
+        await user.click(screen.getByTestId("seed-portfolio-tag"));
+
+        await waitFor(() => {
+            expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    filters: expect.objectContaining({ portfolio: [{ id: 1, name: "OPRE" }] })
+                })
+            );
+        });
+
+        // Change the dropdown — should only clear filters.fiscalYear
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+
+        await waitFor(() => {
+            expect(mockUseGetProjectsQuery).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    filters: expect.objectContaining({
+                        fiscalYear: [{ id: 2024, title: 2024 }],
+                        portfolio: [{ id: 1, name: "OPRE" }]
+                    })
+                })
+            );
+        });
+    });
+
+    it("removing the last FY tag reverts the dropdown to All, not a stale dropdown year", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Set the dropdown shortcut to a specific year first.
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+        await waitFor(() => expect(fySelect).toHaveValue("2024"));
+
+        // Apply a Compare FYs selection (filters.fiscalYear), which takes precedence over
+        // the dropdown shortcut and should override the displayed value to 2025.
+        await user.click(screen.getByTestId("seed-fy-tag"));
+        await waitFor(() => expect(fySelect).toHaveValue("2025"));
+
+        // Remove the FY 2025 tag via the real removeFilter/handleFYTagRemoval codepath.
+        await user.click(screen.getByTestId("remove-fy-tag-2025"));
+
+        // Compare FYs is now empty, so the dropdown falls back to selectedFiscalYear.
+        // The revert-to-"All" effect must reset it — otherwise this would show the
+        // stale "2024" the dropdown shortcut was left on before Compare FYs took over.
+        await waitFor(() => expect(fySelect).toHaveValue("All"));
+    });
+
+    it("still reverts to All on tag removal after an unrelated Apply that leaves fiscalYear's reference unchanged (regression for stale applyFiredFYRef)", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Set the dropdown shortcut to a specific year first.
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+        await waitFor(() => expect(fySelect).toHaveValue("2024"));
+
+        // Apply a Compare FYs selection, overriding the displayed value to 2025.
+        await user.click(screen.getByTestId("seed-fy-tag"));
+        await waitFor(() => expect(fySelect).toHaveValue("2025"));
+
+        // Simulate applying the filter modal WITHOUT touching Compare FYs — this writes
+        // back the same filters.fiscalYear array reference while still setting
+        // applyFiredFYRef.current, exactly like the real useProjectFilterButton.applyFilter.
+        await user.click(screen.getByTestId("apply-without-touching-fy"));
+
+        // Now remove the FY tag. If applyFiredFYRef were left stuck `true` by the no-op
+        // Apply above, this removal would be wrongly treated as Apply-caused and the
+        // dropdown would stay stale on "2024" instead of reverting to "All".
+        await user.click(screen.getByTestId("remove-fy-tag-2025"));
+
+        await waitFor(() => expect(fySelect).toHaveValue("All"));
+    });
+
+    it("renders an <option> for a Compare FY outside the default rolling window", async () => {
+        mockUseGetProjectsFilterOptionsQuery.mockReturnValue({
+            data: { fiscal_years: [2010, 2023, 2024, 2025], portfolios: [], project_types: [] },
+            isLoading: false
+        });
+        const user = userEvent.setup();
+        renderComponent();
+
+        await user.click(screen.getByTestId("seed-fy-tag-outside-window"));
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await waitFor(() => expect(fySelect).toHaveValue("2010"));
+        // The dropdown's value must match a rendered <option> — otherwise the <select>
+        // silently shows blank instead of the selected Compare FY.
+        expect(screen.getByRole("option", { name: "2010" })).toBeInTheDocument();
     });
 });
