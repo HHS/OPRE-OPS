@@ -117,14 +117,14 @@ describe("TextArea Component", () => {
         );
 
         const textarea = screen.getByRole("textbox");
-        expect(textarea).toHaveStyle({ height: "10rem" });
+        expect(textarea.style.height).toBe("10rem");
     });
 
     it("applies default textAreaStyle when not provided", () => {
         render(<TextArea {...defaultProps} />);
 
         const textarea = screen.getByRole("textbox");
-        expect(textarea).toHaveStyle({ height: "8.5rem" });
+        expect(textarea.style.height).toBe("8.5rem");
     });
 
     it("disables fieldset when isDisabled is true", () => {
