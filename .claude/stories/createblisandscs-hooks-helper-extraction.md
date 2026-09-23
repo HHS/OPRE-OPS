@@ -90,3 +90,63 @@ incidental) divergence.
 4. Do not touch the `ServicesComponentSelect`/`GrantNumberSelect` or
    `AllServicesComponentSelect`/`AllGrantNumberSelect` pairs — they're already thin, stable wrappers;
    a generic parameterized version would add indirection for minimal line savings.
+
+## Phase 4: shrink `handleSave` and its immediate neighbors
+
+### Why
+Phases 1-3 extracted pure, relocatable logic out of the hook. A pass focused specifically on
+`handleSave` (still the longest function in the file) found one real repeated block inside it, one
+pair of near-duplicate sibling functions, and one more pure computation that fits the Phase 1/2
+pattern. Scoped to changes that don't alter the `finally`/cleanup ordering or the modal/blocker
+error-handling shapes, since those are the parts most likely to silently regress.
+
+### Estimated impact
+~60-80 lines out of `CreateBLIsAndSCs.hooks.js`, plus a materially shorter `handleSave` dependency
+array (currently 18 entries).
+
+### Steps
+1. Add a `persistPartitionedEntities(items, addMutation, updateMutation)` async helper in the hook
+   file (NOT `.helpers.js` — it awaits the injected RTK mutation trigger functions, so it isn't pure).
+   It wraps `partitionNewAndChanged` + create-promises + update-promises + the two `Promise.all`
+   calls. Replace the two structurally-identical call sites in `handleSave` (services components,
+   grant numbers) with `await persistPartitionedEntities(servicesComponents, addServicesComponent, updateServicesComponent)`
+   and the grant-number equivalent.
+2. Unify `handleFinancialSnapshotChanges` and `handleFinancialSnapshotChangesViaBlocker`. These are
+   ~90% identical but differ in error-handling shape: the "ViaBlocker" version is a plain `async`
+   function that throws on failure (caught by `handleSave`'s own `try/catch`), while the modal version
+   wraps everything in `new Promise((resolve, reject) => ...)` and rejects instead of throwing, plus
+   has a `handleSecondary` escape hatch with no analog in the other function. Do NOT try to merge the
+   promise-wrapping/modal logic — only extract the throwing core (essentially
+   `handleFinancialSnapshotChangesViaBlocker`'s body as-is) into a shared
+   `sendExistingBLIsToApproval(existingBudgetLineItemsWithIds, redirectUrl)` that always throws on
+   failure. Then:
+   - `handleFinancialSnapshotChangesViaBlocker` becomes a thin wrapper calling it with
+     `blocker.location?.pathname`.
+   - `handleFinancialSnapshotChanges`'s `handleConfirm` becomes
+     `try { await sendExistingBLIsToApproval(existingBudgetLineItemsWithIds, getBudgetLinesUrl(selectedAgreement?.id)); resolve(); } catch (e) { reject(e); }`,
+     leaving the modal setup, `handleSecondary`, and the outer `new Promise` untouched.
+3. Extract `showSuccessMessage`'s alert-content derivation (the `anyChangeSentToApproval` /
+   `pendingChanges` / heading+message branching) into a pure
+   `buildSaveSuccessAlert({ tempBudgetLines, deletedBudgetLines, budgetLines, canEditDirectly, isSuperUser, cans, selectedAgreement, savedViaModal, blockerLocationPathname, isThereAnyBLIsFinancialSnapshotChanged })`
+   in `.helpers.js`, returning the `setAlert(...)` payload. `showSuccessMessage` keeps the
+   `continueOverRide` early-return (that's a control-flow branch, not alert content) and otherwise
+   just calls `setAlert(buildSaveSuccessAlert({...}))`.
+4. Split `handleSave`'s `if (!agreement.id) { ... } else { ... }` branches into
+   `handleSaveNewAgreement` and `handleSaveExistingAgreementBudget` callbacks, with `handleSave`
+   calling one or the other. Keep the shared tail (`suite.reset()`/`budgetFormSuite.reset()`/
+   `datePickerSuite.reset()`/`resetForm()`/`setIsEditMode(false)`/`showSuccessMessage(...)` and the
+   outer `try/catch/finally`) in `handleSave` itself — do NOT duplicate that cleanup into each split
+   function, since keeping it shared is what makes this split safe.
+5. (Separate, call out explicitly — this is a behavior change, not a pure refactor) Add a
+   `resetValidationSuites()` helper for the `suite.reset(); budgetFormSuite.reset();
+   datePickerSuite.reset();` sequence copy-pasted in `resetForm` and at the end of `handleSave`.
+   Note: the mount/unmount effect (issue #5894) also resets `scFormSuite`, which `resetForm`/
+   `handleSave` currently do NOT. Decide explicitly whether `resetValidationSuites()` should include
+   `scFormSuite` (fixing a likely-latent inconsistency) or intentionally omit it — don't let this
+   fold in silently as a side effect of the dedup.
+6. (Deprioritized/stretch — do not bundle with the above) Wrap `handleAddBLI`, `handleEditBLI`,
+   `handleDeleteBudgetLine`, `handleDuplicateBudgetLine`, `handleCancel`, and `handleGoBack` in
+   `useCallback` for consistency with the first 7 numbered handlers in the file. Real payoff (fewer
+   child re-renders) but diffuse, and getting 6 dependency arrays right without introducing stale
+   closures needs its own careful pass — only do this if already touching those functions for another
+   reason.

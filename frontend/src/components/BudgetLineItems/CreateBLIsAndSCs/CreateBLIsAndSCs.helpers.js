@@ -253,6 +253,75 @@ export const buildBudgetChangeMessages = (tempBudgetLines, cans) => {
 };
 
 /**
+ * Build the `setAlert(...)` payload for a successful save.
+ * @param {Object} args
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines - The temporary budget lines
+ * @param {Array<number>} args.deletedBudgetLines - Ids of deleted budget lines
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.budgetLines - The original (pre-edit) budget lines, used to look up deleted lines' authoritative status
+ * @param {boolean} args.canEditDirectly
+ * @param {boolean} args.isSuperUser
+ * @param {import("../../../types/CANTypes").CAN[]} args.cans - Used to resolve CAN display names
+ * @param {import("../../../types/AgreementTypes").Agreement} args.selectedAgreement
+ * @param {boolean} args.savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
+ * @param {string|undefined} args.blockerLocationPathname - Where the blocker was navigating to, when `savedViaModal` is true
+ * @param {boolean} args.isThereAnyBLIsFinancialSnapshotChanged
+ * @returns {import("../../../hooks/use-alert.hooks").AlertData} The `setAlert(...)` payload.
+ */
+export const buildSaveSuccessAlert = ({
+    tempBudgetLines,
+    deletedBudgetLines,
+    budgetLines,
+    canEditDirectly,
+    isSuperUser,
+    cans,
+    selectedAgreement,
+    savedViaModal,
+    blockerLocationPathname,
+    isThereAnyBLIsFinancialSnapshotChanged
+}) => {
+    const budgetChangeMessages = buildBudgetChangeMessages(tempBudgetLines, cans);
+    // Deletions of PLANNED/IN_EXECUTION lines route to an approval change request rather than
+    // deleting immediately, so a save containing any of them was "sent to approval" too — even
+    // when there were no financial-snapshot edits. Deleted lines are already out of
+    // tempBudgetLines, so this signal is derived from deletedBudgetLines separately.
+    // Financial edits write directly for super users AND budget team (canEditDirectly);
+    // only other users route them to approval. Deletions are different: the backend hard-
+    // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
+    // line STILL routes to a change request — hence the deletion signal gates on super-user
+    // only (via isDeletionRoutedToApproval), not canEditDirectly.
+    // deletedBudgetLines holds bare ids. Look each up in the original budgetLines prop
+    // to get the authoritative status isDeletionRoutedToApproval needs.
+    const deletionsRoutedToApproval = deletedBudgetLines
+        .map((id) => budgetLines.find((bl) => bl.id === id))
+        .filter((bl) => isDeletionRoutedToApproval(bl, isSuperUser));
+    const deletionChangeMessages = deletionsRoutedToApproval
+        .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
+        .join("\n");
+    const anyChangeSentToApproval =
+        (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
+    const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
+    const redirectUrl = savedViaModal ? blockerLocationPathname : getBudgetLinesUrl(selectedAgreement?.id);
+
+    if (anyChangeSentToApproval) {
+        return {
+            type: "success",
+            heading: "Changes Sent to Approval",
+            message:
+                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                `<strong>Pending Changes:</strong>\n` +
+                ` ${pendingChanges}`,
+            redirectUrl
+        };
+    }
+    return {
+        type: "success",
+        heading: "Agreement Updated",
+        message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
+        redirectUrl
+    };
+};
+
+/**
  * Shape the payload sent to POST /agreements when creating a new agreement, including its
  * not-yet-persisted services components / grant numbers / budget line items.
  * @param {Object} args
