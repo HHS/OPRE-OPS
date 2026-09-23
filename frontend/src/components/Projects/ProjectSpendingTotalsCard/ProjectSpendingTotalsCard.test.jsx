@@ -45,4 +45,16 @@ describe("ProjectSpendingTotalsCard", () => {
         // by checking for the FY label which is the card's first element
         expect(screen.getByText("FY 2043 Project Total")).toBeInTheDocument();
     });
+
+    it("renders 'All FYs' label instead of 'FY All' when fiscalYear is All", () => {
+        render(
+            <ProjectSpendingTotalsCard
+                {...defaultProps}
+                fiscalYear="All"
+            />
+        );
+        expect(screen.getByText("All FYs Project Total")).toBeInTheDocument();
+        expect(screen.getByText("All FYs Agreements")).toBeInTheDocument();
+        expect(screen.queryByText(/FY All/)).not.toBeInTheDocument();
+    });
 });
