@@ -1,25 +1,28 @@
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../UI/RoundedBox";
+import { getFyLabel } from "../ProjectSpending.helpers";
 
 /**
  * Left summary card for the Project Spending tab.
  * Shows the FY total (large), lifetime project total, and FY agreement count.
  *
  * @param {Object} props
- * @param {number} props.fiscalYear
+ * @param {number | "All"} props.fiscalYear
  * @param {number} props.fyTotal - Total spending for the selected FY (non-draft BLIs).
  * @param {number} props.lifetimeTotal - Lifetime project total across all FYs.
  * @param {number} props.fyAgreementCount - Number of agreements active in the selected FY.
  * @returns {React.ReactElement}
  */
 const ProjectSpendingTotalsCard = ({ fiscalYear, fyTotal, lifetimeTotal, fyAgreementCount }) => {
+    const fyLabel = getFyLabel(fiscalYear);
+
     return (
         <RoundedBox
             dataCy="project-spending-totals-card"
             style={{ minHeight: "10rem" }}
         >
-            <p className="margin-0 font-12px text-base-dark">FY {fiscalYear} Project Total</p>
+            <p className="margin-0 font-12px text-base-dark">{fyLabel} Project Total</p>
             <div className="margin-top-1">
                 <CurrencyWithSmallCents
                     amount={fyTotal}
@@ -32,7 +35,7 @@ const ProjectSpendingTotalsCard = ({ fiscalYear, fyTotal, lifetimeTotal, fyAgree
                 <dt className="text-base-dark margin-0">Lifetime Project Total</dt>
                 <dd className="margin-0 margin-top-05 text-bold">{formatCurrency(lifetimeTotal)}</dd>
 
-                <dt className="text-base-dark margin-0 margin-top-2">FY {fiscalYear} Agreements</dt>
+                <dt className="text-base-dark margin-0 margin-top-2">{fyLabel} Agreements</dt>
                 <dd className="margin-0 margin-top-05 font-sans-lg text-bold">{fyAgreementCount}</dd>
             </dl>
         </RoundedBox>

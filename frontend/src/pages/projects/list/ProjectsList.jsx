@@ -10,8 +10,9 @@ import ProjectsTableLoading from "../../../components/Projects/ProjectsTable/Pro
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
-import { ITEMS_PER_PAGE } from "../../../constants";
+import constants, { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
@@ -41,6 +42,22 @@ const ProjectsList = () => {
 
     const { data: projectFilterOptions, isLoading: isLoadingProjectFilterOptions } = useGetProjectsFilterOptionsQuery();
 
+    // Derive the dropdown display value and the API-ready FY array from the two FY inputs:
+    // selectedFiscalYear (shortcut dropdown) and filters.fiscalYear (Compare Fiscal Years panel).
+    // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
+    const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
+
+    // A single Compare FY can fall outside the default rolling window (constants.fiscalYears),
+    // e.g. an older year that still has projects. Include every year the API knows about so
+    // the <select>'s value always matches a rendered <option>.
+    const fiscalYearOptions = mergeFiscalYearOptions(constants.fiscalYears, projectFilterOptions?.fiscal_years);
+
+    // Child components (ProjectsTable, ProjectsTableLoading, export, summary cards) only
+    // understand "All" or a specific year string — they have no "Multi" branch. Under Multi,
+    // hide the FY Total column and show "Multiple Years" labels, same as "All".
+    const isMultiFY = dropdownValue === "Multi";
+    const displayFY = isMultiFY ? "All" : dropdownValue;
+
     const {
         data: projectsResponse,
         isLoading,
@@ -48,13 +65,13 @@ const ProjectsList = () => {
         isError
     } = useGetProjectsQuery({
         filters: {
-            ...filters
+            ...filters,
+            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
         },
         sortConditions: sortCondition,
         sortDescending,
         page: currentPage - 1,
-        limit: pageSize,
-        fiscalYear: selectedFiscalYear
+        limit: pageSize
     });
 
     const projects = projectsResponse?.projects ?? [];
@@ -63,10 +80,10 @@ const ProjectsList = () => {
     const summary = projectsResponse?.summary ?? null;
     const isTableLoading = isLoading || isFetching;
 
-    // Reset to page 1 when sort or fiscal year changes
+    // Reset to page 1 when sort, filters (including fiscal year), or fiscal year dropdown changes
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [sortCondition, sortDescending, selectedFiscalYear]);
+    }, [filters, sortCondition, sortDescending, selectedFiscalYear]);
 
     React.useEffect(() => {
         if (isError) {
@@ -74,30 +91,81 @@ const ProjectsList = () => {
         }
     }, [isError, navigate]);
 
-    // FY_TOTAL sort is meaningless once "All" fiscal years is selected — enforce this
-    // as a standing invariant rather than only when the dropdown itself triggers the change,
-    // so any future path that sets selectedFiscalYear to "All" stays consistent.
-    React.useEffect(() => {
-        if (selectedFiscalYear === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
-            // useSetSortConditions hardcodes sortDescending=true on a column change, ignoring
-            // the second arg. Call twice: first to switch column, then same column to set ascending.
-            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
-            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
-        }
-    }, [selectedFiscalYear, sortCondition, setSortConditions]);
+    // Track when the dropdown shortcut itself clears filters.fiscalYear so the effect
+    // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
+    const dropdownChangedFYRef = React.useRef(false);
 
-    const handleChangeFiscalYear = (newValue) => {
-        setSelectedFiscalYear(newValue);
-        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
-        if (newValue === "All" && sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
-            setSortConditions(PROJECT_SORT_CODES.TITLE, false);
+    // Track when applyFilter caused the emptying so the effect below doesn't revert
+    // selectedFiscalYear to "All" — Apply means "fall back to the current dropdown year",
+    // not "reset to All". This ref is set by useProjectFilterButton's applyFilter.
+    const applyFiredFYRef = React.useRef(false);
+
+    // Track the previous length to distinguish "non-zero → zero" (tag removal) from
+    // a no-op write of a new [] reference when the array was already empty.
+    const prevFYLengthRef = React.useRef(0);
+
+    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown
+    // or Apply), revert selectedFiscalYear to "All" per the business rule.
+    // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
+    React.useEffect(() => {
+        const normalizedFYs = filters.fiscalYear ?? [];
+        const prevLen = prevFYLengthRef.current;
+        prevFYLengthRef.current = normalizedFYs.length;
+        if (dropdownChangedFYRef.current) {
+            dropdownChangedFYRef.current = false;
+            return;
+        }
+        if (applyFiredFYRef.current) {
+            applyFiredFYRef.current = false;
+            return;
+        }
+        if (normalizedFYs.length === 0 && prevLen > 0) {
+            setSelectedFiscalYear("All");
+        }
+    }, [filters.fiscalYear]);
+
+    // Apply can write back the same filters.fiscalYear array reference (e.g. the user
+    // applied without touching Compare FYs) — the effect above then never re-runs to
+    // consume applyFiredFYRef, leaving it stuck `true` and wrongly suppressing the NEXT
+    // (unrelated) tag-removal revert-to-All. This effect has no dependency array, so it
+    // runs after every commit and clears the flag once the Apply-triggered render has
+    // been processed, regardless of whether filters.fiscalYear's reference changed.
+    React.useEffect(() => {
+        applyFiredFYRef.current = false;
+    });
+
+    // FY_TOTAL is meaningless when showing all/multiple fiscal years — reset the sort
+    // to the default whenever that happens. Shared by the displayFY effect below (covers
+    // panel sentinel, Multi, and tag removal) and handleChangeFiscalYear (covers the dropdown
+    // re-selecting "All" while already on "All", which isn't a displayFY transition).
+    const resetFYTotalSort = () => {
+        if (sortCondition === PROJECT_SORT_CODES.FY_TOTAL) {
             setSortConditions(PROJECT_SORT_CODES.TITLE, false);
         }
     };
 
-    const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;
+    // Reset FY_TOTAL sort whenever displayFY enters "All" mode (All FYs or Multi)
+    // from any cause — dropdown shortcut, panel sentinel, Multi, or tag removal.
+    const prevDisplayFYRef = React.useRef(displayFY);
+    React.useEffect(() => {
+        const prev = prevDisplayFYRef.current;
+        prevDisplayFYRef.current = displayFY;
+        if (displayFY === "All" && prev !== "All") {
+            resetFYTotalSort();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displayFY]);
 
-    const fiscalYearDisplay = selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`;
+    // Handle fiscal year shortcut dropdown change.
+    // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
+    const handleChangeFiscalYear = (newValue) => {
+        dropdownChangedFYRef.current = true;
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+        setSelectedFiscalYear(newValue);
+        if (newValue === "All") {
+            resetFYTotalSort();
+        }
+    };
 
     if (isExporting) {
         return (
@@ -122,13 +190,14 @@ const ProjectsList = () => {
                     TabsSection={
                         <div className="margin-left-auto">
                             <FiscalYear
-                                fiscalYear={fiscalYearDropdownValue}
+                                fiscalYear={dropdownValue}
                                 handleChangeFiscalYear={handleChangeFiscalYear}
+                                fiscalYears={fiscalYearOptions}
                                 showAllOption={true}
                             />
                         </div>
                     }
-                    TableSection={<ProjectsTableLoading selectedFiscalYear={selectedFiscalYear} />}
+                    TableSection={<ProjectsTableLoading selectedFiscalYear={displayFY} />}
                 />
             </App>
         );
@@ -166,10 +235,14 @@ const ProjectsList = () => {
                                                 setIsExporting,
                                                 setAlert,
                                                 getAllProjectsTrigger,
-                                                selectedFiscalYear,
+                                                displayFY,
                                                 sortCondition,
                                                 sortDescending,
-                                                totalCount
+                                                totalCount,
+                                                {
+                                                    ...filters,
+                                                    fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
+                                                }
                                             )
                                         }
                                     >
@@ -189,6 +262,7 @@ const ProjectsList = () => {
                                     setFilters={setFilters}
                                     projectFilterOptions={projectFilterOptions}
                                     isLoadingOptions={isLoadingProjectFilterOptions}
+                                    applyFiredFYRef={applyFiredFYRef}
                                 />
                             </div>
                         </div>
@@ -197,8 +271,9 @@ const ProjectsList = () => {
                 TabsSection={
                     <div className="margin-left-auto">
                         <FiscalYear
-                            fiscalYear={fiscalYearDropdownValue}
+                            fiscalYear={dropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
+                            fiscalYears={fiscalYearOptions}
                             showAllOption={true}
                         />
                     </div>
@@ -207,7 +282,7 @@ const ProjectsList = () => {
                     totalCount > 0 &&
                     summary && (
                         <ProjectSummaryCardsSection
-                            fiscalYear={fiscalYearDisplay}
+                            fiscalYear={isMultiFY ? "Multi" : displayFY === "All" ? "All FYs" : `FY ${displayFY}`}
                             summary={summary}
                         />
                     )
@@ -219,7 +294,7 @@ const ProjectsList = () => {
                             sortConditions={sortCondition}
                             sortDescending={sortDescending}
                             setSortConditions={setSortConditions}
-                            selectedFiscalYear={selectedFiscalYear}
+                            selectedFiscalYear={displayFY}
                         />
                         {totalPages > 1 && (
                             <div className="margin-top-3">

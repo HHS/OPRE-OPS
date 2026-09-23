@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYearFilter.helpers";
 
 /**
  * @typedef {import("../ProjectFilterButton/ProjectFilterTypes.d.ts").Filters} Filters
@@ -20,19 +21,22 @@ export const useTagsList = (filters) => {
         // Map each filter key to the property name we need to extract
         const propertyMap = {
             portfolio: "name",
-            fiscalYear: "title",
             projectSearch: "title",
             agreementSearch: "title",
             projectType: "title"
         };
 
         // Transform all filters into tags in one pass
-        return Object.entries(propertyMap).flatMap(([filterKey, propertyName]) =>
+        const tags = Object.entries(propertyMap).flatMap(([filterKey, propertyName]) =>
             (filters[filterKey] ?? []).map((item) => ({
                 tagText: item[propertyName],
                 filter: filterKey
             }))
         );
+
+        // deriveFYTags handles: correct "FY XXXX" prefix (no double-prefix),
+        // "All FYs" sentinel display, and deduplication.
+        return [...deriveFYTags(filters.fiscalYear), ...tags];
     }, [filters]);
 
     return tagsList;
@@ -48,7 +52,7 @@ export const removeFilter = (tag, setFilters) => {
         case "fiscalYear":
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => fiscalYear.title !== tag.tagText)
+                fiscalYear: handleFYTagRemoval(prevState.fiscalYear, tag.tagText)
             }));
             break;
         case "portfolio":

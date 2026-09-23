@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 from flask import url_for
@@ -3155,6 +3156,42 @@ class TestAgreementsPaginationAPI:
 
         assert response.status_code == 200
         assert response.json["limit"] == 50
+
+    def test_sort_by_fy_obligated_all_fys_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort without a fiscal_year filter uses lifetime_obligated (All FYs path)."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "FY_OBLIGATED", "sort_descending": False, "limit": 50, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by lifetime_obligated ascending
+        lifetime_values = [Decimal(str(a["lifetime_obligated"])) for a in data]
+        assert lifetime_values == sorted(lifetime_values)
+
+    def test_sort_by_fy_obligated_specific_fy_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort with a specific fiscal_year filter uses fy_obligated for that year."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "FY_OBLIGATED",
+                "sort_descending": False,
+                "fiscal_year": 2044,
+                "limit": 50,
+                "offset": 0,
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by fy_obligated (for the requested FY) ascending
+        fy_obligated_values = [Decimal(a["fy_obligated"]) for a in data]
+        assert fy_obligated_values == sorted(fy_obligated_values)
 
 
 # ==================== AWARDED AGREEMENT PATCH TESTS ====================

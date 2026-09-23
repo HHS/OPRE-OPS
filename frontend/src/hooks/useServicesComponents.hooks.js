@@ -12,7 +12,7 @@ const servicesComponentsDisplayNameObj = {};
  */
 export const useGetServicesComponentDisplayName = (id) => {
     const [servicesComponentDisplayName, setServicesComponentDisplayName] = React.useState("TBD");
-    const { data, isSuccess } = useGetServicesComponentByIdQuery(id);
+    const { data, isSuccess } = useGetServicesComponentByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -43,7 +43,7 @@ export const useGetServicesComponentDisplayNameLocal = (id) => {
  */
 export const useGetServicesComponentDisplayTitle = (id) => {
     const [servicesComponentDisplayTitle, setServicesComponentDisplayTitle] = React.useState("TBD");
-    const { data, isSuccess } = useGetServicesComponentByIdQuery(id);
+    const { data, isSuccess } = useGetServicesComponentByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {

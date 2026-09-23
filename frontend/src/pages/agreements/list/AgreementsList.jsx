@@ -153,27 +153,15 @@ const AgreementsList = () => {
         }
     }, [filters.fiscalYear]);
 
-    // FY_OBLIGATED is meaningless when showing all/multiple fiscal years — reset the sort
-    // to the default whenever that happens. Shared by the displayFY effect below (covers
-    // panel sentinel, Multi, and tag removal) and handleChangeFiscalYear (covers the dropdown
-    // re-selecting "All" while already on "All", which isn't a displayFY transition).
-    const resetFYObligatedSort = () => {
-        if (sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
-            setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
-        }
-    };
-
-    // Reset FY_OBLIGATED sort whenever displayFY enters "All" mode (All FYs or Multi)
-    // from any cause — dropdown shortcut, panel sentinel, Multi, or tag removal.
-    const prevDisplayFYRef = useRef(displayFY);
+    // Apply can write back the same filters.fiscalYear array reference (e.g. the user
+    // applied without touching Compare FYs) — the effect above then never re-runs to
+    // consume applyFiredFYRef, leaving it stuck `true` and wrongly suppressing the NEXT
+    // (unrelated) tag-removal revert-to-All. This effect has no dependency array, so it
+    // runs after every commit and clears the flag once the Apply-triggered render has
+    // been processed, regardless of whether filters.fiscalYear's reference changed.
     useEffect(() => {
-        const prev = prevDisplayFYRef.current;
-        prevDisplayFYRef.current = displayFY;
-        if (displayFY === "All" && prev !== "All") {
-            resetFYObligatedSort();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [displayFY]);
+        applyFiredFYRef.current = false;
+    });
 
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
@@ -181,9 +169,6 @@ const AgreementsList = () => {
         dropdownChangedFYRef.current = true;
         setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
-        if (newValue === "All") {
-            resetFYObligatedSort();
-        }
     };
 
     const [trigger] = useLazyGetUserQuery();
