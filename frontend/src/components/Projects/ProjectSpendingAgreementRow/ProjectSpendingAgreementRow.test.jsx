@@ -128,6 +128,34 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(cells[4]).toHaveTextContent("$1,234,567.00");
     });
 
+    it("sums fy_total across every fiscal year when fiscalYear is All", () => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: { 2043: "1000.00", 2044: "2000.00" } }
+        });
+        renderRow({ fyTotal: null, fiscalYear: "All" });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$3,000.00");
+    });
+
+    it("resolves to $0 under All FYs for an agreement with no budget line items", () => {
+        // A zero-BLI agreement's fy_total map is empty at every fiscal year — the aggregate
+        // must be $0, not TBD/unknown, once the query resolves.
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: {} }
+        });
+        renderRow({ fyTotal: 151217218, fiscalYear: "All" });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$0");
+        expect(cells[4]).not.toHaveTextContent("$151,217,218.00");
+    });
+
+    it("shows TBD under All FYs while the spending query is in flight and no fyTotal prop is given", () => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({ data: undefined });
+        renderRow({ fyTotal: null, fiscalYear: "All" });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("TBD");
+    });
+
     it("expands to show detail fields on chevron click", async () => {
         const user = userEvent.setup();
         renderRow();

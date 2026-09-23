@@ -4,6 +4,7 @@ import PaginationNav from "../../UI/PaginationNav";
 import styles from "../../UI/Table/table.module.css";
 import ProjectSpendingAgreementRow from "../ProjectSpendingAgreementRow";
 import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
+import { getFyLabel } from "../ProjectSpending.helpers";
 
 /**
  * Table of agreements for the Project Spending tab.
@@ -12,7 +13,7 @@ import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements
- * @param {number} props.fiscalYear - The currently selected fiscal year.
+ * @param {number | "All"} props.fiscalYear - The currently selected fiscal year, or "All".
  * @param {Record<number, number>} props.fyTotals - Fallback map of agreement id to FY total.
  *   Used while each row's per-agreement spending query is in flight. Only populated
  *   when a single agreement exists in the FY; rows otherwise fetch their own totals.
@@ -29,12 +30,13 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) =>
     const visibleAgreements = agreements.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     if (agreements.length === 0) {
+        const fyLabel = getFyLabel(fiscalYear);
         return (
             <p
                 className="font-sans-sm text-base"
                 data-cy="no-agreements-message"
             >
-                No agreements found for FY {fiscalYear}.
+                No agreements found for {fyLabel}.
             </p>
         );
     }
