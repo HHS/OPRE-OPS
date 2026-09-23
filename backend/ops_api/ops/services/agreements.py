@@ -44,7 +44,11 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
+from ops_api.ops.utils.agreements_helpers import (
+    associated_with_agreement,
+    check_user_association,
+    is_agreement_name_unique_violation,
+)
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -861,7 +865,7 @@ class AgreementsService(OpsService[Agreement]):
         N.B. Currently the agreement is always editable if the user is a super user -
         this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
         """
-        return user.is_superuser or associated_with_agreement(agreement.id)
+        return user.is_superuser or check_user_association(agreement, user)
 
     def _deletion_blocked_reason(
         self, agreement: Agreement, user: User, is_editable: bool | None = None
@@ -1230,13 +1234,23 @@ def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool 
     query = select(agreement_cls).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
 
     # Always eager-load the relationships accessed by _compute_agreement_totals (over the full
-    # unpaginated result set) and by per-row serialization. Without these, every agreement
-    # triggers separate lazy SELECT statements — an N+1 that dominates list response time.
+    # unpaginated result set), per-row serialization, and _is_editable / check_user_association.
+    # Without these, every agreement triggers separate lazy SELECT statements — an N+1 that
+    # dominates list response time.
     query = query.options(
         selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
+        selectinload(agreement_cls.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .selectinload(Portfolio.team_leaders),
+        selectinload(agreement_cls.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .joinedload(Portfolio.division),
         selectinload(agreement_cls.procurement_actions),
         selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
         joinedload(agreement_cls.project),
+        selectinload(agreement_cls.team_members),
     )
 
     if include_procurement:
