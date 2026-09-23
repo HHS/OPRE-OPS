@@ -101,12 +101,32 @@ Already well-optimized via eager loading (`selectinload`/`joinedload`). Still no
 
 ---
 
-## Planned Improvements (in priority order)
+## Investigation Results (2026-09-23)
 
-1. **Eager load `budget_line_items` + `procurement_actions` on agreements list** — eliminates N+1 before pagination; low effort, high impact
-2. **Functional index on `fiscal_year` expression** — makes FY-filtered queries use an index instead of full scan; one migration
-3. **DB-level LIMIT/OFFSET on BLI list** — move Python `_apply_budget_total_range_filter` and `_apply_can_active_period_filter` into SQL WHERE clauses, then add `.limit().offset()`
-4. **DB-level LIMIT/OFFSET on agreements list** — requires reworking the 5-subclass union pattern; highest impact, highest effort
+After adding eager loading for `budget_line_items`, `procurement_actions`, `procurement_shop`,
+`project`, `team_members`, and the deep `BLI→CAN→Portfolio→[team_leaders, division]` chain,
+and fixing `_is_editable` to skip a redundant `db_session.get(Agreement, id)` re-fetch,
+the agreements list remained at ~900ms median. Investigation revealed:
+
+- The locustfile calls `/api/v1/agreements/` with **no params** — returns all 24 agreements
+  with all their BLIs fully serialized (470KB response)
+- Even the realistic frontend call (`limit=25&offset=0&include_fees=true`) is ~900ms
+- With 1,095 BLIs in local test data, `selectinload` fires a single `WHERE agreement_id IN (...)`
+  returning all 1,095 rows just to compute totals for 24 agreements before slicing to a page
+
+**Conclusion:** The dominant cost is the work done *before* pagination — loading all BLIs for
+all agreements to compute summary card totals. The eager loading PRs were correct fixes (they
+eliminate real N+1 queries that would worsen at scale), but DB-level LIMIT/OFFSET and moving
+totals computation to a separate aggregate query are what will move the needle on response time.
+
+## Planned Improvements (revised priority)
+
+1. **DB-level LIMIT/OFFSET on agreements list** — avoid loading all BLIs for all agreements;
+   requires either moving totals to a separate aggregate query or accepting totals-only-for-page
+2. **Eager load `budget_line_items` + chain** ✅ — done; correct but not yet measurably impactful
+   at local data scale; will prevent regression at production scale
+3. **Functional index on `fiscal_year` expression** — one migration; helps FY-filtered queries
+4. **DB-level LIMIT/OFFSET on BLI list** — simpler, one query path
 
 ---
 
