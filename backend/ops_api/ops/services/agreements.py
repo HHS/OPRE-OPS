@@ -8,7 +8,7 @@ from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, distinct, func, or_, select, union
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from models import (
     CAN,
@@ -1229,12 +1229,18 @@ def _get_agreements(
 def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool = False) -> Select[tuple[Agreement]]:
     query = select(agreement_cls).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
 
+    # Always eager-load the relationships accessed by _compute_agreement_totals (over the full
+    # unpaginated result set) and by per-row serialization. Without these, every agreement
+    # triggers separate lazy SELECT statements — an N+1 that dominates list response time.
+    query = query.options(
+        selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
+        selectinload(agreement_cls.procurement_actions),
+        selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+        joinedload(agreement_cls.project),
+    )
+
     if include_procurement:
-        query = query.options(
-            selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
-            selectinload(agreement_cls.procurement_trackers),
-            selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-        )
+        query = query.options(selectinload(agreement_cls.procurement_trackers))
 
     return query.order_by(agreement_cls.id)
 
