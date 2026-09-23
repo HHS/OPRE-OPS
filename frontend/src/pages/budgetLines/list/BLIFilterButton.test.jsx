@@ -353,7 +353,7 @@ describe("BLIFilterButton", () => {
     });
 
     describe("applyFiredFYRef seam", () => {
-        it("applyFilter sets applyFiredFYRef before calling setFilters", () => {
+        it("applyFilter sets applyFiredFYRef before calling setFilters when the FY buffer actually changes", () => {
             // Regression guard: applyFiredFYRef must be set to true BEFORE setFilters is called
             // so the page-level reset effect sees the flag and skips resetting selectedFiscalYear
             // to "All". If the order is reversed (setFilters before ref set), the effect fires
@@ -373,11 +373,38 @@ describe("BLIFilterButton", () => {
                 />
             );
 
+            // Actually change the FY buffer so this Apply will change filters.fiscalYears' reference.
+            fireEvent.click(screen.getByText("Set Fiscal Years"));
             fireEvent.click(screen.getByTestId("apply-filter-btn"));
 
             expect(setFilters).toHaveBeenCalled();
             // The ref must have been true at the moment setFilters was called
             expect(applyFiredFYRef._wasSetWhenCalled).toBe(true);
+        });
+
+        it("applyFilter does not set applyFiredFYRef when the FY buffer is unchanged from filters", () => {
+            // Regression guard for the stuck-ref bug: if Apply writes back the same fiscalYears
+            // reference (user didn't touch the FY combobox), the page-level effect keyed on
+            // filters.fiscalYears never re-runs to clear the ref. Setting it anyway would leave
+            // it stuck "true" and wrongly suppress a later, unrelated tag-removal reset.
+            const applyFiredFYRef = { current: false };
+            const setFilters = vi.fn();
+
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={setFilters}
+                    applyFiredFYRef={applyFiredFYRef}
+                    filterOptions={mockFilterOptions}
+                />
+            );
+
+            // Change an unrelated filter only — leave the FY combobox untouched.
+            fireEvent.click(screen.getByText("Set Portfolios"));
+            fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+            expect(setFilters).toHaveBeenCalled();
+            expect(applyFiredFYRef.current).toBe(false);
         });
     });
 });

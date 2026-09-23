@@ -69,7 +69,10 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal, applyF
     const applyFilter = () => {
         // Signal to the page-level FY reset effect that this emptying came from Apply,
         // not from tag removal — so it should NOT revert selectedFiscalYear to "All".
-        if (applyFiredFYRef) applyFiredFYRef.current = true;
+        // Only set the ref when this Apply will actually change filters.fiscalYear's
+        // reference — otherwise the consuming effect never re-runs to clear it, and
+        // the stale "true" wrongly suppresses a later, unrelated tag-removal reset.
+        if (applyFiredFYRef && fiscalYear !== filters.fiscalYear) applyFiredFYRef.current = true;
         setFilters((prevState) => {
             return {
                 ...prevState,
