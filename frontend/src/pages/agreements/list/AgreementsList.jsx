@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PacmanLoader } from "react-spinners";
@@ -25,8 +25,9 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
-import { ITEMS_PER_PAGE } from "../../../constants";
+import constants, { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
 import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
@@ -69,40 +70,26 @@ const AgreementsList = () => {
     const { data: agreementFilterOptions, isLoading: isLoadingAgreementFilterOptions } =
         useGetAgreementsFilterOptionsQuery({ onlyMy: myAgreementsUrl });
 
-    // Determine fiscal year filter based on selection
-    const hasOtherFilters =
-        filters.portfolio.length > 0 ||
-        filters.projectTitle.length > 0 ||
-        filters.agreementType.length > 0 ||
-        filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0 ||
-        filters.awardType.length > 0;
+    // Derive the dropdown display value and the API-ready FY array from the two FY inputs:
+    // selectedFiscalYear (shortcut dropdown) and filters.fiscalYear (Compare Fiscal Years panel).
+    // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
+    const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
 
-    const getFiscalYearFilter = () => {
-        // If explicit filters are set via filter modal, use those
-        if ((filters.fiscalYear ?? []).length > 0) {
-            // "All FYs" means no fiscal year filter
-            if (filters.fiscalYear.some((fy) => fy.id === "all")) {
-                return [];
-            }
-            return filters.fiscalYear;
-        }
-        // If other filters are active but no fiscal year was selected, don't default
-        if (hasOtherFilters) {
-            return [];
-        }
-        // If "All" is selected from the page dropdown, no fiscal year filter
-        if (selectedFiscalYear === "All") {
-            return [];
-        }
-        // Otherwise, use the selected fiscal year
-        return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
-    };
+    // A single Compare FY can fall outside the default rolling window (constants.fiscalYears),
+    // e.g. an older year that still has agreements. Include every year the API knows about so
+    // the <select>'s value always matches a rendered <option>.
+    const fiscalYearOptions = mergeFiscalYearOptions(constants.fiscalYears, agreementFilterOptions?.fiscal_years);
+
+    // Child components (AgreementsTable, AgreementsTableLoading, SummaryCardsSection, export)
+    // only understand "All" or a specific year string — they have no "Multi" branch. Under
+    // Multi, show lifetime_obligated columns and "Multiple Years" labels, same as "All".
+    const isMultiFY = dropdownValue === "Multi";
+    const displayFY = isMultiFY ? "All" : dropdownValue;
 
     const queryParams = {
         filters: {
             ...filters,
-            fiscalYear: getFiscalYearFilter()
+            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
         },
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
@@ -133,32 +120,69 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Sync fiscal year filter modal with page-level dropdown
-    // When "All FYs" is selected in the filter modal, change page dropdown to "All"
+    // Track when the dropdown shortcut itself clears filters.fiscalYear so the effect
+    // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
+    const dropdownChangedFYRef = useRef(false);
+
+    // Track when applyFilter caused the emptying so the effect below doesn't revert
+    // selectedFiscalYear to "All" — Apply means "fall back to the current dropdown year",
+    // not "reset to All". This ref is set by useAgreementsFilterButton's applyFilter.
+    const applyFiredFYRef = useRef(false);
+
+    // Track the previous length to distinguish "non-zero → zero" (tag removal) from
+    // a no-op write of a new [] reference when the array was already empty.
+    const prevFYLengthRef = useRef(0);
+
+    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown
+    // or Apply), revert selectedFiscalYear to "All" per the business rule.
+    // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
     useEffect(() => {
-        if (filters.fiscalYear && filters.fiscalYear.length > 0) {
-            const hasAllFYs = filters.fiscalYear.some((fy) => fy.id === "all");
-
-            if (hasAllFYs && selectedFiscalYear !== "All") {
-                setSelectedFiscalYear("All");
-            }
+        const normalizedFYs = filters.fiscalYear ?? [];
+        const prevLen = prevFYLengthRef.current;
+        prevFYLengthRef.current = normalizedFYs.length;
+        if (dropdownChangedFYRef.current) {
+            dropdownChangedFYRef.current = false;
+            return;
         }
-    }, [filters.fiscalYear, selectedFiscalYear]);
+        if (applyFiredFYRef.current) {
+            applyFiredFYRef.current = false;
+            return;
+        }
+        if (normalizedFYs.length === 0 && prevLen > 0) {
+            setSelectedFiscalYear("All");
+        }
+    }, [filters.fiscalYear]);
 
-    // Handle fiscal year change - clear filters when changing fiscal year selection
-    const handleChangeFiscalYear = (newValue) => {
-        setFilters({
-            portfolio: [],
-            fiscalYear: [],
-            projectTitle: [],
-            agreementType: [],
-            agreementName: [],
-            contractNumber: [],
-            awardType: []
-        });
-        setSelectedFiscalYear(newValue);
-        if (newValue === "All" && sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
+    // FY_OBLIGATED is meaningless when showing all/multiple fiscal years — reset the sort
+    // to the default whenever that happens. Shared by the displayFY effect below (covers
+    // panel sentinel, Multi, and tag removal) and handleChangeFiscalYear (covers the dropdown
+    // re-selecting "All" while already on "All", which isn't a displayFY transition).
+    const resetFYObligatedSort = () => {
+        if (sortCondition === tableSortCodes.agreementCodes.FY_OBLIGATED) {
             setSortConditions(tableSortCodes.agreementCodes.AGREEMENT, false);
+        }
+    };
+
+    // Reset FY_OBLIGATED sort whenever displayFY enters "All" mode (All FYs or Multi)
+    // from any cause — dropdown shortcut, panel sentinel, Multi, or tag removal.
+    const prevDisplayFYRef = useRef(displayFY);
+    useEffect(() => {
+        const prev = prevDisplayFYRef.current;
+        prevDisplayFYRef.current = displayFY;
+        if (displayFY === "All" && prev !== "All") {
+            resetFYObligatedSort();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displayFY]);
+
+    // Handle fiscal year shortcut dropdown change.
+    // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
+    const handleChangeFiscalYear = (newValue) => {
+        dropdownChangedFYRef.current = true;
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+        setSelectedFiscalYear(newValue);
+        if (newValue === "All") {
+            resetFYObligatedSort();
         }
     };
 
@@ -207,7 +231,7 @@ const AgreementsList = () => {
                     getAllAgreementsTrigger({
                         filters: {
                             ...filters,
-                            fiscalYear: getFiscalYearFilter()
+                            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
                         },
                         onlyMy: myAgreementsUrl,
                         sortConditions: sortCondition,
@@ -239,8 +263,9 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const isAllFY = selectedFiscalYear === "All";
-            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${selectedFiscalYear.slice(-2)} Obligated`;
+            // displayFY collapses "Multi" → "All" so export columns match the table columns.
+            const isAllFY = displayFY === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${displayFY.slice(-2)} Obligated`;
 
             // The "Lifetime Obligated" column is omitted when "All" FYs is selected because the
             // fyLabel column above already shows lifetime_obligated — this avoids a duplicate
@@ -372,6 +397,7 @@ const AgreementsList = () => {
                                         setFilters={setFilters}
                                         agreementFilterOptions={agreementFilterOptions}
                                         isLoadingOptions={isLoadingAgreementFilterOptions}
+                                        applyFiredFYRef={applyFiredFYRef}
                                     />
                                 </div>
                             </div>
@@ -379,8 +405,9 @@ const AgreementsList = () => {
                     }
                     FYSelect={
                         <FiscalYear
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={dropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
+                            fiscalYears={fiscalYearOptions}
                             showAllOption={true}
                         />
                     }
@@ -388,14 +415,14 @@ const AgreementsList = () => {
                         !isTableLoading &&
                         totalCount > 0 && (
                             <AgreementSummaryCardsSection
-                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                fiscalYear={isMultiFY ? "Multi" : displayFY === "All" ? "All FYs" : `FY ${displayFY}`}
                                 totals={totals}
                             />
                         )
                     }
                     TableSection={
                         isTableLoading ? (
-                            <AgreementsTableLoading selectedFiscalYear={selectedFiscalYear} />
+                            <AgreementsTableLoading selectedFiscalYear={displayFY} />
                         ) : (
                             <>
                                 <AgreementsTable
@@ -403,7 +430,7 @@ const AgreementsList = () => {
                                     sortConditions={sortCondition}
                                     sortDescending={sortDescending}
                                     setSortConditions={setSortConditions}
-                                    selectedFiscalYear={selectedFiscalYear}
+                                    selectedFiscalYear={displayFY}
                                 />
                                 {totalPages > 1 && (
                                     <div className="margin-top-3">
