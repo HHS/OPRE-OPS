@@ -1272,17 +1272,28 @@ def _get_all_matching_ids(
         id_queries.append(q)
 
     union_subq = union_all(*id_queries).subquery()
-    id_query = select(union_subq.c.id).distinct()
 
-    # Apply SQL-level ORDER BY for sortable conditions
+    # Apply SQL-level ORDER BY for sortable conditions.
+    # PostgreSQL requires ORDER BY columns to appear in the SELECT list when using DISTINCT.
+    # Strategy: join the agreement table to get the sort column, include it in SELECT,
+    # then wrap in a subquery and select only id from the outer query.
     if _is_sql_sortable(sort_condition):
         agreement_alias = Agreement.__table__
-        id_query = id_query.join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
         if sort_condition == AgreementSortCondition.AGREEMENT:
-            order_col = func.lower(agreement_alias.c.name)
+            sort_col = func.lower(agreement_alias.c.name).label("sort_key")
         else:  # TYPE
-            order_col = agreement_alias.c.agreement_type
-        id_query = id_query.order_by(order_col.desc() if sort_descending else order_col)
+            sort_col = agreement_alias.c.agreement_type.label("sort_key")
+
+        inner = (
+            select(union_subq.c.id, sort_col)
+            .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
+            .distinct()
+            .subquery()
+        )
+        order_expr = inner.c.sort_key.desc() if sort_descending else inner.c.sort_key
+        id_query = select(inner.c.id).order_by(order_expr)
+    else:
+        id_query = select(union_subq.c.id).distinct()
 
     rows = session.execute(id_query).all()
     return [row[0] for row in rows]
