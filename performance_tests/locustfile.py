@@ -141,8 +141,11 @@ class OPSAPIUser(HttpUser):
 
     @task(10)
     def list_agreements(self):
-        """GET /api/v1/agreements/ - List all agreements."""
-        self.client.get("/api/v1/agreements/", name="/api/v1/agreements/")
+        """GET /api/v1/agreements/ - List agreements (first page, matching frontend params)."""
+        self.client.get(
+            "/api/v1/agreements/?limit=25&offset=0&include_fees=true&sort_conditions=AGREEMENT&sort_descending=false",
+            name="/api/v1/agreements/",
+        )
 
     @task(5)
     def get_agreement_detail(self):
@@ -236,7 +239,7 @@ class OPSAPIUser(HttpUser):
         if SHARED_CACHE["project_ids"]:
             project_id = random.choice(SHARED_CACHE["project_ids"])
             self.client.get(
-                f"/api/v1/agreements/?project_id={project_id}",
+                f"/api/v1/agreements/?project_id={project_id}&limit=25&offset=0&include_fees=true",
                 name="/api/v1/agreements/?project_id=[id]",
             )
 
@@ -674,18 +677,10 @@ class OPSAPIUser(HttpUser):
             )
 
     @task(20)
-    def get_first_page_of_budget_line_items(self):
-        """GET /api/v1/budget-line-items/?limit=10&offset=0 - Get first page of budget line items."""
-        self.client.get(
-            "/api/v1/budget-line-items/?limit=10&offset=0",
-            name="/api/v1/budget-line-items/?limit=10&offset=0",
-        )
-
-    @task(20)
     def get_budget_line_items(self):
-        """GET /api/v1/budget-line-items/ - Get all budget line items."""
+        """GET /api/v1/budget-line-items/ - Get budget line items (first page, matching frontend params)."""
         self.client.get(
-            "/api/v1/budget-line-items/",
+            "/api/v1/budget-line-items/?limit=25&offset=0&include_fees=true&enable_obe=false&sort_conditions=AGREEMENT&sort_descending=false",
             name="/api/v1/budget-line-items/",
         )
 
