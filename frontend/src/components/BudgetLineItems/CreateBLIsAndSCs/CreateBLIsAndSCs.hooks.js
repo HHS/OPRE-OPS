@@ -412,10 +412,24 @@ const useCreateBLIsAndSCs = (
     const sendExistingBLIsToApproval = React.useCallback(
         async (existingBudgetLineItems, redirectUrl) => {
             try {
-                const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
-                const results = await Promise.allSettled(updatePromises);
-
-                resetForm();
+                // Only genuinely unexpected errors (not the awaited-and-handled per-BLI
+                // rejections below) should land here — otherwise the partial-failure alert
+                // set further down gets immediately overwritten by the generic one here.
+                let results;
+                try {
+                    const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
+                    results = await Promise.allSettled(updatePromises);
+                    resetForm();
+                } catch (error) {
+                    console.error("Error updating budget lines:", error);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while updating budget lines. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                    throw error;
+                }
 
                 const rejected = results.filter((result) => result.status === "rejected");
                 if (rejected.length > 0) {
@@ -427,24 +441,15 @@ const useCreateBLIsAndSCs = (
                         redirectUrl: "/error"
                     });
                     throw new Error("Error sending agreement edits");
-                } else {
-                    setAlert({
-                        type: "success",
-                        heading: "Changes Sent to Approval",
-                        message:
-                            "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                        redirectUrl
-                    });
                 }
-            } catch (error) {
-                console.error("Error updating budget lines:", error);
+
                 setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while updating budget lines. Please try again.",
-                    redirectUrl: "/error"
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl
                 });
-                throw error;
             } finally {
                 setIsEditMode(false);
                 scrollToTop();

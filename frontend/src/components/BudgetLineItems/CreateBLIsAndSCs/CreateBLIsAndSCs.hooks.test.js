@@ -1255,6 +1255,66 @@ describe("useCreateBLIsAndSCs", () => {
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
         });
+
+        it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects (regression)", async () => {
+            // Before this fix, sendExistingBLIsToApproval's own throw (for the partial-failure
+            // branch below) re-entered its own catch block, which immediately overwrote the
+            // "Error Sending Agreement Edits" alert with a generic "An error occurred..." one.
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("network error")) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            let savePromise;
+            act(() => {
+                // suppressErrorAlert=true isolates the assertion to the alert set inside
+                // sendExistingBLIsToApproval, rather than handleSave's own outer catch.
+                savePromise = result.current.handleSave(false, true, true);
+                // Attach a catch immediately so Node doesn't flag this as an unhandled
+                // rejection during the microtask window before the awaits below run.
+                savePromise.catch(() => {});
+            });
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+            });
+
+            await act(async () => {
+                await result.current.modalProps.handleConfirm();
+            });
+
+            await act(async () => {
+                await savePromise.catch(() => {});
+            });
+
+            const errorAlerts = setAlertMock.mock.calls.map((c) => c[0]).filter((a) => a.type === "error");
+            expect(errorAlerts).toHaveLength(1);
+            expect(errorAlerts[0].heading).toBe("Error Sending Agreement Edits");
+        });
     });
 
     it("redirects to the blocker's pending destination when saved via the unsaved-changes modal (regression: blocker.nextLocation typo)", async () => {
