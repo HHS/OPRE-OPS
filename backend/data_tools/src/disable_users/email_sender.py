@@ -2,8 +2,9 @@
 
 Message text lives in email_content.py -- this file only builds the ACS message payload,
 sends it, and logs who each email went to and why. This module itself never catches send
-failures -- disable_users.py's caller decides whether to catch and continue (it does, for the
-per-recipient batch loop) or let a failure propagate (it does, for the admin summary send).
+failures -- disable_users.py's caller catches around every call it makes here (both the admin
+summary and each individual notification), logs each failure, and still raises once at the end
+if anything failed, so the job exits non-zero without letting one bad send block the rest.
 
 Takes an already-constructed EmailClient (not a connection string) so the raw ACS secret never
 sits in *this module's* stack frames. That alone is not a complete guarantee against leaking via

@@ -64,13 +64,20 @@ class AzureConfig(DataToolsConfig):
 
         return cutoff_days
 
-    # `or None` coerces an empty-string env var to None (for an unset var, os.getenv already
-    # returns None, so this is a no-op there) so callers can rely on a clean falsy check rather
-    # than an empty string.
     @property
     def acs_connection_string(self) -> str | None:
-        return os.getenv("ACS_CONNECTION_STRING") or None
+        connection_string = os.getenv("ACS_CONNECTION_STRING")
+
+        if not connection_string:
+            raise ValueError("Missing environment variable for ACS_CONNECTION_STRING.")
+
+        return connection_string
 
     @property
     def email_sender_address(self) -> str | None:
-        return os.getenv("EMAIL_SENDER_ADDRESS") or None
+        sender_address = os.getenv("EMAIL_SENDER_ADDRESS")
+
+        if not sender_address:
+            raise ValueError("Missing environment variable for EMAIL_SENDER_ADDRESS.")
+
+        return sender_address

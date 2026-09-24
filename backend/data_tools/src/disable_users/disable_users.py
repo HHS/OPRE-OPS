@@ -81,9 +81,8 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
         setup_triggers(se, system_admin)
 
         logger.info("Fetching inactive users.")
-        results = []
+        stale_users = []
         all_users = se.execute(select(User)).scalars().all()
-        users_by_id = {user.id: user for user in all_users}
         cutoff_date = datetime.now() - timedelta(days=60)
         for user in all_users:
             latest_session = get_latest_user_session(user_id=user.id, session=se)
@@ -93,24 +92,26 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
                 never_logged_in = latest_session is None
 
                 if (never_logged_in and stale_user) or (stale_session and stale_user):
-                    results.append(user.id)
+                    stale_users.append(user)
 
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
-        user_ids = [uid for uid in results if uid not in excluded_ids]
+        disabled_users = [user for user in stale_users if user.id not in excluded_ids]
 
-        if not user_ids:
+        if not disabled_users:
             logger.info("No inactive users found.")
             return
 
+        user_ids = [user.id for user in disabled_users]
         logger.info("Inactive users found: {}".format(user_ids))
 
+        divisions_by_id = {division.id: division.name for division in se.execute(select(Division)).scalars().all()}
         disabled_user_details = [
             {
-                "email": users_by_id[uid].email,
-                "full_name": users_by_id[uid].display_name,
-                "division_id": users_by_id[uid].division,
+                "email": user.email,
+                "full_name": user.full_name or "N/A",
+                "division": divisions_by_id.get(user.division, "N/A"),
             }
-            for uid in user_ids
+            for user in disabled_users
         ]
 
         # Snapshot active USER_ADMIN recipients before disabling anyone -- an admin who is
@@ -124,11 +125,11 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
 
         se.commit()
 
-        send_disable_notifications(se, config, disabled_user_details, admin_emails)
+        send_disable_notifications(config, disabled_user_details, admin_emails)
 
 
 def send_disable_notifications(
-    se: Session, config: DataToolsConfig, disabled_user_details: list[dict], admin_emails: list[str]
+    config: DataToolsConfig, disabled_user_details: list[dict], admin_emails: list[str]
 ) -> None:
     """Email a summary to all active USER_ADMINs, then email each disabled user individually.
 
@@ -136,22 +137,24 @@ def send_disable_notifications(
     already happened, so "these accounts were disabled" is already true, and there's no downside
     to sending the compliance-relevant admin summary before the individual notifications.
 
-    Each individual send is attempted independently -- one bad recipient (or a transient ACS
-    error) is logged and collected, but does not stop the remaining sends in the batch. If any
-    individual sends failed, a single RuntimeError is raised after all of them have been
-    attempted, so the job still exits non-zero (and the failure is visible), but a single bad
-    recipient can no longer silently drop every notification after it in the batch.
+    Every send -- the admin summary and each individual notification -- is attempted
+    independently: a failure is logged and collected, but never stops the remaining sends. If
+    anything failed, a single RuntimeError is raised after every send has been attempted, so the
+    job still exits non-zero (and the failure is visible), but one bad send can no longer silently
+    prevent every other notification from going out.
 
     ``admin_emails`` must be captured by the caller before any user in this run was disabled (see
     the comment in update_disabled_users_status) so a just-disabled admin isn't silently dropped
     from the recipient list. ``disabled_user_details`` must be non-empty (the caller's early
-    return already guarantees this). No-ops (with a log line) unless ACS email is configured --
-    this keeps local/dev/pytest runs from attempting to send mail.
+    return already guarantees this), and each dict must already have a resolved "division" name
+    (not a raw FK) -- this function has no DB access. No-ops (with a log line) when
+    ``config.acs_connection_string``/``email_sender_address`` is None -- this keeps local/dev/
+    pytest runs from attempting to send mail. AzureConfig never returns None for either property
+    (it raises instead if unset), so that no-op path is only reachable for local/dev/pytest.
 
-    Note: this is not idempotent. If the admin summary send fails, or if an individual send is
-    still failing after the batch completes (see above), already-disabled users stay disabled but
-    some notifications may never go out -- re-running the job will not resend them, since those
-    users are no longer selected as stale. The job's non-zero exit is the signal to investigate
+    Note: this is not idempotent. If a send fails, already-disabled users stay disabled but some
+    notifications may never go out -- re-running the job will not resend them, since those users
+    are no longer selected as stale. The job's non-zero exit is the signal to investigate
     manually.
     """
     if not config.acs_connection_string or not config.email_sender_address:
@@ -164,32 +167,26 @@ def send_disable_notifications(
     sender = config.email_sender_address
     email_client = EmailClient.from_connection_string(config.acs_connection_string)
 
+    failures = []
+
     if not admin_emails:
         logger.warning("No active USER_ADMINs found; skipping admin summary email.")
     else:
-        divisions_by_id = {division.id: division.name for division in se.execute(select(Division)).scalars().all()}
-        summary_rows = [
-            {
-                "full_name": user["full_name"],
-                "email": user["email"],
-                "division": divisions_by_id.get(user["division_id"], "N/A"),
-            }
-            for user in disabled_user_details
-        ]
-        send_admin_summary_email(email_client, sender, admin_emails, summary_rows)
+        try:
+            send_admin_summary_email(email_client, sender, admin_emails, disabled_user_details)
+        except Exception as e:
+            logger.error(f"Failed to send admin summary email: {e}")
+            failures.append("admin summary")
 
-    failed_recipients = []
     for user in disabled_user_details:
         try:
             send_disabled_user_email(email_client, sender, user["email"])
         except Exception as e:
             logger.error(f"Failed to send disable notification email to {user['email']}: {e}")
-            failed_recipients.append(user["email"])
+            failures.append(user["email"])
 
-    if failed_recipients:
-        raise RuntimeError(
-            f"Failed to send disable notification email to {len(failed_recipients)} user(s): {failed_recipients}"
-        )
+    if failures:
+        raise RuntimeError(f"Failed to send {len(failures)} disable notification(s): {failures}")
 
 
 if __name__ == "__main__":
