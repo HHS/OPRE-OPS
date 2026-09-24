@@ -48,16 +48,18 @@ These are the endpoints most relevant to the planned improvements.
 
 | Metric | Value |
 |---|---|
-| Request count | 58 |
+| Request count | 61 |
 | Failures | 0 |
-| Median | 880ms |
-| Average | 968ms |
+| Median | 1,000ms |
+| Average | 1,088ms |
 | p90 | 1,400ms |
 | p95 | 1,500ms |
-| p99 | 1,600ms |
-| Max | 1,576ms |
+| p99 | 1,800ms |
+| Max | 1,766ms |
 
-**Root causes:** No DB-level LIMIT/OFFSET (5 full-table scans, Python slice), N+1 lazy loads in `_compute_agreement_totals()` before pagination.
+> **Note:** These numbers are from the realistic baseline run with frontend-matching params (`limit=25&offset=0&include_fees=true`). Response is ~470KB — all 24 agreements are returned because the local dataset fits within the limit. DB-level LIMIT/OFFSET will reduce this at production scale.
+
+**Root causes:** No DB-level LIMIT/OFFSET (5 full-table scans, Python slice), all BLIs loaded before pagination to compute summary totals.
 
 ### Agreement Detail
 
@@ -77,16 +79,18 @@ High variance — occasional very slow outliers.
 
 | Metric | Value |
 |---|---|
-| Request count | 117 |
+| Request count | 120 |
 | Failures | 0 |
-| Median | 62ms |
-| Average | 74ms |
-| p90 | 110ms |
-| p95 | 170ms |
-| p99 | 210ms |
-| Max | 231ms |
+| Median | 82ms |
+| Average | 92ms |
+| p90 | 120ms |
+| p95 | 190ms |
+| p99 | 220ms |
+| Max | 227ms |
 
 Already well-optimized via eager loading (`selectinload`/`joinedload`). Still no DB-level LIMIT/OFFSET but less impactful due to single query.
+
+> **Note:** These numbers are from the realistic baseline run using frontend-matching params (`limit=25&offset=0&include_fees=true&enable_obe=false`).
 
 ### Other Notable Endpoints
 
