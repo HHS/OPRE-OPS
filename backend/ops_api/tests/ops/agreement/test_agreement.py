@@ -2085,9 +2085,13 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract, 
     assert data["created_by"] is test_contract.created_by
 
 
-def test_agreements_patch_legacy_contract_with_null_service_requirement_type_returns_400(
+def test_agreements_patch_legacy_contract_with_explicit_null_service_requirement_type_returns_400(
     auth_client, loaded_db, legacy_contract_without_service_requirement_type, test_admin_user, app_ctx
 ):
+    """Characterization (#6291): the frontend now blocks Save on edit for CONTRACT/AA agreements
+    with a null service_requirement_type, because the backend rejects it here. If this rule ever
+    changes, revisit AgreementEditFormSuite.js and the on-load validation effect in
+    AgreementEditForm.hooks.js — they assume this backend behavior stays as-is."""
     response = auth_client.patch(
         url_for("api.agreements-item", id=legacy_contract_without_service_requirement_type.id),
         json={"project_officer_id": test_admin_user.id, "service_requirement_type": None},
