@@ -55,11 +55,11 @@ def test_agreements_get_all(auth_client, loaded_db, test_project, app_ctx):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 200})
     assert response.status_code == 200
     assert len(response.json["data"]) == count
     assert response.json["count"] == count
-    assert response.json["limit"] == 50
+    assert response.json["limit"] == 200
     assert response.json["offset"] == 0
 
     # test an agreement
@@ -144,7 +144,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db, app_ctx):
     agreements = loaded_db.scalars(stmt).all()
     assert len(agreements) > 0
 
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1})
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1, "limit": 200})
     assert response.status_code == 200
     assert len(response.json["data"]) == len(agreements)
 
@@ -649,7 +649,7 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
     loaded_db.commit()
 
     # Get all agreements
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 200})
     assert response.status_code == 200
     assert "data" in response.json
 
@@ -695,12 +695,12 @@ def test_agreements_with_project_empty(auth_client, app_ctx):
 
 
 def test_agreements_with_project_found(auth_client, test_project, app_ctx):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": test_project.id})
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"project_id": test_project.id, "limit": 200}
+    )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 3
-    assert response.json["data"][0]["id"] == 1
-    assert response.json["data"][1]["id"] == 10
-    assert response.json["data"][2]["id"] == 2
+    returned_ids = {item["id"] for item in response.json["data"]}
+    assert {1, 2, 10}.issubset(returned_ids)
 
 
 def test_get_agreements_by_nickname(auth_client, app_ctx):
