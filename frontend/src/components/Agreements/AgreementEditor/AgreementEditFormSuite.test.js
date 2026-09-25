@@ -111,6 +111,17 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
         expect(result.hasErrors("service_requirement_type")).toBe(true);
     });
 
+    it("fails a null service_requirement_type when creating a new non-CONTRACT/AA agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
+            service_requirement_type: null,
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
     it("fails a null service_requirement_type when editing an existing CONTRACT", () => {
         const result = suite.run({
             ...validContractData,
@@ -134,8 +145,8 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
     it("does not fail a null service_requirement_type when editing an existing non-CONTRACT/AA agreement", () => {
         const result = suite.run({
             ...validContractData,
-            agreement_type: "PARTNER",
-            "agreement-type-filter": "PARTNER",
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
             service_requirement_type: null,
             isNewAgreement: false
         });
