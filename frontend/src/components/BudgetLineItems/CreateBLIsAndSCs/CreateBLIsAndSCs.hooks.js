@@ -1,4 +1,3 @@
-import cryptoRandomString from "crypto-random-string";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useBlocker, useNavigate } from "react-router-dom";
@@ -16,24 +15,17 @@ import {
     useUpdateGrantNumberMutation,
     useUpdateServicesComponentMutation
 } from "../../../api/opsAPI";
-import {
-    cleanAgreementForApi,
-    cleanBudgetLineItemForApi,
-    cleanBudgetLineItemsForApi,
-    formatTeamMember,
-    isNotDevelopedYet
-} from "../../../helpers/agreement.helpers";
+import { cleanBudgetLineItemForApi, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import {
     BLI_STATUS,
     BLILabel,
-    budgetLinesTotal,
     getNonDRAFTBudgetLines,
     groupByGrantNumber,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
-import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
+import { formatDateForScreen } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import { useGetLoggedInUserFullName, useIsUserBudgetTeam } from "../../../hooks/user.hooks";
@@ -45,33 +37,45 @@ import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
 import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
+import {
+    attachScPeriodToBudgetLines,
+    buildDuplicatedBudgetLineItem,
+    buildEditedBudgetLinePayload,
+    buildNewAgreementBudgetPayload,
+    buildNewBudgetLineItem,
+    buildSaveSuccessAlert,
+    computeBudgetLinePageErrors,
+    feesForCards,
+    getBudgetLinesUrl,
+    getEffectiveScDateRange,
+    isDeletionRoutedToApproval,
+    linkBudgetLinesToApi,
+    partitionNewAndChanged,
+    stripFormOnlyFields,
+    subTotalForCards,
+    totalsForCards
+} from "./CreateBLIsAndSCs.helpers";
+import useCreateBLIsAndSCsSaveBlocker from "./useCreateBLIsAndSCsSaveBlocker";
 
 /**
- * Whether deleting this budget line routes through an approval change request instead of an
- * immediate hard delete. Mirrors the backend delete contract: DRAFT (or a super user) is hard-
- * deleted (HTTP 200); a non-super delete of a PLANNED/IN_EXECUTION line creates a deletion change
- * request (HTTP 202) and the line is left intact until approved. We infer this from the line's
- * status + the user's role (the same way the edit-via-change-request messaging is inferred), since
- * the delete mutation response does not surface the HTTP status code.
- *
- * Only PLANNED and IN_EXECUTION are approval-routed. Other statuses can't reach the delete control
- * here (deletability mirrors editability — EDITABLE_STATUSES is DRAFT/PLANNED/IN_EXECUTION — so
- * OBLIGATED, PLANNED_MOD, in-review, and OBE lines are not deletable in the wizard), so this returns
- * false for them, matching the DRAFT/super immediate-delete branch.
- * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line being deleted.
- * @param {boolean} isSuperUser - Whether the acting user is a super user.
- * @returns {boolean} True if the deletion routes to an approval change request.
+ * Create and update services components / grant numbers, returning the newly-created items
+ * and the already-persisted items. Takes the RTK mutation trigger functions as parameters since
+ * new vs. changed items are persisted via different endpoints depending on entity type
+ * (services components vs. grant numbers).
+ * @template T
+ * @param {T[]} items - Services components or grant numbers.
+ * @param {Function} addMutation - The RTK "add" mutation trigger (e.g. addServicesComponent).
+ * @param {Function} updateMutation - The RTK "update" mutation trigger (e.g. updateServicesComponent).
+ * @returns {Promise<{createdItems: T[], existingItems: T[]}>}
  */
-export const isDeletionRoutedToApproval = (budgetLine, isSuperUser) => {
-    if (isSuperUser) return false;
-    return budgetLine?.status === BLI_STATUS.PLANNED || budgetLine?.status === BLI_STATUS.EXECUTING;
+const persistPartitionedEntities = async (items, addMutation, updateMutation) => {
+    const { newItems, existingItems, changedItems } = partitionNewAndChanged(items);
+    const createdItems = await Promise.all(newItems.map((item) => addMutation(stripFormOnlyFields(item)).unwrap()));
+    await Promise.all(
+        changedItems.map((item) => updateMutation({ id: item.id, data: stripFormOnlyFields(item) }).unwrap())
+    );
+    return { createdItems, existingItems };
 };
-
-/**
- * @param {number} agreementId - The id of the agreement.
- * @returns {string} The path to the agreement's budget lines page.
- */
-const getBudgetLinesUrl = (agreementId) => `/agreements/${agreementId}/budget-lines`;
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -210,15 +214,10 @@ const useCreateBLIsAndSCs = (
     // All SCs (saved or unsaved) carry period_start/period_end in YYYY-MM-DD format.
     // Unsaved SCs also have popStartDate/popEndDate (MM/DD/YYYY) from the form, but
     // period_start/period_end is always populated by the time the SC is dispatched.
-    const effectiveScStartDate = React.useMemo(() => {
-        const dates = servicesComponents.map((sc) => sc.period_start).filter(Boolean);
-        return dates.length > 0 ? dates.reduce((min, d) => (d < min ? d : min)) : null;
-    }, [servicesComponents]);
-
-    const effectiveScEndDate = React.useMemo(() => {
-        const dates = servicesComponents.map((sc) => sc.period_end).filter(Boolean);
-        return dates.length > 0 ? dates.reduce((max, d) => (d > max ? d : max)) : null;
-    }, [servicesComponents]);
+    const { start: effectiveScStartDate, end: effectiveScEndDate } = React.useMemo(
+        () => getEffectiveScDateRange(servicesComponents),
+        [servicesComponents]
+    );
 
     // Disable this blocker once the wizard advances past step 0. The review-screen
     // caller (EditAgreementAndBudgetLines) never passes currentStep, so it stays 0 and
@@ -252,19 +251,10 @@ const useCreateBLIsAndSCs = (
     // via linkBliToSc, also keyed by number); matching on the stale id here would validate against
     // the BLI's OLD SC window while it's grouped under the new one, producing a spurious
     // "outside PoP" error. Fall back to the id only when no number is present (e.g. undecorated data).
-    const budgetLinesWithScPeriod = React.useMemo(() => {
-        return tempBudgetLines.map((bli) => {
-            const sc =
-                bli.services_component_number != null
-                    ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
-                    : servicesComponents.find((sc) => sc.id === bli.services_component_id);
-            return {
-                ...bli,
-                sc_period_start: sc?.period_start ?? null,
-                sc_period_end: sc?.period_end ?? null
-            };
-        });
-    }, [tempBudgetLines, servicesComponents]);
+    const budgetLinesWithScPeriod = React.useMemo(
+        () => attachScPeriodToBudgetLines(tempBudgetLines, servicesComponents),
+        [tempBudgetLines, servicesComponents]
+    );
 
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(budgetLinesWithScPeriod));
@@ -293,53 +283,23 @@ const useCreateBLIsAndSCs = (
               agreement_type: selectedAgreement?.agreement_type
           })
         : pageSuiteResult;
-    const pageErrors = res.getErrors();
     // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
     // already renders its own "This is required information" message and red border above its accordion
     // in review mode. Exclude those BLIs' errors here so the same BLI doesn't surface two identical
     // messages (page-level + per-accordion) (OPS-6094). Derive the ids from the SAME grouped array the
     // accordion renders from, so the suppression always stays in lockstep with what shows the bucket-0
     // message (both read the same state, so there's no transient mismatch).
-    const unassociatedGroup = isGrant
-        ? groupedBudgetLinesByGrantNumber.find((group) => group.grantNumberNumber === 0)
-        : groupedBudgetLinesByServicesComponent.find((group) => group.servicesComponentNumber === 0);
-    const unassociatedBliIds = new Set(
-        isReviewMode ? (unassociatedGroup?.budgetLines ?? []).map((bli) => String(bli.id)) : []
-    );
-    const bliIdFromErrorKey = (key) => key.match(/^Budget line item \((.+)\)$/)?.[1] ?? null;
-    // Filter page errors to only include "Budget line item" errors (from associated BLIs) and
-    // consolidate into a single message.
-    const budgetLineErrors = Object.entries(pageErrors).filter(
-        (error) => error[0].includes("Budget line item") && !unassociatedBliIds.has(bliIdFromErrorKey(error[0]))
-    );
-
-    const budgetLinePageErrors = budgetLineErrors.length > 0 ? [["This is required information"]] : [];
-    const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
+    const { budgetLinePageErrors, budgetLinePageErrorsExist } = computeBudgetLinePageErrors({
+        pageErrors: res.getErrors(),
+        isGrant,
+        groupedByGrantNumber: groupedBudgetLinesByGrantNumber,
+        groupedByServicesComponent: groupedBudgetLinesByServicesComponent,
+        isReviewMode
+    });
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
     const nonDraftBudgetLines = notDraftBLIs;
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
-    /**
-     * Get the total fees for the cards
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The total fees
-     */
-    const feesForCards = (budgetLines) =>
-        budgetLines.reduce((totalFees, budgetLine) => totalFees + (budgetLine.fees || 0), 0);
-
-    /**
-     * Get the sub total for the cards
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The sub total
-     * */
-    const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
-    /**
-     * Get the totals for the cards
-     * @param {number} subTotal - The sub total
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines - The budget lines
-     * @returns {number} - The total
-     * */
-    const totalsForCards = (subTotal, budgetLines) => subTotal + feesForCards(budgetLines);
 
     /**
      * NOTE: 1st useCallback in this file
@@ -403,66 +363,6 @@ const useCreateBLIsAndSCs = (
 
     /**
      * NOTE: 3rd useCallback in this file
-     * function to create a message for the alert
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} tempBudgetLines - The temporary budget lines
-     * @returns {string} - The message(s) to display in the Alert in bullet points
-     */
-    const createBudgetChangeMessages = React.useCallback(
-        (tempBudgetLines) => {
-            const budgetChangeMessages = new Set();
-            const fieldsToCheck = ["date_needed", "can_id", "amount"];
-
-            tempBudgetLines.forEach((tempBudgetLine) => {
-                const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
-                const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
-
-                fieldsToCheck.forEach((field) => {
-                    if (tempChangeRequest && tempChangeRequest[field] !== undefined) {
-                        let oldValue, newValue;
-
-                        switch (field) {
-                            case "amount":
-                                oldValue = renderField(
-                                    "ContractBudgetLineItem",
-                                    "amount",
-                                    financialSnapshot.originalAmount
-                                );
-                                newValue = renderField("ContractBudgetLineItem", "amount", tempChangeRequest.amount);
-                                budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
-                                break;
-                            case "date_needed":
-                                oldValue = renderField(
-                                    "ContractBudgetLineItem",
-                                    "date_needed",
-                                    financialSnapshot.originalDateNeeded
-                                );
-                                newValue = renderField(
-                                    "ContractBudgetLineItem",
-                                    "date_needed",
-                                    tempChangeRequest.date_needed
-                                );
-                                budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
-                                break;
-                            case "can_id":
-                                oldValue =
-                                    cans?.find((can) => can.id === financialSnapshot.originalCanID)?.display_name ||
-                                    "Unknown";
-                                newValue =
-                                    cans?.find((can) => can.id === tempChangeRequest.can_id)?.display_name || "Unknown";
-                                budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
-                                break;
-                        }
-                    }
-                });
-            });
-
-            return Array.from(budgetChangeMessages).join("\n");
-        },
-        [cans]
-    );
-
-    /**
-     * NOTE: 4th useCallback in this file
      * Handle saving the budget lines without financial snapshot changes
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
@@ -501,18 +401,35 @@ const useCreateBLIsAndSCs = (
         datePickerSuite.reset();
     }, []);
     /**
-     * NOTE: 5th useCallback in this file
-     * Handle saving the budget lines with financial snapshot changes via the blocker
+     * NOTE: 4th useCallback in this file
+     * Update the existing budget line items and send them to approval, throwing on any failure.
+     * Shared by the two save paths below — the only thing that differs between them is the
+     * redirect target and whether the call is gated behind a confirmation modal.
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @param {string|undefined} redirectUrl - Where the success alert should redirect to
      * @returns {Promise<void>} - The promise
      */
-    const handleFinancialSnapshotChangesViaBlocker = React.useCallback(
-        async (existingBudgetLineItems) => {
+    const sendExistingBLIsToApproval = React.useCallback(
+        async (existingBudgetLineItems, redirectUrl) => {
             try {
-                const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
-                const results = await Promise.allSettled(updatePromises);
-
-                resetForm();
+                // Only genuinely unexpected errors (not the awaited-and-handled per-BLI
+                // rejections below) should land here — otherwise the partial-failure alert
+                // set further down gets immediately overwritten by the generic one here.
+                let results;
+                try {
+                    const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
+                    results = await Promise.allSettled(updatePromises);
+                    resetForm();
+                } catch (error) {
+                    console.error("Error updating budget lines:", error);
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred while updating budget lines. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                    throw error;
+                }
 
                 const rejected = results.filter((result) => result.status === "rejected");
                 if (rejected.length > 0) {
@@ -524,35 +441,39 @@ const useCreateBLIsAndSCs = (
                         redirectUrl: "/error"
                     });
                     throw new Error("Error sending agreement edits");
-                } else {
-                    setAlert({
-                        type: "success",
-                        heading: "Changes Sent to Approval",
-                        message:
-                            "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                        redirectUrl: blocker.location?.pathname
-                    });
                 }
-            } catch (error) {
-                console.error("Error updating budget lines:", error);
+
                 setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while updating budget lines. Please try again.",
-                    redirectUrl: "/error"
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl
                 });
-                throw error;
             } finally {
                 setIsEditMode(false);
                 scrollToTop();
             }
         },
-        [handleUpdateBLIsToAPI, resetForm, setAlert, setIsEditMode, blocker]
+        [handleUpdateBLIsToAPI, resetForm, setAlert, setIsEditMode]
+    );
+
+    /**
+     * NOTE: 5th useCallback in this file
+     * Handle saving the budget lines with financial snapshot changes via the blocker
+     * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
+    const handleFinancialSnapshotChangesViaBlocker = React.useCallback(
+        (existingBudgetLineItems) => sendExistingBLIsToApproval(existingBudgetLineItems, blocker.location?.pathname),
+        [sendExistingBLIsToApproval, blocker]
     );
 
     /**
      * NOTE: 6th useCallback in this file
-     * Handle saving the budget lines with financial snapshot changes
+     * Handle saving the budget lines with financial snapshot changes, gated behind a
+     * confirmation modal. The modal/promise plumbing stays here (not in sendExistingBLIsToApproval)
+     * since `handleSecondary` needs to resolve without sending anything to approval.
      * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} existingBudgetLineItems - The existing budget line items
      * @returns {Promise<void>} - The promise
      */
@@ -567,44 +488,13 @@ const useCreateBLIsAndSCs = (
                     secondaryButtonText: "Continue Editing",
                     handleConfirm: async () => {
                         try {
-                            const updatePromises = handleUpdateBLIsToAPI(existingBudgetLineItems);
-
-                            const results = await Promise.allSettled(updatePromises);
-
-                            resetForm();
-
-                            const rejected = results.filter((result) => result.status === "rejected");
-                            if (rejected.length > 0) {
-                                console.error(rejected[0].reason);
-                                setAlert({
-                                    type: "error",
-                                    heading: "Error Sending Agreement Edits",
-                                    message: "There was an error sending your edits for approval. Please try again.",
-                                    redirectUrl: "/error"
-                                });
-                                reject(new Error("Error sending agreement edits"));
-                            } else {
-                                setAlert({
-                                    type: "success",
-                                    heading: "Changes Sent to Approval",
-                                    message:
-                                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
-                                    redirectUrl: getBudgetLinesUrl(selectedAgreement?.id)
-                                });
-                                resolve();
-                            }
+                            await sendExistingBLIsToApproval(
+                                existingBudgetLineItems,
+                                getBudgetLinesUrl(selectedAgreement?.id)
+                            );
+                            resolve();
                         } catch (error) {
-                            console.error("Error updating budget lines:", error);
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred while updating budget lines. Please try again.",
-                                redirectUrl: "/error"
-                            });
                             reject(error);
-                        } finally {
-                            setIsEditMode(false);
-                            scrollToTop();
                         }
                     },
                     handleSecondary: () => {
@@ -613,7 +503,7 @@ const useCreateBLIsAndSCs = (
                 });
             });
         },
-        [handleUpdateBLIsToAPI, resetForm, setAlert, selectedAgreement?.id, setIsEditMode, setShowModal, setModalProps]
+        [sendExistingBLIsToApproval, selectedAgreement?.id, setShowModal, setModalProps]
     );
 
     /**
@@ -624,59 +514,35 @@ const useCreateBLIsAndSCs = (
      */
     const showSuccessMessage = React.useCallback(
         (isThereAnyBLIsFinancialSnapshotChanged, savedViaModal) => {
-            const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
-            // Deletions of PLANNED/IN_EXECUTION lines route to an approval change request rather than
-            // deleting immediately, so a save containing any of them was "sent to approval" too — even
-            // when there were no financial-snapshot edits. Deleted lines are already out of
-            // tempBudgetLines, so this signal is derived from deletedBudgetLines separately.
-            // Financial edits write directly for super users AND budget team (canEditDirectly);
-            // only other users route them to approval. Deletions are different: the backend hard-
-            // deletes only for super users / DRAFT, so a budget-team delete of a PLANNED/IN_EXECUTION
-            // line STILL routes to a change request — hence the deletion signal gates on super-user
-            // only (via isDeletionRoutedToApproval), not canEditDirectly.
-            // deletedBudgetLines holds bare ids. Look each up in the original budgetLines prop
-            // to get the authoritative status isDeletionRoutedToApproval needs.
-            const deletionsRoutedToApproval = deletedBudgetLines
-                .map((id) => budgetLines.find((bl) => bl.id === id))
-                .filter((bl) => isDeletionRoutedToApproval(bl, isSuperUser));
-            const deletionChangeMessages = deletionsRoutedToApproval
-                .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
-                .join("\n");
-            const anyChangeSentToApproval =
-                (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
-            const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
             if (continueOverRide) {
                 continueOverRide();
-            } else if (anyChangeSentToApproval) {
-                setAlert({
-                    type: "success",
-                    heading: "Changes Sent to Approval",
-                    message:
-                        `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                        `<strong>Pending Changes:</strong>\n` +
-                        ` ${pendingChanges}`,
-                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
-                });
-            } else {
-                setAlert({
-                    type: "success",
-                    heading: "Agreement Updated",
-                    message: `The agreement ${selectedAgreement?.display_name} has been successfully updated.`,
-                    redirectUrl: savedViaModal ? blocker.location?.pathname : getBudgetLinesUrl(selectedAgreement?.id)
-                });
+                return;
             }
+            setAlert(
+                buildSaveSuccessAlert({
+                    tempBudgetLines,
+                    deletedBudgetLines,
+                    budgetLines,
+                    canEditDirectly,
+                    isSuperUser,
+                    cans,
+                    selectedAgreement,
+                    savedViaModal,
+                    blockerLocationPathname: blocker.location?.pathname,
+                    isThereAnyBLIsFinancialSnapshotChanged
+                })
+            );
         },
         [
             tempBudgetLines,
             deletedBudgetLines,
             budgetLines,
-            continueOverRide,
             canEditDirectly,
             isSuperUser,
+            cans,
+            selectedAgreement,
+            continueOverRide,
             setAlert,
-            selectedAgreement?.id,
-            selectedAgreement?.display_name,
-            createBudgetChangeMessages,
             blocker.location
         ]
     );
@@ -688,28 +554,16 @@ const useCreateBLIsAndSCs = (
     const handleAddBLI = (e) => {
         e.preventDefault();
 
-        const newBudgetLine = {
-            id: cryptoRandomString({ length: 10 }),
-            services_component_number: servicesComponentNumber,
-            grant_number_number: grantNumberNumber,
-            line_description: enteredDescription || "",
-            can_id: selectedCan?.id || null,
-            can: selectedCan || null,
-            canDisplayName: selectedCan?.display_name || null,
-            agreement_id: selectedAgreement?.id || null,
-            agreement: {
-                procurement_shop: {
-                    ...selectedProcurementShop,
-                    current_fee: { fee: selectedProcurementShop?.fee_percentage ?? 0 }
-                }
-            },
-            amount: enteredAmount || 0,
-            status: BLI_STATUS.DRAFT,
-            date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
-            fees: (enteredAmount ?? 0) * ((selectedProcurementShop?.fee_percentage ?? 0) / 100),
-            _meta: { isEditable: true }
-        };
+        const newBudgetLine = buildNewBudgetLineItem({
+            servicesComponentNumber,
+            grantNumberNumber,
+            enteredDescription,
+            selectedCan,
+            selectedAgreement,
+            selectedProcurementShop,
+            enteredAmount,
+            needByDate
+        });
         dispatch({ type: "ADD_BUDGET_LINE_ITEM", payload: newBudgetLine });
         setHasUnsavedChanges(true);
         setAlert({
@@ -745,105 +599,20 @@ const useCreateBLIsAndSCs = (
         // index-based lookup here could compare against the wrong BLI's original values.
         const originalBudgetLine = budgetLines.find((bl) => bl.id === budgetLineBeingEdited);
 
-        // Initialize financialSnapshot
-        const financialSnapshot = {
-            originalAmount: originalBudgetLine?.amount,
-            originalDateNeeded: originalBudgetLine?.date_needed,
-            originalCanID: originalBudgetLine?.can_id,
-            enteredAmount: enteredAmount,
-            needByDate: needByDate,
-            selectedCanId: selectedCan?.id
-        };
-
-        // Initialize tempChangeRequest
-        let tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
-
-        // Compare with the original values in financialSnapshot
-        if (enteredAmount !== financialSnapshot.originalAmount) {
-            tempChangeRequest.amount = enteredAmount;
-        } else {
-            delete tempChangeRequest.amount;
-        }
-
-        if (formatDateForApi(needByDate) !== financialSnapshot.originalDateNeeded) {
-            tempChangeRequest.date_needed = formatDateForApi(needByDate);
-        } else {
-            delete tempChangeRequest.date_needed;
-        }
-
-        if (selectedCan?.id !== financialSnapshot.originalCanID) {
-            tempChangeRequest.can_id = selectedCan?.id;
-        } else {
-            delete tempChangeRequest.can_id;
-        }
-
-        const financialSnapshotChanged = Object.keys(tempChangeRequest).length > 0;
-        const BLIStatusIsPlannedOrExecuting =
-            currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
-
-        // The SC dropdown only offers non-sub-component SCs, so an actual change here can only
-        // ever land on a bare number. When the number is unchanged, preserve the original
-        // grouping label as-is — it may carry a sub-component suffix (e.g. "2-A") that a bare
-        // number would not match in addServiceComponentIdToBLI, silently dropping the BLI's SC
-        // link on save.
-        const serviceComponentGroupingLabel =
-            servicesComponentNumber === currentBudgetLine.services_component_number
-                ? currentBudgetLine.serviceComponentGroupingLabel
-                : (servicesComponentNumber ?? 0).toString();
-
-        // Keep grant_number_id in sync with the dropdown selection. Spreading currentBudgetLine
-        // alone would retain the BLI's original (stale) grant_number_id, and both save paths key
-        // off it: the non-bundle path's addGrantNumberIdToBLI resolves by id (ignoring the new
-        // selection), and the bundle dirty-check compares grant_number_id (treating a
-        // reassignment as no change). For an existing (persisted) grant number we stamp its id
-        // now; for a not-yet-persisted in-session grant number there is no id yet, so null it and
-        // let the save-time number/ref resolution link it.
-        const selectedGrantNumber = grantNumbers?.find((gn) => gn.number === grantNumberNumber);
-        const reassignedGrantNumberId =
-            selectedGrantNumber && "created_on" in selectedGrantNumber ? selectedGrantNumber.id : null;
-
-        const payload = {
-            ...currentBudgetLine,
-            // For grants, stamp the grant number key; do NOT re-stamp the SC fields (they would
-            // rewrite the BLI as "SC 0" and break grouping). For contracts, keep the SC fields.
-            ...(isGrant
-                ? { grant_number_number: grantNumberNumber, grant_number_id: reassignedGrantNumberId }
-                : {
-                      services_component_number: servicesComponentNumber,
-                      serviceComponentGroupingLabel
-                  }),
-            line_description: enteredDescription || "",
-            can_id: selectedCan?.id || null,
-            can: selectedCan || null,
-            canDisplayName: selectedCan?.display_name || null,
-            agreement_id: selectedAgreement?.id || null,
-            agreement: {
-                ...currentBudgetLine.agreement,
-                procurement_shop: {
-                    ...selectedProcurementShop,
-                    current_fee: { fee: selectedProcurementShop?.fee_percentage ?? 0 }
-                }
-            },
-            amount: enteredAmount || 0,
-            status: currentBudgetLine.status || BLI_STATUS.DRAFT,
-            date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee_percentage || null,
-            financialSnapshot: {
-                ...financialSnapshot,
-                enteredAmount: enteredAmount,
-                needByDate: formatDateForApi(needByDate),
-                selectedCanId: selectedCan?.id
-            },
-            fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
-        };
-
-        if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
-            payload.financialSnapshotChanged = true;
-            payload.tempChangeRequest = tempChangeRequest;
-        } else {
-            delete payload.financialSnapshotChanged;
-            delete payload.tempChangeRequest;
-        }
+        const payload = buildEditedBudgetLinePayload({
+            currentBudgetLine,
+            originalBudgetLine,
+            servicesComponentNumber,
+            grantNumberNumber,
+            grantNumbers,
+            enteredDescription,
+            selectedCan,
+            selectedAgreement,
+            selectedProcurementShop,
+            enteredAmount,
+            needByDate,
+            isGrant
+        });
         dispatch({ type: "UPDATE_BUDGET_LINE_ITEM", payload });
         setHasUnsavedChanges(true);
 
@@ -886,65 +655,6 @@ const useCreateBLIsAndSCs = (
     };
 
     /**
-     *
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLineItem
-     * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} createdServiceComponents
-     */
-    const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
-        let matchServiceComponent;
-        // for new BLIs without a grouping label, match only on number
-        if (!budgetLineItem.serviceComponentGroupingLabel) {
-            matchServiceComponent = createdServiceComponents
-                .filter((serviceComponent) => !serviceComponent.sub_component)
-                .find((sC) => sC.number === budgetLineItem.services_component_number);
-        } else {
-            // for existing BLIs with a grouping label, match on full grouping label
-            matchServiceComponent = createdServiceComponents.find((sc) => {
-                const scGroupingLabel = sc.sub_component ? `${sc.number}-${sc.sub_component}` : `${sc.number}`;
-                return scGroupingLabel === budgetLineItem.serviceComponentGroupingLabel;
-            });
-        }
-
-        return {
-            ...budgetLineItem,
-            services_component_id: matchServiceComponent?.id ?? null,
-            services_component_number: undefined, // Remove this property immutably
-            serviceComponentGroupingLabel: undefined // Remove this property immutably
-        };
-    };
-
-    /**
-     * Grant analog of addServiceComponentIdToBLI. Resolves grant_number_id by matching the
-     * editor-state grant_number_number against the (possibly just-created) grant numbers and
-     * strips the UI-only key. See plan §9/§11.
-     * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLineItem
-     * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} createdGrantNumbers
-     */
-    const addGrantNumberIdToBLI = (budgetLineItem, createdGrantNumbers) => {
-        // For persisted BLIs (have a grant_number_id), prefer ID-based matching so a renamed
-        // grant number (same id, changed number) is not incorrectly disassociated on save.
-        if (budgetLineItem.grant_number_id != null) {
-            const byId = createdGrantNumbers.find((gn) => gn.id === budgetLineItem.grant_number_id);
-            return {
-                ...budgetLineItem,
-                grant_number_id: byId?.id ?? null,
-                grant_number_number: undefined
-            };
-        }
-        // New BLIs have no ID yet — fall back to number matching.
-        // When a grant number is deleted mid-edit its referencing BLIs retain their
-        // grant_number_number but the number no longer resolves. Mirror the SC path
-        // (addServiceComponentIdToBLI) and null the link so the BLI is disassociated
-        // rather than causing an error.
-        const matchGrantNumber = createdGrantNumbers.find((gn) => gn.number === budgetLineItem.grant_number_number);
-        return {
-            ...budgetLineItem,
-            grant_number_id: matchGrantNumber?.id ?? null,
-            grant_number_number: undefined
-        };
-    };
-
-    /**
      * Set the budget line for editing by its ID
      * @param {number} budgetLineId - The ID of the budget line to edit
      * @returns {void}
@@ -983,41 +693,7 @@ const useCreateBLIsAndSCs = (
         if (!budgetLine) {
             return;
         }
-        const {
-            services_component_id,
-            services_component_number,
-            grant_number_id,
-            grant_number_number,
-            line_description,
-            can_id,
-            can,
-            agreement_id,
-            amount,
-            date_needed,
-            proc_shop_fee_percentage
-        } = budgetLine;
-        const payload = {
-            id: cryptoRandomString({ length: 10 }),
-            services_component_id,
-            services_component_number,
-            grant_number_id,
-            grant_number_number,
-            line_description,
-            can_id,
-            can,
-            canDisplayName: can?.display_name || null,
-            agreement_id,
-            agreement: budgetLine.agreement,
-            amount,
-            date_needed,
-            proc_shop_fee_percentage,
-            status: BLI_STATUS.DRAFT,
-            created_by: loggedInUserFullName,
-            // Mirror handleAddBLI: a duplicated draft BLI must be editable so its
-            // edit/delete/duplicate icons stay enabled. Without this the row reads
-            // _meta?.isEditable as undefined and renders the disabled icons. (issue #6020)
-            _meta: { isEditable: true }
-        };
+        const payload = buildDuplicatedBudgetLineItem(budgetLine, loggedInUserFullName, isGrant);
         dispatch({ type: "ADD_BUDGET_LINE_ITEM", payload });
         resetForm();
     };
@@ -1095,160 +771,104 @@ const useCreateBLIsAndSCs = (
         }
     };
 
+    /**
+     * Create a brand-new agreement along with its not-yet-persisted services components /
+     * grant numbers / budget line items, in a single request.
+     * @returns {Promise<void>} - The promise
+     */
+    const handleSaveNewAgreement = React.useCallback(async () => {
+        const createAgreementPayload = buildNewAgreementBudgetPayload({
+            agreement,
+            servicesComponents,
+            grantNumbers,
+            tempBudgetLines,
+            isGrant
+        });
+
+        const fulfilled = await addAgreement(createAgreementPayload).unwrap();
+        console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+    }, [agreement, servicesComponents, grantNumbers, tempBudgetLines, isGrant, addAgreement]);
+
+    /**
+     * Persist an existing agreement's services components / grant numbers / budget line items,
+     * routing financially-changed lines to approval when required.
+     * @param {boolean} savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
+     * @returns {Promise<boolean>} - Whether any BLI had a financial snapshot change
+     */
+    const handleSaveExistingAgreementBudget = React.useCallback(
+        /** @param {boolean} savedViaModal */
+        async (savedViaModal) => {
+            const { createdItems: createdServiceComponents, existingItems: existingServicesComponents } =
+                await persistPartitionedEntities(servicesComponents, addServicesComponent, updateServicesComponent);
+
+            // Grant numbers, mirroring the SC create/update above. They must be persisted
+            // BEFORE the BLIs so grant BLIs can resolve grant_number_id. See plan §11.
+            const { createdItems: createdGrantNumbers, existingItems: existingGrantNumbers } =
+                await persistPartitionedEntities(grantNumbers, addGrantNumber, updateGrantNumber);
+
+            const { newBudgetLineItemsWithIds, existingBudgetLineItemsWithIds } = linkBudgetLinesToApi({
+                tempBudgetLines,
+                isGrant,
+                createdServiceComponents,
+                existingServicesComponents,
+                createdGrantNumbers,
+                existingGrantNumbers
+            });
+            // Create new budget line items
+            const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
+                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                return addBudgetLineItem(cleanNewBLI).unwrap();
+            });
+
+            await Promise.all(creationPromises);
+            console.log(`${creationPromises.length} new budget lines created successfully`);
+
+            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+            );
+
+            if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
+                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
+                await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
+            } else {
+                await handleRegularUpdates(existingBudgetLineItemsWithIds);
+            }
+            await handleDeletions();
+
+            return isThereAnyBLIsFinancialSnapshotChanged;
+        },
+        [
+            servicesComponents,
+            addServicesComponent,
+            updateServicesComponent,
+            grantNumbers,
+            addGrantNumber,
+            updateGrantNumber,
+            tempBudgetLines,
+            isGrant,
+            addBudgetLineItem,
+            canEditDirectly,
+            handleFinancialSnapshotChanges,
+            handleFinancialSnapshotChangesViaBlocker,
+            handleRegularUpdates,
+            handleDeletions
+        ]
+    );
+
     const handleSave = React.useCallback(
+        /**
+         * @param {boolean} savedViaModal
+         * @param {boolean} [suppressErrorAlert]
+         * @param {boolean} [suppressSuccessAlert]
+         */
         async (savedViaModal, suppressErrorAlert = false, suppressSuccessAlert = false) => {
             try {
                 let isThereAnyBLIsFinancialSnapshotChanged = false;
                 if (!agreement.id) {
-                    // creating new agreement
-                    const newServicesComponents = servicesComponents
-                        .filter((sc) => !("created_on" in sc))
-                        // eslint-disable-next-line no-unused-vars
-                        .map(({ display_title, has_changed, popStartDate, popEndDate, mode, ...sc }) => ({
-                            ...sc,
-                            ref: display_title
-                        }));
-
-                    const newGrantNumbers = grantNumbers
-                        .filter((gn) => !("created_on" in gn))
-                        // eslint-disable-next-line no-unused-vars
-                        .map(({ display_title, popStartDate, popEndDate, mode, has_changed, ...gn }) => ({
-                            ...gn,
-                            ref: display_title
-                        }));
-
-                    const newBudgetLineItems = tempBudgetLines
-                        .filter((budgetLineItem) => !("created_on" in budgetLineItem))
-                        .map((bli) => {
-                            if (isGrant) {
-                                // Link the new grant BLI to a not-yet-persisted grant number by ref.
-                                const matchedGrantNumber = newGrantNumbers.find(
-                                    (gn) => gn.number === bli.grant_number_number
-                                );
-                                // eslint-disable-next-line no-unused-vars
-                                const { grant_number_number, ...bliWithoutGnNumber } = bli;
-                                return {
-                                    ...bliWithoutGnNumber,
-                                    grant_number_ref: matchedGrantNumber?.ref ?? null
-                                };
-                            }
-
-                            const matchedServiceComponent = newServicesComponents.find(
-                                (sc) => sc.number === bli.services_component_number
-                            );
-
-                            // Create new object without services_component_number
-                            // eslint-disable-next-line
-                            const { services_component_number, ...bliWithoutScNumber } = bli;
-
-                            return {
-                                ...bliWithoutScNumber,
-                                services_component_ref: matchedServiceComponent?.ref ?? null
-                            };
-                        });
-
-                    const data = {
-                        ...agreement,
-                        team_members: (agreement.team_members ?? []).map((team_member) => {
-                            return formatTeamMember(team_member);
-                        }),
-                        requesting_agency_id: agreement.requesting_agency?.id ?? null,
-                        servicing_agency_id: agreement.servicing_agency?.id ?? null
-                    };
-                    // Remove unnecessary fields from data to cut down on payload size and reduce potential errors
-                    const { cleanData } = cleanAgreementForApi(data);
-                    const cleanBudgetLines = cleanBudgetLineItemsForApi(newBudgetLineItems);
-                    const createAgreementPayload = {
-                        ...cleanData,
-                        budget_line_items: cleanBudgetLines,
-                        services_components: newServicesComponents,
-                        grant_numbers: newGrantNumbers
-                    };
-
-                    const fulfilled = await addAgreement(createAgreementPayload).unwrap();
-                    console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                    await handleSaveNewAgreement();
                 } else {
-                    // editing existing agreement
-                    const newServicesComponents = servicesComponents.filter((sc) => !("created_on" in sc));
-
-                    const existingServicesComponents = servicesComponents.filter((sc) => "created_on" in sc);
-                    const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
-
-                    const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
-                        return addServicesComponent(cleanSc).unwrap();
-                    });
-                    const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
-                        return updateServicesComponent({ id: sc.id, data: cleanSc }).unwrap();
-                    });
-
-                    const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
-                    await Promise.all(serviceComponentsUpdatePromises);
-
-                    // Grant numbers, mirroring the SC create/update above. They must be persisted
-                    // BEFORE the BLIs so grant BLIs can resolve grant_number_id. See plan §11.
-                    const newGrantNumbers = grantNumbers.filter((gn) => !("created_on" in gn));
-                    const existingGrantNumbers = grantNumbers.filter((gn) => "created_on" in gn);
-                    const changedGrantNumbers = existingGrantNumbers.filter((gn) => gn.has_changed);
-
-                    const grantNumberCreationPromises = newGrantNumbers.map((gn) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
-                        return addGrantNumber(cleanGn).unwrap();
-                    });
-                    const grantNumberUpdatePromises = changedGrantNumbers.map((gn) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanGn } = gn;
-                        return updateGrantNumber({ id: gn.id, data: cleanGn }).unwrap();
-                    });
-
-                    const createdGrantNumbers = await Promise.all(grantNumberCreationPromises);
-                    await Promise.all(grantNumberUpdatePromises);
-
-                    const newBudgetLineItems = tempBudgetLines.filter(
-                        (budgetLineItem) => !("created_on" in budgetLineItem)
-                    );
-                    const existingBudgetLineItems = tempBudgetLines.filter(
-                        (budgetLineItem) => "created_on" in budgetLineItem
-                    );
-                    const allServicesComponents = [...createdServiceComponents, ...existingServicesComponents];
-                    const allGrantNumbers = [...createdGrantNumbers, ...existingGrantNumbers];
-
-                    // Grant BLIs link via grant_number_id; contract/other BLIs via services_component_id.
-                    const addLinkToBLI = (bli) =>
-                        isGrant
-                            ? addGrantNumberIdToBLI(bli, allGrantNumbers)
-                            : addServiceComponentIdToBLI(bli, allServicesComponents);
-
-                    const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) => addLinkToBLI(newBLI));
-
-                    const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) =>
-                        addLinkToBLI(existingBLI)
-                    );
-                    // Create new budget line items
-                    const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
-                        const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-                        return addBudgetLineItem(cleanNewBLI).unwrap();
-                    });
-
-                    await Promise.all(creationPromises);
-                    console.log(`${creationPromises.length} new budget lines created successfully`);
-
-                    isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-                        (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
-                    );
-
-                    if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
-                        await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
-                    } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
-                        await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
-                    } else {
-                        await handleRegularUpdates(existingBudgetLineItemsWithIds);
-                    }
-                    await handleDeletions();
+                    isThereAnyBLIsFinancialSnapshotChanged = await handleSaveExistingAgreementBudget(savedViaModal);
                 }
                 suite.reset();
                 budgetFormSuite.reset();
@@ -1276,26 +896,13 @@ const useCreateBLIsAndSCs = (
             }
         },
         [
-            servicesComponents,
-            grantNumbers,
-            isGrant,
-            tempBudgetLines,
-            addServicesComponent,
-            updateServicesComponent,
-            addGrantNumber,
-            updateGrantNumber,
-            addBudgetLineItem,
+            agreement,
+            handleSaveNewAgreement,
+            handleSaveExistingAgreementBudget,
             setAlert,
-            canEditDirectly,
-            handleFinancialSnapshotChanges,
-            handleFinancialSnapshotChangesViaBlocker,
-            handleRegularUpdates,
-            handleDeletions,
             setIsEditMode,
             showSuccessMessage,
-            resetForm,
-            agreement,
-            addAgreement
+            resetForm
         ]
     );
 
@@ -1304,78 +911,16 @@ const useCreateBLIsAndSCs = (
         .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
-    const handleSaveRef = React.useRef(handleSave);
-
-    React.useEffect(() => {
-        handleSaveRef.current = handleSave;
-    }, [handleSave]);
-
-    const blockerRef = React.useRef(blocker);
-
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
-
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
-    };
-
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            const destination = blocker.location?.pathname;
-            // Only surface the "require approval" wording when the changes actually route for
-            // review. With the capability ON (and the edits in the flag's scope) they apply
-            // immediately, so fall through to the neutral "Save Changes" copy.
-            const modalContent = requiresFinancialApproval
-                ? {
-                      heading: "Save changes before leaving?",
-                      description:
-                          "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save & Send to Approval",
-                      secondaryButtonText: "Leave without saving"
-                  }
-                : {
-                      heading: "Save changes before leaving?",
-                      description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save Changes",
-                      secondaryButtonText: "Leave without saving"
-                  };
-            setShowSaveChangesModal(true);
-            setModalProps({
-                ...modalContent,
-                handleConfirm: async () => {
-                    await handleSaveRef.current(true);
-                    setShowSaveChangesModal(false);
-                    blocker.reset();
-                    if (destination) {
-                        navigate(destination);
-                    }
-                },
-                handleSecondary: async () => {
-                    setHasUnsavedChanges(false);
-                    setShowSaveChangesModal(false);
-                    setIsEditMode(false);
-                    await proceedIfBlocked();
-                },
-                closeModal: () => {
-                    blocker.reset();
-                }
-            });
-        }
-    }, [blocker, requiresFinancialApproval, setIsEditMode, navigate]);
+    useCreateBLIsAndSCsSaveBlocker({
+        blocker,
+        handleSave,
+        requiresFinancialApproval,
+        navigate,
+        setIsEditMode,
+        setHasUnsavedChanges,
+        setShowSaveChangesModal,
+        setModalProps
+    });
 
     return {
         blocker,

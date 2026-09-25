@@ -2,9 +2,8 @@ import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import EditingIndicator from "../../UI/EditingIndicator";
 import FormHeader from "../../UI/Form/FormHeader";
+import PeriodOfPerformanceFields from "../../UI/Form/PeriodOfPerformanceFields/PeriodOfPerformanceFields";
 import TextArea from "../../UI/Form/TextArea";
-import DatePicker from "../../UI/USWDS/DatePicker";
-import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
 import { GRANT_NUMBER_OPTIONS } from "../GrantNumbers.constants";
 import GrantNumberSelect from "../GrantNumberSelect";
 
@@ -90,42 +89,12 @@ function GrantNumberForm({
                             />
                         </div>
                     </div>
-                    <DateRangePickerWrapper
-                        id="grant-number-period-of-performance"
-                        key={formKey}
-                        className="display-flex flex-justify "
-                    >
-                        <div style={{ width: "275px" }}>
-                            <DatePicker
-                                id="grant-number-pop-start-date"
-                                name="pop-start-date"
-                                label="Period of Performance-Start"
-                                hint="mm/dd/yyyy"
-                                value={formData.popStartDate}
-                                onChange={(e) =>
-                                    setFormData((currentFormData) => ({
-                                        ...currentFormData,
-                                        popStartDate: e.target.value
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div style={{ width: "275px" }}>
-                            <DatePicker
-                                id="grant-number-pop-end-date"
-                                name="pop-end-date"
-                                label="Period of Performance-End"
-                                hint="mm/dd/yyyy"
-                                value={formData.popEndDate}
-                                onChange={(e) =>
-                                    setFormData((currentFormData) => ({
-                                        ...currentFormData,
-                                        popEndDate: e.target.value
-                                    }))
-                                }
-                            />
-                        </div>
-                    </DateRangePickerWrapper>
+                    <PeriodOfPerformanceFields
+                        idPrefix="grant-number-"
+                        formKey={formKey}
+                        formData={formData}
+                        setFormData={setFormData}
+                    />
                 </div>
                 <div className="grid-col margin-left-5">
                     <TextArea
