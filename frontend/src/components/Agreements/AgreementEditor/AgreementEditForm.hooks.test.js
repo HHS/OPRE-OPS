@@ -927,9 +927,9 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
     });
 
     it.each([
-        ["agreement details edit", "/agreements/123"],
-        ["edit wizard", "/agreements/edit/123"]
-    ])("flags a null value on an existing CONTRACT and disables Save (%s)", (_label, pathname) => {
+        ["agreement details edit", "/agreements/123", true],
+        ["edit wizard", "/agreements/edit/123", undefined]
+    ])("flags a null value on an existing CONTRACT and disables Save (%s)", (_label, pathname, isEditMode) => {
         useLocationMock.mockReturnValue({ pathname });
         useEditAgreementMock.mockReturnValue(
             makeEditState({
@@ -941,7 +941,7 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
             })
         );
 
-        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode });
         rerender();
 
         expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
@@ -964,6 +964,8 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
         rerender();
 
         expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
+        expect(result.current.shouldDisableBtn).toBe(false);
     });
 
     it("does not flag a new unsaved agreement on load before the user interacts", () => {
