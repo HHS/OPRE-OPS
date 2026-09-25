@@ -846,11 +846,12 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
     it("isReviewMode effect flags a new unsaved agreement so the required service_requirement_type check fires", () => {
         // Regression guard: this effect's suite.run() must pass isNewAgreement like runValidate
         // does, or the AgreementEditFormSuite required-field rule (gated on data.isNewAgreement)
-        // silently never runs for it. (issue #6230)
+        // silently never runs for it. Uses a non-CONTRACT/AA type so this only passes via the
+        // isNewAgreement branch, not the separately-required CONTRACT/AA branch. (issue #6230)
         useEditAgreementMock.mockReturnValue(
             makeEditState({
                 id: undefined,
-                agreement_type: "CONTRACT",
+                agreement_type: "DIRECT_OBLIGATION",
                 service_requirement_type: null
             })
         );
