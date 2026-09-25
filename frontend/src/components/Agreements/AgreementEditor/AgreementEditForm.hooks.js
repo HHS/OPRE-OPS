@@ -220,10 +220,7 @@ const useAgreementEditForm = (
             suite.run(
                 {
                     ...agreement,
-                    // Only enforce service_requirement_type presence while creating (see suite).
-                    // Some existing non-grant agreements legitimately have no
-                    // service_requirement_type; failing here would disable Save Changes on the
-                    // edit screens for a field the user never touched. (issue #6230)
+                    // New agreements of any non-grant type require service_requirement_type (see suite).
                     isNewAgreement: !agreement?.id,
                     ...overrides,
                     [name]: value
@@ -249,6 +246,13 @@ const useAgreementEditForm = (
             runValidate("project_id", agreement?.project_id);
         }
     }, [isWizardMode, agreement?.project_id, runValidate]);
+
+    React.useEffect(() => {
+        if (agreement?.id) {
+            // Edit mode only validates touched fields; surface a missing value on legacy agreements up front.
+            runValidate("service_requirement_type", agreement?.service_requirement_type);
+        }
+    }, [agreement?.id, agreement?.service_requirement_type, runValidate]);
 
     React.useEffect(() => {
         if (errorProductServiceCodes || errorProjects) {
