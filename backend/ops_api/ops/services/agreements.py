@@ -1105,25 +1105,28 @@ def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) ->
         type_key = ag_type.name
         totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
 
-    # Query 1: SUM(amount + fees) per agreement_type.
-    # Outer join so agreements with no BLIs still appear (coalesce to 0).
+    # Query 1: SUM(amount + fees) per agreement.
+    # BudgetLineItem.fees contains correlated subqueries that break in a multi-row GROUP BY.
+    # Instead run one aggregate query per agreement — the same pattern used by
+    # Agreement.spending_by_fiscal_year (proven in production). No FY filter so all BLIs
+    # (including those with null date_needed) are included, matching agreement_total exactly.
     total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
-    amount_rows = session.execute(
-        select(Agreement.agreement_type, total_expr.label("total"))
-        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id, isouter=True)
-        .where(Agreement.id.in_(agreement_ids))
-        .where(
-            or_(
-                BudgetLineItem.id.is_(None),
-                BudgetLineItem.is_obe.is_(True),
-                BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+    for agreement_id in agreement_ids:
+        ag_type = id_to_type.get(agreement_id)
+        if ag_type is None:
+            continue
+        row = session.execute(
+            select(total_expr.label("total"))
+            .where(BudgetLineItem.agreement_id == agreement_id)
+            .where(
+                or_(
+                    BudgetLineItem.is_obe.is_(True),
+                    BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+                )
             )
-        )
-        .group_by(Agreement.agreement_type)
-    ).all()
-    for row in amount_rows:
+        ).one()
         if row.total is not None:
-            _bucket_amount_by_type(totals, row.agreement_type, float(row.total))
+            _bucket_amount_by_type(totals, ag_type, float(row.total))
 
     # Query 2: award_type classification per agreement.
     award_type_expr = _build_award_type_sql_expr(get_current_fiscal_year())
