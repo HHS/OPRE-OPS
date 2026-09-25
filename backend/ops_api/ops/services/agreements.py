@@ -6,9 +6,9 @@ from typing import Any, List, Literal, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, distinct, func, or_, select, union, union_all
+from sqlalchemy import Select, distinct, func, or_, select, union
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, selectinload
 
 from models import (
     CAN,
@@ -542,57 +542,34 @@ class AgreementsService(OpsService[Agreement]):
         Returns:
             Tuple of (paginated agreements list, metadata dict with count/limit/offset)
         """
+        # Import helper functions from resources
         filters = AgreementFilters.parse_filters(data)
 
-        # Step 1: Get all matching IDs across all subclass tables via UNION ALL.
-        # Ownership filter is applied in SQL when only_my is set.
-        all_ids = _get_all_matching_ids(self.db_session, agreement_classes, data, self)
+        # Collect all agreements across types using existing resource helpers
+        all_results = []
+        for agreement_cls in agreement_classes:
+            agreements = _get_agreements(self.db_session, agreement_cls, data, include_procurement)
+            all_results.extend(agreements)
 
-        # Step 2: Filter by award_type (computed property, must be done post-query).
+        # Filter by award_type (computed property, must be done post-query)
         if filters.award_type:
-            award_type_agreements = self.db_session.scalars(select(Agreement).where(Agreement.id.in_(all_ids))).all()
-            all_ids = [a.id for a in award_type_agreements if a.award_type in filters.award_type]
+            all_results = [a for a in all_results if a.award_type in filters.award_type]
 
-        # Step 3: Sort — SQL-translatable sorts handled in _get_all_matching_ids;
-        # computed-property sorts require loading objects and sorting in Python.
-        sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
-        sort_descending = (
-            filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
-        )
-        if sort_condition and not _is_sql_sortable(sort_condition):
-            sort_agreements = self.db_session.scalars(select(Agreement).where(Agreement.id.in_(all_ids))).all()
-            sort_agreements = _sort_agreements(sort_agreements, sort_condition, sort_descending, filters.fiscal_year)
-            all_ids = [a.id for a in sort_agreements]
-
-        total_count = len(all_ids)
-
-        # Step 4: Compute totals across the full filtered set (for summary cards).
-        # Load only the relationships needed for totals computation.
-        totals_agreements = self.db_session.scalars(
-            select(Agreement)
-            .where(Agreement.id.in_(all_ids))
-            .options(
-                selectinload(Agreement.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
-                selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-                selectinload(Agreement.procurement_actions),
+        # Sort combined results
+        if filters.sort_conditions and len(filters.sort_conditions) > 0:
+            sort_condition = filters.sort_conditions[0]
+            sort_descending = (
+                filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
             )
-        ).all()
-        totals = _compute_agreement_totals(totals_agreements)
+            all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
 
-        # Step 5: Apply DB-level pagination — fetch only the page of IDs.
-        if filters.limit is not None and filters.offset is not None:
-            limit_value = filters.limit[0]
-            offset_value = filters.offset[0]
-        else:
-            limit_value = total_count
-            offset_value = 0
+        # Calculate count before slicing
+        total_count = len(all_results)
 
-        page_ids = all_ids[offset_value : offset_value + limit_value]
+        # Calculate aggregate totals before pagination (for summary cards)
+        totals = _compute_agreement_totals(all_results)
 
-        # Step 6: Fetch the page rows with full eager loads for serialization.
-        paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
-
-        # Step 7: Procurement aggregates (only when requested, over full set).
+        # Calculate procurement overview and step summary before pagination (only when requested)
         procurement_overview = None
         procurement_step_summary = None
         procurement_days_in_step = None
@@ -600,9 +577,19 @@ class AgreementsService(OpsService[Agreement]):
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
-            procurement_overview = _compute_procurement_overview(totals_agreements, overview_fiscal_year)
-            procurement_step_summary = _compute_procurement_step_summary(totals_agreements, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(totals_agreements)
+            procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
+            procurement_days_in_step = _compute_days_in_procurement_step(all_results)
+
+        # Apply pagination slicing
+        if filters.limit is not None and filters.offset is not None:
+            limit_value = filters.limit[0]
+            offset_value = filters.offset[0]
+            paginated_results = all_results[offset_value : offset_value + limit_value]
+        else:
+            paginated_results = all_results
+            limit_value = total_count
+            offset_value = 0
 
         metadata = {
             "count": total_count,
@@ -1226,116 +1213,6 @@ def _compute_days_in_procurement_step(
         days_in_step[step_number][agreement.id] = diff_days
 
     return days_in_step
-
-
-_SQL_SORTABLE = {
-    AgreementSortCondition.AGREEMENT,
-    AgreementSortCondition.TYPE,
-}
-
-
-def _is_sql_sortable(sort_condition: AgreementSortCondition) -> bool:
-    """Return True for sort conditions that can be expressed as SQL ORDER BY."""
-    return sort_condition in _SQL_SORTABLE
-
-
-def _get_all_matching_ids(
-    session: Session,
-    agreement_classes: list[Type[Agreement]],
-    data: dict[str, Any],
-    service: "AgreementsService",
-) -> list[int]:
-    """
-    Return all matching agreement IDs across all subclass tables via UNION ALL.
-
-    SQL-sortable sorts (AGREEMENT, TYPE) are applied here so the returned list is
-    already ordered. Computed-property sorts are handled by the caller in Python.
-    Ownership filter (only_my) is pushed to SQL via _apply_user_association_filter.
-    """
-    filters = AgreementFilters.parse_filters(data)
-    sort_condition = filters.sort_conditions[0] if filters.sort_conditions else AgreementSortCondition.AGREEMENT
-    sort_descending = (
-        filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
-    )
-
-    id_queries = []
-    for agreement_cls in agreement_classes:
-        q = select(agreement_cls.id).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
-        q = _apply_filters(q, agreement_cls, data)
-
-        # Push ownership filter to SQL when only_my is set
-        only_my = data.get("only_my", [])
-        if only_my and True in only_my:
-            current_user = get_current_user()
-            q = service._apply_user_association_filter(q, current_user)
-
-        id_queries.append(q)
-
-    union_subq = union_all(*id_queries).subquery()
-
-    # Apply SQL-level ORDER BY for sortable conditions.
-    # PostgreSQL requires ORDER BY columns to appear in the SELECT list when using DISTINCT.
-    # Strategy: join the agreement table to get the sort column, include it in SELECT,
-    # then wrap in a subquery and select only id from the outer query.
-    if _is_sql_sortable(sort_condition):
-        agreement_alias = Agreement.__table__
-        if sort_condition == AgreementSortCondition.AGREEMENT:
-            sort_col = func.lower(agreement_alias.c.name).label("sort_key")
-        else:  # TYPE
-            sort_col = agreement_alias.c.agreement_type.label("sort_key")
-
-        inner = (
-            select(union_subq.c.id, sort_col)
-            .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
-            .distinct()
-            .subquery()
-        )
-        order_expr = inner.c.sort_key.desc() if sort_descending else inner.c.sort_key
-        id_query = select(inner.c.id).order_by(order_expr)
-    else:
-        id_query = select(union_subq.c.id).distinct()
-
-    rows = session.execute(id_query).all()
-    return [row[0] for row in rows]
-
-
-def _get_page_agreements(
-    session: Session,
-    page_ids: list[int],
-    include_procurement: bool = False,
-) -> list[Agreement]:
-    """
-    Fetch full Agreement objects for the given page of IDs with appropriate eager loads.
-    Preserves the order of page_ids.
-    """
-    if not page_ids:
-        return []
-
-    agreements = session.scalars(
-        select(Agreement)
-        .where(Agreement.id.in_(page_ids))
-        .options(
-            selectinload(Agreement.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
-            selectinload(Agreement.budget_line_items)
-            .joinedload(BudgetLineItem.can)
-            .joinedload(CAN.portfolio)
-            .selectinload(Portfolio.team_leaders),
-            selectinload(Agreement.budget_line_items)
-            .joinedload(BudgetLineItem.can)
-            .joinedload(CAN.portfolio)
-            .joinedload(Portfolio.division),
-            selectinload(Agreement.procurement_actions),
-            selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-            joinedload(Agreement.project),
-            selectinload(Agreement.team_members),
-            selectinload(Agreement.services_components),
-            *([selectinload(Agreement.procurement_trackers)] if include_procurement else []),
-        )
-    ).all()
-
-    # Restore the caller-specified order (IN clause doesn't guarantee order)
-    id_to_agreement = {a.id: a for a in agreements}
-    return [id_to_agreement[i] for i in page_ids if i in id_to_agreement]
 
 
 def _get_agreements(
