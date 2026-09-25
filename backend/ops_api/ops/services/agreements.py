@@ -6,7 +6,7 @@ from typing import Any, List, Literal, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, distinct, func, or_, select, union
+from sqlalchemy import Select, case, distinct, func, or_, select, union
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -35,7 +35,9 @@ from models import (
     Vendor,
 )
 from models.agreements import AgreementType
+from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 from models.procurement_tracker import ProcurementTrackerStatus
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import (
@@ -566,8 +568,9 @@ class AgreementsService(OpsService[Agreement]):
         # Calculate count before slicing
         total_count = len(all_results)
 
-        # Calculate aggregate totals before pagination (for summary cards)
-        totals = _compute_agreement_totals(all_results)
+        # Calculate aggregate totals before pagination (for summary cards).
+        # Uses SQL aggregates to avoid loading all BLIs into Python for every request.
+        totals = _compute_agreement_totals_sql(self.db_session, [a.id for a in all_results])
 
         # Calculate procurement overview and step summary before pagination (only when requested)
         procurement_overview = None
@@ -1006,6 +1009,129 @@ def _percent(value, total):
     if total == 0:
         return 0.0
     return float(round((float(value) / float(total)) * 100))
+
+
+def _bucket_amount_by_type(totals: dict, ag_type: AgreementType, amount: float) -> None:
+    """Accumulate a dollar amount into the correct type bucket in the totals dict."""
+    if ag_type == AgreementType.CONTRACT:
+        totals["total_contract_amount"] += amount
+    elif ag_type in (AgreementType.AA, AgreementType.IAA):
+        totals["total_partner_amount"] += amount
+    elif ag_type == AgreementType.GRANT:
+        totals["total_grant_amount"] += amount
+    elif ag_type == AgreementType.DIRECT_OBLIGATION:
+        totals["total_direct_obligation_amount"] += amount
+
+
+def _accumulate_award_counts(totals: dict, award: str | None, type_key: str) -> None:
+    """Increment the new/continuing counters for one agreement."""
+    if award == "NEW":
+        totals["new_count"] += 1
+        totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
+    elif award == "CONTINUING":
+        totals["continuing_count"] += 1
+        totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
+
+
+def _build_award_type_sql_expr(current_fy: int):
+    """Build the SQLAlchemy CASE expression that classifies each agreement as NEW/CONTINUING/None."""
+    has_non_draft = (
+        select(BudgetLineItem.id)
+        .where(BudgetLineItem.agreement_id == Agreement.id)
+        .where(BudgetLineItem.status.isnot(None))
+        .where(BudgetLineItem.status != BudgetLineItemStatus.DRAFT)
+        .exists()
+    )
+    awarded_date = (
+        select(ProcurementAction.date_awarded_obligated)
+        .where(ProcurementAction.agreement_id == Agreement.id)
+        .where(ProcurementAction.status.in_([ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]))
+        .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+        .order_by(ProcurementAction.created_on.desc())
+        .limit(1)
+        .scalar_subquery()
+    )
+    award_fy_expr = case(
+        (awarded_date.is_(None), None),
+        else_=case(
+            (func.extract("month", awarded_date) >= 10, func.extract("year", awarded_date) + 1),
+            else_=func.extract("year", awarded_date),
+        ),
+    )
+    return case(
+        (~has_non_draft, None),
+        (awarded_date.is_(None), "NEW"),
+        (award_fy_expr.is_(None), "NEW"),
+        (current_fy <= award_fy_expr, "NEW"),
+        else_="CONTINUING",
+    ).label("award_type")
+
+
+def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) -> dict[str, Any]:
+    """Compute aggregate totals for summary cards using SQL aggregates.
+
+    Replaces the Python-iteration version (_compute_agreement_totals) for the list endpoint.
+    Three targeted queries replace loading all BLIs into Python:
+      0. Lightweight (id, agreement_type) fetch — drives type_counts including all-DRAFT agreements.
+      1. SUM(amount + fees) grouped by agreement_type — uses BudgetLineItem.fees SQL expression,
+         the same pattern as Agreement.spending_by_fiscal_year.
+      2. CASE-based award_type (NEW/CONTINUING/None) per agreement via correlated EXISTS.
+    """
+    totals = {
+        "total_contract_amount": 0.0,
+        "total_partner_amount": 0.0,
+        "total_grant_amount": 0.0,
+        "total_direct_obligation_amount": 0.0,
+        "total_agreements_count": len(agreement_ids),
+        "type_counts": {},
+        "new_count": 0,
+        "new_type_counts": {},
+        "continuing_count": 0,
+        "continuing_type_counts": {},
+    }
+
+    if not agreement_ids:
+        return totals
+
+    # Query 0: (id, agreement_type) — needed for type_counts and as a lookup for award rows.
+    # All-DRAFT agreements produce $0 and are intentionally included here.
+    type_rows = session.execute(
+        select(Agreement.id, Agreement.agreement_type).where(Agreement.id.in_(agreement_ids))
+    ).all()
+    id_to_type = {row.id: row.agreement_type for row in type_rows}
+    for ag_type in id_to_type.values():
+        type_key = ag_type.name
+        totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
+
+    # Query 1: SUM(amount + fees) per agreement_type.
+    # Outer join so agreements with no BLIs still appear (coalesce to 0).
+    total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
+    amount_rows = session.execute(
+        select(Agreement.agreement_type, total_expr.label("total"))
+        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id, isouter=True)
+        .where(Agreement.id.in_(agreement_ids))
+        .where(
+            or_(
+                BudgetLineItem.id.is_(None),
+                BudgetLineItem.is_obe.is_(True),
+                BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+            )
+        )
+        .group_by(Agreement.agreement_type)
+    ).all()
+    for row in amount_rows:
+        if row.total is not None:
+            _bucket_amount_by_type(totals, row.agreement_type, float(row.total))
+
+    # Query 2: award_type classification per agreement.
+    award_type_expr = _build_award_type_sql_expr(get_current_fiscal_year())
+    award_rows = session.execute(select(Agreement.id, award_type_expr).where(Agreement.id.in_(agreement_ids))).all()
+    for row in award_rows:
+        ag_type = id_to_type.get(row.id)
+        if ag_type is not None:
+            _accumulate_award_counts(totals, row.award_type, ag_type.name)
+
+    return totals
 
 
 def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
