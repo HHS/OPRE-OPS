@@ -220,10 +220,31 @@ doesn't occur. A separate query handles `award_type` via SQL CASE with correlate
 | `GET /agreements/` p95 | 1,600ms | 1,600ms |
 | `GET /agreements/` p99 | 1,800ms | 1,600ms (**-11%**) |
 
-**Assessment:** Modest improvement — median unchanged, tail latency improved. The gains
-are real but small because the bottleneck has shifted: loading all agreements via 5
-per-subclass queries (not paginated) plus per-agreement lazy loads for serialization
-remain the dominant costs. The SQL aggregates remove one of three bottlenecks.
+**Assessment:** Modest improvement in isolation — median unchanged, tail latency improved.
+See below for results when combined with DB-level pagination.
+
+---
+
+### Option B + DB pagination ✅ Implemented
+
+**Commits:** `99ee9e759`, `806edd4fc`
+
+With both SQL aggregates (totals) and DB-level pagination (UNION ALL ID query) working
+together:
+
+**Load test results (10 users, 5 min, 124 agreements):**
+
+| Metric | Main baseline | SQL agg + pagination | Δ |
+|---|---|---|---|
+| `GET /agreements/` median | 1,200ms | **1,100ms** | **-8%** |
+| `GET /agreements/` avg | 1,226ms | **1,142ms** | **-7%** |
+| `GET /agreements/` p95 | 1,600ms | **1,500ms** | **-6%** |
+
+These improvements are consistent and held under concurrent load. The combination works
+because:
+- SQL aggregates remove BLI loading for totals computation
+- DB pagination reduces the number of full agreement objects loaded and serialized per request
+- Together they break the two main bottlenecks that dominated before
 
 ---
 
