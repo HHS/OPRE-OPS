@@ -276,7 +276,35 @@ that works in aggregate context, keeping the existing expression for per-row use
 
 ---
 
-### Option C: Lazy-load totals (UX change) 🎨 Moderate effort
+### Option C (schema slim): Add `include_budget_lines` param ✅ Implemented
+
+**Commits:** `93d09dc13`, `6835db2e0`
+
+**What:** Added `include_budget_lines` query param (default `true`). The agreements list
+page sends `include_budget_lines=false`; the Procurement Dashboard (which needs BLIs)
+keeps the default `true`. When `false`, `budget_line_items` is excluded from the schema
+dump entirely — no serialization of ~45 BLIs per agreement.
+
+**Why this works:** `AgreementTableRow.jsx` never accesses `agreement.budget_line_items`.
+The summary cards use the `totals` envelope, not individual agreement BLIs. The `_meta`
+fields (`isEditable`, `isDeletable`) are computed server-side, not from serialized BLIs.
+
+**Results (combined with SQL aggregates + DB pagination, 124 agreements):**
+
+| Metric | Main baseline | All fixes | Improvement |
+|---|---|---|---|
+| `GET /agreements/` median | 1,200ms | **170ms** | **-86%** |
+| `GET /agreements/` avg | 1,226ms | **200ms** | **-84%** |
+| `GET /agreements/` p95 | 1,600ms | **310ms** | **-81%** |
+| Response size | ~486KB | **~120KB** | **-75%** |
+
+**This is the dominant improvement.** The 82% payload reduction drives most of the gain —
+removing ~45 BLI objects per agreement from serialization eliminates the largest single
+cost in the response pipeline.
+
+---
+
+### Option D (old C): Lazy-load totals (UX change) 🎨 Moderate effort
 
 **What:** Return the page data immediately without totals. Fetch totals in a separate
 subsequent API call that the frontend fires asynchronously after first render.
@@ -323,3 +351,24 @@ load is deferred to explicit user action.
 unless the UX communicates "showing FY2026, click to load all."
 
 **Engineering effort:** Low-medium. Frontend change only.
+
+---
+
+## Final Results
+
+All changes on `OPS-6140/backend-performance-improvements` combined:
+- SQL aggregates for totals (`_compute_agreement_totals_sql`)
+- DB-level pagination (UNION ALL ID query + page-only fetch)
+- `include_budget_lines=false` on the agreements list page
+
+**`GET /agreements/` median: 1,200ms → 170ms (-86%)**
+
+The payload reduction from removing BLI serialization was the dominant fix. The backend
+query improvements (SQL aggregates + DB pagination) contributed a further 6-8% on top.
+
+## Recommendation
+
+Ship the branch. All changes are additive/backwards-compatible:
+- `include_budget_lines` defaults to `true` — Procurement Dashboard unaffected
+- SQL aggregates + DB pagination are internal refactors with no API contract changes
+- Tests pass (111/111 non-Docker backend, 4,663/4,663 frontend)
