@@ -614,9 +614,10 @@ export const buildEditedBudgetLinePayload = ({
  * Build the object-construction half of duplicating a budget line item.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line being duplicated.
  * @param {string} loggedInUserFullName - The full name of the logged-in user, stamped as created_by.
+ * @param {boolean} isGrant - Whether the agreement is a grant; grant_number_id only exists on GrantBudgetLineItem.
  * @returns {import("../../../types/BudgetLineTypes").BudgetLine} The duplicated budget line item.
  */
-export const buildDuplicatedBudgetLineItem = (budgetLine, loggedInUserFullName) => {
+export const buildDuplicatedBudgetLineItem = (budgetLine, loggedInUserFullName, isGrant) => {
     const {
         services_component_id,
         services_component_number,
@@ -635,8 +636,10 @@ export const buildDuplicatedBudgetLineItem = (budgetLine, loggedInUserFullName) 
         id: cryptoRandomString({ length: 10 }),
         services_component_id,
         services_component_number,
-        grant_number_id,
-        grant_number_number,
+        // grant_number_id only exists on GrantBudgetLineItem; sending it for a
+        // contract/other BLI includes an invalid kwarg in the create payload and
+        // crashes the backend on save. Only carry it over for grant agreements. (issue #6163)
+        ...(isGrant ? { grant_number_id, grant_number_number } : {}),
         line_description,
         can_id,
         can,

@@ -693,7 +693,7 @@ const useCreateBLIsAndSCs = (
         if (!budgetLine) {
             return;
         }
-        const payload = buildDuplicatedBudgetLineItem(budgetLine, loggedInUserFullName);
+        const payload = buildDuplicatedBudgetLineItem(budgetLine, loggedInUserFullName, isGrant);
         dispatch({ type: "ADD_BUDGET_LINE_ITEM", payload });
         resetForm();
     };
