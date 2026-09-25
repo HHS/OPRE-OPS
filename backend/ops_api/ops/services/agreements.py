@@ -1040,6 +1040,7 @@ def _build_award_type_sql_expr(current_fy: int):
         .where(BudgetLineItem.agreement_id == Agreement.id)
         .where(BudgetLineItem.status.isnot(None))
         .where(BudgetLineItem.status != BudgetLineItemStatus.DRAFT)
+        .correlate(Agreement)
         .exists()
     )
     awarded_date = (
@@ -1048,6 +1049,7 @@ def _build_award_type_sql_expr(current_fy: int):
         .where(ProcurementAction.status.in_([ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]))
         .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
         .order_by(ProcurementAction.created_on.desc())
+        .correlate(Agreement)
         .limit(1)
         .scalar_subquery()
     )
