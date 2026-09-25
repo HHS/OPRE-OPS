@@ -195,7 +195,39 @@ May surprise users who expected the "All" change and now don't see certain agree
 
 ---
 
-### Option B: Replace totals computation with SQL aggregates 🔧 High effort
+### Option B: Replace totals computation with SQL aggregates ✅ Implemented
+
+**Commits:** `99ee9e759`
+
+**Final approach:** Query `budget_line_item` directly (no `Agreement` join in the outer
+GROUP BY query). The `BudgetLineItem.fees` SQL expression correlates on `cls.agreement_id`
+which resolves to the outer BLI row — not the Agreement table — so auto-correlation
+doesn't occur. A separate query handles `award_type` via SQL CASE with correlated EXISTS.
+
+**Single-request timing (124 agreements):**
+
+| Filter | Main baseline | SQL aggregates | Δ |
+|---|---|---|---|
+| All FYs | ~950ms | ~890ms | **-6%** |
+| FY2026 | ~345ms | ~330ms | **-4%** |
+
+**Load test results (10 users, 5 min, 124 agreements):**
+
+| Metric | Main baseline | SQL aggregates |
+|---|---|---|
+| `GET /agreements/` median | 1,200ms | 1,200ms |
+| `GET /agreements/` avg | 1,226ms | 1,185ms (**-3%**) |
+| `GET /agreements/` p95 | 1,600ms | 1,600ms |
+| `GET /agreements/` p99 | 1,800ms | 1,600ms (**-11%**) |
+
+**Assessment:** Modest improvement — median unchanged, tail latency improved. The gains
+are real but small because the bottleneck has shifted: loading all agreements via 5
+per-subclass queries (not paginated) plus per-agreement lazy loads for serialization
+remain the dominant costs. The SQL aggregates remove one of three bottlenecks.
+
+---
+
+### Option B (old): Replace totals computation with SQL aggregates 🔧 High effort
 
 **What:** Rewrite `_compute_agreement_totals()` and `award_type` classification as SQL
 `SUM`/`COUNT GROUP BY` queries that run at the DB level instead of iterating Python objects.
