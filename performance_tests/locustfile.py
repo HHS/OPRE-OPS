@@ -143,7 +143,7 @@ class OPSAPIUser(HttpUser):
     def list_agreements(self):
         """GET /api/v1/agreements/ - List agreements (first page, matching frontend params)."""
         self.client.get(
-            "/api/v1/agreements/?limit=25&offset=0&include_fees=true&sort_conditions=AGREEMENT&sort_descending=false",
+            "/api/v1/agreements/?limit=25&offset=0&include_fees=true&include_budget_lines=false&sort_conditions=AGREEMENT&sort_descending=false",
             name="/api/v1/agreements/",
         )
 
@@ -239,7 +239,7 @@ class OPSAPIUser(HttpUser):
         if SHARED_CACHE["project_ids"]:
             project_id = random.choice(SHARED_CACHE["project_ids"])
             self.client.get(
-                f"/api/v1/agreements/?project_id={project_id}&limit=25&offset=0&include_fees=true",
+                f"/api/v1/agreements/?project_id={project_id}&limit=25&offset=0&include_fees=true&include_budget_lines=false",
                 name="/api/v1/agreements/?project_id=[id]",
             )
 
@@ -744,7 +744,7 @@ def _populate_shared_cache(environment):
     try:
         # Fetch all entity IDs - use paginated endpoint for BLIs to speed up
         fetch_ids("/api/v1/cans/", "can_ids", "CANs")
-        fetch_ids("/api/v1/agreements/?limit=100&offset=0", "agreement_ids", "Agreements")
+        fetch_ids("/api/v1/agreements/?limit=100&offset=0&include_budget_lines=false", "agreement_ids", "Agreements")
         fetch_ids("/api/v1/projects/", "project_ids", "Projects")
         fetch_ids("/api/v1/portfolios/", "portfolio_ids", "Portfolios")
         fetch_ids(
