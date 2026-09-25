@@ -359,6 +359,96 @@ describe("useCreateBLIsAndSCs", () => {
         expect(duplicate.amount).toBe(original.amount);
     });
 
+    it("omits grant_number_id when duplicating a non-grant BLI (regression: issue #6163)", () => {
+        // A persisted CONTRACT BLI carries grant_number_id: null (the field only ever applies to
+        // GrantBudgetLineItem). Copying it verbatim into the duplicate's create payload sends an
+        // invalid kwarg to the backend for a ContractBudgetLineItem and 500s on Save & Exit.
+        const sourceBli = {
+            id: "source",
+            amount: 100000,
+            date_needed: "2027-08-31",
+            can_id: 1,
+            status: "PLANNED",
+            services_component_number: 2,
+            grant_number_id: null,
+            grant_number_number: null
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [sourceBli]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [sourceBli],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleDuplicateBudgetLine("source");
+        });
+
+        const duplicate = dispatchMock.mock.calls[0][0].payload;
+        expect(duplicate).not.toHaveProperty("grant_number_id");
+        expect(duplicate).not.toHaveProperty("grant_number_number");
+    });
+
+    it("carries over grant_number_id when duplicating a grant BLI", () => {
+        const sourceBli = {
+            id: "source",
+            amount: 500,
+            date_needed: "2026-01-01",
+            can_id: 1,
+            status: "PLANNED",
+            grant_number_id: 10,
+            grant_number_number: 1
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [sourceBli]
+        });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [sourceBli],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        act(() => {
+            result.current.handleDuplicateBudgetLine("source");
+        });
+
+        const duplicate = dispatchMock.mock.calls[0][0].payload;
+        expect(duplicate.grant_number_id).toBe(10);
+        expect(duplicate.grant_number_number).toBe(1);
+    });
+
     it("still requires DD approval for a Planned financial change when the capability is OFF", async () => {
         const plannedLine = {
             id: 501,
