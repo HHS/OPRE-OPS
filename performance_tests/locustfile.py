@@ -744,7 +744,7 @@ def _populate_shared_cache(environment):
     try:
         # Fetch all entity IDs - use paginated endpoint for BLIs to speed up
         fetch_ids("/api/v1/cans/", "can_ids", "CANs")
-        fetch_ids("/api/v1/agreements/?limit=100&offset=0&include_budget_lines=false", "agreement_ids", "Agreements")
+        fetch_ids("/api/v1/agreements/?limit=50&offset=0&include_budget_lines=false", "agreement_ids", "Agreements")
         fetch_ids("/api/v1/projects/", "project_ids", "Projects")
         fetch_ids("/api/v1/portfolios/", "portfolio_ids", "Portfolios")
         fetch_ids(

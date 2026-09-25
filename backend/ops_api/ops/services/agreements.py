@@ -551,13 +551,14 @@ class AgreementsService(OpsService[Agreement]):
         # fall back to Python over the full ID set.
         all_ids = _get_all_matching_ids(self.db_session, agreement_classes, data, self)
 
-        # Step 2: Filter by award_type via SQL (avoids loading full objects).
+        # Step 2: Filter by award_type via SQL, preserving the sort order from Step 1.
         if filters.award_type:
             award_type_expr = _build_award_type_sql_expr(get_current_fiscal_year())
             award_rows = self.db_session.execute(
                 select(Agreement.id, award_type_expr).where(Agreement.id.in_(all_ids))
             ).all()
-            all_ids = [r.id for r in award_rows if r.award_type in filters.award_type]
+            matching = {r.id for r in award_rows if r.award_type in filters.award_type}
+            all_ids = [aid for aid in all_ids if aid in matching]
 
         # Step 3: Apply computed-property sorts in Python (loads full objects only when needed).
         sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
@@ -585,17 +586,22 @@ class AgreementsService(OpsService[Agreement]):
         page_ids = all_ids[offset_value : offset_value + limit_value]
         paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
 
-        # Step 6: Procurement aggregates require full agreement objects (only when requested).
+        # Step 6: Procurement aggregates are summaries across ALL filtered agreements (not just
+        # the page) — the Procurement Dashboard uses these for its overview cards. Load the full
+        # filtered set with procurement-specific eager loads when requested.
         procurement_overview = None
         procurement_step_summary = None
         procurement_days_in_step = None
         if include_procurement:
+            all_procurement_agreements = _get_page_agreements(self.db_session, all_ids, include_procurement=True)
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
-            procurement_overview = _compute_procurement_overview(paginated_results, overview_fiscal_year)
-            procurement_step_summary = _compute_procurement_step_summary(paginated_results, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(paginated_results)
+            procurement_overview = _compute_procurement_overview(all_procurement_agreements, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(
+                all_procurement_agreements, overview_fiscal_year
+            )
+            procurement_days_in_step = _compute_days_in_procurement_step(all_procurement_agreements)
 
         metadata = {
             "count": total_count,
@@ -1061,6 +1067,7 @@ def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) ->
         .where(
             or_(
                 BudgetLineItem.is_obe.is_(True),
+                BudgetLineItem.status.is_(None),  # NULL status matches Python None != DRAFT → True
                 BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
             )
         )
