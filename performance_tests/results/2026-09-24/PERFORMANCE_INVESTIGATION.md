@@ -13,18 +13,18 @@ the "All" default would hurt initial load performance.
 All tests run locally with 124 agreements (24 original + 100 load test) and ~1,200 BLIs.
 Load tests: 10 concurrent users, 5 min, `limit=25&offset=0&include_fees=true`.
 
-| Scenario | Median | Avg | p95 |
-|---|---|---|---|
-| Original baseline (24 agreements, old locustfile) | 880ms | 968ms | 1,500ms |
+| Scenario                                            | Median  | Avg     | p95     |
+| --------------------------------------------------- | ------- | ------- | ------- |
+| Original baseline (24 agreements, old locustfile)   | 880ms   | 968ms   | 1,500ms |
 | Realistic baseline (24 agreements, frontend params) | 1,000ms | 1,088ms | 1,500ms |
-| Main branch (124 agreements, "All" filter) | 1,200ms | 1,226ms | 1,600ms |
+| Main branch (124 agreements, "All" filter)          | 1,200ms | 1,226ms | 1,600ms |
 
 **Direct single-request timings (124 agreements):**
 
-| Filter | Response time (3 runs avg) |
-|---|---|
-| All FYs | ~950ms |
-| FY2026 only | ~345ms |
+| Filter      | Response time (3 runs avg) |
+| ----------- | -------------------------- |
+| All FYs     | ~950ms                     |
+| FY2026 only | ~345ms                     |
 
 The FY filter is **~3× faster** despite matching 110/124 agreements. The speedup comes from
 fewer BLIs loaded during totals computation — not from fewer agreements.
@@ -130,6 +130,49 @@ meaningful local benchmarking with a dataset that exceeds the page size.
 
 ---
 
+### 5. SQL aggregates for `_compute_agreement_totals` ↩️ Reverted (pending decision)
+
+**Commits:** `5fe477193`, `0486f697a`, `75ae4ebf8`
+
+Replaced the Python loop in `_compute_agreement_totals()` with SQL queries:
+- Query 0: `(id, agreement_type)` — drives `type_counts` including all-DRAFT agreements
+- Query 1: Per-agreement `SUM(amount + fees)` — one SQL aggregate per agreement
+- Query 2: CASE-based `award_type` (NEW/CONTINUING/None) via correlated EXISTS subqueries
+
+**What worked:** Endpoint no longer 500s, returns correct data (`count: 124, data len: 25`,
+all 10 totals keys populated with correct values).
+
+**Implementation challenges encountered:**
+- `BudgetLineItem.fees` SQL expression contains correlated subqueries that break when used
+  in a multi-agreement GROUP BY — required switching to per-agreement queries
+- SQLAlchemy auto-correlation on the `has_non_draft`/`awarded_date` EXISTS subqueries
+  required explicit `.correlate(Agreement)` to fix a runtime `InvalidRequestError`
+
+**Single-request timing (124 agreements):**
+
+| Filter | Before | After SQL aggregates | Δ |
+|---|---|---|---|
+| All FYs | ~950ms | ~1,020ms | +70ms (slightly worse) |
+| FY2026 | ~345ms | ~420ms | +75ms (slightly worse) |
+
+**Load test results (10 users, 5 min, 124 agreements):**
+
+| Metric | Main baseline | SQL aggregates |
+|---|---|---|
+| `GET /agreements/` median | 1,200ms | 1,200ms |
+| `GET /agreements/` p95 | 1,600ms | 2,800ms |
+
+**Why it didn't improve:** The per-agreement query loop (one SQL `SUM` per agreement)
+trades BLI row loading for N round-trips. With 124 agreements that's 124 extra queries
+per request — worse under concurrent load (p95 degraded from 1,600ms to 2,800ms).
+
+The award_type SQL (Query 2) is efficient — one query for all agreements. The amount
+computation (Query 1) is the bottleneck. A true GROUP BY approach would fix it but
+requires rewriting the `fees` expression to avoid the correlation issue, which is
+non-trivial (the expression was designed for per-BLI context, not bulk aggregation).
+
+---
+
 ## Options to Make "All FYs" Faster
 
 The core problem: **the summary cards need totals across all agreements, but computing those
@@ -160,13 +203,23 @@ May surprise users who expected the "All" change and now don't see certain agree
 **Performance:** Totals query would run in milliseconds regardless of agreement count or
 BLI count. Eliminates the Python iteration bottleneck entirely.
 
-**Technical challenge:** `agreement_total` is a Python property that sums BLI
-`amount + fees` (where `fees` involves `procurement_shop_fee` lookup). `award_type`
-(NEW/CONTINUING) is derived from procurement actions. Both need to be reimplemented as
-SQL expressions — achievable but non-trivial, and needs regression testing.
+**Technical challenge (discovered):** The `award_type` CASE expression was successfully
+implemented in SQL (correlated EXISTS + CASE). The blocking problem is `agreement_total`:
 
-**Engineering effort:** Medium-high. Safe path: implement as a separate read-path query,
-keep existing computation as fallback.
+- `BudgetLineItem.fees` has a SQL expression (`@fees.expression`) but it contains
+  correlated subqueries (`Agreement.id == cls.agreement_id`) designed for per-BLI context.
+- When used inside a multi-agreement `GROUP BY`, SQLAlchemy auto-correlates and strips the
+  FROM clause → `InvalidRequestError: no FROM clauses`.
+- Per-agreement queries (N queries for N agreements) fix the correlation but trade BLI row
+  loading for N DB round-trips — under concurrent load, p95 degraded from 1,600ms → 2,800ms.
+
+**The actual fix needed:** Rewrite the `fees` SQL expression to work in a bulk GROUP BY
+context — either by using a lateral join, a CTE, or by inlining the fee lookup without
+relying on SQLAlchemy's correlated subquery mechanism. This is the remaining hard work.
+
+**Engineering effort:** High. `BudgetLineItem.fees` is used in many places; changing its
+SQL expression has broad impact. A safe path: add a separate `fees_bulk_expr` class method
+that works in aggregate context, keeping the existing expression for per-row use.
 
 ---
 
@@ -217,19 +270,3 @@ load is deferred to explicit user action.
 unless the UX communicates "showing FY2026, click to load all."
 
 **Engineering effort:** Low-medium. Frontend change only.
-
----
-
-## Recommendation
-
-**Short term (unblock the PR):** Revert to current FY default (Option A). This is the
-only change that demonstrably improves performance with zero engineering risk.
-
-**Medium term:** Implement Option B (SQL aggregate totals) on a separate story. This
-makes "All FYs" genuinely fast and is the architecturally correct fix.
-
-**Keep on the branch:**
-- `check_user_association` fix (genuine improvement, no downside)
-- Locustfile realistic params (better benchmarking going forward)
-- Load test fixture (reusable for future perf testing)
-- DB pagination commits (good architecture, activate once SQL aggregates are in place)
