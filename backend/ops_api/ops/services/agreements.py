@@ -1435,12 +1435,21 @@ def _get_page_agreements(
         .joinedload(CAN.portfolio)
         .joinedload(Portfolio.division),
         selectinload(Agreement.procurement_actions),
+        selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
         joinedload(Agreement.project),
         selectinload(Agreement.team_members),
         selectinload(Agreement.services_components),
     ]
     if include_procurement:
         options.append(selectinload(Agreement.procurement_trackers))
+
+    # Expire all ProcurementShop objects from the identity map before loading the page.
+    # Earlier queries (BudgetLineItem.fees subqueries) may have populated ProcurementShop
+    # instances without their procurement_shop_fees collection, causing selectinload to skip
+    # reloading an already-cached instance and returning fee_percentage=0.
+    for obj in list(session.identity_map.values()):
+        if isinstance(obj, ProcurementShop):
+            session.expire(obj)
 
     agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
 
