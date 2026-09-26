@@ -176,6 +176,7 @@ class AgreementRequestSchema(PaginationListSchema):
     award_type = fields.List(fields.Enum(AgreementClassification), required=False)
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
     include_procurement = fields.List(fields.Boolean(), required=False, load_default=[False])
+    include_budget_lines = fields.List(fields.Boolean(), required=False, load_default=[True])
 
 
 class AgreementFiltersQueryParametersSchema(Schema):

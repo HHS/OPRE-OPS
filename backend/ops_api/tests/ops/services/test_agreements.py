@@ -444,13 +444,17 @@ class TestAgreementsPagination:
         expected_total = contract_meta["count"] + grant_meta["count"]
         assert combined_meta["count"] == expected_total
 
+    @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db, app_ctx):
+    def test_pagination_with_ownership_filter(self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx):
         """Test that pagination works with ownership filter"""
-        # Mock authenticated user
+        # Mock authenticated user in both call sites
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user.return_value = mock_user
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
 
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -470,13 +474,19 @@ class TestAgreementsPagination:
         assert metadata["limit"] == 10
         assert metadata["offset"] == 0
 
+    @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_ownership_filter_affects_count(self, mock_get_user, loaded_db, app_ctx):
+    def test_pagination_ownership_filter_affects_count(
+        self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx
+    ):
         """Test that ownership filter changes the total count appropriately"""
-        # Mock authenticated user
+        # Mock authenticated user in both call sites
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user.return_value = mock_user
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
 
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -1349,7 +1359,7 @@ class TestAgreementsDuplicateNameHandling:
 class TestIsEditable:
     """Tests for AgreementsService._is_editable method"""
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_super_user_can_always_edit(self, mock_associated, loaded_db):
         """Test that super users can always edit agreements regardless of association"""
         # Mock the associated_with_agreement function to return False
@@ -1369,7 +1379,7 @@ class TestIsEditable:
         # because the super user check short-circuits the logic
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_non_super_user_can_edit_when_associated(self, mock_associated, loaded_db):
         """Test that non-super users can edit when associated with the agreement"""
         # Mock the associated_with_agreement function to return True
@@ -1385,13 +1395,13 @@ class TestIsEditable:
         # Non-super user should be able to edit when associated
         assert service._is_editable(agreement, regular_user) is True
 
-        # Verify that associated_with_agreement was called
-        mock_associated.assert_called_once_with(agreement.id)
+        # Verify that check_user_association was called with the agreement object and user
+        mock_associated.assert_called_once_with(agreement, regular_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_non_super_user_cannot_edit_when_not_associated(self, mock_associated, loaded_db):
         """Test that non-super users cannot edit when not associated with the agreement"""
-        # Mock the associated_with_agreement function to return False
+        # Mock the check_user_association function to return False
         mock_associated.return_value = False
 
         service = AgreementsService(loaded_db)
@@ -1404,10 +1414,10 @@ class TestIsEditable:
         # Non-super user should NOT be able to edit when not associated
         assert service._is_editable(agreement, regular_user) is False
 
-        # Verify that associated_with_agreement was called
-        mock_associated.assert_called_once_with(agreement.id)
+        # Verify that check_user_association was called with the agreement object and user
+        mock_associated.assert_called_once_with(agreement, regular_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_with_real_users(self, mock_associated, loaded_db, test_admin_user, test_non_admin_user):
         """Test _is_editable with real User objects from the database"""
         # Mock the associated_with_agreement function
@@ -1424,7 +1434,7 @@ class TestIsEditable:
         else:
             # If not a super user, should rely on association
             assert service._is_editable(agreement, test_admin_user) is True
-            mock_associated.assert_called_with(agreement.id)
+            mock_associated.assert_called_with(agreement, test_admin_user)
 
         # Reset mock
         mock_associated.reset_mock()
@@ -1433,9 +1443,9 @@ class TestIsEditable:
         # Test with a real non-admin user (not super user)
         assert test_non_admin_user.is_superuser is False
         assert service._is_editable(agreement, test_non_admin_user) is False
-        mock_associated.assert_called_once_with(agreement.id)
+        mock_associated.assert_called_once_with(agreement, test_non_admin_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_checks_super_user_first(self, mock_associated, loaded_db):
         """Test that is_superuser check happens before associated_with_agreement check"""
         # This test verifies the short-circuit behavior: if user is super user,
@@ -1456,7 +1466,7 @@ class TestIsEditable:
         # associated_with_agreement should NOT have been called
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_with_different_agreements(self, mock_associated, loaded_db):
         """Test _is_editable behavior with multiple agreements"""
         service = AgreementsService(loaded_db)
@@ -1471,19 +1481,19 @@ class TestIsEditable:
         # Test with agreement1 - user is associated
         mock_associated.return_value = True
         assert service._is_editable(agreement1, regular_user) is True
-        mock_associated.assert_called_with(agreement1.id)
+        mock_associated.assert_called_with(agreement1, regular_user)
 
         # Reset and test with same agreement - user is NOT associated
         mock_associated.reset_mock()
         mock_associated.return_value = False
         assert service._is_editable(agreement1, regular_user) is False
-        mock_associated.assert_called_with(agreement1.id)
+        mock_associated.assert_called_with(agreement1, regular_user)
 
 
 class TestGetLockedMessage:
     """Tests for AgreementsService._get_locked_message"""
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_editable_and_all_draft(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1492,7 +1502,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_only_null_status_bli_present(self, mock_associated, loaded_db):
         """Regression test for #5658: a BLI with status=None must not count as non-draft (this
         repo has a documented history of NULL-status Python/SQL divergence bugs)."""
@@ -1503,7 +1513,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_editable_and_no_budget_lines(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1512,7 +1522,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_non_draft_bli_present(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1524,7 +1534,7 @@ class TestGetLockedMessage:
             == "Cannot delete an agreement with budget lines that are not in Draft status"
         )
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_super_user_bypasses_non_draft_bli_check(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1536,7 +1546,7 @@ class TestGetLockedMessage:
         # is_superuser short-circuits _is_editable, so association is never checked
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_not_editable(self, mock_associated, loaded_db):
         mock_associated.return_value = False
         service = AgreementsService(loaded_db)
@@ -1545,7 +1555,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) == "Only team members on this agreement can edit or delete"
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_awarded_even_for_super_user(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1558,7 +1568,7 @@ class TestGetLockedMessage:
         # is_superuser short-circuits _is_editable, so association is never checked
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_awarded_for_regular_user(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)

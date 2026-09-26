@@ -6,7 +6,7 @@ from typing import Any, List, Literal, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, distinct, func, or_, select, union
+from sqlalchemy import Select, case, distinct, func, or_, select, union, union_all
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -35,7 +35,9 @@ from models import (
     Vendor,
 )
 from models.agreements import AgreementType
+from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 from models.procurement_tracker import ProcurementTrackerStatus
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import (
@@ -44,7 +46,11 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
+from ops_api.ops.utils.agreements_helpers import (
+    associated_with_agreement,
+    check_user_association,
+    is_agreement_name_unique_violation,
+)
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -538,34 +544,52 @@ class AgreementsService(OpsService[Agreement]):
         Returns:
             Tuple of (paginated agreements list, metadata dict with count/limit/offset)
         """
-        # Import helper functions from resources
         filters = AgreementFilters.parse_filters(data)
 
-        # Collect all agreements across types using existing resource helpers
-        all_results = []
-        for agreement_cls in agreement_classes:
-            agreements = _get_agreements(self.db_session, agreement_cls, data, include_procurement)
-            all_results.extend(agreements)
+        # Step 1: Get all matching IDs via UNION ALL (DB-level, no full object load).
+        # SQL-sortable sorts (AGREEMENT, TYPE) are applied here; computed-property sorts
+        # fall back to Python over the full ID set.
+        all_ids = _get_all_matching_ids(self.db_session, agreement_classes, data, self)
 
-        # Filter by award_type (computed property, must be done post-query)
+        # Step 2: Filter by award_type via SQL, preserving the sort order from Step 1.
         if filters.award_type:
-            all_results = [a for a in all_results if a.award_type in filters.award_type]
+            award_type_expr = _build_award_type_sql_expr(get_current_fiscal_year())
+            award_rows = self.db_session.execute(
+                select(Agreement.id, award_type_expr).where(Agreement.id.in_(all_ids))
+            ).all()
+            matching = {r.id for r in award_rows if r.award_type in filters.award_type}
+            all_ids = [aid for aid in all_ids if aid in matching]
 
-        # Sort combined results
-        if filters.sort_conditions and len(filters.sort_conditions) > 0:
-            sort_condition = filters.sort_conditions[0]
-            sort_descending = (
-                filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
-            )
-            all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
+        # Step 3: Apply computed-property sorts in Python (loads full objects only when needed).
+        sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
+        sort_descending = (
+            filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
+        )
+        if sort_condition and not _is_sql_sortable(sort_condition):
+            sort_agreements = self.db_session.scalars(select(Agreement).where(Agreement.id.in_(all_ids))).all()
+            sort_agreements = _sort_agreements(sort_agreements, sort_condition, sort_descending, filters.fiscal_year)
+            all_ids = [a.id for a in sort_agreements]
 
-        # Calculate count before slicing
-        total_count = len(all_results)
+        total_count = len(all_ids)
 
-        # Calculate aggregate totals before pagination (for summary cards)
-        totals = _compute_agreement_totals(all_results)
+        # Step 4: SQL aggregate totals across the full filtered set (no BLI rows loaded).
+        totals = _compute_agreement_totals_sql(self.db_session, all_ids)
 
-        # Calculate procurement overview and step summary before pagination (only when requested)
+        # Step 5: Pagination — slice IDs, then fetch only the page rows.
+        if filters.limit is not None and filters.offset is not None:
+            limit_value = filters.limit[0]
+            offset_value = filters.offset[0]
+        else:
+            limit_value = total_count
+            offset_value = 0
+
+        page_ids = all_ids[offset_value : offset_value + limit_value]
+        paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
+
+        # Step 6: Procurement aggregates use the same page of agreements as the data array,
+        # keeping the overview card and step detail counts consistent (the Procurement Dashboard
+        # E2E test asserts they match). useGetAllAgreements fetches all pages and accumulates,
+        # so the full picture is built client-side across pages.
         procurement_overview = None
         procurement_step_summary = None
         procurement_days_in_step = None
@@ -573,19 +597,9 @@ class AgreementsService(OpsService[Agreement]):
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
-            procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
-            procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(all_results)
-
-        # Apply pagination slicing
-        if filters.limit is not None and filters.offset is not None:
-            limit_value = filters.limit[0]
-            offset_value = filters.offset[0]
-            paginated_results = all_results[offset_value : offset_value + limit_value]
-        else:
-            paginated_results = all_results
-            limit_value = total_count
-            offset_value = 0
+            procurement_overview = _compute_procurement_overview(paginated_results, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(paginated_results, overview_fiscal_year)
+            procurement_days_in_step = _compute_days_in_procurement_step(paginated_results)
 
         metadata = {
             "count": total_count,
@@ -861,7 +875,7 @@ class AgreementsService(OpsService[Agreement]):
         N.B. Currently the agreement is always editable if the user is a super user -
         this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
         """
-        return user.is_superuser or associated_with_agreement(agreement.id)
+        return user.is_superuser or check_user_association(agreement, user)
 
     def _deletion_blocked_reason(
         self, agreement: Agreement, user: User, is_editable: bool | None = None
@@ -1002,6 +1016,137 @@ def _percent(value, total):
     if total == 0:
         return 0.0
     return float(round((float(value) / float(total)) * 100))
+
+
+def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) -> dict[str, Any]:
+    """Compute aggregate totals for summary cards using SQL aggregates.
+
+    Replaces the Python-iteration version for the list endpoint.
+    Groups BLI amount+fees by agreement_id — no Agreement join in the outer query,
+    which avoids auto-correlation in the BudgetLineItem.fees SQL expression.
+    award_type (NEW/CONTINUING) is classified via SQL CASE with correlated EXISTS.
+    type_counts and total_agreements_count include all-DRAFT agreements via a
+    separate lightweight fetch.
+    """
+    totals = {
+        "total_contract_amount": 0.0,
+        "total_partner_amount": 0.0,
+        "total_grant_amount": 0.0,
+        "total_direct_obligation_amount": 0.0,
+        "total_agreements_count": len(agreement_ids),
+        "type_counts": {},
+        "new_count": 0,
+        "new_type_counts": {},
+        "continuing_count": 0,
+        "continuing_type_counts": {},
+    }
+
+    if not agreement_ids:
+        return totals
+
+    # Query 0: (id, agreement_type) — drives type_counts; includes all-DRAFT agreements.
+    type_rows = session.execute(
+        select(Agreement.id, Agreement.agreement_type).where(Agreement.id.in_(agreement_ids))
+    ).all()
+    id_to_type = {row.id: row.agreement_type for row in type_rows}
+    for ag_type in id_to_type.values():
+        type_key = ag_type.name
+        totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
+
+    # Query 1: SUM(amount + fees) grouped by agreement_id.
+    # Query directly against budget_line_item with no Agreement join — this avoids
+    # auto-correlation in BudgetLineItem.fees which references cls.agreement_id.
+    # The fees expression correlates on the outer BLI row's agreement_id, which resolves
+    # correctly when the outer query is on budget_line_item itself.
+    total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
+    amount_rows = session.execute(
+        select(BudgetLineItem.agreement_id, total_expr.label("total"))
+        .where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        .where(
+            or_(
+                BudgetLineItem.is_obe.is_(True),
+                BudgetLineItem.status.is_(None),  # NULL status matches Python None != DRAFT → True
+                BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+            )
+        )
+        .group_by(BudgetLineItem.agreement_id)
+    ).all()
+    for row in amount_rows:
+        if row.total is not None:
+            ag_type = id_to_type.get(row.agreement_id)
+            if ag_type is not None:
+                _bucket_amount_by_type(totals, ag_type, float(row.total))
+
+    # Query 2: award_type (NEW/CONTINUING/None) per agreement via SQL CASE.
+    current_fy = get_current_fiscal_year()
+    award_type_expr = _build_award_type_sql_expr(current_fy)
+    award_rows = session.execute(
+        select(Agreement.id, Agreement.agreement_type, award_type_expr).where(Agreement.id.in_(agreement_ids))
+    ).all()
+    for row in award_rows:
+        ag_type = id_to_type.get(row.id)
+        if ag_type is not None:
+            _accumulate_award_counts(totals, row.award_type, ag_type.name)
+
+    return totals
+
+
+def _bucket_amount_by_type(totals: dict, ag_type: AgreementType, amount: float) -> None:
+    """Accumulate a dollar amount into the correct type bucket in the totals dict."""
+    if ag_type == AgreementType.CONTRACT:
+        totals["total_contract_amount"] += amount
+    elif ag_type in (AgreementType.AA, AgreementType.IAA):
+        totals["total_partner_amount"] += amount
+    elif ag_type == AgreementType.GRANT:
+        totals["total_grant_amount"] += amount
+    elif ag_type == AgreementType.DIRECT_OBLIGATION:
+        totals["total_direct_obligation_amount"] += amount
+
+
+def _accumulate_award_counts(totals: dict, award: str | None, type_key: str) -> None:
+    """Increment the new/continuing counters for one agreement."""
+    if award == "NEW":
+        totals["new_count"] += 1
+        totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
+    elif award == "CONTINUING":
+        totals["continuing_count"] += 1
+        totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
+
+
+def _build_award_type_sql_expr(current_fy: int):
+    """Build the SQLAlchemy CASE expression that classifies each agreement as NEW/CONTINUING/None."""
+    has_non_draft = (
+        select(BudgetLineItem.id)
+        .where(BudgetLineItem.agreement_id == Agreement.id)
+        .where(BudgetLineItem.status.isnot(None))
+        .where(BudgetLineItem.status != BudgetLineItemStatus.DRAFT)
+        .correlate(Agreement)
+        .exists()
+    )
+    awarded_date = (
+        select(ProcurementAction.date_awarded_obligated)
+        .where(ProcurementAction.agreement_id == Agreement.id)
+        .where(ProcurementAction.status.in_([ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]))
+        .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+        .order_by(ProcurementAction.created_on.desc())
+        .correlate(Agreement)
+        .limit(1)
+        .scalar_subquery()
+    )
+    award_fy_expr = case(
+        (awarded_date.is_(None), None),
+        else_=case(
+            (func.extract("month", awarded_date) >= 10, func.extract("year", awarded_date) + 1),
+            else_=func.extract("year", awarded_date),
+        ),
+    )
+    return case(
+        (~has_non_draft, None),
+        (awarded_date.is_(None), "NEW"),
+        (award_fy_expr.is_(None), "NEW"),
+        (current_fy <= award_fy_expr, "NEW"),
+        else_="CONTINUING",
+    ).label("award_type")
 
 
 def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
@@ -1209,6 +1354,107 @@ def _compute_days_in_procurement_step(
         days_in_step[step_number][agreement.id] = diff_days
 
     return days_in_step
+
+
+_SQL_SORTABLE = {AgreementSortCondition.AGREEMENT, AgreementSortCondition.TYPE}
+
+
+def _is_sql_sortable(sort_condition: AgreementSortCondition) -> bool:
+    return sort_condition in _SQL_SORTABLE
+
+
+def _get_all_matching_ids(
+    session: Session,
+    agreement_classes: list[Type[Agreement]],
+    data: dict[str, Any],
+    service: "AgreementsService",
+) -> list[int]:
+    """Return all matching agreement IDs across all subclass tables via UNION ALL.
+
+    SQL-sortable sorts (AGREEMENT, TYPE) are applied here so the returned list is
+    already ordered. Ownership filter (only_my) is pushed to SQL.
+    """
+    filters = AgreementFilters.parse_filters(data)
+    sort_condition = filters.sort_conditions[0] if filters.sort_conditions else AgreementSortCondition.AGREEMENT
+    sort_descending = (
+        filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
+    )
+
+    id_queries = []
+    for agreement_cls in agreement_classes:
+        q = select(agreement_cls.id).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
+        q = _apply_filters(q, agreement_cls, data)
+        only_my = data.get("only_my", [])
+        if only_my and True in only_my:
+            current_user = get_current_user()
+            q = service._apply_user_association_filter(q, current_user)
+        id_queries.append(q)
+
+    union_subq = union_all(*id_queries).subquery()
+
+    if _is_sql_sortable(sort_condition):
+        agreement_alias = Agreement.__table__
+        if sort_condition == AgreementSortCondition.AGREEMENT:
+            sort_col = func.lower(agreement_alias.c.name).label("sort_key")
+        else:
+            sort_col = agreement_alias.c.agreement_type.label("sort_key")
+        inner = (
+            select(union_subq.c.id, sort_col)
+            .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
+            .distinct()
+            .subquery()
+        )
+        order_expr = inner.c.sort_key.desc() if sort_descending else inner.c.sort_key
+        id_query = select(inner.c.id).order_by(order_expr)
+    else:
+        id_query = select(union_subq.c.id).distinct()
+
+    rows = session.execute(id_query).all()
+    return [row[0] for row in rows]
+
+
+def _get_page_agreements(
+    session: Session,
+    page_ids: list[int],
+    include_procurement: bool = False,
+) -> list[Agreement]:
+    """Fetch full Agreement objects for a page of IDs with eager loads for serialization."""
+    if not page_ids:
+        return []
+
+    from sqlalchemy.orm import joinedload
+
+    options = [
+        selectinload(Agreement.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
+        selectinload(Agreement.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .selectinload(Portfolio.team_leaders),
+        selectinload(Agreement.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .joinedload(Portfolio.division),
+        selectinload(Agreement.procurement_actions),
+        selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+        joinedload(Agreement.project),
+        selectinload(Agreement.team_members),
+        selectinload(Agreement.services_components),
+    ]
+    if include_procurement:
+        options.append(selectinload(Agreement.procurement_trackers))
+
+    # Expire all ProcurementShop objects from the identity map before loading the page.
+    # Earlier queries (BudgetLineItem.fees subqueries) may have populated ProcurementShop
+    # instances without their procurement_shop_fees collection, causing selectinload to skip
+    # reloading an already-cached instance and returning fee_percentage=0.
+    for obj in list(session.identity_map.values()):
+        if isinstance(obj, ProcurementShop):
+            session.expire(obj)
+
+    agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
+
+    id_to_agreement = {a.id: a for a in agreements}
+    return [id_to_agreement[i] for i in page_ids if i in id_to_agreement]
 
 
 def _get_agreements(
