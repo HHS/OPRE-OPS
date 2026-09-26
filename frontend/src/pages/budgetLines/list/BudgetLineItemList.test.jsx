@@ -747,8 +747,8 @@ describe("BudgetLineItemList", () => {
 
     it("page-level reset effect reverts to All when FY tags go non-zero → zero (tag removal path)", () => {
         // Guards the tag-removal → "revert to All" behavior. When filters.fiscalYears transitions
-        // from non-empty to empty WITHOUT dropdownChangedFYRef or applyFiredFYRef being set,
-        // the effect must call setSelectedFiscalYear("All").
+        // from non-empty to empty without dropdownChangedFYRef being set (i.e. not a dropdown
+        // shortcut change), the effect must call setSelectedFiscalYear("All").
         const setSelectedFiscalYearMock = vi.fn();
 
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
