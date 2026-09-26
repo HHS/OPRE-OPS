@@ -18,18 +18,9 @@ import React from "react";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {Object} props.projectFilterOptions - The filter options from API.
  * @param {boolean} [props.isLoadingOptions] - Whether the filter options are loading.
- * @param {React.MutableRefObject<boolean>} [props.applyFiredFYRef] - Ref forwarded to
- *   useProjectFilterButton so the page-level FY reset effect can distinguish Apply from
- *   tag removal.
  * @returns {JSX.Element} - The project filter button component.
  */
-export const ProjectFilterButton = ({
-    filters,
-    setFilters,
-    projectFilterOptions,
-    isLoadingOptions = false,
-    applyFiredFYRef
-}) => {
+export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions, isLoadingOptions = false }) => {
     const [showModal, setShowModal] = React.useState(false);
 
     const {
@@ -45,7 +36,7 @@ export const ProjectFilterButton = ({
         setProjectType,
         applyFilter,
         resetFilter
-    } = useProjectFilterButton(filters, setFilters, showModal, applyFiredFYRef);
+    } = useProjectFilterButton(filters, setFilters, showModal);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;

@@ -747,8 +747,8 @@ describe("BudgetLineItemList", () => {
 
     it("page-level reset effect reverts to All when FY tags go non-zero → zero (tag removal path)", () => {
         // Guards the tag-removal → "revert to All" behavior. When filters.fiscalYears transitions
-        // from non-empty to empty WITHOUT dropdownChangedFYRef or applyFiredFYRef being set,
-        // the effect must call setSelectedFiscalYear("All").
+        // from non-empty to empty without dropdownChangedFYRef being set (i.e. not a dropdown
+        // shortcut change), the effect must call setSelectedFiscalYear("All").
         const setSelectedFiscalYearMock = vi.fn();
 
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
@@ -792,6 +792,56 @@ describe("BudgetLineItemList", () => {
         );
 
         // Tag removal path: no ref guards → effect SHOULD revert to "All"
+        expect(setSelectedFiscalYearMock).toHaveBeenCalledWith("All");
+    });
+
+    it("Apply with empty Compare FYs reverts dropdown to All (Reset+Apply bug regression guard)", () => {
+        // Guards the Reset+Apply bug: when filters.fiscalYears transitions non-zero → zero
+        // via Apply (not a tag removal), the effect must ALSO revert to "All". This failed
+        // when applyFiredFYRef was suppressing the revert on the Apply path.
+        const setSelectedFiscalYearMock = vi.fn();
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [{ id: 2025, title: 2025 }] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        const { rerender } = render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Simulate Apply writing fiscalYears: [] (Reset → Apply with empty Compare FYs).
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, fiscalYears: [] },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "2024",
+            setSelectedFiscalYear: setSelectedFiscalYearMock,
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        rerender(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Apply path: no ref guards → effect SHOULD revert to "All"
         expect(setSelectedFiscalYearMock).toHaveBeenCalledWith("All");
     });
 });

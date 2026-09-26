@@ -124,18 +124,13 @@ const AgreementsList = () => {
     // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
     const dropdownChangedFYRef = useRef(false);
 
-    // Track when applyFilter caused the emptying so the effect below doesn't revert
-    // selectedFiscalYear to "All" — Apply means "fall back to the current dropdown year",
-    // not "reset to All". This ref is set by useAgreementsFilterButton's applyFilter.
-    const applyFiredFYRef = useRef(false);
-
-    // Track the previous length to distinguish "non-zero → zero" (tag removal) from
-    // a no-op write of a new [] reference when the array was already empty.
+    // Track the previous length to distinguish "non-zero → zero" transitions (tag removal
+    // or Apply with empty panel) from no-op writes of a new [] reference when already empty.
     const prevFYLengthRef = useRef(0);
 
-    // When all FY filter tags are explicitly removed (non-zero → zero, not from dropdown
-    // or Apply), revert selectedFiscalYear to "All" per the business rule.
-    // Normalize null (emitted by FiscalYearComboBox clear control) to [] before length checks.
+    // Revert selectedFiscalYear to "All" whenever the FY filter transitions non-zero → zero
+    // (tag removal, Apply with empty panel, or clearing the combobox) unless the dropdown
+    // shortcut itself caused the clear, in which case preserve the chosen year.
     useEffect(() => {
         const normalizedFYs = filters.fiscalYear ?? [];
         const prevLen = prevFYLengthRef.current;
@@ -144,24 +139,10 @@ const AgreementsList = () => {
             dropdownChangedFYRef.current = false;
             return;
         }
-        if (applyFiredFYRef.current) {
-            applyFiredFYRef.current = false;
-            return;
-        }
         if (normalizedFYs.length === 0 && prevLen > 0) {
             setSelectedFiscalYear("All");
         }
     }, [filters.fiscalYear]);
-
-    // Apply can write back the same filters.fiscalYear array reference (e.g. the user
-    // applied without touching Compare FYs) — the effect above then never re-runs to
-    // consume applyFiredFYRef, leaving it stuck `true` and wrongly suppressing the NEXT
-    // (unrelated) tag-removal revert-to-All. This effect has no dependency array, so it
-    // runs after every commit and clears the flag once the Apply-triggered render has
-    // been processed, regardless of whether filters.fiscalYear's reference changed.
-    useEffect(() => {
-        applyFiredFYRef.current = false;
-    });
 
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
@@ -382,7 +363,6 @@ const AgreementsList = () => {
                                         setFilters={setFilters}
                                         agreementFilterOptions={agreementFilterOptions}
                                         isLoadingOptions={isLoadingAgreementFilterOptions}
-                                        applyFiredFYRef={applyFiredFYRef}
                                     />
                                 </div>
                             </div>

@@ -19,13 +19,7 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @param {Object} props.agreementFilterOptions - The filter options from API.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterButton = ({
-    filters,
-    setFilters,
-    agreementFilterOptions,
-    isLoadingOptions = false,
-    applyFiredFYRef
-}) => {
+export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, isLoadingOptions = false }) => {
     const [showModal, setShowModal] = useState(false);
 
     const {
@@ -45,7 +39,7 @@ export const AgreementsFilterButton = ({
         setAwardType,
         applyFilter,
         resetFilter
-    } = useAgreementsFilterButton(filters, setFilters, showModal, applyFiredFYRef);
+    } = useAgreementsFilterButton(filters, setFilters, showModal);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;

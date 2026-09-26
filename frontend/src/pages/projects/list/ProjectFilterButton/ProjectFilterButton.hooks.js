@@ -7,12 +7,8 @@ import React from "react";
  * @param {boolean} showModal - Whether the filter modal is currently open.
  *   Used to reseed local buffers from parent state on each modal open, so that
  *   a Reset-without-Apply followed by re-opening shows the correct current filters.
- * @param {React.MutableRefObject<boolean>} [applyFiredFYRef] - Ref set to true immediately
- *   before applyFilter writes to parent state. Lets the page-level FY reset effect
- *   distinguish tag removal (should revert to "All") from Apply (should preserve the
- *   dropdown's current year).
  */
-export const useProjectFilterButton = (filters, setFilters, showModal, applyFiredFYRef) => {
+export const useProjectFilterButton = (filters, setFilters, showModal) => {
     const [fiscalYear, setFiscalYear] = React.useState(
         /** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([])
     );
@@ -63,9 +59,6 @@ export const useProjectFilterButton = (filters, setFilters, showModal, applyFire
     }, [filters.projectType]);
 
     const applyFilter = () => {
-        // Signal to the page-level FY reset effect that this emptying came from Apply,
-        // not from tag removal — so it should NOT revert selectedFiscalYear to "All".
-        if (applyFiredFYRef) applyFiredFYRef.current = true;
         setFilters(
             /** @param {import('./ProjectFilterTypes').Filters} prevState */
             (prevState) => {
