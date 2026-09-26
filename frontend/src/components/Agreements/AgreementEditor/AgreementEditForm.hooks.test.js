@@ -846,11 +846,12 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
     it("isReviewMode effect flags a new unsaved agreement so the required service_requirement_type check fires", () => {
         // Regression guard: this effect's suite.run() must pass isNewAgreement like runValidate
         // does, or the AgreementEditFormSuite required-field rule (gated on data.isNewAgreement)
-        // silently never runs for it. (issue #6230)
+        // silently never runs for it. Uses a non-CONTRACT/AA type so this only passes via the
+        // isNewAgreement branch, not the separately-required CONTRACT/AA branch. (issue #6230)
         useEditAgreementMock.mockReturnValue(
             makeEditState({
                 id: undefined,
-                agreement_type: "CONTRACT",
+                agreement_type: "DIRECT_OBLIGATION",
                 service_requirement_type: null
             })
         );
@@ -913,5 +914,110 @@ describe("useAgreementEditForm - procurement-shop change request gating (SKIP_CR
         // No approval modal — the change is saved directly.
         expect(result.current.showModal).toBe(false);
         expect(updateAgreementMock).toHaveBeenCalled();
+    });
+});
+
+describe("useAgreementEditForm - service_requirement_type on load for existing agreements", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it.each([
+        ["agreement details edit", "/agreements/123", true],
+        ["edit wizard", "/agreements/edit/123", undefined]
+    ])("flags a null value on an existing CONTRACT and disables Save (%s)", (_label, pathname, isEditMode) => {
+        useLocationMock.mockReturnValue({ pathname });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
+        expect(result.current.shouldDisableBtn).toBe(true);
+    });
+
+    it("does not flag an existing CONTRACT that has a value", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
+        expect(result.current.shouldDisableBtn).toBe(false);
+    });
+
+    it("clears the error and enables Save once the user picks a value", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
+        expect(result.current.shouldDisableBtn).toBe(true);
+
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+        // Two rerenders: the first commits the new agreement (whose changed
+        // service_requirement_type dep triggers the on-load effect's runValidate call, mutating
+        // the suite's internal state); the second re-reads suite.get() to observe that mutation.
+        // `res` is computed in the render body before that render's own effects run, so a single
+        // rerender() here would still read the pre-effect (stale, error) result.
+        rerender();
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
+        expect(result.current.shouldDisableBtn).toBe(false);
+    });
+
+    it("does not flag a new unsaved agreement on load before the user interacts", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ id: undefined, agreement_type: "CONTRACT", service_requirement_type: null })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm();
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
     });
 });

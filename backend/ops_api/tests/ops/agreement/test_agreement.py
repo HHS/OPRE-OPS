@@ -1126,6 +1126,31 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project, app_ctx
 
 
 @pytest.fixture()
+def legacy_contract_without_service_requirement_type(loaded_db, test_vendor, test_admin_user, test_project, app_ctx):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399-legacy-null-srt-fixture",
+        contract_number="XXXX000000099",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=None,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
+    )
+
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
 def test_psf(loaded_db, app_ctx):
     """Create a ProcurementShopFee for testing"""
     ps = ProcurementShop(name="Whatever", abbr="WHO")
@@ -2058,6 +2083,24 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract, 
     assert data["agreement_type"] == test_contract.agreement_type.name
     assert data["project_id"] == test_contract.project_id
     assert data["created_by"] is test_contract.created_by
+
+
+def test_agreements_patch_legacy_contract_with_explicit_null_service_requirement_type_returns_400(
+    auth_client, loaded_db, legacy_contract_without_service_requirement_type, test_admin_user, app_ctx
+):
+    """Characterization (#6291): the frontend now blocks Save on edit for CONTRACT/AA agreements
+    with a null service_requirement_type, because the backend rejects it here. If this rule ever
+    changes, revisit AgreementEditFormSuite.js and the on-load validation effect in
+    AgreementEditForm.hooks.js — they assume this backend behavior stays as-is."""
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=legacy_contract_without_service_requirement_type.id),
+        json={"project_officer_id": test_admin_user.id, "service_requirement_type": None},
+    )
+
+    assert response.status_code == 400
+    assert response.json["errors"] == {
+        "service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."
+    }
 
 
 def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract, app_ctx):
