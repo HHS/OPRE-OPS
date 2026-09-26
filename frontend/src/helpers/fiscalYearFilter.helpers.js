@@ -2,7 +2,8 @@
  * Shared pure helpers for fiscal-year filter logic (Model B: two-input precedence).
  *
  * These are page-agnostic — they accept only FY values, not a full `filters` object.
- * Used by Agreements list; Projects, CANs, Reporting will adopt these in follow-up PRs.
+ * Used by Agreements list; Projects and Reporting will adopt these in follow-up PRs. CANs has no
+ * Compare Fiscal Years component (#6259) and intentionally does not adopt these.
  *
  * State contract:
  *   selectedFiscalYear — the page-level dropdown value ("All" | year string). Never produces a tag.
@@ -76,8 +77,8 @@ export const deriveDropdownValue = (selectedFiscalYear, compareFYs) => {
  *
  * NOTE for future page migrations: this returns {id,title} objects, not raw scalars.
  * The getAgreements and getBudgetLineItems query builders already use getFiscalYearQueryValue()
- * to extract the id. The getCans query builder pushes raw values directly — it must be updated
- * to use getFiscalYearQueryValue() before the CAN page adopts this helper (opsAPI.js ~line 795).
+ * to extract the id. The getCans query builder pushes raw values directly, but CANs has no
+ * Compare Fiscal Years component (#6259) and intentionally does not adopt this helper.
  */
 export const resolveForAPI = (selectedFiscalYear, compareFYs) => {
     if (Array.isArray(compareFYs) && compareFYs.length > 0) {

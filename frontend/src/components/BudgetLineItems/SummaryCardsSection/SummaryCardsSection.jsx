@@ -21,7 +21,8 @@ const SummaryCardsSection = ({
     totalObligatedAmount,
     fiscalYear
 }) => {
-    const titlePrefix = fiscalYear === "Multi" ? "Multiple Years" : `FY ${fiscalYear}`;
+    const titlePrefix =
+        fiscalYear === "Multi" ? "Multiple Years" : fiscalYear === "All FYs" ? "All FYs" : `FY ${fiscalYear}`;
     return (
         <div className="display-flex flex-justify">
             <BudgetLinesTotalSummaryCard
