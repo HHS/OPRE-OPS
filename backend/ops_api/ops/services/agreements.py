@@ -1435,7 +1435,6 @@ def _get_page_agreements(
         .joinedload(CAN.portfolio)
         .joinedload(Portfolio.division),
         selectinload(Agreement.procurement_actions),
-        selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
         joinedload(Agreement.project),
         selectinload(Agreement.team_members),
         selectinload(Agreement.services_components),
@@ -1443,9 +1442,7 @@ def _get_page_agreements(
     if include_procurement:
         options.append(selectinload(Agreement.procurement_trackers))
 
-    agreements = session.scalars(
-        select(Agreement).where(Agreement.id.in_(page_ids)).options(*options).execution_options(populate_existing=True)
-    ).all()
+    agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
 
     id_to_agreement = {a.id: a for a in agreements}
     return [id_to_agreement[i] for i in page_ids if i in id_to_agreement]
