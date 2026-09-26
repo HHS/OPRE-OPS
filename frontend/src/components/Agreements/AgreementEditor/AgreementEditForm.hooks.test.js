@@ -969,6 +969,45 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
         expect(result.current.shouldDisableBtn).toBe(false);
     });
 
+    it("clears the error and enables Save once the user picks a value", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
+        expect(result.current.shouldDisableBtn).toBe(true);
+
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+        // Two rerenders: the first commits the new agreement (whose changed
+        // service_requirement_type dep triggers the on-load effect's runValidate call, mutating
+        // the suite's internal state); the second re-reads suite.get() to observe that mutation.
+        // `res` is computed in the render body before that render's own effects run, so a single
+        // rerender() here would still read the pre-effect (stale, error) result.
+        rerender();
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.shouldDisableBtn).toBe(false);
+    });
+
     it("does not flag a new unsaved agreement on load before the user interacts", () => {
         useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
         useEditAgreementMock.mockReturnValue(
