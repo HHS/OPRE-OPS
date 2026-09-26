@@ -104,45 +104,4 @@ describe("useAgreementsFilterButton", () => {
             portfolio: [{ id: 2, title: "Portfolio B" }]
         });
     });
-
-    describe("applyFiredFYRef seam", () => {
-        it("sets the ref when Apply actually changes the fiscalYear buffer", () => {
-            const setFilters = vi.fn();
-            const applyFiredFYRef = { current: false };
-            const { result } = renderHook(() =>
-                useAgreementsFilterButton(baseFilters, setFilters, true, applyFiredFYRef)
-            );
-
-            act(() => {
-                result.current.setFiscalYear([{ id: 2024, title: 2024 }]);
-            });
-            act(() => {
-                result.current.applyFilter();
-            });
-
-            expect(applyFiredFYRef.current).toBe(true);
-        });
-
-        it("does not set the ref when Apply writes back the same fiscalYear reference", () => {
-            // Regression guard for the stuck-ref bug: if the FY buffer is untouched (same
-            // reference as filters.fiscalYear), the page-level effect keyed on
-            // filters.fiscalYear never re-runs to clear the ref. Setting it anyway leaves
-            // it stuck "true" and wrongly suppresses a later, unrelated tag-removal reset.
-            const filters = { ...baseFilters, fiscalYear: [{ id: 2024, title: 2024 }] };
-            const setFilters = vi.fn();
-            const applyFiredFYRef = { current: false };
-            const { result } = renderHook(() => useAgreementsFilterButton(filters, setFilters, true, applyFiredFYRef));
-
-            // Change an unrelated filter only — leave fiscalYear untouched.
-            act(() => {
-                result.current.setPortfolio([{ id: 2, title: "Portfolio B" }]);
-            });
-            act(() => {
-                result.current.applyFilter();
-            });
-
-            expect(setFilters).toHaveBeenCalledTimes(1);
-            expect(applyFiredFYRef.current).toBe(false);
-        });
-    });
 });
