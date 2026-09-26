@@ -50,13 +50,21 @@ vi.mock("./AgreementsTabs", () => ({
 }));
 
 vi.mock("./AgreementsFilterButton/AgreementsFilterButton", () => ({
-    default: ({ isLoadingOptions }) => (
-        <button
-            data-testid="filter-button"
-            data-loading-options={String(isLoadingOptions)}
-        >
-            Filter
-        </button>
+    default: ({ isLoadingOptions, setFilters }) => (
+        <div>
+            <button
+                data-testid="filter-button"
+                data-loading-options={String(isLoadingOptions)}
+            >
+                Filter
+            </button>
+            <button
+                data-testid="apply-with-empty-fy"
+                onClick={() => setFilters && setFilters((prev) => ({ ...prev, fiscalYear: [] }))}
+            >
+                Apply with empty FY
+            </button>
+        </div>
     )
 }));
 
@@ -1220,6 +1228,32 @@ describe("AgreementsList - Model B FY behavior (OPS-6256)", () => {
         await waitFor(() => expect(mockQuery).toHaveBeenCalled());
         const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
         expect(lastCall[0].filters.fiscalYear).toEqual([]);
+    });
+
+    it("Apply with empty Compare FYs reverts dropdown to All (Reset+Apply bug regression guard)", async () => {
+        baseBeforeEach();
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+        await screen.findByTestId("fiscal-year-dropdown");
+
+        fireEvent.change(screen.getByTestId("fiscal-year-dropdown"), { target: { value: "2024" } });
+        await waitFor(() => expect(screen.getByTestId("fiscal-year-dropdown").value).toBe("2024"));
+
+        // Seed active panel FYs (transitions fiscalYear from [] to non-empty).
+        fireEvent.click(screen.getByTestId("seed-fy-tag"));
+        await waitFor(() => expect(screen.getByTestId("fiscal-year-dropdown").value).toBe("2025"));
+
+        // Simulate Reset → Apply with empty Compare FYs (the reported bug scenario).
+        // filters.fiscalYear transitions from [{id:2025}] → [].
+        fireEvent.click(screen.getByTestId("apply-with-empty-fy"));
+
+        // Dropdown must revert to "All" — NOT stay on "2024" (the stale dropdown year).
+        await waitFor(() => expect(screen.getByTestId("fiscal-year-dropdown").value).toBe("All"));
     });
 
     it("removing the last FY tag reverts the dropdown to All, not the stale pre-Compare-FYs dropdown year", async () => {

@@ -80,18 +80,31 @@ vi.mock("./ProjectFilterTags/ProjectFilterTags", async () => {
     };
 });
 
-// Mock that simulates applying the filter modal without touching Compare FYs.
+// Mock that simulates applying the filter modal in two modes:
+// - "apply-with-empty-fy": Apply with Compare FYs cleared (the Reset+Apply bug scenario)
+// - "apply-without-touching-fy": Apply without changing Compare FYs (only other filters)
 vi.mock("./ProjectFilterButton/ProjectFilterButton", () => ({
     default: ({ setFilters }) => (
-        <button
-            type="button"
-            data-testid="apply-without-touching-fy"
-            onClick={() => {
-                setFilters((prev) => ({ ...prev, portfolio: [{ id: 9, name: "Other Portfolio" }] }));
-            }}
-        >
-            Apply without touching FY
-        </button>
+        <div>
+            <button
+                type="button"
+                data-testid="apply-with-empty-fy"
+                onClick={() => {
+                    setFilters((prev) => ({ ...prev, fiscalYear: [] }));
+                }}
+            >
+                Apply with empty FY
+            </button>
+            <button
+                type="button"
+                data-testid="apply-without-touching-fy"
+                onClick={() => {
+                    setFilters((prev) => ({ ...prev, portfolio: [{ id: 9, name: "Other Portfolio" }] }));
+                }}
+            >
+                Apply without touching FY
+            </button>
+        </div>
     )
 }));
 
@@ -581,6 +594,26 @@ describe("ProjectsList - Model B FY behavior (OPS-6257)", () => {
                 })
             );
         });
+    });
+
+    it("Apply with empty Compare FYs reverts dropdown to All (Reset+Apply bug regression guard)", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "2024");
+        await waitFor(() => expect(fySelect).toHaveValue("2024"));
+
+        // Seed active panel FYs (non-zero → zero is the transition we need to test).
+        await user.click(screen.getByTestId("seed-fy-tag"));
+        await waitFor(() => expect(fySelect).toHaveValue("2025"));
+
+        // Simulate Reset → Apply with empty Compare FYs (the reported bug scenario).
+        // filters.fiscalYear transitions from [{id:2025}] → [].
+        await user.click(screen.getByTestId("apply-with-empty-fy"));
+
+        // Dropdown must revert to "All" — NOT stay on 2024 (the stale dropdown year).
+        await waitFor(() => expect(fySelect).toHaveValue("All"));
     });
 
     it("removing the last FY tag reverts the dropdown to All, not a stale dropdown year", async () => {
