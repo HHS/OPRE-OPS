@@ -1005,6 +1005,7 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
         rerender();
 
         expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
         expect(result.current.shouldDisableBtn).toBe(false);
     });
 
