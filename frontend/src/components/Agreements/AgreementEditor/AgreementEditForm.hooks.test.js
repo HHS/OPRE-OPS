@@ -80,6 +80,7 @@ vi.mock("./AgreementEditorContext.hooks", () => ({
 }));
 
 import useAgreementEditForm from "./AgreementEditForm.hooks";
+import suite from "./AgreementEditFormSuite";
 
 const makeAgreement = (overrides = {}) => ({
     id: undefined,
@@ -1016,5 +1017,44 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
         rerender();
 
         expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+    });
+
+    it("does not re-validate service_requirement_type when an unrelated field changes", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+
+        const runSpy = vi.spyOn(suite, "run");
+        const { rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        const srtRunCalls = () => runSpy.mock.calls.filter(([, field]) => field === "service_requirement_type").length;
+        const callsAfterMount = srtRunCalls();
+        expect(callsAfterMount).toBeGreaterThan(0);
+
+        // Renaming the agreement produces a new `agreement` object (and thus a new `runValidate`
+        // reference), but id and service_requirement_type are unchanged, so the on-load check
+        // should not run again.
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract Renamed",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+        rerender();
+
+        expect(srtRunCalls()).toBe(callsAfterMount);
+
+        runSpy.mockRestore();
     });
 });

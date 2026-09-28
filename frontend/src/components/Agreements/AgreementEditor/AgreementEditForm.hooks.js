@@ -257,7 +257,11 @@ const useAgreementEditForm = (
             runValidate("service_requirement_type", agreement?.service_requirement_type);
             forceServiceReqTypeValidationRerender((tick) => tick + 1);
         }
-    }, [agreement?.id, agreement?.service_requirement_type, runValidate]);
+        // runValidate is intentionally omitted: it's recreated on every agreement field change
+        // (useCallback deps: [agreement]), which would re-run this check on every keystroke in
+        // unrelated fields instead of only when id/service_requirement_type actually change.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agreement?.id, agreement?.service_requirement_type]);
 
     React.useEffect(() => {
         if (errorProductServiceCodes || errorProjects) {
