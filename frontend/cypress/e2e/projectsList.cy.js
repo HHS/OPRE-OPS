@@ -369,6 +369,7 @@ describe("Projects List Page", () => {
         cy.get("button").contains("Reset").click();
         cy.get("button").contains("Apply").click();
         cy.contains("span", "Filters Applied:").should("not.exist");
+        cy.get("#fiscal-year-select").should("have.value", "All");
     });
 
     it("clears fiscal year filter tags when the fiscal year dropdown changes", () => {
