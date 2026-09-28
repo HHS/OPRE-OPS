@@ -64,6 +64,62 @@ const clearBliGrantNumberLink = (bli) => ({
 const reconcileBudgetLines = (budgetLineItems, shouldClear, clearLink) =>
     budgetLineItems.map((bli) => (shouldClear(bli) ? clearLink(bli) : bli));
 
+// Services components and grant numbers are added/updated/deleted identically — same shape,
+// only the state key (and, for delete, the BLI link field to reconcile) differs. These factories
+// produce the case handlers below so that shared logic isn't hand-duplicated per type.
+const makeAddCase = (stateKey) => (state, action) => ({
+    ...state,
+    [stateKey]: [...state[stateKey], action.payload]
+});
+
+const makeUpdateCase = (stateKey) => (state, action) => ({
+    ...state,
+    [stateKey]: state[stateKey].map((item) => (item.number === action.payload.number ? action.payload : item))
+});
+
+const makeDeleteCase =
+    ({ stateKey, deletedIdsKey, linkField, clearLink }) =>
+    (state, action) => {
+        const remainingIds = new Set(
+            state[stateKey]
+                .filter((item) => item.number !== action.payload.number)
+                .map((item) => item.id)
+                .filter(Boolean)
+        );
+        return {
+            ...state,
+            [stateKey]: state[stateKey].filter((item) => item.number !== action.payload.number),
+            [deletedIdsKey]: action.payload.id
+                ? [...state[deletedIdsKey], action.payload.id]
+                : [...state[deletedIdsKey]],
+            // Reconcile BLIs: clear the link to the deleted item by id so entries sharing a
+            // number (e.g. SC sub-components) don't incorrectly retain a stale link.
+            budget_line_items: reconcileBudgetLines(
+                state.budget_line_items,
+                (bli) => bli[linkField] != null && !remainingIds.has(bli[linkField]),
+                clearLink
+            )
+        };
+    };
+
+const addServicesComponent = makeAddCase("services_components");
+const updateServicesComponent = makeUpdateCase("services_components");
+const deleteServiceComponent = makeDeleteCase({
+    stateKey: "services_components",
+    deletedIdsKey: "deleted_services_components_ids",
+    linkField: "services_component_id",
+    clearLink: clearBliServiceComponentLink
+});
+
+const addGrantNumber = makeAddCase("grant_numbers");
+const updateGrantNumber = makeUpdateCase("grant_numbers");
+const deleteGrantNumber = makeDeleteCase({
+    stateKey: "grant_numbers",
+    deletedIdsKey: "deleted_grant_numbers_ids",
+    linkField: "grant_number_id",
+    clearLink: clearBliGrantNumberLink
+});
+
 export function useEditAgreement() {
     return useContext(AgreementEditorContext);
 }
@@ -112,26 +168,7 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "DELETE_SERVICE_COMPONENT": {
-            const remainingScIds = new Set(
-                state.services_components
-                    .filter((sc) => sc.number !== action.payload.number)
-                    .map((sc) => sc.id)
-                    .filter(Boolean)
-            );
-            return {
-                ...state,
-                services_components: state.services_components.filter((sc) => sc.number !== action.payload.number),
-                deleted_services_components_ids: action.payload.id
-                    ? [...state.deleted_services_components_ids, action.payload.id]
-                    : [...state.deleted_services_components_ids],
-                // Reconcile BLIs: clear link to deleted SC by ID so sub-components sharing
-                // a number don't incorrectly retain stale links.
-                budget_line_items: reconcileBudgetLines(
-                    state.budget_line_items,
-                    (bli) => bli.services_component_id != null && !remainingScIds.has(bli.services_component_id),
-                    clearBliServiceComponentLink
-                )
-            };
+            return deleteServiceComponent(state, action);
         }
         // Clears every services component at once, e.g. when the agreement type changes and
         // components added under the previous type/shape no longer apply. Mirrors
@@ -171,18 +208,10 @@ export function editAgreementReducer(state, action) {
             return initialState;
         }
         case "ADD_SERVICES_COMPONENT": {
-            return {
-                ...state,
-                services_components: [...state.services_components, action.payload]
-            };
+            return addServicesComponent(state, action);
         }
         case "UPDATE_SERVICES_COMPONENT": {
-            return {
-                ...state,
-                services_components: state.services_components.map((sc) =>
-                    sc.number === action.payload.number ? action.payload : sc
-                )
-            };
+            return updateServicesComponent(state, action);
         }
         case "RESEED_SERVICES_COMPONENTS": {
             return {
@@ -192,40 +221,13 @@ export function editAgreementReducer(state, action) {
             };
         }
         case "ADD_GRANT_NUMBER": {
-            return {
-                ...state,
-                grant_numbers: [...state.grant_numbers, action.payload]
-            };
+            return addGrantNumber(state, action);
         }
         case "UPDATE_GRANT_NUMBER": {
-            return {
-                ...state,
-                grant_numbers: state.grant_numbers.map((gn) =>
-                    gn.number === action.payload.number ? action.payload : gn
-                )
-            };
+            return updateGrantNumber(state, action);
         }
         case "DELETE_GRANT_NUMBER": {
-            const remainingGnIds = new Set(
-                state.grant_numbers
-                    .filter((gn) => gn.number !== action.payload.number)
-                    .map((gn) => gn.id)
-                    .filter(Boolean)
-            );
-            return {
-                ...state,
-                grant_numbers: state.grant_numbers.filter((gn) => gn.number !== action.payload.number),
-                deleted_grant_numbers_ids: action.payload.id
-                    ? [...state.deleted_grant_numbers_ids, action.payload.id]
-                    : [...state.deleted_grant_numbers_ids],
-                // Reconcile BLIs: clear link to deleted grant number so the BLI moves
-                // to the "not associated" group rather than rendering under a phantom accordion.
-                budget_line_items: reconcileBudgetLines(
-                    state.budget_line_items,
-                    (bli) => bli.grant_number_id != null && !remainingGnIds.has(bli.grant_number_id),
-                    clearBliGrantNumberLink
-                )
-            };
+            return deleteGrantNumber(state, action);
         }
         case "RESEED_GRANT_NUMBERS": {
             return {

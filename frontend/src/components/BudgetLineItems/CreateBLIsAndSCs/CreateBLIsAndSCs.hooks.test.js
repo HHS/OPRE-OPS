@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import useCreateBLIsAndSCs, { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.helpers";
 
 const setAlertMock = vi.fn();
 const navigateMock = vi.fn();
@@ -369,18 +370,17 @@ describe("useCreateBLIsAndSCs", () => {
             date_needed: "2027-08-31",
             can_id: 1,
             status: "PLANNED",
+            services_component_id: 11,
             grant_number_id: null,
             grant_number_number: null
         };
-
         const { result } = renderSubject({
             budgetLines: [sourceBli],
-            selectedAgreement: { agreement_type: "CONTRACT" },
-            canUserEditBudgetLines: true
+            selectedAgreement: { agreement_type: "CONTRACT" }
         });
 
         act(() => {
-            result.current.handleDuplicateBudgetLine("source");
+            result.current.handleDuplicateBudgetLine(sourceBli.id);
         });
 
         const duplicate = dispatchMock.mock.calls[0][0].payload;
@@ -398,15 +398,11 @@ describe("useCreateBLIsAndSCs", () => {
             grant_number_id: 10,
             grant_number_number: 1
         };
-
-        const { result } = renderSubject({
-            budgetLines: [sourceBli],
-            selectedAgreement: { agreement_type: "GRANT" },
-            canUserEditBudgetLines: true
-        });
+        // renderSubject defaults selectedAgreement.agreement_type to GRANT.
+        const { result } = renderSubject({ budgetLines: [sourceBli] });
 
         act(() => {
-            result.current.handleDuplicateBudgetLine("source");
+            result.current.handleDuplicateBudgetLine(sourceBli.id);
         });
 
         const duplicate = dispatchMock.mock.calls[0][0].payload;
@@ -1318,6 +1314,66 @@ describe("useCreateBLIsAndSCs", () => {
 
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
+        });
+
+        it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects via the unsaved-changes modal with suppressErrorAlert=true (regression)", async () => {
+            // Before this fix, sendExistingBLIsToApproval's own throw (for the partial-failure
+            // branch below) re-entered its own catch block, which immediately overwrote the
+            // "Error Sending Agreement Edits" alert with a generic "An error occurred..." one.
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("network error")) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            let savePromise;
+            act(() => {
+                // suppressErrorAlert=true isolates the assertion to the alert set inside
+                // sendExistingBLIsToApproval, rather than handleSave's own outer catch.
+                savePromise = result.current.handleSave(false, true, true);
+                // Attach a catch immediately so Node doesn't flag this as an unhandled
+                // rejection during the microtask window before the awaits below run.
+                savePromise.catch(() => {});
+            });
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+            });
+
+            await act(async () => {
+                await result.current.modalProps.handleConfirm();
+            });
+
+            await act(async () => {
+                await savePromise.catch(() => {});
+            });
+
+            const errorAlerts = setAlertMock.mock.calls.map((c) => c[0]).filter((a) => a.type === "error");
+            expect(errorAlerts).toHaveLength(1);
+            expect(errorAlerts[0].heading).toBe("Error Sending Agreement Edits");
         });
     });
 
