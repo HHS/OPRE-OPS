@@ -1,3 +1,4 @@
+import React from "react";
 import Modal from "react-modal";
 import CANActivePeriodComboBox from "../../../../components/CANs/CANActivePeriodComboBox";
 import CanNumberComboBox from "../../../../components/CANs/CanNumberComboBox";
@@ -23,6 +24,7 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @returns {JSX.Element} - The CAN filter button.
  */
 export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOptions, fyBudgetRange, disabled }) => {
+    const [showModal, setShowModal] = React.useState(false);
     const {
         activePeriod,
         setActivePeriod,
@@ -36,7 +38,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
         setBudget,
         applyFilter,
         resetFilter
-    } = useCANFilterButton(filters, setFilters, fyBudgetRange);
+    } = useCANFilterButton(filters, setFilters, fyBudgetRange, showModal);
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
     const halfWidth = { width: "12rem" };
@@ -92,7 +94,9 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
             className={fieldStyles}
         >
             <CANFYBudgetRangeSlider
-                budget={budget}
+                // guard: the slider destructures [minValue, maxValue] = budget and renders $ NaN
+                // on [] / null / undefined — `??` alone doesn't catch [], so check length too.
+                budget={Array.isArray(budget) && budget.length === 2 ? budget : fyBudgetRange}
                 setBudget={setBudget}
                 legendClassname={legendStyles}
                 fyBudgetRange={fyBudgetRange}
@@ -108,6 +112,8 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
             applyFilter={applyFilter}
             resetFilter={resetFilter}
             fieldsetList={fieldsetList}
+            showModal={showModal}
+            setShowModal={setShowModal}
             disabled={disabled}
         />
     );

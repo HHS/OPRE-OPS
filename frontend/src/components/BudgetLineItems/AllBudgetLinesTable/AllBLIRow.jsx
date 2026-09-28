@@ -29,7 +29,7 @@ const AllBLIRow = ({ budgetLine }) => {
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
-    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
+    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
     // Grant BLIs link to a grant number instead of a services component; show it in the same column.
     // The response serializes the nested grant_number so no extra fetch is needed.
     const isGrant = budgetLine?.agreement?.agreement_type === "GRANT";

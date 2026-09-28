@@ -18,9 +18,18 @@ import React from "react";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {Object} props.projectFilterOptions - The filter options from API.
  * @param {boolean} [props.isLoadingOptions] - Whether the filter options are loading.
+ * @param {React.MutableRefObject<boolean>} [props.applyFiredFYRef] - Ref forwarded to
+ *   useProjectFilterButton so the page-level FY reset effect can distinguish Apply from
+ *   tag removal.
  * @returns {JSX.Element} - The project filter button component.
  */
-export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions, isLoadingOptions = false }) => {
+export const ProjectFilterButton = ({
+    filters,
+    setFilters,
+    projectFilterOptions,
+    isLoadingOptions = false,
+    applyFiredFYRef
+}) => {
     const [showModal, setShowModal] = React.useState(false);
 
     const {
@@ -35,9 +44,8 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
         projectType,
         setProjectType,
         applyFilter,
-        resetFilter,
-        currentFiscalYear
-    } = useProjectFilterButton(filters, setFilters, showModal);
+        resetFilter
+    } = useProjectFilterButton(filters, setFilters, showModal, applyFiredFYRef);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
@@ -51,7 +59,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={`Fiscal Year ${currentFiscalYear}`}
+                defaultString=""
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={projectFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"

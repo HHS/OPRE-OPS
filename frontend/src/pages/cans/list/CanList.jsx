@@ -194,7 +194,7 @@ const CanList = () => {
                 }
                 FYSelect={
                     <CANFiscalYearSelect
-                        fiscalYear={fiscalYear}
+                        fiscalYear={selectedFiscalYear}
                         setSelectedFiscalYear={setSelectedFiscalYear}
                     />
                 }

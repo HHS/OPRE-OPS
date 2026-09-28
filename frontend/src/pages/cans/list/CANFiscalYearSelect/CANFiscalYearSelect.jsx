@@ -4,7 +4,7 @@ import FiscalYear from "../../../../components/UI/FiscalYear";
  * @description - The Fiscal Year Select component for the CAN List.
  * @component
  * @param {Object} props
- * @param {number} props.fiscalYear
+ * @param {number | string} props.fiscalYear
  * @param { (e: string) => void } props.setSelectedFiscalYear
  * @param {boolean} [props.showAllOption=true]
  * @returns  {JSX.Element} - The component JSX.

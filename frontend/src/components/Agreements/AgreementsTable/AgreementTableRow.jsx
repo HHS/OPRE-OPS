@@ -29,7 +29,7 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
- * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" suppresses the FY Obligated value.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
@@ -41,7 +41,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const fyObligatedAmount = isSuccess && selectedFiscalYear !== "All" ? Number(agreement?.fy_obligated ?? 0) : null;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyObligatedAmount = isSuccess && !isAllFY ? Number(agreement?.fy_obligated ?? 0) : null;
 
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
@@ -99,6 +100,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
             <td data-cy="fy-obligated-amount">
                 {isRowActive && !isExpanded && canEditByRole ? (
                     <div>{changeIcons}</div>
+                ) : isAllFY ? (
+                    formatCurrency(lifetimeObligated)
                 ) : fyObligatedAmount !== null ? (
                     formatCurrency(fyObligatedAmount)
                 ) : (

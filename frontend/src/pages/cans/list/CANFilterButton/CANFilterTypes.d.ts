@@ -8,6 +8,6 @@ export type Filters = {
     transfer?: FilterOption[];
     portfolio?: FilterOption[];
     can?: FilterOption[];
-    budget?: [number, number];
+    budget?: [number, number] | [];
     // Add other filter types here
 };
