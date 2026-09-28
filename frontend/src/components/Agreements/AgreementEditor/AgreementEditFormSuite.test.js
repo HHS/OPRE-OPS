@@ -111,12 +111,44 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
         expect(result.hasErrors("service_requirement_type")).toBe(true);
     });
 
-    it("does not fail a null service_requirement_type when editing an existing agreement", () => {
-        // Some existing non-grant agreements legitimately have no service_requirement_type;
-        // isNewAgreement is unset (falsy) so editing them must not block Save Changes.
+    it("fails a null service_requirement_type when creating a new non-CONTRACT/AA agreement", () => {
         const result = suite.run({
             ...validContractData,
-            service_requirement_type: null
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
+            service_requirement_type: null,
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails a null service_requirement_type when editing an existing CONTRACT", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: null,
+            isNewAgreement: false
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails a null service_requirement_type when editing an existing AA", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "AA",
+            "agreement-type-filter": "AA",
+            service_requirement_type: null,
+            isNewAgreement: false
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("does not fail a null service_requirement_type when editing an existing non-CONTRACT/AA agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
+            service_requirement_type: null,
+            isNewAgreement: false
         });
         expect(result.hasErrors("service_requirement_type")).toBe(false);
     });
