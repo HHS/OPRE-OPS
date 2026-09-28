@@ -28,10 +28,9 @@ const suite = create((data = {}, fieldName) => {
     test("service_requirement_type", "This is required information", () => {
         if (isGrant) return;
         enforce(data.service_requirement_type).notEquals("-Select Service Requirement Type-");
-        // Only enforce presence while creating. Some existing non-grant agreements legitimately
-        // have no service_requirement_type; failing here would disable Save Changes on the edit
-        // screens for a field the user never touched. (issue #6230)
-        if (data.isNewAgreement) {
+        // Existing agreements only need it for the types the backend requires it for.
+        const isRequiredType = [AGREEMENT_TYPES.CONTRACT, AGREEMENT_TYPES.AA].includes(data.agreement_type);
+        if (data.isNewAgreement || isRequiredType) {
             enforce(data.service_requirement_type).isNotEmpty();
         }
     });
