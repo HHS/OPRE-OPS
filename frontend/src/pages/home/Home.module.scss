@@ -1,0 +1,18 @@
+// Breaks the summary band out of the `grid-container` gutters applied by DefaultLayout, then
+// re-applies them as padding so the band's background spans the full container width while its
+// content stays aligned with the rest of the page.
+.summaryBand {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media all and (min-width: 64em) {
+    .summaryBand {
+        margin-left: -2rem;
+        margin-right: -2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}

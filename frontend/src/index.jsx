@@ -7,7 +7,6 @@ import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute"
 import ApproveAgreement from "./pages/agreements/approve";
 import Agreement from "./pages/agreements/details/Agreement";
 import AgreementsList from "./pages/agreements/list/AgreementsList";
-import BenefitsGrid from "./pages/home/BenefitsGrid";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
@@ -42,7 +41,6 @@ import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
-import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
@@ -67,21 +65,32 @@ const router = createBrowserRouter(
                 path="/login"
                 element={<Login />}
             />
+            {/* Legacy home page tabs, folded into the home page itself by the home page redesign */}
+            <Route
+                path="/release-notes"
+                element={
+                    <Navigate
+                        to="/"
+                        replace
+                    />
+                }
+            />
+            <Route
+                path="/next"
+                element={
+                    <Navigate
+                        to="/"
+                        replace
+                    />
+                }
+            />
             <Route
                 path="/"
                 element={<Home />}
             >
                 <Route
-                    path="" // default for home page
-                    element={<BenefitsGrid />}
-                />
-                <Route
-                    path="release-notes"
+                    index // default for home page
                     element={<ReleaseNotes />}
-                />
-                <Route
-                    path="next"
-                    element={<WhatsNext />}
                 />
             </Route>
             <Route

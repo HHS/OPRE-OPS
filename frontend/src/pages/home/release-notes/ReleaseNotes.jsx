@@ -1,33 +1,27 @@
 import Accordion from "../../../components/UI/Accordion";
+import SectionHeading from "../../../components/UI/SectionHeading";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { RELEASE_NOTES_TYPES } from "./constants";
 import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
-import ReleaseNotesCards from "./ReleaseNotesCards";
 
 // NOTE: if we decide to do dynamic implementation of ReleaseNotes we can replace the static data with the API response from useGetReleasesQuery from `api/github.js`
+
+/**
+ * @component - The "What's New" home page tab: the latest release notes plus collapsed prior releases.
+ * @returns {JSX.Element} The rendered component.
+ */
 const ReleaseNotes = () => {
     if (!data || data.length === 0) return <p>No release notes available.</p>;
 
-    const latestRelease = data[0];
-    const prevReleases = data.slice(1);
+    const [latestRelease, ...prevReleases] = data;
 
     return (
         <>
-            <h1 className="font-24px">OPS Release Summary</h1>
-            <ReleaseNotesCards
-                lastVersion={latestRelease.version}
-                releaseDate={formatDateToMonthDayYear(latestRelease.releaseDate)}
-                totalReleaseChanges={latestRelease.changes.length}
-                totalFixes={latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.FIXES).length}
-                totalNewFeatures={
-                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.NEW_FEATURE).length
-                }
-                totalImprovements={
-                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.IMPROVEMENTS).length
-                }
+            <SectionHeading
+                title={`Release Notes ${latestRelease.version}`}
+                instructions="This is a list of what's new from our latest release."
+                dataCy="latest-release-heading"
             />
-            <h2>Release Notes: {latestRelease.version}</h2>
             <section
                 className="margin-bottom-8"
                 id="latest-release-notes"
@@ -42,10 +36,12 @@ const ReleaseNotes = () => {
                 ))}
             </section>
 
-            {prevReleases.length > 0 &&
-                prevReleases.map((release) => (
+            {prevReleases.map((release) => (
+                <div
+                    key={release.version}
+                    className="margin-bottom-2"
+                >
                     <Accordion
-                        key={release.version}
                         heading={`Release Notes ${release.version} - ${formatDateToMonthDayYear(release.releaseDate)}`}
                         level={2}
                         isClosed
@@ -59,7 +55,8 @@ const ReleaseNotes = () => {
                             />
                         ))}
                     </Accordion>
-                ))}
+                </div>
+            ))}
         </>
     );
 };

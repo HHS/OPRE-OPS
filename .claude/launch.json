@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "VITE_BACKEND_DOMAIN=http://localhost:8080 VITE_ENABLE_MSW=false bun run start"
+      ],
+      "cwd": "frontend",
+      "port": 3000
+    }
+  ]
+}

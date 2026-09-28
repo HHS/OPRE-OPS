@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { PROCUREMENT_DASHBOARD_ROLES, USER_ROLES } from "../../Users/User.constants";
 
 const NavMenu = () => {
@@ -10,25 +10,13 @@ const NavMenu = () => {
     const isReadOnlyUser = activeUser?.roles?.some((role) => role?.name === USER_ROLES.READ_ONLY);
 
     const [isMenuOpen, setIsMenuOpen] = React.useState(null);
-    const location = useLocation();
     /**
      * Returns the CSS class for a NavLink based on its active state
      * @param {Object} params - The parameters object
      * @param {boolean} params.isActive - Whether the link is active
-     * @param {string} pathname - The current pathname for custom logic
      * @returns {string} The CSS class name
      */
-
-    const getNavLinkClass = ({ isActive }, pathname = null) => {
-        // Custom logic for Home route to include child routes
-        if (
-            pathname === "/" &&
-            (location.pathname === "/" || location.pathname === "/release-notes" || location.pathname === "/next")
-        ) {
-            return "usa-current";
-        }
-        return isActive ? "usa-current" : "";
-    };
+    const getNavLinkClass = ({ isActive }) => (isActive ? "usa-current" : "");
 
     return (
         <div id="nav-menu">
@@ -36,7 +24,8 @@ const NavMenu = () => {
                 <li className="usa-nav__primary-item">
                     <NavLink
                         to="/"
-                        className={(props) => getNavLinkClass(props, "/")}
+                        className={getNavLinkClass}
+                        end
                     >
                         Home
                     </NavLink>

@@ -12,3 +12,6 @@ export const STATUSES = {
     TESTING: "In Progress-Testing",
     COMPLETED: "Completed"
 };
+
+/** Statuses that group a priority under "Currently Developing" on the home page. */
+export const IN_PROGRESS_STATUSES = [STATUSES.RESEARCH, STATUSES.DESIGN, STATUSES.DEVELOPMENT, STATUSES.TESTING];

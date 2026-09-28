@@ -52,26 +52,16 @@ describe("ReleaseNotes Component", () => {
         vi.clearAllMocks();
     });
 
-    it("renders the main heading", () => {
-        render(<ReleaseNotes />);
-
-        expect(screen.getByRole("heading", { level: 1, name: "OPS Release Summary" })).toBeInTheDocument();
-    });
-
     it("renders the latest release heading", () => {
         render(<ReleaseNotes />);
 
-        expect(screen.getByRole("heading", { level: 2, name: "Release Notes: 1.129.0" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: "Release Notes 1.129.0" })).toBeInTheDocument();
     });
 
-    it("renders release notes cards with correct props", () => {
+    it("renders the instructions for the latest release", () => {
         render(<ReleaseNotes />);
 
-        // Check that the latest version is displayed
-        expect(screen.getByText("Version 1.129.0")).toBeInTheDocument();
-
-        // Check that the formatted date is displayed
-        expect(screen.getByText("Formatted 2025-06-24")).toBeInTheDocument();
+        expect(screen.getByText("This is a list of what's new from our latest release.")).toBeInTheDocument();
     });
 
     it("renders all changes from the latest release", () => {
@@ -84,6 +74,13 @@ describe("ReleaseNotes Component", () => {
         expect(screen.getByText("Fixed an issue with health check endpoint.")).toBeInTheDocument();
     });
 
+    it("renders the type tag for each change", () => {
+        render(<ReleaseNotes />);
+
+        expect(screen.getByText("New Feature")).toBeInTheDocument();
+        expect(screen.getByText("Fixes")).toBeInTheDocument();
+    });
+
     it("renders previous releases in accordions", () => {
         render(<ReleaseNotes />);
 
@@ -93,19 +90,10 @@ describe("ReleaseNotes Component", () => {
         ).toBeInTheDocument();
     });
 
-    it("calculates correct counts for different change types", () => {
+    it("renders changes from previous releases inside their accordion", () => {
         render(<ReleaseNotes />);
 
-        // The latest release has 1 New Feature and 1 Fix
-        // Check that the total changes count is displayed (this would be 2)
-        expect(screen.getByText("2")).toBeInTheDocument(); // Total changes
-    });
-
-    it("renders the latest release section", () => {
-        render(<ReleaseNotes />);
-
-        // Check that the latest release section exists by finding content within it
-        expect(screen.getByText("CSRF Protection")).toBeInTheDocument();
-        expect(screen.getByText("Bug Fix")).toBeInTheDocument();
+        expect(screen.getByText("Performance Improvement")).toBeInTheDocument();
+        expect(screen.getByText("Enhanced performance of CSRF protection.")).toBeInTheDocument();
     });
 });
