@@ -1306,7 +1306,7 @@ describe("useCreateBLIsAndSCs", () => {
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
         });
 
-        it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects (regression)", async () => {
+        it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects via the unsaved-changes modal with suppressErrorAlert=true (regression)", async () => {
             // Before this fix, sendExistingBLIsToApproval's own throw (for the partial-failure
             // branch below) re-entered its own catch block, which immediately overwrote the
             // "Error Sending Agreement Edits" alert with a generic "An error occurred..." one.

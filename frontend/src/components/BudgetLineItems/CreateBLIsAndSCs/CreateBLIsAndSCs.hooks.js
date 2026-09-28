@@ -70,10 +70,11 @@ import useCreateBLIsAndSCsSaveBlocker from "./useCreateBLIsAndSCsSaveBlocker";
  */
 const persistPartitionedEntities = async (items, addMutation, updateMutation) => {
     const { newItems, existingItems, changedItems } = partitionNewAndChanged(items);
-    const createdItems = await Promise.all(newItems.map((item) => addMutation(stripFormOnlyFields(item)).unwrap()));
-    await Promise.all(
+    const createPromise = Promise.all(newItems.map((item) => addMutation(stripFormOnlyFields(item)).unwrap()));
+    const updatePromise = Promise.all(
         changedItems.map((item) => updateMutation({ id: item.id, data: stripFormOnlyFields(item) }).unwrap())
     );
+    const [createdItems] = await Promise.all([createPromise, updatePromise]);
     return { createdItems, existingItems };
 };
 
