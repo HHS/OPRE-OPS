@@ -98,17 +98,4 @@ describe("useProjectFilterButton", () => {
             portfolio: [{ id: 2, name: "Portfolio B" }]
         });
     });
-
-    it("applyFilter sets applyFiredFYRef before writing to parent filters", () => {
-        const setFilters = vi.fn();
-        const applyFiredFYRef = { current: false };
-        const { result } = renderHook(() => useProjectFilterButton(baseFilters, setFilters, true, applyFiredFYRef));
-
-        act(() => {
-            result.current.applyFilter();
-        });
-
-        expect(applyFiredFYRef.current).toBe(true);
-        expect(setFilters).toHaveBeenCalledTimes(1);
-    });
 });

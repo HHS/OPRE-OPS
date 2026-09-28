@@ -15,7 +15,6 @@ import {
     getProcurementShopDisplay
 } from "../../Agreements/AgreementsTable/AgreementsTable.helpers";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
-import { sumAcrossFy } from "../ProjectSpending.helpers";
 
 const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Total, chevron
 
@@ -28,13 +27,9 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  * FY resolves to $0. The `fyTotal` prop is only a fallback until the response resolves —
  * the query may be in flight, errored, or skipped.
  *
- * When `fiscalYear` is "All", the FY Total column sums `fy_total` across every fiscal
- * year. An agreement with zero budget line items has an empty `fy_total` map, which
- * resolves to $0 once the query loads, not "unknown".
- *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
- * @param {number | "All"} props.fiscalYear - The selected fiscal year, or "All" to sum across every FY.
+ * @param {number} props.fiscalYear - The selected fiscal year.
  * @param {number | null} props.fyTotal - Fallback FY total from the parent.
  * @returns {React.ReactElement}
  */
@@ -44,9 +39,7 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
     const { data: agreementSpending } = useGetAgreementSpendingByIdQuery(agreement?.id, {
         skip: !agreement?.id
     });
-    const fyTotalFromEndpoint = agreementSpending?.fy_total
-        ? sumAcrossFy(agreementSpending.fy_total, fiscalYear)
-        : undefined;
+    const fyTotalFromEndpoint = agreementSpending?.fy_total?.[fiscalYear];
     let resolvedFyTotal = fyTotal;
     if (fyTotalFromEndpoint != null) {
         resolvedFyTotal = Number(fyTotalFromEndpoint);

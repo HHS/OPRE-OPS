@@ -62,28 +62,6 @@ describe("ProjectSpendingAgreementsTable", () => {
         expect(screen.queryByRole("table")).not.toBeInTheDocument();
     });
 
-    it("renders 'All FYs' heading and empty message when fiscalYear is All", () => {
-        render(
-            <ProjectSpendingAgreementsTable
-                agreements={[]}
-                fiscalYear="All"
-                fyTotals={{}}
-            />
-        );
-        expect(screen.getByText("No agreements found for All FYs.")).toBeInTheDocument();
-    });
-
-    it("renders 'All FYs Total' column heading when fiscalYear is All", () => {
-        render(
-            <ProjectSpendingAgreementsTable
-                agreements={mockAgreements}
-                fiscalYear="All"
-                fyTotals={{}}
-            />
-        );
-        expect(screen.getByText("All FYs Total")).toBeInTheDocument();
-    });
-
     it("updates FY label when fiscalYear changes", () => {
         const { rerender } = render(
             <ProjectSpendingAgreementsTable
