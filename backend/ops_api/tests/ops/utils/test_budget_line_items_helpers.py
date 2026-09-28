@@ -246,6 +246,27 @@ def test_create_budget_line_item_instance_keeps_grant_number_id_for_grant():
     assert bli.grant_number_id == 10
 
 
+def test_create_budget_line_item_instance_strips_requestor_notes():
+    # requestor_notes is on RequestBodySchema but isn't a column on any BLI subclass — it only
+    # feeds a change request generated as a side effect. Unlike grant_number_id this one would
+    # break every agreement type, so check it against a GRANT to keep the two cases independent.
+    data = {
+        "line_description": "Grant BLI",
+        "agreement_id": 1,
+        "can_id": 500,
+        "amount": 1000.0,
+        "status": BudgetLineItemStatus.DRAFT,
+        "created_by": 1,
+        "requestor_notes": "please approve",
+    }
+
+    bli = create_budget_line_item_instance(AgreementType.GRANT, data)
+
+    assert isinstance(bli, GrantBudgetLineItem)
+    assert bli.line_description == "Grant BLI"
+    assert not hasattr(bli, "requestor_notes")
+
+
 # ---------------------------------------------------------------------------
 # is_pre_award_in_review — the write-path guard now mirrored into editability (R1).
 # The True path is covered via compute_bli_editable below; here we pin down the
