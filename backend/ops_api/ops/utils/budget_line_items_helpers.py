@@ -79,7 +79,13 @@ def create_budget_line_item_instance(agreement_type: AgreementType, data: dict[s
     if not factory:
         raise ValueError(f"Unsupported agreement type: {agreement_type}")
 
-    return factory(**data)
+    # Request schemas are shared across BLI types (e.g. grant_number_id lives on the base
+    # RequestBodySchema), so `data` can carry fields that aren't columns on this subclass.
+    # Passing those through as kwargs raises a TypeError when the model is constructed.
+    mapped_columns = {c_attr.key for c_attr in inspect(factory).mapper.column_attrs}
+    filtered_data = {key: value for key, value in data.items() if key in mapped_columns}
+
+    return factory(**filtered_data)
 
 
 EDITABLE_STATUSES = [

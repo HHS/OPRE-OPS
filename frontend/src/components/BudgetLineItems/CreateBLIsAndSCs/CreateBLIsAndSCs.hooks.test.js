@@ -369,33 +369,15 @@ describe("useCreateBLIsAndSCs", () => {
             date_needed: "2027-08-31",
             can_id: 1,
             status: "PLANNED",
-            services_component_number: 2,
             grant_number_id: null,
             grant_number_number: null
         };
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [sourceBli]
-        });
 
-        const { result } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [sourceBli],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 1, agreement_type: "CONTRACT", display_name: "AGR-1" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                true,
-                "Save & Exit",
-                1
-            )
-        );
+        const { result } = renderSubject({
+            budgetLines: [sourceBli],
+            selectedAgreement: { agreement_type: "CONTRACT" },
+            canUserEditBudgetLines: true
+        });
 
         act(() => {
             result.current.handleDuplicateBudgetLine("source");
@@ -416,29 +398,12 @@ describe("useCreateBLIsAndSCs", () => {
             grant_number_id: 10,
             grant_number_number: 1
         };
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [sourceBli]
-        });
 
-        const { result } = renderHook(() =>
-            useCreateBLIsAndSCs(
-                true,
-                false,
-                [sourceBli],
-                vi.fn(),
-                goBackMock,
-                vi.fn(),
-                { id: 1, agreement_type: "GRANT", display_name: "AGR-1" },
-                { fee_percentage: 5, abbr: "PSC" },
-                setIsEditModeMock,
-                "none",
-                true,
-                true,
-                "Save & Exit",
-                1
-            )
-        );
+        const { result } = renderSubject({
+            budgetLines: [sourceBli],
+            selectedAgreement: { agreement_type: "GRANT" },
+            canUserEditBudgetLines: true
+        });
 
         act(() => {
             result.current.handleDuplicateBudgetLine("source");

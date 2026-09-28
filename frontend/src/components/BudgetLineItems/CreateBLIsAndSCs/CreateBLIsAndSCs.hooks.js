@@ -986,8 +986,6 @@ const useCreateBLIsAndSCs = (
         const {
             services_component_id,
             services_component_number,
-            grant_number_id,
-            grant_number_number,
             line_description,
             can_id,
             can,
@@ -1003,7 +1001,9 @@ const useCreateBLIsAndSCs = (
             // grant_number_id only exists on GrantBudgetLineItem; sending it for a
             // contract/other BLI includes an invalid kwarg in the create payload and
             // crashes the backend on save. Only carry it over for grant agreements. (issue #6163)
-            ...(isGrant ? { grant_number_id, grant_number_number } : {}),
+            ...(isGrant
+                ? { grant_number_id: budgetLine.grant_number_id, grant_number_number: budgetLine.grant_number_number }
+                : {}),
             line_description,
             can_id,
             can,
