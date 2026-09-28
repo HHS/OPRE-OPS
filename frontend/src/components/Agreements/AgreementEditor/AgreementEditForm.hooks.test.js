@@ -996,12 +996,9 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
                 service_requirement_type: "SEVERABLE"
             })
         );
-        // Two rerenders: the first commits the new agreement (whose changed
-        // service_requirement_type dep triggers the on-load effect's runValidate call, mutating
-        // the suite's internal state); the second re-reads suite.get() to observe that mutation.
-        // `res` is computed in the render body before that render's own effects run, so a single
-        // rerender() here would still read the pre-effect (stale, error) result.
-        rerender();
+        // The on-load effect's forceServiceReqTypeValidationRerender() call schedules a
+        // follow-up render after runValidate mutates the suite's internal state, so a single
+        // rerender() (to commit the new agreement) is enough to observe the update.
         rerender();
 
         expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);

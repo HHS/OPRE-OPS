@@ -100,6 +100,10 @@ const useAgreementEditForm = (
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
+    // Forces a re-render once the on-load service_requirement_type check below has run, so
+    // `res = suite.get()` (read during render) reflects that suite.run() call instead of
+    // depending on some other effect happening to also call setState on the same commit.
+    const [, forceServiceReqTypeValidationRerender] = React.useState(0);
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -251,6 +255,7 @@ const useAgreementEditForm = (
         if (agreement?.id) {
             // Edit mode only validates touched fields; surface a missing value on legacy agreements up front.
             runValidate("service_requirement_type", agreement?.service_requirement_type);
+            forceServiceReqTypeValidationRerender((tick) => tick + 1);
         }
     }, [agreement?.id, agreement?.service_requirement_type, runValidate]);
 
