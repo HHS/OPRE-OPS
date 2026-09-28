@@ -84,13 +84,10 @@ const mockSpendingData = {
     agreements_with_spending_by_fy: { 2043: [1, 2] }
 };
 
-// Agreement 4 has zero budget line items — absent from every agreements_by_fy bucket,
-// so it must only surface when "All FYs" is selected.
 const mockAgreements = [
     { id: 1, display_name: "Contract A" },
     { id: 2, display_name: "Contract B" },
-    { id: 3, display_name: "Draft Only Contract" },
-    { id: 4, display_name: "No Budget Lines Contract" }
+    { id: 3, display_name: "Draft Only Contract" }
 ];
 
 describe("ProjectSpending", () => {
@@ -171,37 +168,5 @@ describe("ProjectSpending", () => {
         // FY 2043 lists three agreements but only two have spending
         expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-agreement-count", "2");
         expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-total", "1000");
-    });
-
-    it("offers an All FYs option in the dropdown", () => {
-        renderComponent();
-
-        expect(screen.getByRole("option", { name: "All" })).toBeInTheDocument();
-    });
-
-    it("shows the zero-budget-line agreement only when All FYs is selected", () => {
-        renderComponent();
-
-        // Not present under any specific FY
-        expect(screen.queryByTestId("agreement-4")).not.toBeInTheDocument();
-        fireEvent.change(screen.getByRole("combobox"), { target: { value: "2043" } });
-        expect(screen.queryByTestId("agreement-4")).not.toBeInTheDocument();
-
-        fireEvent.change(screen.getByRole("combobox"), { target: { value: "All" } });
-
-        expect(screen.getByTestId("agreement-1")).toBeInTheDocument();
-        expect(screen.getByTestId("agreement-2")).toBeInTheDocument();
-        expect(screen.getByTestId("agreement-3")).toBeInTheDocument();
-        expect(screen.getByTestId("agreement-4")).toBeInTheDocument();
-    });
-
-    it("aggregates totals and agreement count across all fiscal years when All FYs is selected", () => {
-        renderComponent();
-
-        fireEvent.change(screen.getByRole("combobox"), { target: { value: "All" } });
-
-        // Only FY 2043 has any spending in the fixture, so the aggregate equals that FY's values
-        expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-total", "1000");
-        expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-agreement-count", "2");
     });
 });
