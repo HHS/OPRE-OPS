@@ -193,6 +193,38 @@ def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_
     assert "stale.admin@example.gov" in admin_emails_arg
 
 
+def test_update_disabled_users_status_skips_null_updated_on_without_crashing(mock_session, mocker):
+    # updated_on is nullable (Mapped[Optional[datetime]]) -- a user whose updated_on was never
+    # set by an ORM insert (e.g. rows inserted via raw SQL/bulk import) must not crash the
+    # staleness scan. Previously `user.updated_on < cutoff_date` raised TypeError on None,
+    # aborting the whole for-loop and leaving every other user in this run unprocessed.
+    null_updated_on_user = _make_stale_user(1, "null.updated.on@example.gov")
+    null_updated_on_user.updated_on = None
+    stale_user = _make_stale_user(2, "stale.user@example.gov")
+
+    mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
+    mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mock_session.execute.side_effect = _execute_results([null_updated_on_user, stale_user], [])
+    mocker.patch("data_tools.src.disable_users.disable_users.get_active_user_admins", return_value=[])
+    mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
+    mock_send_disable_notifications = mocker.patch(
+        "data_tools.src.disable_users.disable_users.send_disable_notifications"
+    )
+
+    update_disabled_users_status(mock_session, MagicMock())
+
+    # The null-updated_on user is not treated as stale, but the genuinely stale user in the same
+    # batch is still processed -- proving the scan didn't crash or abort partway through.
+    mock_disable_user.assert_called_once_with(mock_session, 2, system_admin_id)
+    disabled_user_details = mock_send_disable_notifications.call_args[0][1]
+    assert [user["email"] for user in disabled_user_details] == ["stale.user@example.gov"]
+
+
 def test_update_disabled_users_status_resolves_division_names_before_notifying(loaded_db, mocker):
     division = Division(name="Test Division Alpha", abbreviation="TDA")
     loaded_db.add(division)

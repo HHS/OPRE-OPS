@@ -32,6 +32,7 @@ format = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
+logger.remove()  # remove the default handler (id=0, diagnose=True) before adding our own
 logger.add(sys.stdout, format=format, level="INFO", diagnose=False)
 logger.add(sys.stderr, format=format, level="INFO", diagnose=False)
 
@@ -87,7 +88,7 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
         for user in all_users:
             latest_session = get_latest_user_session(user_id=user.id, session=se)
             if user.status == UserStatus.ACTIVE:
-                stale_user = user.updated_on < cutoff_date
+                stale_user = user.updated_on is not None and user.updated_on < cutoff_date
                 stale_session = latest_session and latest_session.last_active_at < cutoff_date
                 never_logged_in = latest_session is None
 
@@ -100,6 +101,14 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
         if not disabled_users:
             logger.info("No inactive users found.")
             return
+
+        # Touch the ACS config now, before any user is disabled, so a misconfigured AzureConfig
+        # (which raises rather than returning None -- see send_disable_notifications below) fails
+        # fast here instead of surfacing only after the disable loop has already committed.
+        # local/dev/pytest return None cleanly and are unaffected; the no-op decision for them is
+        # still made in send_disable_notifications.
+        _ = config.acs_connection_string
+        _ = config.email_sender_address
 
         user_ids = [user.id for user in disabled_users]
         logger.info("Inactive users found: {}".format(user_ids))
