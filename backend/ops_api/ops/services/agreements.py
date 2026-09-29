@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from typing import Any, List, Literal, Optional, Sequence, Type
+from typing import Any, List, Literal, Optional, Type
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
@@ -47,7 +47,6 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import (
-    associated_with_agreement,
     check_user_association,
     is_agreement_name_unique_violation,
 )
@@ -1153,57 +1152,6 @@ def _build_award_type_sql_expr(current_fy: int):
     ).label("award_type")
 
 
-def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
-    """Compute aggregate totals across all filtered agreements for summary cards."""
-    totals = {
-        "total_contract_amount": Decimal("0"),
-        "total_partner_amount": Decimal("0"),
-        "total_grant_amount": Decimal("0"),
-        "total_direct_obligation_amount": Decimal("0"),
-        "total_agreements_count": len(all_results),
-        "type_counts": {},
-        "new_count": 0,
-        "new_type_counts": {},
-        "continuing_count": 0,
-        "continuing_type_counts": {},
-    }
-
-    for agreement in all_results:
-        ag_type = agreement.agreement_type
-        ag_total = agreement.agreement_total
-
-        if ag_type == AgreementType.CONTRACT:
-            totals["total_contract_amount"] += ag_total
-        elif ag_type in (AgreementType.AA, AgreementType.IAA):
-            totals["total_partner_amount"] += ag_total
-        elif ag_type == AgreementType.GRANT:
-            totals["total_grant_amount"] += ag_total
-        elif ag_type == AgreementType.DIRECT_OBLIGATION:
-            totals["total_direct_obligation_amount"] += ag_total
-
-        type_key = ag_type.name
-        totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
-
-        award = agreement.award_type
-        if award == "NEW":
-            totals["new_count"] += 1
-            totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
-        elif award == "CONTINUING":
-            totals["continuing_count"] += 1
-            totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
-
-    # Convert Decimals to floats for JSON serialization
-    for key in [
-        "total_contract_amount",
-        "total_partner_amount",
-        "total_grant_amount",
-        "total_direct_obligation_amount",
-    ]:
-        totals[key] = float(totals[key])
-
-    return totals
-
-
 def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int | None) -> dict[str, Any]:
     """Compute procurement overview data grouped by BLI status for a given fiscal year.
 
@@ -1468,34 +1416,6 @@ def _get_page_agreements(
     return [id_to_agreement[i] for i in page_ids if i in id_to_agreement]
 
 
-def _get_agreements(
-    session: Session,
-    agreement_cls: Type[Agreement],
-    data: dict[str, Any],
-    include_procurement: bool = False,
-) -> Sequence[Agreement]:
-    query = _build_base_query(agreement_cls, include_procurement)
-    query = _apply_filters(query, agreement_cls, data)
-
-    logger.debug(f"query: {query}")
-    all_results = session.scalars(query).all()
-
-    return _filter_by_ownership(all_results, data.get("only_my", []))
-
-
-def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool = False) -> Select[tuple[Agreement]]:
-    query = select(agreement_cls).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
-
-    if include_procurement:
-        query = query.options(
-            selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
-            selectinload(agreement_cls.procurement_trackers),
-            selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
-        )
-
-    return query.order_by(agreement_cls.id)
-
-
 def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]) -> Select[Agreement]:
     """Apply filters to the query based on the provided data."""
     filters = AgreementFilters.parse_filters(data)
@@ -1618,15 +1538,6 @@ def _apply_search_filter(
                 query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
 
     return query
-
-
-def _filter_by_ownership(results, only_my):
-    """
-    Filter results based on ownership if 'only_my' is True.
-    """
-    if only_my and True in only_my:
-        return [agreement for agreement in results if associated_with_agreement(agreement.id)]
-    return results
 
 
 def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
