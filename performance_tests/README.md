@@ -2,6 +2,19 @@
 
 Performance testing suite for the OPRE OPS API using [Locust](https://locust.io/), an open-source load testing framework.
 
+## Load Test Fixture
+
+`backend/data_tools/data/load_test_agreements.json5` contains 100 additional contracts
+(IDs 25–124) with 1,000 DRAFT BLIs used for performance benchmarking. This file is
+**not** loaded by `import_test_data.sh` and will never be seeded into dev/staging.
+
+To load it locally for performance testing:
+```bash
+cd backend
+DATA=./data_tools/data/load_test_agreements.json5 \
+  python data_tools/src/import_static_data/import_data.py
+```
+
 ## Overview
 
 This suite provides comprehensive performance testing capabilities for the OPS API with:
