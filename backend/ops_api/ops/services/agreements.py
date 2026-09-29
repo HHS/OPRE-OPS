@@ -1047,14 +1047,18 @@ def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) ->
     if not agreement_ids:
         return totals
 
-    # Query 0: (id, agreement_type) — drives type_counts; includes all-DRAFT agreements.
-    type_rows = session.execute(
-        select(Agreement.id, Agreement.agreement_type).where(Agreement.id.in_(agreement_ids))
+    # Single query for (id, agreement_type, award_type) — drives type_counts and
+    # new/continuing counts. Merges the old Query 0 + Query 2 into one round-trip.
+    current_fy = get_current_fiscal_year()
+    award_type_expr = _build_award_type_sql_expr(current_fy)
+    meta_rows = session.execute(
+        select(Agreement.id, Agreement.agreement_type, award_type_expr).where(Agreement.id.in_(agreement_ids))
     ).all()
-    id_to_type = {row.id: row.agreement_type for row in type_rows}
-    for ag_type in id_to_type.values():
-        type_key = ag_type.name
+    id_to_type = {row.id: row.agreement_type for row in meta_rows}
+    for row in meta_rows:
+        type_key = row.agreement_type.name
         totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
+        _accumulate_award_counts(totals, row.award_type, type_key)
 
     # Query 1: SUM(amount + fees) grouped by agreement_id.
     # Query directly against budget_line_item with no Agreement join — this avoids
@@ -1079,17 +1083,6 @@ def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) ->
             ag_type = id_to_type.get(row.agreement_id)
             if ag_type is not None:
                 _bucket_amount_by_type(totals, ag_type, float(row.total))
-
-    # Query 2: award_type (NEW/CONTINUING/None) per agreement via SQL CASE.
-    current_fy = get_current_fiscal_year()
-    award_type_expr = _build_award_type_sql_expr(current_fy)
-    award_rows = session.execute(
-        select(Agreement.id, Agreement.agreement_type, award_type_expr).where(Agreement.id.in_(agreement_ids))
-    ).all()
-    for row in award_rows:
-        ag_type = id_to_type.get(row.id)
-        if ag_type is not None:
-            _accumulate_award_counts(totals, row.award_type, ag_type.name)
 
     return totals
 
@@ -1331,7 +1324,7 @@ def _get_all_matching_ids(
     is already ordered. Ownership filter (only_my) is pushed to SQL.
     """
     filters = AgreementFilters.parse_filters(data)
-    sort_condition = filters.sort_conditions[0] if filters.sort_conditions else AgreementSortCondition.AGREEMENT
+    sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
     sort_descending = (
         filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
     )
@@ -1365,7 +1358,9 @@ def _get_all_matching_ids(
         order_expr = inner.c.sort_key.desc() if sort_descending else inner.c.sort_key
         id_query = select(inner.c.id).order_by(order_expr)
     else:
-        id_query = select(union_subq.c.id).distinct()
+        # No sort requested — use id order to match the previous behaviour (each subclass
+        # query was ordered by agreement_cls.id, producing a deterministic stable result).
+        id_query = select(union_subq.c.id).distinct().order_by(union_subq.c.id)
 
     rows = session.execute(id_query).all()
     return [row[0] for row in rows]

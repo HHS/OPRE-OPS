@@ -1640,6 +1640,48 @@ class TestComputeAgreementTotalsSql:
         result = _compute_agreement_totals_sql(loaded_db, all_ids)
         assert sum(result["type_counts"].values()) == result["total_agreements_count"]
 
+    def test_contract_amount_matches_db_sum(self, loaded_db):
+        """Pin a dollar amount: SQL totals must match direct DB aggregate for contracts."""
+        from sqlalchemy import func as sqlfunc
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement, BudgetLineItem, BudgetLineItemStatus
+
+        contract_ids = [
+            row[0]
+            for row in loaded_db.execute(
+                sa_select(Agreement.id).where(Agreement.agreement_type == AgreementType.CONTRACT)
+            ).all()
+        ]
+        result = _compute_agreement_totals_sql(loaded_db, contract_ids)
+
+        # Compute expected total directly from DB
+        expected = loaded_db.execute(
+            sa_select(sqlfunc.sum(sqlfunc.coalesce(BudgetLineItem.amount, 0)))
+            .where(BudgetLineItem.agreement_id.in_(contract_ids))
+            .where(
+                (BudgetLineItem.is_obe.is_(True))
+                | (BudgetLineItem.status.is_(None))
+                | (BudgetLineItem.status != BudgetLineItemStatus.DRAFT)
+            )
+        ).scalar()
+
+        assert result["total_contract_amount"] == float(expected or 0)
+
+    def test_new_continuing_counts_are_non_negative(self, loaded_db):
+        """award_type SQL classification: new + continuing <= total agreements."""
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        all_ids = [row[0] for row in loaded_db.execute(sa_select(Agreement.id)).all()]
+        result = _compute_agreement_totals_sql(loaded_db, all_ids)
+        assert result["new_count"] >= 0
+        assert result["continuing_count"] >= 0
+        assert result["new_count"] + result["continuing_count"] <= result["total_agreements_count"]
+        assert sum(result["new_type_counts"].values()) == result["new_count"]
+        assert sum(result["continuing_type_counts"].values()) == result["continuing_count"]
+
 
 class TestGetAllMatchingIds:
     """Tests for _get_all_matching_ids."""
