@@ -18183,11 +18183,6 @@
       certified: false,
       closed: false,
     },
-    {
-      budget_line_item_type: "CONTRACT",
-      line_description: "LI 1",
-      comments: "",
-      can_id: 500,
   ],
   direct_obligation_budget_line_item: [
     {
