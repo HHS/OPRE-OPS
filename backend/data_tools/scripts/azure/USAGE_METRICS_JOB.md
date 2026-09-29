@@ -123,7 +123,7 @@ only the recipient list and SAS expiry are per-report.
 ### Verified ACS values (provisioned by OPRE-OPS-Data#59, applied 2026-09-10)
 
 Dev and staging **share one** ACS instance (the `sdlc` stack, shared at the `eus/` level); prod has
-its own. Values below were read from Azure on 2026-09-15.
+its own. The `sdlc` column was read from Azure on 2026-09-15; the production column on 2026-09-29.
 
 | Thing | dev + staging (`opre-ops-services-sdlc`) | production (`opre-ops-services-prod`) |
 |---|---|---|
@@ -131,11 +131,31 @@ its own. Values below were read from Azure on 2026-09-15.
 | ACS resource | `opre-ops-sdlc-comms-acs` | `opre-ops-prod-comms-acs` |
 | Key Vault secret name | `opre-ops-sdlc-comms-acs-connection-string` | `opre-ops-prod-comms-acs-connection-string` |
 | Key Vault holding it | `opre-ops-dev-app-kv` **and** `opre-ops-stg-app-kv` | `opre-ops-prod-app-kv` |
-| Sender address | `DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net` | (read from that stack's `defaultSenderAddress` output) |
+| Sender address | `DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net` | `DoNotReply@273fd226-bb3b-47c2-b966-08ed4d698bc9.azurecomm.net` |
 | Sender display name | `OPRE Portfolio Management System (OPS)` | same |
+| Vault auth mode | access policies (`enableRbacAuthorization: false`) | same — access policies |
 
-The prod resource-group / ACS / secret names follow the same label pattern; confirm them against the
-prod stack rather than assuming, since only `sdlc` was inspected directly.
+The secret **name** is not guesswork: `modules/communication-service/main.tf` in OPRE-OPS-Data names it
+`"${var.communicationServiceName}-connection-string"` and writes it to the app stack's vault
+(`keyVaultIds = [var.keyVaultId]` ← `dependency.app.outputs.keyVaultId`), so it follows the ACS
+resource name in every environment. The prod managed domain reports `Verified` /
+`domainManagement: AzureManaged` and is linked to `opre-ops-prod-comms-acs`. Re-read the sender with:
+
+```bash
+SUB=$(az account show --subscription opre-ops-services-prod --query id -o tsv)
+az rest --method get --url "https://management.azure.com/subscriptions/${SUB}/resourceGroups/opre-ops-prod-comms-rg/providers/Microsoft.Communication/EmailServices/opre-ops-prod-comms-email/Domains/AzureManagedDomain?api-version=2023-04-01" \
+  --query "properties.{mailFrom:mailFromSenderDomain, verified:verificationStates.Domain.status}"
+```
+
+(`az resource show` does not work for this resource type — it rejects the nested
+`emailServices/domains` path, hence `az rest`.)
+
+Confirm the secret actually materialized in the vault before wiring email (needs `secrets/list`,
+which the deploy identities do **not** have by default):
+
+```bash
+az keyvault secret list --vault-name opre-ops-prod-app-kv --query "[].name" -o tsv
+```
 
 **One-time Azure prerequisite: grant the job's MI Key Vault access.** `opre-ops-stg-app-kv` uses
 **access policies**, not RBAC (`enableRbacAuthorization: false`), and the `storageAccountUser` MI is
@@ -148,11 +168,34 @@ MI_PRINCIPAL_ID=$(az identity show -n storageAccountUser -g opre-ops-stg-app-rg 
 az keyvault set-policy -n opre-ops-stg-app-kv --object-id "$MI_PRINCIPAL_ID" --secret-permissions get
 ```
 
+**One-time Azure prerequisite: the SAS-signing storage key must be *put into* Key Vault — it does not
+exist yet.** `VAULT_FILE_STORAGE_KEY` names a Key Vault secret holding the storage account key, but as
+of 2026-09-29 nothing creates that secret: OPRE-OPS-Data provisions no storage-key secret (its only
+`azurerm_key_vault_secret` resources are the ACS connection string and the `ops-pw` / JWT key pair),
+and **no** container app or job in `opre-ops-stg-app-rg` or `opre-ops-prod-app-rg` references the var.
+This is why email delivery has never been exercised end to end in any environment. Create the secret
+before enabling email (staging shown; swap names for prod):
+
+```bash
+# does a suitable secret already exist under some other name?
+az keyvault secret list --vault-name opre-ops-stg-app-kv --query "[].name" -o tsv
+
+# if not, create it (needs storage-key read + KV secret set)
+KEY=$(az storage account keys list -n opreopsstgappsa -g opre-ops-stg-app-rg --query "[0].value" -o tsv)
+az keyvault secret set --vault-name opre-ops-stg-app-kv --name opreopsstgappsa-storage-key --value "$KEY"
+```
+
+Both storage accounts have `allowSharedKeyAccess: true` (verified 2026-09-29), so an account-key SAS
+is viable. Two consequences of this approach: the secret is a **long-lived copy** of the account key,
+so it must be re-set whenever the key is rotated or newly minted links stop working; and rotating the
+key **invalidates every SAS link already emailed**, including reports recipients have not downloaded
+yet. Wire and verify this on staging before prod — it is the least-exercised part of the path.
+
 Then wire the email vars into the create/update invocation:
 
 ```bash
 export VAULT_URL="https://opre-ops-stg-app-kv.vault.azure.net/"
-export VAULT_FILE_STORAGE_KEY='<secret name holding the storage account key>'
+export VAULT_FILE_STORAGE_KEY="opreopsstgappsa-storage-key"   # the secret created above
 export VAULT_ACS_CONNECTION_STRING_KEY="opre-ops-sdlc-comms-acs-connection-string"
 export ACS_EMAIL_SENDER="DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net"
 export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
@@ -281,22 +324,34 @@ storage holds **real** named-user data — grant `reports/` read access only to 
 
 ### Email delivery on production
 
-Same two prerequisites as staging, with prod names — check whether `opre-ops-prod-app-kv` uses
-access policies or RBAC before picking the grant command, and confirm the prod ACS values against
-the `opre-ops-services-prod` stack (only `sdlc` was inspected directly):
+Same three prerequisites as staging, with prod names. Values below were read from the
+`opre-ops-services-prod` subscription on 2026-09-29 — see the ACS table above for how each was
+confirmed. Set the env vars **before** running the create script: they are applied at job creation,
+and adding them afterwards needs an `az containerapp job update --set-env-vars`.
 
 ```bash
-# grant the job's MI read access to secrets (access-policy vault; use a role assignment if the
-# prod vault has enableRbacAuthorization: true)
+# 1. grant the job's MI read access to secrets. Verified: opre-ops-prod-app-kv has
+#    enableRbacAuthorization: false, so access policies (not a role assignment) is correct.
 MI_PRINCIPAL_ID=$(az identity show -n storageAccountUser -g opre-ops-prod-app-rg --query principalId -o tsv)
 az keyvault set-policy -n opre-ops-prod-app-kv --object-id "$MI_PRINCIPAL_ID" --secret-permissions get
 
+# 2. create the SAS-signing storage-key secret if absent -- see the staging section; nothing
+#    provisions it, so prod almost certainly does not have one either. Verify first:
+#      az keyvault secret list --vault-name opre-ops-prod-app-kv --query "[].name" -o tsv
+KEY=$(az storage account keys list -n opreopsprodappsa -g opre-ops-prod-app-rg --query "[0].value" -o tsv)
+az keyvault secret set --vault-name opre-ops-prod-app-kv --name opreopsprodappsa-storage-key --value "$KEY"
+
+# 3. wire the vars
 export VAULT_URL="https://opre-ops-prod-app-kv.vault.azure.net/"
-export VAULT_FILE_STORAGE_KEY='<secret name holding the prod storage account key>'
+export VAULT_FILE_STORAGE_KEY="opreopsprodappsa-storage-key"   # the secret from step 2
 export VAULT_ACS_CONNECTION_STRING_KEY="opre-ops-prod-comms-acs-connection-string"
-export ACS_EMAIL_SENDER='<prod stack defaultSenderAddress>'
-export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
+export ACS_EMAIL_SENDER="DoNotReply@273fd226-bb3b-47c2-b966-08ed4d698bc9.azurecomm.net"
+export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"   # ask UX -- named-user data
 ```
 
 Prod uses its **own** ACS instance (`opre-ops-prod-comms-acs` in `opre-ops-prod-comms-rg`), not the
-shared `sdlc` one — do not reuse the dev/staging secret name or sender address here.
+shared `sdlc` one — do not reuse the dev/staging secret name or sender address here. The sender GUID
+above is prod's own managed domain and differs from staging's `7b9d729e-…`.
+
+The only value still genuinely open is the recipient list: that is a decision about who should receive
+named-user data behind a link that stays live for 90 days, not a lookup.
