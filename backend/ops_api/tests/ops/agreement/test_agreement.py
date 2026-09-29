@@ -62,15 +62,13 @@ def test_agreements_get_all(auth_client, loaded_db, test_project, app_ctx):
     assert response.json["limit"] == 50
     assert response.json["offset"] == 0
 
-    # test a known agreement is accessible — fetch page 1 which includes agreements sorted by name
-    # CONTRACT #2 starts with "C" so it should appear in first 50 sorted alphabetically
-    contract = next((item for item in response.json["data"] if "CONTRACT #2" in item["name"]), None)
-    if contract:
-        assert contract["agreement_type"] == "CONTRACT"
-        assert contract["project"]["id"] == 1002
-        assert "procurement_shop" in contract
-        assert contract["vendor"] == "Vendor 1"
-        assert "budget_line_items" in contract
+    # test a known agreement is accessible — fixture has ~23 agreements, all fit within limit=50
+    contract = next((item for item in response.json["data"] if "CONTRACT #2" in item["name"]))
+    assert contract["agreement_type"] == "CONTRACT"
+    assert contract["project"]["id"] == 1002
+    assert contract["procurement_shop"]["fee_percentage"] == 4.8
+    assert contract["vendor"] == "Vendor 1"
+    assert "budget_line_items" in contract
 
 
 def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, app_ctx):
@@ -682,8 +680,10 @@ def test_agreements_with_project_found(auth_client, test_project, app_ctx):
         url_for("api.agreements-group"), query_string={"project_id": test_project.id, "limit": 50}
     )
     assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json["data"]}
-    assert {1, 2, 10}.issubset(returned_ids)
+    assert len(response.json["data"]) == 3
+    assert response.json["data"][0]["id"] == 1
+    assert response.json["data"][1]["id"] == 10
+    assert response.json["data"][2]["id"] == 2
 
 
 def test_get_agreements_by_nickname(auth_client, app_ctx):

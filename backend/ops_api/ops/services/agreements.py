@@ -546,7 +546,7 @@ class AgreementsService(OpsService[Agreement]):
         filters = AgreementFilters.parse_filters(data)
 
         # Step 1: Get all matching IDs via UNION ALL (DB-level, no full object load).
-        # SQL-sortable sorts (AGREEMENT, TYPE) are applied here; computed-property sorts
+        # SQL-sortable sorts (currently AGREEMENT only) are applied here; computed-property sorts
         # fall back to Python over the full ID set.
         all_ids = _get_all_matching_ids(self.db_session, agreement_classes, data, self)
 
@@ -1326,8 +1326,9 @@ def _get_all_matching_ids(
 ) -> list[int]:
     """Return all matching agreement IDs across all subclass tables via UNION ALL.
 
-    SQL-sortable sorts (AGREEMENT, TYPE) are applied here so the returned list is
-    already ordered. Ownership filter (only_my) is pushed to SQL.
+    SQL-sortable sorts (AGREEMENT only — TYPE is excluded because Postgres native ENUM
+    sorts by declaration order, not alphabetically) are applied here so the returned list
+    is already ordered. Ownership filter (only_my) is pushed to SQL.
     """
     filters = AgreementFilters.parse_filters(data)
     sort_condition = filters.sort_conditions[0] if filters.sort_conditions else AgreementSortCondition.AGREEMENT
@@ -1355,8 +1356,6 @@ def _get_all_matching_ids(
             from sqlalchemy import text
 
             sort_col = func.lower(agreement_alias.c.name).op("COLLATE")(text('"C"')).label("sort_key")
-        else:
-            sort_col = agreement_alias.c.agreement_type.label("sort_key")
         inner = (
             select(union_subq.c.id, sort_col)
             .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
