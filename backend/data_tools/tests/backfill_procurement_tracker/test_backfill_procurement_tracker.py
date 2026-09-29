@@ -16,6 +16,7 @@ from models.procurement_tracker import (
     ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
 )
 from models.procurement_workflow import (
     get_earliest_obligated_date_needed,
@@ -867,6 +868,33 @@ def test_mod_scenario_links_in_execution_blis_to_modification(db_with_agreements
         assert (
             bli.procurement_action_id == mod_action.id
         ), f"BLI {bli_id} (IN_EXECUTION) should be linked to MODIFICATION action {mod_action.id}"
+
+
+def test_mod_scenario_new_award_step_is_approved(db_with_agreements):
+    """The NEW_AWARD tracker's AWARD step must be Budget-Team-approved, not just its
+    tracker COMPLETED — the Awards and Modifications tab gates on award_approval_status,
+    not tracker/step status (see agreement_award_history._approved_trackers_by_action)."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9007,
+            ProcurementTracker.procurement_action == new_award_action.id,
+        )
+    ).scalar_one()
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step is not None
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date == date(2024, 1, 15)
 
 
 def test_mod_scenario_sets_award_date_on_new_award_action(db_with_agreements):

@@ -45,8 +45,14 @@ from models import (
     ServicesComponent,
     User,
 )
-from models.procurement_action import AwardType, ProcurementAction
-from models.procurement_tracker import DefaultProcurementTracker, ProcurementTracker, ProcurementTrackerStepStatus
+from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
+from models.procurement_tracker import (
+    DefaultProcurementTracker,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
+)
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines_v2.tsv")
 
@@ -1048,6 +1054,329 @@ def test_procurement_shop_set_from_fee_when_obligated(db_with_data_v2):
     db_with_data_v2.commit()
 
 
+def test_creates_awarded_new_award_action_for_obligated_bli_without_execution(db_with_data_v2):
+    """
+    Test that importing a BLI that is already OBLIGATED, with no preceding IN_EXECUTION
+    line, still creates a NEW_AWARD ProcurementAction with status AWARDED and a COMPLETED
+    tracker. Historical/already-awarded agreements can be imported this way, skipping
+    IN_EXECUTION entirely.
+    """
+    contract_agreement = ContractAgreement(
+        name="Test Contract Already Awarded",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Already Awarded",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",  # OBLIGATED
+        COMMENTS="Test Comments",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="152.03",  # 1% of amount
+        PROC_SHOP_RATE="1.0",
+    )
+
+    user = _ensure_user(db_with_data_v2)
+    create_models(data, user, db_with_data_v2)
+
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract Already Awarded")
+    ).scalar_one_or_none()
+    assert bli_model is not None
+    assert bli_model.procurement_action_id is not None
+
+    action = db_with_data_v2.get(ProcurementAction, bli_model.procurement_action_id)
+    assert action.award_type == AwardType.NEW_AWARD
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.agreement_id == contract_agreement.id
+
+    tracker = db_with_data_v2.execute(
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
+    ).scalar_one_or_none()
+    assert tracker is not None
+    assert tracker.procurement_action == action.id
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+
+    # The Awards and Modifications tab gates on the AWARD step's award_approval_status,
+    # not tracker/step status (see agreement_award_history._approved_trackers_by_action),
+    # so a COMPLETED tracker must still have its AWARD step explicitly approved to show up.
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step is not None
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date == date(2025, 3, 11)
+    # award_amount is intentionally NOT set here: the spreadsheet has no award-level
+    # amount column (only a per-BLI SubTotal), and an award can span multiple OBLIGATED
+    # BLIs, so stamping a single BLI's amount as the award total would be wrong.
+    assert award_step.award_amount is None
+
+    # Cleanup
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_second_obligated_bli_reuses_existing_tracker(db_with_data_v2):
+    """
+    Test that ingesting a second OBLIGATED BLI for an agreement that already has a
+    NEW_AWARD ProcurementTracker (from a first OBLIGATED BLI) reuses that tracker and
+    action rather than creating a duplicate.
+    """
+    contract_agreement = ContractAgreement(
+        name="Test Contract Second Obligated Line",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    first_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Second Obligated Line",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="First Obligated Line",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15000.00",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="150.00",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(first_data, user, db_with_data_v2)
+
+    second_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Second Obligated Line",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Second Obligated Line",
+        DATE_NEEDED="4/1/25",
+        AMOUNT="5000.00",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="50.00",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(second_data, user, db_with_data_v2)
+
+    trackers = (
+        db_with_data_v2.execute(
+            select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 1, f"Expected exactly one tracker, found {len(trackers)}"
+
+    actions = (
+        db_with_data_v2.execute(
+            select(ProcurementAction)
+            .where(ProcurementAction.agreement_id == contract_agreement.id)
+            .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(actions) == 1, f"Expected exactly one NEW_AWARD action, found {len(actions)}"
+
+    blis = (
+        db_with_data_v2.execute(
+            select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(blis) == 2
+    assert all(bli.procurement_action_id == actions[0].id for bli in blis)
+
+    # The second BLI's amount must never overwrite/leak onto the shared AWARD step —
+    # there's no award-level amount column in the spreadsheet, so it must stay unset
+    # regardless of how many OBLIGATED BLIs contribute to this award.
+    award_step = trackers[0].get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_amount is None
+
+    # Cleanup
+    for bli in blis:
+        db_with_data_v2.delete(bli)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_obligated_bli_adopts_existing_unlinked_tracker(db_with_data_v2):
+    """
+    Test that ingesting an OBLIGATED BLI for an agreement that already has an
+    unlinked ProcurementTracker (procurement_action is None — e.g. left over from a
+    prior partial run) adopts that tracker instead of creating a duplicate.
+
+    The existing tracker is deliberately left INACTIVE (not the ACTIVE default) so
+    this test actually exercises get_or_create_for_action's include_inactive bypass
+    for the OBLIGATED/include_terminal=True path — an ACTIVE tracker would be found by
+    the unlinked-tracker query even without that bypass, proving nothing about it.
+    """
+    contract_agreement = ContractAgreement(
+        name="Test Contract Unlinked Tracker",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    existing_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=contract_agreement.id, status=ProcurementTrackerStatus.INACTIVE, created_by=user.id
+    )
+    db_with_data_v2.add(existing_tracker)
+    db_with_data_v2.commit()
+    existing_tracker_id = existing_tracker.id
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Unlinked Tracker",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="152.03",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(data, user, db_with_data_v2)
+
+    trackers = (
+        db_with_data_v2.execute(
+            select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 1, f"Expected the existing tracker to be adopted, not duplicated; found {len(trackers)}"
+    assert trackers[0].id == existing_tracker_id
+    assert trackers[0].status == ProcurementTrackerStatus.COMPLETED
+    assert trackers[0].procurement_action is not None
+
+    # Cleanup
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
+    ).scalar_one_or_none()
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_v2):
+    """
+    Agreement already has a PLANNED NEW_AWARD action + ACTIVE tracker from an earlier
+    IN_EXECUTION BLI. A second, OBLIGATED BLI on the same agreement must reuse that
+    action/tracker, not create a duplicate.
+
+    KNOWN GAP (documented, not yet fixed): the reused action/tracker is NOT promoted to
+    AWARDED/COMPLETED+approved here — get_or_create_for_agreement/get_or_create_for_action
+    only update status on first creation, so this agreement's award still won't appear
+    on the Awards and Modifications tab despite having an OBLIGATED BLI. If that gap is
+    fixed, update the two assertions below.
+    """
+    contract_agreement = ContractAgreement(
+        name="Test Contract Probe In Exec Then Obl",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    in_exec_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Probe In Exec Then Obl",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Execution Line",
+        DATE_NEEDED="1/1/25",
+        AMOUNT="10000.00",
+        STATUS="com",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(in_exec_data, user, db_with_data_v2)
+
+    obligated_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Probe In Exec Then Obl",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Obligated Line",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="152.03",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(obligated_data, user, db_with_data_v2)
+
+    trackers = (
+        db_with_data_v2.execute(
+            select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+    actions = (
+        db_with_data_v2.execute(
+            select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+
+    assert len(trackers) == 1, f"Expected the existing tracker to be reused, not duplicated; found {len(trackers)}"
+    assert (
+        len(actions) == 1
+    ), f"Expected the existing NEW_AWARD action to be reused, not duplicated; found {len(actions)}"
+
+    # Known gap — see docstring. Both BLIs land on the same action/tracker, but neither
+    # gets promoted past its original IN_EXECUTION-era state.
+    assert trackers[0].status == ProcurementTrackerStatus.ACTIVE
+    assert actions[0].status == ProcurementActionStatus.PLANNED
+
+    # Cleanup
+    for bli in (
+        db_with_data_v2.execute(select(BudgetLineItem).where(BudgetLineItem.agreement_id == contract_agreement.id))
+        .scalars()
+        .all()
+    ):
+        db_with_data_v2.delete(bli)
+    for tracker in trackers:
+        db_with_data_v2.delete(tracker)
+    for action in actions:
+        db_with_data_v2.delete(action)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
 def test_procurement_shop_set_from_data_when_not_obligated(db_with_data_v2):
     """
     Test that when a budget line is NOT OBLIGATED, the agreement's procurement_shop
@@ -1431,7 +1760,8 @@ def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
 def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_data_v2):
     """
     When an agreement already has OBLIGATED BLIs and a new IN_EXECUTION BLI
-    is ingested, a MODIFICATION action and tracker are created.
+    is ingested, a MODIFICATION action and tracker are created alongside the
+    AWARDED NEW_AWARD action/tracker created when the OBLIGATED BLI was ingested.
     """
     contract_agreement = ContractAgreement(
         name="Test Contract Modification",
@@ -1494,13 +1824,19 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     ).scalar_one_or_none()
     assert exec_bli.procurement_action_id == mod_action.id
 
-    # The OBLIGATED BLI should NOT be linked (it wasn't IN_EXECUTION)
+    # The OBLIGATED BLI should be linked to its own AWARDED NEW_AWARD action, created
+    # when it was ingested (separate from the later MODIFICATION action).
     obl_bli = db_with_data_v2.execute(
         select(ContractBudgetLineItem)
         .where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
         .where(ContractBudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
     ).scalar_one_or_none()
-    assert obl_bli.procurement_action_id is None
+    assert obl_bli.procurement_action_id is not None
+    assert obl_bli.procurement_action_id != mod_action.id
+
+    new_award_action = db_with_data_v2.get(ProcurementAction, obl_bli.procurement_action_id)
+    assert new_award_action.award_type == AwardType.NEW_AWARD
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
 
     # Cleanup
     for bli in (

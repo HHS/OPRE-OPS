@@ -23,6 +23,7 @@ from models.procurement_tracker import (
     ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
 )
 from models.procurement_workflow import (
     get_or_create_procurement_records_for_modification,
@@ -81,6 +82,8 @@ def db_workflow(loaded_db):
     loaded_db.execute(text("DELETE FROM procurement_action_version"))
     loaded_db.execute(text("DELETE FROM contract_agreement"))
     loaded_db.execute(text("DELETE FROM contract_agreement_version"))
+    loaded_db.execute(text("DELETE FROM iaa_agreement"))
+    loaded_db.execute(text("DELETE FROM iaa_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
     loaded_db.execute(text("DELETE FROM procurement_shop_fee"))
@@ -415,6 +418,114 @@ def test_new_award_workflow_completed_status_marks_all_steps(db_workflow):
         assert step.step_completed_date == award_date
 
 
+def test_new_award_workflow_completed_status_approves_award_step(db_workflow):
+    """COMPLETED tracker_status also approves the AWARD step — mark_completed() alone
+    only flips step statuses/dates, but the Awards and Modifications tab gates on
+    award_approval_status == "APPROVED", not tracker/step status."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+    vendor = Vendor(name="Test Vendor", created_by=sys_user.id)
+    db_workflow.add(vendor)
+    db_workflow.flush()
+    agreement.vendor_id = vendor.id
+    award_date = date(2024, 1, 15)
+
+    _, tracker, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=award_date,
+    )
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step is not None
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date == award_date
+    assert award_step.award_vendor_id == vendor.id
+
+
+def test_new_award_workflow_completed_rerun_does_not_clobber_manual_change(db_workflow):
+    """A second get_or_create call for an already-linked COMPLETED tracker must reuse
+    the existing action/tracker (not create a duplicate) AND must NOT re-stamp the
+    AWARD step — needs_step_setup is False once the tracker is linked to this action,
+    so a real Budget Team decision made in between (e.g. a manual DECLINED override)
+    survives a re-run of the importing/backfill script."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+    award_date = date(2024, 1, 15)
+
+    action_1, tracker_1, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=award_date,
+        include_terminal=True,
+    )
+    db_workflow.flush()
+
+    # A Budget Team member reviews the step through the real app and declines it.
+    award_step = tracker_1.get_step(ProcurementTrackerStepType.AWARD)
+    award_step.award_approval_status = "DECLINED"
+    award_step.award_amount = 999
+    db_workflow.flush()
+
+    # Re-running the workflow (e.g. reimporting the same spreadsheet row, or rerunning
+    # the backfill script) must reuse the same action/tracker, not duplicate them...
+    action_2, tracker_2, action_created, tracker_created = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=award_date,
+        include_terminal=True,
+    )
+
+    assert action_created is False
+    assert tracker_created is False
+    assert action_2.id == action_1.id
+    assert tracker_2.id == tracker_1.id
+
+    # ...and must not overwrite that human decision on the (necessarily same) step.
+    assert award_step.award_approval_status == "DECLINED"
+    assert award_step.award_amount == pytest.approx(999)
+
+
+def test_new_award_workflow_adopting_unlinked_tracker_does_not_clobber_existing_approval(db_workflow):
+    """Adopting a pre-existing unlinked tracker also must not clobber an AWARD step
+    that already carries a real decision — needs_step_setup is True for the adopt
+    path too (not just brand-new trackers), so the stamp must guard on the step's
+    current value, not just on needs_step_setup."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    unlinked = DefaultProcurementTracker.create_with_steps(agreement_id=8001, created_by=sys_user.id)
+    db_workflow.add(unlinked)
+    db_workflow.flush()
+    original_id = unlinked.id
+
+    award_step = unlinked.get_step(ProcurementTrackerStepType.AWARD)
+    award_step.award_approval_status = "DECLINED"
+    db_workflow.flush()
+
+    _, tracker, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=date(2024, 1, 15),
+        include_terminal=True,
+    )
+
+    assert tracker.id == original_id
+    assert tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status == "DECLINED"
+
+
 def test_new_award_workflow_idempotent(db_workflow):
     """Calling new_award workflow twice returns existing records with created=False."""
     sys_user = get_or_create_sys_user(db_workflow)
@@ -433,6 +544,35 @@ def test_new_award_workflow_idempotent(db_workflow):
     assert tracker_created is False
     assert action_2.id == action_1.id
     assert tracker_2.id == tracker_1.id
+
+
+def test_new_award_workflow_completed_status_handles_agreement_without_vendor_id(db_workflow):
+    """IaaAgreement has no vendor_id column at all (unlike ContractAgreement/AaAgreement)
+    — the AWARD-step approval stamping must not raise AttributeError for it, and should
+    leave award_vendor_id None."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    iaa_agreement = IaaAgreement(
+        name="IAA No Vendor Field",
+        direction=IAADirectionType.INCOMING,
+        project_id=8000,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+    )
+    db_workflow.add(iaa_agreement)
+    db_workflow.commit()
+
+    _, tracker, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        iaa_agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=date(2024, 1, 15),
+    )
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_vendor_id is None
 
 
 def test_new_award_workflow_creates_ops_events(db_workflow):

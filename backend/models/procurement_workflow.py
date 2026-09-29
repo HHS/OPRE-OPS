@@ -24,12 +24,14 @@ from models.procurement_action import AwardType, ProcurementAction, ProcurementA
 from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 
 if TYPE_CHECKING:
     from models.agreements import Agreement
 
 __all__ = [
+    "AWARD_APPROVED_STATUS",
     "has_obligated_blis",
     "get_earliest_obligated_fiscal_year",
     "get_earliest_obligated_date_needed",
@@ -37,6 +39,11 @@ __all__ = [
     "get_or_create_procurement_records_for_new_award",
     "get_or_create_procurement_records_for_modification",
 ]
+
+# The AWARD step's award_approval_status value that marks a Budget Team award
+# approval. Stored as a free-form String(20) column, so the literal is the contract —
+# mirrored by ops_api's AgreementAwardHistoryService and ProcurementTrackerStepService.
+AWARD_APPROVED_STATUS = "APPROVED"
 
 
 # ---------------------------------------------------------------------------
@@ -264,12 +271,30 @@ def get_or_create_procurement_records_for_new_award(
         include_inactive=include_terminal,
     )
 
-    # Set step statuses only for adopted or newly created trackers.
+    # Set step statuses only for adopted or newly created trackers — this also keeps
+    # a later re-run of get_or_create from clobbering a real Budget Team decision made
+    # in between (e.g. a manual DECLINED/vendor change), since needs_step_setup is
+    # False once the tracker is already linked to this action.
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
     if needs_step_setup:
         if tracker_status == ProcurementTrackerStatus.COMPLETED:
             tracker.mark_completed(completed_date=date_awarded_obligated)
+            # mark_completed() only flips step statuses/dates — it does not approve
+            # the award. The Awards and Modifications tab gates on
+            # award_approval_status == "APPROVED", not tracker/step status (see
+            # AgreementAwardHistoryService), so a COMPLETED tracker created here
+            # (already-awarded/historical import) needs its AWARD step explicitly
+            # approved or it will silently never appear there.
+            # needs_step_setup=True also covers *adopting* a previously unlinked
+            # tracker, not just brand-new ones — guard on the step's current value too,
+            # so adopting a tracker that already carries a real approval decision can't
+            # be clobbered.
+            award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+            if award_step and award_step.award_approval_status is None:
+                award_step.award_approval_status = AWARD_APPROVED_STATUS
+                award_step.award_date = date_awarded_obligated
+                award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
         else:
             tracker.activate_first_step()
 
