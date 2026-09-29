@@ -876,7 +876,7 @@ class AgreementsService(OpsService[Agreement]):
         An agreement is editable if the user is associated with the agreement.
 
         N.B. Currently the agreement is always editable if the user is a super user -
-        this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
+        the super user check short-circuits before check_user_association is called.
         """
         return user.is_superuser or check_user_association(agreement, user)
 
@@ -1400,7 +1400,9 @@ def _get_page_agreements(
         selectinload(Agreement.services_components),
     ]
     if include_procurement:
-        options.append(selectinload(Agreement.procurement_trackers))
+        from models.procurement_tracker import ProcurementTracker
+
+        options.append(selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps))
 
     # Expire all ProcurementShop objects from the identity map before loading the page.
     # Earlier queries (BudgetLineItem.fees subqueries) may have populated ProcurementShop
