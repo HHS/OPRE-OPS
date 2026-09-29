@@ -586,20 +586,24 @@ class AgreementsService(OpsService[Agreement]):
         page_ids = all_ids[offset_value : offset_value + limit_value]
         paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
 
-        # Step 6: Procurement aggregates use the same page of agreements as the data array,
-        # keeping the overview card and step detail counts consistent (the Procurement Dashboard
-        # E2E test asserts they match). useGetAllAgreements fetches all pages and accumulates,
-        # so the full picture is built client-side across pages.
+        # Step 6: Procurement aggregates must cover ALL filtered agreements, not just the page.
+        # useGetAllAgreements keeps only page-0 metadata, so if we scoped these to paginated_results
+        # the overview card and step counts would undercount once there are >limit matching agreements.
+        # The E2E consistency test compares two metadata fields (both from this same response), so
+        # computing both over the full set keeps them consistent while being correct.
         procurement_overview = None
         procurement_step_summary = None
         procurement_days_in_step = None
         if include_procurement:
+            all_procurement_agreements = _get_page_agreements(self.db_session, all_ids, include_procurement=True)
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
-            procurement_overview = _compute_procurement_overview(paginated_results, overview_fiscal_year)
-            procurement_step_summary = _compute_procurement_step_summary(paginated_results, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(paginated_results)
+            procurement_overview = _compute_procurement_overview(all_procurement_agreements, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(
+                all_procurement_agreements, overview_fiscal_year
+            )
+            procurement_days_in_step = _compute_days_in_procurement_step(all_procurement_agreements)
 
         metadata = {
             "count": total_count,
