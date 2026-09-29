@@ -42,6 +42,14 @@ class AzureConfig(DataToolsConfig):
         return key
 
     @property
+    def vault_acs_connection_string_key(self) -> str | None:
+        return os.getenv("VAULT_ACS_CONNECTION_STRING_KEY") or None
+
+    @property
+    def acs_email_sender(self) -> str | None:
+        return os.getenv("ACS_EMAIL_SENDER") or None
+
+    @property
     def file_storage_auth_method(self) -> str | None:
         access_key = os.getenv("FILE_STORAGE_AUTH_METHOD")
 
@@ -96,14 +104,6 @@ class AzureConfig(DataToolsConfig):
     @property
     def usage_metrics_sas_expiry_days(self) -> str:
         return os.getenv("USAGE_METRICS_SAS_EXPIRY_DAYS", "90")
-
-    @property
-    def usage_metrics_acs_connection_string_secret(self) -> str | None:
-        return os.getenv("USAGE_METRICS_ACS_CONNECTION_STRING_SECRET") or None
-
-    @property
-    def usage_metrics_email_sender(self) -> str | None:
-        return os.getenv("USAGE_METRICS_EMAIL_SENDER") or None
 
     @property
     def usage_metrics_email_recipients(self) -> str | None:

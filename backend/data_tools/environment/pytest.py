@@ -27,6 +27,14 @@ class PytestConfig(DataToolsConfig):
         return None
 
     @property
+    def vault_acs_connection_string_key(self) -> str | None:
+        return None
+
+    @property
+    def acs_email_sender(self) -> str | None:
+        return None
+
+    @property
     def file_storage_auth_method(self) -> str | None:
         return None
 
@@ -62,14 +70,6 @@ class PytestConfig(DataToolsConfig):
     @property
     def usage_metrics_sas_expiry_days(self) -> str:
         return "90"
-
-    @property
-    def usage_metrics_acs_connection_string_secret(self) -> str | None:
-        return None
-
-    @property
-    def usage_metrics_email_sender(self) -> str | None:
-        return None
 
     @property
     def usage_metrics_email_recipients(self) -> str | None:

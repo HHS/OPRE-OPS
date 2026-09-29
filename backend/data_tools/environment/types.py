@@ -45,6 +45,30 @@ class DataToolsConfig(Protocol):
 
     @property
     @abstractmethod
+    def vault_acs_connection_string_key(self) -> str | None:
+        """
+        Returns the name of the Key Vault secret holding the Azure Communication Services
+        connection string used to send outbound email, e.g.
+        "opre-ops-sdlc-comms-acs-connection-string". The ACS resource is per-environment and shared
+        by every sender, so this is not specific to any one report or notification. The secret is
+        provisioned by the infrastructure repo and read from ``vault_url`` at run time, so the
+        connection string itself is never stored in a job's environment. Returns None when email
+        delivery is not configured (local/dev), in which case no email is sent.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def acs_email_sender(self) -> str | None:
+        """
+        Returns the verified ACS sender ("MailFrom") address outbound email is sent from,
+        e.g. "DoNotReply@<verified-domain>". The verified domain belongs to the environment's ACS
+        resource and is shared by every sender. Returns None when email delivery is not configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
     def file_storage_auth_method(self) -> str | None:
         """
         Returns whether to use the access key or role-based access control when the environment is remote else returns None.
@@ -127,28 +151,6 @@ class DataToolsConfig(Protocol):
         Returns the number of days a shared download link (SAS) for the report stays valid.
         The link is emailed to the UX team; after this many days it expires and a new run's
         email must be used. Ignored when no ACS email delivery is configured.
-        """
-        ...
-
-    @property
-    @abstractmethod
-    def usage_metrics_acs_connection_string_secret(self) -> str | None:
-        """
-        Returns the name of the Key Vault secret holding the Azure Communication Services
-        connection string used to email the report download link, e.g.
-        "opre-ops-sdlc-comms-acs-connection-string". The secret is provisioned by the
-        infrastructure repo and read from ``vault_url`` at run time, so the connection string
-        itself is never stored in the job's environment. Returns None when email delivery is not
-        configured (local/dev), in which case the report is uploaded but no email is sent.
-        """
-        ...
-
-    @property
-    @abstractmethod
-    def usage_metrics_email_sender(self) -> str | None:
-        """
-        Returns the verified ACS sender ("MailFrom") address the report email is sent from,
-        e.g. "DoNotReply@<verified-domain>". Returns None when email delivery is not configured.
         """
         ...
 

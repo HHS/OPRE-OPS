@@ -460,8 +460,8 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
     week's email references that week's specific report, and the link stays valid for
     ``usage_metrics_sas_expiry_days`` days.
     """
-    connection_string_secret = config.usage_metrics_acs_connection_string_secret
-    sender = config.usage_metrics_email_sender
+    connection_string_secret = config.vault_acs_connection_string_key
+    sender = config.acs_email_sender
     recipients = parse_recipients(config.usage_metrics_email_recipients)
 
     if not (connection_string_secret and sender and recipients):

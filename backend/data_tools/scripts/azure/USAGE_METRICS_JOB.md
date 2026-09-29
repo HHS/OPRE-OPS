@@ -85,8 +85,8 @@ link** to that sprint's dated report (`reports/usage-metrics-<date>.xlsx`) via *
 Services (ACS)**. Code: `deliver_report_link` in `src/usage_metrics/utils.py` →
 `build_blob_sas_url` in `src/azure_utils/utils.py` (mints the SAS) →
 `send_report_link_email` in `src/usage_metrics/email_delivery.py` (sends via ACS). Email delivery
-**no-ops** (report still uploads to Blob) unless `USAGE_METRICS_ACS_CONNECTION_STRING_SECRET`,
-`USAGE_METRICS_EMAIL_SENDER`, and `USAGE_METRICS_EMAIL_RECIPIENTS` are all set — so local/dev/staging
+**no-ops** (report still uploads to Blob) unless `VAULT_ACS_CONNECTION_STRING_KEY`,
+`ACS_EMAIL_SENDER`, and `USAGE_METRICS_EMAIL_RECIPIENTS` are all set — so local/dev/staging
 runs stay silent until wired.
 
 **Auth design (why connection string, not AAD/RBAC):** the ACS resources are provisioned by
@@ -95,7 +95,7 @@ runs stay silent until wired.
 `pg-server` uses for DB creds) and deliberately leaves RBAC auth out of scope. ACS's AAD data-plane
 auth would require the **`Contributor`** role on the ACS resource — ACS has no narrower built-in
 send role — and the job's MI holds no role there. So the job reads the connection string from Key
-Vault via its MI at run time (`get_secret(vault_url, usage_metrics_acs_connection_string_secret)`),
+Vault via its MI at run time (`get_secret(vault_url, vault_acs_connection_string_key)`),
 exactly like the storage account key below. Neither secret is stored on the job.
 
 **SAS design (why account-key, not user-delegation):** a user-delegation SAS (MI-signed) is capped
@@ -109,11 +109,16 @@ recipient list tight. Dated files accumulate in Blob for history; only the *link
 
 | Var | Purpose | Default |
 |---|---|---|
-| `USAGE_METRICS_ACS_CONNECTION_STRING_SECRET` | Key Vault secret name holding the ACS connection string | — (unset = no email) |
-| `USAGE_METRICS_EMAIL_SENDER` | Verified ACS `MailFrom` address | — |
+| `VAULT_ACS_CONNECTION_STRING_KEY` | Key Vault secret name holding the ACS connection string | — (unset = no email) |
+| `ACS_EMAIL_SENDER` | Verified ACS `MailFrom` address | — |
 | `USAGE_METRICS_EMAIL_RECIPIENTS` | Comma-separated recipient addresses | — |
 | `USAGE_METRICS_SAS_EXPIRY_DAYS` | Days the download link stays valid | `90` |
 | `VAULT_URL`, `VAULT_FILE_STORAGE_KEY` | Key Vault URL + secret name of the storage account key (used to sign the SAS) | — |
+
+`VAULT_ACS_CONNECTION_STRING_KEY` and `ACS_EMAIL_SENDER` are **not** usage-metrics specific: the ACS
+resource and its verified sender domain are per-environment and shared by anything that sends
+outbound mail. Any future job that emails should reuse these two names rather than defining its own;
+only the recipient list and SAS expiry are per-report.
 
 ### Verified ACS values (provisioned by OPRE-OPS-Data#59, applied 2026-09-10)
 
@@ -148,8 +153,8 @@ Then wire the email vars into the create/update invocation:
 ```bash
 export VAULT_URL="https://opre-ops-stg-app-kv.vault.azure.net/"
 export VAULT_FILE_STORAGE_KEY='<secret name holding the storage account key>'
-export USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="opre-ops-sdlc-comms-acs-connection-string"
-export USAGE_METRICS_EMAIL_SENDER="DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net"
+export VAULT_ACS_CONNECTION_STRING_KEY="opre-ops-sdlc-comms-acs-connection-string"
+export ACS_EMAIL_SENDER="DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net"
 export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
 ```
 
@@ -214,6 +219,24 @@ Two consequences worth knowing:
 
 To test-fire off-schedule, set `USAGE_METRICS_FORCE_RUN=true` — see below.
 
+### Renaming the ACS env vars on a job that already exists
+
+The two ACS vars were originally created as `USAGE_METRICS_ACS_CONNECTION_STRING_SECRET` and
+`USAGE_METRICS_EMAIL_SENDER`, and are now the generic `VAULT_ACS_CONNECTION_STRING_KEY` and
+`ACS_EMAIL_SENDER` (the ACS resource is shared by any outbound email, not owned by this report). The
+code only reads the new names, so a job created with the old ones would silently fall back to
+"email not configured" and stop sending while still uploading the report. If a job was already
+created with the old names, update it once (staging shown; swap the RG for prod):
+
+```bash
+az containerapp job update -n usage-metrics-job -g opre-ops-stg-app-rg \
+  --set-env-vars VAULT_ACS_CONNECTION_STRING_KEY="opre-ops-sdlc-comms-acs-connection-string" \
+                 ACS_EMAIL_SENDER="DoNotReply@7b9d729e-13e1-43ab-b12d-fa0ea1793a56.azurecomm.net" \
+  --remove-env-vars USAGE_METRICS_ACS_CONNECTION_STRING_SECRET USAGE_METRICS_EMAIL_SENDER
+```
+
+A job created from the current `create_usage_metrics_job.sh` needs none of this.
+
 ## Enable on production (one-time creation)
 
 Production lives in a **separate subscription** (`opre-ops-services-prod`) from dev/staging
@@ -270,8 +293,8 @@ az keyvault set-policy -n opre-ops-prod-app-kv --object-id "$MI_PRINCIPAL_ID" --
 
 export VAULT_URL="https://opre-ops-prod-app-kv.vault.azure.net/"
 export VAULT_FILE_STORAGE_KEY='<secret name holding the prod storage account key>'
-export USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="opre-ops-prod-comms-acs-connection-string"
-export USAGE_METRICS_EMAIL_SENDER='<prod stack defaultSenderAddress>'
+export VAULT_ACS_CONNECTION_STRING_KEY="opre-ops-prod-comms-acs-connection-string"
+export ACS_EMAIL_SENDER='<prod stack defaultSenderAddress>'
 export USAGE_METRICS_EMAIL_RECIPIENTS="ux1@example.gov,ux2@example.gov"
 ```
 

@@ -45,11 +45,13 @@
 #                                                              report, ignoring the sprint schedule
 #
 # Email delivery (optional -- when set, the job emails the UX team a SAS download link to that
-# sprint's report via Azure Communication Services):
-#   USAGE_METRICS_ACS_CONNECTION_STRING_SECRET              -- Key Vault secret name holding the ACS
+# sprint's report via Azure Communication Services). The first two are NOT usage-metrics specific:
+# the ACS resource and its verified sender domain are per-environment and shared by anything that
+# sends outbound mail, so they are named generically and other jobs should reuse them as-is.
+#   VAULT_ACS_CONNECTION_STRING_KEY                         -- Key Vault secret name holding the ACS
 #                                                              connection string, e.g.
 #                                                              opre-ops-sdlc-comms-acs-connection-string
-#   USAGE_METRICS_EMAIL_SENDER                              -- verified ACS MailFrom address
+#   ACS_EMAIL_SENDER                                        -- verified ACS MailFrom address
 #   USAGE_METRICS_EMAIL_RECIPIENTS                          -- comma-separated recipient addresses
 #   USAGE_METRICS_SAS_EXPIRY_DAYS (optional, default "90")  -- how long the download link stays valid
 #   VAULT_URL, VAULT_FILE_STORAGE_KEY                       -- Key Vault URL + secret name of the
@@ -61,9 +63,9 @@
 # the Contributor role on the ACS resource, which the infra repo does not grant (it provisions the
 # connection string into each environment's Key Vault instead).
 #
-# Email delivery is skipped (report is still uploaded to Blob) unless ACS_CONNECTION_STRING_SECRET,
-# EMAIL_SENDER, and EMAIL_RECIPIENTS are all set. When email is enabled, the MI needs Key Vault
-# "get" on secrets -- see USAGE_METRICS_JOB.md for the az keyvault set-policy step.
+# Email delivery is skipped (report is still uploaded to Blob) unless VAULT_ACS_CONNECTION_STRING_KEY,
+# ACS_EMAIL_SENDER, and USAGE_METRICS_EMAIL_RECIPIENTS are all set. When email is enabled, the MI
+# needs Key Vault "get" on secrets -- see USAGE_METRICS_JOB.md for the az keyvault set-policy step.
 #
 # The managed identity must have WRITE access (Storage Blob Data Contributor) on the target
 # container -- read access (used for data import) is not sufficient for upload. The staging
@@ -137,9 +139,9 @@ az containerapp job create \
     USAGE_METRICS_LOOKBACK_DAYS="${USAGE_METRICS_LOOKBACK_DAYS:-14}" \
     USAGE_METRICS_SPRINT_ANCHOR_DATE="${USAGE_METRICS_SPRINT_ANCHOR_DATE:-2026-09-11}" \
     USAGE_METRICS_FORCE_RUN="${USAGE_METRICS_FORCE_RUN:-}" \
-    USAGE_METRICS_ACS_CONNECTION_STRING_SECRET="${USAGE_METRICS_ACS_CONNECTION_STRING_SECRET:-}" \
-    USAGE_METRICS_EMAIL_SENDER="${USAGE_METRICS_EMAIL_SENDER:-}" \
     USAGE_METRICS_EMAIL_RECIPIENTS="${USAGE_METRICS_EMAIL_RECIPIENTS:-}" \
     USAGE_METRICS_SAS_EXPIRY_DAYS="${USAGE_METRICS_SAS_EXPIRY_DAYS:-90}" \
+    ACS_EMAIL_SENDER="${ACS_EMAIL_SENDER:-}" \
     VAULT_URL="${VAULT_URL:-}" \
-    VAULT_FILE_STORAGE_KEY="${VAULT_FILE_STORAGE_KEY:-}"
+    VAULT_FILE_STORAGE_KEY="${VAULT_FILE_STORAGE_KEY:-}" \
+    VAULT_ACS_CONNECTION_STRING_KEY="${VAULT_ACS_CONNECTION_STRING_KEY:-}"

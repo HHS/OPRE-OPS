@@ -302,8 +302,8 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
     # Bypass the sprint-schedule guard so this test does not depend on the day it runs on.
     config.usage_metrics_force_run = True
     # Email delivery not configured in this test -> deliver_report_link should no-op.
-    config.usage_metrics_acs_connection_string_secret = None
-    config.usage_metrics_email_sender = None
+    config.vault_acs_connection_string_key = None
+    config.acs_email_sender = None
     config.usage_metrics_email_recipients = None
 
     conn = MagicMock()
@@ -526,10 +526,8 @@ def test_build_workbook_has_two_sheets_with_expected_columns():
 def _email_config(**overrides):
     """A MagicMock config with email delivery fully configured; override per test."""
     config = MagicMock()
-    config.usage_metrics_acs_connection_string_secret = (
-        "acs-connection-string"  # noqa: S105 (secret NAME, not a secret value)
-    )
-    config.usage_metrics_email_sender = "DoNotReply@example.com"
+    config.vault_acs_connection_string_key = "acs-connection-string"  # noqa: S105 (secret NAME, not a secret value)
+    config.acs_email_sender = "DoNotReply@example.com"
     config.usage_metrics_email_recipients = "ux1@example.com, ux2@example.com"
     config.usage_metrics_sas_expiry_days = "90"
     config.vault_url = "https://vault.example.com"
@@ -577,8 +575,8 @@ def test_deliver_report_link_sends_when_configured(mocker):
 @pytest.mark.parametrize(
     "overrides",
     [
-        {"usage_metrics_acs_connection_string_secret": None},  # noqa: S105 (config key name)
-        {"usage_metrics_email_sender": None},
+        {"vault_acs_connection_string_key": None},  # noqa: S105 (config key name)
+        {"acs_email_sender": None},
         {"usage_metrics_email_recipients": None},
         {"usage_metrics_email_recipients": ""},
     ],
