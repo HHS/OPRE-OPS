@@ -4,14 +4,15 @@ Performance testing suite for the OPRE OPS API using [Locust](https://locust.io/
 
 ## Load Test Fixture
 
-`backend/data_tools/data/load_test_agreements.json5` contains 100 additional contracts
-(IDs 25–124) with 1,000 DRAFT BLIs used for performance benchmarking. This file is
-**not** loaded by `import_test_data.sh` and will never be seeded into dev/staging.
+`performance_tests/load_test_agreements.json5` contains 100 additional contracts
+(IDs 25–124) with 1,000 DRAFT BLIs used for performance benchmarking. This file lives
+outside `backend/` so it does not affect Docker image layer caching in CI, and is
+**never** loaded by `import_test_data.sh`.
 
 To load it locally for performance testing:
 ```bash
 cd backend
-DATA=./data_tools/data/load_test_agreements.json5 \
+DATA=../performance_tests/load_test_agreements.json5 \
   python data_tools/src/import_static_data/import_data.py
 ```
 
