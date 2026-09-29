@@ -309,7 +309,7 @@ describe("ApprovalFlowReviewCard", () => {
             renderComponent();
 
             const card = screen.getByTestId("pre-award-review-card");
-            expect(card).toHaveStyle({ minHeight: "8.375rem" });
+            expect(card.style.minHeight).toBe("8.375rem");
         });
 
         it("should render heading without wrapping", () => {

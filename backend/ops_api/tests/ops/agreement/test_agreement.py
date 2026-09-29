@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 from flask import url_for
@@ -351,6 +352,147 @@ def test_grant_agreement_grant_details_round_trip(auth_client, loaded_db, test_p
 
     delete_response = auth_client.delete(url_for("api.agreements-item", id=grant_id))
     assert delete_response.status_code == 200
+
+
+def test_agreement_delete_blocked_for_non_draft_budget_lines(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """Regression test for #5658: a team member is authorized to delete, but must still be
+    blocked from deleting an agreement whose budget lines aren't all draft."""
+    agreement = ContractAgreement(
+        name="Basic User Non-Draft Delete Attempt",
+        contract_number="CT-DEL-3",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=agreement_id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+    planned_bli_id = planned_bli.id
+
+    response = basic_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 400
+    assert "budget_line_items" in response.json["errors"]
+
+    # The blocked delete must not have partially committed.
+    assert loaded_db.get(ContractAgreement, agreement_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, planned_bli_id) is not None
+
+
+def test_get_agreement_includes_is_deletable_meta(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """GET /agreements/{id} exposes _meta.isDeletable/lockedMessage (backend-computed, see #5658)."""
+    deletable_agreement = ContractAgreement(
+        name="Meta Deletable Test",
+        contract_number="CT-META-1",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(deletable_agreement)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.get(url_for("api.agreements-item", id=deletable_agreement.id))
+
+    assert response.status_code == 200
+    assert response.json["_meta"]["isDeletable"] is True
+    assert response.json["_meta"]["lockedMessage"] is None
+
+    locked_agreement = ContractAgreement(
+        name="Meta Not Deletable Test",
+        contract_number="CT-META-2",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(locked_agreement)
+    loaded_db.commit()
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=locked_agreement.id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    locked_response = basic_user_auth_client.get(url_for("api.agreements-item", id=locked_agreement.id))
+
+    assert locked_response.status_code == 200
+    assert locked_response.json["_meta"]["isDeletable"] is False
+    assert (
+        locked_response.json["_meta"]["lockedMessage"]
+        == "Cannot delete an agreement with budget lines that are not in Draft status"
+    )
+
+
+def test_agreement_delete_succeeds_for_basic_role_team_member(
+    basic_user_auth_client, loaded_db, test_user, test_non_admin_user, test_project, app_ctx
+):
+    """Regression test for #5658: a VIEWER_EDITOR-roled team member (not the creator or project
+    officer) can delete an agreement with no budget lines that they're authorized for via team
+    membership alone."""
+    agreement = ContractAgreement(
+        name="Basic Role Team Member Delete Success",
+        contract_number="CT-DEL-4",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_user.id,
+        project_officer_id=test_user.id,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+
+    response = basic_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 200
+    assert loaded_db.get(ContractAgreement, agreement_id) is None
+
+
+def test_agreement_delete_succeeds_for_super_user_with_non_draft_budget_lines(
+    power_user_auth_client, loaded_db, test_can, app_ctx
+):
+    """Regression test for #5658: a super user bypasses the non-draft-budget-line delete guard
+    through the real DELETE endpoint, not just the unit-tested _get_locked_message helper."""
+    agreement = ContractAgreement(
+        name="Super User Non-Draft Delete Bypass",
+        contract_number="CT-DEL-5",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    agreement_id = agreement.id
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=agreement_id,
+        line_description="Planned line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(planned_bli)
+    loaded_db.commit()
+
+    response = power_user_auth_client.delete(url_for("api.agreements-item", id=agreement_id))
+
+    assert response.status_code == 200
+    assert loaded_db.get(ContractAgreement, agreement_id) is None
 
 
 def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db, app_ctx):
@@ -965,6 +1107,31 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project, app_ctx
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
+    )
+
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def legacy_contract_without_service_requirement_type(loaded_db, test_vendor, test_admin_user, test_project, app_ctx):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399-legacy-null-srt-fixture",
+        contract_number="XXXX000000099",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=None,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
@@ -1916,6 +2083,24 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract, 
     assert data["agreement_type"] == test_contract.agreement_type.name
     assert data["project_id"] == test_contract.project_id
     assert data["created_by"] is test_contract.created_by
+
+
+def test_agreements_patch_legacy_contract_with_explicit_null_service_requirement_type_returns_400(
+    auth_client, loaded_db, legacy_contract_without_service_requirement_type, test_admin_user, app_ctx
+):
+    """Characterization (#6291): the frontend now blocks Save on edit for CONTRACT/AA agreements
+    with a null service_requirement_type, because the backend rejects it here. If this rule ever
+    changes, revisit AgreementEditFormSuite.js and the on-load validation effect in
+    AgreementEditForm.hooks.js — they assume this backend behavior stays as-is."""
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=legacy_contract_without_service_requirement_type.id),
+        json={"project_officer_id": test_admin_user.id, "service_requirement_type": None},
+    )
+
+    assert response.status_code == 400
+    assert response.json["errors"] == {
+        "service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."
+    }
 
 
 def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract, app_ctx):
@@ -3014,6 +3199,42 @@ class TestAgreementsPaginationAPI:
 
         assert response.status_code == 200
         assert response.json["limit"] == 50
+
+    def test_sort_by_fy_obligated_all_fys_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort without a fiscal_year filter uses lifetime_obligated (All FYs path)."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "FY_OBLIGATED", "sort_descending": False, "limit": 50, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by lifetime_obligated ascending
+        lifetime_values = [Decimal(str(a["lifetime_obligated"])) for a in data]
+        assert lifetime_values == sorted(lifetime_values)
+
+    def test_sort_by_fy_obligated_specific_fy_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort with a specific fiscal_year filter uses fy_obligated for that year."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "FY_OBLIGATED",
+                "sort_descending": False,
+                "fiscal_year": 2044,
+                "limit": 50,
+                "offset": 0,
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by fy_obligated (for the requested FY) ascending
+        fy_obligated_values = [Decimal(a["fy_obligated"]) for a in data]
+        assert fy_obligated_values == sorted(fy_obligated_values)
 
 
 # ==================== AWARDED AGREEMENT PATCH TESTS ====================

@@ -333,6 +333,20 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                 expect(response.status).to.eq(202);
             });
         });
+
+        // OPS-5658: this test's BLI is created PLANNED (never Draft), and the delete above
+        // only opens a pending CR rather than removing it. The shared afterEach's agreement
+        // DELETE would be rejected (400) for a non-superuser with a non-Draft BLI still present,
+        // so end this test as a superuser to let that cleanup succeed.
+        cy.contains("Sign-Out")
+            .click()
+            .then(() => {
+                localStorage.clear();
+                testLogin("power-user");
+            })
+            .then(() => {
+                bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+            });
     });
 
     it("should block browser back navigation with unsaved changes", () => {

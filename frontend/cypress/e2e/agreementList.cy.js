@@ -34,7 +34,7 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(3)").should("have.text", "Start");
         cy.get("thead > tr > :nth-child(4)").should("have.text", "End");
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Total");
-        cy.get("thead > tr > :nth-child(6)").should("have.text", "FY26 Obligated");
+        cy.get("thead > tr > :nth-child(6)").should("have.text", "Lifetime Obligated");
 
         cy.get("#fiscal-year-select").select("2044");
         // select the row with data-testid="agreement-table-row-9"
@@ -337,8 +337,9 @@ describe("Agreement List", () => {
         cy.get('[data-cy="agreement-count-summary-card"]').within(() => {
             // Title should reflect "All FYs" since beforeEach selects "All"
             cy.contains("h3", "All FYs Agreements").should("exist");
-            cy.contains("h3", "All FYs New").should("exist");
-            cy.contains("h3", "All FYs Continuing").should("exist");
+            // New and Continuing are hidden when All FYs is selected
+            cy.contains("h3", "All FYs New").should("not.exist");
+            cy.contains("h3", "All FYs Continuing").should("not.exist");
 
             // The total count should be a positive number
             cy.get(".font-sans-xl.text-bold")

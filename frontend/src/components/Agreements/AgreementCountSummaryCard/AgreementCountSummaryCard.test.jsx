@@ -73,6 +73,32 @@ describe("AgreementCountSummaryCard", () => {
         expect(zeros).toHaveLength(3);
     });
 
+    it("hides New and Continuing sections when fiscalYear is 'All FYs'", () => {
+        render(
+            <AgreementCountSummaryCard
+                title="All FYs Agreements"
+                fiscalYear="All FYs"
+                totals={mockTotals}
+            />
+        );
+        expect(screen.queryByText(/New/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Continuing/)).not.toBeInTheDocument();
+        expect(screen.getByText("All FYs Agreements")).toBeInTheDocument();
+        expect(screen.getByText("7")).toBeInTheDocument();
+    });
+
+    it("shows only one zero (total) when fiscalYear is 'All FYs' and totals is null", () => {
+        render(
+            <AgreementCountSummaryCard
+                title="All FYs Agreements"
+                fiscalYear="All FYs"
+                totals={null}
+            />
+        );
+        const zeros = screen.getAllByText("0");
+        expect(zeros).toHaveLength(1); // total only
+    });
+
     it("dynamically counts agreements by type and renders a tag for each", () => {
         render(
             <AgreementCountSummaryCard

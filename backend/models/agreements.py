@@ -525,6 +525,21 @@ class Agreement(BaseModel):
         return date_to_fiscal_year(self.award_date)
 
     @property
+    def has_non_draft_budget_lines(self) -> bool:
+        """
+        Whether any budget line item on this agreement is not in Draft status.
+
+        Single source of truth for this predicate — used by ``award_type`` below and by
+        ``AgreementsService`` (delete guard and deletability meta) so the rule can't drift
+        between those call sites. A NULL status does not count as non-draft.
+        """
+        from models.budget_line_items import BudgetLineItemStatus
+
+        return any(
+            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
+        )
+
+    @property
     def award_type(self) -> Optional[str]:
         """
         Classify agreement as NEW, CONTINUING, or None for Budget Team reporting.
@@ -535,14 +550,9 @@ class Agreement(BaseModel):
 
         Returns the name of an AgreementClassification enum value (e.g. "NEW", "CONTINUING").
         """
-        from models.budget_line_items import BudgetLineItemStatus
         from models.utils.fiscal_year import get_current_fiscal_year
 
-        has_non_draft_blis = any(
-            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
-        )
-
-        if not has_non_draft_blis:
+        if not self.has_non_draft_budget_lines:
             return None
 
         if not self.is_awarded:

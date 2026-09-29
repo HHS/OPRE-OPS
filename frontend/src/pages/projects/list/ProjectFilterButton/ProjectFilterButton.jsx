@@ -35,8 +35,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
         projectType,
         setProjectType,
         applyFilter,
-        resetFilter,
-        currentFiscalYear
+        resetFilter
     } = useProjectFilterButton(filters, setFilters, showModal);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -51,7 +50,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={`Fiscal Year ${currentFiscalYear}`}
+                defaultString=""
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={projectFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"

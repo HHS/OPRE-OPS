@@ -166,22 +166,32 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         }).then((response) => {
                             // This BLI is now PLANNED (the Draft->Planned status change was approved
                             // above), so deleting it creates a deletion change request (202) rather
-                            // than an immediate hard delete. The agreement delete below still cleans
-                            // it up via cascade.
+                            // than an immediate hard delete - it's still PLANNED.
                             expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // The BLI is still PLANNED (only a deletion change request was created above),
+                        // so only a super user can clean up the agreement directly (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });

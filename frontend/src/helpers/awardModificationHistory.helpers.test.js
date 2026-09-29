@@ -40,6 +40,15 @@ describe("awardModificationHistory helpers", () => {
             expect(displayCurrency(null)).toBe(NO_DATA);
             expect(displayCurrency(undefined)).toBe(NO_DATA);
         });
+        it("renders a zero value as '$0', distinct from NO_DATA (OPS-5379)", () => {
+            // The backend deliberately never stores a $0.00 agreement-total snapshot —
+            // it leaves contract_total null instead — because a zero renders here with no
+            // decimals and no "TBD", which would misleadingly read as "this award was
+            // worth nothing" rather than "unknown". This pins that distinction so a
+            // future change can't quietly start sending "0.00".
+            expect(displayCurrency("0.00")).toBe("$0");
+            expect(displayCurrency(0)).toBe("$0");
+        });
     });
 
     describe("displayVendorType", () => {

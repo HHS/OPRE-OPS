@@ -430,7 +430,9 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
 
-        testLogin("system-owner");
+        // The BLIs here were created directly as PLANNED/EXECUTING (not via an unapproved CR),
+        // so only a super user can clean up the agreement directly (see #5658).
+        testLogin("power-user");
         cy.then(() => {
             const token = `Bearer ${window.localStorage.getItem("access_token")}`;
             bliIds.forEach((id) => {

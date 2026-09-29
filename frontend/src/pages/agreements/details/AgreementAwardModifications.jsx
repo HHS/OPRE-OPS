@@ -91,7 +91,7 @@ const AgreementAwardModifications = ({ agreement }) => {
                                                 key={group.dataCy}
                                                 data-cy={group.dataCy}
                                             >
-                                                <h4 className="margin-0 margin-bottom-1 font-sans-3xs text-bold text-base-dark">
+                                                <h4 className="margin-0 margin-bottom-neg-1 font-sans-3xs text-bold text-base-dark">
                                                     {group.title}
                                                 </h4>
                                                 <dl

@@ -71,7 +71,7 @@ describe("FileUploadButton component", () => {
             );
 
             const button = screen.getByRole("button", { name: "Upload File" });
-            expect(button).toHaveStyle({ marginTop: "1rem" });
+            expect(button.style.marginTop).toBe("1rem");
             // Card default styles (width, minHeight, justifyContent)
             expect(button).toHaveStyle({ width: "450px", minHeight: "100px", justifyContent: "space-between" });
         });

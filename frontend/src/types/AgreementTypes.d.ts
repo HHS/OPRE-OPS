@@ -8,7 +8,7 @@ import { AgreementType, AWARD_TYPE_LABELS } from "../pages/agreements/agreements
 export type Agreement = {
     team_leaders: string[];
     division_directors: string[];
-    _meta: { isEditable: boolean };
+    _meta: { isEditable: boolean; isDeletable?: boolean; lockedMessage?: string | null };
     agreement_reason?: string;
     agreement_type: AgreementType;
     alternate_project_officer_id?: number;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/Projects/ProjectTypeSelect/ProjectTypeSelect";
@@ -63,29 +63,35 @@ const CreateProject = () => {
         project_type: DISPLAY_TO_API_TYPE[project.project_type] || project.project_type
     };
 
-    if (isError) {
-        console.log("Error Submitting Project");
-        console.dir(error);
-        setAlert({
-            type: "error",
-            heading: "Error Creating Project",
-            message: "There was an error creating the project. Please try again.",
-            redirectUrl: `/error`
-        });
-    }
+    useEffect(() => {
+        if (isError) {
+            console.log("Error Submitting Project");
+            console.dir(error);
+            setAlert({
+                type: "error",
+                heading: "Error Creating Project",
+                message: "There was an error creating the project. Please try again.",
+                redirectUrl: `/error`
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isError, error]);
 
-    if (isSuccess) {
-        console.log(`New Project Created: ${rpData.id}`);
-        reset();
-        handleClearingForm();
-        // TODO: Once project list is implemented, redirect to the project list page
-        setAlert({
-            type: "success",
-            heading: "New Project Created",
-            message: "The project has been successfully created.",
-            redirectUrl: `/`
-        });
-    }
+    useEffect(() => {
+        if (isSuccess) {
+            console.log(`New Project Created: ${rpData.id}`);
+            reset();
+            handleClearingForm();
+            // TODO: Once project list is implemented, redirect to the project list page
+            setAlert({
+                type: "success",
+                heading: "New Project Created",
+                message: "The project has been successfully created.",
+                redirectUrl: `/`
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSuccess, rpData]);
 
     const handleCancel = () => {
         setShowModal(true);

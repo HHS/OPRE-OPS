@@ -1,6 +1,7 @@
 """Service for procurement tracker step operations."""
 
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
@@ -1048,6 +1049,60 @@ class ProcurementTrackerStepService:
             agreement.name = proposed_title.strip()
             logger.debug(f"Applied proposed award title to agreement {agreement.id} via award approval")
 
+    # Numeric(12, 2) → 10 integer digits. BudgetLineItem.amount is itself Numeric(12, 2),
+    # so a handful of large lines can exceed the column. Exceeding it must cost us the
+    # snapshot, never the award (see _snapshot_agreement_total).
+    _AGREEMENT_TOTAL_MAX = Decimal("9999999999.99")
+
+    @staticmethod
+    def _snapshot_agreement_total(procurement_action: ProcurementAction, agreement: Agreement) -> None:
+        """
+        Capture the agreement's dollar total onto the procurement action, once.
+
+        Write-once by design: a point-in-time snapshot of every non-DRAFT budget line
+        (amount + fees) at the moment of award, surfaced as "Contract Total" on the
+        Awards & Modifications tab. Never recomputed — later BLI edits must not
+        retroactively change what was awarded.
+
+        Note the deliberate name collision: Agreement.agreement_total is the *live*
+        computed property; ProcurementAction.agreement_total is this frozen snapshot.
+        """
+        if procurement_action.agreement_total is not None:
+            logger.debug(
+                f"ProcurementAction {procurement_action.id} already has agreement_total "
+                f"{procurement_action.agreement_total} — leaving the existing snapshot untouched"
+            )
+            return
+
+        # Quantize explicitly rather than letting Numeric(12, 2) round implicitly on INSERT:
+        # BudgetLineItem.fees is (fee_rate / 100) * amount, which routinely yields sub-cent
+        # values (e.g. 4.8% of $1,000.33 = $48.01584), so the raw sum can carry 4+ decimals.
+        total = agreement.agreement_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # A zero snapshot is indistinguishable to a reader from "we know it was $0", and
+        # formatCurrency renders it "$0". Leaving NULL keeps the field honest ("TBD") and,
+        # critically, still correctable — write-once would otherwise make $0 permanent.
+        if total == 0:
+            logger.warning(
+                f"Agreement {agreement.id} has a zero non-DRAFT total at award; "
+                f"leaving ProcurementAction {procurement_action.id}.agreement_total NULL"
+            )
+            return
+
+        # Overflow must not abort the award. db_session.commit() covers the whole award
+        # transaction (BLI obligations, status, date, notifications), and the resource's
+        # patch has no try/except — so a DataError here would roll ALL of that back and
+        # return a 500, silently un-awarding the agreement.
+        if total > ProcurementTrackerStepService._AGREEMENT_TOTAL_MAX:
+            logger.error(
+                f"agreement_total {total} exceeds Numeric(12, 2) for ProcurementAction "
+                f"{procurement_action.id}; skipping snapshot to protect the award transaction"
+            )
+            return
+
+        procurement_action.agreement_total = total
+        logger.debug(f"Snapshotted agreement_total {total} onto ProcurementAction {procurement_action.id}")
+
     def _handle_award_approval(self, step, approval_status, obligated_date, current_user):
         """
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
@@ -1101,6 +1156,7 @@ class ProcurementTrackerStepService:
                         )
                     procurement_action.status = ProcurementActionStatus.AWARDED
                     logger.debug("Marked procurement action as AWARDED via award approval")
+                    self._snapshot_agreement_total(procurement_action, agreement)
 
     def _handle_award_approval_notifications(
         self,

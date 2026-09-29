@@ -62,31 +62,34 @@ const mockProject = {
     _meta: { isEditable: true }
 };
 
+const buildStore = (roles = [], isSuperUser = false) =>
+    configureStore({
+        reducer: {
+            [opsApi.reducerPath]: opsApi.reducer,
+            auth: () => ({
+                isLoggedIn: true,
+                activeUser: { id: 1, roles, is_superuser: isSuperUser }
+            }),
+            alert: () => ({
+                isActive: false,
+                type: "",
+                heading: "",
+                message: "",
+                redirectUrl: ""
+            })
+        },
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
+    });
+
 describe("ProjectDetail", () => {
     let mockStore;
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockStore = configureStore({
-            reducer: {
-                [opsApi.reducerPath]: opsApi.reducer,
-                auth: () => ({
-                    isLoggedIn: true,
-                    activeUser: { id: 1, roles: [] }
-                }),
-                alert: () => ({
-                    isActive: false,
-                    type: "",
-                    heading: "",
-                    message: "",
-                    redirectUrl: ""
-                })
-            },
-            middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
-        });
+        mockStore = buildStore();
     });
 
-    const renderComponent = (id = "1000") => {
+    const renderComponent = (id = "1000", store = mockStore) => {
         const router = createMemoryRouter(
             [
                 {
@@ -97,7 +100,7 @@ describe("ProjectDetail", () => {
             { initialEntries: [`/projects/${id}`] }
         );
         return render(
-            <Provider store={mockStore}>
+            <Provider store={store}>
                 <RouterProvider router={router} />
             </Provider>
         );
@@ -237,6 +240,33 @@ describe("ProjectDetail", () => {
 
         const editButton = screen.getByRole("button", { name: /edit/i });
         expect(editButton).toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("hides the edit button entirely for read-only users, even when _meta.isEditable is true", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        const readOnlyStore = buildStore([{ name: "READ_ONLY" }]);
+        renderComponent("1000", readOnlyStore);
+
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    });
+
+    it("shows an enabled edit button for a user with both SUPER_USER and READ_ONLY roles", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        const superUserReadOnlyStore = buildStore([{ name: "SUPER_USER" }, { name: "READ_ONLY" }], true);
+        renderComponent("1000", superUserReadOnlyStore);
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
     });
 
     it("switches to edit mode when edit button is clicked", async () => {

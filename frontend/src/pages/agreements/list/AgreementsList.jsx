@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PacmanLoader } from "react-spinners";
@@ -25,9 +25,10 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
-import { ITEMS_PER_PAGE } from "../../../constants";
+import constants, { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, formatDate, getCurrentFiscalYear, tableSortCodes } from "../../../helpers/utils";
+import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
+import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -61,7 +62,7 @@ const AgreementsList = () => {
     );
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -69,40 +70,26 @@ const AgreementsList = () => {
     const { data: agreementFilterOptions, isLoading: isLoadingAgreementFilterOptions } =
         useGetAgreementsFilterOptionsQuery({ onlyMy: myAgreementsUrl });
 
-    // Determine fiscal year filter based on selection
-    const hasOtherFilters =
-        filters.portfolio.length > 0 ||
-        filters.projectTitle.length > 0 ||
-        filters.agreementType.length > 0 ||
-        filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0 ||
-        filters.awardType.length > 0;
+    // Derive the dropdown display value and the API-ready FY array from the two FY inputs:
+    // selectedFiscalYear (shortcut dropdown) and filters.fiscalYear (Compare Fiscal Years panel).
+    // Compare FYs takes precedence when non-empty; otherwise the dropdown FY is used.
+    const dropdownValue = deriveDropdownValue(selectedFiscalYear, filters.fiscalYear);
 
-    const getFiscalYearFilter = () => {
-        // If explicit filters are set via filter modal, use those
-        if ((filters.fiscalYear ?? []).length > 0) {
-            // "All FYs" means no fiscal year filter
-            if (filters.fiscalYear.some((fy) => fy.id === "all")) {
-                return [];
-            }
-            return filters.fiscalYear;
-        }
-        // If other filters are active but no fiscal year was selected, don't default
-        if (hasOtherFilters) {
-            return [];
-        }
-        // If "All" is selected from the page dropdown, no fiscal year filter
-        if (selectedFiscalYear === "All") {
-            return [];
-        }
-        // Otherwise, use the selected fiscal year
-        return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
-    };
+    // A single Compare FY can fall outside the default rolling window (constants.fiscalYears),
+    // e.g. an older year that still has agreements. Include every year the API knows about so
+    // the <select>'s value always matches a rendered <option>.
+    const fiscalYearOptions = mergeFiscalYearOptions(constants.fiscalYears, agreementFilterOptions?.fiscal_years);
+
+    // Child components (AgreementsTable, AgreementsTableLoading, SummaryCardsSection, export)
+    // only understand "All" or a specific year string — they have no "Multi" branch. Under
+    // Multi, show lifetime_obligated columns and "Multiple Years" labels, same as "All".
+    const isMultiFY = dropdownValue === "Multi";
+    const displayFY = isMultiFY ? "All" : dropdownValue;
 
     const queryParams = {
         filters: {
             ...filters,
-            fiscalYear: getFiscalYearFilter()
+            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
         },
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
@@ -133,29 +120,35 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Sync fiscal year filter modal with page-level dropdown
-    // When "All FYs" is selected in the filter modal, change page dropdown to "All"
+    // Track when the dropdown shortcut itself clears filters.fiscalYear so the effect
+    // below doesn't revert selectedFiscalYear to "All" when the user changed the dropdown.
+    const dropdownChangedFYRef = useRef(false);
+
+    // Track the previous length to distinguish "non-zero → zero" transitions (tag removal
+    // or Apply with empty panel) from no-op writes of a new [] reference when already empty.
+    const prevFYLengthRef = useRef(0);
+
+    // Revert selectedFiscalYear to "All" whenever the FY filter transitions non-zero → zero
+    // (tag removal, Apply with empty panel, or clearing the combobox) unless the dropdown
+    // shortcut itself caused the clear, in which case preserve the chosen year.
     useEffect(() => {
-        if (filters.fiscalYear && filters.fiscalYear.length > 0) {
-            const hasAllFYs = filters.fiscalYear.some((fy) => fy.id === "all");
-
-            if (hasAllFYs && selectedFiscalYear !== "All") {
-                setSelectedFiscalYear("All");
-            }
+        const normalizedFYs = filters.fiscalYear ?? [];
+        const prevLen = prevFYLengthRef.current;
+        prevFYLengthRef.current = normalizedFYs.length;
+        if (dropdownChangedFYRef.current) {
+            dropdownChangedFYRef.current = false;
+            return;
         }
-    }, [filters.fiscalYear, selectedFiscalYear]);
+        if (normalizedFYs.length === 0 && prevLen > 0) {
+            setSelectedFiscalYear("All");
+        }
+    }, [filters.fiscalYear]);
 
-    // Handle fiscal year change - clear filters when changing fiscal year selection
+    // Handle fiscal year shortcut dropdown change.
+    // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.
     const handleChangeFiscalYear = (newValue) => {
-        setFilters({
-            portfolio: [],
-            fiscalYear: [],
-            projectTitle: [],
-            agreementType: [],
-            agreementName: [],
-            contractNumber: [],
-            awardType: []
-        });
+        dropdownChangedFYRef.current = true;
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
         setSelectedFiscalYear(newValue);
     };
 
@@ -204,7 +197,7 @@ const AgreementsList = () => {
                     getAllAgreementsTrigger({
                         filters: {
                             ...filters,
-                            fiscalYear: getFiscalYearFilter()
+                            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
                         },
                         onlyMy: myAgreementsUrl,
                         sortConditions: sortCondition,
@@ -221,11 +214,6 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
-            const effectiveFY =
-                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
-
-            const agreementResponses = allAgreementsList;
-
             const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
                 .map((agreement) => trigger(agreement.project_officer_id).unwrap());
@@ -241,66 +229,71 @@ const AgreementsList = () => {
                     cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
-            const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
+            // displayFY collapses "Multi" → "All" so export columns match the table columns.
+            const isAllFY = displayFY === "All";
+            const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${displayFY.slice(-2)} Obligated`;
 
-            const tableHeader = [
-                "Agreement",
-                "Type",
-                "Start Date",
-                "End Date",
-                "Total",
-                fyLabel,
-                "Project",
-                "Procurement Shop",
-                "Subtotal",
-                "Fees",
-                "Lifetime Obligated",
-                "Contract Number",
-                "Award Type",
-                "Vendor",
-                "COR"
-            ];
-            await exportTableToXlsx({
-                data: agreementResponses,
-                headers: tableHeader,
-                rowMapper: (agreement) => {
-                    const agreementName = getAgreementName(agreement);
-                    const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-                    const startDate = agreement.sc_start_date
-                        ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z"))
-                        : "TBD";
-                    const endDate = agreement.sc_end_date
-                        ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z"))
-                        : "TBD";
-                    const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
-                    const agreementFees = Number(agreement.total_agreement_fees ?? 0);
-                    const total = Number(agreement.agreement_total ?? 0);
-                    const fyObligated = Number(agreement.fy_obligated ?? 0);
-                    const project = getResearchProjectName(agreement);
-                    const procurementShop = getProcurementShopDisplay(agreement);
-                    const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);
-                    const contractNumber = getAgreementContractNumber(agreement);
-
-                    return [
-                        agreementName,
-                        agreementType,
-                        startDate,
-                        endDate,
-                        total,
-                        fyObligated,
-                        project ?? "",
-                        procurementShop,
-                        agreementSubTotal ?? 0,
-                        agreementFees ?? 0,
-                        lifetimeObligated,
-                        contractNumber ?? "",
-                        agreement?.award_type ?? "",
-                        agreement?.vendor ?? "",
-                        agreementDataMap[agreement.id]?.cor ?? ""
-                    ];
+            // The "Lifetime Obligated" column is omitted when "All" FYs is selected because the
+            // fyLabel column above already shows lifetime_obligated — this avoids a duplicate
+            // column with identical data. Deriving headers/values/currencyColumns from one list
+            // of column definitions keeps them from drifting out of sync with each other.
+            const columnDefs = [
+                { header: "Agreement", getValue: (agreement) => getAgreementName(agreement) },
+                {
+                    header: "Type",
+                    getValue: (agreement) => convertCodeForDisplay("agreementType", agreement?.agreement_type)
                 },
+                {
+                    header: "Start Date",
+                    getValue: (agreement) =>
+                        agreement.sc_start_date ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z")) : "TBD"
+                },
+                {
+                    header: "End Date",
+                    getValue: (agreement) =>
+                        agreement.sc_end_date ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z")) : "TBD"
+                },
+                { header: "Total", currency: true, getValue: (agreement) => Number(agreement.agreement_total ?? 0) },
+                {
+                    header: fyLabel,
+                    currency: true,
+                    getValue: (agreement) =>
+                        isAllFY ? Number(agreement.lifetime_obligated ?? 0) : Number(agreement.fy_obligated ?? 0)
+                },
+                { header: "Project", getValue: (agreement) => getResearchProjectName(agreement) ?? "" },
+                { header: "Procurement Shop", getValue: (agreement) => getProcurementShopDisplay(agreement) },
+                {
+                    header: "Subtotal",
+                    currency: true,
+                    getValue: (agreement) => Number(agreement.agreement_subtotal ?? 0)
+                },
+                {
+                    header: "Fees",
+                    currency: true,
+                    getValue: (agreement) => Number(agreement.total_agreement_fees ?? 0)
+                },
+                {
+                    header: "Lifetime Obligated",
+                    currency: true,
+                    omitWhenAllFY: true,
+                    getValue: (agreement) => Number(agreement.lifetime_obligated ?? 0)
+                },
+                { header: "Contract Number", getValue: (agreement) => getAgreementContractNumber(agreement) ?? "" },
+                { header: "Award Type", getValue: (agreement) => agreement?.award_type ?? "" },
+                { header: "Vendor", getValue: (agreement) => agreement?.vendor ?? "" },
+                { header: "COR", getValue: (agreement) => agreementDataMap[agreement.id]?.cor ?? "" }
+            ];
+            const activeColumnDefs = columnDefs.filter((column) => !(column.omitWhenAllFY && isAllFY));
+
+            await exportTableToXlsx({
+                data: allAgreementsList,
+                headers: activeColumnDefs.map((column) => column.header),
+                rowMapper: (agreement) => activeColumnDefs.map((column) => column.getValue(agreement)),
                 filename: "agreements",
-                currencyColumns: [4, 5, 8, 9, 10] // Total, FY Obligated, Subtotal, Fees, Lifetime Obligated
+                currencyColumns: activeColumnDefs.reduce(
+                    (indices, column, index) => (column.currency ? [...indices, index] : indices),
+                    []
+                )
             });
         } catch (error) {
             console.error("Failed to export data:", error);
@@ -377,8 +370,9 @@ const AgreementsList = () => {
                     }
                     FYSelect={
                         <FiscalYear
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={dropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
+                            fiscalYears={fiscalYearOptions}
                             showAllOption={true}
                         />
                     }
@@ -386,14 +380,14 @@ const AgreementsList = () => {
                         !isTableLoading &&
                         totalCount > 0 && (
                             <AgreementSummaryCardsSection
-                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                fiscalYear={isMultiFY ? "Multi" : displayFY === "All" ? "All FYs" : `FY ${displayFY}`}
                                 totals={totals}
                             />
                         )
                     }
                     TableSection={
                         isTableLoading ? (
-                            <AgreementsTableLoading selectedFiscalYear={selectedFiscalYear} />
+                            <AgreementsTableLoading selectedFiscalYear={displayFY} />
                         ) : (
                             <>
                                 <AgreementsTable
@@ -401,7 +395,7 @@ const AgreementsList = () => {
                                     sortConditions={sortCondition}
                                     sortDescending={sortDescending}
                                     setSortConditions={setSortConditions}
-                                    selectedFiscalYear={selectedFiscalYear}
+                                    selectedFiscalYear={displayFY}
                                 />
                                 {totalPages > 1 && (
                                     <div className="margin-top-3">

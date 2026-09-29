@@ -164,6 +164,8 @@ describe("ContractNumberComboBox", () => {
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         const selectContainer = container.querySelector(".contract-number-combobox__control");
-        expect(selectContainer).toHaveStyle({ minWidth: "30rem" });
+        // react-select applies overrideStyles via CSS-in-JS, not an inline style attribute;
+        // getComputedStyle resolves it, normalizing 30rem to 480px at the default 16px root font-size
+        expect(getComputedStyle(selectContainer).minWidth).toBe("480px");
     });
 });

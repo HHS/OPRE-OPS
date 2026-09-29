@@ -168,6 +168,7 @@ describe("ProjectTitleComboBox", () => {
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         const selectContainer = container.querySelector(".project-title-combobox__control");
-        expect(selectContainer).toHaveStyle({ minWidth: "30rem" });
+        // 30rem === 480px at the default 16px root font-size (jsdom's getComputedStyle normalizes rem to px)
+        expect(getComputedStyle(selectContainer).minWidth).toBe("480px");
     });
 });

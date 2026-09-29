@@ -58,7 +58,7 @@ describe("ProjectsTable", () => {
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /End/ })).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: /Project Total/ })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: /Lifetime Total/ })).toBeInTheDocument();
     });
 
     it("shows 'FY26 Total' label when a specific fiscal year is selected", () => {
@@ -66,9 +66,11 @@ describe("ProjectsTable", () => {
         expect(screen.getByRole("columnheader", { name: /FY26 Total/ })).toBeInTheDocument();
     });
 
-    it("shows 'FY Total' label when 'All' is selected", () => {
+    it("hides the FY Total column when 'All' is selected", () => {
         renderTable({ selectedFiscalYear: "All" });
-        expect(screen.getByRole("columnheader", { name: /^FY Total$/ })).toBeInTheDocument();
+        expect(screen.queryByRole("columnheader", { name: /FY Total/ })).not.toBeInTheDocument();
+        // 5 data columns + 1 expand column = 6 total headers
+        expect(screen.getAllByRole("columnheader").length).toBe(6);
     });
 
     it("renders a project row with a link to the project detail page", () => {
@@ -104,10 +106,11 @@ describe("ProjectsTable", () => {
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(1);
     });
 
-    it("displays 'TBD' for FY total when 'All' is selected", () => {
+    it("does not render any FY total cell when 'All' is selected", () => {
         renderTable({ selectedFiscalYear: "All" });
-        // When selectedFiscalYear is "All", fyTotal is always null → NO_DATA
-        expect(screen.getByText("TBD")).toBeInTheDocument();
+        // FY Total column is hidden entirely under All FYs; MOCK_PROJECT_1 has project_total > 0
+        // so the only TBD values would be from missing dates — not from a FY total cell
+        expect(screen.queryByRole("columnheader", { name: /FY Total/ })).not.toBeInTheDocument();
     });
 
     it("displays the project total as currency", () => {
@@ -115,9 +118,9 @@ describe("ProjectsTable", () => {
         expect(screen.getByText("$800,000.00")).toBeInTheDocument();
     });
 
-    it("displays 'TBD' for a zero project total", () => {
+    it("displays '$0' for a zero project total (TBD only for null)", () => {
         renderTable({ projects: [MOCK_PROJECT_2] });
-        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("$0")).toBeInTheDocument();
     });
 
     it("sets aria-sort='ascending' on the currently sorted column", () => {
@@ -146,6 +149,25 @@ describe("ProjectsTable", () => {
         await user.click(screen.getByRole("button", { name: /Type/i }));
 
         expect(setSortConditions).toHaveBeenCalledWith(PROJECT_SORT_CODES.PROJECT_TYPE, expect.any(Boolean));
+    });
+
+    it("does not render an FY Total header button when 'All' is selected", () => {
+        renderTable({ selectedFiscalYear: "All" });
+        expect(screen.queryByRole("button", { name: /FY Total/i })).not.toBeInTheDocument();
+    });
+
+    it("enables the FY Total header and allows sorting when a specific fiscal year is selected", async () => {
+        const user = userEvent.setup();
+        const setSortConditions = vi.fn();
+        renderTable({ selectedFiscalYear: "2026", setSortConditions });
+
+        const fyTotalHeader = screen.getByRole("button", { name: /FY26 Total/i });
+        expect(fyTotalHeader).not.toHaveAttribute("aria-disabled");
+        expect(fyTotalHeader.className).toContain("cursor-pointer");
+
+        await user.click(fyTotalHeader);
+
+        expect(setSortConditions).toHaveBeenCalledWith(PROJECT_SORT_CODES.FY_TOTAL, expect.any(Boolean));
     });
 
     it("renders multiple rows when given multiple projects", () => {
