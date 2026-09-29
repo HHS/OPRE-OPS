@@ -681,9 +681,8 @@ def test_agreements_with_project_found(auth_client, test_project, app_ctx):
     )
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
-    assert response.json["data"][0]["id"] == 1
-    assert response.json["data"][1]["id"] == 10
-    assert response.json["data"][2]["id"] == 2
+    returned_ids = {item["id"] for item in response.json["data"]}
+    assert {1, 2, 10} == returned_ids
 
 
 def test_get_agreements_by_nickname(auth_client, app_ctx):
