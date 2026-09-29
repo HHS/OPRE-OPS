@@ -1356,7 +1356,10 @@ def _compute_days_in_procurement_step(
     return days_in_step
 
 
-_SQL_SORTABLE = {AgreementSortCondition.AGREEMENT, AgreementSortCondition.TYPE}
+# TYPE is excluded: native Postgres ENUM sorts by declaration order (CONTRACT, GRANT,
+# DIRECT_OBLIGATION, IAA, AA), but the frontend expects alphabetical order (AA, CONTRACT,
+# DIRECT OBLIGATION, GRANT, IAA) matching the old Python str(agreement_type) sort.
+_SQL_SORTABLE = {AgreementSortCondition.AGREEMENT}
 
 
 def _is_sql_sortable(sort_condition: AgreementSortCondition) -> bool:
@@ -1395,7 +1398,11 @@ def _get_all_matching_ids(
     if _is_sql_sortable(sort_condition):
         agreement_alias = Agreement.__table__
         if sort_condition == AgreementSortCondition.AGREEMENT:
-            sort_col = func.lower(agreement_alias.c.name).label("sort_key")
+            # COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort.
+            # Without it, en_US.utf8 collation treats spaces/hyphens differently from Python.
+            from sqlalchemy import text
+
+            sort_col = func.lower(agreement_alias.c.name).op("COLLATE")(text('"C"')).label("sort_key")
         else:
             sort_col = agreement_alias.c.agreement_type.label("sort_key")
         inner = (
