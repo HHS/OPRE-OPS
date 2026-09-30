@@ -2,9 +2,11 @@ import pytest
 
 from models import (
     CAN,
+    AgreementType,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
     Division,
+    GrantBudgetLineItem,
     Portfolio,
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
@@ -16,6 +18,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     compute_bli_editable,
     compute_bli_is_deletable,
     convert_BLI_status_name_to_pretty_string,
+    create_budget_line_item_instance,
     get_bli_locked_message,
     get_division_for_budget_line_item,
     is_post_pre_award_locked,
@@ -198,6 +201,69 @@ def test_update_data_empty_dict():
     original_values = bli.to_dict()
     update_data(bli, {})  # Nothing should change
     assert bli.to_dict() == original_values
+
+
+# ---------------------------------------------------------------------------
+# create_budget_line_item_instance — strips subclass-mismatched fields (issue #6163)
+# ---------------------------------------------------------------------------
+
+
+def test_create_budget_line_item_instance_strips_grant_number_id_for_contract():
+    # grant_number_id lives on the shared RequestBodySchema, so a CONTRACT create payload can
+    # carry it (e.g. from duplicating a BLI). ContractBudgetLineItem has no such column, so it
+    # must be dropped before construction rather than raising a TypeError.
+    data = {
+        "line_description": "Contract BLI",
+        "agreement_id": 1,
+        "can_id": 500,
+        "amount": 1000.0,
+        "status": BudgetLineItemStatus.DRAFT,
+        "created_by": 1,
+        "grant_number_id": None,
+    }
+
+    bli = create_budget_line_item_instance(AgreementType.CONTRACT, data)
+
+    assert isinstance(bli, ContractBudgetLineItem)
+    assert bli.line_description == "Contract BLI"
+
+
+def test_create_budget_line_item_instance_keeps_grant_number_id_for_grant():
+    data = {
+        "line_description": "Grant BLI",
+        "agreement_id": 1,
+        "can_id": 500,
+        "amount": 1000.0,
+        "status": BudgetLineItemStatus.DRAFT,
+        "created_by": 1,
+        "grant_number_id": 10,
+    }
+
+    bli = create_budget_line_item_instance(AgreementType.GRANT, data)
+
+    assert isinstance(bli, GrantBudgetLineItem)
+    assert bli.grant_number_id == 10
+
+
+def test_create_budget_line_item_instance_strips_requestor_notes():
+    # requestor_notes is on RequestBodySchema but isn't a column on any BLI subclass — it only
+    # feeds a change request generated as a side effect. Unlike grant_number_id this one would
+    # break every agreement type, so check it against a GRANT to keep the two cases independent.
+    # As above, construction returning without a TypeError is the assertion.
+    data = {
+        "line_description": "Grant BLI",
+        "agreement_id": 1,
+        "can_id": 500,
+        "amount": 1000.0,
+        "status": BudgetLineItemStatus.DRAFT,
+        "created_by": 1,
+        "requestor_notes": "please approve",
+    }
+
+    bli = create_budget_line_item_instance(AgreementType.GRANT, data)
+
+    assert isinstance(bli, GrantBudgetLineItem)
+    assert bli.line_description == "Grant BLI"
 
 
 # ---------------------------------------------------------------------------
