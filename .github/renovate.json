@@ -61,6 +61,12 @@
             ],
             "automerge": true,
             "platformAutomerge": true
+        },
+        {
+            "description": "Isolate SQLAlchemy from the minor-dependencies group — sqlalchemy-continuum==1.7.0 pins SQLAlchemy<2.1, so bumping it as part of the grouped minor PR breaks pipenv lock for backend/ops_api and backend/data_tools and blocks unrelated updates. Remove this rule once sqlalchemy-continuum (or its replacement) supports SQLAlchemy>=2.1.",
+            "matchPackageNames": ["SQLAlchemy", "sqlalchemy"],
+            "groupName": "sqlalchemy (blocked by sqlalchemy-continuum)",
+            "groupSlug": "sqlalchemy-continuum-blocked"
         }
     ],
     "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
