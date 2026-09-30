@@ -1,3 +1,4 @@
+import pytest
 from loguru import logger
 
 from data_tools.src.usage_metrics.email_delivery import (
@@ -54,8 +55,8 @@ def test_send_report_link_email_uses_connection_string_and_sends(mocker):
         90,
     )
 
-    # Authenticated by the Key Vault-sourced connection string, not AAD/managed identity -- the
-    # infrastructure provisions the connection string and grants the job no role on the ACS resource.
+    # Authenticated by the connection string injected as a Container App secret, not AAD/managed
+    # identity -- the infrastructure grants the job no role on the ACS resource.
     email_client_cls.from_connection_string.assert_called_once_with(CONNECTION_STRING)
     email_client_cls.assert_not_called()
     client.begin_send.assert_called_once()
@@ -70,7 +71,9 @@ def test_send_report_link_email_noops_without_recipients(mocker):
 
 def test_send_report_link_email_does_not_log_connection_string(mocker, caplog):
     email_client_cls = mocker.patch("data_tools.src.usage_metrics.email_delivery.EmailClient")
-    email_client_cls.from_connection_string.return_value.begin_send.return_value.result.return_value = {}
+    email_client_cls.from_connection_string.return_value.begin_send.return_value.result.return_value = {
+        "status": "Succeeded"
+    }
 
     # Remove only our own sink on the way out -- a bare logger.remove() would also drop the
     # stdout/stderr sinks that data_tools adds at import time.
@@ -85,3 +88,19 @@ def test_send_report_link_email_does_not_log_connection_string(mocker, caplog):
     # The connection string embeds the ACS access key; it must never reach the job logs.
     assert "accesskey" not in caplog.text.lower()
     assert FAKE_ACS_CREDENTIAL not in caplog.text
+
+
+@pytest.mark.parametrize("status", ["Failed", "Canceled", None])
+def test_send_report_link_email_raises_on_unsuccessful_status(mocker, status):
+    """A completed poller is not proof of delivery -- a Failed/quota-throttled send must not exit 0.
+
+    This is the first-send failure mode on a newly created ACS managed domain, and it is otherwise
+    invisible: the report is already in Blob storage, the job returns cleanly, and nobody finds out
+    until a recipient reports never getting the email a sprint later.
+    """
+    email_client_cls = mocker.patch("data_tools.src.usage_metrics.email_delivery.EmailClient")
+    poller = email_client_cls.from_connection_string.return_value.begin_send.return_value
+    poller.result.return_value = {"status": status} if status is not None else {}
+
+    with pytest.raises(RuntimeError, match="non-successful send status"):
+        send_report_link_email(CONNECTION_STRING, "DoNotReply@example.com", ["ux1@example.com"], DOWNLOAD_URL, 90)

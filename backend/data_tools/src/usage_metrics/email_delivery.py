@@ -74,7 +74,13 @@ def send_report_link_email(
 ) -> None:
     """Email the report download link to the UX team via ACS.
 
-    :param connection_string: The ACS connection string, read from Key Vault by the caller. Never
+    Raises when ACS reports anything other than a ``Succeeded`` status. ``begin_send`` returning a
+    result is not the same as the mail being accepted -- a throttled or quota-exceeded send (the
+    likely failure on a first send from a newly created managed domain) completes the poller with a
+    ``Failed`` status. Without this check the job would exit 0 and the only signal that no email
+    went out would be a human noticing an empty inbox a sprint later.
+
+    :param connection_string: The ACS connection string, supplied by the caller from config. Never
         logged -- it embeds the resource's access key.
     :param sender: The verified ACS sender ("MailFrom") address.
     :param recipients: Non-empty list of recipient addresses.
@@ -91,6 +97,11 @@ def send_report_link_email(
     client = EmailClient.from_connection_string(connection_string)
     poller = client.begin_send(message)
     result = poller.result()
-    logger.info(
-        f"Report email send completed (status: {result.get('status') if isinstance(result, dict) else result})."
-    )
+
+    status = result.get("status") if isinstance(result, dict) else getattr(result, "status", result)
+    if str(status) != "Succeeded":
+        # The report itself is already in Blob storage, so this does not lose the report -- it
+        # surfaces that the notification failed, which is otherwise invisible.
+        raise RuntimeError(f"ACS reported a non-successful send status for the usage-metrics report email: {status!r}.")
+
+    logger.info(f"Report email send completed (status: {status}).")
