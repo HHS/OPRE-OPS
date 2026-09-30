@@ -18,7 +18,7 @@ export const BLIStatusComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {},
-    statusOptions = ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED"]
+    statusOptions = ["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "IN_REVIEW"]
 }) => {
     const newStatusOption = statusOptions.map((status, index) => {
         const statusOption = {

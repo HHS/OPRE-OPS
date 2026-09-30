@@ -270,6 +270,43 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-PLANNED")).toBeInTheDocument();
     });
 
+    it("renders and removes the In Review status tag", async () => {
+        const filters = {
+            ...defaultFilters,
+            bliStatus: [
+                { id: 1, title: "DRAFT" },
+                { id: 2, title: "In Review" }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId("remove-tag-In Review")).toBeInTheDocument();
+
+        const removeButton = screen.getByTestId("remove-tag-In Review");
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({
+            bliStatus: [
+                { id: 1, title: "DRAFT" },
+                { id: 2, title: "In Review" }
+            ]
+        });
+
+        expect(result.bliStatus).toHaveLength(1);
+        expect(result.bliStatus[0].title).toBe("DRAFT");
+    });
+
     it("renders budget range tag", () => {
         const filters = {
             ...defaultFilters,

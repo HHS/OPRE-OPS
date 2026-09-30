@@ -33,6 +33,31 @@ describe("BLIStatusComboBox", () => {
         expect(screen.getByText("Planned")).toBeInTheDocument();
         expect(screen.getByText("Executing")).toBeInTheDocument();
         expect(screen.getByText("Obligated")).toBeInTheDocument();
+        expect(screen.getByText("In Review")).toBeInTheDocument();
+    });
+
+    it("renders and allows selecting the In Review option", () => {
+        const setSelectedBLIStatus = mockFn;
+        const { getByText, container } = render(
+            <BLIStatusComboBox
+                selectedBLIStatus={null}
+                setSelectedBLIStatus={setSelectedBLIStatus}
+            />
+        );
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.focus(container.querySelector("input"));
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("In Review"));
+        expect(setSelectedBLIStatus).toHaveBeenCalledWith([
+            {
+                id: 5,
+                title: "In Review",
+                status: "IN_REVIEW"
+            }
+        ]);
     });
 
     it("updates the input value when the user types in the input field", () => {

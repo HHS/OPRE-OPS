@@ -46,6 +46,7 @@ test("codes are converted for display correctly", () => {
     expect(convertCodeForDisplay("contractType", "TIME_AND_MATERIALS")).toEqual("Time & Materials (T&M)");
     expect(convertCodeForDisplay("contractType", "COST_PLUS_FIXED_FEE")).toEqual("Cost Plus Fixed Fee (CPFF)");
     expect(convertCodeForDisplay("contractType", "COST_PLUS_AWARD_FEE")).toEqual("Cost Plus Award Fee (CPAF)");
+    expect(convertCodeForDisplay("budgetLineStatus", "IN_REVIEW")).toEqual("In Review");
 });
 
 test("fiscal year are calculated correctly", () => {

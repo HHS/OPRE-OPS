@@ -1030,6 +1030,27 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("enable_obe=true");
     });
 
+    it("forwards a selected IN_REVIEW status as budget_line_status on getBudgetLineItems", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/budget-line-items/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getBudgetLineItems.initiate({
+                filters: {
+                    bliStatus: [{ status: "IN_REVIEW" }]
+                }
+            })
+        );
+
+        expect(capturedUrl).toContain("budget_line_status=IN_REVIEW");
+    });
+
     it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {
         let capturedUrl = "";
         server.use(
