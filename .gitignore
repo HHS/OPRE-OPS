@@ -270,3 +270,6 @@ storybook-static
 
 .worktrees/
 progress/
+performance_tests/results/**/*.html
+performance_tests/results/**/*.csv
+performance_tests/results/**/*_stats_history.csv

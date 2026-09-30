@@ -1289,10 +1289,12 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
 
     assert meta["limit"] == 5
     assert meta["offset"] == 0
-    assert meta["number_of_pages"] == 32
 
     stmt = select(func.count(BudgetLineItem.id)).where(BudgetLineItem.portfolio_id == 1)
     count = loaded_db.execute(stmt).scalar()
+    import math
+
+    assert meta["number_of_pages"] == math.ceil(count / 5)
     assert meta["total_count"] == count
 
     stmt = select(func.sum(BudgetLineItem.amount)).where(BudgetLineItem.portfolio_id == 1)

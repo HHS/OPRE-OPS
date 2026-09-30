@@ -164,6 +164,9 @@ class AgreementListAPI(BaseListAPI):
             include_procurement_list = data.pop("include_procurement", [False])
             include_procurement = include_procurement_list[0] if include_procurement_list else False
 
+            include_budget_lines_list = data.pop("include_budget_lines", [True])
+            include_budget_lines = include_budget_lines_list[0] if include_budget_lines_list else True
+
             logger.debug("Beginning agreement queries")
             service = AgreementsService(current_app.db_session)
             agreements, metadata = service.get_list(agreement_classes, data, include_procurement)
@@ -183,6 +186,7 @@ class AgreementListAPI(BaseListAPI):
                     agreement,
                     AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
                     context=schema_context,
+                    include_budget_lines=include_budget_lines,
                 )
 
                 agreement_response.append(serialized_agreement)
@@ -424,7 +428,11 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
 
 
 def _serialize_agreement_with_meta(
-    service: AgreementsService, agreement: Agreement, schema_mapping: dict[AgreementType, Any], context: dict = None
+    service: AgreementsService,
+    agreement: Agreement,
+    schema_mapping: dict[AgreementType, Any],
+    context: dict = None,
+    include_budget_lines: bool = True,
 ) -> dict:
     """
     Serialize an agreement with its metadata.
@@ -436,13 +444,17 @@ def _serialize_agreement_with_meta(
     schema_type = schema_mapping.get(agreement.agreement_type)
     if schema_type is None:
         raise ValueError(f"No schema mapping found for agreement type: {agreement.agreement_type}")
-    schema = schema_type(exclude=["_meta"])  # Exclude _meta from schema dump since we'll set it manually
+    exclude_fields = ["_meta"]
+    if not include_budget_lines:
+        exclude_fields.append("budget_line_items")
+    schema = schema_type(exclude=exclude_fields)
     if context:
         schema.context = context
     serialized_agreement = schema.dump(agreement)
 
-    # Add _meta to each budget line item
-    get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
+    # Add _meta to each budget line item (only when included)
+    if include_budget_lines:
+        get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
 
     # Add _meta to the agreement itself. is_editable is computed once and reused so
     # _get_locked_message doesn't have to re-derive it; isDeletable is derived from

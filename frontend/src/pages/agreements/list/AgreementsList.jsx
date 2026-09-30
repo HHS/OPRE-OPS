@@ -89,7 +89,8 @@ const AgreementsList = () => {
     const queryParams = {
         filters: {
             ...filters,
-            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear)
+            fiscalYear: resolveForAPI(selectedFiscalYear, filters.fiscalYear),
+            includeBudgetLines: false
         },
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
