@@ -104,7 +104,8 @@ export const opsApi = createApi({
                     awardType,
                     awardingEntityId,
                     division,
-                    includeProcurement
+                    includeProcurement,
+                    includeBudgetLines = true
                 },
                 onlyMy,
                 sortConditions,
@@ -157,6 +158,9 @@ export const opsApi = createApi({
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
+                }
+                if (!includeBudgetLines) {
+                    queryParams.push("include_budget_lines=false");
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");

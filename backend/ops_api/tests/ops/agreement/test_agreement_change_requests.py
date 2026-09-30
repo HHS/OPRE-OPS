@@ -102,7 +102,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
 ):
     # Patch auth and association checks
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
 
     # Patch current user to be the test division director
     monkeypatch.setattr("ops_api.ops.services.change_requests.current_user", loaded_db.get(User, 522))
@@ -268,7 +268,7 @@ def test_update_awarding_entity_fails_when_agreement_in_review_with_procurement_
 ):
     # Patch auth and association checks
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
 
     # Create a change request (this should automatically set agreement to in_review)
     cr = AgreementChangeRequest(
@@ -309,7 +309,7 @@ def test_proc_shop_change_still_blocked_for_in_execution_bli(
     the agreement-level procurement-shop block. A proc-shop change on an agreement with an
     IN_EXECUTION BLI must still raise ValidationError."""
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
 
     # Move the BLI to IN_EXECUTION
     test_cr_blis.status = BudgetLineItemStatus.IN_EXECUTION
