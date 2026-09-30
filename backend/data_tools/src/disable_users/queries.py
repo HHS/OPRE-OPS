@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from data_tools.src.common.utils import SYSTEM_ADMIN_OIDC_ID
-from models import UserSession
+from models import Role, User, UserSession, UserStatus
 
 EXCLUDED_USER_OIDC_IDS = [
     "00000000-0000-1111-a111-000000000018",  # Admin Demo
@@ -31,4 +31,20 @@ def get_latest_user_session(user_id: int, session: Session) -> UserSession | Non
         )
         .scalars()
         .first()
+    )
+
+
+def get_active_user_admins(session: Session) -> list[User]:
+    """Return all ACTIVE users who hold the USER_ADMIN role."""
+    return (
+        session.execute(
+            select(User)
+            .where(
+                User.roles.any(Role.name == "USER_ADMIN"),
+                User.status == UserStatus.ACTIVE,
+            )
+            .order_by(User.id)
+        )
+        .scalars()
+        .all()
     )

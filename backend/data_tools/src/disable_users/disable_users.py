@@ -3,15 +3,19 @@ import sys
 import time
 from datetime import timedelta
 
+from azure.communication.email import EmailClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from data_tools.environment.types import DataToolsConfig
 from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_or_create_sys_user
+from data_tools.src.disable_users.email_sender import send_admin_summary_email, send_disabled_user_email
 from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
     EXCLUDED_USER_OIDC_IDS,
     GET_USER_ID_BY_OIDC_QUERY,
+    get_active_user_admins,
     get_latest_user_session,
 )
 from data_tools.src.import_static_data.import_data import get_config
@@ -28,8 +32,9 @@ format = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
-logger.add(sys.stdout, format=format, level="INFO")
-logger.add(sys.stderr, format=format, level="INFO")
+logger.remove()  # remove the default handler (id=0, diagnose=True) before adding our own
+logger.add(sys.stdout, format=format, level="INFO", diagnose=False)
+logger.add(sys.stderr, format=format, level="INFO", diagnose=False)
 
 
 def get_ids_from_oidc_ids(se, oidc_ids: list):
@@ -72,7 +77,7 @@ def disable_user(se, user_id, system_admin_id):
         se.merge(updated_user_session)
 
 
-def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
+def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToolsConfig):
     """Update the status of disabled users in the database."""
 
     with Session(conn) as se:
@@ -83,33 +88,134 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
         setup_triggers(se, system_admin)
 
         logger.info("Fetching inactive users.")
-        results = []
+        stale_users = []
         all_users = se.execute(select(User)).scalars().all()
         cutoff_date = datetime.now() - timedelta(days=60)
         for user in all_users:
             latest_session = get_latest_user_session(user_id=user.id, session=se)
             if user.status == UserStatus.ACTIVE:
-                stale_user = user.updated_on < cutoff_date
+                stale_user = user.updated_on is not None and user.updated_on < cutoff_date
                 stale_session = latest_session and latest_session.last_active_at < cutoff_date
                 never_logged_in = latest_session is None
 
                 if (never_logged_in and stale_user) or (stale_session and stale_user):
-                    results.append(user.id)
+                    stale_users.append(user)
 
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
-        user_ids = [uid for uid in results if uid not in excluded_ids]
+        disabled_users = [user for user in stale_users if user.id not in excluded_ids]
 
-        if not user_ids:
+        if not disabled_users:
             logger.info("No inactive users found.")
             return
 
+        # Resolve the ACS sender config and construct the EmailClient now, before any user is
+        # disabled, so a misconfigured environment fails fast here instead of surfacing only after
+        # the disable loop has already committed.
+        sender = config.email_sender_address
+        connection_string = config.acs_connection_string
+
+        # The config properties themselves return None rather than raising when unset, because the
+        # usage-metrics report shares them and must still upload its report when email is unwired.
+        # This job has the opposite requirement: the admin summary is the compliance artifact for
+        # this run, and the job is not idempotent -- re-running it will NOT re-send notifications for
+        # users it already disabled. So a remote environment with no ACS wiring must fail before any
+        # user is touched rather than silently disable people and skip the notifications.
+        # local/dev/pytest return None cleanly, where no client is built and sending no-ops.
+        if config.is_remote and not (connection_string and sender):
+            raise ValueError(
+                "ACS email is not configured (ACS_CONNECTION_STRING / EMAIL_SENDER_ADDRESS) in a "
+                "remote environment. Refusing to disable users, because their notifications and the "
+                "admin summary could not be sent and this job does not re-send them on a later run."
+            )
+
+        email_client = EmailClient.from_connection_string(connection_string) if connection_string and sender else None
+
+        user_ids = [user.id for user in disabled_users]
         logger.info("Inactive users found: {}".format(user_ids))
+
+        divisions_by_id = {division.id: division.name for division in se.execute(select(Division)).scalars().all()}
+        disabled_user_details = [
+            {
+                "email": user.email,
+                "full_name": user.full_name or "N/A",
+                "division": divisions_by_id.get(user.division, "N/A"),
+            }
+            for user in disabled_users
+        ]
+
+        # Snapshot active USER_ADMIN recipients before disabling anyone -- an admin who is
+        # themselves stale could otherwise be disabled in this same run and silently drop out
+        # of the recipient list before the summary email is sent below.
+        admin_emails = [admin.email for admin in get_active_user_admins(se)]
 
         for user_id in user_ids:
             logger.info("Deactivating user: {}".format(user_id))
             disable_user(se, user_id, system_admin_id)
 
         se.commit()
+
+        send_disable_notifications(email_client, sender, disabled_user_details, admin_emails)
+
+
+def send_disable_notifications(
+    email_client: EmailClient | None, sender: str | None, disabled_user_details: list[dict], admin_emails: list[str]
+) -> None:
+    """Email a summary to all active USER_ADMINs, then email each disabled user individually.
+
+    The admin summary is sent FIRST, deliberately: by the time this runs the disable/commit has
+    already happened, so "these accounts were disabled" is already true, and there's no downside
+    to sending the compliance-relevant admin summary before the individual notifications.
+
+    Every send -- the admin summary and each individual notification -- is attempted
+    independently: a failure is logged and collected, but never stops the remaining sends. If
+    anything failed, a single RuntimeError is raised after every send has been attempted, so the
+    job still exits non-zero (and the failure is visible), but one bad send can no longer silently
+    prevent every other notification from going out.
+
+    ``admin_emails`` must be captured by the caller before any user in this run was disabled (see
+    the comment in update_disabled_users_status) so a just-disabled admin isn't silently dropped
+    from the recipient list. ``disabled_user_details`` must be non-empty (the caller's early
+    return already guarantees this), and each dict must already have a resolved "division" name
+    (not a raw FK) -- this function has no DB access.
+
+    ``email_client`` is built by the caller (update_disabled_users_status) before any user is
+    disabled, so a misconfigured AzureConfig -- unset or a malformed connection string -- fails
+    fast there instead of here. This function no-ops (with a log line) when ``email_client`` is
+    None, which the caller only passes when ACS isn't configured (local/dev/pytest); AzureConfig
+    never leaves it None.
+
+    Note: this is not idempotent. If a send fails, already-disabled users stay disabled but some
+    notifications may never go out -- re-running the job will not resend them, since those users
+    are no longer selected as stale. The job's non-zero exit is the signal to investigate
+    manually.
+    """
+    if email_client is None:
+        logger.warning(
+            "ACS email not configured (ACS_CONNECTION_STRING/EMAIL_SENDER_ADDRESS); "
+            "skipping disable notification emails."
+        )
+        return
+
+    failures = []
+
+    if not admin_emails:
+        logger.warning("No active USER_ADMINs found; skipping admin summary email.")
+    else:
+        try:
+            send_admin_summary_email(email_client, sender, admin_emails, disabled_user_details)
+        except Exception as e:
+            logger.error(f"Failed to send admin summary email: {e}")
+            failures.append("admin summary")
+
+    for user in disabled_user_details:
+        try:
+            send_disabled_user_email(email_client, sender, user["email"])
+        except Exception as e:
+            logger.error(f"Failed to send disable notification email to {user['email']}: {e}")
+            failures.append(user["email"])
+
+    if failures:
+        raise RuntimeError(f"Failed to send {len(failures)} disable notification(s): {failures}")
 
 
 if __name__ == "__main__":
@@ -119,6 +225,6 @@ if __name__ == "__main__":
     script_config = get_config(script_env)
     db_engine, db_metadata_obj = init_db_from_config(script_config)
 
-    update_disabled_users_status(db_engine)
+    update_disabled_users_status(db_engine, script_config)
 
     logger.info("Disable Inactive Users process complete.")

@@ -212,8 +212,9 @@ def build_blob_sas_url(
 
     Signs an *account-key* SAS (not a user-delegation SAS) so the link can outlive the 7-day cap
     that Azure imposes on user-delegation keys -- the report link needs a longer window (e.g. 90
-    days). The ``account_key`` is expected to be read from Key Vault via the managed identity at
-    call time (see ``get_secret``), so no storage key is stored in the job's environment.
+    days). The caller supplies ``account_key``; for the scheduled usage-metrics job it arrives as a
+    Container App secret injected by Terraform at apply time, so the key is never in source control
+    and the job needs no Key Vault access at run time.
 
     The returned URL is a bearer token: anyone who holds it can read the blob until it expires.
     Scope it to the single report blob and keep the expiry as short as the use case allows; the

@@ -302,8 +302,9 @@ def test_run_usage_metrics_uploads_when_storage_configured(seeded_db, mocker):
     # Bypass the sprint-schedule guard so this test does not depend on the day it runs on.
     config.usage_metrics_force_run = True
     # Email delivery not configured in this test -> deliver_report_link should no-op.
-    config.vault_acs_connection_string_key = None
-    config.acs_email_sender = None
+    config.acs_connection_string = None
+    config.email_sender_address = None
+    config.file_storage_account_key = None
     config.usage_metrics_email_recipients = None
 
     conn = MagicMock()
@@ -526,24 +527,18 @@ def test_build_workbook_has_two_sheets_with_expected_columns():
 def _email_config(**overrides):
     """A MagicMock config with email delivery fully configured; override per test."""
     config = MagicMock()
-    config.vault_acs_connection_string_key = "acs-connection-string"  # noqa: S105 (secret NAME, not a secret value)
-    config.acs_email_sender = "DoNotReply@example.com"
+    config.acs_connection_string = "the-connection-string"  # noqa: S105 (test fixture, not a real secret)
+    config.email_sender_address = "DoNotReply@example.com"
+    config.file_storage_account_key = "the-account-key"  # noqa: S105 (test fixture, not a real secret)
     config.usage_metrics_email_recipients = "ux1@example.com, ux2@example.com"
     config.usage_metrics_sas_expiry_days = "90"
-    config.vault_url = "https://vault.example.com"
-    config.vault_file_storage_key = "storage-key-secret"
     for key, value in overrides.items():
         setattr(config, key, value)
     return config
 
 
 def test_deliver_report_link_sends_when_configured(mocker):
-    """With ACS fully configured, both secrets come from the vault and the SAS link is emailed."""
-    secrets = {"storage-key-secret": "the-account-key", "acs-connection-string": "the-connection-string"}
-    get_secret = mocker.patch(
-        "data_tools.src.usage_metrics.utils.get_secret",
-        side_effect=lambda vault_url, key_name: secrets[key_name],
-    )
+    """With email fully configured, the injected secrets sign the link and it is emailed."""
     build_sas = mocker.patch(
         "data_tools.src.usage_metrics.utils.build_blob_sas_url",
         return_value="https://acct.blob.core.windows.net/data/reports/usage-metrics-2026-08-19.xlsx?sig=x",
@@ -553,12 +548,8 @@ def test_deliver_report_link_sends_when_configured(mocker):
     config = _email_config()
     deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
 
-    # Both the storage key and the ACS connection string are read from the vault -- neither is in
-    # the job env. Fetched before the link is signed so an inaccessible secret fails the run early.
-    assert get_secret.call_args_list == [
-        mocker.call("https://vault.example.com", "storage-key-secret"),
-        mocker.call("https://vault.example.com", "acs-connection-string"),
-    ]
+    # The storage key comes straight off the config (injected as a Container App secret), so there
+    # is no Key Vault round trip at run time.
     build_sas.assert_called_once_with(
         "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx", "the-account-key", 90
     )
@@ -575,28 +566,33 @@ def test_deliver_report_link_sends_when_configured(mocker):
 @pytest.mark.parametrize(
     "overrides",
     [
-        {"vault_acs_connection_string_key": None},  # noqa: S105 (config key name)
-        {"acs_email_sender": None},
+        {"acs_connection_string": None},
+        {"email_sender_address": None},
         {"usage_metrics_email_recipients": None},
         {"usage_metrics_email_recipients": ""},
+        # The storage key is part of the same gate: without it the link cannot be signed. This is
+        # the case a Terraform secret that silently resolved to an empty string lands in.
+        {"file_storage_account_key": None},
+        {"file_storage_account_key": ""},
     ],
 )
 def test_deliver_report_link_noops_when_not_configured(mocker, overrides):
-    """Missing any of secret name/sender/recipients skips email entirely (no vault read, no send)."""
-    get_secret = mocker.patch("data_tools.src.usage_metrics.utils.get_secret")
+    """Missing any of connection string/sender/recipients/storage key skips email entirely."""
+    build_sas = mocker.patch("data_tools.src.usage_metrics.utils.build_blob_sas_url")
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config(**overrides)
     deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
 
-    get_secret.assert_not_called()
+    # No link is minted either -- a half-configured environment must not produce a signed URL it
+    # then fails to send.
+    build_sas.assert_not_called()
     send_email.assert_not_called()
 
 
 @pytest.mark.parametrize("bad_value", ["0", "-5", "not-a-number"])
 def test_deliver_report_link_rejects_bad_expiry(mocker, bad_value):
     """A non-positive or non-integer SAS expiry fails fast rather than minting a useless link."""
-    mocker.patch("data_tools.src.usage_metrics.utils.get_secret")
     mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config(usage_metrics_sas_expiry_days=bad_value)

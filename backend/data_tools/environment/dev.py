@@ -27,20 +27,24 @@ class DevConfig(DataToolsConfig):
         return None
 
     @property
-    def vault_acs_connection_string_key(self) -> str | None:
-        return None
-
-    @property
-    def acs_email_sender(self) -> str | None:
-        return None
-
-    @property
     def file_storage_auth_method(self) -> str | None:
         return None
 
     @property
     def cleanup_user_sessions_cutoff_days(self) -> str | None:
         return "90"
+
+    @property
+    def acs_connection_string(self) -> str | None:
+        return None
+
+    @property
+    def email_sender_address(self) -> str | None:
+        return None
+
+    @property
+    def file_storage_account_key(self) -> str | None:
+        return None
 
     @property
     def usage_metrics_storage_account_url(self) -> str | None:

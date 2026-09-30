@@ -5,11 +5,11 @@ via Azure Communication Services (ACS).
 
 Authentication uses the ACS **connection string**, which the infrastructure repo provisions as a
 Key Vault secret (``<acs-resource-name>-connection-string``, fanned out to each environment's
-vault). The job's managed identity reads that secret from Key Vault at run time -- the same way it
-reads the storage account key used to sign the SAS -- so no ACS secret is stored in the job's
-environment. ACS's own AAD/RBAC data-plane auth is deliberately not used: it requires the
-``Contributor`` role on the ACS resource (ACS has no narrower built-in send role), which the
-infrastructure does not grant.
+vault). Terraform reads that secret at *apply* time and injects it into the job as a Container App
+secret (``ACS_CONNECTION_STRING``), the same way the storage account key used to sign the SAS is
+injected -- so the job itself needs no Key Vault access at run time. ACS's own AAD/RBAC data-plane
+auth is deliberately not used: it requires the ``Contributor`` role on the ACS resource (ACS has no
+narrower built-in send role), which the infrastructure does not grant.
 
 Delivery is best-effort from the job's perspective in the sense that the report is already safely
 in Blob storage before this runs; a send failure is logged and raised so the run surfaces it, but

@@ -42,14 +42,6 @@ class AzureConfig(DataToolsConfig):
         return key
 
     @property
-    def vault_acs_connection_string_key(self) -> str | None:
-        return os.getenv("VAULT_ACS_CONNECTION_STRING_KEY") or None
-
-    @property
-    def acs_email_sender(self) -> str | None:
-        return os.getenv("ACS_EMAIL_SENDER") or None
-
-    @property
     def file_storage_auth_method(self) -> str | None:
         access_key = os.getenv("FILE_STORAGE_AUTH_METHOD")
 
@@ -71,6 +63,28 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
 
         return cutoff_days
+
+    @property
+    def acs_connection_string(self) -> str | None:
+        # Deliberately does NOT raise when unset, unlike most AzureConfig properties. Both outbound
+        # email paths gate on this being present and no-op (with a log line) when it is absent, so a
+        # job in a deployed environment that has not had ACS wired yet still completes its primary
+        # work. Raising here would abort the usage metrics run *after* the report was already
+        # uploaded to Blob storage, and would abort disable_users before it disabled anyone.
+        # Callers that need ACS to be mandatory should assert it themselves.
+        return os.getenv("ACS_CONNECTION_STRING") or None
+
+    @property
+    def email_sender_address(self) -> str | None:
+        # See acs_connection_string above for why this returns None rather than raising.
+        return os.getenv("EMAIL_SENDER_ADDRESS") or None
+
+    @property
+    def file_storage_account_key(self) -> str | None:
+        # Injected as a Container App secret (not read from Key Vault) so the job needs no vault
+        # access at run time. Returns None when SAS signing is not configured, which makes the
+        # report email no-op rather than fail.
+        return os.getenv("FILE_STORAGE_ACCOUNT_KEY") or None
 
     @property
     def usage_metrics_storage_account_url(self) -> str | None:

@@ -45,30 +45,6 @@ class DataToolsConfig(Protocol):
 
     @property
     @abstractmethod
-    def vault_acs_connection_string_key(self) -> str | None:
-        """
-        Returns the name of the Key Vault secret holding the Azure Communication Services
-        connection string used to send outbound email, e.g.
-        "opre-ops-sdlc-comms-acs-connection-string". The ACS resource is per-environment and shared
-        by every sender, so this is not specific to any one report or notification. The secret is
-        provisioned by the infrastructure repo and read from ``vault_url`` at run time, so the
-        connection string itself is never stored in a job's environment. Returns None when email
-        delivery is not configured (local/dev), in which case no email is sent.
-        """
-        ...
-
-    @property
-    @abstractmethod
-    def acs_email_sender(self) -> str | None:
-        """
-        Returns the verified ACS sender ("MailFrom") address outbound email is sent from,
-        e.g. "DoNotReply@<verified-domain>". The verified domain belongs to the environment's ACS
-        resource and is shared by every sender. Returns None when email delivery is not configured.
-        """
-        ...
-
-    @property
-    @abstractmethod
     def file_storage_auth_method(self) -> str | None:
         """
         Returns whether to use the access key or role-based access control when the environment is remote else returns None.
@@ -80,6 +56,43 @@ class DataToolsConfig(Protocol):
     def cleanup_user_sessions_cutoff_days(self) -> str | None:
         """
         Returns the number of days after which the user sessions should be deleted.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def acs_connection_string(self) -> str | None:
+        """
+        Returns the Azure Communication Services connection string used to send outbound email
+        (consumed by disable_users and by the usage metrics report). The ACS resource is
+        per-environment and shared by every sender, so this is not specific to any one report or
+        notification. It is injected as a Container App secret in deployed environments, so the
+        value is never stored in plaintext on the job. Returns None when email delivery is not
+        configured, in which case no email is sent -- including in deployed environments, so that a
+        job whose ACS wiring is missing still completes its primary work.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def email_sender_address(self) -> str | None:
+        """
+        Returns the verified ACS sender ("From") address outbound email is sent from, e.g.
+        "DoNotReply@<verified-domain>". The verified domain belongs to the environment's ACS
+        resource and is shared by every sender. Returns None when email delivery is not configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def file_storage_account_key(self) -> str | None:
+        """
+        Returns the storage account access key used to sign time-limited SAS download links for
+        files uploaded to Blob storage (currently the usage metrics report). An account-key SAS is
+        required rather than a managed-identity-signed user-delegation SAS because the latter is
+        capped at 7 days by Azure and the report link needs to outlive that. It is injected as a
+        Container App secret in deployed environments. Returns None when SAS signing is not
+        configured, in which case no download link is generated and no email is sent.
         """
         ...
 
@@ -161,3 +174,4 @@ class DataToolsConfig(Protocol):
         Returns a comma-separated list of recipient addresses for the report email. Returns None
         (or empty) when email delivery is not configured, in which case no email is sent.
         """
+        ...

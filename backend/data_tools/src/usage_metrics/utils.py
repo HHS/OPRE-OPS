@@ -57,7 +57,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from data_tools.environment.types import DataToolsConfig
-from data_tools.src.azure_utils.utils import build_blob_sas_url, get_secret, upload_blob
+from data_tools.src.azure_utils.utils import build_blob_sas_url, upload_blob
 from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import get_config
 from data_tools.src.usage_metrics.email_delivery import parse_recipients, send_report_link_email
@@ -450,22 +450,30 @@ def should_generate_report(config: DataToolsConfig, today: date) -> bool:
 def deliver_report_link(config: DataToolsConfig, account_url: str, container: str, blob_name: str) -> None:
     """Email a time-limited SAS download link for ``blob_name`` to the UX team.
 
-    No-ops (with a log line) unless ACS email is fully configured -- connection-string secret name,
-    sender, and at least one recipient. This keeps local/dev/staging runs from attempting to send
-    mail while letting the same code path light up in an environment that has ACS wired.
+    No-ops (with a log line) unless email delivery is fully configured -- ACS connection string,
+    sender, at least one recipient, and the storage account key that signs the link. This keeps
+    local/dev runs from attempting to send mail while letting the same code path light up in an
+    environment that has ACS wired.
 
     Both secrets this needs -- the storage account key that signs the SAS and the ACS connection
-    string that authenticates the send -- are read from Key Vault via the managed identity at call
-    time, so neither is stored in the job env. The link points at the dated report blob so each
-    week's email references that week's specific report, and the link stays valid for
-    ``usage_metrics_sas_expiry_days`` days.
+    string that authenticates the send -- are injected as Container App secrets by the
+    ``deployments/usage-metrics`` Terraform stack, so the job needs no Key Vault access at run time.
+    The link points at the dated report blob so each sprint's email references that sprint's specific
+    report, and it stays valid for ``usage_metrics_sas_expiry_days`` days.
     """
-    connection_string_secret = config.vault_acs_connection_string_key
-    sender = config.acs_email_sender
+    connection_string = config.acs_connection_string
+    sender = config.email_sender_address
     recipients = parse_recipients(config.usage_metrics_email_recipients)
+    account_key = config.file_storage_account_key
 
-    if not (connection_string_secret and sender and recipients):
-        logger.info("ACS email not fully configured (secret name/sender/recipients); skipping report email.")
+    if not (connection_string and sender and recipients and account_key):
+        # warning rather than info: by the time this runs the report is already in Blob storage, so
+        # this is the only signal that a *misconfigured* environment silently sent nothing. An
+        # environment with no recipients configured is expected to land here on every run.
+        logger.warning(
+            "Email delivery not fully configured (connection string/sender/recipients/storage key); "
+            "skipping report email. The report itself was still uploaded."
+        )
         return
 
     try:
@@ -477,12 +485,6 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
         ) from e
     if expiry_days <= 0:
         raise ValueError(f"usage_metrics_sas_expiry_days must be > 0, got {expiry_days}.")
-
-    # Fetch both secrets before doing any work, so an inaccessible ACS secret fails the run rather
-    # than after a download link has already been signed.
-    vault_url = config.vault_url
-    account_key = get_secret(vault_url, config.vault_file_storage_key)
-    connection_string = get_secret(vault_url, connection_string_secret)
 
     download_url = build_blob_sas_url(account_url, container, blob_name, account_key, expiry_days)
 
