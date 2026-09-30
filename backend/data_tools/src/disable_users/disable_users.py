@@ -102,13 +102,15 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
             logger.info("No inactive users found.")
             return
 
-        # Touch the ACS config now, before any user is disabled, so a misconfigured AzureConfig
-        # (which raises rather than returning None -- see send_disable_notifications below) fails
-        # fast here instead of surfacing only after the disable loop has already committed.
-        # local/dev/pytest return None cleanly and are unaffected; the no-op decision for them is
-        # still made in send_disable_notifications.
-        _ = config.acs_connection_string
-        _ = config.email_sender_address
+        # Resolve the ACS sender config and construct the EmailClient now, before any user is
+        # disabled, so a misconfigured AzureConfig -- unset (raises -- see send_disable_notifications
+        # below) or set but malformed (EmailClient.from_connection_string raises ValueError) --
+        # fails fast here instead of surfacing only after the disable loop has already committed.
+        # local/dev/pytest return None for both properties cleanly, in which case no client is
+        # built and send_disable_notifications no-ops.
+        sender = config.email_sender_address
+        connection_string = config.acs_connection_string
+        email_client = EmailClient.from_connection_string(connection_string) if connection_string and sender else None
 
         user_ids = [user.id for user in disabled_users]
         logger.info("Inactive users found: {}".format(user_ids))
@@ -134,11 +136,11 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
 
         se.commit()
 
-        send_disable_notifications(config, disabled_user_details, admin_emails)
+        send_disable_notifications(email_client, sender, disabled_user_details, admin_emails)
 
 
 def send_disable_notifications(
-    config: DataToolsConfig, disabled_user_details: list[dict], admin_emails: list[str]
+    email_client: EmailClient | None, sender: str | None, disabled_user_details: list[dict], admin_emails: list[str]
 ) -> None:
     """Email a summary to all active USER_ADMINs, then email each disabled user individually.
 
@@ -156,25 +158,25 @@ def send_disable_notifications(
     the comment in update_disabled_users_status) so a just-disabled admin isn't silently dropped
     from the recipient list. ``disabled_user_details`` must be non-empty (the caller's early
     return already guarantees this), and each dict must already have a resolved "division" name
-    (not a raw FK) -- this function has no DB access. No-ops (with a log line) when
-    ``config.acs_connection_string``/``email_sender_address`` is None -- this keeps local/dev/
-    pytest runs from attempting to send mail. AzureConfig never returns None for either property
-    (it raises instead if unset), so that no-op path is only reachable for local/dev/pytest.
+    (not a raw FK) -- this function has no DB access.
+
+    ``email_client`` is built by the caller (update_disabled_users_status) before any user is
+    disabled, so a misconfigured AzureConfig -- unset or a malformed connection string -- fails
+    fast there instead of here. This function no-ops (with a log line) when ``email_client`` is
+    None, which the caller only passes when ACS isn't configured (local/dev/pytest); AzureConfig
+    never leaves it None.
 
     Note: this is not idempotent. If a send fails, already-disabled users stay disabled but some
     notifications may never go out -- re-running the job will not resend them, since those users
     are no longer selected as stale. The job's non-zero exit is the signal to investigate
     manually.
     """
-    if not config.acs_connection_string or not config.email_sender_address:
+    if email_client is None:
         logger.warning(
             "ACS email not configured (ACS_CONNECTION_STRING/EMAIL_SENDER_ADDRESS); "
             "skipping disable notification emails."
         )
         return
-
-    sender = config.email_sender_address
-    email_client = EmailClient.from_connection_string(config.acs_connection_string)
 
     failures = []
 

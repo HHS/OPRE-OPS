@@ -133,6 +133,7 @@ def test_disables_users_then_calls_send_disable_notifications(mock_session, mock
     mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
     mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
     mock_session.execute.side_effect = _execute_results([stale_user], [])
+    mock_email_client_cls = mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
 
     call_order = []
     mock_admin = MagicMock(email="admin@example.gov")
@@ -157,12 +158,39 @@ def test_disables_users_then_calls_send_disable_notifications(mock_session, mock
 
     mock_disable_user.assert_called_once_with(mock_session, 1, system_admin_id)
     mock_session.commit.assert_called_once()
+    mock_email_client_cls.from_connection_string.assert_called_once_with(mock_config.acs_connection_string)
     mock_send_disable_notifications.assert_called_once_with(
-        mock_config,
+        mock_email_client_cls.from_connection_string.return_value,
+        mock_config.email_sender_address,
         [{"email": "stale.user@example.gov", "full_name": "First Last", "division": "N/A"}],
         ["admin@example.gov"],
     )
     assert call_order == ["get_active_user_admins", "disable_user"]
+
+
+def test_update_disabled_users_status_fails_fast_on_malformed_acs_connection_string(mock_session, mocker):
+    # EmailClient.from_connection_string() raises ValueError on a malformed (but non-empty)
+    # connection string -- previously that call happened inside send_disable_notifications,
+    # *after* the disable loop's se.commit(), so a malformed secret would still crash the job
+    # after users were already disabled. Constructing the client here, before the disable loop,
+    # closes that gap the same way the unset-config case was already closed.
+    stale_user = _make_stale_user(1, "stale.user@example.gov")
+    mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
+    mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mock_session.execute.side_effect = _execute_results([stale_user], [])
+    mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
+    mock_config = MagicMock(acs_connection_string="not-a-valid-connection-string", email_sender_address="x@example.com")
+
+    with pytest.raises(ValueError, match="Invalid connection string"):
+        update_disabled_users_status(mock_session, mock_config)
+
+    mock_disable_user.assert_not_called()
+    mock_session.commit.assert_not_called()
 
 
 def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_in_recipients(mock_session, mocker):
@@ -174,6 +202,7 @@ def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_
     mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
     mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
     mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mock_session.execute.side_effect = _execute_results([stale_admin], [])
     # This admin is themselves stale and about to be disabled in this same run -- because
     # get_active_user_admins is snapshotted before the disable loop, their own email must still
@@ -189,7 +218,7 @@ def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_
 
     update_disabled_users_status(mock_session, MagicMock())
 
-    admin_emails_arg = mock_send_disable_notifications.call_args[0][2]
+    admin_emails_arg = mock_send_disable_notifications.call_args[0][3]
     assert "stale.admin@example.gov" in admin_emails_arg
 
 
@@ -209,6 +238,7 @@ def test_update_disabled_users_status_skips_null_updated_on_without_crashing(moc
     mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
     mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
     mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mock_session.execute.side_effect = _execute_results([null_updated_on_user, stale_user], [])
     mocker.patch("data_tools.src.disable_users.disable_users.get_active_user_admins", return_value=[])
     mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
@@ -221,7 +251,7 @@ def test_update_disabled_users_status_skips_null_updated_on_without_crashing(moc
     # The null-updated_on user is not treated as stale, but the genuinely stale user in the same
     # batch is still processed -- proving the scan didn't crash or abort partway through.
     mock_disable_user.assert_called_once_with(mock_session, 2, system_admin_id)
-    disabled_user_details = mock_send_disable_notifications.call_args[0][1]
+    disabled_user_details = mock_send_disable_notifications.call_args[0][2]
     assert [user["email"] for user in disabled_user_details] == ["stale.user@example.gov"]
 
 
@@ -252,13 +282,14 @@ def test_update_disabled_users_status_resolves_division_names_before_notifying(l
     # own fixture already wires up equivalent before_commit/after_flush history tracking, so this
     # call is both incompatible and redundant in this test context.
     mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mock_send_disable_notifications = mocker.patch(
         "data_tools.src.disable_users.disable_users.send_disable_notifications"
     )
 
     update_disabled_users_status(loaded_db, MagicMock())
 
-    disabled_user_details = mock_send_disable_notifications.call_args[0][1]
+    disabled_user_details = mock_send_disable_notifications.call_args[0][2]
     assert {
         "email": "stale.user@example.gov",
         "full_name": "Stale User",
@@ -273,30 +304,24 @@ def test_update_disabled_users_status_resolves_division_names_before_notifying(l
 
 @patch("data_tools.src.disable_users.disable_users.logger")
 def test_send_disable_notifications_noop_when_acs_not_configured(mock_logger, mocker):
-    mock_email_client_cls = mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mock_send_disabled_user_email = mocker.patch("data_tools.src.disable_users.disable_users.send_disabled_user_email")
     mock_send_admin_summary_email = mocker.patch("data_tools.src.disable_users.disable_users.send_admin_summary_email")
-    mock_config = MagicMock(acs_connection_string=None, email_sender_address=None)
     disabled_user_details = [{"email": "stale.user@example.gov", "full_name": "Stale User", "division": "N/A"}]
 
-    send_disable_notifications(mock_config, disabled_user_details, ["admin@example.gov"])
+    send_disable_notifications(None, None, disabled_user_details, ["admin@example.gov"])
 
     mock_send_disabled_user_email.assert_not_called()
     mock_send_admin_summary_email.assert_not_called()
-    mock_email_client_cls.from_connection_string.assert_not_called()
     mock_logger.warning.assert_called_once()
 
 
 def test_send_disable_notifications_skips_admin_summary_when_no_active_admins(mocker):
-    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mock_send_disabled_user_email = mocker.patch("data_tools.src.disable_users.disable_users.send_disabled_user_email")
     mock_send_admin_summary_email = mocker.patch("data_tools.src.disable_users.disable_users.send_admin_summary_email")
-    mock_config = MagicMock(
-        acs_connection_string="fake-connection-string", email_sender_address="DoNotReply@example.com"
-    )
+    email_client = MagicMock()
     disabled_user_details = [{"email": "stale.user@example.gov", "full_name": "Stale User", "division": "N/A"}]
 
-    send_disable_notifications(mock_config, disabled_user_details, [])
+    send_disable_notifications(email_client, "DoNotReply@example.com", disabled_user_details, [])
 
     mock_send_disabled_user_email.assert_called_once()
     mock_send_admin_summary_email.assert_not_called()
@@ -312,64 +337,54 @@ def test_send_disable_notifications_sends_admin_summary_before_individual_emails
         "data_tools.src.disable_users.disable_users.send_disabled_user_email",
         side_effect=lambda *args, **kwargs: call_order.append("user_email"),
     )
-    mock_email_client_cls = mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
-    mock_email_client = mock_email_client_cls.from_connection_string.return_value
-    mock_config = MagicMock(
-        acs_connection_string="fake-connection-string", email_sender_address="DoNotReply@example.com"
-    )
+    email_client = MagicMock()
     disabled_user_details = [
         {"email": "a@example.gov", "full_name": "A", "division": "N/A"},
         {"email": "b@example.gov", "full_name": "B", "division": "N/A"},
     ]
     admin_emails = ["admin@example.gov"]
 
-    send_disable_notifications(mock_config, disabled_user_details, admin_emails)
+    send_disable_notifications(email_client, "DoNotReply@example.com", disabled_user_details, admin_emails)
 
     assert call_order == ["admin_summary", "user_email", "user_email"]
     # disabled_user_details is passed straight through to send_admin_summary_email untransformed
     # -- that hand-off is the whole point of removing the intermediate summary_rows/Session step.
     mock_send_admin_summary_email.assert_called_once_with(
-        mock_email_client, "DoNotReply@example.com", admin_emails, disabled_user_details
+        email_client, "DoNotReply@example.com", admin_emails, disabled_user_details
     )
 
 
 def test_send_disable_notifications_continues_to_individual_emails_after_admin_summary_fails(mocker):
-    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mocker.patch(
         "data_tools.src.disable_users.disable_users.send_admin_summary_email",
         side_effect=Exception("ACS rejected admin recipient"),
     )
     mock_send_disabled_user_email = mocker.patch("data_tools.src.disable_users.disable_users.send_disabled_user_email")
-    mock_config = MagicMock(
-        acs_connection_string="fake-connection-string", email_sender_address="DoNotReply@example.com"
-    )
+    email_client = MagicMock()
     disabled_user_details = [
         {"email": "a@example.gov", "full_name": "A", "division": "N/A"},
         {"email": "b@example.gov", "full_name": "B", "division": "N/A"},
     ]
 
     with pytest.raises(RuntimeError, match="admin summary"):
-        send_disable_notifications(mock_config, disabled_user_details, ["admin@example.gov"])
+        send_disable_notifications(email_client, "DoNotReply@example.com", disabled_user_details, ["admin@example.gov"])
 
     assert mock_send_disabled_user_email.call_count == 2
 
 
 def test_send_disable_notifications_continues_after_one_individual_send_fails_then_raises(mocker):
-    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
     mocker.patch("data_tools.src.disable_users.disable_users.send_admin_summary_email")
     mock_send_disabled_user_email = mocker.patch(
         "data_tools.src.disable_users.disable_users.send_disabled_user_email",
         side_effect=[Exception("ACS rejected recipient"), None],
     )
-    mock_config = MagicMock(
-        acs_connection_string="fake-connection-string", email_sender_address="DoNotReply@example.com"
-    )
+    email_client = MagicMock()
     disabled_user_details = [
         {"email": "a@example.gov", "full_name": "A", "division": "N/A"},
         {"email": "b@example.gov", "full_name": "B", "division": "N/A"},
     ]
 
     with pytest.raises(RuntimeError, match="a@example.gov"):
-        send_disable_notifications(mock_config, disabled_user_details, ["admin@example.gov"])
+        send_disable_notifications(email_client, "DoNotReply@example.com", disabled_user_details, ["admin@example.gov"])
 
     assert mock_send_disabled_user_email.call_count == 2
