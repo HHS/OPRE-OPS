@@ -33,15 +33,15 @@ describe("BLIStatusComboBox", () => {
         expect(screen.getByText("Planned")).toBeInTheDocument();
         expect(screen.getByText("Executing")).toBeInTheDocument();
         expect(screen.getByText("Obligated")).toBeInTheDocument();
-        expect(screen.getByText("In Review")).toBeInTheDocument();
     });
 
-    it("renders and allows selecting the In Review option", () => {
+    it("renders and allows selecting the In Review option when it's passed in statusOptions", () => {
         const setSelectedBLIStatus = mockFn;
         const { getByText, container } = render(
             <BLIStatusComboBox
                 selectedBLIStatus={null}
                 setSelectedBLIStatus={setSelectedBLIStatus}
+                statusOptions={["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "IN_REVIEW"]}
             />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access

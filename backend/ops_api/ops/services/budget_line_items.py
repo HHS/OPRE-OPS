@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy import Select, String, case, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -22,8 +22,6 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
-    ChangeRequestStatus,
-    ChangeRequestType,
     GrantNumber,
     Portfolio,
     ProcurementShop,
@@ -365,8 +363,7 @@ class BudgetLineItemService:
         bli_cr_exists = (
             select(BudgetLineItemChangeRequest.id)
             .where(
-                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.in_review_filter(),
                 BudgetLineItemChangeRequest.budget_line_item_id == BudgetLineItem.id,
             )
             .exists()
@@ -374,8 +371,7 @@ class BudgetLineItemService:
         agreement_cr_exists = (
             select(AgreementChangeRequest.id)
             .where(
-                AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                AgreementChangeRequest.in_review_filter(),
                 AgreementChangeRequest.agreement_id == BudgetLineItem.agreement_id,
             )
             .exists()
@@ -1217,13 +1213,11 @@ class BudgetLineItemService:
 
         # has_in_review must not call `result.in_review` in a loop — that's a computed
         # @property that issues 1-2 fresh queries per instance (unlike is_obe, a plain
-        # column). Reuse the existing batch-load helper to avoid an N+1.
+        # column). Use the EXISTS-based check to avoid an N+1 without hydrating every
+        # in-review change request row just to test non-emptiness.
         bli_ids = [result.id for result in results]
         agreement_ids = [result.agreement_id for result in results]
-        change_requests_data = batch_load_change_requests_in_review(self.db_session, bli_ids, agreement_ids)
-        has_in_review = bool(change_requests_data["bli_change_requests"]) or bool(
-            change_requests_data["agreement_change_requests"]
-        )
+        has_in_review = has_change_requests_in_review(self.db_session, bli_ids, agreement_ids)
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         if has_in_review:
@@ -1458,8 +1452,7 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
     if bli_ids:
         bli_crs = db_session.scalars(
             select(BudgetLineItemChangeRequest).where(
-                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.in_review_filter(),
                 BudgetLineItemChangeRequest.budget_line_item_id.in_(bli_ids),
             )
         ).all()
@@ -1473,8 +1466,7 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
         if unique_agreement_ids:
             agreement_crs = db_session.scalars(
                 select(AgreementChangeRequest).where(
-                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.in_review_filter(),
                     AgreementChangeRequest.agreement_id.in_(unique_agreement_ids),
                 )
             ).all()
@@ -1485,6 +1477,39 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
         "bli_change_requests": bli_change_requests_map,
         "agreement_change_requests": agreement_change_requests_map,
     }
+
+
+def has_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> bool:
+    """Cheap existence check for whether any BLI-level or Agreement-level change request
+    in the given id sets is currently in review, without hydrating full CR rows (unlike
+    ``batch_load_change_requests_in_review``, which is needed when the caller wants the
+    actual change-request objects)."""
+    conditions = []
+    if bli_ids:
+        conditions.append(
+            select(BudgetLineItemChangeRequest.id)
+            .where(
+                BudgetLineItemChangeRequest.in_review_filter(),
+                BudgetLineItemChangeRequest.budget_line_item_id.in_(bli_ids),
+            )
+            .exists()
+        )
+
+    unique_agreement_ids = list({aid for aid in agreement_ids if aid is not None}) if agreement_ids else []
+    if unique_agreement_ids:
+        conditions.append(
+            select(AgreementChangeRequest.id)
+            .where(
+                AgreementChangeRequest.in_review_filter(),
+                AgreementChangeRequest.agreement_id.in_(unique_agreement_ids),
+            )
+            .exists()
+        )
+
+    if not conditions:
+        return False
+
+    return bool(db_session.scalar(select(or_(*conditions))))
 
 
 def compute_bli_in_review(bli_id: int, agreement_id: int | None, change_requests_data: dict) -> bool:
