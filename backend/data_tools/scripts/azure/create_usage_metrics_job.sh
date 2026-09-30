@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# DEPRECATED -- kept only as a rollback path.
+#
+# The scheduled Usage Metrics report job is now owned by the `deployments/usage-metrics` Terragrunt
+# stack in HHS/OPRE-OPS-Data, which creates it as `opre-ops-<env>-app-usage-metrics` and injects both
+# email secrets as Container App secrets at apply time. Use that stack, not this script.
+#
+# This script exists so a broken apply can be rolled back to a hand-created job without waiting on an
+# infra PR. It is scheduled for deletion once one green end-to-end production run exists. Note it
+# creates the job under the OLD name `usage-metrics-job`, which the deploy workflows no longer repin.
+#
 # Creates the scheduled Usage Metrics report Container App Job (#4148).
 #
 # This is the first *scheduled* job in the repo. It runs once per sprint and uploads a usage report
@@ -48,24 +58,25 @@
 # sprint's report via Azure Communication Services). The first two are NOT usage-metrics specific:
 # the ACS resource and its verified sender domain are per-environment and shared by anything that
 # sends outbound mail, so they are named generically and other jobs should reuse them as-is.
-#   VAULT_ACS_CONNECTION_STRING_KEY                         -- Key Vault secret name holding the ACS
-#                                                              connection string, e.g.
-#                                                              opre-ops-sdlc-comms-acs-connection-string
-#   ACS_EMAIL_SENDER                                        -- verified ACS MailFrom address
+#   ACS_CONNECTION_STRING                                   -- the ACS connection string VALUE (not a
+#                                                              Key Vault secret name). Read it once
+#                                                              with `az keyvault secret show`.
+#   EMAIL_SENDER_ADDRESS                                    -- verified ACS MailFrom address
 #   USAGE_METRICS_EMAIL_RECIPIENTS                          -- comma-separated recipient addresses
 #   USAGE_METRICS_SAS_EXPIRY_DAYS (optional, default "90")  -- how long the download link stays valid
-#   VAULT_URL, VAULT_FILE_STORAGE_KEY                       -- Key Vault URL + secret name of the
-#                                                              storage account key (used to sign the SAS)
+#   FILE_STORAGE_ACCOUNT_KEY                                -- storage account access key VALUE, used
+#                                                              to sign the SAS download link
 #
-# Both secrets the email path needs are read from Key Vault by the MI at run time, so neither is
-# stored on the job: the storage account key that signs the SAS link, and the ACS connection string
-# that authenticates the send. ACS's AAD/RBAC data-plane auth is deliberately not used -- it needs
-# the Contributor role on the ACS resource, which the infra repo does not grant (it provisions the
-# connection string into each environment's Key Vault instead).
+# NOTE: these are VALUES, not Key Vault secret names. The application no longer reads either secret
+# from Key Vault at run time -- the Terraform stack injects them as Container App secrets, and this
+# script mirrors that so the job it creates behaves identically. Consequently the job needs no Key
+# Vault access and no `az keyvault set-policy` grant. ACS's AAD/RBAC data-plane auth is deliberately
+# not used -- it needs the Contributor role on the ACS resource, which the infra repo does not grant.
 #
-# Email delivery is skipped (report is still uploaded to Blob) unless VAULT_ACS_CONNECTION_STRING_KEY,
-# ACS_EMAIL_SENDER, and USAGE_METRICS_EMAIL_RECIPIENTS are all set. When email is enabled, the MI
-# needs Key Vault "get" on secrets -- see USAGE_METRICS_JOB.md for the az keyvault set-policy step.
+# Both are passed as container-app SECRETS below, never as plaintext env vars.
+#
+# Email delivery is skipped (report is still uploaded to Blob) unless ACS_CONNECTION_STRING,
+# EMAIL_SENDER_ADDRESS, USAGE_METRICS_EMAIL_RECIPIENTS and FILE_STORAGE_ACCOUNT_KEY are all set.
 #
 # The managed identity must have WRITE access (Storage Blob Data Contributor) on the target
 # container -- read access (used for data import) is not sufficient for upload. The staging
@@ -123,7 +134,7 @@ az containerapp job create \
   --replica-completion-count 1 \
   --environment "${CAE_NAME}" \
   --mi-user-assigned "${MI_ID}" \
-  --secrets pgpassword="${PGPASSWORD}" \
+  --secrets pgpassword="${PGPASSWORD}" acsconnectionstring="${ACS_CONNECTION_STRING:-}" filestorageaccountkey="${FILE_STORAGE_ACCOUNT_KEY:-}" \
   --env-vars \
     ENV=azure \
     FILE_STORAGE_AUTH_METHOD=mi \
@@ -141,7 +152,6 @@ az containerapp job create \
     USAGE_METRICS_FORCE_RUN="${USAGE_METRICS_FORCE_RUN:-}" \
     USAGE_METRICS_EMAIL_RECIPIENTS="${USAGE_METRICS_EMAIL_RECIPIENTS:-}" \
     USAGE_METRICS_SAS_EXPIRY_DAYS="${USAGE_METRICS_SAS_EXPIRY_DAYS:-90}" \
-    ACS_EMAIL_SENDER="${ACS_EMAIL_SENDER:-}" \
-    VAULT_URL="${VAULT_URL:-}" \
-    VAULT_FILE_STORAGE_KEY="${VAULT_FILE_STORAGE_KEY:-}" \
-    VAULT_ACS_CONNECTION_STRING_KEY="${VAULT_ACS_CONNECTION_STRING_KEY:-}"
+    EMAIL_SENDER_ADDRESS="${EMAIL_SENDER_ADDRESS:-}" \
+    ACS_CONNECTION_STRING=secretref:acsconnectionstring \
+    FILE_STORAGE_ACCOUNT_KEY=secretref:filestorageaccountkey

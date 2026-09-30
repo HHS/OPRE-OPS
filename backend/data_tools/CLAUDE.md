@@ -215,14 +215,20 @@ Typical variables (used by configs and scripts):
 An Azure Container App Job aggregates `ops_event` activity into a two-sheet `.xlsx` (per-day /
 division / role counts + a per-user sign-in list) and uploads it to Blob storage under `reports/`
 for the UX team; it can optionally email a time-limited SAS download link via ACS. Code:
-`src/usage_metrics/`; wrapper: `scripts/usage_metrics.sh`; create/deploy script:
-`scripts/azure/create_usage_metrics_job.sh`.
+`src/usage_metrics/`; wrapper: `scripts/usage_metrics.sh`.
+
+**The job is owned by Terraform**, not by a script in this repo: the `deployments/usage-metrics`
+Terragrunt stack in HHS/OPRE-OPS-Data creates it as `opre-ops-<env>-app-usage-metrics` and injects
+both email secrets (`ACS_CONNECTION_STRING`, `FILE_STORAGE_ACCOUNT_KEY`) as Container App secrets at
+apply time, so the job needs no Key Vault access at run time.
+`scripts/azure/create_usage_metrics_job.sh` is **deprecated** and kept only as a rollback path.
 
 **Schedule:** one report per sprint, on the **last Friday of each two-week sprint**. Cron cannot
 express "every other Friday", so the cron (`50 23 * * 5`) fires every Friday and
 `should_generate_report` skips the off-sprint ones using `USAGE_METRICS_SPRINT_ANCHOR_DATE` (a known
-sprint-end Friday). Half the runs are deliberate no-ops; `USAGE_METRICS_FORCE_RUN=true` overrides
-the filter for test-firing.
+sprint-end Friday). Half the runs are deliberate no-ops. To test-fire, use a **per-execution**
+`az containerapp job start --env-vars USAGE_METRICS_FORCE_RUN=true` — never a committed Terraform
+input, which would silently make the report weekly.
 
 **Note:** the per-user sheet contains named user data — treat `reports/` as sensitive.
 
