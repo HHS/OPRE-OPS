@@ -1,6 +1,12 @@
 """
 Backfill procurement tracker and procurement action records for agreements
-that have budget lines IN_EXECUTION but are missing these records.
+that are missing these records:
+
+1. Agreements with budget lines IN_EXECUTION (and IN_EXECUTION + OBLIGATED
+   "mod" agreements) — see get_agreements_with_in_execution_blis().
+2. CONTRACT and AA agreements with an OBLIGATED BLI but zero ProcurementTrackers
+   — e.g. imported directly at OBLIGATED status, skipping IN_EXECUTION entirely
+   — see get_agreements_missing_award_tracker().
 
 Related to: https://github.com/HHS/OPRE-OPS/issues/5329
 
@@ -34,7 +40,7 @@ from models import (
     BudgetLineItemStatus,
 )
 from models.procurement_action import ProcurementActionStatus
-from models.procurement_tracker import ProcurementTrackerStatus
+from models.procurement_tracker import ProcurementTracker, ProcurementTrackerStatus
 from models.procurement_workflow import (
     get_earliest_obligated_date_needed,
     get_earliest_obligated_fiscal_year,
@@ -119,9 +125,11 @@ def backfill_procurement_records(
     created_trackers = 0
     created_actions = 0
     total_linked_blis = 0
+    agreements_touched = 0
 
     for agreement in agreements:
         try:
+            agreement_changed = False
             is_mod = has_obligated_blis(session, agreement.id)
 
             if is_mod:
@@ -141,16 +149,19 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
+                agreement_changed = agreement_changed or ac or tc
 
                 earliest_fy = get_earliest_obligated_fiscal_year(session, agreement.id)
                 if earliest_fy:
-                    total_linked_blis += link_blis_to_action(
+                    linked = link_blis_to_action(
                         session,
                         agreement,
                         new_award_action,
                         BudgetLineItemStatus.OBLIGATED,
                         fiscal_year=earliest_fy,
                     )
+                    total_linked_blis += linked
+                    agreement_changed = agreement_changed or linked > 0
 
                 # MODIFICATION: action + tracker + IN_EXECUTION BLIs
                 mod_action, _, ac, tc = get_or_create_procurement_records_for_modification(
@@ -158,13 +169,16 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
+                agreement_changed = agreement_changed or ac or tc
 
-                total_linked_blis += link_blis_to_action(
+                linked = link_blis_to_action(
                     session,
                     agreement,
                     mod_action,
                     BudgetLineItemStatus.IN_EXECUTION,
                 )
+                total_linked_blis += linked
+                agreement_changed = agreement_changed or linked > 0
             else:
                 # NEW_AWARD only: action + tracker + IN_EXECUTION BLIs
                 new_award_action, _, ac, tc = get_or_create_procurement_records_for_new_award(
@@ -172,13 +186,19 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
+                agreement_changed = agreement_changed or ac or tc
 
-                total_linked_blis += link_blis_to_action(
+                linked = link_blis_to_action(
                     session,
                     agreement,
                     new_award_action,
                     BudgetLineItemStatus.IN_EXECUTION,
                 )
+                total_linked_blis += linked
+                agreement_changed = agreement_changed or linked > 0
+
+            if agreement_changed:
+                agreements_touched += 1
 
             if dry_run:
                 logger.info(f"Dry run: rolling back changes for Agreement {agreement.id}.")
@@ -194,7 +214,113 @@ def backfill_procurement_records(
     verb = "Would create" if dry_run else "Created"
     logger.info(
         f"Backfill complete. {verb} {created_trackers} trackers, "
-        f"{created_actions} actions, linked {total_linked_blis} BLIs."
+        f"{created_actions} actions, linked {total_linked_blis} BLIs, "
+        f"touched {agreements_touched} agreement(s) (out of {len(agreements)} found)."
+    )
+
+
+AWARD_BACKFILL_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
+
+
+def get_agreements_missing_award_tracker(session: Session) -> list[Agreement]:
+    """
+    Find CONTRACT and AA agreements that have an OBLIGATED BLI but zero
+    ProcurementTrackers.
+
+    Covers agreements imported directly at OBLIGATED status (e.g. historical/
+    already-awarded data), which skip IN_EXECUTION entirely and are therefore
+    invisible to get_agreements_with_in_execution_blis().
+    """
+    obligated_agreement_ids = (
+        select(BudgetLineItem.agreement_id)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
+        .where(BudgetLineItem.agreement_id.isnot(None))
+    )
+
+    agreements_with_tracker = select(ProcurementTracker.agreement_id)
+
+    query = (
+        select(Agreement)
+        .where(Agreement.agreement_type.in_(AWARD_BACKFILL_AGREEMENT_TYPES))
+        .where(Agreement.id.in_(obligated_agreement_ids))
+        .where(Agreement.id.not_in(agreements_with_tracker))
+        .order_by(Agreement.id)
+    )
+
+    return session.execute(query).scalars().all()
+
+
+def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
+    """
+    For CONTRACT and AA agreements with an OBLIGATED BLI but no
+    ProcurementTracker at all, create a COMPLETED NEW_AWARD action/tracker,
+    approve its AWARD step (so the award shows on the Awards and Modifications
+    tab), and link the OBLIGATED BLIs to the action.
+
+    If the agreement already has a NEW_AWARD action (any status), that action
+    is reused rather than duplicated.
+    """
+    dry_run = os.getenv("DRY_RUN", "").lower() in ("1", "true")
+    if dry_run:
+        logger.info("DRY_RUN mode enabled — changes will be rolled back.")
+
+    agreements = get_agreements_missing_award_tracker(session)
+    logger.info(f"Found {len(agreements)} CONTRACT/AA agreements missing an award tracker.")
+    for agreement in agreements:
+        logger.debug(f"Agreement ID {agreement.id}, Name {agreement.name!r}, Type {agreement.agreement_type!r}")
+
+    created_trackers = 0
+    created_actions = 0
+    total_linked_blis = 0
+    agreements_touched = 0
+
+    for agreement in agreements:
+        try:
+            # Prefer the earliest OBLIGATED BLI's date_needed; fall back to a
+            # date already recorded on an existing NEW_AWARD action in case
+            # every OBLIGATED BLI's date_needed is null.
+            award_date = get_earliest_obligated_date_needed(session, agreement.id) or agreement.award_date
+
+            action, _, ac, tc = get_or_create_procurement_records_for_new_award(
+                session,
+                agreement,
+                created_by=sys_user.id,
+                action_status=ProcurementActionStatus.AWARDED,
+                tracker_status=ProcurementTrackerStatus.COMPLETED,
+                date_awarded_obligated=award_date,
+                source=SOURCE,
+                include_terminal=True,
+            )
+            created_actions += int(ac)
+            created_trackers += int(tc)
+
+            linked = link_blis_to_action(
+                session,
+                agreement,
+                action,
+                BudgetLineItemStatus.OBLIGATED,
+            )
+            total_linked_blis += linked
+
+            if ac or tc or linked > 0:
+                agreements_touched += 1
+
+            if dry_run:
+                logger.info(f"Dry run: rolling back changes for Agreement {agreement.id}.")
+                session.rollback()
+            else:
+                session.commit()
+
+        except Exception:
+            logger.exception(f"Error processing Agreement {agreement.id} ({agreement.name!r})")
+            session.rollback()
+            raise
+
+    verb = "Would create" if dry_run else "Created"
+    logger.info(
+        f"Award tracker backfill complete. {verb} {created_trackers} trackers, "
+        f"{created_actions} actions, linked {total_linked_blis} BLIs, "
+        f"touched {agreements_touched} agreement(s) (out of {len(agreements)} found)."
     )
 
 
@@ -207,10 +333,14 @@ AGREEMENT_TYPE_NAMES = [t.name for t in AgreementType]
     "--agreement-types",
     multiple=True,
     type=click.Choice(AGREEMENT_TYPE_NAMES, case_sensitive=False),
-    help="Agreement types to backfill (e.g. CONTRACT GRANT). If omitted, all types are processed.",
+    help=(
+        "Agreement types to backfill IN_EXECUTION records for (e.g. CONTRACT GRANT). "
+        "If omitted, all types are processed. Does not affect the CONTRACT/AA-only "
+        "OBLIGATED-with-no-tracker backfill, which always runs regardless of this option."
+    ),
 )
 def main(env: str, agreement_types: tuple[str, ...]):
-    """Backfill ProcurementTracker and ProcurementAction records for IN_EXECUTION agreements."""
+    """Backfill ProcurementTracker and ProcurementAction records for agreements missing them."""
     parsed_types = [AgreementType[name] for name in agreement_types] if agreement_types else None
 
     if parsed_types:
@@ -236,6 +366,7 @@ def main(env: str, agreement_types: tuple[str, ...]):
         logger.info(f"Retrieved system user: {sys_user}")
         setup_triggers(session, sys_user)
         backfill_procurement_records(session, sys_user, parsed_types)
+        backfill_missing_award_trackers(session, sys_user)
 
     logger.info("Procurement tracker backfill complete.")
 
