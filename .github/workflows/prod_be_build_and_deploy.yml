@@ -65,13 +65,17 @@ jobs:
             # Update job to this image
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-down-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
-            # Keep the scheduled usage-metrics report job on the latest image (created out-of-band via
-            # scripts/azure/create_usage_metrics_job.sh; skip if it doesn't exist yet, but still fail
-            # on a genuine update error for a job that does exist).
-            if az containerapp job show -n usage-metrics-job -g opre-ops-${{ env.ENVIRONMENT }}-app-rg &>/dev/null; then
-              az containerapp job update -n usage-metrics-job -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            # Keep the scheduled usage-metrics report job on the latest image. The job is owned by
+            # the deployments/usage-metrics Terraform stack in OPRE-OPS-Data, which pins it to the
+            # floating :stg / :prod tag; repinning to this SHA here matches how the up/down-schema
+            # and data-tools jobs are handled and keeps a bi-weekly job on a determinate image.
+            # The guard tolerates an environment where the stack has not been applied yet, but note
+            # it will silently skip forever if the job name here ever drifts from the stack's
+            # locals.tf (format("%s-%s", label_obj.id, "usage-metrics")).
+            if az containerapp job show -n opre-ops-${{ env.ENVIRONMENT }}-app-usage-metrics -g opre-ops-${{ env.ENVIRONMENT }}-app-rg &>/dev/null; then
+              az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-usage-metrics -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             else
-              echo "usage-metrics-job not found; skipping"
+              echo "opre-ops-${{ env.ENVIRONMENT }}-app-usage-metrics not found; skipping"
             fi
             # Start the DB schema update job
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
