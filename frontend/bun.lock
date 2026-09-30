@@ -24,7 +24,7 @@
         "jwt-decode": "4.0.0",
         "lodash": "4.18.1",
         "react": "19.3.0",
-        "react-currency-input-field": "4.0.9",
+        "react-currency-input-field": "4.0.10",
         "react-dom": "19.3.0",
         "react-markdown": "10.1.0",
         "react-modal": "3.16.3",
@@ -2170,7 +2170,7 @@
 
     "react": ["react@19.3.0", "", {}, "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog=="],
 
-    "react-currency-input-field": ["react-currency-input-field@4.0.9", "", { "peerDependencies": { "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-7K42lqOdC9jEywgR1ksto3gQv/NKUl88uqUWsqsVjhrAhZdq4fJ6rVhutMdCzlklULSBgGccOIGzgllz5u86Ew=="],
+    "react-currency-input-field": ["react-currency-input-field@4.0.10", "", { "peerDependencies": { "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-DfUmhR+zM0sqGDuuqWHh7NPBEWWNbjxCW0dLzbq44wCkeJESoZE32GOVXv57xnm8bCSleeY+tvFz+J2xFX9TeQ=="],
 
     "react-docgen": ["react-docgen@8.0.4", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/traverse": "^7.28.0", "@babel/types": "^7.28.2", "@types/babel__core": "^7.20.5", "@types/babel__traverse": "^7.20.7", "@types/doctrine": "^0.0.9", "@types/resolve": "^1.20.2", "doctrine": "^3.0.0", "resolve": "^1.22.1", "strip-indent": "^4.0.0" } }, "sha512-gIYjtVTU4NCWZnb/LXVSWfClZXnjzX3+xxi69Tkfu4YsmYuqiOk8giLkKt/WwxWqh+U66CTh8Kqbha1uPv8/qQ=="],
 
