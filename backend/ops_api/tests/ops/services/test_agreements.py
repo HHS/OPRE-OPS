@@ -1734,6 +1734,25 @@ class TestGetPageAgreements:
         blis = result[0].budget_line_items
         assert isinstance(blis, list)
 
+    def test_eager_loads_procurement_shop_fees(self, loaded_db):
+        from sqlalchemy import inspect as sa_inspect
+
+        # Agreement 2 maps to procurement shop 3 (fee=0.5) in the fixture data.
+        # Agreements mapping to shop 2 (fee=0.0) would produce a false pass — use id=2.
+        result = _get_page_agreements(loaded_db, [2])
+        assert len(result) == 1
+        shop = result[0].procurement_shop
+        assert shop is not None, "Agreement 2 must have a procurement shop in fixture data"
+        # Verify procurement_shop_fees is eagerly loaded (not deferred to lazy load).
+        # inspect().unloaded lists attributes that have NOT been loaded yet — if fees is
+        # in that set, the eager load is missing and fee_percentage will silently return 0.
+        unloaded = sa_inspect(shop).unloaded
+        assert "procurement_shop_fees" not in unloaded, (
+            "procurement_shop_fees was not eagerly loaded by _get_page_agreements; "
+            "the selectinload chain is broken and fee_percentage will return 0"
+        )
+        assert float(shop.fee_percentage) > 0, "fee_percentage should be non-zero for shop 3"
+
 
 def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
     """Helper to create a mock BLI for procurement overview/step summary tests."""
