@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../test-utils";
 import ReleaseNotesSummaryCard from "./ReleaseNotesSummaryCard";
 
+// Asymmetric counts (2 new features, 1 fix, 3 improvements) so a mislabeled filter or
+// swapped constant would change the rendered tags, and the total (6) is distinct from
+// every per-category count.
 vi.mock("./data", () => ({
     data: [
         {
@@ -10,8 +13,11 @@ vi.mock("./data", () => ({
             version: "1.464.3",
             changes: [
                 { id: "001", subject: "View a Grant", type: "New Feature", description: "" },
-                { id: "002", subject: "Bug fix", type: "Fixes", description: "" },
-                { id: "003", subject: "Performance", type: "Improvements", description: "" }
+                { id: "002", subject: "Edit a Grant", type: "New Feature", description: "" },
+                { id: "003", subject: "Bug fix", type: "Fixes", description: "" },
+                { id: "004", subject: "Perf 1", type: "Improvements", description: "" },
+                { id: "005", subject: "Perf 2", type: "Improvements", description: "" },
+                { id: "006", subject: "Perf 3", type: "Improvements", description: "" }
             ]
         }
     ]
@@ -28,15 +34,15 @@ describe("ReleaseNotesSummaryCard", () => {
         expect(screen.getByText("Version 1.464.3")).toBeInTheDocument();
     });
 
-    it("renders change type tags", () => {
+    it("renders the total release-change count", () => {
         renderWithProviders(<ReleaseNotesSummaryCard />);
-        expect(screen.getByText("1 New Feature")).toBeInTheDocument();
-        expect(screen.getByText("1 Fix")).toBeInTheDocument();
-        expect(screen.getByText("1 Improvement")).toBeInTheDocument();
+        expect(screen.getByText("6")).toBeInTheDocument();
     });
 
-    it("does not render the footnote", () => {
+    it("renders per-category tags with correct counts and pluralization", () => {
         renderWithProviders(<ReleaseNotesSummaryCard />);
-        expect(screen.queryByText("* See more detail on release changes below")).not.toBeInTheDocument();
+        expect(screen.getByText("2 New Features")).toBeInTheDocument();
+        expect(screen.getByText("1 Fix")).toBeInTheDocument();
+        expect(screen.getByText("3 Improvements")).toBeInTheDocument();
     });
 });

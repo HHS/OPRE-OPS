@@ -1,21 +1,20 @@
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { RELEASE_NOTES_TYPES } from "./constants";
 import { data } from "./data";
 import { LeftCard } from "./ReleaseNotesCards";
+import { getReleaseTotals } from "./releaseNotes.helpers";
 
 const ReleaseNotesSummaryCard = () => {
     if (!data || data.length === 0) return null;
 
     const latest = data[0];
+    const totals = getReleaseTotals(latest);
     return (
-        <div style={{ flex: 1 }}>
+        <div className="flex-fill">
             <LeftCard
                 lastVersion={latest.version}
                 releaseDate={formatDateToMonthDayYear(latest.releaseDate)}
-                totalReleaseChanges={latest.changes.length}
-                totalFixes={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.FIXES).length}
-                totalNewFeatures={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.NEW_FEATURE).length}
-                totalImprovements={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.IMPROVEMENTS).length}
+                headingLevel="h3"
+                {...totals}
             />
         </div>
     );
