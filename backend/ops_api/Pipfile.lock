@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c7928b78aee33de04341a107e6ed2b56d085c5853cd285c42ba9fcda464c54cb"
+            "sha256": "5b524c0712ac76cd93f7f0232b44d43ad45ca50e01ce51355094add540c24960"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2237,10 +2237,11 @@
         },
         "gherkin-official": {
             "hashes": [
-                "sha256:26967b0d537a302119066742669e0e8b663e632769330be675457ae993e1d1bc",
-                "sha256:dbea32561158f02280d7579d179b019160d072ce083197625e2f80a6776bb9eb"
+                "sha256:6bf291733d126712eb167f6f75be57931dd8b9c9eb606de28013f3669007ec06",
+                "sha256:adcc1f392d97dc044861bb645a614e335632330cc2653d23acb7097c923f75cd"
             ],
-            "version": "==29.0.0"
+            "markers": "python_version >= '3.10'",
+            "version": "==42.0.1"
         },
         "greenlet": {
             "hashes": [
@@ -3228,12 +3229,12 @@
         },
         "pytest-bdd": {
             "hashes": [
-                "sha256:2124051e71a05ad7db15296e39013593f72ebf96796e1b023a40e5453c47e5fb",
-                "sha256:ef0896c5cd58816dc49810e8ff1d632f4a12019fb3e49959b2d349ffc1c9bfb5"
+                "sha256:e407a361d8a07bff7d37df2ae0bf93e6b3542ed57e2c6bb89ba46b786ac7984e",
+                "sha256:f22450a98345590c2b3aac5ed3412662788e0a7afac34aa8d650c14445b87046"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.9'",
-            "version": "==8.1.0"
+            "markers": "python_version >= '3.10'",
+            "version": "==9.0.0"
         },
         "pytest-cov": {
             "hashes": [
