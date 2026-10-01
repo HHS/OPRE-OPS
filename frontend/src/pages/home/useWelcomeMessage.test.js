@@ -48,6 +48,16 @@ describe("useWelcomeMessage", () => {
         expect(localStorage.setItem).toHaveBeenCalledWith("hasVisited_42", "true");
     });
 
+    it("first-visit greeting stays 'Welcome' even under Strict Mode double-invocation", () => {
+        // Simulate Strict Mode: effect fires twice against the same storage
+        const { result, rerender } = renderHook(() => useWelcomeMessage(), {
+            wrapper: makeWrapper({ id: 42, first_name: "Jordan" })
+        });
+        // After first render the key is written; rerender simulates second invocation
+        rerender();
+        expect(result.current.greeting).toBe("Welcome Jordan");
+    });
+
     it("returns 'Welcome back [name]' when localStorage key already exists", () => {
         storage.set("hasVisited_42", "true");
 

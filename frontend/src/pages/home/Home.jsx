@@ -32,6 +32,7 @@ const HomepageRedesign = () => {
                 <ReleaseNotesSummaryCard />
                 <CurrentlyDevelopingCard />
             </div>
+            <Outlet />
         </App>
     );
 };

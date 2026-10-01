@@ -34,4 +34,9 @@ describe("ReleaseNotesSummaryCard", () => {
         expect(screen.getByText("1 Fix")).toBeInTheDocument();
         expect(screen.getByText("1 Improvement")).toBeInTheDocument();
     });
+
+    it("does not render the footnote", () => {
+        renderWithProviders(<ReleaseNotesSummaryCard />);
+        expect(screen.queryByText("* See more detail on release changes below")).not.toBeInTheDocument();
+    });
 });

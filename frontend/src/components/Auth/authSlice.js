@@ -21,6 +21,9 @@ export const authSlice = createSlice({
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             localStorage.removeItem("activeProvider");
+            Object.keys(localStorage)
+                .filter((k) => k.startsWith("hasVisited_"))
+                .forEach((k) => localStorage.removeItem(k));
             Cookies.remove("access_token", { path: "/" });
         },
         setUserDetails: (state, action) => {

@@ -16,7 +16,6 @@ const ReleaseNotesSummaryCard = () => {
                 totalFixes={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.FIXES).length}
                 totalNewFeatures={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.NEW_FEATURE).length}
                 totalImprovements={latest.changes.filter((c) => c.type === RELEASE_NOTES_TYPES.IMPROVEMENTS).length}
-                showFootnote
             />
         </div>
     );

@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import Home from "./Home";
 
@@ -8,6 +8,18 @@ vi.mock("../../helpers/featureFlags", () => ({
 }));
 
 import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
+
+const storage = new Map();
+
+beforeEach(() => {
+    storage.clear();
+    vi.clearAllMocks();
+    localStorage.getItem.mockImplementation((key) => storage.get(key) ?? null);
+    localStorage.setItem.mockImplementation((key, value) => storage.set(key, String(value)));
+    localStorage.removeItem.mockImplementation((key) => storage.delete(key));
+    localStorage.clear.mockImplementation(() => storage.clear());
+    isHomepageRedesignEnabled.mockReturnValue(false);
+});
 
 describe("Home", () => {
     it("should render the hero heading", () => {
@@ -49,6 +61,8 @@ describe("Home", () => {
             expect(screen.queryByTestId("welcome-message")).not.toBeInTheDocument();
             expect(screen.queryByText("OPS Updates")).not.toBeInTheDocument();
             expect(screen.queryByText("Currently Developing")).not.toBeInTheDocument();
+            expect(screen.getByText("Plan, track & collaborate")).toBeInTheDocument();
+            expect(screen.getByText("About OPS")).toBeInTheDocument();
         });
 
         it("renders welcome message and cards when flag is on", () => {
@@ -71,6 +85,18 @@ describe("Home", () => {
                 }
             });
             expect(screen.getByTestId("welcome-message")).toHaveTextContent("Welcome");
+        });
+
+        it("renders 'Welcome back' greeting for a returning user", () => {
+            storage.set("hasVisited_1", "true");
+            isHomepageRedesignEnabled.mockReturnValue(true);
+            renderWithProviders(<Home />, {
+                preloadedState: {
+                    auth: { activeUser: { id: 1, first_name: "Alex" }, isLoggedIn: true }
+                }
+            });
+            expect(screen.getByTestId("welcome-message")).toHaveTextContent(/Welcome back/);
+            storage.delete("hasVisited_1");
         });
     });
 });

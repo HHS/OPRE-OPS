@@ -10,7 +10,8 @@ vi.mock("./homepageData", () => ({
     ],
     nextUpItems: [
         { id: 3, title: "Staffing/People Teams" },
-        { id: 4, title: "Award Grants" }
+        { id: 4, title: "Award Grants" },
+        { id: 5, title: "Contract Mods" }
     ]
 }));
 
@@ -35,6 +36,7 @@ describe("CurrentlyDevelopingCard", () => {
         renderWithProviders(<CurrentlyDevelopingCard />);
         expect(screen.getByText("Staffing/People Teams")).toBeInTheDocument();
         expect(screen.getByText("Award Grants")).toBeInTheDocument();
+        expect(screen.getByText("Contract Mods")).toBeInTheDocument();
     });
 
     it("renders the count of currently developing items", () => {

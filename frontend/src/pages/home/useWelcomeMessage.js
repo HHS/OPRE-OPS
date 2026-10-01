@@ -9,12 +9,9 @@ const useWelcomeMessage = () => {
         if (!activeUser?.id) return;
         const key = `hasVisited_${activeUser.id}`;
         const hasVisited = localStorage.getItem(key);
-        if (hasVisited) {
-            setIsReturning(true);
-        } else {
-            localStorage.setItem(key, "true");
-            setIsReturning(false);
-        }
+        // Read before write — idempotent under React Strict Mode double-invocation
+        setIsReturning(!!hasVisited);
+        localStorage.setItem(key, "true");
     }, [activeUser?.id]);
 
     const firstName = activeUser?.first_name ?? null;
