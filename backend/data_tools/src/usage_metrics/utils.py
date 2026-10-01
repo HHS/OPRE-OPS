@@ -220,15 +220,36 @@ def _new_counts() -> dict[str, int]:
     return {metric: 0 for metric in METRIC_COLUMNS}
 
 
-def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, str, str], dict[str, int]]:
+# The only event types that can affect the Aggregate sheet: those carrying a metric, those counting
+# toward active_users, and UPDATE_USER (the carrier for deactivations -- DEACTIVATE_USER is never
+# emitted). Any other type passes through the aggregation loop without touching a single bucket, so
+# filtering them out in SQL is behaviour-preserving and keeps a large share of ops_event rows --
+# which hold a fat event_details JSON each -- from crossing the wire at all.
+AGGREGATE_EVENT_TYPES = frozenset(EVENT_TYPE_TO_METRIC) | ACTIVE_USER_EVENT_TYPES | {OpsEventType.UPDATE_USER}
+
+# Rows are consumed in batches rather than materialised all at once. The job runs with 0.5 GiB, and
+# a sprint of ops_event rows (each with an event_details JSON that can include request bodies and
+# headers) does not reliably fit. Column-only selects are used alongside this deliberately: loading
+# full ORM entities would keep every row alive in the Session identity map for the whole pass, so
+# streaming alone would not bound memory.
+EVENT_STREAM_BATCH_SIZE = 1_000
+
+
+def aggregate_events(
+    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+) -> dict[tuple[str, str, str], dict[str, int]]:
     """Aggregate ``ops_event`` rows into per-(date, division, role) count buckets.
 
     Only rows created within the last ``lookback_days`` (a UTC-naive cutoff, matching the naive
     ``created_on`` timestamps) and with ``event_status == SUCCESS`` are counted.
 
+    ``user_lookup`` may be supplied by the caller so that a single attribution lookup is shared with
+    :func:`aggregate_user_sign_ins` instead of each pass querying every user and division again.
+
     Returns a mapping of ``(date_iso, division, role) -> {metric: count}``.
     """
-    user_lookup = build_user_attribution_lookup(session)
+    if user_lookup is None:
+        user_lookup = build_user_attribution_lookup(session)
 
     counts: dict[tuple[str, str, str], dict[str, int]] = defaultdict(_new_counts)
     # Distinct actors per bucket for the active_users metric.
@@ -237,14 +258,22 @@ def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, st
     # created_on is a naive TIMESTAMP written in the DB's (UTC) session tz, so compare against a
     # naive-UTC cutoff. This scopes the scan to the reporting window instead of the whole table.
     cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
-    stmt = select(OpsEvent).where(
-        OpsEvent.created_on >= cutoff,
-        OpsEvent.event_status == OpsEventStatus.SUCCESS,
+    # Select only the four columns the loop reads, as a streamed Core result. Row objects expose the
+    # same attribute names, so resolve_actor_id / is_deactivating_update work on them unchanged.
+    stmt = (
+        select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
+        .where(
+            OpsEvent.created_on >= cutoff,
+            OpsEvent.event_status == OpsEventStatus.SUCCESS,
+            OpsEvent.event_type.in_(AGGREGATE_EVENT_TYPES),
+        )
+        .execution_options(yield_per=EVENT_STREAM_BATCH_SIZE)
     )
-    events = session.execute(stmt).scalars().all()
-    logger.info(f"Aggregating {len(events):,} successful ops_event row(s) since {cutoff.date().isoformat()}.")
+    logger.info(f"Aggregating successful ops_event row(s) since {cutoff.date().isoformat()}.")
 
-    for event in events:
+    seen = 0
+    for event in session.execute(stmt):
+        seen += 1
         if event.created_on is None:
             continue
         date_iso = event.created_on.date().isoformat()
@@ -265,6 +294,8 @@ def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, st
             if event.event_type in ACTIVE_USER_EVENT_TYPES and actor_id is not None:
                 active_users[key].add(actor_id)
 
+    logger.info(f"Aggregated {seen:,} relevant successful ops_event row(s).")
+
     # Fold the distinct-actor sets into the count buckets.
     for key, actors in active_users.items():
         counts[key]["active_users"] = len(actors)
@@ -272,7 +303,9 @@ def aggregate_events(session: Session, lookback_days: int) -> dict[tuple[str, st
     return counts
 
 
-def aggregate_user_sign_ins(session: Session, lookback_days: int) -> list[dict]:
+def aggregate_user_sign_ins(
+    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+) -> list[dict]:
     """Aggregate successful sign-ins into one row per user for the "Per-user" sheet.
 
     A sign-in is a ``LOGIN_ATTEMPT`` row with ``event_status == SUCCESS`` inside the reporting
@@ -291,15 +324,21 @@ def aggregate_user_sign_ins(session: Session, lookback_days: int) -> list[dict]:
 
     Returns a list of dicts (keyed by :data:`USER_SHEET_COLUMNS`), sorted by division then name.
     """
-    user_lookup = build_user_attribution_lookup(session)
+    if user_lookup is None:
+        user_lookup = build_user_attribution_lookup(session)
 
     cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
-    stmt = select(OpsEvent).where(
-        OpsEvent.created_on >= cutoff,
-        OpsEvent.event_status == OpsEventStatus.SUCCESS,
-        OpsEvent.event_type == OpsEventType.LOGIN_ATTEMPT,
+    # Column-only and streamed, for the same memory reasons as aggregate_events above.
+    stmt = (
+        select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
+        .where(
+            OpsEvent.created_on >= cutoff,
+            OpsEvent.event_status == OpsEventStatus.SUCCESS,
+            OpsEvent.event_type == OpsEventType.LOGIN_ATTEMPT,
+        )
+        .execution_options(yield_per=EVENT_STREAM_BATCH_SIZE)
     )
-    events = session.execute(stmt).scalars().all()
+    events = session.execute(stmt)
 
     # Per actor: sign-in count, most recent sign-in, and the login-time identity snapshot (used
     # only as a fallback when the actor is no longer in the live user table).
@@ -554,8 +593,11 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
 
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
     with Session(conn) as session:
-        counts = aggregate_events(session, lookback_days)
-        user_rows = aggregate_user_sign_ins(session, lookback_days)
+        # Built once and shared: both passes need the same user/division/role attribution, and it
+        # loads every user with their roles eagerly, so doing it twice doubles that cost for nothing.
+        user_lookup = build_user_attribution_lookup(session)
+        counts = aggregate_events(session, lookback_days, user_lookup)
+        user_rows = aggregate_user_sign_ins(session, lookback_days, user_lookup)
     logger.info(
         f"Aggregated into {len(counts):,} date x division x role row(s) and "
         f"{len(user_rows):,} per-user sign-in row(s)."

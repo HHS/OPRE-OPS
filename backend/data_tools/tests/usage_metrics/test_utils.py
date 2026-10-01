@@ -7,10 +7,14 @@ from openpyxl import load_workbook
 from sqlalchemy import text
 
 from data_tools.src.usage_metrics.utils import (
+    ACTIVE_USER_EVENT_TYPES,
+    EVENT_TYPE_TO_METRIC,
     METRIC_COLUMNS,
     SPRINT_LENGTH_DAYS,
     aggregate_events,
     aggregate_user_sign_ins,
+    AGGREGATE_EVENT_TYPES,
+    build_user_attribution_lookup,
     build_workbook,
     deliver_report_link,
     effective_run_date,
@@ -650,3 +654,54 @@ def test_build_workbook_does_not_turn_user_text_into_a_formula():
     assert name_cell.value == "=Smith, Jane"
     assert name_cell.data_type == "s", "openpyxl wrote a formula; Excel would render #NAME?"
     assert email_cell.data_type == "s"
+
+
+def test_aggregate_event_types_covers_everything_the_loop_can_act_on():
+    """Guard the SQL-side event_type filter against drift.
+
+    aggregate_events narrows by event type in SQL to keep irrelevant rows (each carrying a fat
+    event_details JSON) off the wire. That is only behaviour-preserving while the filter is a
+    superset of every type the loop can act on -- add a metric or an active-user type without
+    updating the set and those events would silently stop being counted.
+    """
+    assert set(EVENT_TYPE_TO_METRIC) <= AGGREGATE_EVENT_TYPES
+    assert ACTIVE_USER_EVENT_TYPES <= AGGREGATE_EVENT_TYPES
+    # UPDATE_USER carries deactivations (DEACTIVATE_USER is never emitted).
+    assert OpsEventType.UPDATE_USER in AGGREGATE_EVENT_TYPES
+
+
+def test_aggregate_events_shares_the_supplied_user_lookup(seeded_db, mocker):
+    """A caller-supplied lookup must be used as-is, not rebuilt.
+
+    run_usage_metrics builds the attribution lookup once and hands it to both passes; rebuilding it
+    per pass re-reads every user with their roles eagerly for no benefit.
+    """
+    db, _, _ = seeded_db
+    lookup = build_user_attribution_lookup(db)
+    spy = mocker.patch("data_tools.src.usage_metrics.utils.build_user_attribution_lookup")
+
+    aggregate_events(db, LOOKBACK_DAYS, lookup)
+    aggregate_user_sign_ins(db, LOOKBACK_DAYS, lookup)
+
+    spy.assert_not_called()
+
+
+def test_aggregate_events_ignores_event_types_outside_the_filter(seeded_db):
+    """An event type that carries no metric and is not an active-user type contributes nothing.
+
+    This is what makes narrowing in SQL safe: such a row never created a bucket before the change
+    either, so no (date, division, role) key should appear solely because of one.
+    """
+    db, day1_iso, _ = seeded_db
+    before = {key: dict(value) for key, value in aggregate_events(db, LOOKBACK_DAYS).items()}
+
+    irrelevant = next((t for t in OpsEventType if t not in AGGREGATE_EVENT_TYPES), None)
+    assert irrelevant is not None, "no event type outside the filter to test with"
+    # Attributed to a real seeded user, so the row would land in an existing bucket if it counted.
+    event = _event(irrelevant, created_by=9001)
+    event.created_on = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1)
+    db.add(event)
+    db.flush()
+
+    after = {key: dict(value) for key, value in aggregate_events(db, LOOKBACK_DAYS).items()}
+    assert after == before
