@@ -8,12 +8,12 @@ from sqlalchemy import text
 
 from data_tools.src.usage_metrics.utils import (
     ACTIVE_USER_EVENT_TYPES,
+    AGGREGATE_EVENT_TYPES,
     EVENT_TYPE_TO_METRIC,
     METRIC_COLUMNS,
     SPRINT_LENGTH_DAYS,
     aggregate_events,
     aggregate_user_sign_ins,
-    AGGREGATE_EVENT_TYPES,
     build_user_attribution_lookup,
     build_workbook,
     deliver_report_link,
