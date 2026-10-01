@@ -309,12 +309,26 @@ awarded-contract, awarded-contract-as-superuser, awarded-AA:
 > `PATCH {"awarding_entity_id": <different id>}`; assert
 > `(message is None) == (status in (200, 202))`.
 
-This catches drift in either helper, in either validation rule, in the precedence order, and in the
-serializer gate. It is the test that would have caught #6312.
+This catches drift in either helper, in either validation rule, and in the serializer gate. It is the
+test that would have caught #6312.
 
 **One documented exemption:** awarded Direct Obligation / IAA with only Draft/Planned BLIs. Per
 decision 6 the message is non-null while the backend accepts the PATCH — deliberately conservative.
 Assert that shape explicitly with a comment pointing at §1, so it reads as intended, not as a bug.
+
+**It does NOT catch a validator reorder.** The equivalence test only asserts *whether* the PATCH is
+rejected, not *which* message comes back. If someone reordered `_get_default_validators` so
+`ImmutableAwardedFieldsRule` ran before `ProcurementShopChangeRule`, an awarded+obligated agreement
+would still 400 and the message would still be non-null — equivalence passes while the tooltip
+silently states the wrong reason. The §1 precedence requirement is currently enforced by a comment
+only; nothing in `tests/` references `ProcurementShopChangeRule` or the validator list at all.
+
+Add a structural assertion: in `test_procurement_shop_lock.py`, assert the *class order* of
+`AgreementValidator()._get_default_validators()` and
+`AwardedAgreementValidator()._get_default_validators()` — specifically that
+`ProcurementShopChangeRule` precedes `ImmutableAwardedFieldsRule` in the awarded chain — with a
+comment tying it to the helper's precedence. Not an authorization concern (both orders still reject);
+purely a guard against a misleading tooltip.
 
 ### Behavior preservation — must be established *first*
 
@@ -354,7 +368,16 @@ difference between `rules/agreement.py:77-81` and `services/agreements.py:631-63
 - `CHANGE_REQUEST_IN_REVIEW` when a proc-shop CR is in review; **not** for a CR without
   `has_proc_shop_change`.
 - `AWARDED` for a non-superuser on an awarded contract; `None` for a **superuser** on the same
-  agreement; `AWARDED` for an awarded Direct Obligation / IAA (decision 6 — the deliberate divergence).
+  agreement; `AWARDED` for an awarded Direct Obligation / IAA (decision 6 — the deliberate divergence);
+  `AWARDED` for an awarded **AA**.
+  > The AA case is the **control** for decision 6. `AaAgreement.get_required_fields_for_awarded_agreement`
+  > *does* include `awarding_entity_id` (`models/agreements.py:862-878`), so AA is the one type where the
+  > helper and `ImmutableAwardedFieldsRule` agree exactly — asserting it alongside the D.O./IAA cases is
+  > what makes the divergence legible as intentional rather than accidental. AA is also genuinely
+  > reachable in the edit form: the Vest suite rejects only `IAA` and `DIRECT_OBLIGATION`
+  > (`AgreementEditFormSuite.js:15-20`) and actively handles AA (`:32`, `:74`, `:79`), and the dropdown
+  > renders for it (`!isGrant`, `AgreementEditForm.jsx:531`). Cypress already covers an awarded AA
+  > (agreement 12, `agreementDetailsEdit.cy.js:460-474`).
 - Precedence: awarded **and** obligated → `BLI_IN_EXECUTION`, not `AWARDED`.
 - `None` for DRAFT-only and PLANNED-only.
 - `has_proc_shop_blocking_bli` callable with **no user and a transient `Agreement()`** (guards the
@@ -377,7 +400,12 @@ so nothing new needs exposing. New `beforeEach` must set `useLocationMock` / `ha
 - enabled, `disabledMessage()` → `"Disabled"`, when `null`; enabled when `_meta` is absent (create flow);
 - `disabledMessage()` no longer depends on `agreement.in_review` (§5 latent-bug fix);
 - **`shouldRequestChange` is false when locked even though `procurement_shop` was `null` at mount** —
-  guards the §5 fix; this test fails without the `&& !procurementShopLockedMessage` conjunct.
+  guards the §5 fix; this test fails without the `&& !procurementShopLockedMessage` conjunct. Set
+  `areAnyBudgetLinesPlanned: true` **and** a locking `procurementShopLockedMessage` — i.e. the
+  mixed-status agreement (some PLANNED, some OBLIGATED) that is parity gap #4's actual shape. Without
+  `areAnyBudgetLinesPlanned` the assertion is vacuous: that prop is a required conjunct of
+  `shouldRequestChange` (`hooks.js:215-220`), so the test would pass even with the fix reverted. This is
+  the only automated coverage of gap #4 — it must not depend on the manual E2E step in Verification.
 
 **Vest suite — `AgreementEditFormSuite.test.js`:** `procurement-shop-select` required test is skipped
 when `procurementShopLocked` is set (§6).
