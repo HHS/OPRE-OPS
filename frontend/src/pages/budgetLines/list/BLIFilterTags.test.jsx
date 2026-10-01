@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterTags from "./BLIFilterTags";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 // Mock child components
 vi.mock("../../../components/UI/FilterTags/FilterTags", () => ({
@@ -268,6 +269,43 @@ describe("BLIFilterTags", () => {
 
         expect(screen.getByTestId("remove-tag-DRAFT")).toBeInTheDocument();
         expect(screen.getByTestId("remove-tag-PLANNED")).toBeInTheDocument();
+    });
+
+    it("renders and removes the In Review status tag", async () => {
+        const filters = {
+            ...defaultFilters,
+            bliStatus: [
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`)).toBeInTheDocument();
+
+        const removeButton = screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`);
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({
+            bliStatus: [
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
+            ]
+        });
+
+        expect(result.bliStatus).toHaveLength(1);
+        expect(result.bliStatus[0].title).toBe(BLI_STATUS.DRAFT);
     });
 
     it("renders budget range tag", () => {
