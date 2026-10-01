@@ -13,6 +13,7 @@ from data_tools.src.usage_metrics.utils import (
     aggregate_user_sign_ins,
     build_workbook,
     deliver_report_link,
+    effective_run_date,
     is_deactivating_update,
     is_sprint_end,
     parse_lookback_days,
@@ -598,3 +599,54 @@ def test_deliver_report_link_rejects_bad_expiry(mocker, bad_value):
     config = _email_config(usage_metrics_sas_expiry_days=bad_value)
     with pytest.raises(ValueError):
         deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx")
+
+
+@pytest.mark.parametrize(
+    ("now", "expected"),
+    [
+        # The cron's own slot: 23:50 UTC Friday stays on that Friday.
+        (datetime(2026, 9, 11, 23, 50, tzinfo=timezone.utc), date(2026, 9, 11)),
+        # Start delayed past midnight -- still attributed to the Friday the cron fired on.
+        (datetime(2026, 9, 12, 0, 5, tzinfo=timezone.utc), date(2026, 9, 11)),
+        (datetime(2026, 9, 12, 1, 30, tzinfo=timezone.utc), date(2026, 9, 11)),
+        # Well clear of the boundary: a genuine Saturday run is still a Saturday.
+        (datetime(2026, 9, 12, 12, 0, tzinfo=timezone.utc), date(2026, 9, 12)),
+    ],
+)
+def test_effective_run_date_tolerates_post_midnight_start(now, expected):
+    assert effective_run_date(now) == expected
+
+
+def test_effective_run_date_keeps_delayed_run_on_the_sprint_schedule():
+    """The regression this guards: a start a few minutes late silently skipped a whole sprint.
+
+    Without the grace shift, a 00:05 Saturday start made is_sprint_end see a Saturday, log "not a
+    sprint-end Friday" and exit 0 -- and because the next run only looks back 14 days, those days
+    never appeared in any report.
+    """
+    anchor = date(2026, 9, 11)
+    late_start = datetime(2026, 9, 12, 0, 5, tzinfo=timezone.utc)
+
+    assert is_sprint_end(effective_run_date(late_start), anchor)
+    assert not is_sprint_end(late_start.date(), anchor)
+
+
+def test_build_workbook_does_not_turn_user_text_into_a_formula():
+    """A name or email starting with "=" must stay text, not become a broken Excel formula."""
+    user_rows = [
+        {
+            "name": "=Smith, Jane",
+            "email": "=jane@example.gov",
+            "division": "DIV1",
+            "roles": "USER",
+            "sign_in_count": 3,
+            "last_sign_in_utc": "2026-09-10T12:00:00+00:00",
+        }
+    ]
+    workbook_bytes = build_workbook({}, user_rows)
+
+    sheet = load_workbook(io.BytesIO(workbook_bytes))["Per-user"]
+    name_cell, email_cell = sheet["A2"], sheet["B2"]
+    assert name_cell.value == "=Smith, Jane"
+    assert name_cell.data_type == "s", "openpyxl wrote a formula; Excel would render #NAME?"
+    assert email_cell.data_type == "s"

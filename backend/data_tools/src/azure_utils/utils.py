@@ -41,18 +41,13 @@ class AzureStorageAccount:
     access_key: str
 
 
-def get_secret(vault_url: str, key_name: str, client_id: str | None = MI_CLIENT_ID) -> str:
-    """Read a secret from Key Vault, selecting the user-assigned MI when one is attached.
-
-    Mirrors the credential handling in ``upload_blob`` / ``get_csv_using_mi_or_rbac``: when a
-    ``client_id`` (user-assigned MI client id) is present the credential is pinned to it, because a
-    bare ``DefaultAzureCredential`` cannot resolve a user-assigned identity in the absence of a
-    system-assigned one. Falls back to a plain credential (RBAC / access-key contexts) when unset.
-    """
-    if client_id is None:
-        credential = DefaultAzureCredential()
-    else:
-        credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+def get_secret(vault_url: str, key_name: str) -> str:
+    # Left as a bare DefaultAzureCredential, matching its long-standing behaviour. An earlier
+    # revision of this branch pinned the user-assigned MI client id here for the usage-metrics job,
+    # but that job no longer reads Key Vault at run time (its secrets are injected as Container App
+    # secrets), so the only remaining caller is the FILE_STORAGE_AUTH_METHOD=access_key path in
+    # get_csv below -- and changing its credential resolution would be an unrelated behaviour change.
+    credential = DefaultAzureCredential()
     secret_client = SecretClient(vault_url=vault_url, credential=credential)
     secret = secret_client.get_secret(key_name)
     return secret.value
@@ -243,4 +238,10 @@ def build_blob_sas_url(
         permission=BlobSasPermissions(read=True),
         expiry=expiry,
     )
-    return f"{account_url}/{container_name}/{blob_name}?{sas_token}"
+    # Build the URL from the *parsed* origin rather than the raw input. Concatenating the raw value
+    # would turn a trailing slash into "…blob.core.windows.net//data/reports/x.xlsx", which Azure
+    # reads as a different canonical resource than the one the signature above covers -- so the
+    # upload succeeds and every emailed link fails. The scheme is normalised here too, so a
+    # scheme-less account URL still yields an https link.
+    origin = f"{parsed_account_url.scheme or 'https'}://{parsed_account_url.netloc}"
+    return f"{origin}/{container_name}/{blob_name}?{sas_token}"

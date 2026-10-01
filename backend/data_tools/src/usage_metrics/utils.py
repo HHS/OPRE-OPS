@@ -151,6 +151,11 @@ XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml
 SPRINT_LENGTH_DAYS = 14
 FRIDAY = 4  # date.weekday(): Monday is 0
 
+# How far back to shift "now" before taking its date, so a run that starts slightly after the
+# 23:50 UTC Friday cron is still attributed to that Friday. See ``effective_run_date``. Two hours
+# comfortably covers a cold start plus one replica retry while staying far short of the next day.
+RUN_DATE_GRACE = timedelta(hours=2)
+
 
 def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
     """Build a ``user_id -> {division, roles, email, full_name}`` lookup for actor attribution.
@@ -351,6 +356,23 @@ def aggregate_user_sign_ins(session: Session, lookback_days: int) -> list[dict]:
     return rows
 
 
+def _force_text_cells(cells) -> None:
+    """Stop openpyxl from reinterpreting user-supplied strings as formulas.
+
+    Assigning a string that begins with ``=`` makes openpyxl write the cell as a formula, so a user
+    whose name or email starts with ``=`` renders in Excel as ``#NAME?`` instead of their name --
+    the per-user sheet silently misreports who signed in. Re-asserting the type as a string keeps
+    the literal text. The leading characters Excel also treats as formula starters (``+``, ``-``,
+    ``@``) are included, since the same data reaches spreadsheets other than Excel.
+    """
+    for cell in cells:
+        if isinstance(cell.value, str) and cell.value.startswith(("=", "+", "-", "@")):
+            # Assigning .value is what infers the type, so the override has to come after it --
+            # here the value is already set, so reasserting data_type is enough and it survives a
+            # save/load round trip.
+            cell.data_type = "s"
+
+
 def build_workbook(counts: dict[tuple[str, str, str], dict[str, int]], user_rows: list[dict]) -> bytes:
     """Render the aggregate counts and per-user sign-ins into a two-sheet ``.xlsx`` (as bytes).
 
@@ -371,6 +393,7 @@ def build_workbook(counts: dict[tuple[str, str, str], dict[str, int]], user_rows
     user_sheet.append(USER_SHEET_COLUMNS)
     for row in user_rows:
         user_sheet.append([row[column] for column in USER_SHEET_COLUMNS])
+        _force_text_cells(user_sheet[user_sheet.max_row])
 
     buffer = io.BytesIO()
     wb.save(buffer)
@@ -411,6 +434,23 @@ def parse_sprint_anchor_date(anchor_date: str) -> date:
             f"({anchor.strftime('%A')})."
         )
     return anchor
+
+
+def effective_run_date(now_utc: datetime) -> date:
+    """Return the date this run should be attributed to, tolerating a start just after midnight.
+
+    The cron fires at 23:50 UTC Friday, leaving only ten minutes before the UTC date rolls over to
+    Saturday. A container cold start, a slow image pull, or a replica retry can easily cross that
+    boundary -- and ``is_sprint_end`` would then see a Saturday, skip the run as "not a sprint-end
+    Friday", and exit 0. That failure is near-invisible (the execution still reports Succeeded) and
+    costs a whole sprint: the next run's 14-day window does not reach back far enough to recover the
+    missed days, so that activity never appears in any report.
+
+    Subtracting a grace period before taking the date maps those just-after-midnight starts back
+    onto the Friday the cron intended, and cannot misclassify an on-time run: 23:50 minus the grace
+    is still the same Friday. It also keeps the dated blob name aligned with the sprint-end date.
+    """
+    return (now_utc - RUN_DATE_GRACE).date()
 
 
 def is_sprint_end(today: date, anchor: date) -> bool:
@@ -504,9 +544,13 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     returns ``None`` without touching the database or Blob storage. Otherwise returns the generated
     workbook bytes.
     """
-    today_utc = datetime.now(timezone.utc).date()
+    today_utc = effective_run_date(datetime.now(timezone.utc))
     if not should_generate_report(config, today_utc):
         return None
+
+    # Read the upload target before the expensive work: AzureConfig raises when it is unset, and
+    # discovering that after a full aggregation pass and workbook build wastes the whole run.
+    account_url = config.usage_metrics_storage_account_url
 
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
     with Session(conn) as session:
@@ -523,7 +567,6 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
     latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
 
-    account_url = config.usage_metrics_storage_account_url
     if account_url:
         container = config.usage_metrics_container_name
         logger.info(f"Uploading usage report to {account_url}/{container}.")
