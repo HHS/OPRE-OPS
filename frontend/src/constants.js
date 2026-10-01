@@ -6,13 +6,7 @@ const constants = {
         const currentYear = currentDate.getFullYear();
         const currentFiscalYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
 
-        // Outside production, pin the fiscal years the E2E fixtures are seeded against. The sliding
-        // currentFiscalYear +/- 5 window alone makes those specs time-dependent: FY 2021 dropped out
-        // of range when the federal fiscal year rolled over on 1 October, which broke
-        // portfolioDetail.cy.js (and the a11y gate that runs it) on every branch at once. The far
-        // future years were already pinned here for the same reason; the historical ones were not.
-        const E2E_FIXTURE_YEARS = [2045, 2044, 2043, 2025, 2024, 2023, 2022, 2021];
-        const years = process.env.NODE_ENV !== "production" || window.Cypress ? [...E2E_FIXTURE_YEARS] : [];
+        const years = process.env.NODE_ENV !== "production" || window.Cypress ? [2045, 2044, 2043] : [];
         for (let i = currentFiscalYear + 5; i >= currentFiscalYear - 5; i--) {
             if (!years.includes(i)) {
                 years.push(i);

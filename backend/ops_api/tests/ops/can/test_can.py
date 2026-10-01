@@ -4,7 +4,6 @@ from sqlalchemy import Integer, cast, func, select
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
 from models.cans import CANFundingDetails
-from models.utils.fiscal_year import get_current_fiscal_year
 from ops.services.cans import CANService
 from ops_api.tests.utils import DummyContextManager
 
@@ -635,12 +634,18 @@ def test_can_active_years_zero_year_can(loaded_db):
     loaded_db.add(can)
     loaded_db.commit()
 
-    # A perpetual fund (active_period 0) is active from its appropriation year through the CURRENT
-    # fiscal year plus five, so the expected list has to be derived rather than hardcoded -- the
-    # federal fiscal year rolls over on 1 October, and a literal list silently became wrong on that
-    # date every year.
-    expected_end_year = get_current_fiscal_year() + 5
-    assert can.active_years == list(range(2022, expected_end_year + 1))
+    assert can.active_years == [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+    ]
 
     loaded_db.delete(can)
     loaded_db.commit()
