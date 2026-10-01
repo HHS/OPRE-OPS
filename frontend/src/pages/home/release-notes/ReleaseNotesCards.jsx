@@ -62,7 +62,15 @@ function RightCard() {
  * @param {ReleaseNotesCardProps} props - Component props.
  * @returns {React.ReactElement} The rendered left card.
  */
-function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatures, totalFixes, totalImprovements }) {
+export function LeftCard({
+    releaseDate,
+    lastVersion,
+    totalReleaseChanges,
+    totalNewFeatures,
+    totalFixes,
+    totalImprovements,
+    showFootnote = false
+}) {
     return (
         <RoundedBox>
             <div className="display-flex flex-justify">
@@ -83,22 +91,27 @@ function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatu
                 </article>
 
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Release Changes</h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                        Release Changes {showFootnote && <span>*</span>}
+                    </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalReleaseChanges}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div
+                            className="display-flex flex-column margin-top-1"
+                            style={{ gap: "0.25rem" }}
+                        >
                             {totalNewFeatures > 0 && (
                                 <Tag className="bg-brand-primary text-white">
                                     {totalNewFeatures} {totalNewFeatures > 1 ? "New Features" : "New Feature"}
                                 </Tag>
                             )}
                             {totalFixes > 0 && (
-                                <Tag className="bg-brand-release-changes-fixes text-ink margin-top-1">
+                                <Tag className="bg-brand-release-changes-fixes text-ink">
                                     {totalFixes} {totalFixes > 1 ? "Fixes" : "Fix"}
                                 </Tag>
                             )}
                             {totalImprovements > 0 && (
-                                <Tag className="bg-brand-can-budget-by-fy-graph-4 text-ink margin-top-1">
+                                <Tag className="bg-brand-can-budget-by-fy-graph-4 text-ink">
                                     {totalImprovements} {totalImprovements > 1 ? "Improvements" : "Improvement"}
                                 </Tag>
                             )}
@@ -106,6 +119,11 @@ function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatu
                     </div>
                 </article>
             </div>
+            {showFootnote && (
+                <p className="font-12px text-base-dark margin-0 margin-top-3">
+                    * See more detail on release changes below
+                </p>
+            )}
         </RoundedBox>
     );
 }
