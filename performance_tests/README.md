@@ -91,7 +91,7 @@ The performance tests use the same dependencies as the backend API via pipenv.
 
 1. **Log in to the target environment:**
    - **Dev**: Navigate to https://dev.ops.opre.acf.gov/
-   - **Staging**: Navigate to https://staging.ops.opre.acf.gov/
+   - **Staging**: Navigate to https://stg.ops.opre.acf.gov/
    - Log in with your credentials
 
 2. **Extract the JWT token:**
@@ -108,7 +108,7 @@ The performance tests use the same dependencies as the backend API via pipenv.
 
    # For staging environment
    export JWT_TOKEN="your-staging-token-here"
-   export API_HOST="https://staging.ops.opre.acf.gov"
+   export API_HOST="https://stg.ops.opre.acf.gov"
    ```
 
 4. **Verify the token works:**
