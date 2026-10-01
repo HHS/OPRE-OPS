@@ -86,6 +86,17 @@ describe("useNavigationBlocker", () => {
         expect(shouldBlock).toBe(false);
     });
 
+    it("does not block navigation to the /error page even with unsaved changes", () => {
+        renderHook(() => useNavigationBlocker(defaultProps));
+
+        const shouldBlock = blockerCallback({
+            currentLocation: { pathname: "/agreements/1" },
+            nextLocation: { pathname: "/error" }
+        });
+
+        expect(shouldBlock).toBe(false);
+    });
+
     it("shows modal with correct props when blocked", () => {
         blockerState = "blocked";
 
