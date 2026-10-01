@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, event
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -73,6 +73,18 @@ class AgreementChangeRequest(ChangeRequest):
 
     proc_shop_field_names = ["awarding_entity_id"]
 
+    @classmethod
+    def in_review_filter(cls):
+        """Base filter matching AgreementChangeRequest rows currently in review.
+
+        The single source of truth for what "in review" means for this change-request
+        type — callers add their own id-matching condition (e.g. ``agreement_id.in_(...)``).
+        """
+        return and_(
+            cls.status == ChangeRequestStatus.IN_REVIEW,
+            cls.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        )
+
     @hybrid_property
     def has_proc_shop_change(self):
         return any(key in self.requested_change_data for key in self.proc_shop_field_names)
@@ -94,6 +106,18 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     __mapper_args__ = {
         "polymorphic_identity": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
     }
+
+    @classmethod
+    def in_review_filter(cls):
+        """Base filter matching BudgetLineItemChangeRequest rows currently in review.
+
+        The single source of truth for what "in review" means for this change-request
+        type — callers add their own id-matching condition (e.g. ``budget_line_item_id.in_(...)``).
+        """
+        return and_(
+            cls.status == ChangeRequestStatus.IN_REVIEW,
+            cls.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        )
 
     budget_field_names = ["amount", "can_id", "date_needed"]
 

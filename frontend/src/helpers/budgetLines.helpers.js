@@ -12,13 +12,15 @@ import { setAlert } from "../components/UI/Alert/alertSlice.js";
  * @property {string} PLANNED - Status for budget lines that have been planned but not yet executed.
  * @property {string} EXECUTING - Status for budget lines currently in execution phase.
  * @property {string} OBLIGATED - Status for budget lines that have been fully obligated.
+ * @property {string} IN_REVIEW - Pseudo-status for budget lines with a pending change request.
  */
 export const BLI_STATUS = {
     DRAFT: "DRAFT",
     PLANNED: "PLANNED",
     EXECUTING: "IN_EXECUTION",
     OBLIGATED: "OBLIGATED",
-    PLANNED_MOD: "PLANNED_MOD"
+    PLANNED_MOD: "PLANNED_MOD",
+    IN_REVIEW: "IN_REVIEW"
 };
 
 /**
