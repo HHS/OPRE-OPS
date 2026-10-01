@@ -4,6 +4,7 @@ import { server } from "../tests/mocks";
 import { http, HttpResponse } from "msw";
 import { setupStore } from "../store";
 import { opsApi } from "./opsAPI";
+import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 
 // Helper function to create a test store for RTK Query testing
 function setupApiStore(api, preloadedState) {
@@ -630,7 +631,7 @@ describe("opsAPI - Agreements Pagination", () => {
                 opsApi.endpoints.getAgreements.initiate({
                     filters: {
                         fiscalYear: [{ title: "FY 2026" }],
-                        budgetLineStatus: [{ status: "IN_REVIEW" }],
+                        budgetLineStatus: [{ status: BLI_STATUS.IN_REVIEW }],
                         portfolio: [{ id: 7 }],
                         agreementName: [{ display_name: "Ops Name" }],
                         agreementType: [{ type: "Grant Type" }],
@@ -646,7 +647,7 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             expect(capturedUrl).toContain("fiscal_year=2026");
-            expect(capturedUrl).toContain("budget_line_status=IN_REVIEW");
+            expect(capturedUrl).toContain(`budget_line_status=${BLI_STATUS.IN_REVIEW}`);
             expect(capturedUrl).toContain("portfolio=7");
             expect(capturedUrl).toContain("name=Ops%20Name");
             expect(capturedUrl).toContain("agreement_type=Grant%20Type");
@@ -1028,6 +1029,27 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("only_my=true");
         expect(capturedUrl).toContain("include_fees=true");
         expect(capturedUrl).toContain("enable_obe=true");
+    });
+
+    it("forwards a selected IN_REVIEW status as budget_line_status on getBudgetLineItems", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/budget-line-items/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getBudgetLineItems.initiate({
+                filters: {
+                    bliStatus: [{ status: BLI_STATUS.IN_REVIEW }]
+                }
+            })
+        );
+
+        expect(capturedUrl).toContain(`budget_line_status=${BLI_STATUS.IN_REVIEW}`);
     });
 
     it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {

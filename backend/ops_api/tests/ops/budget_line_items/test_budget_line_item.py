@@ -13,10 +13,13 @@ from models import (
     AABudgetLineItem,
     Agreement,
     AgreementAgency,
+    AgreementChangeRequest,
     AgreementReason,
     AgreementType,
     BudgetLineItem,
+    BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ChangeRequestStatus,
     ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
@@ -1681,6 +1684,350 @@ def test_get_obe_budget_lines(auth_client, loaded_db, app_ctx):
 
     for item in response.json:
         assert item["is_obe"] is True
+
+
+def test_budget_line_items_get_all_by_obe_status_when_obe_disabled(auth_client, loaded_db, app_ctx):
+    # Regression guard: an earlier draft of _apply_pseudo_status_filter left `conditions`
+    # empty when only a disabled pseudo-status was requested, which skipped the WHERE
+    # clause entirely and returned every BLI unfiltered instead of zero rows.
+    stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.is_obe)
+    obe_blis = loaded_db.scalars(stmt).all()
+    assert len(obe_blis) > 0
+
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"budget_line_status": "Overcome by Events"},
+    )
+    assert response.status_code == 200
+    assert response.json == []
+
+
+def test_budget_line_items_invalid_status_raises_validation_error(auth_client, app_ctx):
+    response = auth_client.get(
+        url_for("api.budget-line-items-group"),
+        query_string={"budget_line_status": "NOT_A_REAL_STATUS"},
+    )
+    assert response.status_code == 400
+
+
+def test_budget_line_items_get_all_by_in_review_status(auth_client, loaded_db, app_ctx):
+    # Agreement + BLI with a pending BLI-level change request
+    agreement_with_bli_cr = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement with BLI-level CR for IN_REVIEW filter test",
+        nick_name="BLI CR Agreement",
+    )
+    loaded_db.add(agreement_with_bli_cr)
+    loaded_db.flush()
+
+    bli_with_bli_cr = ContractBudgetLineItem(
+        line_description="BLI with pending BLI-level CR",
+        agreement_id=agreement_with_bli_cr.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(bli_with_bli_cr)
+    loaded_db.flush()
+
+    bli_cr = BudgetLineItemChangeRequest(
+        agreement_id=agreement_with_bli_cr.id,
+        budget_line_item_id=bli_with_bli_cr.id,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "bli-level cr"},
+    )
+    loaded_db.add(bli_cr)
+
+    # Agreement + BLI with a pending agreement-level change request
+    agreement_with_agreement_cr = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement with agreement-level CR for IN_REVIEW filter test",
+        nick_name="Agreement CR Agreement",
+    )
+    loaded_db.add(agreement_with_agreement_cr)
+    loaded_db.flush()
+
+    bli_with_agreement_cr = ContractBudgetLineItem(
+        line_description="BLI in-review via agreement-level CR",
+        agreement_id=agreement_with_agreement_cr.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+    )
+    loaded_db.add(bli_with_agreement_cr)
+    loaded_db.flush()
+
+    agreement_cr = AgreementChangeRequest(
+        agreement_id=agreement_with_agreement_cr.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "agreement-level cr"},
+    )
+    loaded_db.add(agreement_cr)
+
+    # BLI with neither — should never show up as in-review
+    bli_not_in_review = ContractBudgetLineItem(
+        line_description="BLI with no pending change requests",
+        agreement_id=agreement_with_bli_cr.id,
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    loaded_db.add(bli_not_in_review)
+
+    loaded_db.commit()
+
+    try:
+        expected_ids = {bli_with_bli_cr.id, bli_with_agreement_cr.id}
+
+        # Both budget_line_status and the generic status param must behave identically.
+        for param_name in ("budget_line_status", "status"):
+            response = auth_client.get(
+                url_for("api.budget-line-items-group"),
+                query_string={param_name: "IN_REVIEW"},
+            )
+            assert response.status_code == 200
+            returned_ids = {item["id"] for item in response.json}
+            assert expected_ids.issubset(returned_ids)
+            assert bli_not_in_review.id not in returned_ids
+    finally:
+        loaded_db.delete(bli_cr)
+        loaded_db.delete(agreement_cr)
+        loaded_db.delete(bli_with_bli_cr)
+        loaded_db.delete(bli_with_agreement_cr)
+        loaded_db.delete(bli_not_in_review)
+        loaded_db.delete(agreement_with_bli_cr)
+        loaded_db.delete(agreement_with_agreement_cr)
+        loaded_db.commit()
+
+
+def test_budget_line_items_agreement_level_cr_marks_all_sibling_blis_in_review(auth_client, loaded_db, app_ctx):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement with multiple BLIs and one agreement-level CR",
+        nick_name="Sibling BLI Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli_1 = ContractBudgetLineItem(
+        line_description="Sibling BLI 1",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    bli_2 = ContractBudgetLineItem(
+        line_description="Sibling BLI 2",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+    )
+    loaded_db.add(bli_1)
+    loaded_db.add(bli_2)
+    loaded_db.flush()
+
+    agreement_cr = AgreementChangeRequest(
+        agreement_id=agreement.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "sibling test cr"},
+    )
+    loaded_db.add(agreement_cr)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"budget_line_status": "IN_REVIEW"},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert bli_1.id in returned_ids
+        assert bli_2.id in returned_ids
+    finally:
+        loaded_db.delete(agreement_cr)
+        loaded_db.delete(bli_1)
+        loaded_db.delete(bli_2)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+
+def test_budget_line_items_in_review_status_combines_with_real_status_via_or(auth_client, loaded_db, app_ctx):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement for DRAFT+IN_REVIEW union test",
+        nick_name="Union Test Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    draft_not_in_review = ContractBudgetLineItem(
+        line_description="DRAFT, not in review",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    obligated_in_review = ContractBudgetLineItem(
+        line_description="OBLIGATED, in review",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+    )
+    loaded_db.add(draft_not_in_review)
+    loaded_db.add(obligated_in_review)
+    loaded_db.flush()
+
+    cr = BudgetLineItemChangeRequest(
+        agreement_id=agreement.id,
+        budget_line_item_id=obligated_in_review.id,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "union test cr"},
+    )
+    loaded_db.add(cr)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"budget_line_status": ["DRAFT", "IN_REVIEW"]},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert draft_not_in_review.id in returned_ids
+        assert obligated_in_review.id in returned_ids
+    finally:
+        loaded_db.delete(cr)
+        loaded_db.delete(draft_not_in_review)
+        loaded_db.delete(obligated_in_review)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+
+def test_budget_line_items_in_review_filter_empty_when_no_matches(auth_client, loaded_db, app_ctx):
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement with no change requests at all",
+        nick_name="No CR Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="BLI with no change requests",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.DRAFT,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    try:
+        # Scoped via agreement_id to this isolated, CR-free agreement so the assertion
+        # doesn't depend on the rest of the shared dataset having zero in-review BLIs.
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"budget_line_status": "IN_REVIEW", "agreement_id": agreement.id},
+        )
+        assert response.status_code == 200
+        assert response.json == []
+    finally:
+        loaded_db.delete(bli)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+
+def test_budget_line_items_obe_and_in_review_row_included_in_in_review_filter(auth_client, loaded_db, app_ctx):
+    # Confirmed coexistence gap: an OBE'd BLI that becomes in-review via an
+    # agreement-level change request must still match the IN_REVIEW filter, since
+    # BudgetLineItem.in_review is True for it — but a real-status-only filter should
+    # still exclude it via the (unrelated) default OBE-hiding behavior.
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement with an OBE'd, in-review BLI",
+        nick_name="OBE In Review Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    obe_bli = ContractBudgetLineItem(
+        line_description="OBE'd BLI that becomes in-review via an agreement-level CR",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+        is_obe=True,
+    )
+    loaded_db.add(obe_bli)
+    loaded_db.flush()
+
+    agreement_cr = AgreementChangeRequest(
+        agreement_id=agreement.id,
+        change_request_type=ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "obe + in-review coexistence test"},
+    )
+    loaded_db.add(agreement_cr)
+    loaded_db.commit()
+
+    try:
+        assert obe_bli.in_review is True
+
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"budget_line_status": "IN_REVIEW"},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert obe_bli.id in returned_ids
+
+        response = auth_client.get(
+            url_for("api.budget-line-items-group"),
+            query_string={"budget_line_status": "OBLIGATED", "agreement_id": agreement.id},
+        )
+        assert response.status_code == 200
+        returned_ids = {item["id"] for item in response.json}
+        assert obe_bli.id not in returned_ids
+    finally:
+        loaded_db.delete(agreement_cr)
+        loaded_db.delete(obe_bli)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+
+def test_get_budget_line_items_filter_options_in_review_presence(system_owner_auth_client, loaded_db, app_ctx):
+    response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/")
+    assert response.status_code == 200
+    baseline_statuses = set(response.json["statuses"])
+
+    agreement = ContractAgreement(
+        agreement_type=AgreementType.CONTRACT,
+        name="Agreement for filter-options IN_REVIEW presence test",
+        nick_name="Filter Options In Review Agreement",
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli = ContractBudgetLineItem(
+        line_description="BLI for filter-options IN_REVIEW presence test",
+        agreement_id=agreement.id,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(bli)
+    loaded_db.flush()
+
+    cr = BudgetLineItemChangeRequest(
+        agreement_id=agreement.id,
+        budget_line_item_id=bli.id,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"note": "filter options presence test"},
+    )
+    loaded_db.add(cr)
+    loaded_db.commit()
+
+    try:
+        response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/")
+        assert response.status_code == 200
+        assert "IN_REVIEW" in response.json["statuses"]
+    finally:
+        loaded_db.delete(cr)
+        loaded_db.delete(bli)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    # Back to baseline once the only in-review BLI is removed.
+    response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/")
+    assert response.status_code == 200
+    assert set(response.json["statuses"]) == baseline_statuses
 
 
 def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can, app_ctx):

@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple
 from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
-from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy import Select, String, case, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -22,8 +22,6 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
-    ChangeRequestStatus,
-    ChangeRequestType,
     GrantNumber,
     Portfolio,
     ProcurementShop,
@@ -358,19 +356,70 @@ class BudgetLineItemService:
 
         return filtered_results
 
-    def _obe_status_filter(self, query, status_list: list[str]):
-        statuses = [status for status in status_list if status != "Overcome by Events"]
-        has_obe = "Overcome by Events" in status_list
+    def _in_review_exists_clause(self):
+        """SQL EXISTS clause mirroring BudgetLineItem.in_review (a non-SQL-filterable
+        plain @property). True when the BLI has a pending BudgetLineItemChangeRequest,
+        or its parent Agreement has a pending AgreementChangeRequest."""
+        bli_cr_exists = (
+            select(BudgetLineItemChangeRequest.id)
+            .where(
+                BudgetLineItemChangeRequest.in_review_filter(),
+                BudgetLineItemChangeRequest.budget_line_item_id == BudgetLineItem.id,
+            )
+            .exists()
+        )
+        agreement_cr_exists = (
+            select(AgreementChangeRequest.id)
+            .where(
+                AgreementChangeRequest.in_review_filter(),
+                AgreementChangeRequest.agreement_id == BudgetLineItem.agreement_id,
+            )
+            .exists()
+        )
+        return bli_cr_exists | agreement_cr_exists
 
-        if statuses and has_obe:
-            # If we have both regular statuses and OBE
-            query = query.where((BudgetLineItem.status.in_(statuses)) | (BudgetLineItem.is_obe))
-        elif has_obe:
-            # If we only have OBE status
-            query = query.where(BudgetLineItem.is_obe)
-        elif statuses:
-            # If we only have regular statuses
-            query = query.where(BudgetLineItem.status.in_(statuses))
+    @staticmethod
+    def _is_obe_enabled(enable_obe) -> bool:
+        """True when the caller explicitly opted in to seeing OBE'd budget lines.
+        ``enable_obe`` arrives as a list (e.g. ``[True]``) from query-param parsing."""
+        return bool(enable_obe and True in enable_obe)
+
+    def _apply_pseudo_status_filter(self, query, status_list: list[str], enable_obe, in_review_clause=None):
+        """Applies a status filter that may include real BudgetLineItemStatus values
+        plus either or both pseudo-statuses: "Overcome by Events" (is_obe column) and
+        "IN_REVIEW" (EXISTS subquery against change requests, passed in by the caller
+        so it's built once per request instead of once per filter)."""
+        obe_requested = "Overcome by Events" in status_list
+        in_review_requested = "IN_REVIEW" in status_list
+        real_statuses = [s for s in status_list if s not in ("Overcome by Events", "IN_REVIEW")]
+        obe_enabled = self._is_obe_enabled(enable_obe)
+
+        # Validate real statuses against the enum before handing them to .in_(), mirroring
+        # _apply_agreement_type_filter's pattern for AgreementType — turns an unrecognized
+        # status string into a clean 400 instead of a raw DB-level enum error.
+        enum_statuses = []
+        for status in real_statuses:
+            try:
+                enum_statuses.append(BudgetLineItemStatus[status])
+            except KeyError:
+                logger.warning(f"Invalid budget line status: {status}")
+                raise ValidationError({"status": f"Invalid budget line status: {status}"})
+
+        # Always start with the real-status condition, even when enum_statuses is empty.
+        # `.in_([])` compiles to a false predicate, so a request that resolves to no real
+        # statuses and no *enabled* pseudo-status (e.g. only "Overcome by Events" was
+        # requested but enable_obe is off) correctly filters to zero rows instead of an
+        # empty `conditions` list skipping the WHERE clause entirely.
+        conditions = [BudgetLineItem.status.in_(enum_statuses)]
+        if obe_requested and obe_enabled:
+            conditions.append(BudgetLineItem.is_obe)
+        if in_review_requested:
+            conditions.append(in_review_clause if in_review_clause is not None else self._in_review_exists_clause())
+
+        combined = conditions[0]
+        for condition in conditions[1:]:
+            combined = combined | condition
+        query = query.where(combined)
 
         return query
 
@@ -382,17 +431,24 @@ class BudgetLineItemService:
         """
         Apply filters to the BudgetLineItem query based on the provided parameters.
         """
+        # Built once and threaded through every filter that needs it, rather than each
+        # one independently constructing its own copy of the same correlated EXISTS.
+        in_review_requested = "IN_REVIEW" in (filters.budget_line_statuses or []) or "IN_REVIEW" in (
+            filters.statuses or []
+        )
+        in_review_clause = self._in_review_exists_clause() if in_review_requested else None
+
         query = self._apply_fiscal_year_filter(query, filters.fiscal_years)
-        query = self._apply_status_filters(query, filters.budget_line_statuses, filters.enable_obe)
+        query = self._apply_status_filters(query, filters.budget_line_statuses, filters.enable_obe, in_review_clause)
         query = self._apply_portfolio_filter(query, filters.portfolios, filters.sort_conditions)
         query = self._apply_can_filter(query, filters.can_ids)
         query = self._apply_agreement_filter(query, filters.agreement_ids)
-        query = self._apply_status_filter(query, filters.statuses, filters.enable_obe)
+        query = self._apply_status_filter(query, filters.statuses, filters.enable_obe, in_review_clause)
         query = self._apply_agreement_type_filter(query, filters.agreement_types)
         query = self._apply_agreement_name_filter(query, filters.agreement_names)
         # Note: budget_line_total_range and can_active_period filters are applied in Python
         # after fetching results to avoid SQLAlchemy correlation issues
-        query = self._apply_obe_exclusion_filter(query, filters.enable_obe)
+        query = self._apply_obe_exclusion_filter(query, filters.enable_obe, in_review_requested, in_review_clause)
 
         return query
 
@@ -402,13 +458,10 @@ class BudgetLineItemService:
             query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
         return query
 
-    def _apply_status_filters(self, query, budget_line_statuses, enable_obe):
-        """Apply budget line status filter with OBE consideration."""
+    def _apply_status_filters(self, query, budget_line_statuses, enable_obe, in_review_clause=None):
+        """Apply budget line status filter, including pseudo-statuses."""
         if budget_line_statuses:
-            if enable_obe and True in enable_obe:
-                query = self._obe_status_filter(query, budget_line_statuses)
-            else:
-                query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+            query = self._apply_pseudo_status_filter(query, budget_line_statuses, enable_obe, in_review_clause)
         return query
 
     def _apply_portfolio_filter(self, query, portfolios, sort_conditions):
@@ -435,19 +488,24 @@ class BudgetLineItemService:
             query = query.where(BudgetLineItem.agreement_id.in_(agreement_ids))
         return query
 
-    def _apply_status_filter(self, query, statuses, enable_obe):
-        """Apply general status filter with OBE consideration."""
+    def _apply_status_filter(self, query, statuses, enable_obe, in_review_clause=None):
+        """Apply general status filter, including pseudo-statuses."""
         if statuses:
-            if enable_obe and True in enable_obe:
-                query = self._obe_status_filter(query, statuses)
-            else:
-                query = query.where(BudgetLineItem.status.in_(statuses))
+            query = self._apply_pseudo_status_filter(query, statuses, enable_obe, in_review_clause)
         return query
 
-    def _apply_obe_exclusion_filter(self, query, enable_obe):
-        """Exclude OBE items unless explicitly enabled."""
-        if not enable_obe or True not in enable_obe:
-            query = query.where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+    def _apply_obe_exclusion_filter(self, query, enable_obe, in_review_requested=False, in_review_clause=None):
+        """Exclude OBE items unless explicitly enabled, or unless the item is also
+        in-review and the caller requested the IN_REVIEW pseudo-status: an OBE'd BLI
+        that's genuinely in-review must still match the IN_REVIEW filter, matching
+        BudgetLineItem.in_review exactly regardless of is_obe."""
+        if not self._is_obe_enabled(enable_obe):
+            exclusion = func.coalesce(BudgetLineItem.is_obe, False).is_(False)
+            if in_review_requested:
+                exclusion = exclusion | (
+                    in_review_clause if in_review_clause is not None else self._in_review_exists_clause()
+                )
+            query = query.where(exclusion)
         return query
 
     def _apply_agreement_type_filter(self, query, agreement_types):
@@ -1166,8 +1224,18 @@ class BudgetLineItemService:
         # Collect CAN active periods
         can_active_periods = {result.can.active_period for result in results if result.can and result.can.active_period}
 
+        # has_in_review must not call `result.in_review` in a loop — that's a computed
+        # @property that issues 1-2 fresh queries per instance (unlike is_obe, a plain
+        # column). Use the EXISTS-based check to avoid an N+1 without hydrating every
+        # in-review change request row just to test non-emptiness.
+        bli_ids = [result.id for result in results]
+        agreement_ids = [result.agreement_id for result in results]
+        has_in_review = has_change_requests_in_review(self.db_session, bli_ids, agreement_ids)
+
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
-        if has_obe and (enable_obe and True in enable_obe):
+        if has_in_review:
+            budget_line_statuses_list.append("IN_REVIEW")
+        if has_obe and self._is_obe_enabled(enable_obe):
             budget_line_statuses_list.append("Overcome by Events")
 
         status_sort_order = [
@@ -1176,6 +1244,7 @@ class BudgetLineItemService:
             BudgetLineItemStatus.PLANNED_MOD.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
+            "IN_REVIEW",
             "Overcome by Events",
         ]
 
@@ -1396,8 +1465,7 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
     if bli_ids:
         bli_crs = db_session.scalars(
             select(BudgetLineItemChangeRequest).where(
-                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.in_review_filter(),
                 BudgetLineItemChangeRequest.budget_line_item_id.in_(bli_ids),
             )
         ).all()
@@ -1411,8 +1479,7 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
         if unique_agreement_ids:
             agreement_crs = db_session.scalars(
                 select(AgreementChangeRequest).where(
-                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.in_review_filter(),
                     AgreementChangeRequest.agreement_id.in_(unique_agreement_ids),
                 )
             ).all()
@@ -1423,6 +1490,39 @@ def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreeme
         "bli_change_requests": bli_change_requests_map,
         "agreement_change_requests": agreement_change_requests_map,
     }
+
+
+def has_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> bool:
+    """Cheap existence check for whether any BLI-level or Agreement-level change request
+    in the given id sets is currently in review, without hydrating full CR rows (unlike
+    ``batch_load_change_requests_in_review``, which is needed when the caller wants the
+    actual change-request objects)."""
+    conditions = []
+    if bli_ids:
+        conditions.append(
+            select(BudgetLineItemChangeRequest.id)
+            .where(
+                BudgetLineItemChangeRequest.in_review_filter(),
+                BudgetLineItemChangeRequest.budget_line_item_id.in_(bli_ids),
+            )
+            .exists()
+        )
+
+    unique_agreement_ids = list({aid for aid in agreement_ids if aid is not None}) if agreement_ids else []
+    if unique_agreement_ids:
+        conditions.append(
+            select(AgreementChangeRequest.id)
+            .where(
+                AgreementChangeRequest.in_review_filter(),
+                AgreementChangeRequest.agreement_id.in_(unique_agreement_ids),
+            )
+            .exists()
+        )
+
+    if not conditions:
+        return False
+
+    return bool(db_session.scalar(select(or_(*conditions))))
 
 
 def compute_bli_in_review(bli_id: int, agreement_id: int | None, change_requests_data: dict) -> bool:

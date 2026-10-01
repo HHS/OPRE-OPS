@@ -129,7 +129,8 @@ export const codesToDisplayText = {
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated",
-        PLANNED_MOD: "Planned Mod"
+        PLANNED_MOD: "Planned Mod",
+        IN_REVIEW: "In Review"
     },
     validation: {
         name: "Name",

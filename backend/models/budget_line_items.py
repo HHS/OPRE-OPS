@@ -34,12 +34,7 @@ from typing_extensions import Any, override
 
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
-from models.change_requests import (
-    AgreementChangeRequest,
-    BudgetLineItemChangeRequest,
-    ChangeRequestStatus,
-    ChangeRequestType,
-)
+from models.change_requests import AgreementChangeRequest, BudgetLineItemChangeRequest
 
 
 class BudgetLineItemStatus(str, Enum):
@@ -329,8 +324,7 @@ class BudgetLineItem(BaseModel):
 
         queries = [
             select(BudgetLineItemChangeRequest).where(
-                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.in_review_filter(),
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
         ]
@@ -339,8 +333,7 @@ class BudgetLineItem(BaseModel):
         if agreement_id:
             queries.append(
                 select(AgreementChangeRequest).where(
-                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.in_review_filter(),
                     AgreementChangeRequest.agreement_id == agreement_id,
                 )
             )
