@@ -3,43 +3,17 @@ import App from "../../App";
 import Tabs from "../../components/UI/Tabs";
 import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
 import goldDiagonal from "../../images/gold-diagnal.png";
-import ReleaseNotesSummaryCard from "./release-notes/ReleaseNotesSummaryCard";
-import useWelcomeMessage from "./useWelcomeMessage";
-import CurrentlyDevelopingCard from "./CurrentlyDevelopingCard";
-
-const HomepageRedesign = () => {
-    const { greeting } = useWelcomeMessage();
-    return (
-        <App>
-            <h1
-                className="margin-0 text-brand-primary font-sans-2xl margin-top-4 margin-bottom-4"
-                data-cy="welcome-message"
-                data-testid="welcome-message"
-            >
-                {greeting}! Here&apos;s the latest.
-            </h1>
-            <div className="display-flex flex-justify flex-align-center padding-y-1">
-                <h2 className="margin-0">OPS Updates</h2>
-            </div>
-            <p>
-                This is a bi-weekly summary of the current OPS status including what&apos;s new, what&apos;s coming up
-                next, and what&apos;s available today.
-            </p>
-            <div
-                className="display-flex"
-                style={{ gap: "1.5rem" }}
-            >
-                <ReleaseNotesSummaryCard />
-                <CurrentlyDevelopingCard />
-            </div>
-            <Outlet />
-        </App>
-    );
-};
 
 const Home = () => {
+    // Redesign: the Home layout is just chrome around the routed content. The landing
+    // content lives in the index route (HomeIndex -> HomeLanding), so child routes
+    // (/release-notes, /next) render on their own without the landing stacked above them.
     if (isHomepageRedesignEnabled()) {
-        return <HomepageRedesign />;
+        return (
+            <App>
+                <Outlet />
+            </App>
+        );
     }
 
     return (

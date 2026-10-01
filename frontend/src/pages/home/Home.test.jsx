@@ -9,15 +9,8 @@ vi.mock("../../helpers/featureFlags", () => ({
 
 import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
 
-const storage = new Map();
-
 beforeEach(() => {
-    storage.clear();
     vi.clearAllMocks();
-    localStorage.getItem.mockImplementation((key) => storage.get(key) ?? null);
-    localStorage.setItem.mockImplementation((key, value) => storage.set(key, String(value)));
-    localStorage.removeItem.mockImplementation((key) => storage.delete(key));
-    localStorage.clear.mockImplementation(() => storage.clear());
     isHomepageRedesignEnabled.mockReturnValue(false);
 });
 
@@ -55,48 +48,21 @@ describe("Home", () => {
     });
 
     describe("feature flag: isHomepageRedesignEnabled", () => {
-        it("does not render welcome message or cards when flag is off", () => {
+        it("renders hero and tabs when flag is off", () => {
             isHomepageRedesignEnabled.mockReturnValue(false);
             renderWithProviders(<Home />);
-            expect(screen.queryByTestId("welcome-message")).not.toBeInTheDocument();
-            expect(screen.queryByText("OPS Updates")).not.toBeInTheDocument();
-            expect(screen.queryByText("Currently Developing")).not.toBeInTheDocument();
             expect(screen.getByText("Plan, track & collaborate")).toBeInTheDocument();
             expect(screen.getByText("About OPS")).toBeInTheDocument();
         });
 
-        it("renders welcome message and cards when flag is on", () => {
+        it("renders only the routed outlet (no hero or tabs) when flag is on", () => {
             isHomepageRedesignEnabled.mockReturnValue(true);
-            renderWithProviders(<Home />, {
-                preloadedState: {
-                    auth: { activeUser: { id: 1, first_name: "Alex" }, isLoggedIn: true }
-                }
-            });
-            expect(screen.getByTestId("welcome-message")).toBeInTheDocument();
-            expect(screen.getByText("OPS Updates")).toBeInTheDocument();
-            expect(screen.getByText("Currently Developing")).toBeInTheDocument();
-        });
-
-        it("renders generic welcome when flag is on but no first_name", () => {
-            isHomepageRedesignEnabled.mockReturnValue(true);
-            renderWithProviders(<Home />, {
-                preloadedState: {
-                    auth: { activeUser: { id: 1, first_name: null }, isLoggedIn: true }
-                }
-            });
-            expect(screen.getByTestId("welcome-message")).toHaveTextContent("Welcome");
-        });
-
-        it("renders 'Welcome back' greeting for a returning user", () => {
-            storage.set("hasVisited_1", "true");
-            isHomepageRedesignEnabled.mockReturnValue(true);
-            renderWithProviders(<Home />, {
-                preloadedState: {
-                    auth: { activeUser: { id: 1, first_name: "Alex" }, isLoggedIn: true }
-                }
-            });
-            expect(screen.getByTestId("welcome-message")).toHaveTextContent(/Welcome back/);
-            storage.delete("hasVisited_1");
+            renderWithProviders(<Home />);
+            // The redesign layout drops the hero + tabs; landing content comes from the
+            // index route (HomeIndex), not the Home layout itself.
+            expect(screen.queryByText("Plan, track & collaborate")).not.toBeInTheDocument();
+            expect(screen.queryByText("About OPS")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("welcome-message")).not.toBeInTheDocument();
         });
     });
 });

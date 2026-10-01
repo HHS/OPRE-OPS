@@ -21,9 +21,8 @@ export const authSlice = createSlice({
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             localStorage.removeItem("activeProvider");
-            Object.keys(localStorage)
-                .filter((k) => k.startsWith("hasVisited_"))
-                .forEach((k) => localStorage.removeItem(k));
+            // Intentionally keep `hasVisited_<userId>` markers so returning users
+            // still see the "Welcome back" greeting after a logout/login cycle.
             Cookies.remove("access_token", { path: "/" });
         },
         setUserDetails: (state, action) => {
