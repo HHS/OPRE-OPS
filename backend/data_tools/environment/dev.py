@@ -33,3 +33,11 @@ class DevConfig(DataToolsConfig):
     @property
     def cleanup_user_sessions_cutoff_days(self) -> str | None:
         return "90"
+
+    @property
+    def acs_connection_string(self) -> str | None:
+        return None
+
+    @property
+    def email_sender_address(self) -> str | None:
+        return None

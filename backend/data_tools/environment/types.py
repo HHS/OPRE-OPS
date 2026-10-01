@@ -57,3 +57,26 @@ class DataToolsConfig(Protocol):
         """
         Returns the number of days after which the user sessions should be deleted.
         """
+
+    @property
+    @abstractmethod
+    def acs_connection_string(self) -> str | None:
+        """
+        Returns the Azure Communication Services connection string used to send
+        notification emails (currently consumed by disable_users). Returns None
+        when email isn't configured (local/dev/pytest). AzureConfig instead raises
+        if unset, since it's expected to always be configured in deployed environments.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def email_sender_address(self) -> str | None:
+        """
+        Returns the verified ACS sender ("From") address for notification emails,
+        e.g. "DoNotReply@<verified-domain>" (currently consumed by disable_users).
+        Returns None when email isn't configured (local/dev/pytest). AzureConfig
+        instead raises if unset, since it's expected to always be configured in
+        deployed environments.
+        """
+        ...

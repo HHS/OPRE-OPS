@@ -63,3 +63,21 @@ class AzureConfig(DataToolsConfig):
             raise ValueError("Missing environment variable for Cleanup User Sessions Cutoff_Days.")
 
         return cutoff_days
+
+    @property
+    def acs_connection_string(self) -> str | None:
+        connection_string = os.getenv("ACS_CONNECTION_STRING")
+
+        if not connection_string:
+            raise ValueError("Missing environment variable for ACS_CONNECTION_STRING.")
+
+        return connection_string
+
+    @property
+    def email_sender_address(self) -> str | None:
+        sender_address = os.getenv("EMAIL_SENDER_ADDRESS")
+
+        if not sender_address:
+            raise ValueError("Missing environment variable for EMAIL_SENDER_ADDRESS.")
+
+        return sender_address

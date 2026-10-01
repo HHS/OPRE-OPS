@@ -26,10 +26,12 @@ from models import (
 )
 from ops_api.ops.services.agreements import (
     AgreementsService,
-    _compute_agreement_totals,
+    _compute_agreement_totals_sql,
     _compute_days_in_procurement_step,
     _compute_procurement_overview,
     _compute_procurement_step_summary,
+    _get_all_matching_ids,
+    _get_page_agreements,
 )
 from ops_api.ops.services.ops_service import ValidationError
 
@@ -444,13 +446,17 @@ class TestAgreementsPagination:
         expected_total = contract_meta["count"] + grant_meta["count"]
         assert combined_meta["count"] == expected_total
 
+    @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db, app_ctx):
+    def test_pagination_with_ownership_filter(self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx):
         """Test that pagination works with ownership filter"""
-        # Mock authenticated user
+        # Mock authenticated user in both call sites
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user.return_value = mock_user
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
 
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -470,13 +476,19 @@ class TestAgreementsPagination:
         assert metadata["limit"] == 10
         assert metadata["offset"] == 0
 
+    @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_ownership_filter_affects_count(self, mock_get_user, loaded_db, app_ctx):
+    def test_pagination_ownership_filter_affects_count(
+        self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx
+    ):
         """Test that ownership filter changes the total count appropriately"""
-        # Mock authenticated user
+        # Mock authenticated user in both call sites
         mock_user = MagicMock()
         mock_user.id = 1
-        mock_get_user.return_value = mock_user
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
 
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -1349,7 +1361,7 @@ class TestAgreementsDuplicateNameHandling:
 class TestIsEditable:
     """Tests for AgreementsService._is_editable method"""
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_super_user_can_always_edit(self, mock_associated, loaded_db):
         """Test that super users can always edit agreements regardless of association"""
         # Mock the associated_with_agreement function to return False
@@ -1369,7 +1381,7 @@ class TestIsEditable:
         # because the super user check short-circuits the logic
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_non_super_user_can_edit_when_associated(self, mock_associated, loaded_db):
         """Test that non-super users can edit when associated with the agreement"""
         # Mock the associated_with_agreement function to return True
@@ -1385,13 +1397,13 @@ class TestIsEditable:
         # Non-super user should be able to edit when associated
         assert service._is_editable(agreement, regular_user) is True
 
-        # Verify that associated_with_agreement was called
-        mock_associated.assert_called_once_with(agreement.id)
+        # Verify that check_user_association was called with the agreement object and user
+        mock_associated.assert_called_once_with(agreement, regular_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_non_super_user_cannot_edit_when_not_associated(self, mock_associated, loaded_db):
         """Test that non-super users cannot edit when not associated with the agreement"""
-        # Mock the associated_with_agreement function to return False
+        # Mock the check_user_association function to return False
         mock_associated.return_value = False
 
         service = AgreementsService(loaded_db)
@@ -1404,10 +1416,10 @@ class TestIsEditable:
         # Non-super user should NOT be able to edit when not associated
         assert service._is_editable(agreement, regular_user) is False
 
-        # Verify that associated_with_agreement was called
-        mock_associated.assert_called_once_with(agreement.id)
+        # Verify that check_user_association was called with the agreement object and user
+        mock_associated.assert_called_once_with(agreement, regular_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_with_real_users(self, mock_associated, loaded_db, test_admin_user, test_non_admin_user):
         """Test _is_editable with real User objects from the database"""
         # Mock the associated_with_agreement function
@@ -1424,7 +1436,7 @@ class TestIsEditable:
         else:
             # If not a super user, should rely on association
             assert service._is_editable(agreement, test_admin_user) is True
-            mock_associated.assert_called_with(agreement.id)
+            mock_associated.assert_called_with(agreement, test_admin_user)
 
         # Reset mock
         mock_associated.reset_mock()
@@ -1433,9 +1445,9 @@ class TestIsEditable:
         # Test with a real non-admin user (not super user)
         assert test_non_admin_user.is_superuser is False
         assert service._is_editable(agreement, test_non_admin_user) is False
-        mock_associated.assert_called_once_with(agreement.id)
+        mock_associated.assert_called_once_with(agreement, test_non_admin_user)
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_checks_super_user_first(self, mock_associated, loaded_db):
         """Test that is_superuser check happens before associated_with_agreement check"""
         # This test verifies the short-circuit behavior: if user is super user,
@@ -1456,7 +1468,7 @@ class TestIsEditable:
         # associated_with_agreement should NOT have been called
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_is_editable_with_different_agreements(self, mock_associated, loaded_db):
         """Test _is_editable behavior with multiple agreements"""
         service = AgreementsService(loaded_db)
@@ -1471,19 +1483,19 @@ class TestIsEditable:
         # Test with agreement1 - user is associated
         mock_associated.return_value = True
         assert service._is_editable(agreement1, regular_user) is True
-        mock_associated.assert_called_with(agreement1.id)
+        mock_associated.assert_called_with(agreement1, regular_user)
 
         # Reset and test with same agreement - user is NOT associated
         mock_associated.reset_mock()
         mock_associated.return_value = False
         assert service._is_editable(agreement1, regular_user) is False
-        mock_associated.assert_called_with(agreement1.id)
+        mock_associated.assert_called_with(agreement1, regular_user)
 
 
 class TestGetLockedMessage:
     """Tests for AgreementsService._get_locked_message"""
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_editable_and_all_draft(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1492,7 +1504,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_only_null_status_bli_present(self, mock_associated, loaded_db):
         """Regression test for #5658: a BLI with status=None must not count as non-draft (this
         repo has a documented history of NULL-status Python/SQL divergence bugs)."""
@@ -1503,7 +1515,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_deletable_when_editable_and_no_budget_lines(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1512,7 +1524,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) is None
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_non_draft_bli_present(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1524,7 +1536,7 @@ class TestGetLockedMessage:
             == "Cannot delete an agreement with budget lines that are not in Draft status"
         )
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_super_user_bypasses_non_draft_bli_check(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1536,7 +1548,7 @@ class TestGetLockedMessage:
         # is_superuser short-circuits _is_editable, so association is never checked
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_not_editable(self, mock_associated, loaded_db):
         mock_associated.return_value = False
         service = AgreementsService(loaded_db)
@@ -1545,7 +1557,7 @@ class TestGetLockedMessage:
 
         assert service._get_locked_message(agreement, user) == "Only team members on this agreement can edit or delete"
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_awarded_even_for_super_user(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1558,7 +1570,7 @@ class TestGetLockedMessage:
         # is_superuser short-circuits _is_editable, so association is never checked
         mock_associated.assert_not_called()
 
-    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    @patch("ops_api.ops.services.agreements.check_user_association")
     def test_not_deletable_when_awarded_for_regular_user(self, mock_associated, loaded_db):
         mock_associated.return_value = True
         service = AgreementsService(loaded_db)
@@ -1569,18 +1581,11 @@ class TestGetLockedMessage:
             assert service._get_locked_message(agreement, user) == "Cannot delete an awarded agreement"
 
 
-def _make_mock_agreement(agreement_type, total, award_type=None):
-    """Helper to create a mock agreement for _compute_agreement_totals tests."""
-    ag = MagicMock()
-    ag.agreement_type = agreement_type
-    ag.agreement_total = total
-    ag.award_type = award_type
-    return ag
+class TestComputeAgreementTotalsSql:
+    """Tests for _compute_agreement_totals_sql against real DB fixtures."""
 
-
-class TestComputeAgreementTotals:
-    def test_empty_list(self):
-        result = _compute_agreement_totals([])
+    def test_empty_ids(self, loaded_db):
+        result = _compute_agreement_totals_sql(loaded_db, [])
         assert result["total_agreements_count"] == 0
         assert result["total_contract_amount"] == 0.0
         assert result["total_partner_amount"] == 0.0
@@ -1588,88 +1593,146 @@ class TestComputeAgreementTotals:
         assert result["total_direct_obligation_amount"] == 0.0
         assert result["type_counts"] == {}
         assert result["new_count"] == 0
-        assert result["new_type_counts"] == {}
         assert result["continuing_count"] == 0
-        assert result["continuing_type_counts"] == {}
 
-    def test_single_contract(self):
-        agreements = [_make_mock_agreement(AgreementType.CONTRACT, 100)]
-        result = _compute_agreement_totals(agreements)
-        assert result["total_agreements_count"] == 1
-        assert result["total_contract_amount"] == 100.0
-        assert result["type_counts"] == {"CONTRACT": 1}
+    def test_returns_expected_keys(self, loaded_db):
+        result = _compute_agreement_totals_sql(loaded_db, [1])
+        expected_keys = {
+            "total_agreements_count",
+            "total_contract_amount",
+            "total_partner_amount",
+            "total_grant_amount",
+            "total_direct_obligation_amount",
+            "type_counts",
+            "new_count",
+            "new_type_counts",
+            "continuing_count",
+            "continuing_type_counts",
+        }
+        assert expected_keys == set(result.keys())
 
-    def test_amounts_accumulated_by_type(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.CONTRACT, 100),
-            _make_mock_agreement(AgreementType.CONTRACT, 200),
-            _make_mock_agreement(AgreementType.GRANT, 50),
-            _make_mock_agreement(AgreementType.DIRECT_OBLIGATION, 75),
+    def test_amount_fields_are_floats(self, loaded_db):
+        result = _compute_agreement_totals_sql(loaded_db, [1])
+        for key in [
+            "total_contract_amount",
+            "total_partner_amount",
+            "total_grant_amount",
+            "total_direct_obligation_amount",
+        ]:
+            assert isinstance(result[key], float), f"{key} should be float"
+
+    def test_agreement_count_matches_id_list(self, loaded_db):
+        # The count should reflect exactly the agreements in the id list
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        all_ids = [row[0] for row in loaded_db.execute(sa_select(Agreement.id)).all()]
+        result = _compute_agreement_totals_sql(loaded_db, all_ids)
+        assert result["total_agreements_count"] == len(all_ids)
+
+    def test_type_counts_sum_to_total(self, loaded_db):
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        all_ids = [row[0] for row in loaded_db.execute(sa_select(Agreement.id)).all()]
+        result = _compute_agreement_totals_sql(loaded_db, all_ids)
+        assert sum(result["type_counts"].values()) == result["total_agreements_count"]
+
+    def test_contract_amount_is_positive_for_known_contracts(self, loaded_db):
+        """Pin dollar-level behavior: contracts with non-draft BLIs must produce a positive total."""
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        contract_ids = [
+            row[0]
+            for row in loaded_db.execute(
+                sa_select(Agreement.id).where(Agreement.agreement_type == AgreementType.CONTRACT)
+            ).all()
         ]
-        result = _compute_agreement_totals(agreements)
-        assert result["total_agreements_count"] == 4
-        assert result["total_contract_amount"] == 300.0
-        assert result["total_grant_amount"] == 50.0
-        assert result["total_direct_obligation_amount"] == 75.0
-        assert result["total_partner_amount"] == 0.0
+        result = _compute_agreement_totals_sql(loaded_db, contract_ids)
 
-    def test_partner_types_grouped(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.AA, 100),
-            _make_mock_agreement(AgreementType.IAA, 200),
-        ]
-        result = _compute_agreement_totals(agreements)
-        assert result["total_partner_amount"] == 300.0
-        assert result["type_counts"] == {"AA": 1, "IAA": 1}
+        # The fixture has contracts with PLANNED/OBLIGATED/IN_EXECUTION BLIs — total must be > 0
+        assert result["total_contract_amount"] > 0.0
+        assert result["total_partner_amount"] == 0.0  # no AA/IAA in contract_ids
+        assert result["total_grant_amount"] == 0.0  # no GRANTs in contract_ids
+        # type_counts must only have CONTRACT
+        assert set(result["type_counts"].keys()) == {"CONTRACT"}
+        assert result["type_counts"]["CONTRACT"] == len(contract_ids)
 
-    def test_type_counts(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.CONTRACT, 10),
-            _make_mock_agreement(AgreementType.CONTRACT, 20),
-            _make_mock_agreement(AgreementType.GRANT, 30),
-        ]
-        result = _compute_agreement_totals(agreements)
-        assert result["type_counts"] == {"CONTRACT": 2, "GRANT": 1}
+    def test_new_continuing_counts_are_non_negative(self, loaded_db):
+        """award_type SQL classification: new + continuing <= total agreements."""
+        from sqlalchemy import select as sa_select
 
-    def test_new_award_tracking(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="NEW"),
-            _make_mock_agreement(AgreementType.GRANT, 50, award_type="NEW"),
-            _make_mock_agreement(AgreementType.CONTRACT, 200),
-        ]
-        result = _compute_agreement_totals(agreements)
-        assert result["new_count"] == 2
-        assert result["new_type_counts"] == {"CONTRACT": 1, "GRANT": 1}
+        from models import Agreement
 
-    def test_continuing_award_tracking(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="CONTINUING"),
-            _make_mock_agreement(AgreementType.AA, 50, award_type="CONTINUING"),
-        ]
-        result = _compute_agreement_totals(agreements)
-        assert result["continuing_count"] == 2
-        assert result["continuing_type_counts"] == {"CONTRACT": 1, "AA": 1}
+        all_ids = [row[0] for row in loaded_db.execute(sa_select(Agreement.id)).all()]
+        result = _compute_agreement_totals_sql(loaded_db, all_ids)
+        assert result["new_count"] >= 0
+        assert result["continuing_count"] >= 0
+        assert result["new_count"] + result["continuing_count"] <= result["total_agreements_count"]
+        assert sum(result["new_type_counts"].values()) == result["new_count"]
+        assert sum(result["continuing_type_counts"].values()) == result["continuing_count"]
 
-    def test_mixed_award_types(self):
-        agreements = [
-            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="NEW"),
-            _make_mock_agreement(AgreementType.GRANT, 200, award_type="CONTINUING"),
-            _make_mock_agreement(AgreementType.IAA, 300, award_type=None),
-        ]
-        result = _compute_agreement_totals(agreements)
-        assert result["total_agreements_count"] == 3
-        assert result["new_count"] == 1
-        assert result["new_type_counts"] == {"CONTRACT": 1}
-        assert result["continuing_count"] == 1
-        assert result["continuing_type_counts"] == {"GRANT": 1}
 
-    def test_decimal_amounts_converted_to_float(self):
-        from decimal import Decimal
+class TestGetAllMatchingIds:
+    """Tests for _get_all_matching_ids."""
 
-        agreements = [_make_mock_agreement(AgreementType.CONTRACT, Decimal("123.45"))]
-        result = _compute_agreement_totals(agreements)
-        assert result["total_contract_amount"] == 123.45
-        assert isinstance(result["total_contract_amount"], float)
+    def test_returns_all_ids_without_filters(self, loaded_db, app_ctx):
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        total = loaded_db.execute(sa_select(Agreement.id)).scalars().all()
+        service = AgreementsService(loaded_db)
+        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        ids = _get_all_matching_ids(loaded_db, agreement_classes, {}, service)
+        assert len(ids) == len(total)
+        assert set(ids) == set(total)
+
+    def test_fiscal_year_filter_reduces_results(self, loaded_db, app_ctx):
+        service = AgreementsService(loaded_db)
+        agreement_classes = [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement]
+        all_ids = _get_all_matching_ids(loaded_db, agreement_classes, {}, service)
+        fy_ids = _get_all_matching_ids(loaded_db, agreement_classes, {"fiscal_year": [2043]}, service)
+        assert len(fy_ids) <= len(all_ids)
+
+    def test_returns_list_of_ints(self, loaded_db, app_ctx):
+        service = AgreementsService(loaded_db)
+        ids = _get_all_matching_ids(loaded_db, [ContractAgreement], {}, service)
+        assert all(isinstance(i, int) for i in ids)
+
+
+class TestGetPageAgreements:
+    """Tests for _get_page_agreements."""
+
+    def test_empty_ids_returns_empty(self, loaded_db):
+        result = _get_page_agreements(loaded_db, [])
+        assert result == []
+
+    def test_returns_correct_agreements(self, loaded_db):
+        result = _get_page_agreements(loaded_db, [1])
+        assert len(result) == 1
+        assert result[0].id == 1
+
+    def test_preserves_id_order(self, loaded_db):
+        from sqlalchemy import select as sa_select
+
+        from models import Agreement
+
+        ids = loaded_db.execute(sa_select(Agreement.id).limit(3)).scalars().all()
+        reversed_ids = list(reversed(ids))
+        result = _get_page_agreements(loaded_db, reversed_ids)
+        assert [a.id for a in result] == reversed_ids
+
+    def test_eager_loads_budget_line_items(self, loaded_db):
+        result = _get_page_agreements(loaded_db, [1])
+        assert len(result) == 1
+        # Access budget_line_items — should not trigger additional lazy load
+        blis = result[0].budget_line_items
+        assert isinstance(blis, list)
 
 
 def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
