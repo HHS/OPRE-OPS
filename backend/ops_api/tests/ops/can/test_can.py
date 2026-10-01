@@ -625,7 +625,9 @@ def test_can_active_years_five_year_can(loaded_db):
     loaded_db.commit()
 
 
-def test_can_active_years_zero_year_can(loaded_db):
+def test_can_active_years_zero_year_can(loaded_db, mocker):
+    date_mock = mocker.patch("models.cans.date")
+    date_mock.today.return_value = datetime.date(2026, 8, 1)
     can = CAN(
         portfolio_id=1,
         number="G99TEST1",
