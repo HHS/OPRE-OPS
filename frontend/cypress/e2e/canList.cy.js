@@ -17,6 +17,9 @@ const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
 };
 
 beforeEach(() => {
+    // Pin "today" so the rolling fiscal-year dropdown (current FY +/- 5) keeps FY 2021 selectable,
+    // matching the fixed FY 2021 fixture data this spec asserts against.
+    cy.clock(new Date(2026, 7, 1), ["Date"]);
     testLogin("division-director");
     cy.visit("/cans").wait(2000);
     cy.get("#fiscal-year-select").select("2023");
