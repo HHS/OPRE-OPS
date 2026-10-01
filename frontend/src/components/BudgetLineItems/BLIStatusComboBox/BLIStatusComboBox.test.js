@@ -1,6 +1,7 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import BLIStatusComboBox from "./BLIStatusComboBox";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -37,11 +38,18 @@ describe("BLIStatusComboBox", () => {
 
     it("renders and allows selecting the In Review option when it's passed in statusOptions", () => {
         const setSelectedBLIStatus = mockFn;
+        const statusOptions = [
+            BLI_STATUS.DRAFT,
+            BLI_STATUS.PLANNED,
+            BLI_STATUS.EXECUTING,
+            BLI_STATUS.OBLIGATED,
+            BLI_STATUS.IN_REVIEW
+        ];
         const { getByText, container } = render(
             <BLIStatusComboBox
                 selectedBLIStatus={null}
                 setSelectedBLIStatus={setSelectedBLIStatus}
-                statusOptions={["DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "IN_REVIEW"]}
+                statusOptions={statusOptions}
             />
         );
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
@@ -51,9 +59,11 @@ describe("BLIStatusComboBox", () => {
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("In Review"));
+        // id reflects statusOptions position (index + 1), not a hardcoded value, so
+        // reordering/inserting a status above IN_REVIEW can't silently desync this test.
         expect(setSelectedBLIStatus).toHaveBeenCalledWith([
             {
-                id: 5,
+                id: statusOptions.indexOf(BLI_STATUS.IN_REVIEW) + 1,
                 title: "In Review",
                 status: "IN_REVIEW"
             }

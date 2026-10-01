@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterTags from "./BLIFilterTags";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 // Mock child components
 vi.mock("../../../components/UI/FilterTags/FilterTags", () => ({
@@ -274,8 +275,8 @@ describe("BLIFilterTags", () => {
         const filters = {
             ...defaultFilters,
             bliStatus: [
-                { id: 1, title: "DRAFT" },
-                { id: 2, title: "In Review" }
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
             ]
         };
 
@@ -286,9 +287,9 @@ describe("BLIFilterTags", () => {
             />
         );
 
-        expect(screen.getByTestId("remove-tag-In Review")).toBeInTheDocument();
+        expect(screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`)).toBeInTheDocument();
 
-        const removeButton = screen.getByTestId("remove-tag-In Review");
+        const removeButton = screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`);
         fireEvent.click(removeButton);
 
         await waitFor(() => {
@@ -298,13 +299,13 @@ describe("BLIFilterTags", () => {
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback({
             bliStatus: [
-                { id: 1, title: "DRAFT" },
-                { id: 2, title: "In Review" }
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
             ]
         });
 
         expect(result.bliStatus).toHaveLength(1);
-        expect(result.bliStatus[0].title).toBe("DRAFT");
+        expect(result.bliStatus[0].title).toBe(BLI_STATUS.DRAFT);
     });
 
     it("renders budget range tag", () => {
