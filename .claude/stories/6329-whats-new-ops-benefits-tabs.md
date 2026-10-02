@@ -11,11 +11,11 @@ Build the "What's New" and "OPS Benefits" tabs for the redesigned, feature-flagg
 
 ## Acceptance Criteria
 
-- [ ] "What's New" tab renders per the updated Figma design
-- [ ] User can see information related to what's new
+- [x] "What's New" tab renders per the updated Figma design
+- [x] User can see information related to what's new
 - [ ] User can easily discern the status of OPS development
-- [ ] "OPS Benefits" tab renders per the updated Figma design
-- [ ] User can see information related to OPS's benefits
+- [x] "OPS Benefits" tab renders per the updated Figma design
+- [x] User can see information related to OPS's benefits
 
 ## Technical Details
 
