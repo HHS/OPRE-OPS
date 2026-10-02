@@ -64,7 +64,27 @@ The second one matters more than it looks: when it is missing, `primary_access_k
 plan in that case, but only when `usageMetricsEmailRecipients` is non-empty — with no recipients an
 empty key is harmless and the guard stays out of the way.
 
+**Open question, to settle on the first dev apply:** with no recipients and no `listKeys`, the job is
+created with an *empty* `storage-account-key` secret. The provider accepts that, but it's unconfirmed
+whether the Container Apps API does. If it rejects it, the stack should add the secret and the
+`FILE_STORAGE_ACCOUNT_KEY` env var only when the key is non-empty. Either way, the application
+already treats an unset or empty `FILE_STORAGE_ACCOUNT_KEY` as "email not configured".
+
 ## Enabling an environment
+
+⚠️ **Order matters: deploy this repo's code before applying the stack.** The job runs
+`ghcr.io/hhs/opre-ops/ops-data-tools:<env>`, and until OPRE-OPS#5960 is merged and deployed to that
+environment, the image has no `scripts/usage_metrics.sh` or `src/usage_metrics/`. Applying the stack
+first creates a job whose entrypoint doesn't exist, so every scheduled run fails. Per environment
+(staging first, then prod):
+
+1. Merge OPRE-OPS#5960 and let it deploy, so `ops-data-tools:<env>` contains the new code.
+2. Merge [OPRE-OPS-Data#64](https://github.com/HHS/OPRE-OPS-Data/pull/64) (any time; it doesn't
+   auto-apply).
+3. `terragrunt plan` (expect `1 to add, 0 to change, 0 to destroy`), then `terragrunt apply`.
+
+The reverse order is harmless for the deploy workflows: before the job exists they log "not found;
+skipping", and the first deploy after the apply pins the job to that commit's image.
 
 ```bash
 cd infra/cloud/azure/<subscription>/eus/[<env>/]deployments/usage-metrics
@@ -94,7 +114,9 @@ az containerapp job show -n opre-ops-stg-app-usage-metrics -g opre-ops-stg-app-r
 The stack lands in dev, stg **and** prod. A non-empty recipient list in a lower environment means UX
 receives multiple emails per sprint-end with links to different datasets. Intended end state:
 **empty in dev, one internal test address in stg, the real list in prod only.** Email delivery
-no-ops cleanly (the report still uploads) whenever the list is empty.
+no-ops cleanly (the report still uploads) whenever the list is empty. As of OPRE-OPS-Data#64,
+`usageMetricsEmailRecipients` is `""` in **all three** environments, so no email is sent anywhere
+until someone sets it.
 
 ## Test-firing without waiting for the sprint-end Friday
 
@@ -226,23 +248,22 @@ Two consequences worth knowing:
 - Activity after ~18:50 Central on the sprint's last Friday falls into the *next* sprint's report.
   Nothing is lost (the 14-day windows tile exactly), it just lands one report later.
 
-## Cutting over from the hand-created staging job
+## Cutover from the hand-created staging job (done)
 
-Staging has a pre-existing `usage-metrics-job` created by the deprecated script. It runs on a
-**Monday** cron with a 7-day lookback (it predates the sprint schedule), and it has been producing a
-report successfully every week. Before deleting it:
+Staging previously ran a `usage-metrics-job` created by the deprecated script, on a **Monday** cron
+(`50 4 * * 1`) with a 7-day lookback. It completed 4 successful runs (2026-09-07 to 2026-09-28) and
+has **already been deleted**, ahead of the Terraform apply, as agreed in review of
+[OPRE-OPS-Data#64](https://github.com/HHS/OPRE-OPS-Data/pull/64). There is nothing left to delete.
 
-1. **Confirm with UX that nobody is consuming the Monday weekly output.** The cutover changes the
-   window from 7 to 14 days and moves the run to the sprint-end Friday, so there is a short gap.
-2. **Capture `az containerapp job execution list` output** into the infra PR. Executions are child
-   resources and are lost with the job. Blobs under `opreopsstgappsa/data` are untouched. Log
-   Analytics logs survive but stay keyed to the old job name, so saved queries need both names.
-3. Delete it only after the new stack applies and produces a green forced run:
+What that means now:
 
-```bash
-az containerapp job delete -n usage-metrics-job -g opre-ops-stg-app-rg
-```
+- **Staging has no usage-metrics job** until the `deployments/usage-metrics` stack is applied there.
+- Blobs under `opreopsstgappsa/data` are untouched, so the old weekly reports remain. Log Analytics
+  logs for the old runs stay keyed to the name `usage-metrics-job`, so saved queries need both names.
+- **There is a reporting gap.** The window moves from 7 to 14 days and the run moves to the
+  sprint-end Friday; the first report on the new schedule is **Friday 2026-10-09** (if the stack is
+  applied by then). Confirm with UX that nobody depends on the Monday weekly output.
 
-Import is not a workable alternative: `name` is `ForceNew` in the provider, so keeping the old name
-and adopting the convention are mutually exclusive, and the imported resource would diverge on cron,
-lookback, retry limit, six env vars, two secrets and the image anyway.
+It was deleted rather than imported because `name` is `ForceNew` in the provider, so keeping the old
+name and adopting the convention are mutually exclusive, and the imported resource would have
+diverged on cron, lookback, retry limit, six env vars, two secrets and the image anyway.
