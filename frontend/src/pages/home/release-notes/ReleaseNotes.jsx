@@ -1,9 +1,9 @@
 import Accordion from "../../../components/UI/Accordion";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { RELEASE_NOTES_TYPES } from "./constants";
 import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
 import ReleaseNotesCards from "./ReleaseNotesCards";
+import { getReleaseTotals } from "./releaseNotes.helpers";
 
 // NOTE: if we decide to do dynamic implementation of ReleaseNotes we can replace the static data with the API response from useGetReleasesQuery from `api/github.js`
 const ReleaseNotes = () => {
@@ -18,14 +18,7 @@ const ReleaseNotes = () => {
             <ReleaseNotesCards
                 lastVersion={latestRelease.version}
                 releaseDate={formatDateToMonthDayYear(latestRelease.releaseDate)}
-                totalReleaseChanges={latestRelease.changes.length}
-                totalFixes={latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.FIXES).length}
-                totalNewFeatures={
-                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.NEW_FEATURE).length
-                }
-                totalImprovements={
-                    latestRelease.changes.filter((change) => change.type === RELEASE_NOTES_TYPES.IMPROVEMENTS).length
-                }
+                {...getReleaseTotals(latestRelease)}
             />
             <h2>Release Notes: {latestRelease.version}</h2>
             <section

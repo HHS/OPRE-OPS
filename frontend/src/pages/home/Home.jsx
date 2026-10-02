@@ -1,9 +1,21 @@
 import { Outlet } from "react-router-dom";
 import App from "../../App";
 import Tabs from "../../components/UI/Tabs";
+import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
 import goldDiagonal from "../../images/gold-diagnal.png";
 
 const Home = () => {
+    // Redesign: the Home layout is just chrome around the routed content. The landing
+    // content lives in the index route (HomeIndex -> HomeLanding), so child routes
+    // (/release-notes, /next) render on their own without the landing stacked above them.
+    if (isHomepageRedesignEnabled()) {
+        return (
+            <App>
+                <Outlet />
+            </App>
+        );
+    }
+
     return (
         <App>
             <section
