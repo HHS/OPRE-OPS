@@ -10,6 +10,10 @@ import Tabs from "../../components/UI/Tabs";
  */
 const HomeLanding = () => (
     <>
+        {/* Visually hidden page-level heading — the redesign has no visible h1 until the
+            welcome message (from #6338) lands here; this keeps the page a11y-compliant
+            (one h1 per page) in the meantime, since the tab panels below start at h2. */}
+        <h1 className="usa-sr-only">Home</h1>
         <Tabs
             paths={[
                 { pathName: "/", label: "What's New" },

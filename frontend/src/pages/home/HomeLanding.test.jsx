@@ -16,4 +16,12 @@ describe("HomeLanding", () => {
 
         expect(screen.getByText("What's New").className).toContain("listItemSelected");
     });
+
+    it("renders a visually-hidden page-level h1 so the page keeps exactly one h1", () => {
+        renderWithProviders(<HomeLanding />);
+
+        const heading = screen.getByRole("heading", { level: 1 });
+        expect(heading).toBeInTheDocument();
+        expect(heading).toHaveClass("usa-sr-only");
+    });
 });
