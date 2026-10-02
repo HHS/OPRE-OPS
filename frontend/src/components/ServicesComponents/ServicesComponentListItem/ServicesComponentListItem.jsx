@@ -54,6 +54,7 @@ function ServicesComponentListItem({
             <section className="display-flex flex-justify">
                 <h2
                     className="margin-0"
+                    style={{ fontSize: "16px" }}
                     data-cy={`${title}-services-component-item-title`}
                 >
                     {title}
