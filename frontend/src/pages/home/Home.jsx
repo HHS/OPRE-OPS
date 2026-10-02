@@ -1,9 +1,20 @@
 import { Outlet } from "react-router-dom";
 import App from "../../App";
 import Tabs from "../../components/UI/Tabs";
+import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
 import goldDiagonal from "../../images/gold-diagnal.png";
 
 const Home = () => {
+    // Redesign: the tab nav lives in HomeLanding (nested under the index route) instead
+    // of here, since the redesign has no hero and HomeLanding's own tabs replace these.
+    if (isHomepageRedesignEnabled()) {
+        return (
+            <App>
+                <Outlet />
+            </App>
+        );
+    }
+
     return (
         <App>
             <section

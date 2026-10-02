@@ -19,9 +19,13 @@ import ProjectFunding from "./pages/projects/detail/ProjectFunding";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
+import { isHomepageRedesignEnabled } from "./helpers/featureFlags";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
+import HomeLanding from "./pages/home/HomeLanding";
 import Login from "./pages/Login";
+import OpsAtAGlanceContent from "./pages/home/ops-at-a-glance/OpsAtAGlanceContent";
+import OpsBenefitsContent from "./pages/home/ops-benefits/OpsBenefitsContent";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
@@ -43,6 +47,7 @@ import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
+import WhatsNewContent from "./pages/home/whats-new/WhatsNewContent";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
@@ -71,18 +76,37 @@ const router = createBrowserRouter(
                 path="/"
                 element={<Home />}
             >
-                <Route
-                    path="" // default for home page
-                    element={<BenefitsGrid />}
-                />
-                <Route
-                    path="release-notes"
-                    element={<ReleaseNotes />}
-                />
-                <Route
-                    path="next"
-                    element={<WhatsNext />}
-                />
+                {isHomepageRedesignEnabled() ? (
+                    <Route element={<HomeLanding />}>
+                        <Route
+                            path="" // default tab for the redesigned home page
+                            element={<WhatsNewContent />}
+                        />
+                        <Route
+                            path="ops-at-a-glance"
+                            element={<OpsAtAGlanceContent />}
+                        />
+                        <Route
+                            path="ops-benefits"
+                            element={<OpsBenefitsContent />}
+                        />
+                    </Route>
+                ) : (
+                    <>
+                        <Route
+                            path="" // default for home page
+                            element={<BenefitsGrid />}
+                        />
+                        <Route
+                            path="release-notes"
+                            element={<ReleaseNotes />}
+                        />
+                        <Route
+                            path="next"
+                            element={<WhatsNext />}
+                        />
+                    </>
+                )}
             </Route>
             <Route
                 path="/version"
