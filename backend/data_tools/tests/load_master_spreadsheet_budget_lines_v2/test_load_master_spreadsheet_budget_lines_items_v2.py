@@ -1218,16 +1218,11 @@ def test_second_obligated_bli_reuses_existing_tracker(db_with_data_v2):
     db_with_data_v2.commit()
 
 
-def test_obligated_bli_adopts_existing_unlinked_tracker(db_with_data_v2):
+def test_obligated_bli_adopts_existing_active_unlinked_tracker(db_with_data_v2):
     """
-    Test that ingesting an OBLIGATED BLI for an agreement that already has an
+    Test that ingesting an OBLIGATED BLI for an agreement that already has an ACTIVE,
     unlinked ProcurementTracker (procurement_action is None — e.g. left over from a
     prior partial run) adopts that tracker instead of creating a duplicate.
-
-    The existing tracker is deliberately left INACTIVE (not the ACTIVE default) so
-    this test actually exercises get_or_create_for_action's include_inactive bypass
-    for the OBLIGATED/include_terminal=True path — an ACTIVE tracker would be found by
-    the unlinked-tracker query even without that bypass, proving nothing about it.
     """
     contract_agreement = ContractAgreement(
         name="Test Contract Unlinked Tracker",
@@ -1239,7 +1234,7 @@ def test_obligated_bli_adopts_existing_unlinked_tracker(db_with_data_v2):
     user = _ensure_user(db_with_data_v2)
 
     existing_tracker = DefaultProcurementTracker.create_with_steps(
-        agreement_id=contract_agreement.id, status=ProcurementTrackerStatus.INACTIVE, created_by=user.id
+        agreement_id=contract_agreement.id, status=ProcurementTrackerStatus.ACTIVE, created_by=user.id
     )
     db_with_data_v2.add(existing_tracker)
     db_with_data_v2.commit()
@@ -1273,6 +1268,76 @@ def test_obligated_bli_adopts_existing_unlinked_tracker(db_with_data_v2):
     assert trackers[0].id == existing_tracker_id
     assert trackers[0].status == ProcurementTrackerStatus.COMPLETED
     assert trackers[0].procurement_action is not None
+
+    # Cleanup
+    bli_model = db_with_data_v2.execute(
+        select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
+    ).scalar_one_or_none()
+    db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_obligated_bli_does_not_adopt_inactive_unlinked_tracker(db_with_data_v2):
+    """
+    Test that an INACTIVE, unlinked ProcurementTracker is never adopted by an OBLIGATED
+    BLI import. An INACTIVE/COMPLETED tracker with no procurement_action belongs to a
+    closed procurement cycle (or bad data), not an in-progress one — adopting it would
+    silently rewrite its step history via mark_completed() and auto-approve its AWARD
+    step, which also permanently blocks a real Budget Team approval
+    (AwardApprovalResponseValidationRule rejects re-deciding an already-approved step).
+
+    A new tracker/action must be created instead, leaving the stale tracker untouched.
+    """
+    contract_agreement = ContractAgreement(
+        name="Test Contract Stale Unlinked Tracker",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    stale_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=contract_agreement.id, status=ProcurementTrackerStatus.INACTIVE, created_by=user.id
+    )
+    db_with_data_v2.add(stale_tracker)
+    db_with_data_v2.commit()
+    stale_tracker_id = stale_tracker.id
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Stale Unlinked Tracker",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Test Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="152.03",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(data, user, db_with_data_v2)
+
+    trackers = (
+        db_with_data_v2.execute(
+            select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 2, f"Expected a new tracker alongside the untouched stale one; found {len(trackers)}"
+
+    stale = next(t for t in trackers if t.id == stale_tracker_id)
+    assert stale.status == ProcurementTrackerStatus.INACTIVE
+    assert stale.procurement_action is None
+
+    new_tracker = next(t for t in trackers if t.id != stale_tracker_id)
+    assert new_tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert new_tracker.procurement_action is not None
 
     # Cleanup
     bli_model = db_with_data_v2.execute(
