@@ -5,7 +5,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter } from "react-router-dom";
 import NavMenu from "./NavMenu";
 
-const renderWithRoles = (roles = []) => {
+const renderWithRoles = (roles = [], initialEntries = ["/"]) => {
     const store = configureStore({
         reducer: {
             auth: () => ({
@@ -19,7 +19,7 @@ const renderWithRoles = (roles = []) => {
 
     return render(
         <Provider store={store}>
-            <MemoryRouter>
+            <MemoryRouter initialEntries={initialEntries}>
                 <NavMenu />
             </MemoryRouter>
         </Provider>
@@ -58,5 +58,19 @@ describe("NavMenu", () => {
 
         expect(screen.queryByRole("link", { name: "Project" })).not.toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "Agreement" })).not.toBeInTheDocument();
+    });
+
+    describe("Home nav link active state", () => {
+        it.each(["/", "/release-notes", "/next", "/ops-at-a-glance", "/ops-benefits"])("stays active on %s", (path) => {
+            renderWithRoles([], [path]);
+
+            expect(screen.getByRole("link", { name: "Home" })).toHaveClass("usa-current");
+        });
+
+        it("is not active on an unrelated route", () => {
+            renderWithRoles([], ["/portfolios"]);
+
+            expect(screen.getByRole("link", { name: "Home" })).not.toHaveClass("usa-current");
+        });
     });
 });
