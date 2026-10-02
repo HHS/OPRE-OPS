@@ -1398,14 +1398,6 @@ def _get_page_agreements(
 
         options.append(selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps))
 
-    # Expire all ProcurementShop objects from the identity map before loading the page.
-    # Earlier queries (BudgetLineItem.fees subqueries) may have populated ProcurementShop
-    # instances without their procurement_shop_fees collection, causing selectinload to skip
-    # reloading an already-cached instance and returning fee_percentage=0.
-    for obj in list(session.identity_map.values()):
-        if isinstance(obj, ProcurementShop):
-            session.expire(obj)
-
     agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
 
     id_to_agreement = {a.id: a for a in agreements}
