@@ -24,7 +24,7 @@
         "jwt-decode": "4.0.0",
         "lodash": "4.18.1",
         "react": "19.3.0",
-        "react-currency-input-field": "4.0.11",
+        "react-currency-input-field": "4.0.12",
         "react-dom": "19.3.0",
         "react-markdown": "10.1.0",
         "react-modal": "3.16.3",
@@ -37,7 +37,7 @@
         "remark-gfm": "4.0.1",
         "sass": "1.102.0",
         "styled-components": "6.5.3",
-        "vest": "6.3.2"
+        "vest": "6.3.3"
     },
     "overrides": {
         "caniuse-lite": "1.0.30001814",
