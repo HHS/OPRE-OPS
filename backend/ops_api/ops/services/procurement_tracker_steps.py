@@ -26,6 +26,7 @@ from models import (
     User,
 )
 from models.budget_line_items import BudgetLineItemStatus
+from models.procurement_workflow import AWARD_APPROVED_STATUS
 from models.utils import generate_events_update
 from ops_api.ops.services.notification_constants import AwardNotificationTitle, PreAwardNotificationTitle
 from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -394,14 +395,15 @@ class ProcurementTrackerStepService:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
                     if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
                         # Only mark AWARDED on step completion if Budget Team has already approved
-                        # (award_approval_status == "APPROVED"). If approval is still pending,
+                        # (award_approval_status == AWARD_APPROVED_STATUS). If approval is still pending,
                         # the agreement will be awarded when Budget Team approves via _handle_award_approval.
                         if procurement_action.status == ProcurementActionStatus.AWARDED:
                             logger.debug(
                                 "Procurement action already AWARDED by budget team approval — skipping on step completion"
                             )
                         elif (
-                            isinstance(step, DefaultProcurementTrackerStep) and step.award_approval_status == "APPROVED"
+                            isinstance(step, DefaultProcurementTrackerStep)
+                            and step.award_approval_status == AWARD_APPROVED_STATUS
                         ):
                             procurement_action.status = ProcurementActionStatus.AWARDED
                             # Normally unreachable: award approval (_handle_award_approval) already sets
@@ -1107,7 +1109,7 @@ class ProcurementTrackerStepService:
         """
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
 
-        When approval_status == "APPROVED":
+        When approval_status == AWARD_APPROVED_STATUS:
         - IN_EXECUTION BLIs → OBLIGATED (date_needed set to the provided obligated_date)
         - Sets procurement_action.date_awarded_obligated if not already set
         - Marks procurement_action status as AWARDED
@@ -1119,7 +1121,7 @@ class ProcurementTrackerStepService:
                 (enforced by AwardApprovalObligatedDateRequiredRule); never defaulted to today.
             current_user: User making the update
         """
-        if approval_status != "APPROVED":
+        if approval_status != AWARD_APPROVED_STATUS:
             return
 
         # The obligated date is required on award approval (enforced by
@@ -1216,7 +1218,7 @@ class ProcurementTrackerStepService:
 
         # Case 2: Award was approved — notify requester + broader team
         new_award_status = data.get("approval_status")
-        award_approved_transitioned = new_award_status == "APPROVED" and old_award_approval_status in (
+        award_approved_transitioned = new_award_status == AWARD_APPROVED_STATUS and old_award_approval_status in (
             None,
             "PENDING",
         )

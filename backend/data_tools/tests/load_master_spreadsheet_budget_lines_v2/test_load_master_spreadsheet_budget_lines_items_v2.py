@@ -53,6 +53,7 @@ from models.procurement_tracker import (
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
+from models.procurement_workflow import AWARD_APPROVED_STATUS
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines_v2.tsv")
 
@@ -1286,13 +1287,9 @@ def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_
     """
     Agreement already has a PLANNED NEW_AWARD action + ACTIVE tracker from an earlier
     IN_EXECUTION BLI. A second, OBLIGATED BLI on the same agreement must reuse that
-    action/tracker, not create a duplicate.
-
-    KNOWN GAP (documented, not yet fixed): the reused action/tracker is NOT promoted to
-    AWARDED/COMPLETED+approved here — get_or_create_for_agreement/get_or_create_for_action
-    only update status on first creation, so this agreement's award still won't appear
-    on the Awards and Modifications tab despite having an OBLIGATED BLI. If that gap is
-    fixed, update the two assertions below.
+    action/tracker (not create a duplicate) and promote it to AWARDED/COMPLETED with
+    the AWARD step approved, so the award shows up on the Awards and Modifications tab
+    regardless of which order the BLIs are processed in.
     """
     contract_agreement = ContractAgreement(
         name="Test Contract Probe In Exec Then Obl",
@@ -1357,10 +1354,11 @@ def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_
         len(actions) == 1
     ), f"Expected the existing NEW_AWARD action to be reused, not duplicated; found {len(actions)}"
 
-    # Known gap — see docstring. Both BLIs land on the same action/tracker, but neither
-    # gets promoted past its original IN_EXECUTION-era state.
-    assert trackers[0].status == ProcurementTrackerStatus.ACTIVE
-    assert actions[0].status == ProcurementActionStatus.PLANNED
+    assert trackers[0].status == ProcurementTrackerStatus.COMPLETED
+    assert actions[0].status == ProcurementActionStatus.AWARDED
+
+    award_step = trackers[0].get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == AWARD_APPROVED_STATUS
 
     # Cleanup
     for bli in (
