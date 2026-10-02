@@ -57,15 +57,19 @@ class DataToolsConfig(Protocol):
         """
         Returns the number of days after which the user sessions should be deleted.
         """
+        ...
 
     @property
     @abstractmethod
     def acs_connection_string(self) -> str | None:
         """
-        Returns the Azure Communication Services connection string used to send
-        notification emails (currently consumed by disable_users). Returns None
-        when email isn't configured (local/dev/pytest). AzureConfig instead raises
-        if unset, since it's expected to always be configured in deployed environments.
+        Returns the Azure Communication Services connection string used to send outbound email
+        (consumed by disable_users and by the usage metrics report). The ACS resource is
+        per-environment and shared by every sender, so this is not specific to any one report or
+        notification. It is injected as a Container App secret in deployed environments, so the
+        value is never stored in plaintext on the job. Returns None when email delivery is not
+        configured, in which case no email is sent -- including in deployed environments, so that a
+        job whose ACS wiring is missing still completes its primary work.
         """
         ...
 
@@ -73,10 +77,101 @@ class DataToolsConfig(Protocol):
     @abstractmethod
     def email_sender_address(self) -> str | None:
         """
-        Returns the verified ACS sender ("From") address for notification emails,
-        e.g. "DoNotReply@<verified-domain>" (currently consumed by disable_users).
-        Returns None when email isn't configured (local/dev/pytest). AzureConfig
-        instead raises if unset, since it's expected to always be configured in
-        deployed environments.
+        Returns the verified ACS sender ("From") address outbound email is sent from, e.g.
+        "DoNotReply@<verified-domain>". The verified domain belongs to the environment's ACS
+        resource and is shared by every sender. Returns None when email delivery is not configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def file_storage_account_key(self) -> str | None:
+        """
+        Returns the storage account access key used to sign time-limited SAS download links for
+        files uploaded to Blob storage (currently the usage metrics report). An account-key SAS is
+        required rather than a managed-identity-signed user-delegation SAS because the latter is
+        capped at 7 days by Azure and the report link needs to outlive that. It is injected as a
+        Container App secret in deployed environments. Returns None when SAS signing is not
+        configured, in which case no download link is generated and no email is sent.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_storage_account_url(self) -> str | None:
+        """
+        Returns the Azure Blob Storage account URL that the usage metrics report is uploaded to,
+        e.g. "https://<account>.blob.core.windows.net". Returns None when the environment writes
+        the report to the local file system instead of Blob storage.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_container_name(self) -> str:
+        """
+        Returns the name of the Blob container the usage metrics report is uploaded to.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_report_prefix(self) -> str:
+        """
+        Returns the blob-name prefix (folder) the usage metrics report is written under,
+        e.g. "reports".
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_lookback_days(self) -> str:
+        """
+        Returns the number of days of activity the usage metrics report covers (the reporting
+        window). Only ops_event rows created within this many days of the run are aggregated,
+        so the report is scoped to a period rather than re-reading the entire audit log. Keep this
+        equal to the sprint length (14) so consecutive reports tile the calendar with no gap or
+        overlap.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        """
+        Returns a known sprint-end Friday as an ISO date (e.g. "2026-09-11"), used to decide
+        whether today's scheduled run is a sprint end. The job's cron fires every Friday, but the
+        report is only generated on every other one -- the last Friday of each two-week sprint --
+        which plain cron cannot express. Any Friday that ends a sprint works as the anchor, since
+        sprint ends are every 14 days from it in both directions. Must be a Friday.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_force_run(self) -> bool:
+        """
+        Returns whether to generate the report regardless of the sprint schedule. True for local
+        and test environments (so a manual run always produces a report) and settable on the
+        scheduled job via USAGE_METRICS_FORCE_RUN=true to test-fire it off-schedule.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_sas_expiry_days(self) -> str:
+        """
+        Returns the number of days a shared download link (SAS) for the report stays valid.
+        The link is emailed to the UX team; after this many days it expires and a new run's
+        email must be used. Ignored when no ACS email delivery is configured.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def usage_metrics_email_recipients(self) -> str | None:
+        """
+        Returns a comma-separated list of recipient addresses for the report email. Returns None
+        (or empty) when email delivery is not configured, in which case no email is sent.
         """
         ...

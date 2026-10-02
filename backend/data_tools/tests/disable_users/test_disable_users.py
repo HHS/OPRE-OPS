@@ -193,6 +193,60 @@ def test_update_disabled_users_status_fails_fast_on_malformed_acs_connection_str
     mock_session.commit.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    "acs_overrides",
+    [
+        {"acs_connection_string": None, "email_sender_address": "x@example.com"},
+        {"acs_connection_string": "endpoint=https://x;accesskey=y", "email_sender_address": None},
+        {"acs_connection_string": None, "email_sender_address": None},
+    ],
+)
+def test_update_disabled_users_status_fails_fast_when_acs_unset_in_remote(mock_session, mocker, acs_overrides):
+    # The config properties return None rather than raising when ACS is unwired, because the
+    # usage-metrics report shares them and must still upload its report. This job needs the opposite:
+    # it is not idempotent, so disabling users without being able to notify them (or send the admin
+    # summary) loses those notifications permanently. A remote environment must therefore fail before
+    # the disable loop commits.
+    stale_user = _make_stale_user(1, "stale.user@example.gov")
+    mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
+    mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mock_session.execute.side_effect = _execute_results([stale_user], [])
+    mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
+    mock_config = MagicMock(is_remote=True, **acs_overrides)
+
+    with pytest.raises(ValueError, match="ACS email is not configured"):
+        update_disabled_users_status(mock_session, mock_config)
+
+    mock_disable_user.assert_not_called()
+    mock_session.commit.assert_not_called()
+
+
+def test_update_disabled_users_status_still_disables_without_acs_when_not_remote(mock_session, mocker):
+    """Locally (is_remote False) the job must keep working with no ACS wiring at all."""
+    stale_user = _make_stale_user(1, "stale.user@example.gov")
+    mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
+    mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=[])
+    mocker.patch("data_tools.src.disable_users.disable_users.send_disable_notifications")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_active_user_admins", return_value=[])
+    mock_session.execute.side_effect = _execute_results([stale_user], [])
+    mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
+    mock_config = MagicMock(is_remote=False, acs_connection_string=None, email_sender_address=None)
+
+    update_disabled_users_status(mock_session, mock_config)
+
+    mock_disable_user.assert_called_once()
+
+
 def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_in_recipients(mock_session, mocker):
     stale_admin = _make_stale_user(1, "stale.admin@example.gov")
     mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
