@@ -90,6 +90,26 @@ const router = createBrowserRouter(
                             path="ops-benefits"
                             element={<OpsBenefitsContent />}
                         />
+                        {/* Compatibility routes: keep legacy bookmarks/links working instead of
+                            falling through to the catch-all /error redirect once this flag is on. */}
+                        <Route
+                            path="release-notes"
+                            element={
+                                <Navigate
+                                    to="/"
+                                    replace
+                                />
+                            }
+                        />
+                        <Route
+                            path="next"
+                            element={
+                                <Navigate
+                                    to="/ops-at-a-glance"
+                                    replace
+                                />
+                            }
+                        />
                     </Route>
                 ) : (
                     <>
