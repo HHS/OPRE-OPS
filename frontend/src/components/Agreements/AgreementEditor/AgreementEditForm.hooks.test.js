@@ -921,6 +921,7 @@ describe("useAgreementEditForm - procurement-shop change request gating (SKIP_CR
 describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6312)", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        useGetVersionQueryMock.mockReturnValue({ data: { skip_cr_for_draft_planned: false } });
         useLocationMock.mockReturnValue({ pathname: "/agreements/1/edit" });
         hasStateChangedMock.mockReturnValue(false);
         useEditAgreementDispatchMock.mockReturnValue(vi.fn());
