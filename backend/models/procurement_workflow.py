@@ -24,12 +24,14 @@ from models.procurement_action import AwardType, ProcurementAction, ProcurementA
 from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 
 if TYPE_CHECKING:
     from models.agreements import Agreement
 
 __all__ = [
+    "AWARD_APPROVED_STATUS",
     "has_obligated_blis",
     "get_earliest_obligated_fiscal_year",
     "get_earliest_obligated_date_needed",
@@ -37,6 +39,11 @@ __all__ = [
     "get_or_create_procurement_records_for_new_award",
     "get_or_create_procurement_records_for_modification",
 ]
+
+# The AWARD step's award_approval_status value that marks a Budget Team award
+# approval. Stored as a free-form String(20) column, so the literal is the contract —
+# shared with ops_api's AgreementAwardHistoryService and ProcurementTrackerStepService.
+AWARD_APPROVED_STATUS = "APPROVED"
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +261,21 @@ def get_or_create_procurement_records_for_new_award(
     else:
         _sync_procurement_shop(action, agreement)
 
+        # Promote an existing, not-yet-AWARDED action when this call represents an
+        # OBLIGATED BLI arriving after an earlier IN_EXECUTION BLI already created a
+        # PLANNED action for the same agreement — otherwise the action is stuck at
+        # PLANNED forever, since get_or_create_for_agreement never updates the status
+        # of a pre-existing action.
+        if action_status == ProcurementActionStatus.AWARDED and action.status not in _TERMINAL_ACTION_STATUSES:
+            action.status = ProcurementActionStatus.AWARDED
+            if date_awarded_obligated is not None and action.date_awarded_obligated is None:
+                action.date_awarded_obligated = date_awarded_obligated
+            logger.info(
+                f"Promoted ProcurementAction {action.id} to AWARDED for Agreement {agreement.id} "
+                f"({agreement.name!r}) — a later-processed OBLIGATED BLI resolved an action "
+                "that an earlier IN_EXECUTION BLI had already created as PLANNED"
+            )
+
     tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
         agreement_id=agreement.id,
@@ -264,14 +286,34 @@ def get_or_create_procurement_records_for_new_award(
         include_inactive=include_terminal,
     )
 
-    # Set step statuses only for adopted or newly created trackers.
+    # Set step statuses for adopted or newly created trackers, and promote any tracker
+    # that isn't yet COMPLETED when this call represents an OBLIGATED BLI — covering the
+    # same already-linked-tracker case as the action promotion above. The award-approval
+    # stamp below is independently guarded on the step's current value (not on
+    # needs_step_setup) so a later re-run of get_or_create can never clobber a real
+    # Budget Team decision made in between (e.g. a manual DECLINED/vendor change).
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
-    if needs_step_setup:
-        if tracker_status == ProcurementTrackerStatus.COMPLETED:
+    if tracker_status == ProcurementTrackerStatus.COMPLETED:
+        # get_or_create_for_action already stamps tracker.status onto a newly created or
+        # newly adopted tracker, so "needs_step_setup" is what actually distinguishes
+        # "steps still need to be marked COMPLETED" from "already a completed tracker
+        # from a prior call" in that case; for an already-linked tracker (needs_step_setup
+        # False), tracker.status reflects its real prior state and is the right check.
+        if needs_step_setup or tracker.status != ProcurementTrackerStatus.COMPLETED:
             tracker.mark_completed(completed_date=date_awarded_obligated)
-        else:
-            tracker.activate_first_step()
+        # mark_completed() only flips step statuses/dates — it does not approve
+        # the award. The Awards and Modifications tab gates on
+        # award_approval_status == AWARD_APPROVED_STATUS, not tracker/step status (see
+        # AgreementAwardHistoryService), so a COMPLETED tracker needs its AWARD step
+        # explicitly approved or it will silently never appear there.
+        award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+        if award_step and award_step.award_approval_status is None:
+            award_step.award_approval_status = AWARD_APPROVED_STATUS
+            award_step.award_date = date_awarded_obligated
+            award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
+    elif needs_step_setup:
+        tracker.activate_first_step()
 
     if tracker_created:
         _create_tracker_event(
