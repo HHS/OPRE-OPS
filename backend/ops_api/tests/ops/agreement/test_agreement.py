@@ -439,6 +439,64 @@ def test_get_agreement_includes_is_deletable_meta(
     )
 
 
+def test_get_agreement_item_includes_procurement_shop_locked_message_but_list_does_not(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """GET /agreements/{id} exposes _meta.procurementShopLockedMessage (#6312); GET /agreements
+    (the list endpoint, which shares the same serializer) always returns it as null rather than
+    computing it, since the computation needs a query per row — see
+    _serialize_agreement_with_meta's include_procurement_shop_lock parameter."""
+    draft_agreement = ContractAgreement(
+        name="Meta Procurement Shop Unlocked Test",
+        contract_number="CT-META-PROC-1",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(draft_agreement)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.get(url_for("api.agreements-item", id=draft_agreement.id))
+    assert response.status_code == 200
+    assert response.json["_meta"]["procurementShopLockedMessage"] is None
+
+    locked_agreement = ContractAgreement(
+        name="Meta Procurement Shop Locked Test",
+        contract_number="CT-META-PROC-2",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(locked_agreement)
+    loaded_db.commit()
+    obligated_bli = ContractBudgetLineItem(
+        agreement_id=locked_agreement.id,
+        line_description="Obligated line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+    )
+    loaded_db.add(obligated_bli)
+    loaded_db.commit()
+
+    locked_response = basic_user_auth_client.get(url_for("api.agreements-item", id=locked_agreement.id))
+    assert locked_response.status_code == 200
+    assert locked_response.json["_meta"]["procurementShopLockedMessage"] == (
+        "The Procurement Shop cannot be edited because this agreement has budget lines in "
+        "Executing, Obligated or Planned Mod status."
+    )
+
+    # The list endpoint shares _serialize_agreement_with_meta but never opts into the
+    # procurement-shop lookup, so even this same, actually-locked agreement reports null there.
+    list_response = basic_user_auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": locked_agreement.name, "exact_match": "true"},
+    )
+    assert list_response.status_code == 200
+    assert len(list_response.json["data"]) == 1
+    assert list_response.json["data"][0]["_meta"]["procurementShopLockedMessage"] is None
+
+
 def test_agreement_delete_succeeds_for_basic_role_team_member(
     basic_user_auth_client, loaded_db, test_user, test_non_admin_user, test_project, app_ctx
 ):
@@ -1920,6 +1978,9 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(
 
     assert response.status_code == 400
     assert "Validation failed" in response.json["message"]
+    assert response.json["errors"] == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+    }
 
     # Cleanup
     loaded_db.delete(bli)

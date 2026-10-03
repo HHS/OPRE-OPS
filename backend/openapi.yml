@@ -475,6 +475,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing, Obligated, or Planned Mod status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -542,6 +543,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing, Obligated, or Planned Mod status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -9755,6 +9757,25 @@ components:
             - awarding_entity_id
             - agreement_reason
 
+    AgreementMetaSchema:
+      description: >-
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage.
+      allOf:
+        - $ref: "#/components/schemas/MetaSchema"
+        - type: object
+          properties:
+            procurementShopLockedMessage:
+              type: string
+              nullable: true
+              description: >-
+                Server-computed human-readable reason the Procurement Shop dropdown is locked
+                (any budget line in Executing, Obligated, or Planned Mod status; a procurement-shop
+                change request in review; or the agreement is awarded, for non-super users) that
+                the frontend cannot derive on its own. Null when the Procurement Shop can be
+                changed. Only populated on GET /agreements/{id} — always null in the
+                GET /agreements list response, since computing it there would add a database
+                query per row.
+
     AgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementData"
@@ -9824,7 +9845,7 @@ components:
                 - NEW
                 - CONTINUING
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name
@@ -9891,7 +9912,7 @@ components:
             updated_on:
               $ref: "#/components/parameters/updated_on"
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name

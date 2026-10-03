@@ -918,6 +918,123 @@ describe("useAgreementEditForm - procurement-shop change request gating (SKIP_CR
     });
 });
 
+describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6312)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useGetVersionQueryMock.mockReturnValue({ data: { skip_cr_for_draft_planned: false } });
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1/edit" });
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it("disables the dropdown and shows the backend's message when procurementShopLockedMessage is set, even though isAgreementAwarded is false (the production shape — agreements with no is_awarded but a locking budget line)", () => {
+        useSelectorMock.mockReturnValue(false); // not superuser
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 522,
+                awarding_entity_id: null,
+                _meta: {
+                    procurementShopLockedMessage:
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(true);
+        expect(result.current.disabledMessage()).toBe(
+            "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+        );
+    });
+
+    it("stays disabled with the same message for a superuser — the backend rule has no superuser exemption", () => {
+        useSelectorMock.mockReturnValue(true); // superuser
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 10,
+                _meta: {
+                    procurementShopLockedMessage: "The Procurement Shop cannot be edited on an awarded agreement."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProcurementShopDisabled).toBe(true);
+        expect(result.current.disabledMessage()).toBe("The Procurement Shop cannot be edited on an awarded agreement.");
+    });
+
+    it("is enabled, with disabledMessage() falling back to 'Disabled', when procurementShopLockedMessage is null", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: 7, _meta: { procurementShopLockedMessage: null } }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+        expect(result.current.disabledMessage()).toBe("Disabled");
+    });
+
+    it("is enabled when _meta is entirely absent (the create-agreement wizard flow)", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: undefined }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+    });
+
+    it("no longer depends on agreement.in_review — an unrelated BLI change request in review does not disable the field or show the proc-shop tooltip", () => {
+        // Before #6312, disabledMessage() branched on agreement.in_review (true for ANY in-review
+        // change request, including BLI-only ones), independent of isProcurementShopDisabled's
+        // own gate. That let an awarded agreement with only a BLI CR in review show the
+        // "pending edits...for the Procurement Shop" tooltip for the wrong reason. The backend
+        // message is now the only source, so an unrelated in-review flag has no effect.
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 99,
+                in_review: true,
+                change_requests_in_review: [{ has_proc_shop_change: false }],
+                _meta: { procurementShopLockedMessage: null }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+        expect(result.current.disabledMessage()).toBe("Disabled");
+    });
+
+    it("keeps shouldRequestChange false when locked, even on the mixed-status shape (areAnyBudgetLinesPlanned true) where useHasStateChanged(null) would otherwise report a change at mount", () => {
+        // Guards the fix to shouldRequestChange's `&& !procurementShopLockedMessage` conjunct.
+        // Without it, this assertion would still pass vacuously unless areAnyBudgetLinesPlanned
+        // is true (it's a required conjunct of shouldRequestChange) — so this must set it true
+        // to actually exercise parity gap #4's shape.
+        useSelectorMock.mockReturnValue(false); // not superuser/budget-team, so canEditDirectly is false
+        hasStateChangedMock.mockReturnValue(true); // simulates useHasStateChanged(null) === true at mount
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 525,
+                awarding_entity_id: null,
+                _meta: {
+                    procurementShopLockedMessage:
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({
+            isAgreementAwarded: false,
+            areAnyBudgetLinesPlanned: true
+        });
+
+        expect(result.current.shouldRequestChange).toBe(false);
+    });
+});
+
 describe("useAgreementEditForm - service_requirement_type on load for existing agreements", () => {
     beforeEach(() => {
         vi.clearAllMocks();

@@ -41,6 +41,18 @@ class MetaSchema(Schema):
     immutable_awarded_fields = fields.List(fields.String(), load_default=None, dump_default=None, required=False)
 
 
+class AgreementMetaSchema(MetaSchema):
+    """
+    Agreement-specific extension of MetaSchema. Kept separate from the base ``MetaSchema`` —
+    which is also dumped for budget line items (``ops_api.ops.services.budget_line_items.
+    get_is_editable_meta_data``) — so ``procurementShopLockedMessage`` only ever appears on
+    agreement responses, not leaked onto every budget line item's ``_meta`` as an unconditional
+    ``null`` (OPS-6312).
+    """
+
+    procurementShopLockedMessage = fields.Str(allow_none=True, load_default=None, dump_default=None)
+
+
 class AgreementData(Schema):
     """
     Base schema for agreement data, which includes common fields across different agreement types.
@@ -238,7 +250,7 @@ class AgreementResponse(FyObligatedMixin, AgreementData):
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
-    _meta = fields.Nested(MetaSchema, required=True)
+    _meta = fields.Nested(AgreementMetaSchema, required=True)
 
 
 class AgreementListResponse(FyObligatedMixin, AgreementData):
@@ -267,7 +279,7 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
-    _meta = fields.Nested(MetaSchema, required=True)
+    _meta = fields.Nested(AgreementMetaSchema, required=True)
 
 
 class ContractAgreementResponse(AgreementResponse):

@@ -80,6 +80,17 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
         expect(result.hasErrors("procurement-shop-select")).toBe(true);
     });
 
+    it("does not fail procurement-shop-select when missing AND locked by the backend (OPS-6312)", () => {
+        // A locked, empty Procurement Shop (e.g. an obligated agreement with no shop set yet)
+        // must not surface a "required" error the user can never clear — the field is disabled.
+        const result = suite.run({
+            ...validContractData,
+            "procurement-shop-select": undefined,
+            procurementShopLocked: true
+        });
+        expect(result.hasErrors("procurement-shop-select")).toBe(false);
+    });
+
     it("fails service_requirement_type when missing", () => {
         const result = suite.run({
             ...validContractData,

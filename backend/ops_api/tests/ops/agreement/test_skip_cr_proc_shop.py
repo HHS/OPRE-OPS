@@ -199,11 +199,14 @@ def test_proc_shop_change_still_blocked_for_in_execution_when_flag_on(
     loaded_db.commit()
 
     service = AgreementsService(loaded_db)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         service.update(
             test_grant_agreement.id,
             {"awarding_entity_id": 2, "agreement_cls": GrantAgreement},
         )
+    assert exc_info.value.validation_errors == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+    }
 
 
 def test_proc_shop_change_via_edit_bundle_writes_history_when_flag_on(

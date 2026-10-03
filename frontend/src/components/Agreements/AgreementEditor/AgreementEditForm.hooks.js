@@ -157,7 +157,7 @@ const useAgreementEditForm = (
         nofo_number: nofoNumber,
         aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
-        _meta: { immutable_awarded_fields: immutableFields = [] } = {}
+        _meta: { immutable_awarded_fields: immutableFields = [], procurementShopLockedMessage = null } = {}
     } = agreement;
 
     const {
@@ -217,7 +217,12 @@ const useAgreementEditForm = (
         areAnyBudgetLinesPlanned &&
         !isAgreementAwarded &&
         !canEditDirectly &&
-        !skipCrForDraftPlanned;
+        !skipCrForDraftPlanned &&
+        // Guards against useHasStateChanged(selectedProcurementShop) reporting "changed" at
+        // mount for agreements that have no procurement shop set (selectedProcurementShop is
+        // null) — a locked shop must never show the "send to approval" modal, since the save
+        // it would lead to can never succeed anyway (OPS-6312).
+        !procurementShopLockedMessage;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
@@ -226,13 +231,16 @@ const useAgreementEditForm = (
                     ...agreement,
                     // New agreements of any non-grant type require service_requirement_type (see suite).
                     isNewAgreement: !agreement?.id,
+                    // Backend-locked Procurement Shop is never "missing" — see the suite's
+                    // procurement-shop-select test (OPS-6312).
+                    procurementShopLocked: Boolean(procurementShopLockedMessage),
                     ...overrides,
                     [name]: value
                 },
                 name
             );
         },
-        [agreement]
+        [agreement, procurementShopLockedMessage]
     );
 
     React.useEffect(() => {
@@ -240,10 +248,11 @@ const useAgreementEditForm = (
             suite.run({
                 ...agreement,
                 isNewAgreement: !agreement?.id,
+                procurementShopLocked: Boolean(procurementShopLockedMessage),
                 "procurement-shop-select": selectedProcurementShop
             });
         }
-    }, [isReviewMode, agreement, selectedProcurementShop]);
+    }, [isReviewMode, agreement, selectedProcurementShop, procurementShopLockedMessage]);
 
     React.useEffect(() => {
         if (!isWizardMode) {
@@ -687,19 +696,10 @@ const useAgreementEditForm = (
         setAgreementProcurementShopId(procurementShop?.id);
     };
 
-    const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
-        (changeRequest) => changeRequest.has_proc_shop_change
-    );
-
-    const isProcurementShopDisabled = !isSuperUser && (hasProcurementShopChangeRequest || isAgreementAwarded);
-    const disabledMessage = () => {
-        if (agreement.in_review) {
-            return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
-        } else if (isAgreementAwarded) {
-            return "The Procurement Shop cannot be edited on an awarded agreement.";
-        }
-        return "Disabled";
-    };
+    // The backend owns this rule (AgreementsService._get_procurement_shop_locked_message).
+    // Re-deriving it here is what caused #6312 — do not add local conditions.
+    const isProcurementShopDisabled = Boolean(procurementShopLockedMessage);
+    const disabledMessage = () => procurementShopLockedMessage ?? "Disabled";
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
