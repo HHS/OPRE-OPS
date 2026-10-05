@@ -61,7 +61,13 @@ def disable_user(se, user_id, system_admin_id):
         event_type=OpsEventType.UPDATE_USER,
         event_status=OpsEventStatus.SUCCESS,
         created_by=system_admin_id,
-        event_details={"user_id": user_id, "message": "User deactivated via automated process."},
+        # "status" mirrors the manual UI path's request.json payload so the usage-metrics
+        # deactivated_users detector counts these automated deactivations too.
+        event_details={
+            "user_id": user_id,
+            "status": UserStatus.INACTIVE.name,
+            "message": "User deactivated via automated process.",
+        },
     )
     se.add(ops_event)
 
@@ -103,13 +109,25 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
             return
 
         # Resolve the ACS sender config and construct the EmailClient now, before any user is
-        # disabled, so a misconfigured AzureConfig -- unset (raises -- see send_disable_notifications
-        # below) or set but malformed (EmailClient.from_connection_string raises ValueError) --
-        # fails fast here instead of surfacing only after the disable loop has already committed.
-        # local/dev/pytest return None for both properties cleanly, in which case no client is
-        # built and send_disable_notifications no-ops.
+        # disabled, so a misconfigured environment fails fast here instead of surfacing only after
+        # the disable loop has already committed.
         sender = config.email_sender_address
         connection_string = config.acs_connection_string
+
+        # The config properties themselves return None rather than raising when unset, because the
+        # usage-metrics report shares them and must still upload its report when email is unwired.
+        # This job has the opposite requirement: the admin summary is the compliance artifact for
+        # this run, and the job is not idempotent -- re-running it will NOT re-send notifications for
+        # users it already disabled. So a remote environment with no ACS wiring must fail before any
+        # user is touched rather than silently disable people and skip the notifications.
+        # local/dev/pytest return None cleanly, where no client is built and sending no-ops.
+        if config.is_remote and not (connection_string and sender):
+            raise ValueError(
+                "ACS email is not configured (ACS_CONNECTION_STRING / EMAIL_SENDER_ADDRESS) in a "
+                "remote environment. Refusing to disable users, because their notifications and the "
+                "admin summary could not be sent and this job does not re-send them on a later run."
+            )
+
         email_client = EmailClient.from_connection_string(connection_string) if connection_string and sender else None
 
         user_ids = [user.id for user in disabled_users]

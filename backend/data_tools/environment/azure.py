@@ -66,18 +66,59 @@ class AzureConfig(DataToolsConfig):
 
     @property
     def acs_connection_string(self) -> str | None:
-        connection_string = os.getenv("ACS_CONNECTION_STRING")
-
-        if not connection_string:
-            raise ValueError("Missing environment variable for ACS_CONNECTION_STRING.")
-
-        return connection_string
+        # Deliberately does NOT raise when unset, unlike most AzureConfig properties. Both outbound
+        # email paths gate on this being present and no-op (with a log line) when it is absent, so a
+        # job in a deployed environment that has not had ACS wired yet still completes its primary
+        # work. Raising here would abort the usage metrics run *after* the report was already
+        # uploaded to Blob storage, and would abort disable_users before it disabled anyone.
+        # Callers that need ACS to be mandatory should assert it themselves.
+        return os.getenv("ACS_CONNECTION_STRING") or None
 
     @property
     def email_sender_address(self) -> str | None:
-        sender_address = os.getenv("EMAIL_SENDER_ADDRESS")
+        # See acs_connection_string above for why this returns None rather than raising.
+        return os.getenv("EMAIL_SENDER_ADDRESS") or None
 
-        if not sender_address:
-            raise ValueError("Missing environment variable for EMAIL_SENDER_ADDRESS.")
+    @property
+    def file_storage_account_key(self) -> str | None:
+        # Injected as a Container App secret (not read from Key Vault) so the job needs no vault
+        # access at run time. Returns None when SAS signing is not configured, which makes the
+        # report email no-op rather than fail.
+        return os.getenv("FILE_STORAGE_ACCOUNT_KEY") or None
 
-        return sender_address
+    @property
+    def usage_metrics_storage_account_url(self) -> str | None:
+        url = os.getenv("USAGE_METRICS_STORAGE_ACCOUNT_URL")
+
+        if not url:
+            raise ValueError("Missing environment variable for USAGE_METRICS_STORAGE_ACCOUNT_URL.")
+
+        return url
+
+    @property
+    def usage_metrics_container_name(self) -> str:
+        return os.getenv("USAGE_METRICS_CONTAINER_NAME", "data")
+
+    @property
+    def usage_metrics_report_prefix(self) -> str:
+        return os.getenv("USAGE_METRICS_REPORT_PREFIX", "reports")
+
+    @property
+    def usage_metrics_lookback_days(self) -> str:
+        return os.getenv("USAGE_METRICS_LOOKBACK_DAYS", "14")
+
+    @property
+    def usage_metrics_sprint_anchor_date(self) -> str:
+        return os.getenv("USAGE_METRICS_SPRINT_ANCHOR_DATE", "2026-09-11")
+
+    @property
+    def usage_metrics_force_run(self) -> bool:
+        return os.getenv("USAGE_METRICS_FORCE_RUN", "").strip().lower() in ("1", "true", "yes")
+
+    @property
+    def usage_metrics_sas_expiry_days(self) -> str:
+        return os.getenv("USAGE_METRICS_SAS_EXPIRY_DAYS", "90")
+
+    @property
+    def usage_metrics_email_recipients(self) -> str | None:
+        return os.getenv("USAGE_METRICS_EMAIL_RECIPIENTS") or None
