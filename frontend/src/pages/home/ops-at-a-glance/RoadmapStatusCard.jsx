@@ -30,7 +30,7 @@ const RoadmapStatusCard = () => {
         },
         {
             status: ROADMAP_STATUS.NOT_STARTED,
-            items: [...itemsByStatus(ROADMAP_STATUS.NOT_STARTED)].sort((a, b) => a.title.localeCompare(b.title)),
+            items: itemsByStatus(ROADMAP_STATUS.NOT_STARTED).sort((a, b) => a.title.localeCompare(b.title)),
             footnote: NOT_STARTED_FOOTNOTE
         }
     ];
