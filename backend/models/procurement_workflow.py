@@ -133,11 +133,13 @@ def link_blis_to_action(
 # ---------------------------------------------------------------------------
 
 
-_TERMINAL_ACTION_STATUSES = frozenset({
-    ProcurementActionStatus.AWARDED,
-    ProcurementActionStatus.CERTIFIED,
-    ProcurementActionStatus.CANCELLED,
-})
+_TERMINAL_ACTION_STATUSES = frozenset(
+    {
+        ProcurementActionStatus.AWARDED,
+        ProcurementActionStatus.CERTIFIED,
+        ProcurementActionStatus.CANCELLED,
+    }
+)
 
 
 def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") -> None:
@@ -149,10 +151,7 @@ def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") ->
     if action.status in _TERMINAL_ACTION_STATUSES:
         return
 
-    if (
-        action.procurement_shop_id != agreement.awarding_entity_id
-        and agreement.awarding_entity_id is not None
-    ):
+    if action.procurement_shop_id != agreement.awarding_entity_id and agreement.awarding_entity_id is not None:
         old_shop_id = action.procurement_shop_id
         action.procurement_shop_id = agreement.awarding_entity_id
         logger.info(
@@ -288,10 +287,7 @@ def get_or_create_procurement_records_for_new_award(
 
     # Set step statuses for adopted or newly created trackers, and promote any tracker
     # that isn't yet COMPLETED when this call represents an OBLIGATED BLI — covering the
-    # same already-linked-tracker case as the action promotion above. The award-approval
-    # stamp below is independently guarded on the step's current value (not on
-    # needs_step_setup) so a later re-run of get_or_create can never clobber a real
-    # Budget Team decision made in between (e.g. a manual DECLINED/vendor change).
+    # same already-linked-tracker case as the action promotion above.
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
     if tracker_status == ProcurementTrackerStatus.COMPLETED:
@@ -300,15 +296,31 @@ def get_or_create_procurement_records_for_new_award(
         # "steps still need to be marked COMPLETED" from "already a completed tracker
         # from a prior call" in that case; for an already-linked tracker (needs_step_setup
         # False), tracker.status reflects its real prior state and is the right check.
-        if needs_step_setup or tracker.status != ProcurementTrackerStatus.COMPLETED:
+        # Captured *before* mark_completed() mutates tracker.status, since that call
+        # below would otherwise make an in-progress, order-flip-promoted tracker look
+        # identical to one that already finished the real app workflow.
+        was_already_linked_and_completed = not needs_step_setup and tracker.status == ProcurementTrackerStatus.COMPLETED
+        if needs_step_setup or not was_already_linked_and_completed:
             tracker.mark_completed(completed_date=date_awarded_obligated)
         # mark_completed() only flips step statuses/dates — it does not approve
         # the award. The Awards and Modifications tab gates on
         # award_approval_status == AWARD_APPROVED_STATUS, not tracker/step status (see
         # AgreementAwardHistoryService), so a COMPLETED tracker needs its AWARD step
         # explicitly approved or it will silently never appear there.
+        #
+        # Auto-approval only applies when this call is itself responsible for taking the
+        # tracker to COMPLETED (new, adopted, or order-flip-promoted). If the tracker was
+        # already linked to this action AND already COMPLETED, it got there through the
+        # real app workflow and the AWARD step may still be awaiting a genuine Budget Team
+        # decision — stamping APPROVED here would silently fabricate that decision and
+        # then permanently block the real one, since AwardApprovalResponseValidationRule
+        # rejects re-deciding an already-approved step.
         award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
-        if award_step and award_step.award_approval_status is None:
+        if (
+            award_step
+            and award_step.award_approval_status is None
+            and (needs_step_setup or not was_already_linked_and_completed)
+        ):
             award_step.award_approval_status = AWARD_APPROVED_STATUS
             award_step.award_date = date_awarded_obligated
             award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
