@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Tabs from "../../components/UI/Tabs";
 import CurrentlyDevelopingCard from "./CurrentlyDevelopingCard";
+import { HOME_RELATIVE_PATHS } from "./homeRoutes";
 import ReleaseNotesSummaryCard from "./release-notes/ReleaseNotesSummaryCard";
 import useWelcomeMessage from "./useWelcomeMessage";
 
@@ -40,8 +41,8 @@ const HomeLanding = () => {
             <Tabs
                 paths={[
                     { pathName: "/", label: "What's New" },
-                    { pathName: "/ops-at-a-glance", label: "OPS at a Glance" },
-                    { pathName: "/ops-benefits", label: "OPS Benefits" }
+                    { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
+                    { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
                 ]}
             />
             <Outlet />

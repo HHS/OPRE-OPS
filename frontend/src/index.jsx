@@ -23,6 +23,7 @@ import { isHomepageRedesignEnabled } from "./helpers/featureFlags";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
 import HomeLanding from "./pages/home/HomeLanding";
+import { HOME_RELATIVE_PATHS } from "./pages/home/homeRoutes";
 import Login from "./pages/Login";
 import OpsAtAGlanceContent from "./pages/home/ops-at-a-glance/OpsAtAGlanceContent";
 import OpsBenefitsContent from "./pages/home/ops-benefits/OpsBenefitsContent";
@@ -79,21 +80,21 @@ const router = createBrowserRouter(
                 {isHomepageRedesignEnabled() ? (
                     <Route element={<HomeLanding />}>
                         <Route
-                            path="" // default tab for the redesigned home page
+                            path={HOME_RELATIVE_PATHS.whatsNew}
                             element={<WhatsNewContent />}
                         />
                         <Route
-                            path="ops-at-a-glance"
+                            path={HOME_RELATIVE_PATHS.opsAtAGlance}
                             element={<OpsAtAGlanceContent />}
                         />
                         <Route
-                            path="ops-benefits"
+                            path={HOME_RELATIVE_PATHS.opsBenefits}
                             element={<OpsBenefitsContent />}
                         />
                         {/* Compatibility routes: keep legacy bookmarks/links working instead of
                             falling through to the catch-all /error redirect once this flag is on. */}
                         <Route
-                            path="release-notes"
+                            path={HOME_RELATIVE_PATHS.releaseNotes}
                             element={
                                 <Navigate
                                     to="/"
@@ -102,10 +103,10 @@ const router = createBrowserRouter(
                             }
                         />
                         <Route
-                            path="next"
+                            path={HOME_RELATIVE_PATHS.next}
                             element={
                                 <Navigate
-                                    to="/ops-at-a-glance"
+                                    to={`/${HOME_RELATIVE_PATHS.opsAtAGlance}`}
                                     replace
                                 />
                             }
@@ -114,15 +115,15 @@ const router = createBrowserRouter(
                 ) : (
                     <>
                         <Route
-                            path="" // default for home page
+                            path={HOME_RELATIVE_PATHS.whatsNew} // default for home page
                             element={<BenefitsGrid />}
                         />
                         <Route
-                            path="release-notes"
+                            path={HOME_RELATIVE_PATHS.releaseNotes}
                             element={<ReleaseNotes />}
                         />
                         <Route
-                            path="next"
+                            path={HOME_RELATIVE_PATHS.next}
                             element={<WhatsNext />}
                         />
                     </>
