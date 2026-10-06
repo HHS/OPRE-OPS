@@ -97,6 +97,17 @@ def get_agreements_with_in_execution_blis(
     return session.execute(query).scalars().all()
 
 
+def _session_pending_count(session: Session) -> int:
+    """Count of new/dirty/deleted objects pending in the session.
+
+    Used to detect that an agreement was touched even when nothing was created or
+    linked — e.g. promoting an existing action to AWARDED, completing/approving an
+    existing tracker, or splitting a BLI onto a different action all mutate persistent
+    objects in place without going through a create/link counter.
+    """
+    return len(session.new) + len(session.dirty) + len(session.deleted)
+
+
 def backfill_procurement_records(
     session: Session,
     sys_user: User,
@@ -129,7 +140,7 @@ def backfill_procurement_records(
 
     for agreement in agreements:
         try:
-            agreement_changed = False
+            pending_before = _session_pending_count(session)
             is_mod = has_obligated_blis(session, agreement.id)
 
             if is_mod:
@@ -150,7 +161,6 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
-                agreement_changed = agreement_changed or ac or tc
 
                 earliest_fy = get_earliest_obligated_fiscal_year(session, agreement.id)
                 if earliest_fy:
@@ -162,7 +172,6 @@ def backfill_procurement_records(
                         fiscal_year=earliest_fy,
                     )
                     total_linked_blis += linked
-                    agreement_changed = agreement_changed or linked > 0
 
                 # MODIFICATION: action + tracker + IN_EXECUTION BLIs
                 mod_action, _, ac, tc = get_or_create_procurement_records_for_modification(
@@ -170,7 +179,6 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
-                agreement_changed = agreement_changed or ac or tc
 
                 linked = link_blis_to_action(
                     session,
@@ -179,7 +187,6 @@ def backfill_procurement_records(
                     BudgetLineItemStatus.IN_EXECUTION,
                 )
                 total_linked_blis += linked
-                agreement_changed = agreement_changed or linked > 0
             else:
                 # NEW_AWARD only: action + tracker + IN_EXECUTION BLIs
                 new_award_action, _, ac, tc = get_or_create_procurement_records_for_new_award(
@@ -187,7 +194,6 @@ def backfill_procurement_records(
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
-                agreement_changed = agreement_changed or ac or tc
 
                 linked = link_blis_to_action(
                     session,
@@ -196,9 +202,13 @@ def backfill_procurement_records(
                     BudgetLineItemStatus.IN_EXECUTION,
                 )
                 total_linked_blis += linked
-                agreement_changed = agreement_changed or linked > 0
 
-            if agreement_changed:
+            # Session-dirty check rather than or-ing together ac/tc/linked>0 — those
+            # miss in-place mutations with no counter of their own: promoting an
+            # existing action to AWARDED, completing/approving an existing tracker, and
+            # the order-flip BLI split (see _split_unobligated_blis_to_modification) all
+            # mutate persistent objects without creating or linking anything new.
+            if _session_pending_count(session) > pending_before:
                 agreements_touched += 1
 
             if dry_run:
@@ -294,6 +304,8 @@ def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
 
     for agreement in agreements:
         try:
+            pending_before = _session_pending_count(session)
+
             # No fallback when every OBLIGATED BLI's date_needed is null — leave
             # date_awarded_obligated/award_date unset rather than guessing, so the
             # gap is visible and resolved by asking OPRE for the real date.
@@ -320,7 +332,11 @@ def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
             )
             total_linked_blis += linked
 
-            if ac or tc or linked > 0:
+            # Session-dirty check rather than or-ing together ac/tc/linked>0 — those
+            # miss in-place mutations with no counter of their own, e.g. promoting an
+            # existing NEW_AWARD action to AWARDED and completing/approving its tracker
+            # when the action already existed but was still PLANNED.
+            if _session_pending_count(session) > pending_before:
                 agreements_touched += 1
 
             if dry_run:

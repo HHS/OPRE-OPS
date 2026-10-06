@@ -755,6 +755,103 @@ def test_backfill_second_run_touches_zero_agreements(db_with_agreements, capture
     assert "touched 0 agreement(s) (out of 6 found)." in summary[0]
 
 
+def test_backfill_counts_touched_on_promotion_only_run(loaded_db, captured_log_messages):
+    """An agreement whose NEW_AWARD action/tracker already exist (PLANNED/ACTIVE, from an
+    earlier IN_EXECUTION-only run) and whose BLIs are already linked must still be counted
+    as touched when this run promotes the action to AWARDED and completes/approves the
+    tracker — those are real mutations with no create/link counter of their own.
+
+    Uses an isolated agreement (not the shared db_with_agreements fixture) so the touched
+    count in the summary log reflects only this one agreement."""
+    sys_user = get_or_create_sys_user(loaded_db)
+    loaded_db.commit()
+    uid = sys_user.id
+
+    project = ResearchProject(id=9100, title="Promotion Only Test Project", short_title="POTP")
+    loaded_db.add(project)
+    loaded_db.commit()
+
+    proc_shop = ProcurementShop(id=9100, name="Promotion Only PSC", abbr="POPSC", created_by=uid)
+    loaded_db.add(proc_shop)
+    loaded_db.commit()
+
+    contract = ContractAgreement(
+        id=9023,
+        name="Contract Promotion Only",
+        project_id=9100,
+        awarding_entity_id=9100,
+        created_by=uid,
+        updated_by=uid,
+    )
+    loaded_db.add(contract)
+    loaded_db.commit()
+
+    new_award_action = ProcurementAction(
+        agreement_id=9023,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=9100,
+        created_by=uid,
+    )
+    loaded_db.add(new_award_action)
+    loaded_db.flush()
+
+    new_award_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9023, procurement_action=new_award_action.id, created_by=uid
+    )
+    loaded_db.add(new_award_tracker)
+    loaded_db.flush()
+
+    mod_action = ProcurementAction(
+        agreement_id=9023,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=9100,
+        created_by=uid,
+    )
+    loaded_db.add(mod_action)
+    loaded_db.flush()
+
+    mod_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9023, procurement_action=mod_action.id, status=ProcurementTrackerStatus.ACTIVE, created_by=uid
+    )
+    mod_tracker.activate_first_step()
+    loaded_db.add(mod_tracker)
+    loaded_db.flush()
+
+    obligated_bli = ContractBudgetLineItem(
+        id=90023,
+        agreement_id=9023,
+        amount=2300,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 10, 1),
+        procurement_action_id=new_award_action.id,
+        created_by=uid,
+    )
+    execution_bli = ContractBudgetLineItem(
+        id=90024,
+        agreement_id=9023,
+        amount=2400,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        procurement_action_id=mod_action.id,
+        created_by=uid,
+    )
+    loaded_db.add_all([obligated_bli, execution_bli])
+    loaded_db.commit()
+
+    backfill_procurement_records(loaded_db, sys_user)
+
+    loaded_db.refresh(new_award_action)
+    loaded_db.refresh(new_award_tracker)
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
+    assert new_award_tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert new_award_tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status == "APPROVED"
+
+    summary = [m for m in captured_log_messages if m.startswith("Backfill complete.")]
+    assert len(summary) == 1
+    assert "touched 1 agreement(s) (out of 1 found)." in summary[0]
+
+
 # ---- BLI linking tests (non-mod) ----
 
 
