@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "mcp__figma__create_new_file",
+      "mcp__figma__generate_diagram",
+      "mcp__figma__generate_figma_design",
+      "mcp__figma__add_code_connect_map",
+      "mcp__figma__send_code_connect_mappings",
+      "mcp__figma__upload_assets",
+      "mcp__figma__use_figma"
+    ]
+  }
+}
