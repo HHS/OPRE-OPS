@@ -1,15 +1,21 @@
 ---
 name: visual-check
 description: Use when the user asks to visually check, eyeball, screenshot, or review the UI of their current branch/PR in OPRE-OPS ("does this look right", "visual check", "check the UI changes"). Drives the running app (or Storybook) with Playwright MCP, screenshots the pages/components the diff touches at desktop and mobile widths, and reports visual, a11y, and console issues.
+argument-hint: [pr# | route | figma-url]
 ---
 
 # Visual Check (OPRE-OPS)
 
 Look at the UI the current branch changes the way a reviewer would, and report what's wrong. Screenshots are evidence for the report, not the deliverable.
 
+## Prerequisites
+- **Playwright MCP** for driving the browser (`browser_navigate`, `browser_take_screenshot`, etc.). Required for every run.
+- **Figma MCP** for design comparison (step 6) — only needed if a Figma link is in play.
+- Check they're available before starting. If Playwright MCP is missing, tell the user and stop — the skill can't run without it. If only Figma MCP is missing, skip step 6 and say so explicitly in the report instead of guessing at design intent.
+
 ## Inputs
-- Default target: current branch diffed against `main`.
-- User may instead name routes, components, a PR number, or a Figma URL.
+- Default target: current branch diffed against `origin/main`.
+- User may instead name routes, components, a PR number, or a Figma URL. For a **PR number**: `gh pr diff <num> --name-only` to get changed files (and `gh pr checkout <num>` first if you need to run the app against it), rather than diffing whatever branch happens to be checked out.
 - Mode: **app** (full stack, real data) or **storybook** (isolated component states). Pick app if the diff touches `src/pages/` or routing; storybook if it only touches `src/components/UI/` and stories exist; ask if unclear.
 
 ## Workflow
@@ -24,25 +30,26 @@ Look at the UI the current branch changes the way a reviewer would, and report w
 - [ ] 7. Report; clean up
 ```
 
-**1. Scope.** `git diff --name-only main...HEAD -- frontend/src`. Map changed files to what to look at:
-- `src/pages/<X>/...` → find its route in the router (`grep -rn "path:" frontend/src/index.jsx frontend/src/router*` or similar) → URL(s).
+**1. Scope.** `git fetch origin main && git diff --name-only origin/main...HEAD -- frontend/src` (fetching first avoids a stale local `main` pulling in unrelated commits). Map changed files to what to look at:
+- `src/pages/<X>/...` → find its route in the router (`grep -n 'path="' frontend/src/index.jsx` — routes are JSX attributes, not object-literal `path:`) → URL(s).
 - `src/components/...` → find which pages render it (`grep -rln "<ComponentName"`), and its `*.stories.jsx` if any.
 - Also read the branch's story file in `.claude/stories/` if one matches the ticket number — it states intended behavior and states to check.
-- **Collect Figma links** (used in step 6). Ticket number = digits from the branch name (`OPS-6328/...` → `6328`). Search, in order, and keep every `figma.com/(design|file|proto)/...` URL found:
+- **Ticket number** = digits from the branch name (`OPS-6328/...` → `6328`). Many branches are ticket-less by convention (`docs/...`, `OPS/hotfix-...`, per root `CLAUDE.md`) — if the branch name has no digits, skip the ticket-based lookups below (story file glob, `gh issue view`) rather than running them with an empty/garbage ticket value.
+- **Collect Figma links** (used in step 6), only if a ticket number was found. Search, in order, and keep every `figma.com/(design|file|proto)/...` URL found:
   1. Story file(s): `grep -oE "https://www\.figma\.com/[^ )>\"']+" .claude/stories/*<ticket>*.md` — usually on a `**Design:**` line.
   2. Storybook stories for changed components: `parameters.design.url` (or any figma.com URL) in the co-located `*.stories.jsx`.
   3. The GitHub issue: `gh issue view <ticket> --json body,comments` and grep the same pattern.
   Note which link came from where, and which target each one maps to (by `node-id` or surrounding text). Links without a `node-id` point at a whole file — ask the user which frame rather than guessing.
 List the targets (and any Figma links found) to the user in one line before capturing. Cap at ~6 targets; ask before doing more.
 
-**2. Running?** App: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` and `:8080`. If not up, tell the user and offer `docker compose up --build -d` (takes minutes; don't start it silently). Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
+**2. Running?** App: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` and `:8080`. If not up, tell the user and offer `docker compose up --build -d` (or `podman compose` if that's the user's container runtime) — takes minutes; don't start it silently. Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
 
 **3. Sign in (app mode only).** Navigate to `http://localhost:3000/login`, click "Sign in with FakeAuth®", choose the user type (default `system_owner`; use `basic_user` when checking permission-dependent UI). These are local seeded test users only.
 
 **4. Capture.** For each target, at **1280×800** and **375×812** (`browser_resize`):
 - Navigate, `browser_wait_for` the main content (not a fixed sleep), then `browser_take_screenshot` (full page).
 - Capture the states the change affects: empty, loading, error, long text, hover/focus, open modal, validation errors. Use the story file / diff to decide which matter — don't capture every state of every page.
-- Save to a temp dir outside the repo: `mktemp -d /tmp/visual-check.XXXX`. Name files `<target>-<width>-<state>.png`.
+- Request a save path under a temp dir outside the repo: `mktemp -d /tmp/visual-check.XXXX`, named `<target>-<width>-<state>.png`. The MCP server's output dir config may override where the file actually lands — if so, report wherever it actually saved rather than assuming the requested path.
 
 **5. Inspect** each capture:
 - Look at the screenshot: overlap, clipping, truncation, misalignment, wrong USWDS spacing/colors, broken responsive layout, missing icons, unstyled elements.
@@ -57,14 +64,15 @@ List the targets (and any Figma links found) to the user in one line before capt
 **7. Report**, grouped by target, most severe first:
 - 🔴 broken (unusable, overlapping, data wrong) · 🟠 off-spec (doesn't match design/intent) · 🟡 polish · ℹ️ console/a11y notes
 - Each finding: what, where (target + width + state), screenshot path, and the likely source file if obvious.
-- **Introduced vs. pre-existing.** For each finding, check whether the responsible component/style file is in `git diff --name-only main...HEAD`. If not (or if the before/after baseline shows it on `main` too), put it in a separate **Pre-existing (not from this branch)** section at the end — still reported, but not counted against the branch. Say how you decided ("styles in X.scss, unchanged on this branch").
+- **Introduced vs. pre-existing.** For each finding, check whether the responsible component/style file is in `git diff --name-only origin/main...HEAD`. If not (or if the before/after baseline shows it on `main` too), put it in a separate **Pre-existing (not from this branch)** section at the end — still reported, but not counted against the branch. Say how you decided ("styles in X.scss, unchanged on this branch").
 - **Shared components → design decision, not a local fix.** If the responsible code is a shared component (`src/components/Layouts/**`, `src/components/UI/**`, or anything imported by 3+ pages — check with `grep -rln "<Name"`), mark it ⚖️ **needs UX decision**, list the pages it affects, and don't suggest a page-level override. The question for UX is "change the shared component everywhere, or change the design?"
 - End with what was NOT checked (states skipped, targets capped).
 Leave the temp dir in place and tell the user the path (they may want to attach images to the PR). Don't edit code unless asked.
 
 ## Before/after (optional)
-If the user wants a baseline: run steps 3–4 on `main` first (they check it out / restart), saving with an `-before` suffix, then on the branch with `-after`, and report differences between the pairs.
+If the user wants a baseline: run steps 3–4 on `origin/main` first (they check it out / restart), saving with an `-before` suffix, then on the branch with `-after`, and report differences between the pairs.
 
-## Notes from use
-- **2026-10-01, run 1.** ✅ Caught a text difference vs. Figma (turned out to be mock data in the design — low value but valid). ❌ Missed a padding mismatch vs. Figma (pre-existing, not from the branch). Changes: added required numeric spacing comparison against `get_design_context`, mock-data vs. static-copy classification, and an introduced-vs-pre-existing split in the report.
-- **Run 1 follow-up.** The padding mismatch lives in `TablePageLayout` (shared by 6 list pages), so it's a UX decision (fix everywhere vs. adjust design), not a branch fix. Added the ⚖️ shared-component rule.
+## Lessons
+- Screenshot comparison alone misses small padding/margin/gap differences — always pull numeric values via `get_design_context` and `getComputedStyle` rather than eyeballing images.
+- Data-driven text (names, amounts, dates from seed data) frequently differs from Figma's mock data without being a real bug — classify by format, not by exact-match.
+- A visual mismatch traced to a shared component (e.g. `TablePageLayout`) is a UX decision, not a branch-level fix — flag it ⚖️ rather than suggesting a page-level override.
