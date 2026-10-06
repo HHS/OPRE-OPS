@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import ReleaseNotesCards from "./ReleaseNotesCards";
+import ReleaseNotesCards, { LeftCard } from "./ReleaseNotesCards";
 
 describe("ReleaseNotesCards Component", () => {
     const mockProps = {
@@ -106,5 +106,25 @@ describe("ReleaseNotesCards Component", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
         expect(screen.getByText("All data should now be updated directly in OPS")).toBeInTheDocument();
+    });
+
+    describe("LeftCard headingLevel", () => {
+        it("defaults to its original per-label levels (h2, h2, h3) so /release-notes is unchanged", () => {
+            render(<LeftCard {...mockProps} />);
+            expect(screen.getByRole("heading", { level: 2, name: "Last Release" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 2, name: "OPS Version" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
+        });
+
+        it("renders its labels at the requested level so it nests under a parent section", () => {
+            render(
+                <LeftCard
+                    {...mockProps}
+                    headingLevel="h3"
+                />
+            );
+            expect(screen.getByRole("heading", { level: 3, name: "Last Release" })).toBeInTheDocument();
+            expect(screen.queryByRole("heading", { level: 2, name: "Last Release" })).not.toBeInTheDocument();
+        });
     });
 });

@@ -58,8 +58,12 @@ describe("Home", () => {
         it("renders only the routed outlet (no hero or legacy tabs) when flag is on", () => {
             isHomepageRedesignEnabled.mockReturnValue(true);
             renderWithProviders(<Home />);
+            // The redesign layout drops the hero + legacy tabs; landing content (welcome
+            // message, OPS Updates cards, tab nav) comes from HomeLanding via the routed
+            // Outlet, not the Home layout itself.
             expect(screen.queryByText("Plan, track & collaborate")).not.toBeInTheDocument();
             expect(screen.queryByText("About OPS")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("welcome-message")).not.toBeInTheDocument();
         });
     });
 });

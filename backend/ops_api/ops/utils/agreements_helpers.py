@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 
 from flask import current_app
@@ -5,9 +6,21 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 
-from models import Agreement, User
+from models import Agreement, BudgetLineItemStatus, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.users import is_super_user
+
+# Budget line statuses that block a Procurement Shop change. Explicit set rather than an
+# ordinal comparison against BudgetLineItemStatus's declaration order, since PLANNED_MOD sorts
+# after OBLIGATED there and an ordinal ">= IN_EXECUTION" check would miss it if the enum were
+# ever reordered (and raises on a NULL status, which this set treats as not-blocking).
+PROCUREMENT_SHOP_BLOCKING_BLI_STATUSES = frozenset(
+    {
+        BudgetLineItemStatus.IN_EXECUTION,
+        BudgetLineItemStatus.OBLIGATED,
+        BudgetLineItemStatus.PLANNED_MOD,
+    }
+)
 
 # Name of the unique index that enforces case-insensitive (name, agreement_type) uniqueness.
 # Defined in models/agreements.py and migration 2025_12_09_1950-d8f34037b656.
@@ -164,3 +177,55 @@ def update_agreement(agreement: Agreement, data: dict[str, Any]) -> None:
     for item in data:
         if item in [c_attr.key for c_attr in inspect(agreement).mapper.column_attrs]:
             setattr(agreement, item, data[item])
+
+
+def has_proc_shop_blocking_bli(agreement: Agreement) -> bool:
+    """
+    Whether any budget line on ``agreement`` is in a status that blocks a Procurement Shop
+    change (IN_EXECUTION, OBLIGATED, or PLANNED_MOD).
+
+    Deliberately takes no ``user`` argument — this is the predicate ``AgreementsService.
+    _handle_proc_shop_change`` calls directly (that call site has no authenticated user in
+    some unit tests). ``get_procurement_shop_locked_reason`` below wraps this with the other,
+    user-aware conditions.
+    """
+    return any(bli.status in PROCUREMENT_SHOP_BLOCKING_BLI_STATUSES for bli in agreement.budget_line_items)
+
+
+class ProcurementShopLockReason(str, Enum):
+    """Why the Procurement Shop on an agreement cannot be changed, if at all."""
+
+    BLI_IN_EXECUTION = "bli_in_execution"
+    CHANGE_REQUEST_IN_REVIEW = "change_request_in_review"
+    AWARDED = "awarded"
+
+
+def get_procurement_shop_locked_reason(agreement: Agreement, user: User) -> ProcurementShopLockReason | None:
+    """
+    Single source of truth for whether ``agreement``'s Procurement Shop can be changed by
+    ``user``, and if not, why. Mirrors (and is consumed by) ``ProcurementShopChangeRule`` so the
+    validation rule and this reason can never drift apart; see ``AgreementsService.
+    _get_procurement_shop_locked_message`` for the user-facing copy.
+
+    Precedence intentionally mirrors the validator chain order: ``ProcurementShopChangeRule``
+    runs before ``ImmutableAwardedFieldsRule`` in ``AwardedAgreementValidator``, so an awarded
+    agreement with blocking budget lines reports BLI_IN_EXECUTION — the error a user (including
+    a superuser) actually gets back from the API.
+    """
+    if has_proc_shop_blocking_bli(agreement):
+        return ProcurementShopLockReason.BLI_IN_EXECUTION
+
+    change_requests_in_review = agreement.change_requests_in_review
+    if change_requests_in_review and any(cr.has_proc_shop_change for cr in change_requests_in_review):
+        return ProcurementShopLockReason.CHANGE_REQUEST_IN_REVIEW
+
+    # Deliberately NOT gated on `"awarding_entity_id" in agreement.immutable_awarded_fields`
+    # (which ImmutableAwardedFieldsRule checks): that list is empty for Direct Obligation and
+    # IAA agreements, which would make an awarded Direct Obligation/IAA report as unlocked here
+    # even though today's frontend locks it. Locking more than the backend would reject is safe
+    # — a disabled field can never produce an unsavable state — so this condition stays
+    # intentionally more conservative than ImmutableAwardedFieldsRule for those two types.
+    if agreement.is_awarded and not user.is_superuser:
+        return ProcurementShopLockReason.AWARDED
+
+    return None

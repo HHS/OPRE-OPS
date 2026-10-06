@@ -47,7 +47,10 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import (
+    ProcurementShopLockReason,
     check_user_association,
+    get_procurement_shop_locked_reason,
+    has_proc_shop_blocking_bli,
     is_agreement_name_unique_violation,
 )
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
@@ -620,14 +623,11 @@ class AgreementsService(OpsService[Agreement]):
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
-        # Block if any BLIs are IN_EXECUTION or higher (use explicit set, not ordinal position,
-        # to avoid PLANNED_MOD sorting after OBLIGATED in the enum definition order)
-        _blocked_statuses = {
-            BudgetLineItemStatus.IN_EXECUTION,
-            BudgetLineItemStatus.OBLIGATED,
-            BudgetLineItemStatus.PLANNED_MOD,
-        }
-        if any(bli.status in _blocked_statuses for bli in agreement.budget_line_items):
+        # Mirrors ProcurementShopChangeRule's BLI-status check via the shared predicate (OPS-6312)
+        # so this defense-in-depth guard can't drift from the validation rule that normally catches
+        # this first. No user is available at this call site, so the (user-aware) full reason
+        # lookup — get_procurement_shop_locked_reason — isn't used here.
+        if has_proc_shop_blocking_bli(agreement):
             raise ValidationError(
                 "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
             )
@@ -913,6 +913,29 @@ class AgreementsService(OpsService[Agreement]):
             return "Cannot delete an awarded agreement"
         if reason == "non_draft_bli":
             return "Cannot delete an agreement with budget lines that are not in Draft status"
+        return None
+
+    def _get_procurement_shop_locked_message(self, agreement: Agreement, user: User) -> str | None:
+        """
+        Human-readable reason the Procurement Shop control is locked for ``user`` on
+        ``agreement``, or None if it isn't locked. Mirrors ``_get_locked_message`` above: the
+        reason code (``get_procurement_shop_locked_reason``) is kept separate from this display
+        copy so ``ProcurementShopChangeRule``'s API error strings and this tooltip text can differ
+        without the underlying rule drifting (OPS-6312).
+        """
+        reason = get_procurement_shop_locked_reason(agreement, user)
+        if reason == ProcurementShopLockReason.BLI_IN_EXECUTION:
+            return (
+                "The Procurement Shop cannot be edited because this agreement has budget lines in "
+                "Executing, Obligated or Planned Mod status."
+            )
+        if reason == ProcurementShopLockReason.CHANGE_REQUEST_IN_REVIEW:
+            return (
+                "There are pending edits In Review for the Procurement Shop.\n It cannot be edited "
+                "until pending edits have been approved or declined."
+            )
+        if reason == ProcurementShopLockReason.AWARDED:
+            return "The Procurement Shop cannot be edited on an awarded agreement."
         return None
 
 
@@ -1397,14 +1420,6 @@ def _get_page_agreements(
         from models.procurement_tracker import ProcurementTracker
 
         options.append(selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps))
-
-    # Expire all ProcurementShop objects from the identity map before loading the page.
-    # Earlier queries (BudgetLineItem.fees subqueries) may have populated ProcurementShop
-    # instances without their procurement_shop_fees collection, causing selectinload to skip
-    # reloading an already-cached instance and returning fee_percentage=0.
-    for obj in list(session.identity_map.values()):
-        if isinstance(obj, ProcurementShop):
-            session.expire(obj)
 
     agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
 

@@ -5,8 +5,9 @@ import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
 import goldDiagonal from "../../images/gold-diagnal.png";
 
 const Home = () => {
-    // Redesign: the tab nav lives in HomeLanding (nested under the index route) instead
-    // of here, since the redesign has no hero and HomeLanding's own tabs replace these.
+    // Redesign: the Home layout is just chrome around the routed content. The welcome
+    // message, OPS Updates cards, and tab nav all live in HomeLanding (the pathless
+    // layout route wrapping "/", "/ops-at-a-glance", "/ops-benefits"), not here.
     if (isHomepageRedesignEnabled()) {
         return (
             <App>
