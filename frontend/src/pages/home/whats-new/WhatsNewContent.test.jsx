@@ -46,13 +46,16 @@ describe("WhatsNewContent", () => {
     it("renders the latest release collapsed into an Accordion", () => {
         render(<WhatsNewContent />);
 
-        expect(screen.getByRole("button", { name: /Release Notes 1.129.0/ })).toBeInTheDocument();
-        expect(screen.getByText("CSRF Protection")).toBeInTheDocument();
+        const latestButton = screen.getByRole("button", { name: /Release Notes 1.129.0/ });
+        expect(latestButton).toBeInTheDocument();
+        expect(latestButton).toHaveAttribute("aria-expanded", "false");
     });
 
     it("renders older releases in closed accordions", () => {
         render(<WhatsNewContent />);
 
-        expect(screen.getByRole("button", { name: /Release Notes 1.128.0/ })).toBeInTheDocument();
+        const olderButton = screen.getByRole("button", { name: /Release Notes 1.128.0/ });
+        expect(olderButton).toBeInTheDocument();
+        expect(olderButton).toHaveAttribute("aria-expanded", "false");
     });
 });
