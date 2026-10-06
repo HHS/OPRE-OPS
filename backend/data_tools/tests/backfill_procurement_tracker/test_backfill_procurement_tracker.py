@@ -1367,6 +1367,58 @@ def test_backfill_missing_award_step_is_approved(db_with_agreements):
     assert award_step.award_date == date(2023, 5, 1)
 
 
+def test_backfill_missing_award_leaves_date_unset_when_date_needed_is_null(db_with_agreements):
+    """When every OBLIGATED BLI's date_needed is null, the backfill must leave the award
+    date unset rather than guessing — no fallback to an agreement's existing award_date,
+    since fabricating a date here would mask a real data gap that should instead be
+    resolved by asking OPRE for the correct date."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    uid = sys_user.id
+
+    contract = ContractAgreement(
+        id=9020,
+        name="Contract Obligated Null Date Needed",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    db_with_agreements.add(contract)
+    db_with_agreements.commit()
+
+    bli = ContractBudgetLineItem(
+        id=90020,
+        agreement_id=9020,
+        amount=2000,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=None,
+        created_by=uid,
+    )
+    db_with_agreements.add(bli)
+    db_with_agreements.commit()
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9020,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.date_awarded_obligated is None
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9020,
+            ProcurementTracker.procurement_action == action.id,
+        )
+    ).scalar_one()
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date is None
+
+
 def test_backfill_missing_award_reuses_existing_action(db_with_agreements):
     """Agreement 9010 (AA) already has an AWARDED action — backfill should reuse it, not duplicate."""
     sys_user = get_or_create_sys_user(db_with_agreements)

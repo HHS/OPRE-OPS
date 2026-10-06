@@ -198,6 +198,7 @@ def _sync_procurement_records_for_bli(
         link_blis_to_action(session, agreement, action, BudgetLineItemStatus.IN_EXECUTION)
         commit_or_rollback(session)
     elif bli.status == BudgetLineItemStatus.OBLIGATED:
+        # No fallback if date_needed is null — leave the date unset rather than guessing.
         award_date = get_earliest_obligated_date_needed(session, agreement.id)
         action, _, _, _ = get_or_create_procurement_records_for_new_award(
             session,

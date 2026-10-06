@@ -136,6 +136,7 @@ def backfill_procurement_records(
                 logger.debug(f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod.")
 
                 # NEW_AWARD: action (AWARDED) + tracker (COMPLETED) + earliest-FY OBLIGATED BLIs
+                # No fallback if date_needed is null — leave the date unset rather than guessing.
                 award_date = get_earliest_obligated_date_needed(session, agreement.id)
                 new_award_action, _, ac, tc = get_or_create_procurement_records_for_new_award(
                     session,
@@ -276,10 +277,10 @@ def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
 
     for agreement in agreements:
         try:
-            # Prefer the earliest OBLIGATED BLI's date_needed; fall back to a
-            # date already recorded on an existing NEW_AWARD action in case
-            # every OBLIGATED BLI's date_needed is null.
-            award_date = get_earliest_obligated_date_needed(session, agreement.id) or agreement.award_date
+            # No fallback when every OBLIGATED BLI's date_needed is null — leave
+            # date_awarded_obligated/award_date unset rather than guessing, so the
+            # gap is visible and resolved by asking OPRE for the real date.
+            award_date = get_earliest_obligated_date_needed(session, agreement.id)
 
             action, _, ac, tc = get_or_create_procurement_records_for_new_award(
                 session,
