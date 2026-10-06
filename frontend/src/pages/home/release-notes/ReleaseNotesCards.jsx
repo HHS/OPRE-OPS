@@ -16,53 +16,8 @@ import Tag from "../../../components/UI/Tag";
  */
 
 /**
- * @component - Displays a summary of the latest release notes, including release date, version, and counts of changes.
- * @param {ReleaseNotesCardProps} props - Component props.
- * @returns {React.ReactElement} The rendered release notes summary card.
- */
-const ReleaseNotesCards = ({
-    releaseDate,
-    lastVersion,
-    totalReleaseChanges,
-    totalNewFeatures,
-    totalFixes,
-    totalImprovements
-}) => {
-    return (
-        <section
-            className="display-flex flex-justify"
-            data-cy="release-notes-cards"
-        >
-            <LeftCard
-                releaseDate={releaseDate}
-                lastVersion={lastVersion}
-                totalReleaseChanges={totalReleaseChanges}
-                totalNewFeatures={totalNewFeatures}
-                totalFixes={totalFixes}
-                totalImprovements={totalImprovements}
-            />
-            <RightCard />
-        </section>
-    );
-};
-
-/**
- * @component - Displays a card noting that data is now updated directly in OPS.
- * @private
- * @returns {React.ReactElement} The rendered right card.
- */
-function RightCard() {
-    return (
-        <RoundedBox>
-            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Data updates</h2>
-            <p className="font-sans-lg text-bold line-height-sans-1">All data should now be updated directly in OPS</p>
-        </RoundedBox>
-    );
-}
-
-/**
- * @component - LeftCard component displays the summary of the latest release notes.
- * @private
+ * @component - Displays the summary of the latest release notes: release date, version,
+ * and counts of changes.
  * @param {ReleaseNotesCardProps} props - Component props.
  * @returns {React.ReactElement} The rendered left card.
  */
@@ -133,5 +88,3 @@ export function LeftCard({
         </RoundedBox>
     );
 }
-
-export default ReleaseNotesCards;
