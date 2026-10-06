@@ -8,7 +8,7 @@ import ReleaseNote from "./ReleaseNote";
  * releases, each older release in a closed Accordion.
  * @param {Object} props
  * @param {boolean} [props.wrapLatestInAccordion=false] - When true, renders the latest
- * release in a closed Accordion like the older releases, instead of a plain always-expanded section.
+ * release in an Accordion (open by default, per Figma), instead of a plain non-collapsible section.
  * @returns {React.ReactElement}
  */
 const ReleaseNotesList = ({ wrapLatestInAccordion = false }) => {
@@ -31,7 +31,6 @@ const ReleaseNotesList = ({ wrapLatestInAccordion = false }) => {
                 <Accordion
                     heading={latestHeading}
                     level={2}
-                    isClosed
                 >
                     {latestChanges}
                 </Accordion>

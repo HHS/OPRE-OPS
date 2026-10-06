@@ -43,12 +43,13 @@ describe("WhatsNewContent", () => {
         expect(screen.getByText(/This is a list of release notes/)).toBeInTheDocument();
     });
 
-    it("renders the latest release collapsed into an Accordion", () => {
+    it("renders the latest release in an open Accordion, per Figma", () => {
         render(<WhatsNewContent />);
 
         const latestButton = screen.getByRole("button", { name: /Release Notes 1.129.0/ });
         expect(latestButton).toBeInTheDocument();
-        expect(latestButton).toHaveAttribute("aria-expanded", "false");
+        expect(latestButton).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByText("CSRF Protection")).toBeInTheDocument();
     });
 
     it("renders older releases in closed accordions", () => {

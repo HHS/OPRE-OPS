@@ -52,13 +52,14 @@ describe("ReleaseNotesList", () => {
         expect(screen.queryByRole("button", { name: /Release Notes 1.129.0/ })).not.toBeInTheDocument();
     });
 
-    it("renders the latest release in a closed Accordion when wrapLatestInAccordion is true", () => {
+    it("renders the latest release in an open Accordion when wrapLatestInAccordion is true", () => {
         render(<ReleaseNotesList wrapLatestInAccordion />);
 
         const latestButton = screen.getByRole("button", { name: /Release Notes 1.129.0 - Formatted 2025-06-24/ });
         expect(latestButton).toBeInTheDocument();
-        expect(latestButton).toHaveAttribute("aria-expanded", "false");
+        expect(latestButton).toHaveAttribute("aria-expanded", "true");
         expect(screen.queryByRole("heading", { level: 2, name: "Release Notes: 1.129.0" })).not.toBeInTheDocument();
+        expect(screen.getByText("CSRF Protection")).toBeInTheDocument();
     });
 
     it("renders older releases in closed accordions regardless of wrapLatestInAccordion", () => {
