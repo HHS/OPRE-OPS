@@ -9,8 +9,8 @@ argument-hint: [pr# | route | figma-url]
 Look at the UI the current branch changes the way a reviewer would, and report what's wrong. Screenshots are evidence for the report, not the deliverable.
 
 ## Prerequisites
-- **Playwright MCP** for driving the browser (`browser_navigate`, `browser_take_screenshot`, etc.). Required for every run.
-- **Figma MCP** for design comparison (step 6) — only needed if a Figma link is in play.
+- **Playwright MCP** for driving the browser (`browser_navigate`, `browser_take_screenshot`, etc.). Required for every run. The project's `.mcp.json` configures it with `--output-dir /tmp/playwright-mcp`, so captures land there, not in the repo. Also needs Google Chrome installed locally — the server launches it by default, and the first browser call fails without it.
+- **Figma MCP** for design comparison (step 6) — only needed if a Figma link is in play. Note Figma's per-seat MCP rate limits: View/Collab seats get 20 read calls/month, which a single design-comparison run can mostly consume; Dev/Full seats get 200–600/day. If calls are failing with a rate-limit error, say so rather than reporting "no differences found."
 - Check they're available before starting. If Playwright MCP is missing, tell the user and stop — the skill can't run without it. If only Figma MCP is missing, skip step 6 and say so explicitly in the report instead of guessing at design intent.
 
 ## Inputs
@@ -42,14 +42,14 @@ Look at the UI the current branch changes the way a reviewer would, and report w
   Note which link came from where, and which target each one maps to (by `node-id` or surrounding text). Links without a `node-id` point at a whole file — ask the user which frame rather than guessing.
 List the targets (and any Figma links found) to the user in one line before capturing. Cap at ~6 targets; ask before doing more.
 
-**2. Running?** App: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` and `:8080`. If not up, tell the user and offer `docker compose up --build -d` (or `podman compose` if that's the user's container runtime) — takes minutes; don't start it silently. Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
+**2. Running?** App: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` and `:8080`. If not up, tell the user and offer `docker compose up --build -d` — takes minutes; don't start it silently. Storybook: `http://localhost:6006`; offer `cd frontend && bun run storybook` in the background.
 
 **3. Sign in (app mode only).** Navigate to `http://localhost:3000/login`, click "Sign in with FakeAuth®", choose the user type (default `system_owner`; use `basic_user` when checking permission-dependent UI). These are local seeded test users only.
 
 **4. Capture.** For each target, at **1280×800** and **375×812** (`browser_resize`):
 - Navigate, `browser_wait_for` the main content (not a fixed sleep), then `browser_take_screenshot` (full page).
 - Capture the states the change affects: empty, loading, error, long text, hover/focus, open modal, validation errors. Use the story file / diff to decide which matter — don't capture every state of every page.
-- Save with a relative filename (`<target>-<width>-<state>.png`) — Playwright MCP resolves explicit filenames against its own workspace/output root and may reject or ignore an absolute path like `/tmp/...`. After capture, move the returned file into a temp dir outside the repo (`mktemp -d /tmp/visual-check.XXXX`) for the report.
+- Save with a relative filename (`<target>-<width>-<state>.png`) — Playwright MCP resolves explicit filenames against its workspace/output root and **rejects** an absolute path outside it (`File access denied: ... is outside allowed roots`). With the project's `--output-dir /tmp/playwright-mcp` config, use `mktemp -d /tmp/playwright-mcp/visual-check.XXXX` for the report's temp dir — paths under there are allowed.
 
 **5. Inspect** each capture:
 - Look at the screenshot: overlap, clipping, truncation, misalignment, wrong USWDS spacing/colors, broken responsive layout, missing icons, unstyled elements.
