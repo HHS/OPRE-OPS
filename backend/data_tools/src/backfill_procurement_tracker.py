@@ -39,7 +39,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
 )
-from models.procurement_action import ProcurementActionStatus
+from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 from models.procurement_tracker import ProcurementTracker, ProcurementTrackerStatus
 from models.procurement_workflow import (
     get_earliest_obligated_date_needed,
@@ -232,12 +232,17 @@ AWARD_BACKFILL_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA, Agre
 
 def get_agreements_missing_award_tracker(session: Session) -> list[Agreement]:
     """
-    Find CONTRACT, AA, and IAA agreements that have an OBLIGATED BLI but zero
-    ProcurementTrackers.
+    Find CONTRACT, AA, and IAA agreements that have an OBLIGATED BLI but no
+    NEW_AWARD ProcurementTracker.
 
     Covers agreements imported directly at OBLIGATED status (e.g. historical/
     already-awarded data), which skip IN_EXECUTION entirely and are therefore
     invisible to get_agreements_with_in_execution_blis().
+
+    Excludes only agreements with an existing NEW_AWARD tracker, not any tracker —
+    an agreement can have a MODIFICATION-only tracker (e.g. an IN_EXECUTION BLI
+    processed as a modification while its OBLIGATED sibling never got a NEW_AWARD
+    tracker of its own) and still need one backfilled here.
     """
     obligated_agreement_ids = (
         select(BudgetLineItem.agreement_id)
@@ -245,13 +250,17 @@ def get_agreements_missing_award_tracker(session: Session) -> list[Agreement]:
         .where(BudgetLineItem.agreement_id.isnot(None))
     )
 
-    agreements_with_tracker = select(ProcurementTracker.agreement_id)
+    agreements_with_new_award_tracker = (
+        select(ProcurementTracker.agreement_id)
+        .join(ProcurementAction, ProcurementTracker.procurement_action == ProcurementAction.id)
+        .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+    )
 
     query = (
         select(Agreement)
         .where(Agreement.agreement_type.in_(AWARD_BACKFILL_AGREEMENT_TYPES))
         .where(Agreement.id.in_(obligated_agreement_ids))
-        .where(Agreement.id.not_in(agreements_with_tracker))
+        .where(Agreement.id.not_in(agreements_with_new_award_tracker))
         .order_by(Agreement.id)
     )
 
