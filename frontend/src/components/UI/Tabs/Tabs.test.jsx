@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import Tabs from "./Tabs";
 
@@ -27,6 +27,12 @@ describe("Tabs", () => {
 
     beforeEach(() => {
         mockNavigate.mockClear();
+    });
+
+    afterEach(() => {
+        Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+        vi.useRealTimers();
+        vi.restoreAllMocks();
     });
 
     it("renders all tabs with correct labels", () => {
@@ -60,6 +66,45 @@ describe("Tabs", () => {
         const secondTab = screen.getByText("Path 2");
         fireEvent.click(secondTab);
 
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+    });
+
+    it("scrolls to top and waits for scrollend before navigating when scrolled", () => {
+        render(<Tabs paths={mockPaths} />);
+        Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
+        const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+        fireEvent.click(screen.getByText("Path 2"));
+
+        expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+        expect(mockNavigate).not.toHaveBeenCalled();
+
+        window.dispatchEvent(new Event("scrollend"));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+    });
+
+    it("falls back to navigating on a timeout if scrollend never fires", () => {
+        vi.useFakeTimers();
+        render(<Tabs paths={mockPaths} />);
+        Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
+        vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+        fireEvent.click(screen.getByText("Path 2"));
+        expect(mockNavigate).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(500);
+
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+    });
+
+    it("navigates immediately when already scrolled to the top", () => {
+        render(<Tabs paths={mockPaths} />);
+        const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+        fireEvent.click(screen.getByText("Path 2"));
+
+        expect(scrollToSpy).not.toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
     });
 

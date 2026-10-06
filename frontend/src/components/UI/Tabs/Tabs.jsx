@@ -29,7 +29,29 @@ const Tabs = ({ paths, rightContent }) => {
         /** @param {React.MouseEvent} e */
         (e) => {
             const pathName = e.currentTarget.getAttribute("data-value") || "";
-            navigate(pathName);
+
+            if (window.scrollY === 0) {
+                navigate(pathName);
+                return;
+            }
+
+            // Scroll to top and wait for it to finish before swapping the tab's content.
+            // Tabs can differ a lot in height, and navigating immediately lets the browser's
+            // native scroll-clamping (instant, unanimatable) jump most of the way the moment
+            // the shorter content mounts — only the small remainder animates, which looks like
+            // an abrupt snap instead of a smooth scroll.
+            let settled = false;
+            const goToTab = () => {
+                if (settled) return;
+                settled = true;
+                window.removeEventListener("scrollend", goToTab);
+                navigate(pathName);
+            };
+            window.addEventListener("scrollend", goToTab);
+            // Fallback in case `scrollend` isn't supported or never fires (e.g. the scroll
+            // gets interrupted).
+            setTimeout(goToTab, 500);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         };
 
     const links = paths.map((path) => {
