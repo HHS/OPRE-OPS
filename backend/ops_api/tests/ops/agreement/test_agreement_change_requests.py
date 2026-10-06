@@ -287,11 +287,14 @@ def test_update_awarding_entity_fails_when_agreement_in_review_with_procurement_
 
     # Attempt to trigger another procurement shop change request
     service = AgreementsService(loaded_db)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         service.update(
             test_grant_agreement.id,
             {"awarding_entity_id": 3, "agreement_cls": GrantAgreement},
         )
+    assert exc_info.value.validation_errors == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement that is currently in review."
+    }
 
     # Cleanup - remove the change request (in_review should update automatically)
     loaded_db.delete(cr)
@@ -316,8 +319,11 @@ def test_proc_shop_change_still_blocked_for_in_execution_bli(
     loaded_db.commit()
 
     service = AgreementsService(loaded_db)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         service.update(
             test_grant_agreement.id,
             {"awarding_entity_id": 2, "agreement_cls": GrantAgreement},
         )
+    assert exc_info.value.validation_errors == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+    }

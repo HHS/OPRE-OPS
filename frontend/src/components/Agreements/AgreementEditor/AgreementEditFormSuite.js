@@ -67,6 +67,11 @@ const suite = create((data = {}, fieldName) => {
     });
     test("procurement-shop-select", "This is required information", () => {
         if (isGrant) return;
+        // Skip the required check when the backend has locked the field (OPS-6312):
+        // otherwise an agreement with no procurement shop set AND a locking budget line
+        // (e.g. OBLIGATED) would show a permanent "required" error under a disabled
+        // dropdown the user can never clear, blocking Save Changes for every other edit.
+        if (data.procurementShopLocked) return;
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });

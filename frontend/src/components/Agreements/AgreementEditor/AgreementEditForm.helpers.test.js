@@ -95,10 +95,10 @@ describe("AgreementEditForm.helpers", () => {
                 expect(result).toBe(true);
             });
 
-            it("should return true for ProcurementShop when in immutableFields", () => {
+            it("should return false for ProcurementShop regardless of immutableFields (OPS-6312: locking comes from _meta.procurementShopLockedMessage, not this awarded-fields map)", () => {
                 const immutableFields = ["awarding_entity_id"];
                 const result = isFieldDisabled(AgreementFields.ProcurementShop, immutableFields, false, true);
-                expect(result).toBe(true);
+                expect(result).toBe(false);
             });
 
             it("should return true for AgreementReason when in immutableFields", () => {
@@ -224,9 +224,9 @@ describe("AgreementEditForm.helpers", () => {
                 ).toBe(true);
             });
 
-            it("should correctly map ProcurementShop field to 'awarding_entity_id'", () => {
+            it("should NOT disable the ProcurementShop field via the awarded-fields map (OPS-6312: that would resurrect a dead, superuser-exempt duplicate of the backend rule — procurement shop locking comes from _meta.procurementShopLockedMessage instead)", () => {
                 expect(isFieldDisabled(AgreementFields.ProcurementShop, ["awarding_entity_id"], false, true)).toBe(
-                    true
+                    false
                 );
             });
 
