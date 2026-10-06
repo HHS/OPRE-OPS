@@ -3,7 +3,7 @@
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["@playwright/mcp@0.0.83"]
+      "args": ["@playwright/mcp@0.0.83", "--output-dir", "/tmp/playwright-mcp"]
     },
     "figma": {
       "type": "http",

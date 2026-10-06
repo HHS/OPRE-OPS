@@ -254,6 +254,7 @@ data/
 
 # Claude Code
 .claude/settings.local.json
+.playwright-mcp/
 
 .vscode/mcp.json
 
