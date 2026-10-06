@@ -130,7 +130,7 @@ def db_with_agreements(loaded_db):
         created_by=uid,
         updated_by=uid,
     )
-    # Agreement 9013: IAA with OBLIGATED BLI, no tracker → IAA is not eligible, excluded
+    # Agreement 9013: IAA with OBLIGATED BLI, no tracker → IAA is eligible, included
     iaa_1 = IaaAgreement(
         id=9013,
         name="IAA Obligated No Tracker",
@@ -255,7 +255,7 @@ def db_with_agreements(loaded_db):
         date_needed=date(2023, 7, 1),
         created_by=uid,
     )
-    # BLI for agreement 9013 (IAA): OBLIGATED, no tracker/action — IAA not eligible
+    # BLI for agreement 9013 (IAA): OBLIGATED, no tracker/action — IAA is eligible
     bli_16 = IAABudgetLineItem(
         id=90016,
         agreement_id=9013,
@@ -1313,11 +1313,15 @@ def test_missing_award_tracker_query_excludes_grant(db_with_agreements):
     assert 9012 not in result_ids
 
 
-def test_missing_award_tracker_query_excludes_iaa(db_with_agreements):
-    """Agreement 9013: IAA with an OBLIGATED BLI and no tracker → excluded, IAA is not eligible."""
+def test_missing_award_tracker_query_finds_obligated_iaa(db_with_agreements):
+    """Agreement 9013: IAA, OBLIGATED BLI, no tracker → included (IAA is eligible).
+
+    IAA awards backfilled this way are not yet shown on the Awards and Modifications
+    tab (ops_api's AgreementAwardHistoryService._SUPPORTED_AGREEMENT_TYPES is still
+    CONTRACT/AA only) — see the comment on AWARD_BACKFILL_AGREEMENT_TYPES."""
     results = get_agreements_missing_award_tracker(db_with_agreements)
     result_ids = {a.id for a in results}
-    assert 9013 not in result_ids
+    assert 9013 in result_ids
 
 
 # ---- Missing award tracker backfill tests ----
@@ -1483,22 +1487,53 @@ def test_backfill_missing_award_skips_agreement_with_existing_tracker(db_with_ag
     assert action is None
 
 
-def test_backfill_missing_award_never_touches_grant_or_iaa(db_with_agreements):
-    """GRANT (9012) and IAA (9013) agreements are not eligible — never get a tracker/action,
-    even though both have an OBLIGATED BLI and no tracker."""
+def test_backfill_missing_award_never_touches_grant(db_with_agreements):
+    """GRANT (9012) is not eligible — never gets a tracker/action, even though it has
+    an OBLIGATED BLI and no tracker."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_missing_award_trackers(db_with_agreements, sys_user)
 
-    for agreement_id in [9012, 9013]:
-        tracker = db_with_agreements.execute(
-            select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement_id)
-        ).scalar_one_or_none()
-        assert tracker is None, f"Agreement {agreement_id} should not have been backfilled"
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9012)
+    ).scalar_one_or_none()
+    assert tracker is None, "Agreement 9012 (GRANT) should not have been backfilled"
 
-        action = db_with_agreements.execute(
-            select(ProcurementAction).where(ProcurementAction.agreement_id == agreement_id)
-        ).scalar_one_or_none()
-        assert action is None, f"Agreement {agreement_id} should not have been backfilled"
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9012)
+    ).scalar_one_or_none()
+    assert action is None, "Agreement 9012 (GRANT) should not have been backfilled"
+
+
+def test_backfill_missing_award_creates_completed_tracker_for_iaa(db_with_agreements):
+    """Agreement 9013 (IAA): OBLIGATED BLI, no tracker/action → COMPLETED tracker +
+    AWARDED action created, same as CONTRACT/AA. Not shown on the Awards and
+    Modifications tab yet (that's a separate, frontend-touching product decision —
+    see the comment on AWARD_BACKFILL_AGREEMENT_TYPES), but the backend records exist."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9013,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.date_awarded_obligated == date(2023, 8, 1)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9013,
+            ProcurementTracker.procurement_action == action.id,
+        )
+    ).scalar_one()
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+
+    bli = db_with_agreements.get(BudgetLineItem, 90016)
+    assert bli.procurement_action_id == action.id
 
 
 def test_backfill_missing_award_is_idempotent(db_with_agreements):
@@ -1519,15 +1554,15 @@ def test_backfill_missing_award_is_idempotent(db_with_agreements):
 
 
 def test_backfill_missing_award_logs_agreements_touched_count(db_with_agreements, captured_log_messages):
-    """All 3 eligible agreements (9007 CONTRACT mod-scenario, 9009 CONTRACT, 9010 AA — each
-    has an OBLIGATED BLI and no tracker at this point) get something created or linked on a
-    first run, so all 3 should be reported as touched."""
+    """All 4 eligible agreements (9007 CONTRACT mod-scenario, 9009 CONTRACT, 9010 AA,
+    9013 IAA — each has an OBLIGATED BLI and no tracker at this point) get something
+    created or linked on a first run, so all 4 should be reported as touched."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_missing_award_trackers(db_with_agreements, sys_user)
 
     summary = [m for m in captured_log_messages if m.startswith("Award tracker backfill complete.")]
     assert len(summary) == 1
-    assert "touched 3 agreement(s) (out of 3 found)." in summary[0]
+    assert "touched 4 agreement(s) (out of 4 found)." in summary[0]
 
 
 def test_full_backfill_pipeline_handles_mod_scenario_consistently(db_with_agreements):

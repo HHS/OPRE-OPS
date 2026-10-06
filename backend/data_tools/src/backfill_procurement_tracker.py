@@ -4,7 +4,7 @@ that are missing these records:
 
 1. Agreements with budget lines IN_EXECUTION (and IN_EXECUTION + OBLIGATED
    "mod" agreements) — see get_agreements_with_in_execution_blis().
-2. CONTRACT and AA agreements with an OBLIGATED BLI but zero ProcurementTrackers
+2. CONTRACT, AA, and IAA agreements with an OBLIGATED BLI but zero ProcurementTrackers
    — e.g. imported directly at OBLIGATED status, skipping IN_EXECUTION entirely
    — see get_agreements_missing_award_tracker().
 
@@ -220,12 +220,19 @@ def backfill_procurement_records(
     )
 
 
-AWARD_BACKFILL_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
+# Matches load_master_spreadsheet_budget_lines_v2's _PROCUREMENT_ELIGIBLE_TYPES, not
+# ops_api's AgreementAwardHistoryService._SUPPORTED_AGREEMENT_TYPES (CONTRACT, AA only).
+# That's deliberate, not drift: IAA awards created/backfilled here are real DB state —
+# a ProcurementAction/Tracker with an approved AWARD step — but the Awards and
+# Modifications tab (and its frontend gate, isContractOrAaAgreement) does not show IAA
+# yet, so they're currently invisible there. Widening the tab to IAA is a separate,
+# frontend-touching product decision.
+AWARD_BACKFILL_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA, AgreementType.IAA)
 
 
 def get_agreements_missing_award_tracker(session: Session) -> list[Agreement]:
     """
-    Find CONTRACT and AA agreements that have an OBLIGATED BLI but zero
+    Find CONTRACT, AA, and IAA agreements that have an OBLIGATED BLI but zero
     ProcurementTrackers.
 
     Covers agreements imported directly at OBLIGATED status (e.g. historical/
@@ -253,10 +260,11 @@ def get_agreements_missing_award_tracker(session: Session) -> list[Agreement]:
 
 def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
     """
-    For CONTRACT and AA agreements with an OBLIGATED BLI but no
+    For CONTRACT, AA, and IAA agreements with an OBLIGATED BLI but no
     ProcurementTracker at all, create a COMPLETED NEW_AWARD action/tracker,
-    approve its AWARD step (so the award shows on the Awards and Modifications
-    tab), and link the OBLIGATED BLIs to the action.
+    approve its AWARD step, and link the OBLIGATED BLIs to the action. For
+    CONTRACT/AA this makes the award show on the Awards and Modifications tab;
+    IAA awards are not yet shown there (see AWARD_BACKFILL_AGREEMENT_TYPES).
 
     If the agreement already has a NEW_AWARD action (any status), that action
     is reused rather than duplicated.
@@ -266,7 +274,7 @@ def backfill_missing_award_trackers(session: Session, sys_user: User) -> None:
         logger.info("DRY_RUN mode enabled — changes will be rolled back.")
 
     agreements = get_agreements_missing_award_tracker(session)
-    logger.info(f"Found {len(agreements)} CONTRACT/AA agreements missing an award tracker.")
+    logger.info(f"Found {len(agreements)} CONTRACT/AA/IAA agreements missing an award tracker.")
     for agreement in agreements:
         logger.debug(f"Agreement ID {agreement.id}, Name {agreement.name!r}, Type {agreement.agreement_type!r}")
 
