@@ -7,7 +7,7 @@ import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute"
 import ApproveAgreement from "./pages/agreements/approve";
 import Agreement from "./pages/agreements/details/Agreement";
 import AgreementsList from "./pages/agreements/list/AgreementsList";
-import BenefitsGrid from "./pages/home/BenefitsGrid";
+import HomeIndex from "./pages/home/HomeIndex";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
@@ -72,8 +72,8 @@ const router = createBrowserRouter(
                 element={<Home />}
             >
                 <Route
-                    path="" // default for home page
-                    element={<BenefitsGrid />}
+                    index // default for home page
+                    element={<HomeIndex />}
                 />
                 <Route
                     path="release-notes"
