@@ -1,11 +1,11 @@
 import RoundedBox from "../../components/UI/RoundedBox";
 import Tag from "../../components/UI/Tag";
-import roadmapData from "./roadmapData.json";
+import { getRoadmapItemsByStatus } from "./roadmapData.helpers";
 import { ROADMAP_STATUS } from "./roadmapStatus.constants";
 
 const CurrentlyDevelopingCard = () => {
-    const currentlyDevelopingItems = roadmapData.filter((item) => item.status === ROADMAP_STATUS.CURRENTLY_DEVELOPING);
-    const nextUpItems = roadmapData.filter((item) => item.status === ROADMAP_STATUS.NOT_STARTED);
+    const currentlyDevelopingItems = getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING);
+    const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED);
 
     return (
         <RoundedBox className="flex-fill">

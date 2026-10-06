@@ -1,6 +1,6 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
-import roadmapData from "../roadmapData.json";
+import { getRoadmapItemsByStatus } from "../roadmapData.helpers";
 import { ROADMAP_STATUS } from "../roadmapStatus.constants";
 
 const COLUMN_TAG_CLASSES = {
@@ -13,8 +13,6 @@ const COLUMN_TAG_CLASSES = {
 
 const NOT_STARTED_FOOTNOTE = "* Features are listed in alphabetical order, not the order they will be worked on";
 
-const itemsByStatus = (status) => roadmapData.filter((item) => item.status === status);
-
 /**
  * @component - Renders the "OPS at a Glance" roadmap status board: Done, Currently
  * Developing, and Not Started Yet columns, each with a count and Tag pills. Only the
@@ -26,15 +24,15 @@ const itemsByStatus = (status) => roadmapData.filter((item) => item.status === s
  */
 const RoadmapStatusCard = () => {
     const columns = [
-        { status: ROADMAP_STATUS.DONE, items: itemsByStatus(ROADMAP_STATUS.DONE), footnote: null },
+        { status: ROADMAP_STATUS.DONE, items: getRoadmapItemsByStatus(ROADMAP_STATUS.DONE), footnote: null },
         {
             status: ROADMAP_STATUS.CURRENTLY_DEVELOPING,
-            items: itemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING),
+            items: getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING),
             footnote: null
         },
         {
             status: ROADMAP_STATUS.NOT_STARTED,
-            items: itemsByStatus(ROADMAP_STATUS.NOT_STARTED).sort((a, b) => a.title.localeCompare(b.title)),
+            items: getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED).sort((a, b) => a.title.localeCompare(b.title)),
             footnote: NOT_STARTED_FOOTNOTE
         }
     ];
