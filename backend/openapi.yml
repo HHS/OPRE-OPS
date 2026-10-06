@@ -4401,6 +4401,39 @@ paths:
                         format: float
                     description: The range of budget line totals (amount + fees) available in the dataset
 
+  /budget-line-items-batch/:
+    post:
+      tags:
+        - Budget Line Items
+      operationId: getBudgetLineItemsBatch
+      description: >-
+        Bulk-fetch full budget line item representations for a list of ids in a single
+        request. POST (not GET) only because the id list travels in a JSON body rather
+        than a query string, which has practical length limits a large portfolio/fiscal-year
+        combo can exceed. This is a read, gated by the same permission as
+        GET /budget-line-items/{id}. Unknown ids are silently omitted from the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetLineItemsBatchRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetLineItem"
+        "400":
+          description: Bad Request — ids missing, empty, or exceeds the 50-item limit
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
   /budget-line-items/:
     get:
       tags:
@@ -7864,6 +7897,18 @@ components:
           type: integer
         division:
           $ref: "#/components/schemas/Division"
+    BudgetLineItemsBatchRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: integer
+          example: [1, 2, 3]
     BudgetLineItemRequest:
       type: object
       properties:

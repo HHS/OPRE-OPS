@@ -1,11 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PortfolioSpending from "./PortfolioSpending";
 
 const useOutletContextMock = vi.fn();
 const useGetPortfolioCansByIdQueryMock = vi.fn();
 const useGetReportingSummaryQueryMock = vi.fn();
-const useLazyGetBudgetLineItemQueryMock = vi.fn();
+const useLazyGetBudgetLineItemsBatchQueryMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -18,7 +18,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
 vi.mock("../../../api/opsAPI", () => ({
     useGetPortfolioCansByIdQuery: (...args) => useGetPortfolioCansByIdQueryMock(...args),
     useGetReportingSummaryQuery: (...args) => useGetReportingSummaryQueryMock(...args),
-    useLazyGetBudgetLineItemQuery: (...args) => useLazyGetBudgetLineItemQueryMock(...args)
+    useLazyGetBudgetLineItemsBatchQuery: (...args) => useLazyGetBudgetLineItemsBatchQueryMock(...args)
 }));
 
 vi.mock("../PortfolioBudgetSummary", () => ({
@@ -36,6 +36,8 @@ vi.mock("../../CANs/CANBudgetLineTable", () => ({
 }));
 
 describe("PortfolioSpending", () => {
+    let triggerMock;
+
     beforeEach(() => {
         useOutletContextMock.mockReturnValue({
             portfolioId: 7,
@@ -48,7 +50,8 @@ describe("PortfolioSpending", () => {
         });
 
         useGetReportingSummaryQueryMock.mockReturnValue({ data: undefined });
-        useLazyGetBudgetLineItemQueryMock.mockReturnValue([vi.fn(), { isLoading: false }]);
+        triggerMock = vi.fn(() => ({ unwrap: () => Promise.resolve([]) }));
+        useLazyGetBudgetLineItemsBatchQueryMock.mockReturnValue([triggerMock, { isLoading: false }]);
     });
 
     afterEach(() => {
@@ -109,5 +112,42 @@ describe("PortfolioSpending", () => {
 
         expect(screen.getByTestId("spending-data")).toBeEmptyDOMElement();
         expect(screen.getByTestId("counts-data")).toBeEmptyDOMElement();
+    });
+
+    it("fetches budget line ids in batches of 50 instead of one request per id", async () => {
+        const budgetLineIds = Array.from({ length: 120 }, (_, i) => i + 1);
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: budgetLineIds }],
+            isLoading: false,
+            isFetching: false
+        });
+        triggerMock.mockImplementation(({ ids }) => ({
+            unwrap: () => Promise.resolve(ids.map((id) => ({ id, fiscal_year: 2026 })))
+        }));
+        useLazyGetBudgetLineItemsBatchQueryMock.mockReturnValue([triggerMock, { isLoading: false }]);
+
+        render(<PortfolioSpending />);
+
+        await waitFor(() => expect(triggerMock).toHaveBeenCalledTimes(3));
+        const callSizes = triggerMock.mock.calls.map(([{ ids }]) => ids.length);
+        expect(callSizes).toEqual([50, 50, 20]);
+        expect(await screen.findByText("Portfolio budget line table")).toBeInTheDocument();
+    });
+
+    it("shows an error message instead of an infinite spinner when a batch fetch fails", async () => {
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: [1, 2, 3] }],
+            isLoading: false,
+            isFetching: false
+        });
+        triggerMock.mockImplementation(() => ({ unwrap: () => Promise.reject(new Error("network error")) }));
+        useLazyGetBudgetLineItemsBatchQueryMock.mockReturnValue([triggerMock, { isLoading: false }]);
+        vi.spyOn(console, "error").mockImplementation(() => {});
+
+        render(<PortfolioSpending />);
+
+        expect(await screen.findByText("Unable to load budget lines")).toBeInTheDocument();
+        expect(screen.queryByText("Portfolio budget line table")).not.toBeInTheDocument();
+        expect(screen.queryByRole("table", { name: "Loading portfolio budget lines" })).not.toBeInTheDocument();
     });
 });

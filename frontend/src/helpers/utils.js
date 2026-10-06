@@ -774,3 +774,17 @@ export const applyMinimumArcValue = (items, total) => {
         return { ...item, value: item.value - reduction };
     });
 };
+
+/**
+ * Splits an array into chunks of at most `size` items each.
+ * @param {Array} array - The array to split.
+ * @param {number} size - The maximum size of each chunk.
+ * @returns {Array[]} An array of chunks.
+ */
+export const chunk = (array, size) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+        chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+};

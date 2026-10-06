@@ -18,6 +18,7 @@ from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
     BudgetLineItemListResponseSchema,
     BudgetLineItemResponseSchema,
+    BudgetLineItemsBatchRequestSchema,
     MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
@@ -243,6 +244,48 @@ def _list_item_meta(
         meta["isDeletable"] = False
         meta["lockedMessage"] = None
     return meta
+
+
+class BudgetLineItemsBatchAPI(BaseListAPI):
+    """
+    Bulk-fetch full BudgetLineItem representations for a list of ids in a single request.
+
+    POST (not GET) only because the id list needs to travel in a JSON body rather than a
+    query string, which has practical length limits a large portfolio/fiscal-year combo
+    can exceed. This is still a read, gated by the same GET permission as the other BLI
+    read endpoints. Unknown ids are silently omitted from the response.
+    """
+
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._request_schema = BudgetLineItemsBatchRequestSchema()
+        self._response_schema_collection = BudgetLineItemResponseSchema(many=True)
+        self._cr_schema = GenericChangeRequestResponseSchema(many=True)
+
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    def post(self) -> Response:
+        data = self._request_schema.load(request.json)
+
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        budget_line_items = service.get_batch(data["ids"])
+
+        bli_ids = [bli.id for bli in budget_line_items]
+        agreement_ids = [bli.agreement_id for bli in budget_line_items]
+        change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
+
+        serialized_blis = self._response_schema_collection.dump(budget_line_items)
+        for serialized_bli in serialized_blis:
+            bli_id = serialized_bli.get("id")
+            agreement_id = serialized_bli.get("agreement_id")
+            change_requests = get_change_requests_for_bli(bli_id, agreement_id, change_requests_data)
+            in_review = change_requests is not None
+            serialized_bli["in_review"] = in_review
+            serialized_bli["change_requests_in_review"] = (
+                self._cr_schema.dump(change_requests) if change_requests else None
+            )
+            serialized_bli["_meta"] = get_is_editable_meta_data(serialized_bli)
+
+        return make_response_with_headers(serialized_blis)
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

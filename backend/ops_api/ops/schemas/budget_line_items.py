@@ -4,6 +4,7 @@ import typing
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.experimental.context import Context
+from marshmallow.validate import Length
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition, ProjectType
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
@@ -199,6 +200,17 @@ class QueryParametersSchema(PaginationListSchema):
     agreement_type = fields.List(fields.String(), required=False)
     agreement_name = fields.List(fields.String(), required=False)
     can_active_period = fields.List(fields.String(), required=False)
+
+
+class BudgetLineItemsBatchRequestSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    ids = fields.List(
+        fields.Integer(),
+        required=True,
+        validate=Length(min=1, max=50, error="ids must contain between 1 and 50 items"),
+    )
 
 
 class BLIFiltersQueryParametersSchema(Schema):

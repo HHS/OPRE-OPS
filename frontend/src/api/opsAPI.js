@@ -439,6 +439,15 @@ export const opsApi = createApi({
             query: (id) => `/budget-line-items/${id}`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItemsBatch: builder.query({
+            query: ({ ids }) => ({
+                url: "/budget-line-items-batch/",
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: { ids }
+            }),
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {

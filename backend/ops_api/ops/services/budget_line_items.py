@@ -213,6 +213,35 @@ class BudgetLineItemService:
         else:
             raise ResourceNotFoundError("BudgetLineItem", id)
 
+    def get_batch(self, ids: list[int]) -> list[BudgetLineItem]:
+        """
+        Get multiple Budget Line Items by id, eager-loading the same relationships
+        get_list uses so serializing a batch doesn't trigger per-item lazy-load queries.
+        Unknown ids are silently omitted from the result.
+        """
+        if not ids:
+            return []
+
+        query = (
+            select(BudgetLineItem)
+            .where(BudgetLineItem.id.in_(ids))
+            .options(
+                selectinload(BudgetLineItem.agreement).options(
+                    selectinload(Agreement.team_members),
+                    joinedload(Agreement.project),
+                    joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+                    selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps),
+                ),
+                selectinload(BudgetLineItem.can).options(
+                    joinedload(CAN.portfolio).joinedload(Portfolio.division),
+                    joinedload(CAN.portfolio).selectinload(Portfolio.team_leaders),
+                ),
+                joinedload(BudgetLineItem.procurement_shop_fee),
+                joinedload(BudgetLineItem.services_component),
+            )
+        )
+        return list(self.db_session.scalars(query).all())
+
     def get_list(self, data: dict | None) -> type[list[BudgetLineItem], dict | None]:
         """
         Get a list of Budget Line Items, optionally filtered.
