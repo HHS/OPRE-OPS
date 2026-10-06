@@ -2,8 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RoadmapStatusCard from "./RoadmapStatusCard";
 
-vi.mock("./data", () => ({
-    data: [
+vi.mock("../roadmapData.json", () => ({
+    default: [
         { id: 1, title: "Login", status: "Done" },
         { id: 2, title: "Navigation", status: "Done" },
         { id: 3, title: "Viewing Award & Mod info", status: "Currently Developing" },

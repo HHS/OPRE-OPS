@@ -1,7 +1,7 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
-import { ROADMAP_STATUS } from "./constants";
-import { data } from "./data";
+import roadmapData from "../roadmapData.json";
+import { ROADMAP_STATUS } from "../roadmapStatus.constants";
 
 const COLUMN_TAG_CLASSES = {
     [ROADMAP_STATUS.DONE]: "bg-brand-can-budget-by-fy-graph-4 text-ink",
@@ -11,13 +11,15 @@ const COLUMN_TAG_CLASSES = {
 
 const NOT_STARTED_FOOTNOTE = "* Features are listed in alphabetical order, not the order they will be worked on";
 
-const itemsByStatus = (status) => data.filter((item) => item.status === status);
+const itemsByStatus = (status) => roadmapData.filter((item) => item.status === status);
 
 /**
  * @component - Renders the "OPS at a Glance" roadmap status board: Done, Currently
  * Developing, and Not Started Yet columns, each with a count and Tag pills. Only the
  * "Not Started Yet" column is sorted alphabetically (per the Figma footnote) — the
- * other two render in `data.js`'s authored order.
+ * other two render in `roadmapData.json`'s authored order. Shares that data (and the
+ * `ROADMAP_STATUS` constant) with `CurrentlyDevelopingCard`, so the two surfaces can't
+ * drift into disagreeing "Currently Developing" lists (see OPS-6331).
  * @returns {React.ReactElement}
  */
 const RoadmapStatusCard = () => {
