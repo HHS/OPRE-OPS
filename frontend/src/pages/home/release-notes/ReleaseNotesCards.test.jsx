@@ -109,10 +109,11 @@ describe("ReleaseNotesCards Component", () => {
     });
 
     describe("LeftCard headingLevel", () => {
-        it("renders its labels as h2 by default", () => {
+        it("defaults to its original per-label levels (h2, h2, h3) so /release-notes is unchanged", () => {
             render(<LeftCard {...mockProps} />);
             expect(screen.getByRole("heading", { level: 2, name: "Last Release" })).toBeInTheDocument();
-            expect(screen.getByRole("heading", { level: 2, name: "Release Changes" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 2, name: "OPS Version" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
         });
 
         it("renders its labels at the requested level so it nests under a parent section", () => {

@@ -11,8 +11,13 @@ describe("isHomepageRedesignEnabled", () => {
         expect(isHomepageRedesignEnabled()).toBe(true);
     });
 
-    it("returns false when VITE_FEATURE_HOMEPAGE_REDESIGN is not set", () => {
+    it("returns false when VITE_FEATURE_HOMEPAGE_REDESIGN is an empty string", () => {
         vi.stubEnv("VITE_FEATURE_HOMEPAGE_REDESIGN", "");
+        expect(isHomepageRedesignEnabled()).toBe(false);
+    });
+
+    it("returns false when VITE_FEATURE_HOMEPAGE_REDESIGN is genuinely unset", () => {
+        vi.stubEnv("VITE_FEATURE_HOMEPAGE_REDESIGN", undefined);
         expect(isHomepageRedesignEnabled()).toBe(false);
     });
 

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { invalidateVisitClassification } from "../../helpers/visitSessionCache.helpers";
 
 export const authSlice = createSlice({
     name: "auth",
@@ -16,8 +17,15 @@ export const authSlice = createSlice({
             state.isLoggedIn = true;
         },
         logout: (state) => {
+            // Capture before clearing: invalidate just this user's cached first/returning
+            // welcome-message classification so a same-tab relogin (no reload) re-reads
+            // localStorage fresh instead of reusing a stale value from earlier this session.
+            const loggedOutUserId = state.activeUser?.id;
             state.isLoggedIn = false;
             state.activeUser = null;
+            if (loggedOutUserId != null) {
+                invalidateVisitClassification(loggedOutUserId);
+            }
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
             localStorage.removeItem("activeProvider");

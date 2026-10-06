@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
+import { __resetVisitSessionCache } from "../../helpers/visitSessionCache.helpers";
 import HomeIndex from "./HomeIndex";
 
 vi.mock("../../helpers/featureFlags", () => ({
@@ -19,6 +20,9 @@ beforeEach(() => {
     localStorage.removeItem.mockImplementation((key) => storage.delete(key));
     localStorage.clear.mockImplementation(() => storage.clear());
     isHomepageRedesignEnabled.mockReturnValue(false);
+    // These tests reuse user id 1 across cases; useWelcomeMessage caches its first/returning
+    // classification at module scope, so reset it to keep cases independent.
+    __resetVisitSessionCache();
 });
 
 describe("HomeIndex", () => {

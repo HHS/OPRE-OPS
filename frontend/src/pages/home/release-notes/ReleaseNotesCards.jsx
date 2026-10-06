@@ -9,9 +9,10 @@ import Tag from "../../../components/UI/Tag";
  * @property {number} totalNewFeatures - Number of new features in the latest release.
  * @property {number} totalFixes - Number of fixes in the latest release.
  * @property {number} totalImprovements - Number of improvements in the latest release.
- * @property {"h2"|"h3"} [headingLevel] - Heading tag for the card's labels, so the card
- *   nests correctly under its surrounding outline (default "h2"; the homepage summary
- *   nests under an h2 section and passes "h3").
+ * @property {"h2"|"h3"} [headingLevel] - Heading tag for all three of the card's labels, so
+ *   the card nests correctly under its surrounding outline. Omit it to keep this card's
+ *   original per-label levels (used by the standalone /release-notes page); the homepage
+ *   summary nests under an h2 section and passes "h3" uniformly.
  */
 
 /**
@@ -72,15 +73,21 @@ export function LeftCard({
     totalNewFeatures,
     totalFixes,
     totalImprovements,
-    headingLevel: Heading = "h2"
+    headingLevel
 }) {
+    // Preserve this card's original per-label levels (h2, h2, h3) when no override is
+    // given, so the standalone /release-notes page — which doesn't pass headingLevel —
+    // renders byte-for-byte the same as before this prop existed.
+    const LastReleaseHeading = headingLevel ?? "h2";
+    const OpsVersionHeading = headingLevel ?? "h2";
+    const ReleaseChangesHeading = headingLevel ?? "h3";
     return (
         <RoundedBox>
             <div className="display-flex flex-justify">
                 <article>
-                    <Heading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                    <LastReleaseHeading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         Last Release
-                    </Heading>
+                    </LastReleaseHeading>
                     <Tag
                         text={releaseDate}
                         className="bg-brand-primary-light text-primary"
@@ -88,9 +95,9 @@ export function LeftCard({
                 </article>
 
                 <article>
-                    <Heading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                    <OpsVersionHeading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         OPS Version
-                    </Heading>
+                    </OpsVersionHeading>
                     <Tag
                         text={`Version ${lastVersion}`}
                         className="bg-brand-primary-light text-primary"
@@ -98,9 +105,9 @@ export function LeftCard({
                 </article>
 
                 <article>
-                    <Heading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                    <ReleaseChangesHeading className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         Release Changes
-                    </Heading>
+                    </ReleaseChangesHeading>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalReleaseChanges}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
