@@ -26,6 +26,7 @@ from models.procurement_tracker import (
     ProcurementTrackerStepType,
 )
 from models.procurement_workflow import (
+    AWARD_APPROVED_STATUS,
     get_or_create_procurement_records_for_modification,
     get_or_create_procurement_records_for_new_award,
 )
@@ -597,6 +598,59 @@ def test_new_award_workflow_completed_rerun_does_not_clobber_in_progress_steps(d
     assert all_steps[2].step_start_date == date(2024, 1, 6)
     assert all_steps[-1].status == ProcurementTrackerStepStatus.PENDING
     assert tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status is None
+
+
+def test_new_award_workflow_promotion_splits_unobligated_bli_to_modification(db_workflow):
+    """Order-independence: an IN_EXECUTION BLI that landed on a NEW_AWARD action before
+    any OBLIGATED BLI existed (so has_obligated_blis() correctly said "not a mod" at the
+    time) must move to its own MODIFICATION action when a later OBLIGATED BLI promotes
+    that NEW_AWARD action to AWARDED — producing the same (AWARDED NEW_AWARD + in-process
+    MODIFICATION) structure as if the OBLIGATED BLI had been processed first."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    new_award_action, tracker, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow, agreement, created_by=sys_user.id
+    )
+    db_workflow.flush()
+
+    execution_bli = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        amount=10000,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        procurement_action_id=new_award_action.id,
+        created_by=sys_user.id,
+    )
+    db_workflow.add(execution_bli)
+    db_workflow.flush()
+
+    get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=date(2024, 1, 15),
+        include_terminal=True,
+    )
+
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
+
+    mod_action = db_workflow.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == agreement.id,
+            ProcurementAction.award_type == AwardType.MODIFICATION,
+        )
+    ).scalar_one()
+    assert mod_action.status == ProcurementActionStatus.PLANNED
+
+    mod_tracker = db_workflow.execute(
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.procurement_action == mod_action.id)
+    ).scalar_one()
+    assert mod_tracker.status == ProcurementTrackerStatus.ACTIVE
+
+    assert execution_bli.procurement_action_id == mod_action.id
+    assert tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status == AWARD_APPROVED_STATUS
 
 
 def test_new_award_workflow_adopting_unlinked_tracker_does_not_clobber_existing_approval(db_workflow):

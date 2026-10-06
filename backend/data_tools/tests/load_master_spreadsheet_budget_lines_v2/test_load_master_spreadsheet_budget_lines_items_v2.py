@@ -1348,13 +1348,17 @@ def test_obligated_bli_does_not_adopt_inactive_unlinked_tracker(db_with_data_v2)
     db_with_data_v2.commit()
 
 
-def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_v2):
+def test_obligated_bli_promotes_award_and_splits_in_progress_line_to_modification(db_with_data_v2):
     """
     Agreement already has a PLANNED NEW_AWARD action + ACTIVE tracker from an earlier
     IN_EXECUTION BLI. A second, OBLIGATED BLI on the same agreement must reuse that
     action/tracker (not create a duplicate) and promote it to AWARDED/COMPLETED with
-    the AWARD step approved, so the award shows up on the Awards and Modifications tab
-    regardless of which order the BLIs are processed in.
+    the AWARD step approved, so the award shows up on the Awards and Modifications tab.
+
+    The still-IN_EXECUTION "Execution Line" BLI must move off that now-AWARDED NEW_AWARD
+    action onto its own in-process MODIFICATION action/tracker — the same end state
+    (an AWARDED NEW_AWARD plus a MODIFICATION in process) produced if the OBLIGATED line
+    had been processed first, so the result does not depend on import order.
     """
     contract_agreement = ContractAgreement(
         name="Test Contract Probe In Exec Then Obl",
@@ -1399,13 +1403,6 @@ def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_
     )
     create_models(obligated_data, user, db_with_data_v2)
 
-    trackers = (
-        db_with_data_v2.execute(
-            select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
-        )
-        .scalars()
-        .all()
-    )
     actions = (
         db_with_data_v2.execute(
             select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
@@ -1413,17 +1410,43 @@ def test_obligated_bli_reuses_tracker_from_prior_in_execution_line(db_with_data_
         .scalars()
         .all()
     )
+    assert len(actions) == 2, f"Expected a NEW_AWARD and a MODIFICATION action; found {len(actions)}"
 
-    assert len(trackers) == 1, f"Expected the existing tracker to be reused, not duplicated; found {len(trackers)}"
-    assert (
-        len(actions) == 1
-    ), f"Expected the existing NEW_AWARD action to be reused, not duplicated; found {len(actions)}"
+    new_award_action = next(a for a in actions if a.award_type == AwardType.NEW_AWARD)
+    mod_action = next(a for a in actions if a.award_type == AwardType.MODIFICATION)
 
-    assert trackers[0].status == ProcurementTrackerStatus.COMPLETED
-    assert actions[0].status == ProcurementActionStatus.AWARDED
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
+    assert mod_action.status == ProcurementActionStatus.PLANNED
 
-    award_step = trackers[0].get_step(ProcurementTrackerStepType.AWARD)
+    new_award_tracker = db_with_data_v2.execute(
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.procurement_action == new_award_action.id)
+    ).scalar_one()
+    mod_tracker = db_with_data_v2.execute(
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.procurement_action == mod_action.id)
+    ).scalar_one()
+
+    assert new_award_tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert mod_tracker.status == ProcurementTrackerStatus.ACTIVE
+
+    award_step = new_award_tracker.get_step(ProcurementTrackerStepType.AWARD)
     assert award_step.award_approval_status == AWARD_APPROVED_STATUS
+
+    obligated_bli = db_with_data_v2.execute(
+        select(BudgetLineItem).where(
+            BudgetLineItem.agreement_id == contract_agreement.id,
+            BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED,
+        )
+    ).scalar_one()
+    execution_bli = db_with_data_v2.execute(
+        select(BudgetLineItem).where(
+            BudgetLineItem.agreement_id == contract_agreement.id,
+            BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION,
+        )
+    ).scalar_one()
+    assert obligated_bli.procurement_action_id == new_award_action.id
+    assert execution_bli.procurement_action_id == mod_action.id
+
+    trackers = [new_award_tracker, mod_tracker]
 
     # Cleanup
     for bli in (

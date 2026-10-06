@@ -274,6 +274,14 @@ def get_or_create_procurement_records_for_new_award(
                 f"({agreement.name!r}) — a later-processed OBLIGATED BLI resolved an action "
                 "that an earlier IN_EXECUTION BLI had already created as PLANNED"
             )
+            # The earlier IN_EXECUTION BLI's own has_obligated_blis() check said "not a
+            # mod" because no OBLIGATED BLI existed yet at that time — so it landed on
+            # this NEW_AWARD action. Now that this action is being promoted to AWARDED,
+            # any BLI still on it that isn't OBLIGATED is still in progress and must move
+            # to its own MODIFICATION action, so the result matches what processing the
+            # same two BLIs in the opposite order would have produced (an AWARDED
+            # NEW_AWARD plus a MODIFICATION in process), regardless of import order.
+            _split_unobligated_blis_to_modification(session, agreement, action, created_by, source)
 
     tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
@@ -323,6 +331,53 @@ def get_or_create_procurement_records_for_new_award(
         )
 
     return action, tracker, action_created, tracker_created
+
+
+def _split_unobligated_blis_to_modification(
+    session: Session,
+    agreement: "Agreement",
+    new_award_action: ProcurementAction,
+    created_by: Optional[int],
+    source: Optional[str],
+) -> None:
+    """
+    Move any BLI still linked to ``new_award_action`` that is not OBLIGATED onto a
+    MODIFICATION action/tracker instead.
+
+    Only called when ``new_award_action`` is being promoted to AWARDED (the "order
+    flip" case): an earlier IN_EXECUTION BLI linked to this action before any OBLIGATED
+    BLI existed for the agreement, so its own has_obligated_blis() check correctly said
+    "not a mod" at the time. Without this, that still-in-progress BLI would be stranded
+    on a now-AWARDED/COMPLETED NEW_AWARD cycle instead of its own in-process
+    MODIFICATION — a different result than if the two BLIs had been processed in the
+    opposite order.
+    """
+    unobligated_blis = (
+        session.execute(
+            select(BudgetLineItem).where(
+                BudgetLineItem.procurement_action_id == new_award_action.id,
+                BudgetLineItem.status != BudgetLineItemStatus.OBLIGATED,
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    if not unobligated_blis:
+        return
+
+    mod_action, _, _, _ = get_or_create_procurement_records_for_modification(
+        session, agreement, created_by=created_by, source=source
+    )
+
+    for bli in unobligated_blis:
+        bli.procurement_action_id = mod_action.id
+
+    logger.info(
+        f"Moved {len(unobligated_blis)} non-OBLIGATED BLI(s) from newly-AWARDED "
+        f"ProcurementAction {new_award_action.id} to MODIFICATION ProcurementAction "
+        f"{mod_action.id} for Agreement {agreement.id} ({agreement.name!r}) — order-flip split"
+    )
 
 
 def get_or_create_procurement_records_for_modification(
