@@ -35,10 +35,10 @@ Look at the UI the current branch changes the way a reviewer would, and report w
 - `src/components/...` → find which pages render it (`grep -rln "<ComponentName"`), and its `*.stories.jsx` if any.
 - Also read the branch's story file in `.claude/stories/` if one matches the ticket number — it states intended behavior and states to check.
 - **Ticket number** = digits from the branch name (`OPS-6328/...` → `6328`). Many branches are ticket-less by convention (`docs/...`, `OPS/hotfix-...`, per root `CLAUDE.md`) — if the branch name has no digits, skip the ticket-based lookups below (story file glob, `gh issue view`) rather than running them with an empty/garbage ticket value.
-- **Collect Figma links** (used in step 6), only if a ticket number was found. Search, in order, and keep every `figma.com/(design|file|proto)/...` URL found:
-  1. Story file(s): `grep -oE "https://www\.figma\.com/[^ )>\"']+" .claude/stories/*<ticket>*.md` — usually on a `**Design:**` line.
-  2. Storybook stories for changed components: `parameters.design.url` (or any figma.com URL) in the co-located `*.stories.jsx`.
-  3. The GitHub issue: `gh issue view <ticket> --json body,comments` and grep the same pattern.
+- **Collect Figma links** (used in step 6). Search, in order, and keep every `figma.com/(design|file|proto)/...` URL found:
+  1. Storybook stories for changed components (no ticket needed): `parameters.design.url` (or any figma.com URL) in the co-located `*.stories.jsx`.
+  2. Story file(s), only if a ticket number was found: `grep -oE "https://www\.figma\.com/[^ )>\"']+" .claude/stories/*<ticket>*.md` — usually on a `**Design:**` line.
+  3. The GitHub issue, only if a ticket number was found: `gh issue view <ticket> --json body,comments` and grep the same pattern.
   Note which link came from where, and which target each one maps to (by `node-id` or surrounding text). Links without a `node-id` point at a whole file — ask the user which frame rather than guessing.
 List the targets (and any Figma links found) to the user in one line before capturing. Cap at ~6 targets; ask before doing more.
 
@@ -49,7 +49,7 @@ List the targets (and any Figma links found) to the user in one line before capt
 **4. Capture.** For each target, at **1280×800** and **375×812** (`browser_resize`):
 - Navigate, `browser_wait_for` the main content (not a fixed sleep), then `browser_take_screenshot` (full page).
 - Capture the states the change affects: empty, loading, error, long text, hover/focus, open modal, validation errors. Use the story file / diff to decide which matter — don't capture every state of every page.
-- Request a save path under a temp dir outside the repo: `mktemp -d /tmp/visual-check.XXXX`, named `<target>-<width>-<state>.png`. The MCP server's output dir config may override where the file actually lands — if so, report wherever it actually saved rather than assuming the requested path.
+- Save with a relative filename (`<target>-<width>-<state>.png`) — Playwright MCP resolves explicit filenames against its own workspace/output root and may reject or ignore an absolute path like `/tmp/...`. After capture, move the returned file into a temp dir outside the repo (`mktemp -d /tmp/visual-check.XXXX`) for the report.
 
 **5. Inspect** each capture:
 - Look at the screenshot: overlap, clipping, truncation, misalignment, wrong USWDS spacing/colors, broken responsive layout, missing icons, unstyled elements.
@@ -64,7 +64,7 @@ List the targets (and any Figma links found) to the user in one line before capt
 **7. Report**, grouped by target, most severe first:
 - 🔴 broken (unusable, overlapping, data wrong) · 🟠 off-spec (doesn't match design/intent) · 🟡 polish · ℹ️ console/a11y notes
 - Each finding: what, where (target + width + state), screenshot path, and the likely source file if obvious.
-- **Introduced vs. pre-existing.** For each finding, check whether the responsible component/style file is in `git diff --name-only origin/main...HEAD`. If not (or if the before/after baseline shows it on `main` too), put it in a separate **Pre-existing (not from this branch)** section at the end — still reported, but not counted against the branch. Say how you decided ("styles in X.scss, unchanged on this branch").
+- **Introduced vs. pre-existing.** File membership in `git diff --name-only origin/main...HEAD` is a coarse first pass, not proof: a pre-existing bug in a touched file still counts as "in the diff," and a bug caused by new markup interacting with an *unchanged* stylesheet won't show up this way at all. If the file isn't in the diff, or the before/after baseline (optional section below) shows the same issue on `main`, put it in a separate **Pre-existing (not from this branch)** section at the end — still reported, but not counted against the branch. If you didn't run a before/after baseline and the file-diff check is your only signal, say so and mark the attribution as uncertain rather than asserting it confidently.
 - **Shared components → design decision, not a local fix.** If the responsible code is a shared component (`src/components/Layouts/**`, `src/components/UI/**`, or anything imported by 3+ pages — check with `grep -rln "<Name"`), mark it ⚖️ **needs UX decision**, list the pages it affects, and don't suggest a page-level override. The question for UX is "change the shared component everywhere, or change the design?"
 - End with what was NOT checked (states skipped, targets capped).
 Leave the temp dir in place and tell the user the path (they may want to attach images to the PR). Don't edit code unless asked.
