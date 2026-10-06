@@ -285,45 +285,35 @@ def get_or_create_procurement_records_for_new_award(
         include_inactive=include_terminal,
     )
 
-    # Set step statuses for adopted or newly created trackers, and promote any tracker
-    # that isn't yet COMPLETED when this call represents an OBLIGATED BLI — covering the
-    # same already-linked-tracker case as the action promotion above.
+    # Set step statuses for adopted/newly-created trackers, and promote an already-linked
+    # tracker that is still sitting untouched at step 1 — covering the same already-linked
+    # "order flip" case as the action promotion above (an earlier IN_EXECUTION BLI created
+    # the tracker before a later-processed OBLIGATED BLI arrives for the same agreement).
+    #
+    # An already-linked tracker whose active_step_number is already past 1 has real
+    # progress behind it: ProcurementTrackerStepService only advances active_step_number
+    # (and stamps step_completed_date) when a step is genuinely completed through the app,
+    # and activate_first_step() never touches it. mark_completed() unconditionally
+    # overwrites every step's status/dates and jumps active_step_number to the end, so it
+    # must never run against that real history — only against a tracker this call is
+    # itself responsible for completing (new, adopted, or still at its untouched initial
+    # state).
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
+    tracker_is_untouched = tracker.active_step_number <= 1 and tracker.status != ProcurementTrackerStatus.COMPLETED
     if tracker_status == ProcurementTrackerStatus.COMPLETED:
-        # get_or_create_for_action already stamps tracker.status onto a newly created or
-        # newly adopted tracker, so "needs_step_setup" is what actually distinguishes
-        # "steps still need to be marked COMPLETED" from "already a completed tracker
-        # from a prior call" in that case; for an already-linked tracker (needs_step_setup
-        # False), tracker.status reflects its real prior state and is the right check.
-        # Captured *before* mark_completed() mutates tracker.status, since that call
-        # below would otherwise make an in-progress, order-flip-promoted tracker look
-        # identical to one that already finished the real app workflow.
-        was_already_linked_and_completed = not needs_step_setup and tracker.status == ProcurementTrackerStatus.COMPLETED
-        if needs_step_setup or not was_already_linked_and_completed:
+        if needs_step_setup or tracker_is_untouched:
             tracker.mark_completed(completed_date=date_awarded_obligated)
-        # mark_completed() only flips step statuses/dates — it does not approve
-        # the award. The Awards and Modifications tab gates on
-        # award_approval_status == AWARD_APPROVED_STATUS, not tracker/step status (see
-        # AgreementAwardHistoryService), so a COMPLETED tracker needs its AWARD step
-        # explicitly approved or it will silently never appear there.
-        #
-        # Auto-approval only applies when this call is itself responsible for taking the
-        # tracker to COMPLETED (new, adopted, or order-flip-promoted). If the tracker was
-        # already linked to this action AND already COMPLETED, it got there through the
-        # real app workflow and the AWARD step may still be awaiting a genuine Budget Team
-        # decision — stamping APPROVED here would silently fabricate that decision and
-        # then permanently block the real one, since AwardApprovalResponseValidationRule
-        # rejects re-deciding an already-approved step.
-        award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
-        if (
-            award_step
-            and award_step.award_approval_status is None
-            and (needs_step_setup or not was_already_linked_and_completed)
-        ):
-            award_step.award_approval_status = AWARD_APPROVED_STATUS
-            award_step.award_date = date_awarded_obligated
-            award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
+            # mark_completed() only flips step statuses/dates — it does not approve
+            # the award. The Awards and Modifications tab gates on
+            # award_approval_status == AWARD_APPROVED_STATUS, not tracker/step status (see
+            # AgreementAwardHistoryService), so a COMPLETED tracker needs its AWARD step
+            # explicitly approved or it will silently never appear there.
+            award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+            if award_step and award_step.award_approval_status is None:
+                award_step.award_approval_status = AWARD_APPROVED_STATUS
+                award_step.award_date = date_awarded_obligated
+                award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
     elif needs_step_setup:
         tracker.activate_first_step()
 

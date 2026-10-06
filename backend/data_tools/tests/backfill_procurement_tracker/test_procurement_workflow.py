@@ -543,6 +543,62 @@ def test_new_award_workflow_completed_rerun_does_not_approve_pending_real_decisi
     assert tracker_2.get_step(ProcurementTrackerStepType.AWARD).award_approval_status is None
 
 
+def test_new_award_workflow_completed_rerun_does_not_clobber_in_progress_steps(db_workflow):
+    """An already-linked tracker that is genuinely mid-workflow (real step dates entered
+    by a COR, an active step short of AWARD) must not be force-completed by a later
+    OBLIGATED re-import. mark_completed() unconditionally overwrites every step's
+    status/dates and jumps active_step_number to the end — needs_step_setup is False
+    once the tracker is linked to this action, so that real history must survive."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    action, _ = ProcurementAction.get_or_create_for_agreement(
+        db_workflow,
+        agreement,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.PLANNED,
+        created_by=sys_user.id,
+    )
+    db_workflow.flush()
+
+    tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=agreement.id, procurement_action=action.id, created_by=sys_user.id
+    )
+    db_workflow.add(tracker)
+    db_workflow.flush()
+
+    # Simulate real progress made through the app: steps 1-2 completed with real dates,
+    # step 3 active, steps 4+ (including AWARD) still pending.
+    all_steps = sorted(tracker.steps, key=lambda s: s.step_number)
+    for step in all_steps[:2]:
+        step.status = ProcurementTrackerStepStatus.COMPLETED
+        step.step_start_date = date(2024, 1, 1)
+        step.step_completed_date = date(2024, 1, 5)
+    all_steps[2].status = ProcurementTrackerStepStatus.ACTIVE
+    all_steps[2].step_start_date = date(2024, 1, 6)
+    tracker.active_step_number = 3
+    db_workflow.flush()
+
+    get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+        date_awarded_obligated=date(2024, 1, 15),
+        include_terminal=True,
+    )
+
+    assert tracker.status == ProcurementTrackerStatus.ACTIVE
+    assert tracker.active_step_number == 3
+    assert all_steps[0].status == ProcurementTrackerStepStatus.COMPLETED
+    assert all_steps[0].step_completed_date == date(2024, 1, 5)
+    assert all_steps[2].status == ProcurementTrackerStepStatus.ACTIVE
+    assert all_steps[2].step_start_date == date(2024, 1, 6)
+    assert all_steps[-1].status == ProcurementTrackerStepStatus.PENDING
+    assert tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status is None
+
+
 def test_new_award_workflow_adopting_unlinked_tracker_does_not_clobber_existing_approval(db_workflow):
     """Adopting a pre-existing unlinked tracker also must not clobber an AWARD step
     that already carries a real decision — needs_step_setup is True for the adopt
