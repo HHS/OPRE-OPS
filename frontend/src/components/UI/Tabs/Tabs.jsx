@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import styles from "./Tabs.module.scss";
 
 /**
@@ -22,6 +24,21 @@ const Tabs = ({ paths, rightContent }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    // Tracks at most one in-flight "scroll to top, then navigate" transition, so a second
+    // tab click (or unmounting — e.g. the user follows an unrelated link away from this page)
+    // can cancel it instead of letting it fire a stale `navigate()` later.
+    const pendingTransitionRef = useRef(null);
+
+    const cancelPendingTransition = () => {
+        const pending = pendingTransitionRef.current;
+        if (!pending) return;
+        window.removeEventListener("scrollend", pending.onScrollEnd);
+        clearTimeout(pending.timeoutId);
+        pendingTransitionRef.current = null;
+    };
+
+    useEffect(() => cancelPendingTransition, []);
+
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;
 
@@ -29,6 +46,7 @@ const Tabs = ({ paths, rightContent }) => {
         /** @param {React.MouseEvent} e */
         (e) => {
             const pathName = e.currentTarget.getAttribute("data-value") || "";
+            cancelPendingTransition();
 
             if (window.scrollY === 0) {
                 navigate(pathName);
@@ -40,18 +58,16 @@ const Tabs = ({ paths, rightContent }) => {
             // native scroll-clamping (instant, unanimatable) jump most of the way the moment
             // the shorter content mounts — only the small remainder animates, which looks like
             // an abrupt snap instead of a smooth scroll.
-            let settled = false;
-            const goToTab = () => {
-                if (settled) return;
-                settled = true;
-                window.removeEventListener("scrollend", goToTab);
+            const onScrollEnd = () => {
+                cancelPendingTransition();
                 navigate(pathName);
             };
-            window.addEventListener("scrollend", goToTab);
             // Fallback in case `scrollend` isn't supported or never fires (e.g. the scroll
             // gets interrupted).
-            setTimeout(goToTab, 500);
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            const timeoutId = setTimeout(onScrollEnd, 500);
+            pendingTransitionRef.current = { onScrollEnd, timeoutId };
+            window.addEventListener("scrollend", onScrollEnd);
+            scrollToTop();
         };
 
     const links = paths.map((path) => {

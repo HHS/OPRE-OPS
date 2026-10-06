@@ -76,12 +76,40 @@ describe("Tabs", () => {
 
         fireEvent.click(screen.getByText("Path 2"));
 
-        expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+        expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth", block: "start" });
         expect(mockNavigate).not.toHaveBeenCalled();
 
         window.dispatchEvent(new Event("scrollend"));
 
         expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+    });
+
+    it("cancels the pending transition when a different tab is clicked before it settles", () => {
+        render(<Tabs paths={mockPaths} />);
+        Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
+        vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+        fireEvent.click(screen.getByText("Path 2"));
+        fireEvent.click(screen.getByText("Path 3"));
+
+        // The abandoned Path 2 transition must not fire later and yank the user back.
+        window.dispatchEvent(new Event("scrollend"));
+
+        expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path3");
+    });
+
+    it("does not navigate for a pending transition after the component unmounts", () => {
+        vi.useFakeTimers();
+        const { unmount } = render(<Tabs paths={mockPaths} />);
+        Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
+        vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+        fireEvent.click(screen.getByText("Path 2"));
+        unmount();
+        vi.advanceTimersByTime(500);
+
+        expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     it("falls back to navigating on a timeout if scrollend never fires", () => {
