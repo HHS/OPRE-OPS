@@ -40,7 +40,7 @@ const HomeLanding = () => {
             </div>
             <Tabs
                 paths={[
-                    { pathName: "/", label: "What's New" },
+                    { pathName: `/${HOME_RELATIVE_PATHS.whatsNew}`, label: "What's New" },
                     { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
                     { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
                 ]}
