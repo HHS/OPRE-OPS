@@ -14,9 +14,9 @@ describe("Home Page", () => {
         cy.visit("/");
         cy.get("[data-cy='welcome-message']").should("exist");
         cy.get("h2").contains("OPS Updates");
-        cy.get("[data-cy='details-tab-What's New']").should("exist");
-        cy.get("[data-cy='details-tab-OPS at a Glance']").should("exist");
-        cy.get("[data-cy='details-tab-OPS Benefits']").should("exist");
+        cy.get(`[data-cy="details-tab-What's New"]`).should("exist");
+        cy.get(`[data-cy="details-tab-OPS at a Glance"]`).should("exist");
+        cy.get(`[data-cy="details-tab-OPS Benefits"]`).should("exist");
         cy.get("h2").contains("What's New");
     });
 
