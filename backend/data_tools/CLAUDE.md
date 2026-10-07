@@ -226,9 +226,14 @@ apply time, so the job needs no Key Vault access at run time.
 **Schedule:** one report per sprint, on the **last Friday of each two-week sprint**. Cron cannot
 express "every other Friday", so the cron (`50 23 * * 5`) fires every Friday and
 `should_generate_report` skips the off-sprint ones using `USAGE_METRICS_SPRINT_ANCHOR_DATE` (a known
-sprint-end Friday). Half the runs are deliberate no-ops. To test-fire, use a **per-execution**
-`az containerapp job start --env-vars USAGE_METRICS_FORCE_RUN=true` — never a committed Terraform
+sprint-end Friday). Half the runs are deliberate no-ops. To test-fire, start a **per-execution**
+override with `USAGE_METRICS_FORCE_RUN=true` through the REST API, copying the job's complete
+container (image, `args`, all env vars) as the runbook shows. Never set it as a committed Terraform
 input, which would silently make the report weekly.
+
+**Never use `az containerapp job start --env-vars` / `--image` on any `ops-data-tools` job.** The
+override replaces the container and the CLI drops the job's `args`, so the image's default `CMD`
+(`import_test_data.sh`) runs instead. It drops the `ops` schema and loads test seed data.
 
 **Note:** the per-user sheet contains named user data — treat `reports/` as sensitive.
 
