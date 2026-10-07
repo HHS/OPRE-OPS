@@ -109,8 +109,7 @@ export const ApproveAwardApproval = () => {
                 Review the agreement details and the Signed Award attached below. Confirm that the CLINs have been
                 entered correctly and that all the agreement details match the award exactly. Make any final edits, as
                 needed. After the Budget Team approves, the agreement will change to Awarded. This will change the
-                budget lines in Executing Status to Obligated Status, and change budget lines in Planned Status to
-                Planned - Mod Status.
+                budget lines in Executing Status to Obligated Status.
             </p>
 
             {approvalAlreadyProcessed && (
@@ -354,8 +353,7 @@ export const ApproveAwardApproval = () => {
                     >
                         I understand that approving for Award means all information in this agreement is correct
                         (matches the award exactly) and can be changed to Awarded in OPS. I understand this action will
-                        change budget lines in Executing Status to Obligated Status and budget lines in Planned Status
-                        will change to Planned Mod Status.
+                        change budget lines in Executing Status to Obligated Status.
                     </label>
                 </div>
             </div>
