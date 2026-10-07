@@ -2,6 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CanFunding from "./CanFunding";
 
+const { mockShowButton } = vi.hoisted(() => ({
+    mockShowButton: { value: false }
+}));
+
 vi.mock("./CanFunding.hooks.js", () => ({
     default: () => ({
         handleAddBudget: vi.fn(),
@@ -13,7 +17,7 @@ vi.mock("./CanFunding.hooks.js", () => ({
         cn: {},
         res: {},
         setShowModal: vi.fn(),
-        showButton: false,
+        showButton: mockShowButton.value,
         showModal: false,
         budgetForm: { submittedAmount: 500000, isSubmitted: true },
         handleEnteredBudgetAmount: vi.fn(),
@@ -58,6 +62,7 @@ vi.mock("../../../components/UI/RoundedBox", () => ({ default: ({ children }) =>
 
 describe("CanFunding", () => {
     beforeEach(() => {
+        mockShowButton.value = false;
         mockUseIsUserReadOnly.mockReturnValue(false);
     });
 
@@ -145,9 +150,7 @@ describe("CanFunding", () => {
         expect(screen.queryByText("Funding received table")).not.toBeInTheDocument();
     });
 
-    it("renders the Edit button when the user is not read-only", () => {
-        mockUseIsUserReadOnly.mockReturnValue(false);
-
+    const renderCanFunding = (props = {}) =>
         render(
             <CanFunding
                 canId={1}
@@ -167,36 +170,39 @@ describe("CanFunding", () => {
                 resetWelcomeModal={() => {}}
                 isExpired={false}
                 isTableLoading={false}
+                {...props}
             />
         );
 
-        expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
+    it("hides the Edit button when the user is not on the Budget Team", () => {
+        renderCanFunding({ isBudgetTeamMember: false });
+
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+        expect(screen.queryByText("Only data from the current fiscal year can be edited.")).not.toBeInTheDocument();
     });
 
-    it("hides the Edit button when the user is read-only", () => {
+    it("renders an enabled Edit button for Budget Team members when editing is allowed", () => {
+        mockShowButton.value = true;
+
+        renderCanFunding({ isBudgetTeamMember: true });
+
+        expect(screen.getByRole("button", { name: /edit/i })).toBeEnabled();
+    });
+
+    it("renders a disabled Edit button with tooltip for Budget Team members when editing is not allowed", () => {
+        mockShowButton.value = false;
+
+        renderCanFunding({ isBudgetTeamMember: true, fiscalYear: 2020 });
+
+        expect(screen.getByRole("button", { name: /edit/i })).toBeDisabled();
+        expect(screen.getByText("Only data from the current fiscal year can be edited.")).toBeInTheDocument();
+    });
+
+    it("hides the Edit button for Budget Team members who are read-only", () => {
+        mockShowButton.value = true;
         mockUseIsUserReadOnly.mockReturnValue(true);
 
-        render(
-            <CanFunding
-                canId={1}
-                canNumber="CAN-001"
-                currentFiscalYearFundingId={11}
-                funding={{ fiscal_year: 2026, active_period: 1 }}
-                fundingBudgets={[]}
-                fiscalYear={2026}
-                totalFunding={1000}
-                receivedFunding={100}
-                fundingReceived={[]}
-                isBudgetTeamMember={false}
-                isEditMode={false}
-                toggleEditMode={() => {}}
-                carryForwardFunding={0}
-                welcomeModal={{ showModal: false }}
-                resetWelcomeModal={() => {}}
-                isExpired={false}
-                isTableLoading={false}
-            />
-        );
+        renderCanFunding({ isBudgetTeamMember: true });
 
         expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     });
