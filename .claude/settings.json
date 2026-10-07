@@ -7,7 +7,14 @@
       "mcp__figma__add_code_connect_map",
       "mcp__figma__send_code_connect_mappings",
       "mcp__figma__upload_assets",
-      "mcp__figma__use_figma"
+      "mcp__figma__use_figma",
+      "mcp__plugin_figma_figma__create_new_file",
+      "mcp__plugin_figma_figma__generate_diagram",
+      "mcp__plugin_figma_figma__generate_figma_design",
+      "mcp__plugin_figma_figma__add_code_connect_map",
+      "mcp__plugin_figma_figma__send_code_connect_mappings",
+      "mcp__plugin_figma_figma__upload_assets",
+      "mcp__plugin_figma_figma__use_figma"
     ]
   }
 }
