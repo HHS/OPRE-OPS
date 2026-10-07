@@ -44,6 +44,7 @@ const HomeLanding = () => {
                     { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
                     { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
                 ]}
+                scrollToTopOnChange
             />
             <Outlet />
         </>
