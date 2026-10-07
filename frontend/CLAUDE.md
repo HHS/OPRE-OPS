@@ -8,18 +8,7 @@ This is the React frontend for OPRE OPS. All commands below should be run from t
 
 ### Package Management
 
-**Use bun for all Node.js dependencies:**
-
-```bash
-# Install dependencies (frozen lockfile for consistent builds)
-bun install --frozen-lockfile
-
-# Add a new package
-bun add package-name
-
-# Add a development dependency
-bun add --dev package-name
-```
+**Use bun for all Node.js dependencies** (not npm/yarn). Install with `bun install --frozen-lockfile` for consistent builds.
 
 ### Running the App
 
@@ -222,20 +211,6 @@ const legendData = rawItems.map((item) => ({
 ```
 
 The `Tag` component renders these values verbatim, so a `percent` of `"<1"` displays as `<1%` and `99` displays as `99%` without further string handling.
-
-## Important Files
-
-- `src/api/opsAPI.js`: RTK Query API with all endpoints
-- `src/api/opsAuthAPI.js`: Authentication-specific endpoints
-- `src/store.js`: Redux store configuration
-- `src/components/UI/`: Shared UI components
-- `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx`: Required for large-font (font-sans-xl+) currency totals on cards
-- `src/helpers/agreement.helpers.js`: Agreement calculation helpers
-- `src/helpers/utils.js`: Shared helpers including `computeDisplayPercents` / `computeDisplayPercent` and `convertToCurrency`
-- `src/helpers/currencyFormat.helpers.js`: `formatCurrency` helper for display-only currency rendering
-- `src/pages/`: Page-level components (route targets)
-- `cypress/e2e/`: E2E test specs
-- `cypress/support/commands.js`: Custom Cypress commands
 
 ## Integration with Backend
 

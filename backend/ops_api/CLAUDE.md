@@ -157,18 +157,6 @@ agreement.fee_percentage = 0.05
 - **Simulated errors**: Endpoints support `?simulatedError=true` (returns 500) or `?simulatedError=400` for frontend error testing
 - **SQL debugging**: Set `SQLALCHEMY_ECHO = True` in `ops/default_settings.py`
 
-## Important Files
-
-- `ops/__init__.py`: Flask application factory (app setup, middleware, routes)
-- `ops/default_settings.py`: Default configuration
-- `ops/resources/base_views.py`: Base classes for API resources
-- `ops/auth/decorators.py`: Authorization decorators
-- `ops/auth/authorization_providers.py`: Permission definitions
-- `openapi.yml` (in `backend/`): OpenAPI spec — keep in sync via the `/sync-openapi` skill
-- `models/base.py`: Base model with audit fields and event listeners
-- `models/__init__.py`: Database initialization and model imports
-- `tests/conftest.py`: Pytest fixtures and test configuration
-
 ## Environment Variables
 
 - `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY`: RSA keys for JWT signing/verification (required)

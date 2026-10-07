@@ -8,26 +8,7 @@ This is the data loading and ETL backend for OPRE OPS. It imports TSV/CSV and JS
 
 ### Package Management
 
-**Use pipenv for all Python dependencies:**
-
-```bash
-cd backend/data_tools
-
-# Install dependencies (always use --dev for development)
-pipenv install --dev
-
-# Add a new package
-pipenv install package-name
-
-# Add a development dependency
-pipenv install --dev package-name
-
-# Enter pipenv shell (then you can omit "pipenv run" prefix)
-pipenv shell
-
-# Update Pipfile.lock
-pipenv lock
-```
+**Use pipenv for all Python dependencies**, run from `backend/data_tools`. Always install with `--dev` for development (`pipenv install --dev`).
 
 ### Running the ETL (load_data.py)
 
@@ -184,18 +165,6 @@ def test_transform_creates_projects(loaded_db):
 ### Fee Percentage and Conventions
 
 Same as the rest of the backend: fee percentages are stored as whole numbers (e.g. `5.0` = 5%). Use `datetime.date` for dates and model enums (e.g. `ContractType`) rather than raw strings.
-
-## Important Files
-
-- **src/load_data.py**: CLI entrypoint; dispatches to per-type `transform` functions.
-- **src/common/db.py**: `init_db`, `init_db_from_config`, `setup_triggers`.
-- **src/common/utils.py**: `get_config`, `get_or_create_sys_user`, and shared helpers.
-- **environment/types.py**: `DataToolsConfig` protocol.
-- **environment/local.py**, **environment/dev.py**, **environment/azure.py**: Config implementations.
-- **scripts/initial_data.sh**: Schema reset + migrations + initial_data SQL.
-- **scripts/import_test_data.sh**: Schema + migrations + JSON5 static data.
-- **scripts/load_data.sh**: Wrapper for `load_data.py`.
-- **tests/conftest.py**: Pytest fixtures and history trigger setup for tests.
 
 ## Environment Variables
 
