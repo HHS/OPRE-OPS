@@ -1331,7 +1331,6 @@ export const {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
-    useLazyGetBudgetLineItemQuery,
     useLazyGetBudgetLineItemsBatchQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
