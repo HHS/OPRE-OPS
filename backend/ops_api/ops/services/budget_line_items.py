@@ -216,7 +216,10 @@ class BudgetLineItemService:
     def get_batch(self, ids: list[int]) -> list[BudgetLineItem]:
         """
         Get multiple Budget Line Items by id, eager-loading the same relationships
-        get_list uses so serializing a batch doesn't trigger per-item lazy-load queries.
+        get_list uses to avoid most per-item lazy-load queries during serialization.
+        Note: `clin` and the grant subclass's `grant_number` are not eager-loaded here
+        (the same gap exists in get_list), so BLIs with those set still trigger a
+        lazy load each when serialized.
         Unknown ids are silently omitted from the result.
         """
         if not ids:
