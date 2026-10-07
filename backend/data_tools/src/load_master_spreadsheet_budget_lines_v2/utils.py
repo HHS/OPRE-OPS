@@ -24,6 +24,7 @@ from models import (
     AABudgetLineItem,
     Agreement,
     AgreementType,
+    BudgetLineItem,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
     DirectObligationBudgetLineItem,
@@ -37,7 +38,10 @@ from models import (
     User,
     agreement_history_trigger_func,
 )
+from models.procurement_action import ProcurementActionStatus
+from models.procurement_tracker import ProcurementTrackerStatus
 from models.procurement_workflow import (
+    get_earliest_obligated_date_needed,
     get_or_create_procurement_records_for_modification,
     get_or_create_procurement_records_for_new_award,
     has_obligated_blis,
@@ -165,6 +169,117 @@ def _find_agreement_and_can(data, session):
     return agreement, can
 
 
+_PROCUREMENT_ELIGIBLE_TYPES = {AgreementType.CONTRACT, AgreementType.IAA, AgreementType.AA}
+
+
+def _sync_procurement_records_for_bli(
+    data: "BudgetLineItemData", bli: BudgetLineItem, agreement: Agreement, sys_user: User, session: Session
+) -> None:
+    """
+    Create/update the ProcurementAction(s) and ProcurementTracker(s) implied by this BLI's status.
+
+    - IN_EXECUTION: NEW_AWARD (or MODIFICATION if the agreement already has OBLIGATED BLIs).
+    - OBLIGATED: NEW_AWARD, AWARDED — covers agreements imported already-awarded, which skip
+      IN_EXECUTION entirely and would otherwise never get a ProcurementAction/Tracker.
+    """
+    if not agreement or data.AGREEMENT_TYPE not in _PROCUREMENT_ELIGIBLE_TYPES:
+        return
+
+    if bli.status == BudgetLineItemStatus.IN_EXECUTION:
+        is_mod = has_obligated_blis(session, agreement.id)
+        if is_mod:
+            action, _, _, _ = get_or_create_procurement_records_for_modification(
+                session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
+            )
+        else:
+            action, _, _, _ = get_or_create_procurement_records_for_new_award(
+                session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
+            )
+        link_blis_to_action(session, agreement, action, BudgetLineItemStatus.IN_EXECUTION)
+        commit_or_rollback(session)
+    elif bli.status == BudgetLineItemStatus.OBLIGATED:
+        # No fallback if date_needed is null — leave the date unset rather than guessing.
+        award_date = get_earliest_obligated_date_needed(session, agreement.id)
+        action, _, _, _ = get_or_create_procurement_records_for_new_award(
+            session,
+            agreement,
+            created_by=sys_user.id,
+            action_status=ProcurementActionStatus.AWARDED,
+            tracker_status=ProcurementTrackerStatus.COMPLETED,
+            date_awarded_obligated=award_date,
+            source="SpreadsheetIngest",
+            include_terminal=True,
+        )
+        link_blis_to_action(session, agreement, action, BudgetLineItemStatus.OBLIGATED)
+        commit_or_rollback(session)
+
+
+def _upsert_bli(data, bli_class, existing_bli, agreement, can, sc, procurement_shop_fee_id, sys_user, session):
+    """
+    Create a new BudgetLineItem or update an existing one.
+
+    Returns (bli, existing_bli_dict), where existing_bli_dict is None for a newly
+    created BLI, or the pre-update dict (for the history diff) when updating.
+    """
+    fields = {
+        "line_description": data.LINE_DESC,
+        "comments": data.COMMENTS,
+        "agreement_id": agreement.id if agreement else None,
+        "agreement": agreement if agreement else None,
+        "can_id": can.id if can else None,
+        "can": can if can else None,
+        "amount": data.AMOUNT,
+        "status": data.STATUS,
+        "date_needed": data.DATE_NEEDED,
+        "procurement_shop_fee_id": procurement_shop_fee_id,
+        "services_component": sc,
+        "service_component_name_for_sort": sc.display_name_for_sort if sc else None,
+    }
+
+    if not existing_bli:
+        bli = bli_class(
+            budget_line_item_type=data.AGREEMENT_TYPE if data.AGREEMENT_TYPE else None,
+            **fields,
+            created_by=sys_user.id,
+            created_on=datetime.now(),
+        )
+        session.add(bli)
+        commit_or_rollback(session)
+        logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
+        return bli, None
+
+    existing_bli_dict = existing_bli.to_dict()  # capture before mutating for diff
+    bli = existing_bli
+    for field_name, value in fields.items():
+        setattr(bli, field_name, value)
+    bli.updated_by = sys_user.id
+    bli.updated_on = datetime.now()
+
+    session.add(bli)
+    commit_or_rollback(session)
+    logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
+    return bli, existing_bli_dict
+
+
+def _build_bli_ops_event(bli, existing_bli_dict, sys_user):
+    """Build the CREATE_BLI/UPDATE_BLI OpsEvent for a BLI create-or-update."""
+    if existing_bli_dict is None:
+        return OpsEvent(
+            event_type=OpsEventType.CREATE_BLI,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={"new_bli": bli.to_dict()},
+        )
+
+    updates = generate_events_update(existing_bli_dict, bli.to_dict(), bli.id, sys_user.id)
+    return OpsEvent(
+        event_type=OpsEventType.UPDATE_BLI,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=sys_user.id,
+        event_details={"bli_updates": updates, "bli": bli.to_dict()},
+    )
+
+
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session) -> None:
     """
     Create and persist the models to the database.
@@ -178,16 +293,13 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         proc_shop = session.scalar(select(ProcurementShop).where(ProcurementShop.abbr == data.PROC_SHOP))
         procurement_shop_fee_id = _resolve_procurement_fee(data, proc_shop, agreement, session)
 
-        # Determine which subclass to instantiate
         bli_class = {
             AgreementType.CONTRACT: ContractBudgetLineItem,
             AgreementType.GRANT: GrantBudgetLineItem,
             AgreementType.DIRECT_OBLIGATION: DirectObligationBudgetLineItem,
             AgreementType.IAA: IAABudgetLineItem,
             AgreementType.AA: AABudgetLineItem,
-        }.get(data.AGREEMENT_TYPE, None)
-
-        # Handle the case where the bli subclass is not found
+        }.get(data.AGREEMENT_TYPE)
         if not bli_class:
             logger.warning(f"Unable to map AgreementType={data.AGREEMENT_TYPE} to a BudgetLineItem subclass.")
             return
@@ -206,56 +318,12 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             logger.warning(f"BudgetLineItem with SYS_BUDGET_ID {data.ID} not found.")
             return
 
-        if not existing_budget_line_item:
-            # Create a new BudgetLineItem subclass
-            bli = bli_class(
-                budget_line_item_type=data.AGREEMENT_TYPE if data.AGREEMENT_TYPE else None,
-                line_description=data.LINE_DESC,
-                comments=data.COMMENTS,
-                agreement_id=agreement.id if agreement else None,
-                agreement=agreement if agreement else None,
-                can_id=can.id if can else None,
-                can=can if can else None,
-                amount=data.AMOUNT,
-                status=data.STATUS,
-                date_needed=data.DATE_NEEDED,
-                procurement_shop_fee_id=procurement_shop_fee_id,
-                services_component=sc,
-                service_component_name_for_sort=sc.display_name_for_sort if sc else None,
-                created_by=sys_user.id,
-                created_on=datetime.now(),
-            )
-
-            session.add(bli)
-            commit_or_rollback(session)
-
-            logger.info(f"CREATED {bli_class.__name__} model for {bli.to_dict()}")
-
-        else:
-            existing_bli_dict = existing_budget_line_item.to_dict()  # capture before mutating for diff
-            bli = existing_budget_line_item
-            bli.line_description = data.LINE_DESC
-            bli.comments = data.COMMENTS
-            bli.agreement_id = agreement.id if agreement else None
-            bli.agreement = agreement if agreement else None
-            bli.can_id = can.id if can else None
-            bli.can = can if can else None
-            bli.amount = data.AMOUNT
-            bli.status = data.STATUS
-            bli.date_needed = data.DATE_NEEDED
-            bli.procurement_shop_fee_id = procurement_shop_fee_id
-            bli.services_component = sc
-            bli.service_component_name_for_sort = sc.display_name_for_sort if sc else None
-            bli.updated_by = sys_user.id
-            bli.updated_on = datetime.now()
-
-            session.add(bli)
-            commit_or_rollback(session)
-
-            logger.info(f"UPSERTING {bli_class.__name__} model for {bli.to_dict()}")
+        bli, existing_bli_dict = _upsert_bli(
+            data, bli_class, existing_budget_line_item, agreement, can, sc, procurement_shop_fee_id, sys_user, session
+        )
 
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
-        if not existing_budget_line_item:
+        if existing_bli_dict is None:
             logger.warning(
                 f"***Manually update BudgetLineItem.id in Budget Spreadsheet: original Agreement "
                 f"Name={data.AGREEMENT_NAME}, Agreement Type={data.AGREEMENT_TYPE}"
@@ -264,40 +332,10 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         commit_or_rollback(session)
 
-        procurement_eligible_types = {AgreementType.CONTRACT, AgreementType.IAA, AgreementType.AA}
-        if (
-            bli.status == BudgetLineItemStatus.IN_EXECUTION
-            and agreement
-            and data.AGREEMENT_TYPE in procurement_eligible_types
-        ):
-            is_mod = has_obligated_blis(session, agreement.id)
-            if is_mod:
-                action, _, _, _ = get_or_create_procurement_records_for_modification(
-                    session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
-                )
-            else:
-                action, _, _, _ = get_or_create_procurement_records_for_new_award(
-                    session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
-                )
-            link_blis_to_action(session, agreement, action, BudgetLineItemStatus.IN_EXECUTION)
-            commit_or_rollback(session)
+        _sync_procurement_records_for_bli(data, bli, agreement, sys_user, session)
 
         # Create an OPSEvent record for the BLI create/update with the correct payload shape for each case.
-        if not existing_budget_line_item:
-            ops_event = OpsEvent(
-                event_type=OpsEventType.CREATE_BLI,
-                event_status=OpsEventStatus.SUCCESS,
-                created_by=sys_user.id,
-                event_details={"new_bli": bli.to_dict()},
-            )
-        else:
-            updates = generate_events_update(existing_bli_dict, bli.to_dict(), bli.id, sys_user.id)
-            ops_event = OpsEvent(
-                event_type=OpsEventType.UPDATE_BLI,
-                event_status=OpsEventStatus.SUCCESS,
-                created_by=sys_user.id,
-                event_details={"bli_updates": updates, "bli": bli.to_dict()},
-            )
+        ops_event = _build_bli_ops_event(bli, existing_bli_dict, sys_user)
         session.add(ops_event)
         session.flush()  # populate ops_event.id and created_on before the history trigger reads them
         agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
