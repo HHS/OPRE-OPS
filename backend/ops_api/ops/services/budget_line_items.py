@@ -9,7 +9,7 @@ from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectin_polymorphic, selectinload
 
 from models import (
     CAN,
@@ -22,6 +22,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
+    GrantBudgetLineItem,
     GrantNumber,
     Portfolio,
     ProcurementShop,
@@ -216,10 +217,7 @@ class BudgetLineItemService:
     def get_batch(self, ids: list[int]) -> list[BudgetLineItem]:
         """
         Get multiple Budget Line Items by id, eager-loading the same relationships
-        get_list uses to avoid most per-item lazy-load queries during serialization.
-        Note: `clin` and the grant subclass's `grant_number` are not eager-loaded here
-        (the same gap exists in get_list), so BLIs with those set still trigger a
-        lazy load each when serialized.
+        get_list uses so serializing a batch doesn't trigger per-item lazy-load queries.
         Unknown ids are silently omitted from the result.
         """
         if not ids:
@@ -241,6 +239,13 @@ class BudgetLineItemService:
                 ),
                 joinedload(BudgetLineItem.procurement_shop_fee),
                 joinedload(BudgetLineItem.services_component),
+                selectinload(BudgetLineItem.clin),
+                # Loading GrantBudgetLineItem.grant_number requires selectin_polymorphic:
+                # a plain select(BudgetLineItem) only knows the base-table columns, so a
+                # loader option on a joined-inheritance subclass's relationship is silently
+                # ignored unless the query is told to selectin-load that subclass's table too.
+                selectin_polymorphic(BudgetLineItem, [GrantBudgetLineItem]),
+                selectinload(GrantBudgetLineItem.grant_number),
             )
         )
         return list(self.db_session.scalars(query).all())
@@ -275,6 +280,15 @@ class BudgetLineItemService:
                 joinedload(BudgetLineItem.procurement_shop_fee),
                 # Eager load services component
                 joinedload(BudgetLineItem.services_component),
+                # Eager load CLIN
+                selectinload(BudgetLineItem.clin),
+                # Eager load the grant subclass's grant number. selectin_polymorphic is
+                # required: a plain select(BudgetLineItem) only knows the base-table
+                # columns, so a loader option on a joined-inheritance subclass's
+                # relationship is silently ignored unless the query is told to
+                # selectin-load that subclass's table too.
+                selectin_polymorphic(BudgetLineItem, [GrantBudgetLineItem]),
+                selectinload(GrantBudgetLineItem.grant_number),
             )
         )
         agreement_already_joined = False
