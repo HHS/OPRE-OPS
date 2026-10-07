@@ -235,6 +235,7 @@ def get_or_create_procurement_records_for_new_award(
     date_awarded_obligated: Optional[date] = None,
     source: Optional[str] = None,
     include_terminal: bool = False,
+    promote_on_order_flip: bool = True,
 ) -> tuple[ProcurementAction, DefaultProcurementTracker, bool, bool]:
     """
     Get or create a NEW_AWARD ProcurementAction and tracker for the agreement.
@@ -242,6 +243,14 @@ def get_or_create_procurement_records_for_new_award(
 
     Pass ``include_terminal=True`` to match actions/trackers in terminal statuses
     (e.g. for backfill of historical data).
+
+    Pass ``promote_on_order_flip=False`` to disable promoting an existing
+    not-yet-AWARDED action/tracker (and splitting its unobligated BLIs to a
+    MODIFICATION action) when ``action_status=AWARDED`` is passed for an action that
+    already exists. That promotion exists specifically to resolve the "order flip" case
+    (an OBLIGATED BLI processed after an earlier IN_EXECUTION BLI already created a
+    PLANNED action) — callers passing AWARDED for a different reason, against an
+    existing action, should opt out so it isn't triggered implicitly.
 
     Returns (action, tracker, action_created, tracker_created).
     """
@@ -265,7 +274,11 @@ def get_or_create_procurement_records_for_new_award(
         # PLANNED action for the same agreement — otherwise the action is stuck at
         # PLANNED forever, since get_or_create_for_agreement never updates the status
         # of a pre-existing action.
-        if action_status == ProcurementActionStatus.AWARDED and action.status not in _TERMINAL_ACTION_STATUSES:
+        if (
+            promote_on_order_flip
+            and action_status == ProcurementActionStatus.AWARDED
+            and action.status not in _TERMINAL_ACTION_STATUSES
+        ):
             action.status = ProcurementActionStatus.AWARDED
             if date_awarded_obligated is not None and action.date_awarded_obligated is None:
                 action.date_awarded_obligated = date_awarded_obligated
@@ -308,7 +321,22 @@ def get_or_create_procurement_records_for_new_award(
     # state).
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
-    tracker_is_untouched = tracker.active_step_number <= 1 and tracker.status != ProcurementTrackerStatus.COMPLETED
+    #
+    # active_step_number <= 1 alone isn't enough: a user can fill in real step-1 data
+    # (notes, completed-by, completed date) without ever advancing past it, since
+    # active_step_number only moves on step *completion*. Check the step-1 fields
+    # themselves so that in-progress data is never silently overwritten.
+    step_1 = tracker.get_step(ProcurementTrackerStepType.ACQUISITION_PLANNING)
+    step_1_has_data = step_1 is not None and (
+        step_1.acquisition_planning_notes
+        or step_1.acquisition_planning_date_completed
+        or step_1.acquisition_planning_task_completed_by
+    )
+    tracker_is_untouched = (
+        tracker.active_step_number <= 1
+        and tracker.status != ProcurementTrackerStatus.COMPLETED
+        and not step_1_has_data
+    )
     if tracker_status == ProcurementTrackerStatus.COMPLETED:
         if needs_step_setup or tracker_is_untouched:
             tracker.mark_completed(completed_date=date_awarded_obligated)

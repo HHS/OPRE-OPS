@@ -369,7 +369,7 @@ AGREEMENT_TYPE_NAMES = [t.name for t in AgreementType]
     type=click.Choice(AGREEMENT_TYPE_NAMES, case_sensitive=False),
     help=(
         "Agreement types to backfill IN_EXECUTION records for (e.g. CONTRACT GRANT). "
-        "If omitted, all types are processed. Does not affect the CONTRACT/AA-only "
+        "If omitted, all types are processed. Does not affect the CONTRACT/AA/IAA "
         "OBLIGATED-with-no-tracker backfill, which always runs regardless of this option."
     ),
 )
