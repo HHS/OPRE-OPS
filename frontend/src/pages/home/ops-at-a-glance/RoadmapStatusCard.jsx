@@ -1,15 +1,7 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
 import { getRoadmapItemsByStatus } from "../roadmapData.helpers";
-import { ROADMAP_STATUS } from "../roadmapStatus.constants";
-
-const COLUMN_TAG_CLASSES = {
-    [ROADMAP_STATUS.DONE]: "bg-brand-can-budget-by-fy-graph-4 text-ink",
-    // text-white on this background fails WCAG AA contrast (3.24:1, needs 4.5:1) — text-ink
-    // matches CurrentlyDevelopingCard's "Currently Developing" tag treatment.
-    [ROADMAP_STATUS.CURRENTLY_DEVELOPING]: "bg-brand-data-viz-primary-3 text-ink",
-    [ROADMAP_STATUS.NOT_STARTED]: "bg-brand-primary-light text-primary"
-};
+import { ROADMAP_STATUS, ROADMAP_STATUS_TAG_CLASSES } from "../roadmapStatus.constants";
 
 const NOT_STARTED_FOOTNOTE = "* Features are listed in alphabetical order, not the order they will be worked on";
 
@@ -61,7 +53,7 @@ const RoadmapStatusCard = () => {
                                 >
                                     <Tag
                                         text={item.title}
-                                        className={COLUMN_TAG_CLASSES[column.status]}
+                                        className={ROADMAP_STATUS_TAG_CLASSES[column.status]}
                                     />
                                 </span>
                             ))}

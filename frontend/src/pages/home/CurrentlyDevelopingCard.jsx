@@ -1,7 +1,7 @@
 import RoundedBox from "../../components/UI/RoundedBox";
 import Tag from "../../components/UI/Tag";
 import { getRoadmapItemsByStatus } from "./roadmapData.helpers";
-import { ROADMAP_STATUS } from "./roadmapStatus.constants";
+import { ROADMAP_STATUS, ROADMAP_STATUS_TAG_CLASSES } from "./roadmapStatus.constants";
 
 const CurrentlyDevelopingCard = () => {
     const currentlyDevelopingItems = getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING);
@@ -28,7 +28,7 @@ const CurrentlyDevelopingCard = () => {
                             <Tag
                                 key={item.id}
                                 text={item.title}
-                                className="bg-brand-data-viz-bl-by-status-3 text-ink"
+                                className={ROADMAP_STATUS_TAG_CLASSES[ROADMAP_STATUS.CURRENTLY_DEVELOPING]}
                             />
                         ))}
                     </div>
@@ -43,7 +43,7 @@ const CurrentlyDevelopingCard = () => {
                             <Tag
                                 key={item.id}
                                 text={item.title}
-                                className="bg-brand-primary-light text-primary"
+                                className={ROADMAP_STATUS_TAG_CLASSES[ROADMAP_STATUS.NOT_STARTED]}
                             />
                         ))}
                     </div>
