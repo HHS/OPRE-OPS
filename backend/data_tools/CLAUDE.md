@@ -159,6 +159,8 @@ def test_transform_creates_projects(loaded_db):
 
 ### Key Fixtures
 
+Defined in `tests/conftest.py`:
+
 - **db_service** (session): Ensures Postgres is up; returns `(db_session, engine)`.
 - **loaded_db**: Session with history triggers registered; rolls back and cleans `ops_db_history` after each test.
 
