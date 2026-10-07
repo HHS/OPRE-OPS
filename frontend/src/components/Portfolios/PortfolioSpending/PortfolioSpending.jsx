@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
 import {
     useGetPortfolioCansByIdQuery,
@@ -60,24 +60,8 @@ const PortfolioSpending = () => {
     // hundreds of budget line ids and a request-per-id fan-out can exhaust the backend's
     // DB connection pool.
     const [trigger, { isLoading: isBudgetLineItemLoading }] = useLazyGetBudgetLineItemsBatchQuery();
-    const fetchBudgetLineItems = useCallback(async () => {
-        const batches = chunk(budgetLineIds, BUDGET_LINE_BATCH_SIZE);
-        const promises = batches.map((ids) => trigger({ ids }).unwrap());
-        try {
-            const batchResults = await Promise.all(promises);
-            const budgetLineItemsData = batchResults.flat();
-            const budgetLineItemsByFiscalYear = budgetLineItemsData.filter(
-                (item) => item.fiscal_year === fiscalYear || item.fiscal_year === null
-            );
-            setBudgetLineItems(budgetLineItemsByFiscalYear);
-            setFetchError(false);
-        } catch (error) {
-            console.error("Failed to fetch budgetLineItems:", error);
-            setFetchError(true);
-        }
-    }, [budgetLineIds, fiscalYear, trigger]);
 
-    // When switching tabs components gets remounted, and while budgetLineIds are cached, useCallback still runs and fetches budgetLineItems
+    // When switching tabs components gets remounted, and while budgetLineIds are cached, the effect still runs and fetches budgetLineItems
     const isBudgetLineItemLoadingOnRemount = !fetchError && budgetLineItems.length === 0 && budgetLineIds.length > 0;
 
     const isLoading = isCansLoading || isBudgetLineItemLoading || isBudgetLineItemLoadingOnRemount;
@@ -87,10 +71,42 @@ const PortfolioSpending = () => {
         setBudgetLineItems([]);
         setFetchError(false);
 
-        if (budgetLineIds?.length) {
-            fetchBudgetLineItems();
+        // Skip while CANs are (re)fetching: budgetLineIds still reflects the previous
+        // fiscal year/portfolio until the new CANs arrive, so fetching now would just be
+        // a wasted request for the wrong ids. The effect re-runs once isCansFetching flips.
+        if (isCansFetching || !budgetLineIds?.length) {
+            return;
         }
-    }, [budgetLineIds, fiscalYear, fetchBudgetLineItems]);
+
+        let cancelled = false;
+
+        const fetchBudgetLineItems = async () => {
+            const batches = chunk(budgetLineIds, BUDGET_LINE_BATCH_SIZE);
+            const promises = batches.map((ids) => trigger({ ids }).unwrap());
+            try {
+                const batchResults = await Promise.all(promises);
+                const budgetLineItemsData = batchResults.flat();
+                const budgetLineItemsByFiscalYear = budgetLineItemsData.filter(
+                    (item) => item.fiscal_year === fiscalYear || item.fiscal_year === null
+                );
+                if (!cancelled) {
+                    setBudgetLineItems(budgetLineItemsByFiscalYear);
+                    setFetchError(false);
+                }
+            } catch (error) {
+                console.error("Failed to fetch budgetLineItems:", error);
+                if (!cancelled) {
+                    setFetchError(true);
+                }
+            }
+        };
+
+        fetchBudgetLineItems();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [budgetLineIds, fiscalYear, isCansFetching, trigger]);
 
     return (
         <>

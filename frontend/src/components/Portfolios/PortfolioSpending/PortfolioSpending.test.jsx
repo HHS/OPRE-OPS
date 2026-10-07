@@ -150,4 +150,83 @@ describe("PortfolioSpending", () => {
         expect(screen.queryByText("Portfolio budget line table")).not.toBeInTheDocument();
         expect(screen.queryByRole("table", { name: "Loading portfolio budget lines" })).not.toBeInTheDocument();
     });
+
+    it("does not fetch budget lines while CANs are still refetching for the new fiscal year", async () => {
+        // RTK Query keeps the previous fiscal year's CANs (and thus budgetLineIds) around
+        // while isFetching is true for the new args - fetching now would be for the wrong ids.
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: [1, 2, 3] }],
+            isLoading: false,
+            isFetching: true
+        });
+
+        const { rerender } = render(<PortfolioSpending />);
+
+        expect(triggerMock).not.toHaveBeenCalled();
+
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: [4, 5, 6] }],
+            isLoading: false,
+            isFetching: false
+        });
+        triggerMock.mockImplementation(({ ids }) => ({
+            unwrap: () => Promise.resolve(ids.map((id) => ({ id, fiscal_year: 2026 })))
+        }));
+
+        rerender(<PortfolioSpending />);
+
+        await waitFor(() => expect(triggerMock).toHaveBeenCalledTimes(1));
+        expect(triggerMock).toHaveBeenCalledWith({ ids: [4, 5, 6] });
+    });
+
+    it("ignores a stale rejection that resolves after a newer fetch already succeeded", async () => {
+        let rejectStale;
+        const stalePromise = new Promise((_, reject) => {
+            rejectStale = reject;
+        });
+        triggerMock.mockImplementationOnce(() => ({ unwrap: () => stalePromise }));
+        vi.spyOn(console, "error").mockImplementation(() => {});
+
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: [1, 2, 3] }],
+            isLoading: false,
+            isFetching: false
+        });
+
+        const { rerender } = render(<PortfolioSpending />);
+
+        await waitFor(() => expect(triggerMock).toHaveBeenCalledTimes(1));
+
+        // Fiscal year changes; the new CANs/ids have already arrived and the newer fetch
+        // resolves successfully before the stale request from the old fiscal year settles.
+        useOutletContextMock.mockReturnValue({
+            portfolioId: 7,
+            fiscalYear: 2027,
+            inDraftFunding: 10,
+            totalFunding: 100,
+            inExecutionFunding: 20,
+            obligatedFunding: 30,
+            plannedFunding: 40
+        });
+        useGetPortfolioCansByIdQueryMock.mockReturnValue({
+            data: [{ budget_line_items: [4, 5, 6] }],
+            isLoading: false,
+            isFetching: false
+        });
+        triggerMock.mockImplementationOnce(({ ids }) => ({
+            unwrap: () => Promise.resolve(ids.map((id) => ({ id, fiscal_year: 2027 })))
+        }));
+
+        rerender(<PortfolioSpending />);
+
+        expect(await screen.findByText("Portfolio budget line table")).toBeInTheDocument();
+
+        // The stale request's effect already cleaned up, so its rejection must not
+        // clobber the good table with an error message.
+        rejectStale(new Error("stale network error"));
+        await waitFor(() => expect(console.error).toHaveBeenCalled());
+
+        expect(screen.queryByText("Unable to load budget lines")).not.toBeInTheDocument();
+        expect(screen.getByText("Portfolio budget line table")).toBeInTheDocument();
+    });
 });
