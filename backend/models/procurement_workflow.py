@@ -24,12 +24,14 @@ from models.procurement_action import AwardType, ProcurementAction, ProcurementA
 from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 
 if TYPE_CHECKING:
     from models.agreements import Agreement
 
 __all__ = [
+    "AWARD_APPROVED_STATUS",
     "has_obligated_blis",
     "get_earliest_obligated_fiscal_year",
     "get_earliest_obligated_date_needed",
@@ -37,6 +39,11 @@ __all__ = [
     "get_or_create_procurement_records_for_new_award",
     "get_or_create_procurement_records_for_modification",
 ]
+
+# The AWARD step's award_approval_status value that marks a Budget Team award
+# approval. Stored as a free-form String(20) column, so the literal is the contract —
+# shared with ops_api's AgreementAwardHistoryService and ProcurementTrackerStepService.
+AWARD_APPROVED_STATUS = "APPROVED"
 
 
 # ---------------------------------------------------------------------------
@@ -126,11 +133,13 @@ def link_blis_to_action(
 # ---------------------------------------------------------------------------
 
 
-_TERMINAL_ACTION_STATUSES = frozenset({
-    ProcurementActionStatus.AWARDED,
-    ProcurementActionStatus.CERTIFIED,
-    ProcurementActionStatus.CANCELLED,
-})
+_TERMINAL_ACTION_STATUSES = frozenset(
+    {
+        ProcurementActionStatus.AWARDED,
+        ProcurementActionStatus.CERTIFIED,
+        ProcurementActionStatus.CANCELLED,
+    }
+)
 
 
 def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") -> None:
@@ -142,10 +151,7 @@ def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") ->
     if action.status in _TERMINAL_ACTION_STATUSES:
         return
 
-    if (
-        action.procurement_shop_id != agreement.awarding_entity_id
-        and agreement.awarding_entity_id is not None
-    ):
+    if action.procurement_shop_id != agreement.awarding_entity_id and agreement.awarding_entity_id is not None:
         old_shop_id = action.procurement_shop_id
         action.procurement_shop_id = agreement.awarding_entity_id
         logger.info(
@@ -229,6 +235,7 @@ def get_or_create_procurement_records_for_new_award(
     date_awarded_obligated: Optional[date] = None,
     source: Optional[str] = None,
     include_terminal: bool = False,
+    promote_on_order_flip: bool = True,
 ) -> tuple[ProcurementAction, DefaultProcurementTracker, bool, bool]:
     """
     Get or create a NEW_AWARD ProcurementAction and tracker for the agreement.
@@ -236,6 +243,14 @@ def get_or_create_procurement_records_for_new_award(
 
     Pass ``include_terminal=True`` to match actions/trackers in terminal statuses
     (e.g. for backfill of historical data).
+
+    Pass ``promote_on_order_flip=False`` to disable promoting an existing
+    not-yet-AWARDED action/tracker (and splitting its unobligated BLIs to a
+    MODIFICATION action) when ``action_status=AWARDED`` is passed for an action that
+    already exists. That promotion exists specifically to resolve the "order flip" case
+    (an OBLIGATED BLI processed after an earlier IN_EXECUTION BLI already created a
+    PLANNED action) — callers passing AWARDED for a different reason, against an
+    existing action, should opt out so it isn't triggered implicitly.
 
     Returns (action, tracker, action_created, tracker_created).
     """
@@ -254,6 +269,33 @@ def get_or_create_procurement_records_for_new_award(
     else:
         _sync_procurement_shop(action, agreement)
 
+        # Promote an existing, not-yet-AWARDED action when this call represents an
+        # OBLIGATED BLI arriving after an earlier IN_EXECUTION BLI already created a
+        # PLANNED action for the same agreement — otherwise the action is stuck at
+        # PLANNED forever, since get_or_create_for_agreement never updates the status
+        # of a pre-existing action.
+        if (
+            promote_on_order_flip
+            and action_status == ProcurementActionStatus.AWARDED
+            and action.status not in _TERMINAL_ACTION_STATUSES
+        ):
+            action.status = ProcurementActionStatus.AWARDED
+            if date_awarded_obligated is not None and action.date_awarded_obligated is None:
+                action.date_awarded_obligated = date_awarded_obligated
+            logger.info(
+                f"Promoted ProcurementAction {action.id} to AWARDED for Agreement {agreement.id} "
+                f"({agreement.name!r}) — a later-processed OBLIGATED BLI resolved an action "
+                "that an earlier IN_EXECUTION BLI had already created as PLANNED"
+            )
+            # The earlier IN_EXECUTION BLI's own has_obligated_blis() check said "not a
+            # mod" because no OBLIGATED BLI existed yet at that time — so it landed on
+            # this NEW_AWARD action. Now that this action is being promoted to AWARDED,
+            # any BLI still on it that isn't OBLIGATED is still in progress and must move
+            # to its own MODIFICATION action, so the result matches what processing the
+            # same two BLIs in the opposite order would have produced (an AWARDED
+            # NEW_AWARD plus a MODIFICATION in process), regardless of import order.
+            _split_unobligated_blis_to_modification(session, agreement, action, created_by, source)
+
     tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
         agreement_id=agreement.id,
@@ -264,14 +306,52 @@ def get_or_create_procurement_records_for_new_award(
         include_inactive=include_terminal,
     )
 
-    # Set step statuses only for adopted or newly created trackers.
+    # Set step statuses for adopted/newly-created trackers, and promote an already-linked
+    # tracker that is still sitting untouched at step 1 — covering the same already-linked
+    # "order flip" case as the action promotion above (an earlier IN_EXECUTION BLI created
+    # the tracker before a later-processed OBLIGATED BLI arrives for the same agreement).
+    #
+    # An already-linked tracker whose active_step_number is already past 1 has real
+    # progress behind it: ProcurementTrackerStepService only advances active_step_number
+    # (and stamps step_completed_date) when a step is genuinely completed through the app,
+    # and activate_first_step() never touches it. mark_completed() unconditionally
+    # overwrites every step's status/dates and jumps active_step_number to the end, so it
+    # must never run against that real history — only against a tracker this call is
+    # itself responsible for completing (new, adopted, or still at its untouched initial
+    # state).
     # This must happen *before* the event is created so that the event
     # captures the final active_step_number and step statuses.
-    if needs_step_setup:
-        if tracker_status == ProcurementTrackerStatus.COMPLETED:
+    #
+    # active_step_number <= 1 alone isn't enough: a user can fill in real step-1 data
+    # (notes, completed-by, completed date) without ever advancing past it, since
+    # active_step_number only moves on step *completion*. Check the step-1 fields
+    # themselves so that in-progress data is never silently overwritten.
+    step_1 = tracker.get_step(ProcurementTrackerStepType.ACQUISITION_PLANNING)
+    step_1_has_data = step_1 is not None and (
+        step_1.acquisition_planning_notes
+        or step_1.acquisition_planning_date_completed
+        or step_1.acquisition_planning_task_completed_by
+    )
+    tracker_is_untouched = (
+        tracker.active_step_number <= 1
+        and tracker.status != ProcurementTrackerStatus.COMPLETED
+        and not step_1_has_data
+    )
+    if tracker_status == ProcurementTrackerStatus.COMPLETED:
+        if needs_step_setup or tracker_is_untouched:
             tracker.mark_completed(completed_date=date_awarded_obligated)
-        else:
-            tracker.activate_first_step()
+            # mark_completed() only flips step statuses/dates — it does not approve
+            # the award. The Awards and Modifications tab gates on
+            # award_approval_status == AWARD_APPROVED_STATUS, not tracker/step status (see
+            # AgreementAwardHistoryService), so a COMPLETED tracker needs its AWARD step
+            # explicitly approved or it will silently never appear there.
+            award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+            if award_step and award_step.award_approval_status is None:
+                award_step.award_approval_status = AWARD_APPROVED_STATUS
+                award_step.award_date = date_awarded_obligated
+                award_step.award_vendor_id = getattr(agreement, "vendor_id", None)
+    elif needs_step_setup:
+        tracker.activate_first_step()
 
     if tracker_created:
         _create_tracker_event(
@@ -279,6 +359,53 @@ def get_or_create_procurement_records_for_new_award(
         )
 
     return action, tracker, action_created, tracker_created
+
+
+def _split_unobligated_blis_to_modification(
+    session: Session,
+    agreement: "Agreement",
+    new_award_action: ProcurementAction,
+    created_by: Optional[int],
+    source: Optional[str],
+) -> None:
+    """
+    Move any BLI still linked to ``new_award_action`` that is not OBLIGATED onto a
+    MODIFICATION action/tracker instead.
+
+    Only called when ``new_award_action`` is being promoted to AWARDED (the "order
+    flip" case): an earlier IN_EXECUTION BLI linked to this action before any OBLIGATED
+    BLI existed for the agreement, so its own has_obligated_blis() check correctly said
+    "not a mod" at the time. Without this, that still-in-progress BLI would be stranded
+    on a now-AWARDED/COMPLETED NEW_AWARD cycle instead of its own in-process
+    MODIFICATION — a different result than if the two BLIs had been processed in the
+    opposite order.
+    """
+    unobligated_blis = (
+        session.execute(
+            select(BudgetLineItem).where(
+                BudgetLineItem.procurement_action_id == new_award_action.id,
+                BudgetLineItem.status != BudgetLineItemStatus.OBLIGATED,
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    if not unobligated_blis:
+        return
+
+    mod_action, _, _, _ = get_or_create_procurement_records_for_modification(
+        session, agreement, created_by=created_by, source=source
+    )
+
+    for bli in unobligated_blis:
+        bli.procurement_action_id = mod_action.id
+
+    logger.info(
+        f"Moved {len(unobligated_blis)} non-OBLIGATED BLI(s) from newly-AWARDED "
+        f"ProcurementAction {new_award_action.id} to MODIFICATION ProcurementAction "
+        f"{mod_action.id} for Agreement {agreement.id} ({agreement.name!r}) — order-flip split"
+    )
 
 
 def get_or_create_procurement_records_for_modification(
