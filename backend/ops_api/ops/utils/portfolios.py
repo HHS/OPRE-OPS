@@ -152,7 +152,7 @@ def get_total_funding(
     planned_funding = _get_budget_line_item_total_by_statuses(
         portfolio_id=portfolio.id,
         fiscal_year=fiscal_year,
-        statuses=[BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD],
+        statuses=[BudgetLineItemStatus.PLANNED],
     )
 
     obligated_funding = _get_budget_line_item_total_by_status(

@@ -483,7 +483,7 @@ def test_get_agreement_item_includes_procurement_shop_locked_message_but_list_do
     assert locked_response.status_code == 200
     assert locked_response.json["_meta"]["procurementShopLockedMessage"] == (
         "The Procurement Shop cannot be edited because this agreement has budget lines in "
-        "Executing, Obligated or Planned Mod status."
+        "Executing or Obligated status."
     )
 
     # The list endpoint shares _serialize_agreement_with_meta but never opts into the

@@ -129,7 +129,7 @@ export const computeBudgetLinePageErrors = ({
  *
  * Only PLANNED and IN_EXECUTION are approval-routed. Other statuses can't reach the delete control
  * here (deletability mirrors editability — EDITABLE_STATUSES is DRAFT/PLANNED/IN_EXECUTION — so
- * OBLIGATED, PLANNED_MOD, in-review, and OBE lines are not deletable in the wizard), so this returns
+ * OBLIGATED, in-review, and OBE lines are not deletable in the wizard), so this returns
  * false for them, matching the DRAFT/super immediate-delete branch.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line being deleted.
  * @param {boolean} isSuperUser - Whether the acting user is a super user.

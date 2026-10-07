@@ -124,7 +124,7 @@ export default function useApproveAwardApproval(agreementId) {
         setShowModal(true);
         setModalProps({
             heading:
-                "Are you sure you want to approve this agreement for Award? This will change the budget lines in Executing Status to Obligated Status, and budget lines in Planned Status to Planned Mod Status.",
+                "Are you sure you want to approve this agreement for Award? This will change the budget lines in Executing Status to Obligated Status.",
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {

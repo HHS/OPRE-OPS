@@ -60,7 +60,6 @@ class TestHasProcShopBlockingBli:
         [
             BudgetLineItemStatus.IN_EXECUTION,
             BudgetLineItemStatus.OBLIGATED,
-            BudgetLineItemStatus.PLANNED_MOD,
         ],
     )
     def test_true_for_each_blocking_status(self, status):
@@ -80,11 +79,10 @@ class TestHasProcShopBlockingBli:
         agreement.budget_line_items = [bli]
         assert has_proc_shop_blocking_bli(agreement) is False
 
-    def test_blocking_statuses_set_matches_the_three_named_statuses(self):
+    def test_blocking_statuses_set_matches_the_two_named_statuses(self):
         assert PROCUREMENT_SHOP_BLOCKING_BLI_STATUSES == {
             BudgetLineItemStatus.IN_EXECUTION,
             BudgetLineItemStatus.OBLIGATED,
-            BudgetLineItemStatus.PLANNED_MOD,
         }
 
 
@@ -160,7 +158,6 @@ class TestGetProcurementShopLockedReason:
         [
             BudgetLineItemStatus.IN_EXECUTION,
             BudgetLineItemStatus.OBLIGATED,
-            BudgetLineItemStatus.PLANNED_MOD,
         ],
     )
     def test_bli_in_execution_even_when_not_awarded(
@@ -379,7 +376,7 @@ class TestGetProcurementShopLockedMessage:
         message = service._get_procurement_shop_locked_message(unawarded_contract, test_admin_user)
         assert message == (
             "The Procurement Shop cannot be edited because this agreement has budget lines in "
-            "Executing, Obligated or Planned Mod status."
+            "Executing or Obligated status."
         )
 
         loaded_db.delete(bli)

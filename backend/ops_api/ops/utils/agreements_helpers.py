@@ -11,14 +11,12 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.users import is_super_user
 
 # Budget line statuses that block a Procurement Shop change. Explicit set rather than an
-# ordinal comparison against BudgetLineItemStatus's declaration order, since PLANNED_MOD sorts
-# after OBLIGATED there and an ordinal ">= IN_EXECUTION" check would miss it if the enum were
-# ever reordered (and raises on a NULL status, which this set treats as not-blocking).
+# ordinal comparison against BudgetLineItemStatus's declaration order, which would break if the
+# enum were ever reordered (and raises on a NULL status, which this set treats as not-blocking).
 PROCUREMENT_SHOP_BLOCKING_BLI_STATUSES = frozenset(
     {
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
-        BudgetLineItemStatus.PLANNED_MOD,
     }
 )
 
@@ -182,7 +180,7 @@ def update_agreement(agreement: Agreement, data: dict[str, Any]) -> None:
 def has_proc_shop_blocking_bli(agreement: Agreement) -> bool:
     """
     Whether any budget line on ``agreement`` is in a status that blocks a Procurement Shop
-    change (IN_EXECUTION, OBLIGATED, or PLANNED_MOD).
+    change (IN_EXECUTION or OBLIGATED).
 
     Deliberately takes no ``user`` argument — this is the predicate ``AgreementsService.
     _handle_proc_shop_change`` calls directly (that call site has no authenticated user in

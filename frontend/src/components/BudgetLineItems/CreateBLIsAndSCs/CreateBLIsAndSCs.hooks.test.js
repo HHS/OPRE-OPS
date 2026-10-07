@@ -1615,9 +1615,8 @@ describe("isDeletionRoutedToApproval", () => {
         expect(isDeletionRoutedToApproval({ status: "DRAFT" }, false)).toBe(false);
     });
 
-    it("returns false for OBLIGATED / PLANNED_MOD (not approval-routed deletes)", () => {
+    it("returns false for an OBLIGATED line (not an approval-routed delete)", () => {
         expect(isDeletionRoutedToApproval({ status: "OBLIGATED" }, false)).toBe(false);
-        expect(isDeletionRoutedToApproval({ status: "PLANNED_MOD" }, false)).toBe(false);
     });
 
     it("returns false for a super user regardless of status", () => {

@@ -8,7 +8,6 @@ from models.agreements import AgreementClassification
 
 SPENDING_STATUSES = [
     BudgetLineItemStatus.PLANNED,
-    BudgetLineItemStatus.PLANNED_MOD,
     BudgetLineItemStatus.IN_EXECUTION,
     BudgetLineItemStatus.OBLIGATED,
 ]
