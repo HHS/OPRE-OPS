@@ -52,6 +52,14 @@ describe("WhatsNewContent", () => {
         expect(screen.getByText("CSRF Protection")).toBeInTheDocument();
     });
 
+    it("nests the release accordion headings under the tab's own h2", () => {
+        render(<WhatsNewContent />);
+
+        expect(
+            screen.getByRole("heading", { level: 3, name: /Release Notes 1.129.0/ })
+        ).toBeInTheDocument();
+    });
+
     it("renders older releases in closed accordions", () => {
         render(<WhatsNewContent />);
 

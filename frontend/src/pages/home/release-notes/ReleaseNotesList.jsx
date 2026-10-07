@@ -4,14 +4,12 @@ import { data } from "./data";
 import ReleaseNote from "./ReleaseNote";
 
 /**
- * @component - Renders the release notes list: the latest release followed by older
- * releases, each older release in a closed Accordion.
- * @param {Object} props
- * @param {boolean} [props.wrapLatestInAccordion=false] - When true, renders the latest
- * release in an Accordion (open by default, per Figma), instead of a plain non-collapsible section.
+ * @component - Renders the release notes list for the "What's New" tab: the latest
+ * release in an open Accordion (per Figma), followed by older releases each in a
+ * closed Accordion. Headings are level 3 to nest under the tab's own h2.
  * @returns {React.ReactElement}
  */
-const ReleaseNotesList = ({ wrapLatestInAccordion = false }) => {
+const ReleaseNotesList = () => {
     if (!data || data.length === 0) return <p>No release notes available.</p>;
 
     const [latestRelease, ...prevReleases] = data;
@@ -27,31 +25,19 @@ const ReleaseNotesList = ({ wrapLatestInAccordion = false }) => {
 
     return (
         <>
-            {wrapLatestInAccordion ? (
-                <Accordion
-                    heading={latestHeading}
-                    level={2}
-                >
-                    {latestChanges}
-                </Accordion>
-            ) : (
-                <>
-                    <h2>Release Notes: {latestRelease.version}</h2>
-                    <section
-                        className="margin-bottom-8"
-                        id="latest-release-notes"
-                    >
-                        {latestChanges}
-                    </section>
-                </>
-            )}
+            <Accordion
+                heading={latestHeading}
+                level={3}
+            >
+                {latestChanges}
+            </Accordion>
 
             {prevReleases.length > 0 &&
                 prevReleases.map((release) => (
                     <Accordion
                         key={release.version}
                         heading={`Release Notes ${release.version} - ${formatDateToMonthDayYear(release.releaseDate)}`}
-                        level={2}
+                        level={3}
                         isClosed
                     >
                         {release.changes.map((change) => (
