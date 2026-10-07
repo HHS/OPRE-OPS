@@ -3,7 +3,7 @@ import RoadmapStatusCard from "./RoadmapStatusCard";
 /**
  * @component - "OPS at a Glance" tab content for the redesigned homepage: a header
  * followed by the Done / Currently Developing / Not Started Yet roadmap status board.
- * Data is mocked (see `data.js`) — real data wiring is handled separately (OPS-6331).
+ * Data is mocked (see `roadmapData.json`) — real data wiring is handled separately (OPS-6331).
  * @returns {React.ReactElement}
  */
 const OpsAtAGlanceContent = () => (

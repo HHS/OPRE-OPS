@@ -71,10 +71,12 @@ but is never called by any component — `release-notes/data.js` stays hardcoded
     "Not Started Yet", kept `ops-at-a-glance/data.js`'s fuller, consistently-worded 6-item
     list, since `homepageData.js`'s 3-item list was the same underlying items under
     slightly different wording.
-- **`whats-next/data.js`**: left untouched. Legacy, flag-off-only page with an incompatible
-  6-value status vocabulary (`priority`, `levelOfEffort`, `"In Progress-Development"`, etc.)
-  — already deliberately kept separate from the 3-bucket model, per
-  `.claude/stories/6330-ops-at-a-glance-tab.md`.
+- **`whats-next/data.js`**: left untouched at the time this was written — legacy, flag-off-only
+  page with an incompatible 6-value status vocabulary (`priority`, `levelOfEffort`,
+  `"In Progress-Development"`, etc.), deliberately kept separate from the 3-bucket model per
+  `.claude/stories/6330-ops-at-a-glance-tab.md`. The entire `whats-next/` directory was later
+  deleted in this same PR when the feature flag and legacy homepage were removed, so this is
+  moot now rather than a live constraint.
 
 ### Deferred to a follow-up issue
 
@@ -83,8 +85,9 @@ but is never called by any component — `release-notes/data.js` stays hardcoded
   → `type`/`subject`/`description`) and a caching/rate-limit strategy.
 - Formalize "the UX team's Claude skill" that edits this data as an actual `.claude/skills/`
   entry, rather than an ad hoc Claude Code session each release.
-- Decide whether/how to reconcile `whats-next/data.js`'s legacy vocabulary with the 3-bucket
-  model, if the legacy flag-off homepage is ever retired.
+- ~~Decide whether/how to reconcile `whats-next/data.js`'s legacy vocabulary with the 3-bucket
+  model, if the legacy flag-off homepage is ever retired.~~ Moot — the legacy homepage and
+  `whats-next/` were both deleted in this same PR.
 
 ### Key Files
 

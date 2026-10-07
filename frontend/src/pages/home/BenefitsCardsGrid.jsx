@@ -6,8 +6,7 @@ import realTimePlanningIcon from "../../images/planning.svg";
 import transparencyIcon from "../../images/transparency.svg";
 
 /**
- * @component - Renders the grid of OPS benefit cards. Shared by the legacy
- * centered-header "About OPS" tab and the redesigned "OPS Benefits" tab.
+ * @component - Renders the grid of OPS benefit cards used by the "OPS Benefits" tab.
  * @returns {React.ReactElement}
  */
 const BenefitsCardsGrid = () => (
