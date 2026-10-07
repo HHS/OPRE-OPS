@@ -170,6 +170,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/budget-line-items-batch/",
         view_func=BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC,
+        # BudgetLineItemsBatchAPI only overrides post(); without this, Flask also registers
+        # the inherited BaseListAPI.get(), which has no @is_authorized check and would return
+        # every BudgetLineItem row unpaginated.
+        methods=["POST"],
     )
 
     api_bp.add_url_rule(

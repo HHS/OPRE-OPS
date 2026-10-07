@@ -47,3 +47,8 @@ def test_post_budget_line_items_batch_rejects_too_many_ids(auth_client, app_ctx)
 def test_post_budget_line_items_batch_auth_required(client):
     response = client.post("/api/v1/budget-line-items-batch/", json={"ids": [1]})
     assert response.status_code == 401
+
+
+def test_get_budget_line_items_batch_not_allowed(auth_client, app_ctx):
+    response = auth_client.get(url_for("api.budget-line-items-batch"))
+    assert response.status_code == 405
