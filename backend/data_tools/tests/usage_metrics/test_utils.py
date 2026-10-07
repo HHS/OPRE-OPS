@@ -25,6 +25,7 @@ from data_tools.src.usage_metrics.utils import (
     resolve_actor_id,
     run_usage_metrics,
     should_generate_report,
+    viewed_agreement_id,
 )
 from models import Division, OpsEvent, OpsEventStatus, OpsEventType, Role, User, UserStatus
 
@@ -131,6 +132,34 @@ def test_is_deactivating_update_matches_userstatus_enum_names():
         assert is_deactivating_update(ev) is True
 
 
+def test_viewed_agreement_id_for_single_agreement_get():
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=1, event_details={"agreement_id": 12})
+    assert viewed_agreement_id(ev) == 12
+
+
+@pytest.mark.parametrize(
+    "event_details",
+    [
+        {"agreement_ids": [1, 2, 3], "total_count": 3},  # GET /agreements/ (list page, export batch)
+        {"procurement_action_id": 5},  # GET /procurement-actions/<id>
+        {"procurement_action_ids": [5, 6], "count": 2},  # GET /procurement-actions/
+        {"agreement_id": True},
+        {"agreement_id": "12"},
+        {},
+        None,
+        ["not", "a", "dict"],
+    ],
+)
+def test_viewed_agreement_id_none_for_non_view_payloads(event_details):
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=1, event_details=event_details)
+    assert viewed_agreement_id(ev) is None
+
+
+def test_viewed_agreement_id_none_for_other_event_types():
+    ev = _event(OpsEventType.UPDATE_AGREEMENT, created_by=1, event_details={"agreement_id": 12})
+    assert viewed_agreement_id(ev) is None
+
+
 def test_parse_lookback_days_valid():
     assert parse_lookback_days("7") == 7
 
@@ -196,8 +225,8 @@ def seeded_db(loaded_db):
 
     events = [
         # Two distinct viewers on day1 -> active_users = 2, agreements_viewed = 2.
-        _event(OpsEventType.GET_AGREEMENT, created_by=9001),
-        _event(OpsEventType.GET_AGREEMENT, created_by=9002),
+        _event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}),
+        _event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"agreement_id": 1}),
         # Successful login on day1 -> logins = 1 (actor from event_details, created_by NULL).
         _event(OpsEventType.LOGIN_ATTEMPT, created_by=None, event_details={"user": {"id": 9001}}),
         # Failed login must be excluded (FAILED status filtered out at query time).
@@ -267,6 +296,52 @@ def test_events_outside_window_excluded(seeded_db):
     assert counts == {}
 
 
+def test_agreements_viewed_counts_distinct_user_agreement_pairs_per_day(seeded_db):
+    """List GETs and repeat fetches must not inflate agreements_viewed (#4148 follow-up)."""
+    db, day1_iso, day2_iso = seeded_db
+    # Midday on the fixture's own dates, so these land in the same buckets whatever the clock says.
+    day1 = datetime.fromisoformat(day1_iso) + timedelta(hours=12)
+    day2 = datetime.fromisoformat(day2_iso) + timedelta(hours=12)
+
+    extra = [
+        # User A refetches agreement 1 (already seeded once on day1) -> still one view.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day1),
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day1),
+        # User A opens a second agreement on day1 -> +1.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 2}), day1),
+        # A list page load and a procurement-action fetch are not agreement views.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_ids": list(range(25))}), day1),
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"procurement_action_id": 7}), day1),
+        # Same agreement on a different day counts again, on that day.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day2),
+    ]
+    for ev, when in extra:
+        ev.created_on = when
+        db.add(ev)
+    db.commit()
+
+    counts = aggregate_events(db, LOOKBACK_DAYS)
+
+    # day1: (A, 1), (B, 1), (A, 2).
+    assert counts[(day1_iso, "Test Division", "analyst")]["agreements_viewed"] == 3
+    assert counts[(day2_iso, "Test Division", "analyst")]["agreements_viewed"] == 1
+
+
+def test_agreement_list_get_counts_as_active_but_not_viewed(seeded_db):
+    """A user who only loaded the list page is active but viewed no agreement."""
+    db, day1_iso, _ = seeded_db
+    # Two days before the seeded events, so this bucket holds only the list GET.
+    list_only_day = datetime.fromisoformat(day1_iso) - timedelta(days=2) + timedelta(hours=12)
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"agreement_ids": [1, 2]})
+    ev.created_on = list_only_day
+    db.add(ev)
+    db.commit()
+
+    bucket = aggregate_events(db, LOOKBACK_DAYS)[(list_only_day.date().isoformat(), "Test Division", "analyst")]
+    assert bucket["active_users"] == 1
+    assert bucket["agreements_viewed"] == 0
+
+
 def test_utc_day_bucketing_boundary(loaded_db):
     """An event just before/after UTC midnight buckets to the correct UTC day."""
     now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -275,9 +350,10 @@ def test_utc_day_bucketing_boundary(loaded_db):
     before_midnight = datetime(base.year, base.month, base.day, 23, 50, 0)
     after_midnight = before_midnight + timedelta(minutes=20)  # next UTC day, 00:10
 
-    ev1 = _event(OpsEventType.GET_AGREEMENT, created_by=None)
+    # LOGOUT bumps a count even with no resolvable actor, so each event materialises its day bucket.
+    ev1 = _event(OpsEventType.LOGOUT, created_by=None)
     ev1.created_on = before_midnight
-    ev2 = _event(OpsEventType.GET_AGREEMENT, created_by=None)
+    ev2 = _event(OpsEventType.LOGOUT, created_by=None)
     ev2.created_on = after_midnight
     loaded_db.add_all([ev1, ev2])
     loaded_db.commit()

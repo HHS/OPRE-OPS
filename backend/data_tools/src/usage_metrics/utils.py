@@ -42,6 +42,12 @@ Attribution / counting notes (see the #4148 plan for the full rationale):
 - Role is a many-to-many relationship; a user holding multiple roles is counted once per
   role, so role sums for a division may exceed the division's own totals. This is documented
   in the report rather than resolved to a single "primary" role.
+- **agreements_viewed** is the number of distinct (user, agreement) pairs per bucket, not a raw
+  ``GET_AGREEMENT`` row count. That event type is shared by the single-agreement GET, the
+  agreement list GET (one per list page / export batch), and both procurement-action GETs, so
+  counting rows mostly measured list-page loads and refetches. Only rows whose
+  ``event_details`` carry a single ``agreement_id`` are views, and repeat fetches of the same
+  agreement by the same user on the same day count once. See ``viewed_agreement_id``.
 """
 
 import io
@@ -103,8 +109,8 @@ ACTIVE_USER_EVENT_TYPES = frozenset(
     }
 )
 
-# Event types that map to a single count column. deactivated_users is handled separately
-# because it depends on the UPDATE_USER payload, not just the event type.
+# Event types that map to a single count column. deactivated_users and agreements_viewed are
+# handled separately because they depend on the event payload, not just the event type.
 # LOGIN_ATTEMPT maps to "logins" here because only SUCCESS rows reach aggregation, so every
 # LOGIN_ATTEMPT that gets counted is a completed login.
 EVENT_TYPE_TO_METRIC = {
@@ -115,7 +121,6 @@ EVENT_TYPE_TO_METRIC = {
     OpsEventType.CREATE_NEW_AGREEMENT: "agreements_edited",
     OpsEventType.UPDATE_AGREEMENT: "agreements_edited",
     OpsEventType.DELETE_AGREEMENT: "agreements_edited",
-    OpsEventType.GET_AGREEMENT: "agreements_viewed",
     OpsEventType.CREATE_BLI: "blis_created",
     OpsEventType.CREATE_PROJECT: "projects_created",
 }
@@ -216,8 +221,41 @@ def is_deactivating_update(event: OpsEvent) -> bool:
     return status in (UserStatus.INACTIVE.name, UserStatus.LOCKED.name)
 
 
+def viewed_agreement_id(event: OpsEvent) -> int | None:
+    """Return the agreement id a ``GET_AGREEMENT`` event viewed, or None if it is not a single view.
+
+    ``GET_AGREEMENT`` is emitted by four endpoints, told apart only by the ``event_details`` keys
+    each one records:
+    - ``GET /agreements/<id>``: ``agreement_id`` -- the only one that is a view of an agreement.
+    - ``GET /agreements/``: ``agreement_ids`` (list page, export batches).
+    - ``GET /procurement-actions/<id>`` and ``GET /procurement-actions/``: ``procurement_action_id(s)``.
+    """
+    if event.event_type != OpsEventType.GET_AGREEMENT:
+        return None
+    details = event.event_details or {}
+    if not isinstance(details, dict):
+        return None
+    agreement_id = details.get("agreement_id")
+    # bool is an int subclass; exclude it so a malformed payload cannot count as agreement 1/0.
+    return agreement_id if isinstance(agreement_id, int) and not isinstance(agreement_id, bool) else None
+
+
 def _new_counts() -> dict[str, int]:
     return {metric: 0 for metric in METRIC_COLUMNS}
+
+
+def _row_count_metrics(event: OpsEvent) -> list[str]:
+    """Return the per-row count columns an event increments (one each).
+
+    The distinct-set metrics (active_users, agreements_viewed) are tallied separately.
+    """
+    metrics = []
+    metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
+    if metric is not None:
+        metrics.append(metric)
+    if is_deactivating_update(event):
+        metrics.append("deactivated_users")
+    return metrics
 
 
 # The only event types that can affect the Aggregate sheet: those carrying a metric, those counting
@@ -254,6 +292,8 @@ def aggregate_events(
     counts: dict[tuple[str, str, str], dict[str, int]] = defaultdict(_new_counts)
     # Distinct actors per bucket for the active_users metric.
     active_users: dict[tuple[str, str, str], set[int]] = defaultdict(set)
+    # Distinct (actor, agreement) pairs per bucket for the agreements_viewed metric.
+    viewed: dict[tuple[str, str, str], set[tuple[int, int]]] = defaultdict(set)
 
     # created_on is a naive TIMESTAMP written in the DB's (UTC) session tz, so compare against a
     # naive-UTC cutoff. This scopes the scan to the reporting window instead of the whole table.
@@ -279,26 +319,29 @@ def aggregate_events(
         date_iso = event.created_on.date().isoformat()
         actor_id = resolve_actor_id(event)
         attribution = user_lookup.get(actor_id, UNKNOWN_ATTRIBUTION) if actor_id is not None else UNKNOWN_ATTRIBUTION
+        agreement_id = viewed_agreement_id(event)
+        metrics = _row_count_metrics(event)
 
         # A multi-role user is counted once per role (fan-out); see module docstring.
         for role in attribution["roles"]:
             key = (date_iso, attribution["division"], role)
 
-            metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
-            if metric is not None:
+            for metric in metrics:
                 counts[key][metric] += 1
-
-            if is_deactivating_update(event):
-                counts[key]["deactivated_users"] += 1
 
             if event.event_type in ACTIVE_USER_EVENT_TYPES and actor_id is not None:
                 active_users[key].add(actor_id)
 
+            if agreement_id is not None and actor_id is not None:
+                viewed[key].add((actor_id, agreement_id))
+
     logger.info(f"Aggregated {seen:,} relevant successful ops_event row(s).")
 
-    # Fold the distinct-actor sets into the count buckets.
+    # Fold the distinct-actor and distinct-view sets into the count buckets.
     for key, actors in active_users.items():
         counts[key]["active_users"] = len(actors)
+    for key, pairs in viewed.items():
+        counts[key]["agreements_viewed"] = len(pairs)
 
     return counts
 
