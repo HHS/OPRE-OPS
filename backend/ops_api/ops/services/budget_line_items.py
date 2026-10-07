@@ -1241,7 +1241,6 @@ class BudgetLineItemService:
         status_sort_order = [
             BudgetLineItemStatus.DRAFT.name,
             BudgetLineItemStatus.PLANNED.name,
-            BudgetLineItemStatus.PLANNED_MOD.name,
             BudgetLineItemStatus.IN_EXECUTION.name,
             BudgetLineItemStatus.OBLIGATED.name,
             "IN_REVIEW",
@@ -1292,7 +1291,7 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             [
                 result.amount + result.fees
                 for result in all_results
-                if result.amount and result.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
+                if result.amount and result.status == BudgetLineItemStatus.PLANNED
             ]
         )
         total_in_execution_amount = sum(
@@ -1318,11 +1317,7 @@ def _get_totals_with_or_without_fees(all_results, include_fees):
             [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.DRAFT]
         )
         total_planned_amount = sum(
-            [
-                result.amount
-                for result in all_results
-                if result.amount and result.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
-            ]
+            [result.amount for result in all_results if result.amount and result.status == BudgetLineItemStatus.PLANNED]
         )
         total_in_execution_amount = sum(
             [
