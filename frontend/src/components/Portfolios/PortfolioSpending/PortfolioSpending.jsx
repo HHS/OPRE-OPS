@@ -5,7 +5,7 @@ import {
     useGetReportingSummaryQuery,
     useLazyGetBudgetLineItemsBatchQuery
 } from "../../../api/opsAPI";
-import { chunk } from "../../../helpers/utils";
+import { chunk } from "lodash";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioSpendingTableLoading from "./PortfolioSpendingTableLoading";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
