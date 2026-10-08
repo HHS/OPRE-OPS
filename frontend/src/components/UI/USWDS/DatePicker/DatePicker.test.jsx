@@ -91,6 +91,38 @@ describe("DatePicker", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
+    it("keeps USWDS working when an error message appears and the input is cleared", async () => {
+        const { rerender } = render(<DatePicker {...defaultProps} />);
+
+        rerender(
+            <DatePicker
+                {...defaultProps}
+                messages={["Invalid date"]}
+            />
+        );
+
+        // React must not rewrite the className USWDS put on the input it enhanced
+        const [internalInput] = screen.getAllByRole("textbox", { hidden: true });
+        expect(internalInput).toHaveClass("usa-date-picker__internal-input");
+        expect(getExternalInput()).toHaveClass("usa-input--error");
+
+        // USWDS reads the internal input on every keystroke; clearing must not throw
+        await userEvent.type(getExternalInput(), "10/1/25");
+        await userEvent.clear(getExternalInput());
+        expect(getExternalInput()).toHaveValue("");
+    });
+
+    it("marks the visible input as errored when mounted with a message", () => {
+        render(
+            <DatePicker
+                {...defaultProps}
+                messages={["Invalid date"]}
+            />
+        );
+
+        expect(getExternalInput()).toHaveClass("usa-input--error");
+    });
+
     it("should disable the input when isDisabled is true", () => {
         render(
             <DatePicker
