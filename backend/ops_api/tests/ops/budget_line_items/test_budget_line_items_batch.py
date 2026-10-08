@@ -143,3 +143,45 @@ def test_get_batch_eager_loads_clin_and_grant_number(loaded_db, test_project, te
     by_id = {bli["id"]: bli for bli in result}
     assert by_id[contract_bli.id]["clin"]["id"] == clin.id
     assert by_id[grant_bli.id]["grant_number"]["id"] == grant_number.id
+
+
+def test_post_budget_line_items_batch_query_count_does_not_scale_with_batch_size(auth_client, loaded_db, app_ctx):
+    """
+    Regression test for the per-row N+1 this endpoint used to have: in_review and
+    change_requests_in_review were dumped from BLI model properties (1-2 fresh queries
+    each, every call) and the agreement-association check was re-run per row instead of
+    once per distinct agreement. That made query count scale roughly linearly with batch
+    size. Both are now batch-loaded/cached once per request, so a 10x larger batch should
+    cost at most a handful more queries, not ~1-2 extra per added row.
+    """
+    all_ids = loaded_db.scalars(select(BudgetLineItem.id).order_by(BudgetLineItem.id)).all()
+    assert len(all_ids) >= 56, "loaded_db fixture data shrank below what this test needs"
+
+    def count_queries(ids):
+        queries = []
+
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+            queries.append(statement)
+
+        event.listen(loaded_db.get_bind(), "before_cursor_execute", before_cursor_execute)
+        try:
+            response = auth_client.post(url_for("api.budget-line-items-batch"), json={"ids": ids})
+        finally:
+            event.remove(loaded_db.get_bind(), "before_cursor_execute", before_cursor_execute)
+        assert response.status_code == 200
+        return len(queries)
+
+    # Warm up the session (user/role lookups, etc.) so that one-time setup cost isn't
+    # attributed to whichever batch happens to run first.
+    count_queries(all_ids[:1])
+
+    few_ids = all_ids[1:6]  # 5 ids
+    many_ids = all_ids[6:56]  # 50 ids, 10x the batch, disjoint from few_ids
+
+    queries_for_few = count_queries(few_ids)
+    queries_for_many = count_queries(many_ids)
+
+    assert queries_for_many <= queries_for_few + 20, (
+        f"query count scaled with batch size: {queries_for_few} queries for {len(few_ids)} ids "
+        f"vs {queries_for_many} queries for {len(many_ids)} ids"
+    )
