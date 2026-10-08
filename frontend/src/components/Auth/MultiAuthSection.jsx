@@ -158,7 +158,7 @@ const MultiAuthSection = () => {
 
     if (isAuthenticating) {
         return (
-            <div className="bg-white padding-y-3 padding-x-5 border border-base-lighter">
+            <div className="bg-brand-base-light-variant padding-y-3 padding-x-5">
                 <h1>Signing In...</h1>
                 <PacmanLoader
                     size={25}
@@ -171,7 +171,7 @@ const MultiAuthSection = () => {
 
     return (
         <>
-            <div className="bg-white padding-y-3 padding-x-5 border border-base-lighter">
+            <div className="bg-brand-base-light-variant padding-y-3 padding-x-5">
                 <h1 className="margin-bottom-1">Sign in to your account</h1>
                 <div className="usa-prose">
                     <p className="margin-top-1">
@@ -182,7 +182,7 @@ const MultiAuthSection = () => {
                     <p>
                         <button
                             type="button"
-                            className="usa-button usa-button--outline width-full"
+                            className="usa-button usa-button--outline width-full bg-white"
                             onClick={() => handleSSOLogin("logingov")}
                             disabled={isAuthenticating}
                         >
@@ -193,7 +193,7 @@ const MultiAuthSection = () => {
                 <p>
                     <button
                         type="button"
-                        className="usa-button usa-button--outline width-full"
+                        className="usa-button usa-button--outline width-full bg-white"
                         onClick={() => handleSSOLogin("hhsams")}
                         disabled={isAuthenticating}
                     >
@@ -204,7 +204,7 @@ const MultiAuthSection = () => {
                     <p>
                         <button
                             type="button"
-                            className="usa-button usa-button--outline width-full"
+                            className="usa-button usa-button--outline width-full bg-white"
                             onClick={() => setShowModal(true)}
                             disabled={isAuthenticating}
                         >

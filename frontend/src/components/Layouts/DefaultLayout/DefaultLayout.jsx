@@ -17,7 +17,7 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     const { isAlertActive } = useAlert();
 
     return (
-        <div className="bg-base-lightest">
+        <div className="bg-ops-shell">
             <div className="usa-overlay"></div>
             {!import.meta.env.PROD && (
                 <SlimAlert
