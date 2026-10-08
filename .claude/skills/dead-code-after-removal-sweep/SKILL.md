@@ -48,10 +48,10 @@ grep -rn "team-members" src/ --include="*.js" --include="*.jsx" | grep -v "\.tes
 # For a removed enum value / status / label, one case-insensitive pattern that
 # tolerates the separator variants (zero separators too, so camelCase matches),
 # across frontend, backend, and docs:
-git grep -n -i -E "planned[ _-]*mod" -- . ':!*.lock' ':!package-lock.json'
+git grep -n -i -E "planned[ _-]*mod" -- . ':!*.lock' ':!*package-lock.json'
 ```
 
-Exclude lockfiles by exact name. A broad pathspec like `':!*lock*'` also hides unrelated files whose path merely contains "lock" (e.g. `procurement-shop-lock-parity`).
+Exclude lockfiles by suffix or filename, not by a broad pattern. A pathspec with no wildcard (`':!package-lock.json'`) only matches at the repo root, so use the leading `*` (`':!*package-lock.json'`) to also skip nested copies. A broad pathspec like `':!*lock*'` hides unrelated files whose path merely contains "lock" (e.g. `procurement-shop-lock-parity`).
 
 For every hit, classify it:
 
