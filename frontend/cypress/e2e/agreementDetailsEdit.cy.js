@@ -425,7 +425,7 @@ describe("Awarded Agreement", () => {
         cy.get("#product_service_code_id").should("not.be.disabled");
         cy.get("#agreement_reason").should("not.be.disabled");
         // Procurement Shop is the one exception: it's disabled even for a power user (superuser)
-        // because this agreement has a budget line in Executing/Obligated/Planned Mod status,
+        // because this agreement has a budget line in Executing/Obligated status,
         // and the backend's ProcurementShopChangeRule has no superuser exemption (OPS-6312).
         cy.get("#procurement-shop-select").should("be.disabled");
     });
@@ -475,7 +475,7 @@ describe("Awarded Agreement", () => {
         cy.get("#product_service_code_id").should("not.be.disabled");
         cy.get("#agreement_reason").should("not.be.disabled");
         // Procurement Shop is the one exception: it's disabled even for a power user (superuser)
-        // because this agreement has a budget line in Executing/Obligated/Planned Mod status,
+        // because this agreement has a budget line in Executing/Obligated status,
         // and the backend's ProcurementShopChangeRule has no superuser exemption (OPS-6312).
         cy.get("#procurement-shop-select").should("be.disabled");
         cy.get("#requesting-agency-combobox-input").should("not.be.disabled");

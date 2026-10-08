@@ -1858,20 +1858,6 @@ class TestComputeProcurementOverview:
             assert status["amount_percent"] == 0.0
             assert status["agreements_percent"] == 0.0
 
-    def test_planned_mod_grouped_under_planned(self):
-        from decimal import Decimal
-
-        bli_planned = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, Decimal("100000"), Decimal("0"))
-        bli_planned_mod = _make_mock_bli(BudgetLineItemStatus.PLANNED_MOD, 2025, Decimal("50000"), Decimal("0"))
-        ag = _make_mock_procurement_agreement(blis=[bli_planned, bli_planned_mod])
-
-        result = _compute_procurement_overview([ag], fiscal_year=2025)
-
-        assert {s["status"] for s in result["status_data"]} == {"PLANNED", "IN_EXECUTION", "OBLIGATED"}
-        planned = next(s for s in result["status_data"] if s["status"] == "PLANNED")
-        assert planned["amount"] == 150000.0
-        assert planned["agreements"] == 1
-
 
 class TestComputeProcurementStepSummary:
     def test_empty_list(self):

@@ -937,7 +937,7 @@ describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6
                 awarding_entity_id: null,
                 _meta: {
                     procurementShopLockedMessage:
-                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
                 }
             })
         );
@@ -946,7 +946,7 @@ describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6
 
         expect(result.current.isProcurementShopDisabled).toBe(true);
         expect(result.current.disabledMessage()).toBe(
-            "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+            "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
         );
     });
 
@@ -1021,7 +1021,7 @@ describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6
                 awarding_entity_id: null,
                 _meta: {
                     procurementShopLockedMessage:
-                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing, Obligated or Planned Mod status."
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
                 }
             })
         );

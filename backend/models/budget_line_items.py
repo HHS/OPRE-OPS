@@ -45,7 +45,14 @@ class BudgetLineItemStatus(str, Enum):
     PLANNED = "PLANNED"
     IN_EXECUTION = "IN_EXECUTION"
     OBLIGATED = "OBLIGATED"
-    PLANNED_MOD = "PLANNED_MOD"
+
+    @classmethod
+    def _missing_(cls, value):
+        # Retired status; coerce stale rows instead of raising LookupError if the
+        # backfill migration hasn't reached this row yet (rolling deploy, replica lag).
+        if value == "PLANNED_MOD":
+            return cls.PLANNED
+        return None
 
 
 class BudgetLineSortCondition(Enum):

@@ -129,7 +129,6 @@ export const codesToDisplayText = {
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated",
-        PLANNED_MOD: "Planned Mod",
         IN_REVIEW: "In Review"
     },
     validation: {
@@ -444,7 +443,6 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-            case BLI_STATUS.PLANNED_MOD:
                 return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
                 return "text-brand-data-viz-bl-by-status-3";
@@ -459,7 +457,6 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-            case BLI_STATUS.PLANNED_MOD:
                 return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
                 return "brand-data-viz-bl-by-status-3";

@@ -639,8 +639,7 @@ class AgreementsService(OpsService[Agreement]):
             # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # At least one BLI is in PLANNED status (PLANNED_MOD is unreachable here — the
-        # blocked-status guard above raises first for it). Normally this needs a Change
+        # At least one BLI is in PLANNED status. Normally this needs a Change
         # Request for Division Director approval. When the SKIP_CR_FOR_DRAFT_PLANNED
         # capability is enabled (per-environment), apply the change directly instead —
         # matching the same flag's behavior for BLI Draft→Planned edits. The awarding_entity_id
@@ -927,7 +926,7 @@ class AgreementsService(OpsService[Agreement]):
         if reason == ProcurementShopLockReason.BLI_IN_EXECUTION:
             return (
                 "The Procurement Shop cannot be edited because this agreement has budget lines in "
-                "Executing, Obligated or Planned Mod status."
+                "Executing or Obligated status."
             )
         if reason == ProcurementShopLockReason.CHANGE_REQUEST_IN_REVIEW:
             return (
@@ -1179,11 +1178,6 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         BudgetLineItemStatus.OBLIGATED,
     ]
 
-    # PLANNED_MOD BLIs are modifications to already-PLANNED lines, so they're grouped under PLANNED here.
-    status_bucket = {
-        BudgetLineItemStatus.PLANNED_MOD: BudgetLineItemStatus.PLANNED,
-    }
-
     amount_by_status: dict[BudgetLineItemStatus, Decimal] = {s: Decimal("0") for s in tracked_statuses}
     agreements_by_status: dict[BudgetLineItemStatus, set[int]] = {s: set() for s in tracked_statuses}
 
@@ -1191,10 +1185,9 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
         for bli in agreement.budget_line_items:
             if fiscal_year is not None and bli.fiscal_year != fiscal_year:
                 continue
-            bucket = status_bucket.get(bli.status, bli.status)
-            if bucket in amount_by_status:
-                amount_by_status[bucket] += (bli.amount or Decimal("0")) + bli.fees
-                agreements_by_status[bucket].add(agreement.id)
+            if bli.status in amount_by_status:
+                amount_by_status[bli.status] += (bli.amount or Decimal("0")) + bli.fees
+                agreements_by_status[bli.status].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
     tracked_agreement_ids = set().union(*agreements_by_status.values())

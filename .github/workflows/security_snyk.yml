@@ -26,7 +26,7 @@ jobs:
           fi
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: "frontend/.nvmrc"
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Snyk test
         id: snyk_test
-        uses: snyk/actions/node@b075801f26076be9bb50521154cafab73f44da0c # master
+        uses: snyk/actions/node@11b673cfb4b0dc0d860a1323caa199d54950dcce # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run Snyk monitor
         id: snyk_monitor
-        uses: snyk/actions/node@b075801f26076be9bb50521154cafab73f44da0c # master
+        uses: snyk/actions/node@11b673cfb4b0dc0d860a1323caa199d54950dcce # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
           fi
 
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@b075801f26076be9bb50521154cafab73f44da0c # master
+        uses: snyk/actions/setup@11b673cfb4b0dc0d860a1323caa199d54950dcce # master
 
       - uses: ./.github/actions/setup-python
 
@@ -147,7 +147,7 @@ jobs:
           fi
 
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@b075801f26076be9bb50521154cafab73f44da0c # master
+        uses: snyk/actions/setup@11b673cfb4b0dc0d860a1323caa199d54950dcce # master
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
