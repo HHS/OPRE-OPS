@@ -37,7 +37,7 @@ function Login() {
         <div className="bg-ops-shell">
             <div className="usa-overlay"></div>
             <header className="usa-header usa-header--extended">
-                <div className="usa-navbar padding-top-105 bg-white">
+                <div className="usa-navbar padding-top-105 padding-bottom-2 bg-white border-bottom border-base-lighter">
                     <div
                         className="usa-logo"
                         style={styles.logo}
