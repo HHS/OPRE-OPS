@@ -52,6 +52,13 @@ i.e.
 // centered content. Figma only shows the line under the centered content,
 // so cancel it here and re-add it on .usa-nav__inner (which is already
 // width-constrained) via utility classes in Header.jsx.
+//
+// Specificity note: this selector ties (0,2,0) with USWDS's own
+// `.usa-header--extended .usa-nav` rule in usa-header/_usa-header.scss. It
+// only wins because this partial is @forward'd after "uswds" in styles.scss.
+// If that forward order ever changes, or a USWDS upgrade adjusts the native
+// rule's specificity, this override will silently stop winning — no build
+// error, just the full-width border-top line reappearing.
 .usa-header--extended .usa-nav {
     border-top: none;
 }
@@ -63,6 +70,14 @@ i.e.
 // doesn't contain margin collapsing, so <main>'s first child's top margin
 // (e.g. the page <h1>'s margin-top-4) would collapse through <main> and
 // push its white background down, exposing .bg-ops-shell behind it.
+//
+// Specificity note: same situation as the .usa-nav rule above — this ties
+// (0,1,1) with USWDS's native `.usa-header + main` rule and wins only by
+// @forward order, not specificity. See that note for the failure mode.
+// (USWDS also has a `.usa-header + .usa-section` variant of this rule,
+// uncovered by this override — currently unused since no page renders a
+// <section> as the header's direct next sibling, but worth knowing if one
+// ever does.)
 .usa-header--extended + main {
     border-top: 1px solid transparent;
 }
