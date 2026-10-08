@@ -2,23 +2,15 @@ import HoverCard from "../../components/UI/Cards/HoverCard";
 import approvalIcon from "../../images/approvals.svg";
 import autonomyIcon from "../../images/autonomy.svg";
 import dataVisualizationIcon from "../../images/data-viz.svg";
-import flourish from "../../images/flourish.svg";
 import realTimePlanningIcon from "../../images/planning.svg";
 import transparencyIcon from "../../images/transparency.svg";
 
-const BenefitsGrid = () => (
+/**
+ * @component - Renders the grid of OPS benefit cards used by the "OPS Benefits" tab.
+ * @returns {React.ReactElement}
+ */
+const BenefitsCardsGrid = () => (
     <>
-        <section
-            id="divider"
-            className="display-flex flex-column flex-align-center margin-bottom-4"
-        >
-            <h2 className="text-brand-primary font-32px">OPS Benefits</h2>
-            <img
-                src={flourish}
-                alt="flourish"
-                width="94px"
-            />
-        </section>
         <section className="usa-card-group">
             <HoverCard
                 title="Transparency"
@@ -56,4 +48,4 @@ const BenefitsGrid = () => (
     </>
 );
 
-export default BenefitsGrid;
+export default BenefitsCardsGrid;

@@ -2,13 +2,7 @@ import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import { __resetVisitSessionCache } from "../../helpers/visitSessionCache.helpers";
-import HomeIndex from "./HomeIndex";
-
-vi.mock("../../helpers/featureFlags", () => ({
-    isHomepageRedesignEnabled: vi.fn(() => false)
-}));
-
-import { isHomepageRedesignEnabled } from "../../helpers/featureFlags";
+import HomeLanding from "./HomeLanding";
 
 const storage = new Map();
 
@@ -19,51 +13,62 @@ beforeEach(() => {
     localStorage.setItem.mockImplementation((key, value) => storage.set(key, String(value)));
     localStorage.removeItem.mockImplementation((key) => storage.delete(key));
     localStorage.clear.mockImplementation(() => storage.clear());
-    isHomepageRedesignEnabled.mockReturnValue(false);
     // These tests reuse user id 1 across cases; useWelcomeMessage caches its first/returning
     // classification at module scope, so reset it to keep cases independent.
     __resetVisitSessionCache();
 });
 
-describe("HomeIndex", () => {
-    it("renders the legacy benefits grid when the flag is off", () => {
-        isHomepageRedesignEnabled.mockReturnValue(false);
-        renderWithProviders(<HomeIndex />);
+describe("HomeLanding", () => {
+    it("renders the tab nav with all three tab labels", () => {
+        renderWithProviders(<HomeLanding />);
+
+        expect(screen.getByText("What's New")).toBeInTheDocument();
+        expect(screen.getByText("OPS at a Glance")).toBeInTheDocument();
         expect(screen.getByText("OPS Benefits")).toBeInTheDocument();
-        expect(screen.queryByTestId("welcome-message")).not.toBeInTheDocument();
     });
 
-    it("renders the redesigned landing (welcome + cards) when the flag is on", () => {
-        isHomepageRedesignEnabled.mockReturnValue(true);
-        renderWithProviders(<HomeIndex />, {
+    it("marks the What's New tab as selected by default", () => {
+        renderWithProviders(<HomeLanding />);
+
+        expect(screen.getByText("What's New").className).toContain("listItemSelected");
+    });
+
+    it("renders the welcome message as the page's single h1", () => {
+        renderWithProviders(<HomeLanding />, {
             preloadedState: {
                 auth: { activeUser: { id: 1, first_name: "Alex" }, isLoggedIn: true }
             }
         });
-        expect(screen.getByTestId("welcome-message")).toHaveTextContent("Welcome Alex");
-        expect(screen.getByText("OPS Updates")).toBeInTheDocument();
-        expect(screen.getByText("Currently Developing")).toBeInTheDocument();
-        expect(screen.queryByText("OPS Benefits")).not.toBeInTheDocument();
+
+        const heading = screen.getByRole("heading", { level: 1 });
+        expect(heading).toHaveTextContent("Welcome Alex");
     });
 
-    it("renders a generic welcome when the flag is on but there is no first_name", () => {
-        isHomepageRedesignEnabled.mockReturnValue(true);
-        renderWithProviders(<HomeIndex />, {
+    it("renders a generic welcome when there is no first_name", () => {
+        renderWithProviders(<HomeLanding />, {
             preloadedState: {
                 auth: { activeUser: { id: 1, first_name: null }, isLoggedIn: true }
             }
         });
+
         expect(screen.getByTestId("welcome-message")).toHaveTextContent("Welcome!");
     });
 
     it("renders a 'Welcome back' greeting for a returning user", () => {
         storage.set("hasVisited_1", "true");
-        isHomepageRedesignEnabled.mockReturnValue(true);
-        renderWithProviders(<HomeIndex />, {
+        renderWithProviders(<HomeLanding />, {
             preloadedState: {
                 auth: { activeUser: { id: 1, first_name: "Alex" }, isLoggedIn: true }
             }
         });
+
         expect(screen.getByTestId("welcome-message")).toHaveTextContent("Welcome back Alex");
+    });
+
+    it("renders the OPS Updates summary cards", () => {
+        renderWithProviders(<HomeLanding />);
+
+        expect(screen.getByText("OPS Updates")).toBeInTheDocument();
+        expect(screen.getByText("Currently Developing")).toBeInTheDocument();
     });
 });

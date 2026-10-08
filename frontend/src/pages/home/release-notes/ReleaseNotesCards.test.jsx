@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import ReleaseNotesCards, { LeftCard } from "./ReleaseNotesCards";
+import { LeftCard } from "./ReleaseNotesCards";
 
-describe("ReleaseNotesCards Component", () => {
+describe("LeftCard", () => {
     const mockProps = {
         releaseDate: "December 15, 2024",
         lastVersion: "2.1.0",
@@ -13,37 +13,37 @@ describe("ReleaseNotesCards Component", () => {
     };
 
     it("renders the release date", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getAllByText("December 15, 2024")).toHaveLength(1);
     });
 
     it("renders the version number", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("Version 2.1.0")).toBeInTheDocument();
     });
 
     it("renders the total release changes count", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("5")).toBeInTheDocument();
     });
 
     it("renders new features count with correct text", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("2 New Features")).toBeInTheDocument();
     });
 
     it("renders fixes count with correct text", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("2 Fixes")).toBeInTheDocument();
     });
 
     it("renders improvements count with correct text", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("1 Improvement")).toBeInTheDocument();
     });
@@ -56,7 +56,7 @@ describe("ReleaseNotesCards Component", () => {
             totalImprovements: 1
         };
 
-        render(<ReleaseNotesCards {...singleCountProps} />);
+        render(<LeftCard {...singleCountProps} />);
 
         expect(screen.getByText("1 New Feature")).toBeInTheDocument();
         expect(screen.getByText("1 Fix")).toBeInTheDocument();
@@ -71,60 +71,35 @@ describe("ReleaseNotesCards Component", () => {
             totalImprovements: 0
         };
 
-        render(<ReleaseNotesCards {...zeroCountProps} />);
+        render(<LeftCard {...zeroCountProps} />);
 
         expect(screen.queryByText(/New Feature/)).not.toBeInTheDocument();
         expect(screen.queryByText(/Fix/)).not.toBeInTheDocument();
         expect(screen.queryByText(/Improvement/)).not.toBeInTheDocument();
     });
 
-    it("renders the data updates heading", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
-
-        expect(screen.getByText("Data updates")).toBeInTheDocument();
-    });
-
     it("renders the last release heading", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("Last Release")).toBeInTheDocument();
     });
 
     it("renders the OPS version heading", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("OPS Version")).toBeInTheDocument();
     });
 
     it("renders the release changes heading", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
+        render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("Release Changes")).toBeInTheDocument();
     });
 
-    it("renders the data updated in OPS message", () => {
-        render(<ReleaseNotesCards {...mockProps} />);
-
-        expect(screen.getByText("All data should now be updated directly in OPS")).toBeInTheDocument();
-    });
-
-    describe("LeftCard headingLevel", () => {
-        it("defaults to its original per-label levels (h2, h2, h3) so /release-notes is unchanged", () => {
-            render(<LeftCard {...mockProps} />);
-            expect(screen.getByRole("heading", { level: 2, name: "Last Release" })).toBeInTheDocument();
-            expect(screen.getByRole("heading", { level: 2, name: "OPS Version" })).toBeInTheDocument();
-            expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
-        });
-
-        it("renders its labels at the requested level so it nests under a parent section", () => {
-            render(
-                <LeftCard
-                    {...mockProps}
-                    headingLevel="h3"
-                />
-            );
-            expect(screen.getByRole("heading", { level: 3, name: "Last Release" })).toBeInTheDocument();
-            expect(screen.queryByRole("heading", { level: 2, name: "Last Release" })).not.toBeInTheDocument();
-        });
+    it("renders its labels as h3s, nesting under the homepage's 'OPS Updates' h2", () => {
+        render(<LeftCard {...mockProps} />);
+        expect(screen.getByRole("heading", { level: 3, name: "Last Release" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "OPS Version" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
     });
 });

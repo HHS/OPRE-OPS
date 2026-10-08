@@ -1,12 +1,17 @@
+import { Outlet } from "react-router-dom";
+import Tabs from "../../components/UI/Tabs";
 import CurrentlyDevelopingCard from "./CurrentlyDevelopingCard";
+import { HOME_RELATIVE_PATHS } from "./homeRoutes";
 import ReleaseNotesSummaryCard from "./release-notes/ReleaseNotesSummaryCard";
 import useWelcomeMessage from "./useWelcomeMessage";
 
 /**
- * @component - Redesigned homepage landing content (feature-flagged): a personalized
- * welcome message plus the "OPS Updates" summary cards. Rendered as the index route
- * under the Home layout, so child routes (/release-notes, /next) are unaffected.
- * @returns {React.ReactElement} The rendered homepage landing content.
+ * @component - Layout for the redesigned homepage: a personalized welcome message,
+ * the "OPS Updates" summary cards, and the tabbed nav (What's New, OPS at a Glance,
+ * OPS Benefits). Rendered as a pathless layout route nested under Home, so the welcome
+ * message/cards/tab nav persist across tab switches while the active tab's content
+ * renders via Outlet.
+ * @returns {React.ReactElement}
  */
 const HomeLanding = () => {
     const { greeting } = useWelcomeMessage();
@@ -33,6 +38,15 @@ const HomeLanding = () => {
                 <ReleaseNotesSummaryCard />
                 <CurrentlyDevelopingCard />
             </div>
+            <Tabs
+                paths={[
+                    { pathName: `/${HOME_RELATIVE_PATHS.whatsNew}`, label: "What's New" },
+                    { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
+                    { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
+                ]}
+                scrollToTopOnChange
+            />
+            <Outlet />
         </>
     );
 };

@@ -13,7 +13,6 @@ const ReleaseNotesSummaryCard = () => {
             <LeftCard
                 lastVersion={latest.version}
                 releaseDate={formatDateToMonthDayYear(latest.releaseDate)}
-                headingLevel="h3"
                 {...totals}
             />
         </div>

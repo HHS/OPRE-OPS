@@ -3,15 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import CurrentlyDevelopingCard from "./CurrentlyDevelopingCard";
 
-vi.mock("./homepageData", () => ({
-    currentlyDevelopingItems: [
-        { id: 1, title: "Finish Procurement Tracker" },
-        { id: 2, title: "View & Edit Grants" }
-    ],
-    nextUpItems: [
-        { id: 3, title: "Staffing/People Teams" },
-        { id: 4, title: "Award Grants" },
-        { id: 5, title: "Contract Mods" }
+vi.mock("./roadmapData.json", () => ({
+    default: [
+        { id: 1, title: "Finish Procurement Tracker", status: "Currently Developing" },
+        { id: 2, title: "View & Edit Grants", status: "Currently Developing" },
+        { id: 3, title: "Staffing/People Teams", status: "Not Started Yet" },
+        { id: 4, title: "Award Grants", status: "Not Started Yet" },
+        { id: 5, title: "Contract Mods", status: "Not Started Yet" },
+        { id: 6, title: "Login", status: "Done" }
     ]
 }));
 
@@ -42,5 +41,10 @@ describe("CurrentlyDevelopingCard", () => {
     it("renders the count of currently developing items", () => {
         renderWithProviders(<CurrentlyDevelopingCard />);
         expect(screen.getByText("2")).toBeInTheDocument();
+    });
+
+    it("excludes Done items from both columns", () => {
+        renderWithProviders(<CurrentlyDevelopingCard />);
+        expect(screen.queryByText("Login")).not.toBeInTheDocument();
     });
 });
