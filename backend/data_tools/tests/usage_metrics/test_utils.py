@@ -627,7 +627,14 @@ def test_deliver_report_link_sends_when_configured(mocker):
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config()
-    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+    deliver_report_link(
+        config,
+        "https://acct.blob.core.windows.net",
+        "data",
+        "reports/usage-metrics-2026-08-19.xlsx",
+        date(2026, 8, 6),
+        date(2026, 8, 19),
+    )
 
     # The storage key comes straight off the config (injected as a Container App secret), so there
     # is no Key Vault round trip at run time.
@@ -642,6 +649,9 @@ def test_deliver_report_link_sends_when_configured(mocker):
     assert args[2] == ["ux1@example.com", "ux2@example.com"]
     assert args[3] == build_sas.return_value
     assert args[4] == 90
+    # The reporting period is forwarded unchanged so the email states this sprint's date range.
+    assert args[5] == date(2026, 8, 6)
+    assert args[6] == date(2026, 8, 19)
 
 
 @pytest.mark.parametrize(
@@ -663,7 +673,14 @@ def test_deliver_report_link_noops_when_not_configured(mocker, overrides):
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config(**overrides)
-    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+    deliver_report_link(
+        config,
+        "https://acct.blob.core.windows.net",
+        "data",
+        "reports/usage-metrics-2026-08-19.xlsx",
+        date(2026, 8, 6),
+        date(2026, 8, 19),
+    )
 
     # No link is minted either -- a half-configured environment must not produce a signed URL it
     # then fails to send.
@@ -678,7 +695,9 @@ def test_deliver_report_link_rejects_bad_expiry(mocker, bad_value):
 
     config = _email_config(usage_metrics_sas_expiry_days=bad_value)
     with pytest.raises(ValueError):
-        deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx")
+        deliver_report_link(
+            config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx", date(2026, 8, 6), date(2026, 8, 19)
+        )
 
 
 @pytest.mark.parametrize(

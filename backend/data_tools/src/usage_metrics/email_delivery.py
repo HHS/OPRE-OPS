@@ -18,6 +18,8 @@ the report itself is not lost.
 
 from __future__ import annotations
 
+from datetime import date
+
 from azure.communication.email import EmailClient
 from loguru import logger
 
@@ -39,24 +41,44 @@ def parse_recipients(raw: str | None) -> list[str]:
     return list(seen.keys())
 
 
-def build_email_message(sender: str, recipients: list[str], download_url: str, expiry_days: int) -> dict:
+def _format_period(period_start: date, period_end: date) -> str:
+    """Render the reporting window as a human-readable date range, e.g. "Sep 26 - Oct 10, 2026"."""
+    return f"{period_start.strftime('%b %-d')} - {period_end.strftime('%b %-d, %Y')}"
+
+
+def build_email_message(
+    sender: str,
+    recipients: list[str],
+    download_url: str,
+    expiry_days: int,
+    period_start: date,
+    period_end: date,
+) -> dict:
     """Build the ACS email message payload for the report-ready notification.
 
     The link is rendered in both plain text and HTML so it is clickable in HTML mail clients and
-    still usable in plain-text ones. The body states the expiry and that the report names
-    individual users, so recipients treat the link accordingly.
+    still usable in plain-text ones. The body states the sprint's reporting period, the expiry,
+    and that the report names individual users, so recipients treat the link accordingly.
+
+    :param period_start: First date covered by the report (inclusive).
+    :param period_end: Last date covered by the report (inclusive) -- the sprint-end Friday.
     """
-    subject = "OPS usage metrics report is ready"
+    subject = "Your OPS Usage Metrics Report Is Ready"
+    period = _format_period(period_start, period_end)
     plain_text = (
-        "The latest OPS usage metrics report is ready.\n\n"
-        f"Download it here (link expires in {expiry_days} days):\n{download_url}\n\n"
-        "This report contains named user data -- please do not forward the link."
+        f"The OPS usage metrics report for the sprint ending {period_end.strftime('%B %-d, %Y')} "
+        f"({period}) is now available.\n\n"
+        f"Download the report (link expires in {expiry_days} days):\n{download_url}\n\n"
+        "Please note that this report contains named user data. Do not forward this link.\n\n"
+        "Thank you,\nOPS Reporting"
     )
     html = (
-        "<p>The latest OPS usage metrics report is ready.</p>"
+        f"<p>The OPS usage metrics report for the sprint ending "
+        f"{period_end.strftime('%B %-d, %Y')} ({period}) is now available.</p>"
         f'<p><a href="{download_url}">Download the report</a> '  # noqa: B907 (HTML attr, not a repr)
         f"(link expires in {expiry_days} days).</p>"
-        "<p>This report contains named user data &mdash; please do not forward the link.</p>"
+        "<p>Please note that this report contains named user data. Do not forward this link.</p>"
+        "<p>Thank you,<br>OPS Reporting</p>"
     )
     return {
         "senderAddress": sender,
@@ -71,6 +93,8 @@ def send_report_link_email(
     recipients: list[str],
     download_url: str,
     expiry_days: int,
+    period_start: date,
+    period_end: date,
 ) -> None:
     """Email the report download link to the UX team via ACS.
 
@@ -86,12 +110,14 @@ def send_report_link_email(
     :param recipients: Non-empty list of recipient addresses.
     :param download_url: The SAS download URL to include in the email body.
     :param expiry_days: Days the link stays valid (rendered in the body).
+    :param period_start: First date covered by the report (inclusive), rendered in the body.
+    :param period_end: Last date covered by the report (inclusive), rendered in the body.
     """
     if not recipients:
         logger.warning("No recipients configured; skipping report email.")
         return
 
-    message = build_email_message(sender, recipients, download_url, expiry_days)
+    message = build_email_message(sender, recipients, download_url, expiry_days, period_start, period_end)
 
     logger.info(f"Sending usage-metrics report email to {len(recipients)} recipient(s) from {sender}.")
     client = EmailClient.from_connection_string(connection_string)

@@ -569,7 +569,14 @@ def should_generate_report(config: DataToolsConfig, today: date) -> bool:
     return False
 
 
-def deliver_report_link(config: DataToolsConfig, account_url: str, container: str, blob_name: str) -> None:
+def deliver_report_link(
+    config: DataToolsConfig,
+    account_url: str,
+    container: str,
+    blob_name: str,
+    period_start: date,
+    period_end: date,
+) -> None:
     """Email a time-limited SAS download link for ``blob_name`` to the UX team.
 
     No-ops (with a log line) unless email delivery is fully configured -- ACS connection string,
@@ -582,6 +589,9 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
     ``deployments/usage-metrics`` Terraform stack, so the job needs no Key Vault access at run time.
     The link points at the dated report blob so each sprint's email references that sprint's specific
     report, and it stays valid for ``usage_metrics_sas_expiry_days`` days.
+
+    :param period_start: First date covered by the report (inclusive), stated in the email body.
+    :param period_end: Last date covered by the report (inclusive) -- the sprint-end Friday.
     """
     connection_string = config.acs_connection_string
     sender = config.email_sender_address
@@ -610,7 +620,7 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
 
     download_url = build_blob_sas_url(account_url, container, blob_name, account_key, expiry_days)
 
-    send_report_link_email(connection_string, sender, recipients, download_url, expiry_days)
+    send_report_link_email(connection_string, sender, recipients, download_url, expiry_days, period_start, period_end)
 
 
 def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes | None:
@@ -652,6 +662,11 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
     latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
 
+    # The reporting window stated to recipients: the lookback window ends on today_utc (the
+    # sprint-end Friday) and spans lookback_days, so it starts (lookback_days - 1) days earlier.
+    period_end = today_utc
+    period_start = today_utc - timedelta(days=lookback_days - 1)
+
     if account_url:
         container = config.usage_metrics_container_name
         logger.info(f"Uploading usage report to {account_url}/{container}.")
@@ -659,7 +674,7 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
         upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         logger.info(f"Uploaded usage report workbook ({latest_xlsx_blob}).")
         # Email the UX team a download link to this sprint's dated report (no-ops unless ACS is set).
-        deliver_report_link(config, account_url, container, dated_xlsx_blob)
+        deliver_report_link(config, account_url, container, dated_xlsx_blob, period_start, period_end)
     else:
         local_xlsx_path = f"usage-metrics-{today}.xlsx"
         with open(local_xlsx_path, "wb") as f:
