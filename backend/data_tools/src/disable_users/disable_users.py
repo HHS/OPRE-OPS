@@ -43,7 +43,10 @@ logger.add(sys.stderr, format=format, level="INFO", diagnose=False)
 INACTIVITY_DAYS = 60
 WARNING_DAYS = 7
 # Warnings go out only in this run, so each at-risk user gets one per day. Assumes the job's cron
-# (managed in OPRE-OPS-Data) runs hourly at the top of the hour. 13:00 UTC is 9am EDT / 8am EST.
+# (managed in OPRE-OPS-Data) runs hourly at the top of the hour. datetime.now() is UTC because TZ is
+# forced to UTC above, regardless of the container's timezone. 13:00 UTC is 9am EDT / 8am EST.
+# Nothing records that a warning was sent, so a manual run started during this hour re-sends that
+# day's warnings.
 WARNING_SEND_HOUR_UTC = 13
 
 
@@ -206,6 +209,7 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine, config: DataToo
             send_disable_notifications(email_client, sender, disabled_user_details, admin_emails)
 
         if warnings:
+            logger.info("Sending {} inactivity warning(s).".format(len(warnings)))
             send_inactivity_warnings(email_client, sender, warnings, config.environment_label, config.frontend_url)
 
 
