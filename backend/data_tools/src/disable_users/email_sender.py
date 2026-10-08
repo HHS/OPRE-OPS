@@ -1,10 +1,11 @@
-"""Sends the disable_users notification emails via Azure Communication Services (OPS-2102).
+"""Sends the disable_users notification and inactivity-warning emails via Azure Communication Services (OPS-2102).
 
 Message text lives in email_content.py -- this file only builds the ACS message payload,
 sends it, and logs who each email went to and why. This module itself never catches send
-failures -- disable_users.py's caller catches around every call it makes here (both the admin
-summary and each individual notification), logs each failure, and still raises once at the end
-if anything failed, so the job exits non-zero without letting one bad send block the rest.
+failures -- disable_users.py's caller catches around every call it makes here (the admin
+summary, each individual notification, and each inactivity warning), logs each failure, and
+still raises once at the end if anything failed, so the job exits non-zero without letting one
+bad send block the rest.
 
 Takes an already-constructed EmailClient (not a connection string) so the raw ACS secret never
 sits in *this module's* stack frames. That alone is not a complete guarantee against leaking via
@@ -25,6 +26,8 @@ from data_tools.src.disable_users.email_content import (
     DISABLED_USER_SUBJECT,
     admin_summary_body,
     disabled_user_body,
+    inactivity_warning_body,
+    inactivity_warning_subject,
 )
 
 
@@ -54,4 +57,26 @@ def send_admin_summary_email(
     logger.info(
         f"Sent admin summary email to {', '.join(admin_emails)} "
         f"(reason: {len(disabled_users)} user(s) automatically disabled for inactivity)."
+    )
+
+
+def send_inactivity_warning_email(
+    email_client: EmailClient,
+    sender: str,
+    user_email: str,
+    days_remaining: int,
+    environment_label: str,
+    frontend_url: str,
+) -> None:
+    """Warn a single user that their account will be disabled for inactivity within ``days_remaining`` days."""
+    _send_email(
+        email_client,
+        sender,
+        [user_email],
+        inactivity_warning_subject(days_remaining, environment_label),
+        inactivity_warning_body(user_email, days_remaining, environment_label, frontend_url),
+    )
+    logger.info(
+        f"Sent inactivity warning email to {user_email} "
+        f"(reason: account will be automatically disabled for inactivity within {days_remaining} day(s))."
     )

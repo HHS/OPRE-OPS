@@ -207,8 +207,9 @@ Typical variables (used by configs and scripts):
 - **FILE_STORAGE_AUTH_METHOD**: e.g. `rbac` for Azure blob with RBAC.
 - **LOG_LEVEL**: Logging level (default `INFO`).
 - **ENV**: Passed to scripts (e.g. `local` vs non-local) for connection and schema behavior.
-- **ACS_CONNECTION_STRING**: Azure Communication Services connection string used by `disable_users.py` to send account-disabled notification emails. Injected as a Container App secret in deployed environments; unset (`None`) locally/dev/pytest, which skips sending emails entirely.
+- **ACS_CONNECTION_STRING**: Azure Communication Services connection string used by `disable_users.py` to send account-disabled notification and inactivity-warning emails. Injected as a Container App secret in deployed environments; unset (`None`) locally/dev/pytest, which skips sending emails entirely.
 - **EMAIL_SENDER_ADDRESS**: The verified ACS "From" address for `disable_users.py` notification emails, e.g. `DoNotReply@<verified-domain>`. Unset (`None`) locally/dev/pytest.
+- **CONTAINER_APP_JOB_NAME**: Set automatically by Azure Container Apps; `AzureConfig` derives `environment_label`/`frontend_url` from it (`stg` → Staging, `prod` → Production, otherwise `None`). `disable_users.py` emails 7..1-day inactivity warnings during the 13:00 UTC run, only in Staging/Production.
 
 ## Scheduled Usage Metrics Report (OPS-4148)
 
