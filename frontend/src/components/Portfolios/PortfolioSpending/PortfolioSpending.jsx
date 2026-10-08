@@ -91,7 +91,6 @@ const PortfolioSpending = () => {
                 );
                 if (!cancelled) {
                     setBudgetLineItems(budgetLineItemsByFiscalYear);
-                    setFetchError(false);
                 }
             } catch (error) {
                 console.error("Failed to fetch budgetLineItems:", error);
