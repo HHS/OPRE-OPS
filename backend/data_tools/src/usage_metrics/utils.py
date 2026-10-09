@@ -42,13 +42,19 @@ Attribution / counting notes (see the #4148 plan for the full rationale):
 - Role is a many-to-many relationship; a user holding multiple roles is counted once per
   role, so role sums for a division may exceed the division's own totals. This is documented
   in the report rather than resolved to a single "primary" role.
+- **agreements_viewed** is the number of distinct (user, agreement) pairs per bucket, not a raw
+  ``GET_AGREEMENT`` row count. That event type is shared by the single-agreement GET, the
+  agreement list GET (one per list page / export batch), and both procurement-action GETs, so
+  counting rows mostly measured list-page loads and refetches. Only rows whose
+  ``event_details`` carry a single ``agreement_id`` are views, and repeat fetches of the same
+  agreement by the same user on the same day count once. See ``viewed_agreement_id``.
 """
 
 import io
 import os
 import sys
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 import sqlalchemy
 from loguru import logger
@@ -103,8 +109,8 @@ ACTIVE_USER_EVENT_TYPES = frozenset(
     }
 )
 
-# Event types that map to a single count column. deactivated_users is handled separately
-# because it depends on the UPDATE_USER payload, not just the event type.
+# Event types that map to a single count column. deactivated_users and agreements_viewed are
+# handled separately because they depend on the event payload, not just the event type.
 # LOGIN_ATTEMPT maps to "logins" here because only SUCCESS rows reach aggregation, so every
 # LOGIN_ATTEMPT that gets counted is a completed login.
 EVENT_TYPE_TO_METRIC = {
@@ -115,7 +121,6 @@ EVENT_TYPE_TO_METRIC = {
     OpsEventType.CREATE_NEW_AGREEMENT: "agreements_edited",
     OpsEventType.UPDATE_AGREEMENT: "agreements_edited",
     OpsEventType.DELETE_AGREEMENT: "agreements_edited",
-    OpsEventType.GET_AGREEMENT: "agreements_viewed",
     OpsEventType.CREATE_BLI: "blis_created",
     OpsEventType.CREATE_PROJECT: "projects_created",
 }
@@ -155,6 +160,12 @@ FRIDAY = 4  # date.weekday(): Monday is 0
 # 23:50 UTC Friday cron is still attributed to that Friday. See ``effective_run_date``. Two hours
 # comfortably covers a cold start plus one replica retry while staying far short of the next day.
 RUN_DATE_GRACE = timedelta(hours=2)
+
+# The cron's scheduled UTC time of day (``50 23 * * 5``). The reporting window ends at this slot on
+# the run date rather than at the moment the job actually starts, so a delayed start counts exactly
+# the rows an on-time run would have -- no early-Saturday rows leak in, and consecutive sprints'
+# windows meet at the same instant with no gap or overlap however late either run starts.
+SCHEDULED_RUN_TIME = time(23, 50)
 
 
 def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
@@ -216,8 +227,41 @@ def is_deactivating_update(event: OpsEvent) -> bool:
     return status in (UserStatus.INACTIVE.name, UserStatus.LOCKED.name)
 
 
+def viewed_agreement_id(event: OpsEvent) -> int | None:
+    """Return the agreement id a ``GET_AGREEMENT`` event viewed, or None if it is not a single view.
+
+    ``GET_AGREEMENT`` is emitted by four endpoints, told apart only by the ``event_details`` keys
+    each one records:
+    - ``GET /agreements/<id>``: ``agreement_id`` -- the only one that is a view of an agreement.
+    - ``GET /agreements/``: ``agreement_ids`` (list page, export batches).
+    - ``GET /procurement-actions/<id>`` and ``GET /procurement-actions/``: ``procurement_action_id(s)``.
+    """
+    if event.event_type != OpsEventType.GET_AGREEMENT:
+        return None
+    details = event.event_details or {}
+    if not isinstance(details, dict):
+        return None
+    agreement_id = details.get("agreement_id")
+    # bool is an int subclass; exclude it so a malformed payload cannot count as agreement 1/0.
+    return agreement_id if isinstance(agreement_id, int) and not isinstance(agreement_id, bool) else None
+
+
 def _new_counts() -> dict[str, int]:
     return {metric: 0 for metric in METRIC_COLUMNS}
+
+
+def _row_count_metrics(event: OpsEvent) -> list[str]:
+    """Return the per-row count columns an event increments (one each).
+
+    The distinct-set metrics (active_users, agreements_viewed) are tallied separately.
+    """
+    metrics = []
+    metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
+    if metric is not None:
+        metrics.append(metric)
+    if is_deactivating_update(event):
+        metrics.append("deactivated_users")
+    return metrics
 
 
 # The only event types that can affect the Aggregate sheet: those carrying a metric, those counting
@@ -235,13 +279,28 @@ AGGREGATE_EVENT_TYPES = frozenset(EVENT_TYPE_TO_METRIC) | ACTIVE_USER_EVENT_TYPE
 EVENT_STREAM_BATCH_SIZE = 1_000
 
 
+def report_window(lookback_days: int, window_end: datetime | None = None) -> tuple[datetime, datetime]:
+    """Return the half-open ``[start, end)`` naive-UTC ``created_on`` window to aggregate over.
+
+    ``window_end`` defaults to now. The scheduled run passes the cron slot on the run date (see
+    :data:`SCHEDULED_RUN_TIME`) so the window does not drift with the job's actual start time.
+    """
+    if window_end is None:
+        window_end = datetime.now(timezone.utc).replace(tzinfo=None)
+    return window_end - timedelta(days=lookback_days), window_end
+
+
 def aggregate_events(
-    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+    session: Session,
+    lookback_days: int,
+    user_lookup: dict[int, dict] | None = None,
+    window_end: datetime | None = None,
 ) -> dict[tuple[str, str, str], dict[str, int]]:
     """Aggregate ``ops_event`` rows into per-(date, division, role) count buckets.
 
-    Only rows created within the last ``lookback_days`` (a UTC-naive cutoff, matching the naive
-    ``created_on`` timestamps) and with ``event_status == SUCCESS`` are counted.
+    Only rows created within the ``lookback_days`` ending at ``window_end`` (a UTC-naive bound,
+    matching the naive ``created_on`` timestamps; defaults to now -- see :func:`report_window`) and
+    with ``event_status == SUCCESS`` are counted.
 
     ``user_lookup`` may be supplied by the caller so that a single attribution lookup is shared with
     :func:`aggregate_user_sign_ins` instead of each pass querying every user and division again.
@@ -254,22 +313,25 @@ def aggregate_events(
     counts: dict[tuple[str, str, str], dict[str, int]] = defaultdict(_new_counts)
     # Distinct actors per bucket for the active_users metric.
     active_users: dict[tuple[str, str, str], set[int]] = defaultdict(set)
+    # Distinct (actor, agreement) pairs per bucket for the agreements_viewed metric.
+    viewed: dict[tuple[str, str, str], set[tuple[int, int]]] = defaultdict(set)
 
     # created_on is a naive TIMESTAMP written in the DB's (UTC) session tz, so compare against a
-    # naive-UTC cutoff. This scopes the scan to the reporting window instead of the whole table.
-    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+    # naive-UTC window. This scopes the scan to the reporting window instead of the whole table.
+    window_start, window_end = report_window(lookback_days, window_end)
     # Select only the four columns the loop reads, as a streamed Core result. Row objects expose the
     # same attribute names, so resolve_actor_id / is_deactivating_update work on them unchanged.
     stmt = (
         select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
         .where(
-            OpsEvent.created_on >= cutoff,
+            OpsEvent.created_on >= window_start,
+            OpsEvent.created_on < window_end,
             OpsEvent.event_status == OpsEventStatus.SUCCESS,
             OpsEvent.event_type.in_(AGGREGATE_EVENT_TYPES),
         )
         .execution_options(yield_per=EVENT_STREAM_BATCH_SIZE)
     )
-    logger.info(f"Aggregating successful ops_event row(s) since {cutoff.date().isoformat()}.")
+    logger.info(f"Aggregating successful ops_event row(s) from {window_start.isoformat()} to {window_end.isoformat()}.")
 
     seen = 0
     for event in session.execute(stmt):
@@ -279,37 +341,43 @@ def aggregate_events(
         date_iso = event.created_on.date().isoformat()
         actor_id = resolve_actor_id(event)
         attribution = user_lookup.get(actor_id, UNKNOWN_ATTRIBUTION) if actor_id is not None else UNKNOWN_ATTRIBUTION
+        agreement_id = viewed_agreement_id(event)
+        metrics = _row_count_metrics(event)
 
         # A multi-role user is counted once per role (fan-out); see module docstring.
         for role in attribution["roles"]:
             key = (date_iso, attribution["division"], role)
 
-            metric = EVENT_TYPE_TO_METRIC.get(event.event_type)
-            if metric is not None:
+            for metric in metrics:
                 counts[key][metric] += 1
-
-            if is_deactivating_update(event):
-                counts[key]["deactivated_users"] += 1
 
             if event.event_type in ACTIVE_USER_EVENT_TYPES and actor_id is not None:
                 active_users[key].add(actor_id)
 
+            if agreement_id is not None and actor_id is not None:
+                viewed[key].add((actor_id, agreement_id))
+
     logger.info(f"Aggregated {seen:,} relevant successful ops_event row(s).")
 
-    # Fold the distinct-actor sets into the count buckets.
+    # Fold the distinct-actor and distinct-view sets into the count buckets.
     for key, actors in active_users.items():
         counts[key]["active_users"] = len(actors)
+    for key, pairs in viewed.items():
+        counts[key]["agreements_viewed"] = len(pairs)
 
     return counts
 
 
 def aggregate_user_sign_ins(
-    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+    session: Session,
+    lookback_days: int,
+    user_lookup: dict[int, dict] | None = None,
+    window_end: datetime | None = None,
 ) -> list[dict]:
     """Aggregate successful sign-ins into one row per user for the "Per-user" sheet.
 
     A sign-in is a ``LOGIN_ATTEMPT`` row with ``event_status == SUCCESS`` inside the reporting
-    window (same UTC-naive cutoff and window as :func:`aggregate_events`). One completed login
+    window (same UTC-naive ``[start, end)`` window as :func:`aggregate_events`). One completed login
     (one ``/auth/login/`` POST) writes exactly one such row and creates one new ``UserSession``
     (the login flow always deactivates prior sessions and creates a fresh one), so counting these
     rows is a faithful count of sign-in sessions -- i.e. how many times the user had to sign in.
@@ -327,12 +395,13 @@ def aggregate_user_sign_ins(
     if user_lookup is None:
         user_lookup = build_user_attribution_lookup(session)
 
-    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+    window_start, window_end = report_window(lookback_days, window_end)
     # Column-only and streamed, for the same memory reasons as aggregate_events above.
     stmt = (
         select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
         .where(
-            OpsEvent.created_on >= cutoff,
+            OpsEvent.created_on >= window_start,
+            OpsEvent.created_on < window_end,
             OpsEvent.event_status == OpsEventStatus.SUCCESS,
             OpsEvent.event_type == OpsEventType.LOGIN_ATTEMPT,
         )
@@ -526,7 +595,14 @@ def should_generate_report(config: DataToolsConfig, today: date) -> bool:
     return False
 
 
-def deliver_report_link(config: DataToolsConfig, account_url: str, container: str, blob_name: str) -> None:
+def deliver_report_link(
+    config: DataToolsConfig,
+    account_url: str,
+    container: str,
+    blob_name: str,
+    period_start: date,
+    period_end: date,
+) -> None:
     """Email a time-limited SAS download link for ``blob_name`` to the UX team.
 
     No-ops (with a log line) unless email delivery is fully configured -- ACS connection string,
@@ -539,6 +615,9 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
     ``deployments/usage-metrics`` Terraform stack, so the job needs no Key Vault access at run time.
     The link points at the dated report blob so each sprint's email references that sprint's specific
     report, and it stays valid for ``usage_metrics_sas_expiry_days`` days.
+
+    :param period_start: First date covered by the report (inclusive), stated in the email body.
+    :param period_end: Last date covered by the report (inclusive) -- the sprint-end Friday.
     """
     connection_string = config.acs_connection_string
     sender = config.email_sender_address
@@ -567,7 +646,7 @@ def deliver_report_link(config: DataToolsConfig, account_url: str, container: st
 
     download_url = build_blob_sas_url(account_url, container, blob_name, account_key, expiry_days)
 
-    send_report_link_email(connection_string, sender, recipients, download_url, expiry_days)
+    send_report_link_email(connection_string, sender, recipients, download_url, expiry_days, period_start, period_end)
 
 
 def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -> bytes | None:
@@ -592,12 +671,16 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     account_url = config.usage_metrics_storage_account_url
 
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
+    # Anchor the window to the cron slot, not to "now": a delayed start (within RUN_DATE_GRACE) must
+    # not pull early-Saturday rows into a report stated as ending Friday, nor open a gap/overlap
+    # against the neighbouring sprint's window.
+    window_end = datetime.combine(today_utc, SCHEDULED_RUN_TIME)
     with Session(conn) as session:
         # Built once and shared: both passes need the same user/division/role attribution, and it
         # loads every user with their roles eagerly, so doing it twice doubles that cost for nothing.
         user_lookup = build_user_attribution_lookup(session)
-        counts = aggregate_events(session, lookback_days, user_lookup)
-        user_rows = aggregate_user_sign_ins(session, lookback_days, user_lookup)
+        counts = aggregate_events(session, lookback_days, user_lookup, window_end)
+        user_rows = aggregate_user_sign_ins(session, lookback_days, user_lookup, window_end)
     logger.info(
         f"Aggregated into {len(counts):,} date x division x role row(s) and "
         f"{len(user_rows):,} per-user sign-in row(s)."
@@ -609,6 +692,13 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     dated_xlsx_blob = f"{prefix}/usage-metrics-{today}.xlsx"
     latest_xlsx_blob = f"{prefix}/usage-metrics-latest.xlsx"
 
+    # The reporting window stated to recipients: the lookback window ends on today_utc (the
+    # sprint-end Friday) and spans lookback_days, so it starts (lookback_days - 1) days earlier.
+    # The queried window is the cron slot to cron slot (window_end above), so the stated dates are
+    # accurate to within the cron's ten minutes before midnight at each end.
+    period_end = today_utc
+    period_start = today_utc - timedelta(days=lookback_days - 1)
+
     if account_url:
         container = config.usage_metrics_container_name
         logger.info(f"Uploading usage report to {account_url}/{container}.")
@@ -616,7 +706,7 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
         upload_blob(account_url, container, latest_xlsx_blob, workbook_bytes, content_type=XLSX_CONTENT_TYPE)
         logger.info(f"Uploaded usage report workbook ({latest_xlsx_blob}).")
         # Email the UX team a download link to this sprint's dated report (no-ops unless ACS is set).
-        deliver_report_link(config, account_url, container, dated_xlsx_blob)
+        deliver_report_link(config, account_url, container, dated_xlsx_blob, period_start, period_end)
     else:
         local_xlsx_path = f"usage-metrics-{today}.xlsx"
         with open(local_xlsx_path, "wb") as f:

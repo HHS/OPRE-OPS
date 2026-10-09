@@ -59,29 +59,47 @@ In each subscription the applying principal needs **both**:
   **`Storage Blob Data Contributor` does not grant this**; `Contributor` or
   `Storage Account Contributor` do.
 
-The second one matters more than it looks: when it is missing, `primary_access_key` comes back as an
+Being in `kvAccessList` in the env's `app` stack (`locals.tf`) is what grants the first one; it
+creates a per-user access policy on `opre-ops-<env>-app-kv`.
+
+Two more things are needed before plan works at all:
+
+- **VPN.** The app vaults have public network access disabled. Off VPN, the vault answers with an
+  authorization error first (`does not have secrets get permission`), which hides the real
+  `ForbiddenByConnection` until the access policy is in place. On VPN,
+  `nslookup opre-ops-<env>-app-kv.vault.azure.net` resolves to a private `10.x` address.
+- **The right subscription for state.** The remote-state backend uses the `az` CLI's default
+  subscription. If yours is `opre-ops-services-prod`, init fails for sdlc stacks with
+  `Resource group 'opre-ops-sdlc-terraform-state' could not be found`. Run `az account set` to the
+  target subscription, or set `ARM_SUBSCRIPTION_ID` for the session.
+
+The `listKeys` permission matters more than it looks: when it is missing, `primary_access_key` comes back as an
 **empty string rather than erroring**. The stack carries a `lifecycle precondition` that fails the
 plan in that case, but only when `usageMetricsEmailRecipients` is non-empty — with no recipients an
 empty key is harmless and the guard stays out of the way.
 
-**Open question, to settle on the first dev apply:** with no recipients and no `listKeys`, the job is
-created with an *empty* `storage-account-key` secret. The provider accepts that, but it's unconfirmed
-whether the Container Apps API does. If it rejects it, the stack should add the secret and the
-`FILE_STORAGE_ACCOUNT_KEY` env var only when the key is non-empty. Either way, the application
-already treats an unset or empty `FILE_STORAGE_ACCOUNT_KEY` as "email not configured".
+**Open question, to settle on the first apply without `listKeys`:** with no recipients and no
+`listKeys`, the job is created with an *empty* `storage-account-key` secret. The provider accepts
+that, but it's unconfirmed whether the Container Apps API does. (The staging apply on 2026-10-06 had
+`listKeys`, so it did not settle this; dev and prod have not been applied yet.) If it rejects it,
+the stack should add the secret and the `FILE_STORAGE_ACCOUNT_KEY` env var only when the key is
+non-empty. Either way, the application already treats an unset or empty `FILE_STORAGE_ACCOUNT_KEY`
+as "email not configured".
 
 ## Enabling an environment
 
 ⚠️ **Order matters: deploy this repo's code before applying the stack.** The job runs
-`ghcr.io/hhs/opre-ops/ops-data-tools:<env>`, and until OPRE-OPS#5960 is merged and deployed to that
-environment, the image has no `scripts/usage_metrics.sh` or `src/usage_metrics/`. Applying the stack
-first creates a job whose entrypoint doesn't exist, so every scheduled run fails. Per environment
-(staging first, then prod):
+`ghcr.io/hhs/opre-ops/ops-data-tools:<env>`, and until the code from OPRE-OPS#5960 is deployed to
+that environment, the image has no `scripts/usage_metrics.sh` or `src/usage_metrics/`. Applying the
+stack first creates a job whose entrypoint doesn't exist, so every scheduled run fails.
 
-1. Merge OPRE-OPS#5960 and let it deploy, so `ops-data-tools:<env>` contains the new code.
-2. Merge [OPRE-OPS-Data#64](https://github.com/HHS/OPRE-OPS-Data/pull/64) (any time; it doesn't
-   auto-apply).
-3. `terragrunt plan` (expect `1 to add, 0 to change, 0 to destroy`), then `terragrunt apply`.
+Status as of 2026-10-07: #5960 and [OPRE-OPS-Data#64](https://github.com/HHS/OPRE-OPS-Data/pull/64)
+are both merged, and **staging is applied** (see "Verified end to end" below). Dev and prod have no
+`usage-metrics` job yet. Per remaining environment:
+
+1. Make sure `ops-data-tools:<env>` contains the #5960 code. For prod that means running the manual
+   `prod_be_build_and_deploy.yml` workflow first.
+2. `terragrunt plan` (expect `1 to add, 0 to change, 0 to destroy`), then `terragrunt apply`.
 
 The reverse order is harmless for the deploy workflows: before the job exists they log "not found;
 skipping", and the first deploy after the apply pins the job to that commit's image.
@@ -91,6 +109,10 @@ cd infra/cloud/azure/<subscription>/eus/[<env>/]deployments/usage-metrics
 terragrunt plan     # confirm one job created; EMAIL_SENDER_ADDRESS renders the real DoNotReply@ address
 terragrunt apply
 ```
+
+`1 to add` holds only for the first apply. After that the deploy workflow repins the job's image to a
+commit SHA (see "Ongoing image updates"), and the stack has no `ignore_changes` on the image, so every
+later plan shows an in-place change of the image back to `:<env>`. That diff is expected and harmless.
 
 Do **not** try to verify the secrets from plan output — the provider marks the whole `secret` set
 `Sensitive`, so a real key and an empty string both render as `(sensitive value)`. Sanity-check the
@@ -122,17 +144,52 @@ until someone sets it.
 
 A manual start on any other day hits the sprint filter and no-ops. Use a **per-execution override**,
 which applies to that one run and never mutates the job — so there is nothing to revert and nothing
-for Terraform to fight:
+for Terraform to fight.
+
+The override must carry the job's **complete** container — image, `args` and every env var — plus
+`USAGE_METRICS_FORCE_RUN=true`. Copy it from the job itself and start through the REST API:
 
 ```bash
-az containerapp job start -n opre-ops-stg-app-usage-metrics -g opre-ops-stg-app-rg \
-  --env-vars USAGE_METRICS_FORCE_RUN=true ...
+SUB=$(az account show --subscription opre-ops-services-sdlc --query id -o tsv)
+ID=/subscriptions/${SUB}/resourceGroups/opre-ops-stg-app-rg/providers/Microsoft.App/jobs/opre-ops-stg-app-usage-metrics
+
+# The job's current container, with one env var appended. Secrets appear only as secretRef names.
+az rest --method get --url "https://management.azure.com${ID}?api-version=2024-03-01" \
+  | jq '{containers: [.properties.template.containers[0]
+          | .env += [{"name":"USAGE_METRICS_FORCE_RUN","value":"true"}]]}' > start-body.json
+
+# Check before starting: args must be the usage_metrics.sh pair, and the env count one more than the job's.
+jq '.containers[0] | {image, args, envCount: (.env | length)}' start-body.json
+
+az rest --method post --url "https://management.azure.com${ID}/start?api-version=2024-03-01" \
+  --body @start-body.json
 az containerapp job execution list -n opre-ops-stg-app-usage-metrics -g opre-ops-stg-app-rg -o table
 ```
 
-⚠️ Verify whether `--env-vars` **replaces** rather than merges the container env before relying on
-it — the CLI help's "empty string to clear existing values" suggests replace, which would mean
-passing the full list, not just the one override.
+Confirm the override took effect from the logs, not just the `Succeeded` status:
+`usage_metrics_force_run is set; generating report regardless of the sprint schedule.`
+
+### ⛔ Do not use `az containerapp job start --env-vars` / `--image` on this or any `ops-data-tools` job
+
+An override **replaces** the job's container, it does not merge into it, and the CLI never sends the
+job's `args`. Tested on staging on 2026-10-06 (az 2.90.0):
+
+| Command | Result |
+|---|---|
+| `job start --env-vars USAGE_METRICS_FORCE_RUN=true` | Rejected: `ContainerAppImageRequired`. Azure does not fill in missing fields from the job. |
+| `job start --image ...:stg --env-vars USAGE_METRICS_FORCE_RUN=true` | Execution ran with **only** that one env var and **no `args`**, then failed. This is the `Failed` execution `opre-ops-stg-app-usage-metrics-jhggfw7` (2026-10-06 21:45 UTC) in staging's history; it is not a report failure. |
+
+With no `args`, the container runs the image's default command. CI builds `ops-data-tools` from
+`Dockerfile.data-tools-import`, whose `CMD` is `scripts/import_test_data.sh`. That script runs
+`DROP SCHEMA IF EXISTS ops CASCADE`, re-runs migrations, and then **loads the JSON5 test seed data**
+into the database. The test run died only because the override had also wiped `PGHOST`, so `psql`
+never reached the database. "Pass the full env list too" does **not** make the CLI safe: the `args`
+are still dropped, and on a job that carries admin DB credentials (`up-schema`, `down-schema`,
+`data-tools`) a full-env, no-args override could drop the `ops` schema in that environment and
+replace it with test data.
+
+`--yaml` with a complete container is the only safe CLI form. The REST method above does the same
+thing without hand-writing YAML.
 
 **Do not** set `USAGE_METRICS_FORCE_RUN` as a committed Terraform input. A forgotten `true` there is
 permanent and invisible: it turns the report weekly and emails a 90-day SAS link to named-user data
@@ -148,6 +205,21 @@ Then verify end to end:
 
 A failed ACS send now raises rather than exiting 0, so a throttled first send fails the job loudly
 instead of leaving a green run and an empty inbox.
+
+### Verified end to end (staging, 2026-10-06)
+
+The Terraform-created staging job was test-fired with the REST method above, with
+`usageMetricsEmailRecipients` temporarily set to one internal address and
+`usageMetricsSasExpiryDays = "7"` (OPRE-OPS-Data#67, applied and then closed without merging).
+Execution `opre-ops-stg-app-usage-metrics-oohrlsw` took about a minute and succeeded:
+
+- It aggregated 6,235 `ops_event` rows into 44 aggregate rows and 8 per-user rows.
+- It uploaded `reports/usage-metrics-2026-10-06.xlsx` and `reports/usage-metrics-latest.xlsx`.
+- ACS returned `Succeeded` for the send to 1 recipient, from the sdlc `DoNotReply@` sender.
+
+Staging was then re-applied from `main`, so recipients are `""` and expiry is 90 days again
+(confirmed on the live job 2026-10-07). Prod still needs its own first send (see the deliverability
+caveats below).
 
 ## Verified environment values
 
@@ -228,9 +300,9 @@ alongside day-of-week makes standard cron parsers **OR** the two fields rather t
 | Piece | Value | Why |
 |---|---|---|
 | Cron | `50 23 * * 5` | 23:50 UTC **every** Friday. Azure cron is UTC-only; this lands Friday evening US Central (18:50 CDT / 17:50 CST) — after the workday, still on the Friday. |
-| Sprint filter | `should_generate_report` in `src/usage_metrics/utils.py` | Off-sprint Fridays log why they are skipping and exit 0 without touching the DB or Blob storage. |
+| Sprint filter | `should_generate_report` in `src/usage_metrics/utils.py` | Off-sprint Fridays log why they are skipping and exit 0 without touching the DB or Blob storage. A run that starts up to two hours late (cold start, retry) is still attributed to the Friday — see `effective_run_date`. |
 | `USAGE_METRICS_SPRINT_ANCHOR_DATE` | `2026-09-11` | A known sprint-end Friday; sprint ends are every 14 days from it in both directions. Validated as a Friday at run time — a non-Friday anchor would never line up with the cron, so it raises instead of silently no-opping forever. |
-| `USAGE_METRICS_LOOKBACK_DAYS` | `14` | Matches the sprint length, so consecutive reports tile the calendar with no gap or overlap. Keep these two in step. |
+| `USAGE_METRICS_LOOKBACK_DAYS` | `14` | Matches the sprint length, so consecutive reports tile the calendar. Keep these two in step. |
 
 The anchor came from the team's own sprint boundaries — the sprint 106 and 107 release-note commits
 landed Friday 2026-08-28 and Friday 2026-09-11, exactly 14 days apart. **If the team's sprint
@@ -246,7 +318,9 @@ Two consequences worth knowing:
   shows up in `az containerapp job execution list` as `Succeeded` — check the logs for the "not a
   sprint-end Friday" line before treating a run as a missed report.
 - Activity after ~18:50 Central on the sprint's last Friday falls into the *next* sprint's report.
-  Nothing is lost (the 14-day windows tile exactly), it just lands one report later.
+  Nothing is lost, it just lands one report later. The tiling is exact to within a few minutes: the
+  14-day window is measured back from when each run actually starts, so a slow cold start or a retry
+  can shift a boundary by that much.
 
 ## Cutover from the hand-created staging job (done)
 
@@ -257,12 +331,13 @@ has **already been deleted**, ahead of the Terraform apply, as agreed in review 
 
 What that means now:
 
-- **Staging has no usage-metrics job** until the `deployments/usage-metrics` stack is applied there.
+- **The staging stack was applied on 2026-10-06**, so `opre-ops-stg-app-usage-metrics` now exists
+  and runs on the Friday schedule. Email stays off there until a recipient is committed.
 - Blobs under `opreopsstgappsa/data` are untouched, so the old weekly reports remain. Log Analytics
   logs for the old runs stay keyed to the name `usage-metrics-job`, so saved queries need both names.
 - **There is a reporting gap.** The window moves from 7 to 14 days and the run moves to the
-  sprint-end Friday; the first report on the new schedule is **Friday 2026-10-09** (if the stack is
-  applied by then). Confirm with UX that nobody depends on the Monday weekly output.
+  sprint-end Friday; the first report on the new schedule is **Friday 2026-10-09**. Confirm with UX
+  that nobody depends on the Monday weekly output.
 
 It was deleted rather than imported because `name` is `ForceNew` in the provider, so keeping the old
 name and adopting the convention are mutually exclusive, and the imported resource would have

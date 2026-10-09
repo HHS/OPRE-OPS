@@ -22,9 +22,11 @@ from data_tools.src.usage_metrics.utils import (
     is_sprint_end,
     parse_lookback_days,
     parse_sprint_anchor_date,
+    report_window,
     resolve_actor_id,
     run_usage_metrics,
     should_generate_report,
+    viewed_agreement_id,
 )
 from models import Division, OpsEvent, OpsEventStatus, OpsEventType, Role, User, UserStatus
 
@@ -131,6 +133,34 @@ def test_is_deactivating_update_matches_userstatus_enum_names():
         assert is_deactivating_update(ev) is True
 
 
+def test_viewed_agreement_id_for_single_agreement_get():
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=1, event_details={"agreement_id": 12})
+    assert viewed_agreement_id(ev) == 12
+
+
+@pytest.mark.parametrize(
+    "event_details",
+    [
+        {"agreement_ids": [1, 2, 3], "total_count": 3},  # GET /agreements/ (list page, export batch)
+        {"procurement_action_id": 5},  # GET /procurement-actions/<id>
+        {"procurement_action_ids": [5, 6], "count": 2},  # GET /procurement-actions/
+        {"agreement_id": True},
+        {"agreement_id": "12"},
+        {},
+        None,
+        ["not", "a", "dict"],
+    ],
+)
+def test_viewed_agreement_id_none_for_non_view_payloads(event_details):
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=1, event_details=event_details)
+    assert viewed_agreement_id(ev) is None
+
+
+def test_viewed_agreement_id_none_for_other_event_types():
+    ev = _event(OpsEventType.UPDATE_AGREEMENT, created_by=1, event_details={"agreement_id": 12})
+    assert viewed_agreement_id(ev) is None
+
+
 def test_parse_lookback_days_valid():
     assert parse_lookback_days("7") == 7
 
@@ -196,8 +226,8 @@ def seeded_db(loaded_db):
 
     events = [
         # Two distinct viewers on day1 -> active_users = 2, agreements_viewed = 2.
-        _event(OpsEventType.GET_AGREEMENT, created_by=9001),
-        _event(OpsEventType.GET_AGREEMENT, created_by=9002),
+        _event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}),
+        _event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"agreement_id": 1}),
         # Successful login on day1 -> logins = 1 (actor from event_details, created_by NULL).
         _event(OpsEventType.LOGIN_ATTEMPT, created_by=None, event_details={"user": {"id": 9001}}),
         # Failed login must be excluded (FAILED status filtered out at query time).
@@ -267,6 +297,76 @@ def test_events_outside_window_excluded(seeded_db):
     assert counts == {}
 
 
+def test_report_window_is_half_open_and_ends_at_window_end():
+    end = datetime(2026, 9, 11, 23, 50)
+    assert report_window(14, end) == (datetime(2026, 8, 28, 23, 50), end)
+
+
+def test_events_at_or_after_window_end_excluded(seeded_db):
+    """Rows newer than window_end (e.g. early Saturday on a delayed run) are not counted."""
+    db, _, day2 = seeded_db
+    # day1 events are 3 days old and the day2 deactivation 2 days old; ending the window between
+    # them keeps day1 and drops day2, even though day2 is well inside the lookback from "now".
+    window_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=2, hours=12)
+    counts = aggregate_events(db, LOOKBACK_DAYS, window_end=window_end)
+    assert sum(bucket["logins"] for bucket in counts.values()) == 1
+    assert all(key[0] != day2 for key in counts)
+    assert sum(bucket["deactivated_users"] for bucket in counts.values()) == 0
+
+
+def test_aggregate_user_sign_ins_excludes_rows_at_or_after_window_end(seeded_db):
+    db, _, _ = seeded_db
+    # The only successful login is 3 days old; a window ending before it excludes it.
+    window_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=3, hours=12)
+    assert aggregate_user_sign_ins(db, LOOKBACK_DAYS, window_end=window_end) == []
+
+
+def test_agreements_viewed_counts_distinct_user_agreement_pairs_per_day(seeded_db):
+    """List GETs and repeat fetches must not inflate agreements_viewed (#4148 follow-up)."""
+    db, day1_iso, day2_iso = seeded_db
+    # Midday on the fixture's own dates, so these land in the same buckets whatever the clock says.
+    day1 = datetime.fromisoformat(day1_iso) + timedelta(hours=12)
+    day2 = datetime.fromisoformat(day2_iso) + timedelta(hours=12)
+
+    extra = [
+        # User A refetches agreement 1 (already seeded once on day1) -> still one view.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day1),
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day1),
+        # User A opens a second agreement on day1 -> +1.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 2}), day1),
+        # A list page load and a procurement-action fetch are not agreement views.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_ids": list(range(25))}), day1),
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"procurement_action_id": 7}), day1),
+        # Same agreement on a different day counts again, on that day.
+        (_event(OpsEventType.GET_AGREEMENT, created_by=9001, event_details={"agreement_id": 1}), day2),
+    ]
+    for ev, when in extra:
+        ev.created_on = when
+        db.add(ev)
+    db.commit()
+
+    counts = aggregate_events(db, LOOKBACK_DAYS)
+
+    # day1: (A, 1), (B, 1), (A, 2).
+    assert counts[(day1_iso, "Test Division", "analyst")]["agreements_viewed"] == 3
+    assert counts[(day2_iso, "Test Division", "analyst")]["agreements_viewed"] == 1
+
+
+def test_agreement_list_get_counts_as_active_but_not_viewed(seeded_db):
+    """A user who only loaded the list page is active but viewed no agreement."""
+    db, day1_iso, _ = seeded_db
+    # Two days before the seeded events, so this bucket holds only the list GET.
+    list_only_day = datetime.fromisoformat(day1_iso) - timedelta(days=2) + timedelta(hours=12)
+    ev = _event(OpsEventType.GET_AGREEMENT, created_by=9002, event_details={"agreement_ids": [1, 2]})
+    ev.created_on = list_only_day
+    db.add(ev)
+    db.commit()
+
+    bucket = aggregate_events(db, LOOKBACK_DAYS)[(list_only_day.date().isoformat(), "Test Division", "analyst")]
+    assert bucket["active_users"] == 1
+    assert bucket["agreements_viewed"] == 0
+
+
 def test_utc_day_bucketing_boundary(loaded_db):
     """An event just before/after UTC midnight buckets to the correct UTC day."""
     now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -275,9 +375,10 @@ def test_utc_day_bucketing_boundary(loaded_db):
     before_midnight = datetime(base.year, base.month, base.day, 23, 50, 0)
     after_midnight = before_midnight + timedelta(minutes=20)  # next UTC day, 00:10
 
-    ev1 = _event(OpsEventType.GET_AGREEMENT, created_by=None)
+    # LOGOUT bumps a count even with no resolvable actor, so each event materialises its day bucket.
+    ev1 = _event(OpsEventType.LOGOUT, created_by=None)
     ev1.created_on = before_midnight
-    ev2 = _event(OpsEventType.GET_AGREEMENT, created_by=None)
+    ev2 = _event(OpsEventType.LOGOUT, created_by=None)
     ev2.created_on = after_midnight
     loaded_db.add_all([ev1, ev2])
     loaded_db.commit()
@@ -421,6 +522,34 @@ def test_run_usage_metrics_skips_off_sprint_friday(mocker):
     session_mock.assert_not_called()
 
 
+def test_run_usage_metrics_delayed_start_queries_the_on_time_window(mocker):
+    """A start 40 min past midnight still ends the window at the Friday 23:50 cron slot, not "now".
+
+    Otherwise early-Saturday rows land in a report stated as ending Friday, and the neighbouring
+    sprints' windows gap or overlap by however late each run happened to start.
+    """
+    mocker.patch("data_tools.src.usage_metrics.utils.Session")
+    mocker.patch("data_tools.src.usage_metrics.utils.build_user_attribution_lookup", return_value={})
+    events_mock = mocker.patch("data_tools.src.usage_metrics.utils.aggregate_events", return_value={})
+    sign_ins_mock = mocker.patch("data_tools.src.usage_metrics.utils.aggregate_user_sign_ins", return_value=[])
+    mocker.patch("data_tools.src.usage_metrics.utils.upload_blob")
+    deliver_mock = mocker.patch("data_tools.src.usage_metrics.utils.deliver_report_link")
+    datetime_mock = mocker.patch("data_tools.src.usage_metrics.utils.datetime", wraps=datetime)
+    datetime_mock.now.return_value = datetime(2026, 9, 12, 0, 30, tzinfo=timezone.utc)
+
+    config = _schedule_config(
+        usage_metrics_storage_account_url="https://acct.blob.core.windows.net",
+        usage_metrics_lookback_days="14",
+    )
+    run_usage_metrics(MagicMock(), config)
+
+    on_time_slot = datetime(2026, 9, 11, 23, 50)
+    assert events_mock.call_args.args[3] == on_time_slot
+    assert sign_ins_mock.call_args.args[3] == on_time_slot
+    # The stated period agrees with the queried window: Sep 11 back 14 days inclusive.
+    assert deliver_mock.call_args.args[4:] == (date(2026, 8, 29), date(2026, 9, 11))
+
+
 # ---------------------------------------------------------------------------
 # Per-user sign-in aggregation and workbook.
 # ---------------------------------------------------------------------------
@@ -551,7 +680,14 @@ def test_deliver_report_link_sends_when_configured(mocker):
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config()
-    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+    deliver_report_link(
+        config,
+        "https://acct.blob.core.windows.net",
+        "data",
+        "reports/usage-metrics-2026-08-19.xlsx",
+        date(2026, 8, 6),
+        date(2026, 8, 19),
+    )
 
     # The storage key comes straight off the config (injected as a Container App secret), so there
     # is no Key Vault round trip at run time.
@@ -566,6 +702,9 @@ def test_deliver_report_link_sends_when_configured(mocker):
     assert args[2] == ["ux1@example.com", "ux2@example.com"]
     assert args[3] == build_sas.return_value
     assert args[4] == 90
+    # The reporting period is forwarded unchanged so the email states this sprint's date range.
+    assert args[5] == date(2026, 8, 6)
+    assert args[6] == date(2026, 8, 19)
 
 
 @pytest.mark.parametrize(
@@ -587,7 +726,14 @@ def test_deliver_report_link_noops_when_not_configured(mocker, overrides):
     send_email = mocker.patch("data_tools.src.usage_metrics.utils.send_report_link_email")
 
     config = _email_config(**overrides)
-    deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/usage-metrics-2026-08-19.xlsx")
+    deliver_report_link(
+        config,
+        "https://acct.blob.core.windows.net",
+        "data",
+        "reports/usage-metrics-2026-08-19.xlsx",
+        date(2026, 8, 6),
+        date(2026, 8, 19),
+    )
 
     # No link is minted either -- a half-configured environment must not produce a signed URL it
     # then fails to send.
@@ -602,7 +748,9 @@ def test_deliver_report_link_rejects_bad_expiry(mocker, bad_value):
 
     config = _email_config(usage_metrics_sas_expiry_days=bad_value)
     with pytest.raises(ValueError):
-        deliver_report_link(config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx")
+        deliver_report_link(
+            config, "https://acct.blob.core.windows.net", "data", "reports/x.xlsx", date(2026, 8, 6), date(2026, 8, 19)
+        )
 
 
 @pytest.mark.parametrize(
