@@ -54,7 +54,7 @@ import io
 import os
 import sys
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 import sqlalchemy
 from loguru import logger
@@ -160,6 +160,12 @@ FRIDAY = 4  # date.weekday(): Monday is 0
 # 23:50 UTC Friday cron is still attributed to that Friday. See ``effective_run_date``. Two hours
 # comfortably covers a cold start plus one replica retry while staying far short of the next day.
 RUN_DATE_GRACE = timedelta(hours=2)
+
+# The cron's scheduled UTC time of day (``50 23 * * 5``). The reporting window ends at this slot on
+# the run date rather than at the moment the job actually starts, so a delayed start counts exactly
+# the rows an on-time run would have -- no early-Saturday rows leak in, and consecutive sprints'
+# windows meet at the same instant with no gap or overlap however late either run starts.
+SCHEDULED_RUN_TIME = time(23, 50)
 
 
 def build_user_attribution_lookup(session: Session) -> dict[int, dict]:
@@ -273,13 +279,28 @@ AGGREGATE_EVENT_TYPES = frozenset(EVENT_TYPE_TO_METRIC) | ACTIVE_USER_EVENT_TYPE
 EVENT_STREAM_BATCH_SIZE = 1_000
 
 
+def report_window(lookback_days: int, window_end: datetime | None = None) -> tuple[datetime, datetime]:
+    """Return the half-open ``[start, end)`` naive-UTC ``created_on`` window to aggregate over.
+
+    ``window_end`` defaults to now. The scheduled run passes the cron slot on the run date (see
+    :data:`SCHEDULED_RUN_TIME`) so the window does not drift with the job's actual start time.
+    """
+    if window_end is None:
+        window_end = datetime.now(timezone.utc).replace(tzinfo=None)
+    return window_end - timedelta(days=lookback_days), window_end
+
+
 def aggregate_events(
-    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+    session: Session,
+    lookback_days: int,
+    user_lookup: dict[int, dict] | None = None,
+    window_end: datetime | None = None,
 ) -> dict[tuple[str, str, str], dict[str, int]]:
     """Aggregate ``ops_event`` rows into per-(date, division, role) count buckets.
 
-    Only rows created within the last ``lookback_days`` (a UTC-naive cutoff, matching the naive
-    ``created_on`` timestamps) and with ``event_status == SUCCESS`` are counted.
+    Only rows created within the ``lookback_days`` ending at ``window_end`` (a UTC-naive bound,
+    matching the naive ``created_on`` timestamps; defaults to now -- see :func:`report_window`) and
+    with ``event_status == SUCCESS`` are counted.
 
     ``user_lookup`` may be supplied by the caller so that a single attribution lookup is shared with
     :func:`aggregate_user_sign_ins` instead of each pass querying every user and division again.
@@ -296,20 +317,21 @@ def aggregate_events(
     viewed: dict[tuple[str, str, str], set[tuple[int, int]]] = defaultdict(set)
 
     # created_on is a naive TIMESTAMP written in the DB's (UTC) session tz, so compare against a
-    # naive-UTC cutoff. This scopes the scan to the reporting window instead of the whole table.
-    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+    # naive-UTC window. This scopes the scan to the reporting window instead of the whole table.
+    window_start, window_end = report_window(lookback_days, window_end)
     # Select only the four columns the loop reads, as a streamed Core result. Row objects expose the
     # same attribute names, so resolve_actor_id / is_deactivating_update work on them unchanged.
     stmt = (
         select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
         .where(
-            OpsEvent.created_on >= cutoff,
+            OpsEvent.created_on >= window_start,
+            OpsEvent.created_on < window_end,
             OpsEvent.event_status == OpsEventStatus.SUCCESS,
             OpsEvent.event_type.in_(AGGREGATE_EVENT_TYPES),
         )
         .execution_options(yield_per=EVENT_STREAM_BATCH_SIZE)
     )
-    logger.info(f"Aggregating successful ops_event row(s) since {cutoff.date().isoformat()}.")
+    logger.info(f"Aggregating successful ops_event row(s) from {window_start.isoformat()} to {window_end.isoformat()}.")
 
     seen = 0
     for event in session.execute(stmt):
@@ -347,12 +369,15 @@ def aggregate_events(
 
 
 def aggregate_user_sign_ins(
-    session: Session, lookback_days: int, user_lookup: dict[int, dict] | None = None
+    session: Session,
+    lookback_days: int,
+    user_lookup: dict[int, dict] | None = None,
+    window_end: datetime | None = None,
 ) -> list[dict]:
     """Aggregate successful sign-ins into one row per user for the "Per-user" sheet.
 
     A sign-in is a ``LOGIN_ATTEMPT`` row with ``event_status == SUCCESS`` inside the reporting
-    window (same UTC-naive cutoff and window as :func:`aggregate_events`). One completed login
+    window (same UTC-naive ``[start, end)`` window as :func:`aggregate_events`). One completed login
     (one ``/auth/login/`` POST) writes exactly one such row and creates one new ``UserSession``
     (the login flow always deactivates prior sessions and creates a fresh one), so counting these
     rows is a faithful count of sign-in sessions -- i.e. how many times the user had to sign in.
@@ -370,12 +395,13 @@ def aggregate_user_sign_ins(
     if user_lookup is None:
         user_lookup = build_user_attribution_lookup(session)
 
-    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+    window_start, window_end = report_window(lookback_days, window_end)
     # Column-only and streamed, for the same memory reasons as aggregate_events above.
     stmt = (
         select(OpsEvent.created_on, OpsEvent.event_type, OpsEvent.created_by, OpsEvent.event_details)
         .where(
-            OpsEvent.created_on >= cutoff,
+            OpsEvent.created_on >= window_start,
+            OpsEvent.created_on < window_end,
             OpsEvent.event_status == OpsEventStatus.SUCCESS,
             OpsEvent.event_type == OpsEventType.LOGIN_ATTEMPT,
         )
@@ -645,12 +671,16 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
     account_url = config.usage_metrics_storage_account_url
 
     lookback_days = parse_lookback_days(config.usage_metrics_lookback_days)
+    # Anchor the window to the cron slot, not to "now": a delayed start (within RUN_DATE_GRACE) must
+    # not pull early-Saturday rows into a report stated as ending Friday, nor open a gap/overlap
+    # against the neighbouring sprint's window.
+    window_end = datetime.combine(today_utc, SCHEDULED_RUN_TIME)
     with Session(conn) as session:
         # Built once and shared: both passes need the same user/division/role attribution, and it
         # loads every user with their roles eagerly, so doing it twice doubles that cost for nothing.
         user_lookup = build_user_attribution_lookup(session)
-        counts = aggregate_events(session, lookback_days, user_lookup)
-        user_rows = aggregate_user_sign_ins(session, lookback_days, user_lookup)
+        counts = aggregate_events(session, lookback_days, user_lookup, window_end)
+        user_rows = aggregate_user_sign_ins(session, lookback_days, user_lookup, window_end)
     logger.info(
         f"Aggregated into {len(counts):,} date x division x role row(s) and "
         f"{len(user_rows):,} per-user sign-in row(s)."
@@ -664,6 +694,8 @@ def run_usage_metrics(conn: sqlalchemy.engine.Engine, config: DataToolsConfig) -
 
     # The reporting window stated to recipients: the lookback window ends on today_utc (the
     # sprint-end Friday) and spans lookback_days, so it starts (lookback_days - 1) days earlier.
+    # The queried window is the cron slot to cron slot (window_end above), so the stated dates are
+    # accurate to within the cron's ten minutes before midnight at each end.
     period_end = today_utc
     period_start = today_utc - timedelta(days=lookback_days - 1)
 

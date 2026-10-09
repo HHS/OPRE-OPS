@@ -42,8 +42,13 @@ def parse_recipients(raw: str | None) -> list[str]:
 
 
 def _format_period(period_start: date, period_end: date) -> str:
-    """Render the reporting window as a human-readable date range, e.g. "Sep 26 - Oct 10, 2026"."""
-    return f"{period_start.strftime('%b %-d')} - {period_end.strftime('%b %-d, %Y')}"
+    """Render the reporting window as a human-readable date range, e.g. "Sep 26 - Oct 10, 2026".
+
+    The start date carries its own year only when the window spans a year boundary, so a window
+    like Dec 19 - Jan 1 reads "Dec 19, 2026 - Jan 1, 2027" rather than an ambiguous "Dec 19 - ...".
+    """
+    start_format = "%b %-d" if period_start.year == period_end.year else "%b %-d, %Y"
+    return f"{period_start.strftime(start_format)} - {period_end.strftime('%b %-d, %Y')}"
 
 
 def build_email_message(
@@ -65,16 +70,15 @@ def build_email_message(
     """
     subject = "Your OPS Usage Metrics Report Is Ready"
     period = _format_period(period_start, period_end)
+    sprint_end = period_end.strftime("%B %-d, %Y")
     plain_text = (
-        f"The OPS usage metrics report for the sprint ending {period_end.strftime('%B %-d, %Y')} "
-        f"({period}) is now available.\n\n"
+        f"The OPS usage metrics report for the sprint ending {sprint_end} ({period}) is now available.\n\n"
         f"Download the report (link expires in {expiry_days} days):\n{download_url}\n\n"
         "Please note that this report contains named user data. Do not forward this link.\n\n"
         "Thank you,\nOPS Reporting"
     )
     html = (
-        f"<p>The OPS usage metrics report for the sprint ending "
-        f"{period_end.strftime('%B %-d, %Y')} ({period}) is now available.</p>"
+        f"<p>The OPS usage metrics report for the sprint ending {sprint_end} ({period}) is now available.</p>"
         f'<p><a href="{download_url}">Download the report</a> '  # noqa: B907 (HTML attr, not a repr)
         f"(link expires in {expiry_days} days).</p>"
         "<p>Please note that this report contains named user data. Do not forward this link.</p>"

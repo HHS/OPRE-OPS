@@ -48,6 +48,15 @@ def test_build_email_message_shape_and_link():
     assert "named user data" in message["content"]["plainText"]
 
 
+def test_build_email_message_period_spanning_new_year_states_both_years():
+    """A window crossing Jan 1 must not render an ambiguous year-less start date."""
+    message = build_email_message(
+        "DoNotReply@example.com", ["ux@example.com"], DOWNLOAD_URL, 90, date(2026, 12, 19), date(2027, 1, 1)
+    )
+    for body in (message["content"]["plainText"], message["content"]["html"]):
+        assert "sprint ending January 1, 2027 (Dec 19, 2026 - Jan 1, 2027)" in body
+
+
 def test_send_report_link_email_uses_connection_string_and_sends(mocker):
     email_client_cls = mocker.patch("data_tools.src.usage_metrics.email_delivery.EmailClient")
     client = email_client_cls.from_connection_string.return_value

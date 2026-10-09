@@ -22,6 +22,7 @@ from data_tools.src.usage_metrics.utils import (
     is_sprint_end,
     parse_lookback_days,
     parse_sprint_anchor_date,
+    report_window,
     resolve_actor_id,
     run_usage_metrics,
     should_generate_report,
@@ -296,6 +297,30 @@ def test_events_outside_window_excluded(seeded_db):
     assert counts == {}
 
 
+def test_report_window_is_half_open_and_ends_at_window_end():
+    end = datetime(2026, 9, 11, 23, 50)
+    assert report_window(14, end) == (datetime(2026, 8, 28, 23, 50), end)
+
+
+def test_events_at_or_after_window_end_excluded(seeded_db):
+    """Rows newer than window_end (e.g. early Saturday on a delayed run) are not counted."""
+    db, _, day2 = seeded_db
+    # day1 events are 3 days old and the day2 deactivation 2 days old; ending the window between
+    # them keeps day1 and drops day2, even though day2 is well inside the lookback from "now".
+    window_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=2, hours=12)
+    counts = aggregate_events(db, LOOKBACK_DAYS, window_end=window_end)
+    assert sum(bucket["logins"] for bucket in counts.values()) == 1
+    assert all(key[0] != day2 for key in counts)
+    assert sum(bucket["deactivated_users"] for bucket in counts.values()) == 0
+
+
+def test_aggregate_user_sign_ins_excludes_rows_at_or_after_window_end(seeded_db):
+    db, _, _ = seeded_db
+    # The only successful login is 3 days old; a window ending before it excludes it.
+    window_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=3, hours=12)
+    assert aggregate_user_sign_ins(db, LOOKBACK_DAYS, window_end=window_end) == []
+
+
 def test_agreements_viewed_counts_distinct_user_agreement_pairs_per_day(seeded_db):
     """List GETs and repeat fetches must not inflate agreements_viewed (#4148 follow-up)."""
     db, day1_iso, day2_iso = seeded_db
@@ -495,6 +520,34 @@ def test_run_usage_metrics_skips_off_sprint_friday(mocker):
     assert run_usage_metrics(MagicMock(), config) is None
     upload_mock.assert_not_called()
     session_mock.assert_not_called()
+
+
+def test_run_usage_metrics_delayed_start_queries_the_on_time_window(mocker):
+    """A start 40 min past midnight still ends the window at the Friday 23:50 cron slot, not "now".
+
+    Otherwise early-Saturday rows land in a report stated as ending Friday, and the neighbouring
+    sprints' windows gap or overlap by however late each run happened to start.
+    """
+    mocker.patch("data_tools.src.usage_metrics.utils.Session")
+    mocker.patch("data_tools.src.usage_metrics.utils.build_user_attribution_lookup", return_value={})
+    events_mock = mocker.patch("data_tools.src.usage_metrics.utils.aggregate_events", return_value={})
+    sign_ins_mock = mocker.patch("data_tools.src.usage_metrics.utils.aggregate_user_sign_ins", return_value=[])
+    mocker.patch("data_tools.src.usage_metrics.utils.upload_blob")
+    deliver_mock = mocker.patch("data_tools.src.usage_metrics.utils.deliver_report_link")
+    datetime_mock = mocker.patch("data_tools.src.usage_metrics.utils.datetime", wraps=datetime)
+    datetime_mock.now.return_value = datetime(2026, 9, 12, 0, 30, tzinfo=timezone.utc)
+
+    config = _schedule_config(
+        usage_metrics_storage_account_url="https://acct.blob.core.windows.net",
+        usage_metrics_lookback_days="14",
+    )
+    run_usage_metrics(MagicMock(), config)
+
+    on_time_slot = datetime(2026, 9, 11, 23, 50)
+    assert events_mock.call_args.args[3] == on_time_slot
+    assert sign_ins_mock.call_args.args[3] == on_time_slot
+    # The stated period agrees with the queried window: Sep 11 back 14 days inclusive.
+    assert deliver_mock.call_args.args[4:] == (date(2026, 8, 29), date(2026, 9, 11))
 
 
 # ---------------------------------------------------------------------------
