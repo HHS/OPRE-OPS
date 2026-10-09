@@ -36,46 +36,48 @@ function Login() {
     return (
         <div className="bg-ops-shell">
             <div className="usa-overlay"></div>
-            <header className="usa-header usa-header--extended">
-                <div className="usa-navbar padding-top-105 padding-bottom-2 bg-white border-bottom border-base-lighter">
-                    <div
-                        className="usa-logo"
-                        style={styles.logo}
-                        id="logo"
-                    >
-                        <Link
-                            to="/"
-                            style={styles.textLogo}
-                            title="Portfolio Management System"
+            <div>
+                <header className="usa-header usa-header--extended">
+                    <div className="usa-navbar padding-top-105 padding-bottom-2 bg-white border-bottom border-base-lighter">
+                        <div
+                            className="usa-logo"
+                            style={styles.logo}
+                            id="logo"
                         >
-                            <img
-                                src={logo}
-                                alt="OPRE Logo"
-                            />
-                            <span className="font-sans-sm text-bold">&nbsp;Portfolio Management System</span>
-                        </Link>
+                            <Link
+                                to="/"
+                                style={styles.textLogo}
+                                title="Portfolio Management System"
+                            >
+                                <img
+                                    src={logo}
+                                    alt="OPRE Logo"
+                                />
+                                <span className="font-sans-sm text-bold">&nbsp;Portfolio Management System</span>
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <div style={styles.alertContainer}>
-                <div
-                    className="grid-container"
-                    style={{ width: "100%" }}
-                >
-                    <SimpleAlert
-                        type="error"
-                        heading="Sign-In Failed"
-                        isClosable={true}
-                        isAlertVisible={loginError.hasError}
-                        setIsAlertVisible={() => {
-                            dispatch(setLoginError({ hasError: false, loginErrorType: null }));
-                        }}
-                        message={
-                            authConstants.loginErrorMessages[loginError?.loginErrorType] ||
-                            authConstants.loginErrorMessages.UNKNOWN_ERROR
-                        }
-                    />
+                <div style={styles.alertContainer}>
+                    <div
+                        className="grid-container"
+                        style={{ width: "100%" }}
+                    >
+                        <SimpleAlert
+                            type="error"
+                            heading="Sign-In Failed"
+                            isClosable={true}
+                            isAlertVisible={loginError.hasError}
+                            setIsAlertVisible={() => {
+                                dispatch(setLoginError({ hasError: false, loginErrorType: null }));
+                            }}
+                            message={
+                                authConstants.loginErrorMessages[loginError?.loginErrorType] ||
+                                authConstants.loginErrorMessages.UNKNOWN_ERROR
+                            }
+                        />
+                    </div>
                 </div>
             </div>
 
