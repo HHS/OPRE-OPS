@@ -47,8 +47,7 @@ Trigger phrases:
 ### 1. Determine the Date Range
 
 Default to the **last 2 weeks** from today. Allow overrides:
-- "latest" / "what shipped recently" → last 14 days ending today
-- "last sprint" / "last 2 weeks" → previous 14-day window
+- "latest" / "what shipped recently" / "last sprint" / "last 2 weeks" → all mean the same thing: last 14 days ending today
 - A specific date → 14 days ending on that date
 - A specific range → use the provided range as-is
 
@@ -202,13 +201,13 @@ git fetch origin main
 git checkout -b docs/updated-release-notes-sprint-{number} origin/main
 ```
 
-Before committing, run this repo's mandated frontend pre-commit checks proactively (per the root `CLAUDE.md` Pre-Commit Workflow) rather than relying only on the hooks to catch problems reactively:
+Before committing, run this repo's mandated frontend pre-commit checks proactively (per the root `CLAUDE.md` Pre-Commit Workflow) rather than relying only on the hooks to catch problems reactively. Run it as a subshell — the parentheses matter: Claude Code's shell keeps its working directory between separate commands, so a bare `cd frontend && ...` would leave later repo-root-relative paths (like `git add frontend/...`) resolving incorrectly.
 
 ```bash
-cd frontend && bun run format && bun run lint --fix
+(cd frontend && bun run format && bun run lint --fix)
 ```
 
-Then stage and commit:
+Then stage and commit, from the repo root:
 
 ```bash
 git add frontend/src/pages/home/release-notes/data.js frontend/src/pages/home/roadmapData.json
@@ -217,10 +216,10 @@ git push origin docs/updated-release-notes-sprint-{number}
 ```
 
 Don't reach for `--no-verify` by default. `roadmapData.json` is plain JSON and gets checked by this repo's `check json` and `prettier` hooks specifically to catch exactly the kind of mistake a quick manual edit can introduce (malformed JSON, inconsistent indentation). If a hook fails:
-- `prettier`/`check json` failing almost always means the JSON needs a formatting fix — run `cd frontend && bun run format` **and then `git add` the reformatted files again** before re-committing. Re-running the commit without re-staging will just check the same stale, unformatted snapshot and fail again.
+- `prettier`/`check json` failing almost always means the JSON needs a formatting fix — run `(cd frontend && bun run format)` **and then `git add` the reformatted files again, from the repo root** before re-committing. Re-running the commit without re-staging will just check the same stale, unformatted snapshot and fail again.
 - Only use `--no-verify` if an unrelated hook (e.g. a flaky secret scanner) is blocking an otherwise-correct commit, and say so when you do.
 
-Once the branch is pushed, use this repo's `create-pr` skill to open the PR — it populates the full `.github/pull_request_template.md` (What changed, Issue, How to test, A11y impact, Definition of Done, etc.) instead of a bare one-line body. Don't call `gh pr create` directly with just a title and short body.
+Once the branch is pushed, **don't call `gh pr create` yourself** with just a title and short body — that skips the repo's PR template. This repo's `create-pr` skill populates the full `.github/pull_request_template.md` (What changed, Issue, How to test, A11y impact, Definition of Done, etc.) for exactly this, but it has `disable-model-invocation: true`, meaning you can't invoke it on your own — only the user can trigger it, by typing `/create-pr`. So instead, tell the user the branch is pushed and ask them to run `/create-pr` themselves to open it with the full template.
 
 ### 10. Offer to Preview
 
