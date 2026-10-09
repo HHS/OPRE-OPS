@@ -7,9 +7,7 @@ export default {
         layout: "fullscreen",
         docs: {
             description: {
-                component:
-                    'Site-wide footer with a "Return to top" button, agency information, and ' +
-                    "the HHS/OPRE identifier section."
+                component: 'Site-wide footer with a "Return to top" button and the HHS/OPRE identifier section.'
             }
         }
     }

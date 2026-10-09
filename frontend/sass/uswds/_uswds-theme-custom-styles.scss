@@ -21,3 +21,64 @@ i.e.
 */
 
 @use "uswds-core" as *;
+
+// OPS-6327: app shell background (DefaultLayout + Login outer wrapper only),
+// scoped so it doesn't recolor the ~20 unrelated bg-base-lightest usages
+// (nav dropdown, cards, hover states) elsewhere in the app.
+//
+// Also a sticky footer: on pages shorter than the viewport, the shell
+// previously just sat at its natural (short) height, leaving a plain white
+// gap below the footer instead of the footer anchoring to the bottom of
+// the screen.
+.bg-ops-shell {
+    background-color: #f2f7fc;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+// width: 100% makes the cross-axis size explicit instead of relying on the
+// flex default (align-items: stretch) to resolve it — without it, <main>
+// can briefly render at a content-driven width during initial layout
+// (visible as a flash of a narrower centered box on page load) before
+// settling into its final max-width-constrained size.
+.bg-ops-shell > main {
+    flex: 1 0 auto;
+    width: 100%;
+}
+
+// OPS-6327: USWDS's extended header draws the nav's border-top across the
+// full-width <nav>, including the app-shell gutters on either side of the
+// centered content. Figma only shows the line under the centered content,
+// so cancel it here and re-add it on .usa-nav__inner (which is already
+// width-constrained) via utility classes in Header.jsx.
+//
+// Compounded as `.usa-header.usa-header--extended` (0,3,0) rather than just
+// `.usa-header--extended` (0,2,0) so this deterministically outranks
+// USWDS's native `.usa-header--extended .usa-nav` rule (0,2,0) on
+// specificity alone — safe because every header in this app always carries
+// both classes together (grep `usa-header--extended` under src/ to confirm).
+// An earlier version of this rule relied on `@forward` source order instead
+// (tied specificity, later partial wins) — fragile to a future reorder or
+// USWDS version bump; compounding removes that dependency entirely.
+.usa-header.usa-header--extended .usa-nav {
+    border-top: none;
+}
+
+// OPS-6327: USWDS also auto-adds a border-top to whatever immediately
+// follows a usa-header--extended (here, <main>), drawing a second divider
+// line below the nav row. Figma's header has no line there at all, so make
+// it transparent rather than removing it outright — a zero-width border
+// doesn't contain margin collapsing, so <main>'s first child's top margin
+// (e.g. the page <h1>'s margin-top-4) would collapse through <main> and
+// push its white background down, exposing .bg-ops-shell behind it.
+//
+// Compounded as `.usa-header.usa-header--extended + main` (0,2,1) for the
+// same deterministic-specificity reason as the .usa-nav rule above — beats
+// USWDS's native `.usa-header + main` (0,1,1) outright. (USWDS also has a
+// `.usa-header + .usa-section` variant of this rule, uncovered by this
+// override — currently unused since no page renders a <section> as the
+// header's direct next sibling, but worth knowing if one ever does.)
+.usa-header.usa-header--extended + main {
+    border-top: 1px solid transparent;
+}
