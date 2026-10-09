@@ -1,6 +1,6 @@
 from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
-from werkzeug.exceptions import BadRequest, Forbidden, NotFound
+from werkzeug.exceptions import BadRequest, Forbidden, MethodNotAllowed, NotFound
 
 from ops_api.ops.auth.auth_types import (
     LoginErrorResponse,
@@ -68,6 +68,13 @@ def register_error_handlers(app):  # noqa: C901
         Handle exception when the user is not authorized to access the resource.
         """
         return make_response_with_headers({}, 403)
+
+    @app.errorhandler(MethodNotAllowed)
+    def handle_exception_method_not_allowed(e):
+        """
+        Handle exception when the HTTP method is not allowed for the requested URL.
+        """
+        return make_response_with_headers({}, 405)
 
     @app.errorhandler(BadRequest)
     def handle_exception_bad_request(e):

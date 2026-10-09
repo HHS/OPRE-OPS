@@ -48,6 +48,7 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import (
+    BudgetLineItemsBatchAPI,
     BudgetLineItemsItemAPI,
     BudgetLineItemsListAPI,
     BudgetLineItemsListFilterOptionAPI,
@@ -182,6 +183,7 @@ CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history", CANHis
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC = BudgetLineItemsBatchAPI.as_view("budget-line-items-batch", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC = BudgetLineItemsListFilterOptionAPI.as_view(
     "budget-line-items-filters", BudgetLineItem
 )
