@@ -39,6 +39,23 @@ Read the full diff carefully. You need to understand every change to write an ac
 
 Write a concise summary of what the PR does at a high level — the kind of thing a reviewer reads to orient themselves before looking at code. Follow with a breakdown by file or area, using bold filenames or directory names as headers. Focus on *what* changed and *why*, not line-by-line narration.
 
+### Decisions reviewers may ask about (optional)
+
+Add this section, right after "What changed", **only when the PR makes choices a reviewer — human or agent — could reasonably question**. Skip it for straightforward PRs; an empty or padded section is worse than none.
+
+Good candidates:
+
+- An approach chosen over a plausible alternative (and why the alternative lost).
+- Something deliberately left alone, or deliberately not tested, that a reviewer might flag as a gap.
+- A non-obvious technical constraint that explains odd-looking code (e.g. a migration quirk).
+- A deviation from a convention or from what the ticket literally says.
+- A rollout or deploy-ordering risk, or an irreversible step.
+- Out-of-scope follow-ups you noticed but did not do.
+
+Format: one bullet per decision, the likely question in bold, then the answer with the reason. Keep each to one or two sentences, and don't restate the diff — every bullet should be something that could draw a review comment. Check each claim against the code before writing it down; a wrong rationale in the PR is worse than none.
+
+This is a public repo: don't name real users, user IDs, or production infrastructure resources in this section.
+
 ### Issue
 
 Extract the ticket number from the branch name (the project convention is `OPS-NNNN/description`). Format it as a link:
@@ -86,7 +103,7 @@ Before creating the PR:
 1. Check if the branch has been pushed to the remote. If not, push it with `git push -u origin HEAD`.
 2. Confirm with the user: show them the title and a summary of what the PR body will contain. Ask "Ready to create?" before running `gh pr create`.
 
-Use a HEREDOC for the body to preserve formatting:
+Use a HEREDOC for the body to preserve formatting. If you are including the optional decisions section, add `## Decisions reviewers may ask about` between `What changed` and `Issue`:
 
 ```bash
 gh pr create --title "the pr title" --body "$(cat <<'EOF'
