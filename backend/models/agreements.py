@@ -751,6 +751,7 @@ class GrantAgreement(Agreement):
     nofo_number: Mapped[Optional[str]] = mapped_column(String)
     aln_numbers: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String))
     funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
+    awarded_grant_number: Mapped[Optional[str]] = mapped_column(String)
 
     grant_numbers: Mapped[list["GrantNumber"]] = relationship(
         "GrantNumber",

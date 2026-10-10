@@ -134,6 +134,13 @@ class TestAgreementRequestSchemaPagination:
         result_max = schema.load(data_max)
         assert result_max["limit"] == [50]
 
+    def test_schema_accepts_odn_filter(self):
+        """Test that AgreementRequestSchema accepts the odn (OPS-6308 ODN lookup) filter param."""
+        schema = AgreementRequestSchema()
+        data = {"odn": ["ODN-PO-0001"]}
+        result = schema.load(data)
+        assert result["odn"] == ["ODN-PO-0001"]
+
     def test_schema_with_other_filter_parameters(self):
         """Test that pagination works alongside other filter parameters."""
         schema = AgreementRequestSchema()
@@ -342,6 +349,25 @@ class TestAgreementDataNestedFields:
         assert none_result["nofo_number"] is None
         assert none_result["aln_numbers"] is None
         assert none_result["funding_period_months"] is None
+
+    def test_grant_agreement_data_has_awarded_grant_number_field(self):
+        """Test that GrantAgreementData exposes awarded_grant_number (OPS-6308 ODN lookup)."""
+        schema = GrantAgreementData()
+        assert "awarded_grant_number" in schema.fields
+        assert schema.fields["awarded_grant_number"].allow_none is True
+
+    def test_grant_agreement_data_loads_awarded_grant_number(self):
+        schema = GrantAgreementData()
+        data = {"name": "Test Grant", "agreement_type": "GRANT", "awarded_grant_number": "GRANT-2026-01"}
+        result = schema.load(data)
+        assert result["awarded_grant_number"] == "GRANT-2026-01"
+
+        none_result = schema.load({"name": "Test Grant", "agreement_type": "GRANT", "awarded_grant_number": None})
+        assert none_result["awarded_grant_number"] is None
+
+    def test_grant_agreement_response_has_awarded_grant_number_field(self):
+        assert "awarded_grant_number" in GrantAgreementResponse().fields
+        assert "awarded_grant_number" in GrantListAgreementResponse().fields
 
     def test_grant_agreement_data_rejects_invalid_funding_period_months(self):
         """Test that GrantAgreementData only allows 12 or 18 for funding_period_months."""

@@ -1704,6 +1704,58 @@ class TestGetAllMatchingIds:
         ids = _get_all_matching_ids(loaded_db, [ContractAgreement], {}, service)
         assert all(isinstance(i, int) for i in ids)
 
+    def test_odn_filter_matches_contract_po_number(self, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - Service ODN",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="SERVICE-ODN-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        service = AgreementsService(loaded_db)
+        ids = _get_all_matching_ids(
+            loaded_db,
+            [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement],
+            {"odn": ["service-odn-0001"]},
+            service,
+        )
+        assert ids == [contract.id]
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_filter_excludes_iaa_and_direct(self, loaded_db, app_ctx):
+        """IAA and Direct Obligation agreements have no ODN-equivalent column and must be
+        positively excluded from the odn filter, not merely left unfiltered."""
+        shared_value = "SERVICE-ODN-EXCLUDE"
+        from models import IAADirectionType
+
+        iaa = IaaAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.IAA,
+            direction=IAADirectionType.INCOMING,
+        )
+        direct = DirectAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.DIRECT_OBLIGATION,
+        )
+        loaded_db.add_all([iaa, direct])
+        loaded_db.commit()
+
+        service = AgreementsService(loaded_db)
+        ids = _get_all_matching_ids(
+            loaded_db,
+            [ContractAgreement, GrantAgreement, IaaAgreement, DirectAgreement, AaAgreement],
+            {"odn": [shared_value]},
+            service,
+        )
+        assert ids == []
+
+        loaded_db.delete(iaa)
+        loaded_db.delete(direct)
+        loaded_db.commit()
+
 
 class TestGetPageAgreements:
     """Tests for _get_page_agreements."""

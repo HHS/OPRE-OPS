@@ -98,6 +98,7 @@ export const opsApi = createApi({
                     portfolio,
                     agreementName,
                     nickName,
+                    odn,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -133,6 +134,9 @@ export const opsApi = createApi({
                 }
                 if (nickName) {
                     nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
+                }
+                if (odn) {
+                    odn.forEach((value) => queryParams.push(`odn=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
