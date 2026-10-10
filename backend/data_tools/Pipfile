@@ -43,7 +43,7 @@ pytest-xdist = "==3.8.0"
 filelock = "==4.0.12"
 ipython = "==9.17.1"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
-black = {extras = ["d"], version = "==26.10.0"}
+black = {extras = ["d"], version = "==26.10.1"}
 isort = "==9.0.2"
 
 [requires]
