@@ -5,11 +5,13 @@ import pytest
 
 from data_tools.src.disable_users.disable_users import (
     disable_user,
+    get_deactivation_date,
     get_ids_from_oidc_ids,
     send_disable_notifications,
+    send_inactivity_warnings,
     update_disabled_users_status,
 )
-from models import Division, OpsEventStatus, OpsEventType, User, UserStatus
+from models import Division, OpsEventStatus, OpsEventType, User, UserSession, UserStatus
 
 system_admin_id = 111
 
@@ -279,7 +281,7 @@ def test_disables_users_then_calls_send_disable_notifications_keeps_stale_admin_
 def test_update_disabled_users_status_skips_null_updated_on_without_crashing(mock_session, mocker):
     # updated_on is nullable (Mapped[Optional[datetime]]) -- a user whose updated_on was never
     # set by an ORM insert (e.g. rows inserted via raw SQL/bulk import) must not crash the
-    # staleness scan. Previously `user.updated_on < cutoff_date` raised TypeError on None,
+    # staleness scan. Previously comparing a None updated_on to the cutoff raised TypeError,
     # aborting the whole for-loop and leaving every other user in this run unprocessed.
     null_updated_on_user = _make_stale_user(1, "null.updated.on@example.gov")
     null_updated_on_user.updated_on = None
@@ -442,3 +444,216 @@ def test_send_disable_notifications_continues_after_one_individual_send_fails_th
         send_disable_notifications(email_client, "DoNotReply@example.com", disabled_user_details, ["admin@example.gov"])
 
     assert mock_send_disabled_user_email.call_count == 2
+
+
+UPDATED_ON = datetime(2026, 8, 1, 9, 30)
+
+
+@pytest.mark.parametrize(
+    "updated_on, last_active_at, expected",
+    [
+        (None, None, None),
+        (UPDATED_ON, None, UPDATED_ON + timedelta(days=60)),
+        (UPDATED_ON, UPDATED_ON + timedelta(days=3), UPDATED_ON + timedelta(days=63)),
+        (UPDATED_ON, UPDATED_ON - timedelta(days=3), UPDATED_ON + timedelta(days=60)),
+    ],
+    ids=["null-updated-on", "never-logged-in", "session-newer", "session-older"],
+)
+def test_get_deactivation_date(updated_on, last_active_at, expected):
+    user = User(updated_on=updated_on)
+    latest_session = None if last_active_at is None else UserSession(last_active_at=last_active_at)
+
+    assert get_deactivation_date(user, latest_session) == expected
+
+
+RUN_13 = datetime(2026, 10, 8, 13, 0, 5)  # the 13:00 UTC run, with 5s of start-up jitter
+RUN_HOUR_13 = datetime(2026, 10, 8, 13, 0, 0)
+IN_WINDOW_DEADLINE = RUN_HOUR_13 + timedelta(days=5)
+
+
+def _make_user_with_deadline(user_id, email, deadline):
+    """A never-logged-in user (get_latest_user_session is patched to None) whose deactivation
+    deadline is ``deadline``."""
+    user = _make_stale_user(user_id, email)
+    user.updated_on = deadline - timedelta(days=60)
+    return user
+
+
+def _patch_job(mock_session, mocker, users, excluded_ids=()):
+    """Patch everything update_disabled_users_status touches except the scan itself, and return
+    the disable_user and send_inactivity_warnings mocks."""
+    mocker.patch("data_tools.src.disable_users.disable_users.Session", return_value=_session_returning(mock_session))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=None)
+    mocker.patch("data_tools.src.disable_users.disable_users.get_ids_from_oidc_ids", return_value=list(excluded_ids))
+    mocker.patch("data_tools.src.disable_users.disable_users.get_active_user_admins", return_value=[])
+    mocker.patch("data_tools.src.disable_users.disable_users.send_disable_notifications")
+    mocker.patch("data_tools.src.disable_users.disable_users.EmailClient")
+    mock_session.execute.side_effect = _execute_results(users, [])
+    mock_disable_user = mocker.patch("data_tools.src.disable_users.disable_users.disable_user")
+    mock_send_inactivity_warnings = mocker.patch("data_tools.src.disable_users.disable_users.send_inactivity_warnings")
+    return mock_disable_user, mock_send_inactivity_warnings
+
+
+def _warning_config():
+    return MagicMock(environment_label="Staging", frontend_url="https://stg.example.gov/")
+
+
+@pytest.mark.parametrize(
+    "now, deadline, expect_disabled",
+    [
+        # At 13:00:00 sharp a deadline of exactly now is 0 days out: not yet past, not in the window.
+        (RUN_HOUR_13, RUN_HOUR_13, False),
+        # 1us past is disabled -- and, although 13:00:05 jitter would put it at days_remaining=1,
+        # it must not also be warned: the disable and warning sets are disjoint.
+        (RUN_13, RUN_13 - timedelta(microseconds=1), True),
+    ],
+    ids=["deadline-exactly-now-neither-disabled-nor-warned", "deadline-just-past"],
+)
+def test_disable_boundary(mock_session, mocker, now, deadline, expect_disabled):
+    user = _make_user_with_deadline(1, "user@example.gov", deadline)
+    mock_disable_user, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [user])
+
+    update_disabled_users_status(mock_session, _warning_config(), now=now)
+
+    assert mock_disable_user.called is expect_disabled
+    mock_send_inactivity_warnings.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "now, deadline, expected_days_remaining",
+    [
+        (RUN_13, RUN_HOUR_13 + timedelta(days=7), 7),
+        (RUN_13, RUN_HOUR_13 + timedelta(days=7, microseconds=1), None),
+        (RUN_13, RUN_HOUR_13 + timedelta(days=1), 1),
+        # Counted from the floored run hour, not the jittered start time: 3 days 00:00:03 from
+        # 13:00:00 rounds up to 4, where 2 days 23:59:58 from 13:00:05 would give 3.
+        (RUN_13, datetime(2026, 10, 8, 13, 0, 3) + timedelta(days=3), 4),
+        (datetime(2026, 10, 8, 14, 0, 0), IN_WINDOW_DEADLINE, None),
+    ],
+    ids=["7-days", "just-over-7-days", "1-day", "floored-to-run-hour", "not-the-13-utc-run"],
+)
+def test_inactivity_warning_selection(mock_session, mocker, now, deadline, expected_days_remaining):
+    user = _make_user_with_deadline(1, "user@example.gov", deadline)
+    mock_disable_user, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [user])
+    config = _warning_config()
+
+    update_disabled_users_status(mock_session, config, now=now)
+
+    mock_disable_user.assert_not_called()
+    if expected_days_remaining is None:
+        mock_send_inactivity_warnings.assert_not_called()
+    else:
+        # Sent even though nobody was disabled this run (no early return before the warnings).
+        mock_send_inactivity_warnings.assert_called_once_with(
+            mocker.ANY,
+            config.email_sender_address,
+            [{"email": "user@example.gov", "days_remaining": expected_days_remaining}],
+            "Staging",
+            "https://stg.example.gov/",
+        )
+
+
+@pytest.mark.parametrize(
+    "status, excluded_ids, environment_label",
+    [
+        (UserStatus.ACTIVE, [1], "Staging"),
+        (UserStatus.INACTIVE, [], "Staging"),
+        (UserStatus.ACTIVE, [], None),
+    ],
+    ids=["excluded-oidc-user", "non-active-user", "no-environment-label"],
+)
+def test_inactivity_warning_not_sent(mock_session, mocker, status, excluded_ids, environment_label):
+    user = _make_user_with_deadline(1, "user@example.gov", IN_WINDOW_DEADLINE)
+    user.status = status
+    _, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [user], excluded_ids=excluded_ids)
+    config = MagicMock(environment_label=environment_label)
+
+    update_disabled_users_status(mock_session, config, now=RUN_13)
+
+    mock_send_inactivity_warnings.assert_not_called()
+
+
+def test_disables_and_warns_in_the_same_run(mock_session, mocker):
+    stale_user = _make_user_with_deadline(1, "stale.user@example.gov", RUN_HOUR_13 - timedelta(days=1))
+    at_risk_user = _make_user_with_deadline(2, "at.risk.user@example.gov", IN_WINDOW_DEADLINE)
+    mock_disable_user, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [stale_user, at_risk_user])
+    config = _warning_config()
+
+    update_disabled_users_status(mock_session, config, now=RUN_13)
+
+    mock_disable_user.assert_called_once_with(mock_session, 1, system_admin_id)
+    mock_send_inactivity_warnings.assert_called_once_with(
+        mocker.ANY,
+        config.email_sender_address,
+        [{"email": "at.risk.user@example.gov", "days_remaining": 5}],
+        "Staging",
+        "https://stg.example.gov/",
+    )
+
+
+def test_recent_session_postpones_disable_and_drives_warning(mock_session, mocker):
+    user = _make_user_with_deadline(1, "user@example.gov", RUN_HOUR_13 - timedelta(days=1))
+    mock_disable_user, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [user])
+    # The newer session, not the stale updated_on, is what keeps this user active.
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_latest_user_session",
+        return_value=UserSession(last_active_at=IN_WINDOW_DEADLINE - timedelta(days=60)),
+    )
+
+    update_disabled_users_status(mock_session, _warning_config(), now=RUN_13)
+
+    mock_disable_user.assert_not_called()
+    mock_send_inactivity_warnings.assert_called_once()
+    assert mock_send_inactivity_warnings.call_args[0][2] == [{"email": "user@example.gov", "days_remaining": 5}]
+
+
+def test_update_disabled_users_status_fails_fast_when_acs_unset_in_remote_with_only_warnings(mock_session, mocker):
+    # Warnings are stateless -- one missed at 13:00 is never re-sent -- so a remote environment with
+    # pending warnings and no ACS wiring must fail loudly rather than skip them.
+    user = _make_user_with_deadline(1, "user@example.gov", IN_WINDOW_DEADLINE)
+    _, mock_send_inactivity_warnings = _patch_job(mock_session, mocker, [user])
+    config = MagicMock(is_remote=True, acs_connection_string=None, environment_label="Production")
+
+    with pytest.raises(ValueError, match="ACS email is not configured"):
+        update_disabled_users_status(mock_session, config, now=RUN_13)
+
+    mock_send_inactivity_warnings.assert_not_called()
+
+
+def test_send_inactivity_warnings_does_not_raise_when_every_send_succeeds(mocker):
+    mock_send_inactivity_warning_email = mocker.patch(
+        "data_tools.src.disable_users.disable_users.send_inactivity_warning_email"
+    )
+
+    send_inactivity_warnings(
+        MagicMock(),
+        "DoNotReply@example.com",
+        [{"email": "a@example.gov", "days_remaining": 7}],
+        "Production",
+        "https://ops.example.gov/",
+    )
+
+    mock_send_inactivity_warning_email.assert_called_once()
+
+
+def test_send_inactivity_warnings_continues_after_one_send_fails_then_raises(mocker):
+    mock_send_inactivity_warning_email = mocker.patch(
+        "data_tools.src.disable_users.disable_users.send_inactivity_warning_email",
+        side_effect=[Exception("ACS rejected recipient"), None],
+    )
+    email_client = MagicMock()
+    warnings = [{"email": "a@example.gov", "days_remaining": 7}, {"email": "b@example.gov", "days_remaining": 3}]
+
+    with pytest.raises(RuntimeError, match="a@example.gov"):
+        send_inactivity_warnings(
+            email_client, "DoNotReply@example.com", warnings, "Production", "https://ops.example.gov/"
+        )
+
+    assert mock_send_inactivity_warning_email.call_count == 2
+    mock_send_inactivity_warning_email.assert_called_with(
+        email_client, "DoNotReply@example.com", "b@example.gov", 3, "Production", "https://ops.example.gov/"
+    )

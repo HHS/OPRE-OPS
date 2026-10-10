@@ -85,6 +85,26 @@ class DataToolsConfig(Protocol):
 
     @property
     @abstractmethod
+    def environment_label(self) -> str | None:
+        """
+        Returns the human-readable name of the deployed OPS environment this job serves, e.g.
+        "Staging" or "Production", for use in user-facing email. Returns None when the environment
+        does not send environment-specific user email (dev, local, pytest).
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def frontend_url(self) -> str | None:
+        """
+        Returns the base URL of the OPS frontend for the environment this job serves, e.g.
+        "https://ops.opre.acf.gov/", for links in user-facing email. Returns None when the
+        environment does not send environment-specific user email (dev, local, pytest).
+        """
+        ...
+
+    @property
+    @abstractmethod
     def file_storage_account_key(self) -> str | None:
         """
         Returns the storage account access key used to sign time-limited SAS download links for
