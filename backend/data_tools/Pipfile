@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 SQLAlchemy = "==2.0.54"
 pandas = "==3.0.6"
-json5 = "==0.15.0"
+json5 = "==0.16.0"
 psycopg2-binary = "==2.9.13"
 cfenv = "==0.5.3"
 typing-extensions = "==4.16.0"
