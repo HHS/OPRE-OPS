@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ff7562954eba64ddfa35a0e8cdf97de91dab53ea027b7e1570fbc0e36f7d3ee1"
+            "sha256": "129620b8f4d844e9b145a6694437ad8771cdf1c7be903cf46193c6d860eff815"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1076,12 +1076,12 @@
         },
         "json5": {
             "hashes": [
-                "sha256:56636a30c0e8a4665fe2179c0212f32eae3796dea89ea6f649b9436ecdb39618",
-                "sha256:7424d1f1eb1d56da6e3d70643f53619862b4ce81440bdb8ecfd6f875e5ba4a71"
+                "sha256:8b135a77b231f22e3656c601fec7621c5354c64c4fb2773715ee0814e4dc6bf7",
+                "sha256:ab703e0d2e565ecff92b4d3525159108911db47e1becc3903a9433d4d504505a"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.8.0'",
-            "version": "==0.15.0"
+            "version": "==0.16.0"
         },
         "loguru": {
             "hashes": [
