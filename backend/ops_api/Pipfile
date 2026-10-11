@@ -27,11 +27,11 @@ deepdiff = "==9.1.0"
 urllib3 = "==2.8.0"
 
 [dev-packages]
-black = {extras = ["d"], version = "==26.10.0"}
+black = {extras = ["d"], version = "==26.10.1"}
 flake8 = "==7.4.1"
 isort = "==9.0.2"
 nox = "==2026.8.17"
-numpy = "==2.5.3"
+numpy = "==2.5.4"
 pytest = "==9.1.1"
 pytest-bdd = "==9.0.0"
 pytest-cov = "==7.1.0"
