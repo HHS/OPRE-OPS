@@ -36,6 +36,13 @@ const deleteAgreement = (agreementId) => {
     });
 };
 
+// The lookup is a secondary action next to Export/Filters, not a persistent search bar — the
+// input only exists once this modal trigger is opened.
+const openOdnLookup = () => {
+    cy.get('[data-cy="agreement-odn-lookup-trigger"]').click();
+    cy.get("#agreement-odn-lookup-input").should("be.visible");
+};
+
 describe("Agreements List - Find by ODN", () => {
     let createdAgreementIds;
 
@@ -66,6 +73,7 @@ describe("Agreements List - Find by ODN", () => {
             cy.visit("/agreements");
             cy.get("#fiscal-year-select").select("All");
 
+            openOdnLookup();
             cy.get("#agreement-odn-lookup-input").type(testAgreement.po_number);
             cy.get('[data-cy="agreement-odn-lookup-submit"]').click();
 
@@ -77,6 +85,7 @@ describe("Agreements List - Find by ODN", () => {
         cy.visit("/agreements");
         cy.get("#fiscal-year-select").select("All");
 
+        openOdnLookup();
         cy.get("#agreement-odn-lookup-input").type("ODN-DOES-NOT-EXIST-E2E");
         cy.get('[data-cy="agreement-odn-lookup-submit"]').click();
 
@@ -105,6 +114,7 @@ describe("Agreements List - Find by ODN", () => {
                 cy.visit("/agreements");
                 cy.get("#fiscal-year-select").select("All");
 
+                openOdnLookup();
                 cy.get("#agreement-odn-lookup-input").type(sharedOdn);
                 cy.get('[data-cy="agreement-odn-lookup-submit"]').click();
 

@@ -9,6 +9,7 @@ import { useEffect, useRef, useCallback } from "react";
  * @param {string | Array<any>} [props.description=""] - The description text to display in the modal.
  * @param {Function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
  * @param {string} [props.cancelButtonText] - The text to display on the primary action button.
+ * @param {string} [props.modalClassName] - Additional class names for the modal panel, e.g. to widen it beyond the default USWDS modal width for content like a table.
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
  * @returns {JSX.Element} - The modal component JSX.
  */
@@ -17,6 +18,7 @@ export const ContainerModal = ({
     description = "",
     setShowModal = () => {},
     cancelButtonText = "Cancel",
+    modalClassName = "",
     children
 }) => {
     const modalRef = useRef(null);
@@ -78,7 +80,7 @@ export const ContainerModal = ({
             >
                 <div className="usa-modal-overlay">
                     <div
-                        className="usa-modal"
+                        className={`usa-modal ${modalClassName}`}
                         ref={modalRef}
                     >
                         <div className="usa-modal__content">
@@ -122,5 +124,6 @@ ContainerModal.propTypes = {
     heading: PropTypes.string.isRequired,
     description: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     setShowModal: PropTypes.func.isRequired,
-    cancelButtonText: PropTypes.string
+    cancelButtonText: PropTypes.string,
+    modalClassName: PropTypes.string
 };

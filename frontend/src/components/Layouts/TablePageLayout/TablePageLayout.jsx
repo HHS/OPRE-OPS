@@ -14,7 +14,6 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {React.ReactNode} [props.FilterButton] - The filter button to display.
  * @param {React.ReactNode} [props.FilterTags] - The filter tags to display.
  * @param {React.ReactNode} [props.FYSelect] - The fiscal year select to display.
- * @param {React.ReactNode} [props.LookupSection] - An optional lookup widget to display above the tabs/fiscal-year row.
  * @param {string} props.subtitle - The subtitle to display.
  * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
  * @param {React.ReactNode} [props.TableSection] - The table to display.
@@ -30,7 +29,6 @@ export const TablePageLayout = ({
     FilterButton = null,
     FilterTags = null,
     FYSelect,
-    LookupSection = null,
     subtitle,
     SummaryCardsSection,
     TableSection = null,
@@ -56,7 +54,6 @@ export const TablePageLayout = ({
                     </Link>
                 )}
             </div>
-            {LookupSection && <div className="margin-bottom-2">{LookupSection}</div>}
             <div className="display-flex flex-align-center flex-justify padding-y-1">
                 {TabsSection}
                 {FYSelect && FYSelect}
@@ -84,7 +81,6 @@ TablePageLayout.propTypes = {
     FilterButton: PropTypes.node,
     FilterTags: PropTypes.node,
     FYSelect: PropTypes.node,
-    LookupSection: PropTypes.node,
     subtitle: PropTypes.string.isRequired,
     SummaryCardsSection: PropTypes.node,
     TableSection: PropTypes.node,
