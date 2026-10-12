@@ -127,7 +127,11 @@ class ContractAgreementData(AgreementData):
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
-    awarded_grant_number = fields.String(allow_none=True)
+    # awarded_grant_number is intentionally NOT writable here. It represents the ODN
+    # assigned during Grant award, which has no real award workflow yet — it's only
+    # ever set via direct test/seed fixtures (never through the public create/update
+    # API) so an ordinary user can't spoof/duplicate an ODN. It's still exposed for
+    # reading on GrantAgreementResponse/GrantListAgreementResponse.
     aln_numbers = fields.List(fields.String(), allow_none=True, load_default=[])
     funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18]))
     # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)

@@ -9738,13 +9738,6 @@ components:
             nofo_number:
               type: string
               nullable: true
-            awarded_grant_number:
-              type: string
-              nullable: true
-              description: |
-                The grant's order/document number (ODN), assigned during Grant award.
-                Not yet populated by a real award workflow — currently set via test/seed
-                data only.
             aln_numbers:
               type: array
               nullable: true
@@ -10069,6 +10062,11 @@ components:
             awarded_grant_number:
               type: string
               nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true
@@ -10096,6 +10094,11 @@ components:
             awarded_grant_number:
               type: string
               nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true
