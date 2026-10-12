@@ -11,6 +11,7 @@ export default defineConfig({
             "cypress/e2e/agreementDetails.cy.js",
             "cypress/e2e/agreementDetailsEdit.cy.js",
             "cypress/e2e/agreementList.cy.js",
+            "cypress/e2e/agreementOdnLookup.cy.js",
             "cypress/e2e/agreementsPagination.cy.js",
             "cypress/e2e/agreementsPaginationFilters.cy.js",
             "cypress/e2e/agreementsPaginationSorting.cy.js",
