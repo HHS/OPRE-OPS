@@ -50,9 +50,11 @@ export const AgreementOdnLookup = () => {
                         role="status"
                         aria-live="polite"
                     >
-                        <h3 className="margin-bottom-1">
+                        {/* Deliberately not a heading: this sits between the page's <h1> and <h2>
+                            subtitle, so an <h3> here would skip/invert the heading hierarchy. */}
+                        <p className="margin-bottom-1 text-bold">
                             {matches.length} agreements match ODN &quot;{queriedValue}&quot;
-                        </h3>
+                        </p>
                     </div>
                     <AgreementsTable
                         agreements={matches}
@@ -60,6 +62,7 @@ export const AgreementOdnLookup = () => {
                         sortDescending={false}
                         setSortConditions={() => {}}
                         selectedFiscalYear="All"
+                        disableRowActions
                     />
                 </div>
             )}

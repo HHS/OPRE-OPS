@@ -21,8 +21,11 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("../../../../components/Agreements/AgreementsTable", () => ({
-    default: ({ agreements }) => (
-        <div data-testid="agreements-table">
+    default: ({ agreements, disableRowActions }) => (
+        <div
+            data-testid="agreements-table"
+            data-disable-row-actions={String(disableRowActions)}
+        >
             {agreements.map((agreement) => (
                 <div key={agreement.id}>{agreement.name}</div>
             ))}
@@ -77,10 +80,21 @@ describe("AgreementOdnLookup", () => {
 
         typeAndSubmit("ODN-SHARED");
 
-        expect(await screen.findByTestId("agreements-table")).toBeInTheDocument();
+        const table = await screen.findByTestId("agreements-table");
+        expect(table).toBeInTheDocument();
+        // Results come from a one-time snapshot, not a live cache subscription, so row
+        // edit/delete actions must be disabled here (a mutation elsewhere wouldn't be
+        // reflected back into this list).
+        expect(table).toHaveAttribute("data-disable-row-actions", "true");
         expect(screen.getByText("First")).toBeInTheDocument();
         expect(screen.getByText("Second")).toBeInTheDocument();
         expect(mockNavigate).not.toHaveBeenCalled();
+
+        // The "N agreements match" status message must not be a heading: this widget sits
+        // between the page's <h1> and its <h2> subtitle, so an <h3> here would skip/invert
+        // the page's heading hierarchy (a11y regression).
+        expect(screen.queryByRole("heading", { name: /agreements match odn/i })).not.toBeInTheDocument();
+        expect(screen.getByText(/2 agreements match odn/i).tagName).toBe("P");
     });
 
     it("renders an accessible no-match message when there are zero matches", async () => {

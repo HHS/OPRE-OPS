@@ -30,9 +30,10 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
  * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
+export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowActions = false }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -67,17 +68,18 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
         ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
         : "";
 
-    const changeIcons = canEditByRole ? (
-        <ChangeIcons
-            item={agreement ?? {}}
-            isItemEditable={isEditable ?? false}
-            lockedMessage={lockedMessage}
-            isItemDeletable={canUserDeleteAgreement ?? false}
-            handleDeleteItem={handleDeleteAgreement}
-            handleSetItemForEditing={handleEditAgreement}
-            duplicateIcon={false}
-        />
-    ) : null;
+    const changeIcons =
+        canEditByRole && !disableRowActions ? (
+            <ChangeIcons
+                item={agreement ?? {}}
+                isItemEditable={isEditable ?? false}
+                lockedMessage={lockedMessage}
+                isItemDeletable={canUserDeleteAgreement ?? false}
+                handleDeleteItem={handleDeleteAgreement}
+                handleSetItemForEditing={handleEditAgreement}
+                duplicateIcon={false}
+            />
+        ) : null;
 
     const TableRowData = (
         <>

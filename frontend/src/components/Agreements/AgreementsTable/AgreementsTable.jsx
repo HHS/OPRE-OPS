@@ -10,6 +10,9 @@ import AgreementTableRow from "./AgreementTableRow";
  * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort the table in descending order
  * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition
  * @param {string} props.selectedFiscalYear - The selected fiscal year for the FY Obligated column
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions. Use for
+ *   non-cache-subscribed result sets (e.g. a one-off search) where a mutation wouldn't be reflected
+ *   back into the displayed rows.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({
@@ -17,7 +20,8 @@ export const AgreementsTable = ({
     sortDescending,
     sortConditions,
     setSortConditions,
-    selectedFiscalYear
+    selectedFiscalYear,
+    disableRowActions = false
 }) => {
     const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear);
 
@@ -39,6 +43,7 @@ export const AgreementsTable = ({
                             key={agreement?.id}
                             agreement={agreement}
                             selectedFiscalYear={selectedFiscalYear}
+                            disableRowActions={disableRowActions}
                         />
                     ))}
             </Table>

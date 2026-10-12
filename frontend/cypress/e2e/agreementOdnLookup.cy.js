@@ -37,16 +37,22 @@ const deleteAgreement = (agreementId) => {
 };
 
 describe("Agreements List - Find by ODN", () => {
+    let createdAgreementIds;
+
     beforeEach(() => {
         // append a unique identifier to avoid conflicts across test runs
         const uniqueId = Date.now();
         testAgreement.name = `E2E ODN Lookup Agreement ${uniqueId}`;
         testAgreement.po_number = `E2E-ODN-${uniqueId}`;
+        createdAgreementIds = [];
 
         testLogin("system-owner");
     });
 
     afterEach(() => {
+        // Clean up unconditionally — including when the test above throws/times out — so a
+        // failing assertion never leaves orphaned test agreements in the shared e2e DB.
+        createdAgreementIds.forEach((id) => deleteAgreement(id));
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
@@ -55,6 +61,7 @@ describe("Agreements List - Find by ODN", () => {
         addAgreement(testAgreement).then((response) => {
             expect(response.status).to.eq(201);
             const agreementId = response.body.id;
+            createdAgreementIds.push(agreementId);
 
             cy.visit("/agreements");
             cy.get("#fiscal-year-select").select("All");
@@ -63,8 +70,6 @@ describe("Agreements List - Find by ODN", () => {
             cy.get('[data-cy="agreement-odn-lookup-submit"]').click();
 
             cy.url({ timeout: 10000 }).should("include", `/agreements/${agreementId}`);
-
-            deleteAgreement(agreementId);
         });
     });
 
@@ -81,5 +86,37 @@ describe("Agreements List - Find by ODN", () => {
 
         cy.url().should("include", "/agreements");
         cy.url().should("not.match", /\/agreements\/\d+/);
+    });
+
+    it("renders an accessible results table when multiple agreements share an ODN", () => {
+        const uniqueId = Date.now();
+        const sharedOdn = `E2E-ODN-SHARED-${uniqueId}`;
+        const agreementA = { ...testAgreement, name: `E2E ODN Multi A ${uniqueId}`, po_number: sharedOdn };
+        const agreementB = { ...testAgreement, name: `E2E ODN Multi B ${uniqueId}`, po_number: sharedOdn };
+
+        addAgreement(agreementA).then((responseA) => {
+            expect(responseA.status).to.eq(201);
+            createdAgreementIds.push(responseA.body.id);
+
+            addAgreement(agreementB).then((responseB) => {
+                expect(responseB.status).to.eq(201);
+                createdAgreementIds.push(responseB.body.id);
+
+                cy.visit("/agreements");
+                cy.get("#fiscal-year-select").select("All");
+
+                cy.get("#agreement-odn-lookup-input").type(sharedOdn);
+                cy.get('[data-cy="agreement-odn-lookup-submit"]').click();
+
+                cy.get('[data-cy="agreement-odn-lookup-multiple"]', { timeout: 10000 })
+                    .should("be.visible")
+                    .and("contain.text", "2 agreements match ODN");
+                cy.contains(agreementA.name).should("be.visible");
+                cy.contains(agreementB.name).should("be.visible");
+
+                // Stays on the list page — no single-match redirect for multiple matches.
+                cy.url().should("not.match", /\/agreements\/\d+$/);
+            });
+        });
     });
 });
