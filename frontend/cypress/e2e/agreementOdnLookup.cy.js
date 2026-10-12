@@ -5,7 +5,8 @@ let testAgreement = {
     agreement_type: "CONTRACT",
     name: "E2E ODN Lookup Agreement",
     service_requirement_type: "SEVERABLE",
-    po_number: "E2E-ODN-LOOKUP"
+    po_number: "E2E-ODN-LOOKUP",
+    project_id: 1000
 };
 
 const addAgreement = (agreement) => {
