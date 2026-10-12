@@ -30,6 +30,22 @@ def test_apply_change_request_data_coerces_date_needed_string_to_date(loaded_db)
     assert isinstance(bli.date_needed, datetime.date)
 
 
+def test_apply_change_request_data_refuses_to_set_awarded_grant_number():
+    """OPS-6308: approving an AGREEMENT_CHANGE_REQUEST out-of-band via this script must not
+    be able to set awarded_grant_number, the same way ops_api.ops.utils.agreements_helpers
+    .update_agreement() (the equivalent mass-assignment used by the normal UI-approval path)
+    refuses to. Without this guard, a Division Director could PATCH a change request's
+    requested_change_data directly, then approve it via this script instead of the UI, and
+    spoof/duplicate a Grant's ODN despite the write-schema restriction on the create/update API."""
+    from data_tools.src.approve_change_requests import apply_change_request_data
+    from models import AgreementType, GrantAgreement
+
+    agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+    apply_change_request_data(agreement, {"name": "Updated Name", "awarded_grant_number": "ODN-SPOOFED"})
+    assert agreement.name == "Updated Name"
+    assert agreement.awarded_grant_number is None
+
+
 # ---------------------------------------------------------------------------
 # build_reviewer_notes
 # ---------------------------------------------------------------------------

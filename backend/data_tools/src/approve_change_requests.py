@@ -65,6 +65,15 @@ logger.add(sys.stderr, format=log_format, level=LOG_LEVEL)
 
 OUT_OF_BAND_MARKER = "[Approved via out-of-band script on behalf of assigned reviewer]"
 
+# Columns that must never be set through this out-of-band mass-assignment, even though
+# they're real mapped columns. Mirrors AGREEMENT_UPDATE_DISALLOWED_FIELDS in
+# ops_api/ops/utils/agreements_helpers.py (not imported directly — data_tools and ops_api
+# are separate deployable packages — keep the two lists in sync by hand). awarded_grant_number
+# (OPS-6308) has no real Grant-award workflow yet and is deliberately excluded from the normal
+# create/update API's write schema; without this guard, approving an AGREEMENT_CHANGE_REQUEST
+# through this script (rather than the UI) would bypass that restriction.
+AGREEMENT_UPDATE_DISALLOWED_FIELDS = frozenset({"awarded_grant_number"})
+
 
 def apply_change_request_data(target, data: dict) -> None:
     """Set each key in data onto target if it's a real mapped column attribute,
@@ -85,6 +94,8 @@ def apply_change_request_data(target, data: dict) -> None:
 
     mapped_columns = {c_attr.key for c_attr in inspect(target).mapper.column_attrs}
     for key, value in coerced.items():
+        if key in AGREEMENT_UPDATE_DISALLOWED_FIELDS:
+            continue
         if key in mapped_columns:
             setattr(target, key, value)
 
