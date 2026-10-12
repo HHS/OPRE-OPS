@@ -21,10 +21,11 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("../../../../components/Agreements/AgreementsTable", () => ({
-    default: ({ agreements, disableRowActions }) => (
+    default: ({ agreements, disableRowActions, disableSorting }) => (
         <div
             data-testid="agreements-table"
             data-disable-row-actions={String(disableRowActions)}
+            data-disable-sorting={String(disableSorting)}
         >
             {agreements.map((agreement) => (
                 <div key={agreement.id}>{agreement.name}</div>
@@ -86,6 +87,9 @@ describe("AgreementOdnLookup", () => {
         // edit/delete actions must be disabled here (a mutation elsewhere wouldn't be
         // reflected back into this list).
         expect(table).toHaveAttribute("data-disable-row-actions", "true");
+        // No sort state is wired up for this snapshot, so headers must not render as
+        // sort controls that silently do nothing.
+        expect(table).toHaveAttribute("data-disable-sorting", "true");
         expect(screen.getByText("First")).toBeInTheDocument();
         expect(screen.getByText("Second")).toBeInTheDocument();
         expect(mockNavigate).not.toHaveBeenCalled();
@@ -95,6 +99,26 @@ describe("AgreementOdnLookup", () => {
         // the page's heading hierarchy (a11y regression).
         expect(screen.queryByRole("heading", { name: /agreements match odn/i })).not.toBeInTheDocument();
         expect(screen.getByText(/2 agreements match odn/i).tagName).toBe("P");
+    });
+
+    it("fetches every page when matches exceed the server's per-request page limit", async () => {
+        const firstPageAgreements = Array.from({ length: 50 }, (_, index) => ({
+            id: index + 1,
+            name: `Agreement ${index + 1}`
+        }));
+        const secondPageAgreements = [{ id: 51, name: "Agreement 51" }];
+        unwrapMock
+            .mockResolvedValueOnce({ agreements: firstPageAgreements, count: 51 })
+            .mockResolvedValueOnce({ agreements: secondPageAgreements, count: 51 });
+        renderComponent();
+
+        typeAndSubmit("ODN-MANY");
+
+        expect(await screen.findByText("Agreement 51")).toBeInTheDocument();
+        expect(triggerMock).toHaveBeenCalledTimes(2);
+        expect(triggerMock).toHaveBeenNthCalledWith(2, { filters: { odn: ["ODN-MANY"] }, page: 1, limit: 50 });
+        expect(screen.getByText(/51 agreements match odn/i)).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     it("renders an accessible no-match message when there are zero matches", async () => {

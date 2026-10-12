@@ -50,6 +50,25 @@ describe("Table", () => {
         expect(screen.getByRole("columnheader", { name: "Expand row" })).toBeInTheDocument();
     });
 
+    it("renders a header with a value as plain text, not a sort button, when sortable={false}", () => {
+        const onClickHeader = vi.fn();
+        render(
+            <Table
+                tableHeadings={headings}
+                onClickHeader={onClickHeader}
+                sortable={false}
+            />
+        );
+
+        // "BL ID #" has a non-empty value and would normally render as a sort button.
+        expect(screen.queryByRole("button", { name: /BL ID #/ })).not.toBeInTheDocument();
+        expect(screen.getByText("BL ID #")).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "BL ID #" })).toHaveAttribute("aria-sort", "none");
+
+        fireEvent.click(screen.getByText("BL ID #"));
+        expect(onClickHeader).not.toHaveBeenCalled();
+    });
+
     it("still supports sorting and shows the arrow on a sortable selected header", () => {
         render(
             <Table

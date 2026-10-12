@@ -63,6 +63,7 @@ export const AgreementOdnLookup = () => {
                         setSortConditions={() => {}}
                         selectedFiscalYear="All"
                         disableRowActions
+                        disableSorting
                     />
                 </div>
             )}

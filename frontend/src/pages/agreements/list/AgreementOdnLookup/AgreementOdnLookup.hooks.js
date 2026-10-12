@@ -11,6 +11,11 @@ export const ODN_LOOKUP_STATUS = {
     NONE: "none"
 };
 
+// Server-enforced max per request (AgreementRequestSchema validates limit <= 50). An exact-match
+// ODN lookup should essentially never exceed this, but if it does, fetch every remaining page so
+// "multiple matches" genuinely shows all matches, not just the first page's worth.
+const PAGE_LIMIT = 50;
+
 /**
  * Encapsulates the odn (order/document number) lookup state machine: idle -> loading ->
  * single (navigates away) | multiple (shows matches) | none (shows no-match message).
@@ -44,18 +49,34 @@ const useAgreementOdnLookup = () => {
         setStatus(ODN_LOOKUP_STATUS.LOADING);
 
         try {
-            const result = await trigger({ filters: { odn: [trimmedValue] }, page: 0, limit: 50 }).unwrap();
+            const result = await trigger({ filters: { odn: [trimmedValue] }, page: 0, limit: PAGE_LIMIT }).unwrap();
             if (submissionId !== latestSubmissionRef.current) {
                 return;
             }
 
-            const agreements = result?.agreements ?? [];
+            let agreements = result?.agreements ?? [];
             const count = result?.count ?? 0;
 
             if (count === 1) {
                 setStatus(ODN_LOOKUP_STATUS.SINGLE);
                 navigate(`/agreements/${agreements[0].id}`);
             } else if (count > 1) {
+                if (count > agreements.length) {
+                    const totalPages = Math.ceil(count / PAGE_LIMIT);
+                    const remainingPages = await Promise.all(
+                        Array.from({ length: totalPages - 1 }, (_, index) =>
+                            trigger({
+                                filters: { odn: [trimmedValue] },
+                                page: index + 1,
+                                limit: PAGE_LIMIT
+                            }).unwrap()
+                        )
+                    );
+                    if (submissionId !== latestSubmissionRef.current) {
+                        return;
+                    }
+                    agreements = agreements.concat(remainingPages.flatMap((page) => page?.agreements ?? []));
+                }
                 setMatches(agreements);
                 setStatus(ODN_LOOKUP_STATUS.MULTIPLE);
             } else {
