@@ -69,6 +69,43 @@ describe("AgreementOdnLookupButton", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
+    it("returns focus to the trigger button after the modal closes", () => {
+        renderComponent();
+
+        const trigger = screen.getByRole("button", { name: /find by odn/i });
+        trigger.focus();
+        fireEvent.click(trigger);
+        expect(trigger).not.toHaveFocus();
+
+        fireEvent.click(screen.getByRole("button", { name: /close/i }));
+
+        expect(trigger).toHaveFocus();
+    });
+
+    it("does not navigate if the lookup resolves after the user closes the modal", async () => {
+        let resolveLookup;
+        unwrapMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveLookup = resolve;
+                })
+        );
+        renderComponent();
+
+        fireEvent.click(screen.getByRole("button", { name: /find by odn/i }));
+        const input = screen.getByLabelText("Find agreement by ODN");
+        fireEvent.change(input, { target: { value: "ODN-SLOW" } });
+        fireEvent.click(screen.getByRole("button", { name: /^find$/i }));
+
+        fireEvent.click(screen.getByRole("button", { name: /close/i }));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+        resolveLookup({ agreements: [{ id: 55, name: "Should Not Navigate" }], count: 1 });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
     it("starts fresh (no stale results) when reopened after a previous lookup", async () => {
         unwrapMock.mockResolvedValue({ agreements: [], count: 0 });
         renderComponent();

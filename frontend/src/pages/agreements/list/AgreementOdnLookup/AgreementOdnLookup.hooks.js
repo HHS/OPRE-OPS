@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLazyGetAgreementsQuery } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
@@ -32,6 +32,16 @@ const useAgreementOdnLookup = () => {
     // overwriting its result (e.g. user corrects a typo and resubmits before the
     // first lookup responds).
     const latestSubmissionRef = useRef(0);
+
+    // If the modal is closed (unmounting this component) while a lookup is still in
+    // flight, invalidate it so its eventual resolution can't call navigate()/setAlert()
+    // or set state on an instance the user has already dismissed — e.g. a user who
+    // closed the lookup should never be redirected by a request they walked away from.
+    useEffect(() => {
+        return () => {
+            latestSubmissionRef.current = -1;
+        };
+    }, []);
 
     const handleChange = (_name, value) => {
         setInputValue(value);

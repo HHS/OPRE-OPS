@@ -55,12 +55,15 @@ export const ContainerModal = ({
     );
 
     useEffect(() => {
+        // Capture focus BEFORE moving it into the modal, so cleanup restores focus to
+        // whatever opened the modal (e.g. the trigger button) rather than to the modal's
+        // own first focusable element, which is about to be unmounted.
+        const previouslyFocusedElement = document.activeElement;
+
         const focusableElements = getFocusableElements();
         if (focusableElements.length > 0) {
             focusableElements[0].focus();
         }
-
-        const previouslyFocusedElement = document.activeElement;
 
         document.addEventListener("keydown", handleKeyDown);
 

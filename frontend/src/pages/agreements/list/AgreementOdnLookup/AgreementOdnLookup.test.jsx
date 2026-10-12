@@ -177,6 +177,32 @@ describe("AgreementOdnLookup", () => {
         expect(mockNavigate).not.toHaveBeenCalled();
     });
 
+    it("does not navigate or alert when a lookup resolves after the component has unmounted", async () => {
+        let resolveLookup;
+        unwrapMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveLookup = resolve;
+                })
+        );
+        const { unmount } = render(
+            <BrowserRouter>
+                <AgreementOdnLookup />
+            </BrowserRouter>
+        );
+
+        typeAndSubmit("ODN-CANCELED");
+        unmount();
+
+        // The request resolves after the user has already closed/navigated away from the
+        // lookup (e.g. closed the modal) — its side effects must be fully suppressed.
+        resolveLookup({ agreements: [{ id: 123, name: "Should Not Navigate" }], count: 1 });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+    });
+
     it("submits via Enter key in the input (native form submission)", async () => {
         unwrapMock.mockResolvedValue({ agreements: [{ id: 7, name: "Enter Match" }], count: 1 });
         renderComponent();
