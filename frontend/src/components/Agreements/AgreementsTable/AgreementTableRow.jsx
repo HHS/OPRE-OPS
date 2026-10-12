@@ -100,7 +100,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded && canEditByRole ? (
+                {isRowActive && !isExpanded && canEditByRole && !disableRowActions ? (
                     <div>{changeIcons}</div>
                 ) : isAllFY ? (
                     formatCurrency(lifetimeObligated)
@@ -193,7 +193,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                         </dl>
                     </>
                 )}
-                {canEditByRole && (
+                {canEditByRole && !disableRowActions && (
                     <div
                         className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"

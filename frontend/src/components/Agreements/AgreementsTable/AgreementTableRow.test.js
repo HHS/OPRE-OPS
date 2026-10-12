@@ -135,7 +135,8 @@ const createMockStore = (
 const renderComponent = (
     userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
     agreementData = baseAgreement,
-    isSuperUser = false
+    isSuperUser = false,
+    disableRowActions = false
 ) => {
     const store = createMockStore(userRoles, isSuperUser);
 
@@ -147,7 +148,10 @@ const renderComponent = (
             >
                 <table>
                     <tbody>
-                        <AgreementTableRow agreement={agreementData} />
+                        <AgreementTableRow
+                            agreement={agreementData}
+                            disableRowActions={disableRowActions}
+                        />
                     </tbody>
                 </table>
             </Router>
@@ -348,6 +352,36 @@ describe("AgreementTableRow", () => {
             await user.hover(tableRow);
 
             expect(screen.getByText("$0")).toBeInTheDocument();
+        });
+    });
+
+    describe("disableRowActions", () => {
+        test("non-read-only user still sees the FY Obligated amount (not blank) on hover when disableRowActions is true", async () => {
+            // OPS-6308 regression: a non-read-only (default VIEWER_EDITOR) user has
+            // canEditByRole === true, so the hover-swap condition that decides whether to
+            // render the ChangeIcons slot in the amount cell must also check
+            // disableRowActions, or the amount silently disappears on hover even though
+            // disableRowActions already correctly suppresses the icons themselves.
+            renderComponent(undefined, baseAgreement, false, true);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByText("$0")).toBeInTheDocument();
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+
+        test("non-read-only user does not see change icons in the expanded row when disableRowActions is true", async () => {
+            renderComponent(undefined, baseAgreement, false, true);
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
         });
     });
 
