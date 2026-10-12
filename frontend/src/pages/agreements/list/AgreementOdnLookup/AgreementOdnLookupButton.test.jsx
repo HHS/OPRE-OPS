@@ -51,7 +51,11 @@ describe("AgreementOdnLookupButton", () => {
 
         expect(screen.getByRole("dialog")).toBeInTheDocument();
         expect(screen.getByText("Find Agreement by ODN")).toBeInTheDocument();
-        expect(screen.getByLabelText("Find agreement by ODN")).toBeInTheDocument();
+        const input = screen.getByLabelText("Find agreement by ODN");
+        expect(input).toBeInTheDocument();
+        // Locks in ContainerModal's focus-on-open behavior landing on the actual input
+        // (the first focusable element inside the modal), not some other control.
+        expect(input).toHaveFocus();
     });
 
     it("closes the modal when Close is clicked", () => {
