@@ -95,6 +95,31 @@ describe("ContainerModal", () => {
         expect(mockSetShowModal).toHaveBeenCalledWith(false);
     });
 
+    it("restores focus to the element that opened it (not the modal's own first focusable element) once it unmounts", () => {
+        render(<button data-testid="trigger">Open</button>);
+        const trigger = screen.getByTestId("trigger");
+        trigger.focus();
+        expect(trigger).toHaveFocus();
+
+        const { unmount } = render(
+            <ContainerModal
+                heading="Test Heading"
+                setShowModal={mockSetShowModal}
+            >
+                <input data-testid="modal-input" />
+            </ContainerModal>
+        );
+
+        // The modal moves focus to its own first focusable element while open.
+        expect(trigger).not.toHaveFocus();
+
+        // Closing the modal (unmounting it, as the real trigger components do via
+        // `{showModal && <ContainerModal>...}`) must return focus to whatever opened it.
+        unmount();
+
+        expect(trigger).toHaveFocus();
+    });
+
     it("should have dialog role", () => {
         render(
             <ContainerModal

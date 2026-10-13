@@ -6,7 +6,7 @@ from typing import Any, List, Literal, Optional, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, distinct, func, or_, select, union, union_all
+from sqlalchemy import Select, case, distinct, false, func, or_, select, union, union_all
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -79,6 +79,7 @@ class AgreementFilters:
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
+    odn: Optional[list[str]] = None
     name: Optional[list[str]] = None
     search: Optional[list[str]] = None
     only_my: Optional[list[bool]] = None
@@ -108,6 +109,7 @@ class AgreementFilters:
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
+            odn=data.get("odn", []),
             name=data.get("name", []),
             search=data.get("search", []),
             only_my=data.get("only_my", []),
@@ -1527,7 +1529,40 @@ def _apply_agreement_specific_filters(
         if foa:
             query = query.where(agreement_cls.foa.in_(foa))
 
+    query = _apply_odn_filter(query, agreement_cls, data)
+
     return query
+
+
+def _apply_odn_filter(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply the odn (order/document number) exact-match, case-insensitive lookup filter.
+
+    Scoped to the agreement types that have an ODN-equivalent field. IAA and Direct
+    Obligation agreements have no such field and must be positively excluded, not just
+    left unfiltered.
+
+    Values are trimmed and empty/whitespace-only values are dropped server-side (not just
+    by the frontend) so a value only submitted via the UI's own trimming — or a caller that
+    skips it entirely — can't produce a false match against a stored empty string, and a
+    bare `?odn=` is treated the same as omitting the filter rather than matching nothing.
+    """
+    odn_values = [value.strip() for value in data.get("odn", [])]
+    odn_values = [value for value in odn_values if value]
+    if not odn_values:
+        return query
+
+    if agreement_cls == ContractAgreement:
+        odn_column = agreement_cls.po_number
+    elif agreement_cls == AaAgreement:
+        odn_column = agreement_cls.task_order_number
+    elif agreement_cls == GrantAgreement:
+        odn_column = agreement_cls.awarded_grant_number
+    else:
+        return query.where(false())
+
+    return query.where(func.lower(odn_column).in_([value.lower() for value in odn_values]))
 
 
 def _apply_search_filter(

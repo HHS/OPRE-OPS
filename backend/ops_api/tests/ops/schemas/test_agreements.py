@@ -134,6 +134,13 @@ class TestAgreementRequestSchemaPagination:
         result_max = schema.load(data_max)
         assert result_max["limit"] == [50]
 
+    def test_schema_accepts_odn_filter(self):
+        """Test that AgreementRequestSchema accepts the odn (OPS-6308 ODN lookup) filter param."""
+        schema = AgreementRequestSchema()
+        data = {"odn": ["ODN-PO-0001"]}
+        result = schema.load(data)
+        assert result["odn"] == ["ODN-PO-0001"]
+
     def test_schema_with_other_filter_parameters(self):
         """Test that pagination works alongside other filter parameters."""
         schema = AgreementRequestSchema()
@@ -342,6 +349,17 @@ class TestAgreementDataNestedFields:
         assert none_result["nofo_number"] is None
         assert none_result["aln_numbers"] is None
         assert none_result["funding_period_months"] is None
+
+    def test_grant_agreement_data_does_not_expose_awarded_grant_number_as_writable(self):
+        """awarded_grant_number must NOT be settable through the create/update API (OPS-6308):
+        it's only ever populated via test/seed fixtures until a real Grant award workflow
+        exists, so a user can't spoof/duplicate an ODN via the public agreement endpoints."""
+        schema = GrantAgreementData()
+        assert "awarded_grant_number" not in schema.fields
+
+    def test_grant_agreement_response_has_awarded_grant_number_field(self):
+        assert "awarded_grant_number" in GrantAgreementResponse().fields
+        assert "awarded_grant_number" in GrantListAgreementResponse().fields
 
     def test_grant_agreement_data_rejects_invalid_funding_period_months(self):
         """Test that GrantAgreementData only allows 12 or 18 for funding_period_months."""

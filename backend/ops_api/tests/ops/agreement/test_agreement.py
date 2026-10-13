@@ -786,6 +786,179 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db, app_ctx):
     assert all(item[key] == value for item in response.json["data"] if key in item)
 
 
+class TestAgreementOdnLookup:
+    """Tests for the `odn` (order/document number) exact-match lookup filter.
+
+    ODN is Contract.po_number, AA.task_order_number, or Grant.awarded_grant_number.
+    IAA and Direct Obligation agreements have no ODN-equivalent field and must never match.
+    """
+
+    def test_odn_single_match_contract(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - ODN Lookup",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-PO-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-PO-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_single_match_aa(self, auth_client, loaded_db, app_ctx):
+        aa = AaAgreement(
+            name="Test AA - ODN Lookup",
+            agreement_type=AgreementType.AA,
+            requesting_agency_id=1,
+            servicing_agency_id=1,
+            task_order_number="ODN-TO-0001",
+        )
+        loaded_db.add(aa)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-TO-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == aa.id
+
+        loaded_db.delete(aa)
+        loaded_db.commit()
+
+    def test_odn_single_match_grant(self, auth_client, loaded_db, app_ctx):
+        grant = GrantAgreement(
+            name="Test Grant - ODN Lookup",
+            agreement_type=AgreementType.GRANT,
+            awarded_grant_number="ODN-GRANT-0001",
+        )
+        loaded_db.add(grant)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-GRANT-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == grant.id
+
+        loaded_db.delete(grant)
+        loaded_db.commit()
+
+    def test_odn_case_insensitive(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - ODN Case Insensitive",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-Mixed-Case",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "odn-mixed-case"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_multiple_matches(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - Shared ODN",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-SHARED-0001",
+        )
+        aa = AaAgreement(
+            name="Test AA - Shared ODN",
+            agreement_type=AgreementType.AA,
+            requesting_agency_id=1,
+            servicing_agency_id=1,
+            task_order_number="ODN-SHARED-0001",
+        )
+        loaded_db.add_all([contract, aa])
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-SHARED-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 2
+        returned_ids = {item["id"] for item in response.json["data"]}
+        assert returned_ids == {contract.id, aa.id}
+
+        loaded_db.delete(contract)
+        loaded_db.delete(aa)
+        loaded_db.commit()
+
+    def test_odn_no_match(self, auth_client, loaded_db, app_ctx):
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-DOES-NOT-EXIST"})
+        assert response.status_code == 200
+        assert response.json["count"] == 0
+        assert response.json["data"] == []
+
+    def test_odn_empty_value_does_not_match_stored_empty_string(self, auth_client, loaded_db, app_ctx):
+        """An empty/whitespace-only odn value must never produce a match, even against an
+        agreement whose stored po_number happens to be the empty string (not NULL) — a bare
+        `?odn=` should behave like the filter wasn't provided at all, not "match empty string"."""
+        contract = ContractAgreement(
+            name="Test Contract - Empty ODN Column",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        for empty_value in ["", "   "]:
+            response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": empty_value})
+            assert response.status_code == 200
+            assert contract.id not in {item["id"] for item in response.json["data"]}
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_trims_whitespace_server_side(self, auth_client, loaded_db, app_ctx):
+        """The backend must trim odn values itself, not rely solely on the frontend — a
+        direct API caller sending untrimmed input should still match a trimmed stored value."""
+        contract = ContractAgreement(
+            name="Test Contract - ODN Trim",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-TRIM-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "  ODN-TRIM-0001  "})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_excludes_iaa_and_direct(self, auth_client, loaded_db, app_ctx):
+        """IAA and Direct Obligation agreements have no ODN-equivalent field and must never
+        match, even if a value happens to coincide with some other field on those rows."""
+        shared_value = "ODN-EXCLUDE-0001"
+        iaa = IaaAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.IAA,
+            direction=IAADirectionType.INCOMING,
+        )
+        direct = DirectAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.DIRECT_OBLIGATION,
+        )
+        loaded_db.add_all([iaa, direct])
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": shared_value})
+        assert response.status_code == 200
+        assert response.json["count"] == 0
+
+        loaded_db.delete(iaa)
+        loaded_db.delete(direct)
+        loaded_db.commit()
+
+
 def test_agreements_with_division_filter(auth_client, loaded_db, app_ctx):
     """GET /agreements/?division=N returns only agreements whose project officer is in that division.
 

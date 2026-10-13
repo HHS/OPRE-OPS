@@ -593,6 +593,7 @@ def create_agreement_update_history_event(
         "contract_category",
         "psc_contract_specialist",
         "nofo_number",
+        "awarded_grant_number",
     ]
     if property_name in simple_property_names:
         old_value_str = fix_stringified_enum_values(old_value)
@@ -1403,6 +1404,7 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "psc_contract_specialist": "PSC Contract Specialist",
         "agreement_reason": "Agreement Reason",
         "nofo_number": "NOFO Number",
+        "awarded_grant_number": "Awarded Grant Number",
     }
 
     message_display_names = {
@@ -1422,6 +1424,7 @@ def get_agreement_property_display_name(property_name: str, in_title: bool) -> s
         "psc_contract_specialist": "PSC contract specialist",
         "agreement_reason": "Reason for Agreement",
         "nofo_number": "NOFO Number",
+        "awarded_grant_number": "awarded grant number",
     }
     return (
         title_display_names.get(property_name, property_name)

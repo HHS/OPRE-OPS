@@ -30,6 +30,7 @@ import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
 import { convertCodeForDisplay, formatDate, tableSortCodes } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
+import AgreementOdnLookupButton from "./AgreementOdnLookup/AgreementOdnLookupButton";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
@@ -365,6 +366,9 @@ const AgreementsList = () => {
                                         agreementFilterOptions={agreementFilterOptions}
                                         isLoadingOptions={isLoadingAgreementFilterOptions}
                                     />
+                                </div>
+                                <div className="margin-left-205">
+                                    <AgreementOdnLookupButton />
                                 </div>
                             </div>
                         </>

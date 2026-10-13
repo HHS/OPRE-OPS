@@ -30,9 +30,10 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
  * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
+export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowActions = false }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -67,7 +68,9 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
         ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
         : "";
 
-    const changeIcons = canEditByRole ? (
+    const showRowActions = canEditByRole && !disableRowActions;
+
+    const changeIcons = showRowActions ? (
         <ChangeIcons
             item={agreement ?? {}}
             isItemEditable={isEditable ?? false}
@@ -98,7 +101,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded && canEditByRole ? (
+                {isRowActive && !isExpanded && showRowActions ? (
                     <div>{changeIcons}</div>
                 ) : isAllFY ? (
                     formatCurrency(lifetimeObligated)
@@ -191,7 +194,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
                         </dl>
                     </>
                 )}
-                {canEditByRole && (
+                {showRowActions && (
                     <div
                         className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"

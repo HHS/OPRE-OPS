@@ -116,6 +116,19 @@ paths:
           style: form
           explode: true
         - in: query
+          name: odn
+          description: >
+            Order/document number (ODN) to find agreements by exact match (case-insensitive).
+            Matches Contract po_number, Assisted Acquisition task_order_number, or Grant
+            awarded_grant_number. IAA and Direct Obligation agreements have no ODN-equivalent
+            field and are never returned by this filter.
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
           name: only_my
           description: Only includes agreements that a user owns
           schema:
@@ -10046,6 +10059,14 @@ components:
             nofo_number:
               type: string
               nullable: true
+            awarded_grant_number:
+              type: string
+              nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true
@@ -10070,6 +10091,14 @@ components:
             nofo_number:
               type: string
               nullable: true
+            awarded_grant_number:
+              type: string
+              nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true

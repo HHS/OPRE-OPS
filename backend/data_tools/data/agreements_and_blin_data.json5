@@ -92,6 +92,8 @@
       awarding_entity_id: 3,
       created_by: 503,
       foa: "This is an FOA value",
+      // Seeded for manual/E2E testing of the "find agreement by ODN" lookup (OPS-6308).
+      awarded_grant_number: "GRANT-AWD-0001",
       special_topics: [
         {
           tablename: "special_topics",
@@ -183,6 +185,8 @@
       servicing_agency_id: 2,
       service_requirement_type: "SEVERABLE",
       created_by: 503,
+      // Seeded for manual/E2E testing of the "find agreement by ODN" lookup (OPS-6308).
+      task_order_number: "TO-TEST-0001",
       special_topics: [
         {
           tablename: "special_topics",
@@ -298,6 +302,9 @@
       end_date: "2044-06-13T14:00:00",
       psc_contract_specialist: "PSC Contract Specialist",
       cotr_id: 520,
+      // Seeded for manual/E2E testing of the "find agreement by ODN" lookup (OPS-6308) —
+      // a single-match case.
+      po_number: "PO-TEST-0001",
       special_topics: [
         {
           tablename: "special_topics",
@@ -338,6 +345,9 @@
       end_date: "2044-06-13T14:00:00",
       psc_contract_specialist: "PSC Contract Specialist",
       cotr_id: 520,
+      // Seeded for manual/E2E testing of the "find agreement by ODN" lookup (OPS-6308) —
+      // shared with MIHOPE Long-Term (id: 8) below for a multiple-matches case.
+      po_number: "PO-TEST-0002",
       special_topics: [
         {
           tablename: "special_topics",
@@ -381,6 +391,9 @@
       end_date: "2044-06-13T14:00:00",
       psc_contract_specialist: "",
       cotr_id: 520,
+      // Seeded for manual/E2E testing of the "find agreement by ODN" lookup (OPS-6308) —
+      // shared with MIHOPE Check-In (id: 7) above for a multiple-matches case.
+      po_number: "PO-TEST-0002",
       special_topics: [
         {
           tablename: "special_topics",

@@ -167,12 +167,22 @@ def get_pre_award_notification_directors_for_agreement(
     return division_directors, deputy_division_directors
 
 
+# Columns that must never be set through the change-request approval flow's generic
+# mass-assignment below, even though they're real columns on the model. awarded_grant_number
+# (OPS-6308) has no real Grant-award workflow yet and is deliberately excluded from
+# GrantAgreementData's write schema on the normal create/update API — this closes the same
+# gap here, since requested_change_data is otherwise applied with no field allow-list.
+AGREEMENT_UPDATE_DISALLOWED_FIELDS = frozenset({"awarded_grant_number"})
+
+
 def update_agreement(agreement: Agreement, data: dict[str, Any]) -> None:
     """
     Update Agreement instance with values from data dict
     if the keys correspond to actual column attributes on the model.
     """
     for item in data:
+        if item in AGREEMENT_UPDATE_DISALLOWED_FIELDS:
+            continue
         if item in [c_attr.key for c_attr in inspect(agreement).mapper.column_attrs]:
             setattr(agreement, item, data[item])
 

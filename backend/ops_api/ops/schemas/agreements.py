@@ -127,6 +127,11 @@ class ContractAgreementData(AgreementData):
 class GrantAgreementData(AgreementData):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
+    # awarded_grant_number is intentionally NOT writable here. It represents the ODN
+    # assigned during Grant award, which has no real award workflow yet — it's only
+    # ever set via direct test/seed fixtures (never through the public create/update
+    # API) so an ordinary user can't spoof/duplicate an ODN. It's still exposed for
+    # reading on GrantAgreementResponse/GrantListAgreementResponse.
     aln_numbers = fields.List(fields.String(), allow_none=True, load_default=[])
     funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18]))
     # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)
@@ -180,6 +185,7 @@ class AgreementRequestSchema(PaginationListSchema):
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
     nick_name = fields.List(fields.String(), required=False)
     foa = fields.List(fields.String(), required=False)
+    odn = fields.List(fields.String(), required=False)
     name = fields.List(fields.String(), required=False)
     search = fields.List(fields.String(), required=False)  # currently an alias for name
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
@@ -317,6 +323,7 @@ class ContractListAgreementResponse(AgreementListResponse):
 class GrantAgreementResponse(AgreementResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
+    awarded_grant_number = fields.String(allow_none=True)
     aln_numbers = fields.List(fields.String(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
@@ -325,6 +332,7 @@ class GrantAgreementResponse(AgreementResponse):
 class GrantListAgreementResponse(AgreementListResponse):
     foa = fields.String(allow_none=True)
     nofo_number = fields.String(allow_none=True)
+    awarded_grant_number = fields.String(allow_none=True)
     aln_numbers = fields.List(fields.String(), allow_none=True)
     funding_period_months = fields.Integer(allow_none=True)
     grant_numbers = fields.List(fields.Nested(GrantNumberItemResponse), dump_only=True)
