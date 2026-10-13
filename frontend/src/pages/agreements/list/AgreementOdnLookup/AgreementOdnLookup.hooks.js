@@ -67,9 +67,16 @@ const useAgreementOdnLookup = () => {
             let agreements = result?.agreements ?? [];
             const count = result?.count ?? 0;
 
-            if (count === 1) {
+            if (count === 1 && agreements[0]) {
                 setStatus(ODN_LOOKUP_STATUS.SINGLE);
                 navigate(`/agreements/${agreements[0].id}`);
+            } else if (count === 1) {
+                // Backend reported exactly one match but returned no row for it (e.g. the
+                // agreement was deleted between the count and the page fetch) — treat as no
+                // match rather than throwing on agreements[0].id and showing a scary generic
+                // error for what's actually "nothing to find."
+                setMatches([]);
+                setStatus(ODN_LOOKUP_STATUS.NONE);
             } else if (count > 1) {
                 if (count > agreements.length) {
                     const totalPages = Math.ceil(count / PAGE_LIMIT);

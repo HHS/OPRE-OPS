@@ -895,6 +895,45 @@ class TestAgreementOdnLookup:
         assert response.json["count"] == 0
         assert response.json["data"] == []
 
+    def test_odn_empty_value_does_not_match_stored_empty_string(self, auth_client, loaded_db, app_ctx):
+        """An empty/whitespace-only odn value must never produce a match, even against an
+        agreement whose stored po_number happens to be the empty string (not NULL) — a bare
+        `?odn=` should behave like the filter wasn't provided at all, not "match empty string"."""
+        contract = ContractAgreement(
+            name="Test Contract - Empty ODN Column",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        for empty_value in ["", "   "]:
+            response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": empty_value})
+            assert response.status_code == 200
+            assert contract.id not in {item["id"] for item in response.json["data"]}
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_trims_whitespace_server_side(self, auth_client, loaded_db, app_ctx):
+        """The backend must trim odn values itself, not rely solely on the frontend — a
+        direct API caller sending untrimmed input should still match a trimmed stored value."""
+        contract = ContractAgreement(
+            name="Test Contract - ODN Trim",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-TRIM-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "  ODN-TRIM-0001  "})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
     def test_odn_excludes_iaa_and_direct(self, auth_client, loaded_db, app_ctx):
         """IAA and Direct Obligation agreements have no ODN-equivalent field and must never
         match, even if a value happens to coincide with some other field on those rows."""

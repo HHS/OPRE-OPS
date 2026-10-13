@@ -34,7 +34,7 @@ export const AgreementOdnLookupButton = () => {
             {showModal && (
                 <ContainerModal
                     heading="Find Agreement by ODN"
-                    description="Enter an agreement's exact order/document number (ODN) — the Purchase Order Number for Contracts, the Task Order Number for Assisted Acquisitions, or the Grant Number for Grants."
+                    description="Enter an agreement's exact order/document number (ODN) — the Purchase Order Number for Contracts, the Task Order Number for Assisted Acquisitions, or the number assigned when a Grant is awarded (not the Grant Number used to structure the agreement's budget lines)."
                     setShowModal={setShowModal}
                     cancelButtonText="Close"
                     modalClassName="maxw-desktop"

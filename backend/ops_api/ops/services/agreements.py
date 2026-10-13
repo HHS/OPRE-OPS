@@ -1542,8 +1542,14 @@ def _apply_odn_filter(
     Scoped to the agreement types that have an ODN-equivalent field. IAA and Direct
     Obligation agreements have no such field and must be positively excluded, not just
     left unfiltered.
+
+    Values are trimmed and empty/whitespace-only values are dropped server-side (not just
+    by the frontend) so a value only submitted via the UI's own trimming — or a caller that
+    skips it entirely — can't produce a false match against a stored empty string, and a
+    bare `?odn=` is treated the same as omitting the filter rather than matching nothing.
     """
-    odn_values = data.get("odn", [])
+    odn_values = [value.strip() for value in data.get("odn", [])]
+    odn_values = [value for value in odn_values if value]
     if not odn_values:
         return query
 

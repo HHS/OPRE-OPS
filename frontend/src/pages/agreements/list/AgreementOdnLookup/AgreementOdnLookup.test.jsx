@@ -133,6 +133,20 @@ describe("AgreementOdnLookup", () => {
         expect(mockNavigate).not.toHaveBeenCalled();
     });
 
+    it("shows the no-match state instead of throwing when count is 1 but no row is returned", async () => {
+        // E.g. the agreement was deleted between the backend computing count and fetching
+        // the page — count === 1 but agreements is empty. Must not throw on agreements[0].id.
+        unwrapMock.mockResolvedValue({ agreements: [], count: 1 });
+        renderComponent();
+
+        typeAndSubmit("ODN-RACE");
+
+        const message = await screen.findByText(/no agreements found with odn/i);
+        expect(message).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+    });
+
     it("trims whitespace and does not submit an empty value", () => {
         renderComponent();
 
