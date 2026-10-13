@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 SQLAlchemy = "==2.0.54"
 pandas = "==3.0.6"
-json5 = "==0.16.0"
+json5 = "==0.17.3"
 psycopg2-binary = "==2.9.13"
 cfenv = "==0.5.3"
 typing-extensions = "==4.16.0"
@@ -40,7 +40,7 @@ pytest = "==9.1.1"
 pytest-cov = "==7.1.0"
 pytest-mock = "==3.16.0"
 pytest-xdist = "==3.8.0"
-filelock = "==4.0.12"
+filelock = "==4.1.0"
 ipython = "==9.17.1"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
 black = {extras = ["d"], version = "==26.10.1"}
