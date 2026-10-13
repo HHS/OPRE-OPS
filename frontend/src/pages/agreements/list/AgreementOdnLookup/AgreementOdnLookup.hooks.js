@@ -104,10 +104,11 @@ const useAgreementOdnLookup = () => {
                     }
                     const failedPages = remainingPageResults.filter((page) => page.status === "rejected");
                     if (failedPages.length > 0) {
-                        console.error(
-                            `Failed to fetch ${failedPages.length} of ${totalPages - 1} additional ODN match page(s)`,
-                            failedPages.map((page) => page.reason)
-                        );
+                        console.error("Failed to fetch one or more additional ODN match pages", {
+                            failedCount: failedPages.length,
+                            totalRemainingPages: totalPages - 1,
+                            reasons: failedPages.map((page) => page.reason)
+                        });
                     }
                     agreements = agreements.concat(
                         remainingPageResults
