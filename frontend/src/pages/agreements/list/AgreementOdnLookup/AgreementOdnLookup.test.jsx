@@ -147,6 +147,51 @@ describe("AgreementOdnLookup", () => {
         expect(mockSetAlert).not.toHaveBeenCalled();
     });
 
+    it("ignores a duplicate submission while a lookup is already in flight", async () => {
+        let resolveFirst;
+        unwrapMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })
+        );
+        renderComponent();
+
+        typeAndSubmit("ODN-DUPLICATE");
+        expect(triggerMock).toHaveBeenCalledTimes(1);
+
+        // The Find button is disabled while loading, and a second submit attempt (e.g. a
+        // double Enter/click before the first request resolves) must not fire another request.
+        const findButton = screen.getByRole("button", { name: /find/i });
+        expect(findButton).toBeDisabled();
+        fireEvent.click(findButton);
+        expect(triggerMock).toHaveBeenCalledTimes(1);
+
+        resolveFirst({ agreements: [{ id: 1, name: "Match" }], count: 1 });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/agreements/1"));
+    });
+
+    it("shows the matches it did fetch even if a later page fails, rather than discarding everything", async () => {
+        const firstPageAgreements = Array.from({ length: 50 }, (_, index) => ({
+            id: index + 1,
+            name: `Agreement ${index + 1}`
+        }));
+        unwrapMock
+            .mockResolvedValueOnce({ agreements: firstPageAgreements, count: 51 })
+            .mockRejectedValueOnce(new Error("transient network error"));
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        renderComponent();
+
+        typeAndSubmit("ODN-PARTIAL-FAILURE");
+
+        expect(await screen.findByText("Agreement 1")).toBeInTheDocument();
+        expect(screen.getByText(/50 agreements match odn/i)).toBeInTheDocument();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalled();
+
+        consoleErrorSpy.mockRestore();
+    });
+
     it("trims whitespace and does not submit an empty value", () => {
         renderComponent();
 

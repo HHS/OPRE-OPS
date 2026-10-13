@@ -50,7 +50,12 @@ const useAgreementOdnLookup = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const trimmedValue = inputValue.trim();
-        if (!trimmedValue) {
+        // Drop an exact-duplicate resubmission of the query already in flight (e.g. mashing
+        // Find/Enter on an unchanged value) to avoid a wasted request. A *different* value is
+        // still allowed to supersede a pending submission immediately — latestSubmissionRef
+        // below ensures only the newest result is ever used, so a user correcting a typo
+        // doesn't have to wait for the stale request to resolve first.
+        if (!trimmedValue || (status === ODN_LOOKUP_STATUS.LOADING && trimmedValue === queriedValue)) {
             return;
         }
 
@@ -80,7 +85,12 @@ const useAgreementOdnLookup = () => {
             } else if (count > 1) {
                 if (count > agreements.length) {
                     const totalPages = Math.ceil(count / PAGE_LIMIT);
-                    const remainingPages = await Promise.all(
+                    // allSettled rather than all: a transient failure on one later page (an
+                    // edge case to begin with — PAGE_LIMIT above explains an ODN matching
+                    // >50 agreements should essentially never happen) shouldn't throw away
+                    // the matches already fetched from page 0 and any other page that did
+                    // succeed.
+                    const remainingPageResults = await Promise.allSettled(
                         Array.from({ length: totalPages - 1 }, (_, index) =>
                             trigger({
                                 filters: { odn: [trimmedValue] },
@@ -92,7 +102,18 @@ const useAgreementOdnLookup = () => {
                     if (submissionId !== latestSubmissionRef.current) {
                         return;
                     }
-                    agreements = agreements.concat(remainingPages.flatMap((page) => page?.agreements ?? []));
+                    const failedPages = remainingPageResults.filter((page) => page.status === "rejected");
+                    if (failedPages.length > 0) {
+                        console.error(
+                            `Failed to fetch ${failedPages.length} of ${totalPages - 1} additional ODN match page(s)`,
+                            failedPages.map((page) => page.reason)
+                        );
+                    }
+                    agreements = agreements.concat(
+                        remainingPageResults
+                            .filter((page) => page.status === "fulfilled")
+                            .flatMap((page) => page.value?.agreements ?? [])
+                    );
                 }
                 setMatches(agreements);
                 setStatus(ODN_LOOKUP_STATUS.MULTIPLE);

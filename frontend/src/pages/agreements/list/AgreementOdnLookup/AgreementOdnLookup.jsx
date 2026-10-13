@@ -27,6 +27,7 @@ export const AgreementOdnLookup = () => {
                     type="submit"
                     className="usa-button margin-left-1"
                     data-cy="agreement-odn-lookup-submit"
+                    disabled={status === ODN_LOOKUP_STATUS.LOADING && inputValue.trim() === queriedValue}
                 >
                     Find
                 </button>
