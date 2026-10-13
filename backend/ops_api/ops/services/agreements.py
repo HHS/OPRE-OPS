@@ -1553,14 +1553,16 @@ def _apply_odn_filter(
     if not odn_values:
         return query
 
-    lowered_odn_values = [value.lower() for value in odn_values]
     if agreement_cls == ContractAgreement:
-        return query.where(func.lower(agreement_cls.po_number).in_(lowered_odn_values))
+        odn_column = agreement_cls.po_number
     elif agreement_cls == AaAgreement:
-        return query.where(func.lower(agreement_cls.task_order_number).in_(lowered_odn_values))
+        odn_column = agreement_cls.task_order_number
     elif agreement_cls == GrantAgreement:
-        return query.where(func.lower(agreement_cls.awarded_grant_number).in_(lowered_odn_values))
-    return query.where(false())
+        odn_column = agreement_cls.awarded_grant_number
+    else:
+        return query.where(false())
+
+    return query.where(func.lower(odn_column).in_([value.lower() for value in odn_values]))
 
 
 def _apply_search_filter(

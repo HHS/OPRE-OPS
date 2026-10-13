@@ -68,18 +68,19 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
         ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
         : "";
 
-    const changeIcons =
-        canEditByRole && !disableRowActions ? (
-            <ChangeIcons
-                item={agreement ?? {}}
-                isItemEditable={isEditable ?? false}
-                lockedMessage={lockedMessage}
-                isItemDeletable={canUserDeleteAgreement ?? false}
-                handleDeleteItem={handleDeleteAgreement}
-                handleSetItemForEditing={handleEditAgreement}
-                duplicateIcon={false}
-            />
-        ) : null;
+    const showRowActions = canEditByRole && !disableRowActions;
+
+    const changeIcons = showRowActions ? (
+        <ChangeIcons
+            item={agreement ?? {}}
+            isItemEditable={isEditable ?? false}
+            lockedMessage={lockedMessage}
+            isItemDeletable={canUserDeleteAgreement ?? false}
+            handleDeleteItem={handleDeleteAgreement}
+            handleSetItemForEditing={handleEditAgreement}
+            duplicateIcon={false}
+        />
+    ) : null;
 
     const TableRowData = (
         <>
@@ -100,7 +101,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded && canEditByRole && !disableRowActions ? (
+                {isRowActive && !isExpanded && showRowActions ? (
                     <div>{changeIcons}</div>
                 ) : isAllFY ? (
                     formatCurrency(lifetimeObligated)
@@ -193,7 +194,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                         </dl>
                     </>
                 )}
-                {canEditByRole && !disableRowActions && (
+                {showRowActions && (
                     <div
                         className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"
