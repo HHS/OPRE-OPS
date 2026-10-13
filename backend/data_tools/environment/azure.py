@@ -1,6 +1,24 @@
 import os
+import re
 
 from data_tools.environment.types import DataToolsConfig
+
+# A single AzureConfig serves every deployed environment (dev, stg, prod), so the environment is
+# identified from CONTAINER_APP_JOB_NAME, which Azure Container Apps injects into every job
+# execution and which follows the "opre-ops-<env>-app-<job>" naming convention. Environments
+# not listed here (e.g. dev) yield None.
+_JOB_NAME_PATTERN = re.compile(r"^opre-ops-(?P<env>[a-z]+)-app-")
+_ENVIRONMENTS = {
+    "stg": ("Staging", "https://stg.ops.opre.acf.gov/"),
+    "prod": ("Production", "https://ops.opre.acf.gov/"),
+}
+
+
+def _deployed_environment() -> tuple[str, str] | tuple[None, None]:
+    match = _JOB_NAME_PATTERN.match(os.getenv("CONTAINER_APP_JOB_NAME", ""))
+    if not match:
+        return None, None
+    return _ENVIRONMENTS.get(match["env"], (None, None))
 
 
 class AzureConfig(DataToolsConfig):
@@ -78,6 +96,14 @@ class AzureConfig(DataToolsConfig):
     def email_sender_address(self) -> str | None:
         # See acs_connection_string above for why this returns None rather than raising.
         return os.getenv("EMAIL_SENDER_ADDRESS") or None
+
+    @property
+    def environment_label(self) -> str | None:
+        return _deployed_environment()[0]
+
+    @property
+    def frontend_url(self) -> str | None:
+        return _deployed_environment()[1]
 
     @property
     def file_storage_account_key(self) -> str | None:

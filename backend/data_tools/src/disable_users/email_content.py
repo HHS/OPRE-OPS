@@ -1,4 +1,4 @@
-"""Subject/body text for the disable_users notification emails (OPS-2102).
+"""Subject/body text for the disable_users notification and inactivity-warning emails (OPS-2102).
 
 Edit the strings and functions below to change what gets sent -- this file has no
 sending logic, only text.
@@ -35,3 +35,26 @@ def admin_summary_body(disabled_users: list[dict]) -> str:
         "these accounts should be reactivated."
     )
     return "\n".join(lines)
+
+
+def _days(days_remaining: int) -> str:
+    return "1 day" if days_remaining == 1 else f"{days_remaining} days"
+
+
+def inactivity_warning_subject(days_remaining: int, environment_label: str) -> str:
+    """Subject of the daily warning sent to a user whose account will soon be disabled.
+
+    Prefixed with "[STAGING] " when ``environment_label`` is "Staging"; otherwise untagged.
+    """
+    prefix = "[STAGING] " if environment_label == "Staging" else ""
+    return f"{prefix}Your OPS user account will be disabled within {_days(days_remaining)}"
+
+
+def inactivity_warning_body(email: str, days_remaining: int, environment_label: str, frontend_url: str) -> str:
+    """Body of the daily warning sent to a user whose account will soon be disabled."""
+    return (
+        f"Your OPRE OPS {environment_label} user account associated with the email address ({email}) will be "
+        f"automatically disabled within {_days(days_remaining)} due to inactivity.\n\n"
+        f"To keep your account active, log in to OPS {environment_label}:\n{frontend_url}\n\n"
+        "Do not reply to this email."
+    )

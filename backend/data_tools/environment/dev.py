@@ -43,6 +43,14 @@ class DevConfig(DataToolsConfig):
         return None
 
     @property
+    def environment_label(self) -> str | None:
+        return None
+
+    @property
+    def frontend_url(self) -> str | None:
+        return None
+
+    @property
     def file_storage_account_key(self) -> str | None:
         return None
 
