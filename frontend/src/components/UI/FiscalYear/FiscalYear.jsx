@@ -30,7 +30,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], show
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >
-                {showAllOption && <option value="All">All</option>}
+                {(showAllOption || fiscalYear === "All") && <option value="All">All</option>}
                 {/* "Multi" is display-only (disabled) - shown when multiple years selected via modal */}
                 {fiscalYear === "Multi" && (
                     <option
