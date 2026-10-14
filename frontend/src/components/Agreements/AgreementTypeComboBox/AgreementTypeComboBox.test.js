@@ -73,13 +73,39 @@ describe("AgreementTypeComboBox", () => {
             {
                 id: 1,
                 title: "Contract",
-                type: "CONTRACT"
+                type: "CONTRACT",
+                order: 0
             },
             {
-                id: 2,
+                id: 3,
                 title: "Grant",
-                type: "GRANT"
+                type: "GRANT",
+                order: 2
             }
+        ]);
+    });
+
+    it("renders the options in the canonical display order with Misc last", () => {
+        const { container } = render(
+            <AgreementTypeComboBox
+                selectedAgreementTypes={null}
+                setSelectedAgreementTypes={mockSetSelectedAgreementTypes}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const optionLabels = Array.from(container.querySelectorAll('[id*="option"]')).map((el) => el.textContent);
+
+        expect(optionLabels).toEqual([
+            "Contract",
+            "Direct Obligation",
+            "Grant",
+            "Partner - AA",
+            "Partner - IAA",
+            "Misc"
         ]);
     });
 });

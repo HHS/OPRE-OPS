@@ -21,11 +21,13 @@ export const AgreementTypeComboBox = ({
     overrideStyles = {},
     agreementTypeOptions = Object.values(AgreementType)
 }) => {
+    const canonicalOrder = Object.values(AgreementType);
     const typeOptions = agreementTypeOptions.map((type, index) => {
         const typeOption = {
             id: index + 1,
             title: convertCodeForDisplay("agreementType", type),
-            type: type
+            type: type,
+            order: canonicalOrder.indexOf(type)
         };
         return typeOption;
     });

@@ -2,18 +2,18 @@
  * Enum for agreement types.
  * @enum {string}
  * @property {string} CONTRACT
- * @property {string} GRANT
  * @property {string} DIRECT_OBLIGATION
- * @property {string} IAA
+ * @property {string} GRANT
  * @property {string} AA
+ * @property {string} IAA
  * @property {string} MISCELLANEOUS
  */
 export const AgreementType = {
     CONTRACT: "CONTRACT",
-    GRANT: "GRANT",
     DIRECT_OBLIGATION: "DIRECT_OBLIGATION",
-    IAA: "IAA",
+    GRANT: "GRANT",
     AA: "AA",
+    IAA: "IAA",
     MISCELLANEOUS: "MISCELLANEOUS"
 };
 
