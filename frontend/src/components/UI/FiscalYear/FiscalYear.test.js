@@ -126,7 +126,7 @@ describe("FiscalYear Component", () => {
         expect(multiOption).toBeInTheDocument();
     });
 
-    it("places 'All' option at the bottom when showAllOption is true", () => {
+    it("places 'All' option at the top when showAllOption is true", () => {
         const customYears = [2023, 2024, 2025];
 
         render(
@@ -141,10 +141,42 @@ describe("FiscalYear Component", () => {
         );
 
         const options = screen.getAllByRole("option");
-        const lastOption = options[options.length - 1];
+        const firstOption = options[0];
 
-        expect(lastOption).toHaveValue("All");
-        expect(lastOption).toHaveTextContent("All");
+        expect(firstOption).toHaveValue("All");
+        expect(firstOption).toHaveTextContent("All");
+    });
+
+    it("keeps 'All' option at the top after selecting a specific fiscal year", () => {
+        const customYears = [2023, 2024, 2025];
+
+        const { rerender } = render(
+            <Provider store={store}>
+                <FiscalYear
+                    fiscalYear="All"
+                    handleChangeFiscalYear={() => {}}
+                    fiscalYears={customYears}
+                    showAllOption={true}
+                />
+            </Provider>
+        );
+
+        const optionsWhenAllSelected = screen.getAllByRole("option");
+        expect(optionsWhenAllSelected[0]).toHaveValue("All");
+
+        rerender(
+            <Provider store={store}>
+                <FiscalYear
+                    fiscalYear={2024}
+                    handleChangeFiscalYear={() => {}}
+                    fiscalYears={customYears}
+                    showAllOption={true}
+                />
+            </Provider>
+        );
+
+        const optionsAfterSelectingYear = screen.getAllByRole("option");
+        expect(optionsAfterSelectingYear[0]).toHaveValue("All");
     });
 
     it("does not display duplicate 'All' options when fiscalYear is 'All' and showAllOption is true", () => {
