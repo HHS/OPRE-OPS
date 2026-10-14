@@ -78,6 +78,8 @@ const ProcurementDashboard = () => {
         const mapAgreementRows = (agreementList) => {
             const rows = [];
             for (const agreement of agreementList) {
+                if (agreement.is_awarded) continue;
+
                 const stepNumber = stepByAgreementId[agreement.id] ?? "";
                 const blis = (agreement.budget_line_items || []).filter(
                     (bli) => bli.fiscal_year === CURRENT_FISCAL_YEAR && bli.status === BLI_STATUS.EXECUTING

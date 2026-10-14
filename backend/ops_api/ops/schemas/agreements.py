@@ -273,6 +273,8 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     )
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
+    # Relied on by the Procurement Dashboard (OPS-6384) to exclude awarded agreements —
+    # do not remove without checking frontend/src/pages/procurementDashboard/
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
     award_type = fields.String(load_default=None, dump_default=None, required=False, allow_none=True)
     sc_start_date = fields.Date(allow_none=True)

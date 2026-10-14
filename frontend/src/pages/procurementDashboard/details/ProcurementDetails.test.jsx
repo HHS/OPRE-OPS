@@ -39,6 +39,7 @@ const makeAgreement = (overrides = {}) => ({
     budget_line_items: [],
     agreement_subtotal: 0,
     total_agreement_fees: 0,
+    is_awarded: false,
     ...overrides
 });
 
@@ -125,6 +126,69 @@ describe("ProcurementDetails", () => {
         renderComponent({ agreements, procurementTrackers });
 
         expect(screen.queryByTestId("expandable-row")).not.toBeInTheDocument();
+    });
+
+    it("excludes an awarded agreement from the step accordion", () => {
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
+        const agreements = [
+            makeAgreement({
+                id: 1,
+                display_name: "Awarded Agreement",
+                budget_line_items: [executingBli],
+                is_awarded: true
+            })
+        ];
+
+        const procurementTrackers = [{ agreement_id: 1, active_step_number: 6, steps: [] }];
+
+        renderComponent({ agreements, procurementTrackers });
+
+        expect(screen.queryByTestId("expandable-row")).not.toBeInTheDocument();
+    });
+
+    it("still shows a non-awarded agreement whose tracker is COMPLETED", () => {
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
+        const agreements = [
+            makeAgreement({
+                id: 1,
+                display_name: "Pending Award Agreement",
+                budget_line_items: [executingBli],
+                is_awarded: false
+            })
+        ];
+
+        const procurementTrackers = [{ agreement_id: 1, active_step_number: 6, status: "COMPLETED", steps: [] }];
+
+        renderComponent({ agreements, procurementTrackers });
+
+        expect(screen.getAllByTestId("expandable-row")).toHaveLength(1);
+    });
+
+    it("excludes only the awarded agreement from a mixed list", () => {
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
+        const agreements = [
+            makeAgreement({
+                id: 1,
+                display_name: "Awarded Agreement",
+                budget_line_items: [executingBli],
+                is_awarded: true
+            }),
+            makeAgreement({
+                id: 2,
+                display_name: "Not Yet Awarded",
+                budget_line_items: [executingBli],
+                is_awarded: false
+            })
+        ];
+
+        const procurementTrackers = [
+            { agreement_id: 1, active_step_number: 6, steps: [] },
+            { agreement_id: 2, active_step_number: 6, steps: [] }
+        ];
+
+        renderComponent({ agreements, procurementTrackers });
+
+        expect(screen.getAllByTestId("expandable-row")).toHaveLength(1);
     });
 
     it("resolves user display names from the users query", () => {

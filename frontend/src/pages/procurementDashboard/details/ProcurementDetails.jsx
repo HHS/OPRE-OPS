@@ -58,6 +58,7 @@ const ProcurementDetails = ({
         for (const tracker of procurementTrackers) {
             const agreement = agreementById[tracker.agreement_id];
             if (!agreement) continue;
+            if (agreement.is_awarded) continue;
 
             const hasExecutingBli = (agreement.budget_line_items || []).some(
                 (bli) => bli.fiscal_year === fiscalYear && bli.status === BLI_STATUS.EXECUTING

@@ -278,4 +278,43 @@ describe("ProcurementDashboardPage", () => {
         const allSheet = mockExportMultiSheetToXlsx.mock.calls[0][0].sheets[0];
         expect(allSheet.rows).toHaveLength(0);
     });
+
+    it("excludes awarded agreements from export", async () => {
+        mockUseGetAllAgreements.mockReturnValue({
+            agreements: [
+                {
+                    id: 30,
+                    name: "Awarded Agreement",
+                    agreement_type: "CONTRACT",
+                    procurement_shop: { abbr: "GCS" },
+                    award_type: "NEW",
+                    is_awarded: true,
+                    budget_line_items: [{ id: 300, fiscal_year: 2025, status: "IN_EXECUTION", amount: 1000, fees: 50 }]
+                }
+            ],
+            metadata: {
+                procurement_overview: null,
+                procurement_step_summary: null
+            },
+            isLoading: false,
+            error: null
+        });
+        mockUseGetAllProcurementTrackers.mockReturnValue({
+            procurementTrackers: [{ agreement_id: 30, active_step_number: 6 }],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        const user = userEvent.setup();
+        renderWithProviders(<ProcurementDashboard />);
+
+        await user.click(screen.getByText("Export"));
+
+        const sheets = mockExportMultiSheetToXlsx.mock.calls[0][0].sheets;
+        const allSheet = sheets[0];
+        expect(allSheet.rows).toHaveLength(0);
+        const step6Sheet = sheets.find((s) => s.name === "Step 6");
+        expect(step6Sheet.rows).toHaveLength(0);
+    });
 });
