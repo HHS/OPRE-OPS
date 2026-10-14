@@ -35,6 +35,7 @@ from models import (
     ProcurementTracker,
     ProcurementTrackerStepType,
 )
+from models.procurement_workflow import AWARD_APPROVED_STATUS
 from models.utils.fiscal_year import date_to_fiscal_year
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 
@@ -44,11 +45,6 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationEr
 # Mirrored on the frontend by isContractOrAaAgreement in helpers/agreement.helpers.js;
 # keep both in sync.
 _SUPPORTED_AGREEMENT_TYPES = (AgreementType.CONTRACT, AgreementType.AA)
-
-# The AWARD step's ``award_approval_status`` value that marks a Budget Team award
-# approval. Stored as a free-form String(20) column, so the literal is the contract
-# (matches the usage in ProcurementTrackerStepService).
-_AWARD_APPROVED_STATUS = "APPROVED"
 
 
 def _prefer_step_value(step_value: Optional[str], fallback: Optional[str]) -> Optional[str]:
@@ -194,7 +190,7 @@ class AgreementAwardHistoryService:
             award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
             # award_approval_status lives on the DefaultProcurementTrackerStep subclass;
             # getattr keeps this safe for any non-default step type.
-            if getattr(award_step, "award_approval_status", None) != _AWARD_APPROVED_STATUS:
+            if getattr(award_step, "award_approval_status", None) != AWARD_APPROVED_STATUS:
                 continue
             by_action.setdefault(tracker.procurement_action, tracker)
         return by_action

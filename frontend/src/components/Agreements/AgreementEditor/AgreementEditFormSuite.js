@@ -28,10 +28,9 @@ const suite = create((data = {}, fieldName) => {
     test("service_requirement_type", "This is required information", () => {
         if (isGrant) return;
         enforce(data.service_requirement_type).notEquals("-Select Service Requirement Type-");
-        // Only enforce presence while creating. Some existing non-grant agreements legitimately
-        // have no service_requirement_type; failing here would disable Save Changes on the edit
-        // screens for a field the user never touched. (issue #6230)
-        if (data.isNewAgreement) {
+        // Existing agreements only need it for the types the backend requires it for.
+        const isRequiredType = [AGREEMENT_TYPES.CONTRACT, AGREEMENT_TYPES.AA].includes(data.agreement_type);
+        if (data.isNewAgreement || isRequiredType) {
             enforce(data.service_requirement_type).isNotEmpty();
         }
     });
@@ -68,6 +67,11 @@ const suite = create((data = {}, fieldName) => {
     });
     test("procurement-shop-select", "This is required information", () => {
         if (isGrant) return;
+        // Skip the required check when the backend has locked the field (OPS-6312):
+        // otherwise an agreement with no procurement shop set AND a locking budget line
+        // (e.g. OBLIGATED) would show a permanent "required" error under a disabled
+        // dropdown the user can never clear, blocking Save Changes for every other edit.
+        if (data.procurementShopLocked) return;
         enforce(data["procurement-shop-select"]).isNotEmpty();
         enforce(data["procurement-shop-select"]?.id).greaterThan(0);
     });

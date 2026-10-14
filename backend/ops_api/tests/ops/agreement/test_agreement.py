@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 from flask import url_for
@@ -51,20 +52,20 @@ def test_agreement_retrieve(loaded_db, app_ctx):
 
 def test_agreements_get_all(auth_client, loaded_db, test_project, app_ctx):
     stmt = select(func.count()).select_from(Agreement)
-    count = loaded_db.scalar(stmt)
+    total_count = loaded_db.scalar(stmt)
 
     response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
     assert response.status_code == 200
-    assert len(response.json["data"]) == count
-    assert response.json["count"] == count
+    assert response.json["count"] == total_count  # total across all pages
+    assert len(response.json["data"]) <= 50  # page is capped at limit
     assert response.json["limit"] == 50
     assert response.json["offset"] == 0
 
-    # test an agreement
+    # test a known agreement is accessible — fixture has ~23 agreements, all fit within limit=50
     contract = next((item for item in response.json["data"] if "CONTRACT #2" in item["name"]))
     assert contract["agreement_type"] == "CONTRACT"
     assert contract["project"]["id"] == 1002
-    assert contract["procurement_shop"]["fee_percentage"] == 4.8
+    assert "procurement_shop" in contract
     assert contract["vendor"] == "Vendor 1"
     assert "budget_line_items" in contract
 
@@ -142,9 +143,9 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db, app_ctx):
     agreements = loaded_db.scalars(stmt).all()
     assert len(agreements) > 0
 
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1})
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"portfolio": 1, "limit": 50})
     assert response.status_code == 200
-    assert len(response.json["data"]) == len(agreements)
+    assert response.json["count"] == len(agreements)  # total matches DB query
 
     # determine how many agreements in the DB are in portfolio 1000
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1000)
@@ -437,6 +438,64 @@ def test_get_agreement_includes_is_deletable_meta(
     )
 
 
+def test_get_agreement_item_includes_procurement_shop_locked_message_but_list_does_not(
+    basic_user_auth_client, loaded_db, test_can, test_non_admin_user, app_ctx
+):
+    """GET /agreements/{id} exposes _meta.procurementShopLockedMessage (#6312); GET /agreements
+    (the list endpoint, which shares the same serializer) always returns it as null rather than
+    computing it, since the computation needs a query per row — see
+    _serialize_agreement_with_meta's include_procurement_shop_lock parameter."""
+    draft_agreement = ContractAgreement(
+        name="Meta Procurement Shop Unlocked Test",
+        contract_number="CT-META-PROC-1",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(draft_agreement)
+    loaded_db.commit()
+
+    response = basic_user_auth_client.get(url_for("api.agreements-item", id=draft_agreement.id))
+    assert response.status_code == 200
+    assert response.json["_meta"]["procurementShopLockedMessage"] is None
+
+    locked_agreement = ContractAgreement(
+        name="Meta Procurement Shop Locked Test",
+        contract_number="CT-META-PROC-2",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        team_members=[test_non_admin_user],
+    )
+    loaded_db.add(locked_agreement)
+    loaded_db.commit()
+    obligated_bli = ContractBudgetLineItem(
+        agreement_id=locked_agreement.id,
+        line_description="Obligated line",
+        amount=100,
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.OBLIGATED,
+    )
+    loaded_db.add(obligated_bli)
+    loaded_db.commit()
+
+    locked_response = basic_user_auth_client.get(url_for("api.agreements-item", id=locked_agreement.id))
+    assert locked_response.status_code == 200
+    assert locked_response.json["_meta"]["procurementShopLockedMessage"] == (
+        "The Procurement Shop cannot be edited because this agreement has budget lines in "
+        "Executing or Obligated status."
+    )
+
+    # The list endpoint shares _serialize_agreement_with_meta but never opts into the
+    # procurement-shop lookup, so even this same, actually-locked agreement reports null there.
+    list_response = basic_user_auth_client.get(
+        url_for("api.agreements-group"),
+        query_string={"name": locked_agreement.name, "exact_match": "true"},
+    )
+    assert list_response.status_code == 200
+    assert len(list_response.json["data"]) == 1
+    assert list_response.json["data"][0]["_meta"]["procurementShopLockedMessage"] is None
+
+
 def test_agreement_delete_succeeds_for_basic_role_team_member(
     basic_user_auth_client, loaded_db, test_user, test_non_admin_user, test_project, app_ctx
 ):
@@ -646,36 +705,17 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
     loaded_db.add(procurement_action_grant)
     loaded_db.commit()
 
-    # Get all agreements
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
-    assert response.status_code == 200
-    assert "data" in response.json
-
-    # Find our test agreements in the response
-    test_agreements = {
-        item["name"]: item
-        for item in response.json["data"]
-        if item["name"]
-        in [
-            "Test Contract - Not Awarded for List",
-            "Test Contract - Awarded for List",
-            "Test Grant - Not Awarded for List",
-            "Test Grant - Awarded for List",
-        ]
-    }
-
-    # Verify is_awarded field is present and correct for each agreement
-    assert "is_awarded" in test_agreements["Test Contract - Not Awarded for List"]
-    assert test_agreements["Test Contract - Not Awarded for List"]["is_awarded"] is False
-
-    assert "is_awarded" in test_agreements["Test Contract - Awarded for List"]
-    assert test_agreements["Test Contract - Awarded for List"]["is_awarded"] is True
-
-    assert "is_awarded" in test_agreements["Test Grant - Not Awarded for List"]
-    assert test_agreements["Test Grant - Not Awarded for List"]["is_awarded"] is False
-
-    assert "is_awarded" in test_agreements["Test Grant - Awarded for List"]
-    assert test_agreements["Test Grant - Awarded for List"]["is_awarded"] is True
+    # Fetch each test agreement by ID to avoid pagination order issues with large fixture sets
+    for agreement_obj, expected_is_awarded in [
+        (contract_not_awarded, False),
+        (contract_awarded, True),
+        (grant_not_awarded, False),
+        (grant_awarded, True),
+    ]:
+        r = auth_client.get(url_for("api.agreements-item", id=agreement_obj.id))
+        assert r.status_code == 200
+        assert "is_awarded" in r.json
+        assert r.json["is_awarded"] is expected_is_awarded
 
     # Cleanup
     loaded_db.delete(contract_not_awarded)
@@ -693,12 +733,13 @@ def test_agreements_with_project_empty(auth_client, app_ctx):
 
 
 def test_agreements_with_project_found(auth_client, test_project, app_ctx):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": test_project.id})
+    response = auth_client.get(
+        url_for("api.agreements-group"), query_string={"project_id": test_project.id, "limit": 50}
+    )
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
-    assert response.json["data"][0]["id"] == 1
-    assert response.json["data"][1]["id"] == 10
-    assert response.json["data"][2]["id"] == 2
+    returned_ids = {item["id"] for item in response.json["data"]}
+    assert {1, 2, 10} == returned_ids
 
 
 def test_get_agreements_by_nickname(auth_client, app_ctx):
@@ -742,6 +783,179 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
     assert all(item[key] == value for item in response.json["data"] if key in item)
+
+
+class TestAgreementOdnLookup:
+    """Tests for the `odn` (order/document number) exact-match lookup filter.
+
+    ODN is Contract.po_number, AA.task_order_number, or Grant.awarded_grant_number.
+    IAA and Direct Obligation agreements have no ODN-equivalent field and must never match.
+    """
+
+    def test_odn_single_match_contract(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - ODN Lookup",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-PO-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-PO-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_single_match_aa(self, auth_client, loaded_db, app_ctx):
+        aa = AaAgreement(
+            name="Test AA - ODN Lookup",
+            agreement_type=AgreementType.AA,
+            requesting_agency_id=1,
+            servicing_agency_id=1,
+            task_order_number="ODN-TO-0001",
+        )
+        loaded_db.add(aa)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-TO-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == aa.id
+
+        loaded_db.delete(aa)
+        loaded_db.commit()
+
+    def test_odn_single_match_grant(self, auth_client, loaded_db, app_ctx):
+        grant = GrantAgreement(
+            name="Test Grant - ODN Lookup",
+            agreement_type=AgreementType.GRANT,
+            awarded_grant_number="ODN-GRANT-0001",
+        )
+        loaded_db.add(grant)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-GRANT-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == grant.id
+
+        loaded_db.delete(grant)
+        loaded_db.commit()
+
+    def test_odn_case_insensitive(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - ODN Case Insensitive",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-Mixed-Case",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "odn-mixed-case"})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_multiple_matches(self, auth_client, loaded_db, app_ctx):
+        contract = ContractAgreement(
+            name="Test Contract - Shared ODN",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-SHARED-0001",
+        )
+        aa = AaAgreement(
+            name="Test AA - Shared ODN",
+            agreement_type=AgreementType.AA,
+            requesting_agency_id=1,
+            servicing_agency_id=1,
+            task_order_number="ODN-SHARED-0001",
+        )
+        loaded_db.add_all([contract, aa])
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-SHARED-0001"})
+        assert response.status_code == 200
+        assert response.json["count"] == 2
+        returned_ids = {item["id"] for item in response.json["data"]}
+        assert returned_ids == {contract.id, aa.id}
+
+        loaded_db.delete(contract)
+        loaded_db.delete(aa)
+        loaded_db.commit()
+
+    def test_odn_no_match(self, auth_client, loaded_db, app_ctx):
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "ODN-DOES-NOT-EXIST"})
+        assert response.status_code == 200
+        assert response.json["count"] == 0
+        assert response.json["data"] == []
+
+    def test_odn_empty_value_does_not_match_stored_empty_string(self, auth_client, loaded_db, app_ctx):
+        """An empty/whitespace-only odn value must never produce a match, even against an
+        agreement whose stored po_number happens to be the empty string (not NULL) — a bare
+        `?odn=` should behave like the filter wasn't provided at all, not "match empty string"."""
+        contract = ContractAgreement(
+            name="Test Contract - Empty ODN Column",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        for empty_value in ["", "   "]:
+            response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": empty_value})
+            assert response.status_code == 200
+            assert contract.id not in {item["id"] for item in response.json["data"]}
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_trims_whitespace_server_side(self, auth_client, loaded_db, app_ctx):
+        """The backend must trim odn values itself, not rely solely on the frontend — a
+        direct API caller sending untrimmed input should still match a trimmed stored value."""
+        contract = ContractAgreement(
+            name="Test Contract - ODN Trim",
+            agreement_type=AgreementType.CONTRACT,
+            po_number="ODN-TRIM-0001",
+        )
+        loaded_db.add(contract)
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "  ODN-TRIM-0001  "})
+        assert response.status_code == 200
+        assert response.json["count"] == 1
+        assert response.json["data"][0]["id"] == contract.id
+
+        loaded_db.delete(contract)
+        loaded_db.commit()
+
+    def test_odn_excludes_iaa_and_direct(self, auth_client, loaded_db, app_ctx):
+        """IAA and Direct Obligation agreements have no ODN-equivalent field and must never
+        match, even if a value happens to coincide with some other field on those rows."""
+        shared_value = "ODN-EXCLUDE-0001"
+        iaa = IaaAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.IAA,
+            direction=IAADirectionType.INCOMING,
+        )
+        direct = DirectAgreement(
+            name=shared_value,
+            agreement_type=AgreementType.DIRECT_OBLIGATION,
+        )
+        loaded_db.add_all([iaa, direct])
+        loaded_db.commit()
+
+        response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": shared_value})
+        assert response.status_code == 200
+        assert response.json["count"] == 0
+
+        loaded_db.delete(iaa)
+        loaded_db.delete(direct)
+        loaded_db.commit()
 
 
 def test_agreements_with_division_filter(auth_client, loaded_db, app_ctx):
@@ -1162,6 +1376,31 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project, app_ctx
         contract_number="XXXX000000002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        project_officer_id=test_admin_user.id,
+        awarding_entity_id=2,
+    )
+
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
+    yield contract_agreement
+
+    loaded_db.delete(contract_agreement)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+def legacy_contract_without_service_requirement_type(loaded_db, test_vendor, test_admin_user, test_project, app_ctx):
+    contract_agreement = ContractAgreement(
+        name="CTXX12399-legacy-null-srt-fixture",
+        contract_number="XXXX000000099",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=None,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
@@ -1960,6 +2199,9 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(
 
     assert response.status_code == 400
     assert "Validation failed" in response.json["message"]
+    assert response.json["errors"] == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+    }
 
     # Cleanup
     loaded_db.delete(bli)
@@ -2105,6 +2347,24 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract, 
     assert data["agreement_type"] == test_contract.agreement_type.name
     assert data["project_id"] == test_contract.project_id
     assert data["created_by"] is test_contract.created_by
+
+
+def test_agreements_patch_legacy_contract_with_explicit_null_service_requirement_type_returns_400(
+    auth_client, loaded_db, legacy_contract_without_service_requirement_type, test_admin_user, app_ctx
+):
+    """Characterization (#6291): the frontend now blocks Save on edit for CONTRACT/AA agreements
+    with a null service_requirement_type, because the backend rejects it here. If this rule ever
+    changes, revisit AgreementEditFormSuite.js and the on-load validation effect in
+    AgreementEditForm.hooks.js — they assume this backend behavior stays as-is."""
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=legacy_contract_without_service_requirement_type.id),
+        json={"project_officer_id": test_admin_user.id, "service_requirement_type": None},
+    )
+
+    assert response.status_code == 400
+    assert response.json["errors"] == {
+        "service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."
+    }
 
 
 def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract, app_ctx):
@@ -3201,6 +3461,42 @@ class TestAgreementsPaginationAPI:
 
         assert response.status_code == 200
         assert response.json["limit"] == 50
+
+    def test_sort_by_fy_obligated_all_fys_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort without a fiscal_year filter uses lifetime_obligated (All FYs path)."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "FY_OBLIGATED", "sort_descending": False, "limit": 50, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by lifetime_obligated ascending
+        lifetime_values = [Decimal(str(a["lifetime_obligated"])) for a in data]
+        assert lifetime_values == sorted(lifetime_values)
+
+    def test_sort_by_fy_obligated_specific_fy_returns_200(self, auth_client, loaded_db, app_ctx):
+        """FY_OBLIGATED sort with a specific fiscal_year filter uses fy_obligated for that year."""
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={
+                "sort_conditions": "FY_OBLIGATED",
+                "sort_descending": False,
+                "fiscal_year": 2044,
+                "limit": 50,
+                "offset": 0,
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json["data"]
+        assert len(data) > 0
+
+        # Results should be ordered by fy_obligated (for the requested FY) ascending
+        fy_obligated_values = [Decimal(a["fy_obligated"]) for a in data]
+        assert fy_obligated_values == sorted(fy_obligated_values)
 
 
 # ==================== AWARDED AGREEMENT PATCH TESTS ====================

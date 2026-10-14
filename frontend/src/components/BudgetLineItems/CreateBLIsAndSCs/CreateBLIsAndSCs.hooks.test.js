@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import useCreateBLIsAndSCs, { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.helpers";
 
 const setAlertMock = vi.fn();
 const navigateMock = vi.fn();
@@ -359,6 +360,56 @@ describe("useCreateBLIsAndSCs", () => {
         expect(duplicate.amount).toBe(original.amount);
     });
 
+    it("omits grant_number_id when duplicating a non-grant BLI (regression: issue #6163)", () => {
+        // A persisted CONTRACT BLI carries grant_number_id: null (the field only ever applies to
+        // GrantBudgetLineItem). Copying it verbatim into the duplicate's create payload sends an
+        // invalid kwarg to the backend for a ContractBudgetLineItem and 500s on Save & Exit.
+        const sourceBli = {
+            id: "source",
+            amount: 100000,
+            date_needed: "2027-08-31",
+            can_id: 1,
+            status: "PLANNED",
+            services_component_id: 11,
+            grant_number_id: null,
+            grant_number_number: null
+        };
+        const { result } = renderSubject({
+            budgetLines: [sourceBli],
+            selectedAgreement: { agreement_type: "CONTRACT" }
+        });
+
+        act(() => {
+            result.current.handleDuplicateBudgetLine(sourceBli.id);
+        });
+
+        const duplicate = dispatchMock.mock.calls[0][0].payload;
+        expect(duplicate).not.toHaveProperty("grant_number_id");
+        expect(duplicate).not.toHaveProperty("grant_number_number");
+    });
+
+    it("carries over grant_number_id when duplicating a grant BLI", () => {
+        const sourceBli = {
+            id: "source",
+            amount: 500,
+            date_needed: "2026-01-01",
+            can_id: 1,
+            status: "PLANNED",
+            grant_number_id: 10,
+            grant_number_number: 1
+        };
+        // renderSubject defaults selectedAgreement.agreement_type to GRANT.
+        const { result } = renderSubject({ budgetLines: [sourceBli] });
+
+        act(() => {
+            result.current.handleDuplicateBudgetLine(sourceBli.id);
+        });
+
+        const duplicate = dispatchMock.mock.calls[0][0].payload;
+        expect(duplicate.grant_number_id).toBe(10);
+        expect(duplicate.grant_number_number).toBe(1);
+    });
+
     it("still requires DD approval for a Planned financial change when the capability is OFF", async () => {
         const plannedLine = {
             id: 501,
@@ -605,11 +656,16 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(deleteAgreementMock).not.toHaveBeenCalled();
-        expect(setAlertMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 
-    it("deletes the agreement and navigates to the agreements list if one was already persisted before reaching step 3", async () => {
+    it("deletes the agreement and shows the cancel-agreement success alert if one was already persisted before reaching step 3", async () => {
         const { result } = renderHook(() =>
             useCreateBLIsAndSCs(
                 false, // isEditMode
@@ -638,8 +694,13 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(deleteAgreementMock).toHaveBeenCalledWith(1);
-        expect(setAlertMock).not.toHaveBeenCalled();
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(setAlertMock).toHaveBeenCalledWith({
+            type: "success",
+            heading: "Create New Agreement Cancelled",
+            message: "Your agreement has been cancelled.",
+            redirectUrl: "/agreements"
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 
     it("uses the latest review-mode suite result for page validation", async () => {
@@ -1254,6 +1315,66 @@ describe("useCreateBLIsAndSCs", () => {
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
         });
+
+        it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects via the unsaved-changes modal with suppressErrorAlert=true (regression)", async () => {
+            // Before this fix, sendExistingBLIsToApproval's own throw (for the partial-failure
+            // branch below) re-entered its own catch block, which immediately overwrote the
+            // "Error Sending Agreement Edits" alert with a generic "An error occurred..." one.
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("network error")) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            let savePromise;
+            act(() => {
+                // suppressErrorAlert=true isolates the assertion to the alert set inside
+                // sendExistingBLIsToApproval, rather than handleSave's own outer catch.
+                savePromise = result.current.handleSave(false, true, true);
+                // Attach a catch immediately so Node doesn't flag this as an unhandled
+                // rejection during the microtask window before the awaits below run.
+                savePromise.catch(() => {});
+            });
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+            });
+
+            await act(async () => {
+                await result.current.modalProps.handleConfirm();
+            });
+
+            await act(async () => {
+                await savePromise.catch(() => {});
+            });
+
+            const errorAlerts = setAlertMock.mock.calls.map((c) => c[0]).filter((a) => a.type === "error");
+            expect(errorAlerts).toHaveLength(1);
+            expect(errorAlerts[0].heading).toBe("Error Sending Agreement Edits");
+        });
     });
 
     it("redirects to the blocker's pending destination when saved via the unsaved-changes modal (regression: blocker.nextLocation typo)", async () => {
@@ -1494,9 +1615,8 @@ describe("isDeletionRoutedToApproval", () => {
         expect(isDeletionRoutedToApproval({ status: "DRAFT" }, false)).toBe(false);
     });
 
-    it("returns false for OBLIGATED / PLANNED_MOD (not approval-routed deletes)", () => {
+    it("returns false for an OBLIGATED line (not an approval-routed delete)", () => {
         expect(isDeletionRoutedToApproval({ status: "OBLIGATED" }, false)).toBe(false);
-        expect(isDeletionRoutedToApproval({ status: "PLANNED_MOD" }, false)).toBe(false);
     });
 
     it("returns false for a super user regardless of status", () => {

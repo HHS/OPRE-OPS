@@ -18,6 +18,7 @@ from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
     BudgetLineItemListResponseSchema,
     BudgetLineItemResponseSchema,
+    BudgetLineItemsBatchRequestSchema,
     MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
@@ -243,6 +244,67 @@ def _list_item_meta(
         meta["isDeletable"] = False
         meta["lockedMessage"] = None
     return meta
+
+
+class BudgetLineItemsBatchAPI(BaseListAPI):
+    """
+    Bulk-fetch full BudgetLineItem representations for a list of ids in a single request.
+
+    POST (not GET) only because the id list needs to travel in a JSON body rather than a
+    query string, which has practical length limits a large portfolio/fiscal-year combo
+    can exceed. This is still a read, gated by the same GET permission as the other BLI
+    read endpoints. Unknown ids are silently omitted from the response.
+    """
+
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._request_schema = BudgetLineItemsBatchRequestSchema()
+        # List schema: in_review/change_requests_in_review are load_only (batch-loaded and
+        # injected below instead), avoiding the per-row lazy-loads BudgetLineItemResponseSchema
+        # would trigger by dumping those from the BLI model properties.
+        self._response_schema_collection = BudgetLineItemListResponseSchema(many=True)
+        self._cr_schema = GenericChangeRequestResponseSchema(many=True)
+        self._meta_schema = MetaSchema()
+
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    def post(self) -> Response:
+        data = self._request_schema.load(request.json)
+
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        budget_line_items = service.get_batch(data["ids"])
+
+        bli_dict = {bli.id: bli for bli in budget_line_items}
+        bli_ids = list(bli_dict.keys())
+        agreement_ids = [bli.agreement_id for bli in budget_line_items]
+        change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
+
+        # Computed once per request (not per BLI) and reused via _list_item_meta, same as
+        # BudgetLineItemsListAPI.get - avoids a Role lookup and an association check per row.
+        is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+        is_super = is_super_user(current_user, current_app)
+        user_agreement_associations: dict = {}
+
+        serialized_blis = self._response_schema_collection.dump(budget_line_items)
+        for serialized_bli in serialized_blis:
+            bli_id = serialized_bli.get("id")
+            agreement_id = serialized_bli.get("agreement_id")
+            change_requests = get_change_requests_for_bli(bli_id, agreement_id, change_requests_data)
+            in_review = change_requests is not None
+            serialized_bli["in_review"] = in_review
+            serialized_bli["change_requests_in_review"] = (
+                self._cr_schema.dump(change_requests) if change_requests else None
+            )
+            serialized_bli["_meta"] = _list_item_meta(
+                serialized_bli,
+                bli_dict.get(bli_id),
+                {},
+                self._meta_schema,
+                is_budget_team,
+                is_super,
+                user_agreement_associations,
+            )
+
+        return make_response_with_headers(serialized_blis)
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

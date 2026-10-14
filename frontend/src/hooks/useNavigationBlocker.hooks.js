@@ -29,9 +29,15 @@ export default function useNavigationBlocker({
     // synchronously by the blocker predicate on every navigation attempt.
     const isBypassingRef = React.useRef(false);
 
+    // Never block the error page: the app sends users there on failures (a failed save's Alert
+    // redirectUrl, or a direct navigate("/error") on a query error) while hasChanged may still be true.
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
-            !isBypassingRef.current && !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
+            !isBypassingRef.current &&
+            !isCancelling &&
+            hasChanged &&
+            nextLocation.pathname !== "/error" &&
+            currentLocation.pathname !== nextLocation.pathname
     );
 
     const saveChangesRef = React.useRef(saveChanges);

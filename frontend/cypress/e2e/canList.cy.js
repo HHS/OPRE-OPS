@@ -17,6 +17,9 @@ const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
 };
 
 beforeEach(() => {
+    // Pin "today" so the rolling fiscal-year dropdown (current FY +/- 5) keeps FY 2021 selectable,
+    // matching the fixed FY 2021 fixture data this spec asserts against.
+    cy.clock(new Date(2026, 7, 1), ["Date"]);
     testLogin("division-director");
     cy.visit("/cans").wait(2000);
     cy.get("#fiscal-year-select").select("2023");
@@ -203,17 +206,30 @@ describe("CAN List Filtering", () => {
         // No CANs found
         cy.get("tbody").should("not.exist");
         cy.get("p.text-center").contains("No CANs found").should("exist");
-        // reset
+
+        // Reset clears the modal fields but must NOT fire a query — tags stay until Apply
         cy.get("button").contains("Filter").click();
         cy.get("button").contains("Reset").click();
+        cy.get("div").contains("Filters Applied:").should("exist");
+        cy.get("button[id='filter-tag-activePeriod-0']").should("exist");
+        cy.get("button[id='filter-tag-budget-4']").should("exist");
+        // Reset leaves the page-level FY dropdown untouched
+        cy.get("#fiscal-year-select").should("have.value", "2023");
 
+        // Apply commits the emptied modal — every tag clears, results revert to FY 2023
+        cy.get("button").contains("Apply").click();
         cy.get("div").contains("Filters Applied:").should("not.exist");
         cy.get("button[id='filter-tag-activePeriod-0']").should("not.exist");
         cy.get("button[id='filter-tag-portfolio-1']").should("not.exist");
         cy.get("button[id='filter-tag-transfer-2']").should("not.exist");
+        cy.get("button[id='filter-tag-can-3']").should("not.exist");
         cy.get("button[id='filter-tag-budget-4']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
+
+        // Dropdown-only FY changes never produce a tag (#5332 Filter Tags rule)
+        cy.get("#fiscal-year-select").select("2021");
+        cy.get("div").contains("Filters Applied:").should("not.exist");
     });
 
     // The three tests below are failing unpredictably in github. Skipping for now.

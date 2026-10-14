@@ -65,7 +65,7 @@ const agreements = [
         agreement_subtotal: 300,
         total_agreement_fees: 15,
         agreement_total: 315,
-        lifetime_obligated: 0,
+        lifetime_obligated: 75000,
         fy_obligated: "0",
         created_by: 1,
         notes: "Test notes",
@@ -148,10 +148,10 @@ it("does not render contract-only expanded fields for a GRANT agreement row", ()
 });
 
 describe("getTableHeadingsWithFY", () => {
-    it("returns 'FY Obligated' when fiscalYear is 'All'", () => {
+    it("returns 'Lifetime Obligated' when fiscalYear is 'All'", () => {
         const headings = getTableHeadingsWithFY("All");
         const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
-        expect(fyHeading.heading).toBe("FY Obligated");
+        expect(fyHeading.heading).toBe("Lifetime Obligated");
     });
 
     it("returns year-specific label for a specific fiscal year", () => {
@@ -161,11 +161,8 @@ describe("getTableHeadingsWithFY", () => {
     });
 });
 
-// Finding 3: FY Obligated header has no disabled state when "All" is selected.
-// AgreementsTable silently no-ops the click but passes no disabled prop to the
-// column header, unlike ProjectsTable which sets disabled={true} on SortableHeader.
-// This test should FAIL until the disabled prop (and aria/cursor treatment) is wired up.
-it("marks the FY Obligated column header as disabled when selectedFiscalYear is 'All'", () => {
+it("Lifetime Obligated column header is sortable (not disabled) when selectedFiscalYear is 'All'", () => {
+    const setSortConditions = vi.fn();
     render(
         <Provider store={store}>
             <BrowserRouter>
@@ -174,19 +171,19 @@ it("marks the FY Obligated column header as disabled when selectedFiscalYear is 
                     selectedFiscalYear="All"
                     sortConditions="AGREEMENT"
                     sortDescending={false}
-                    setSortConditions={vi.fn()}
+                    setSortConditions={setSortConditions}
                 />
             </BrowserRouter>
         </Provider>
     );
 
-    // The FY Obligated <th> button should be aria-disabled so screen readers
-    // and sighted users know it is not interactive under "All FYs".
-    const fyHeader = screen.getByRole("button", { name: /FY Obligated/i });
-    expect(fyHeader).toHaveAttribute("aria-disabled", "true");
+    const fyHeader = screen.getByRole("button", { name: /Lifetime Obligated/i });
+    expect(fyHeader).not.toHaveAttribute("aria-disabled");
+    fyHeader.click();
+    expect(setSortConditions).toHaveBeenCalled();
 });
 
-it("shows 'FY Obligated' column header and NO_DATA in the FY column when selectedFiscalYear is 'All'", () => {
+it("shows 'Lifetime Obligated' column header and lifetime obligated value in the FY column when selectedFiscalYear is 'All'", () => {
     render(
         <Provider store={store}>
             <BrowserRouter>
@@ -198,7 +195,8 @@ it("shows 'FY Obligated' column header and NO_DATA in the FY column when selecte
         </Provider>
     );
 
-    expect(screen.getByText("FY Obligated")).toBeInTheDocument();
+    expect(screen.getByText("Lifetime Obligated")).toBeInTheDocument();
     expect(screen.queryByText("FY26 Obligated")).not.toBeInTheDocument();
-    expect(screen.getByText(NO_DATA)).toBeInTheDocument();
+    expect(screen.queryByText(NO_DATA)).not.toBeInTheDocument();
+    expect(screen.getByText("$75,000.00")).toBeInTheDocument();
 });

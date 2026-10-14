@@ -1,10 +1,13 @@
 from datetime import date
 
 import pytest
+from loguru import logger
 from sqlalchemy import select, text
 
 from data_tools.src.backfill_procurement_tracker import (
+    backfill_missing_award_trackers,
     backfill_procurement_records,
+    get_agreements_missing_award_tracker,
     get_agreements_with_in_execution_blis,
 )
 from data_tools.src.common.utils import get_or_create_sys_user
@@ -16,6 +19,7 @@ from models.procurement_tracker import (
     ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
 )
 from models.procurement_workflow import (
     get_earliest_obligated_date_needed,
@@ -39,6 +43,11 @@ def db_with_agreements(loaded_db):
     # Procurement shop for awarding_entity_id
     proc_shop = ProcurementShop(id=9000, name="Test PSC", abbr="TPSC", created_by=uid)
     loaded_db.add(proc_shop)
+    loaded_db.commit()
+
+    # Agency for AaAgreement's required requesting/servicing agency FKs
+    agreement_agency = AgreementAgency(id=9000, name="Test Agency", requesting=True, servicing=True)
+    loaded_db.add(agreement_agency)
     loaded_db.commit()
 
     # Agreement 9001: IN_EXECUTION BLI, no tracker, no action → should be backfilled
@@ -81,6 +90,56 @@ def db_with_agreements(loaded_db):
     grant_1 = GrantAgreement(
         id=9008, name="Grant With Execution", project_id=9000, awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
+    # Agreement 9009: OBLIGATED BLI only (never IN_EXECUTION), no tracker, no action
+    # → should get a COMPLETED NEW_AWARD tracker/action backfilled
+    contract_9 = ContractAgreement(
+        id=9009,
+        name="Contract Obligated No Tracker",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    # Agreement 9010: AA agreement, OBLIGATED BLI, already has an AWARDED NEW_AWARD
+    # action but no tracker → tests AA eligibility + reusing the existing action
+    aa_10 = AaAgreement(
+        id=9010,
+        name="AA Obligated Already Awarded",
+        project_id=9000,
+        awarding_entity_id=9000,
+        requesting_agency_id=9000,
+        servicing_agency_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    # Agreement 9011: OBLIGATED BLI but already has a tracker → should be excluded
+    contract_11 = ContractAgreement(
+        id=9011,
+        name="Contract Obligated Has Tracker",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    # Agreement 9012: Grant with OBLIGATED BLI, no tracker → GRANT is not eligible, excluded
+    grant_2 = GrantAgreement(
+        id=9012,
+        name="Grant Obligated No Tracker",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    # Agreement 9013: IAA with OBLIGATED BLI, no tracker → IAA is eligible, included
+    iaa_1 = IaaAgreement(
+        id=9013,
+        name="IAA Obligated No Tracker",
+        project_id=9000,
+        awarding_entity_id=9000,
+        direction=IAADirectionType.INCOMING,
+        created_by=uid,
+        updated_by=uid,
+    )
     loaded_db.add_all(
         [
             contract_1,
@@ -91,6 +150,11 @@ def db_with_agreements(loaded_db):
             contract_6,
             contract_7,
             grant_1,
+            contract_9,
+            aa_10,
+            contract_11,
+            grant_2,
+            iaa_1,
         ]
     )
     loaded_db.commit()
@@ -155,7 +219,71 @@ def db_with_agreements(loaded_db):
     bli_11 = GrantBudgetLineItem(
         id=90011, agreement_id=9008, amount=1100, status=BudgetLineItemStatus.IN_EXECUTION, created_by=uid
     )
-    loaded_db.add_all([bli_1, bli_2, bli_3, bli_4, bli_5, bli_6, bli_7, bli_8, bli_9, bli_10, bli_11])
+    # BLI for agreement 9009: OBLIGATED only, no tracker/action yet
+    bli_12 = ContractBudgetLineItem(
+        id=90012,
+        agreement_id=9009,
+        amount=1200,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 5, 1),
+        created_by=uid,
+    )
+    # BLI for agreement 9010 (AA): OBLIGATED, already has an AWARDED action
+    bli_13 = AABudgetLineItem(
+        id=90013,
+        agreement_id=9010,
+        amount=1300,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2022, 2, 1),
+        created_by=uid,
+    )
+    # BLI for agreement 9011: OBLIGATED, but agreement already has a tracker
+    bli_14 = ContractBudgetLineItem(
+        id=90014,
+        agreement_id=9011,
+        amount=1400,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 6, 1),
+        created_by=uid,
+    )
+    # BLI for agreement 9012 (grant): OBLIGATED, no tracker/action — GRANT not eligible
+    bli_15 = GrantBudgetLineItem(
+        id=90015,
+        agreement_id=9012,
+        amount=1500,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 7, 1),
+        created_by=uid,
+    )
+    # BLI for agreement 9013 (IAA): OBLIGATED, no tracker/action — IAA is eligible
+    bli_16 = IAABudgetLineItem(
+        id=90016,
+        agreement_id=9013,
+        amount=1600,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 8, 1),
+        created_by=uid,
+    )
+    loaded_db.add_all(
+        [
+            bli_1,
+            bli_2,
+            bli_3,
+            bli_4,
+            bli_5,
+            bli_6,
+            bli_7,
+            bli_8,
+            bli_9,
+            bli_10,
+            bli_11,
+            bli_12,
+            bli_13,
+            bli_14,
+            bli_15,
+            bli_16,
+        ]
+    )
     loaded_db.commit()
 
     # Agreement 9002: already has both tracker and action
@@ -188,6 +316,36 @@ def db_with_agreements(loaded_db):
     loaded_db.add(pa_4)
     loaded_db.commit()
 
+    # Agreement 9010: already has an AWARDED NEW_AWARD action, no tracker
+    pa_10 = ProcurementAction(
+        agreement_id=9010,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.AWARDED,
+        date_awarded_obligated=date(2022, 1, 1),
+        created_by=uid,
+    )
+    loaded_db.add(pa_10)
+    loaded_db.commit()
+
+    # Agreement 9011: already has a NEW_AWARD action + tracker despite the OBLIGATED BLI
+    # — the exclusion is specifically on an existing NEW_AWARD tracker, not any tracker
+    # (see test_missing_award_tracker_query_includes_agreement_with_only_modification_tracker
+    # for the case where only a MODIFICATION tracker exists).
+    pa_11 = ProcurementAction(
+        agreement_id=9011,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.AWARDED,
+        date_awarded_obligated=date(2023, 6, 1),
+        created_by=uid,
+    )
+    loaded_db.add(pa_11)
+    loaded_db.flush()
+    tracker_11 = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9011, procurement_action=pa_11.id, status=ProcurementTrackerStatus.COMPLETED, created_by=uid
+    )
+    loaded_db.add(tracker_11)
+    loaded_db.commit()
+
     yield loaded_db
 
     loaded_db.rollback()
@@ -203,6 +361,10 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM grant_budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM contract_budget_line_item"))
     loaded_db.execute(text("DELETE FROM contract_budget_line_item_version"))
+    loaded_db.execute(text("DELETE FROM aa_budget_line_item"))
+    loaded_db.execute(text("DELETE FROM aa_budget_line_item_version"))
+    loaded_db.execute(text("DELETE FROM iaa_budget_line_item"))
+    loaded_db.execute(text("DELETE FROM iaa_budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM budget_line_item"))
     loaded_db.execute(text("DELETE FROM budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM procurement_action"))
@@ -211,8 +373,14 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM grant_agreement_version"))
     loaded_db.execute(text("DELETE FROM contract_agreement"))
     loaded_db.execute(text("DELETE FROM contract_agreement_version"))
+    loaded_db.execute(text("DELETE FROM aa_agreement"))
+    loaded_db.execute(text("DELETE FROM aa_agreement_version"))
+    loaded_db.execute(text("DELETE FROM iaa_agreement"))
+    loaded_db.execute(text("DELETE FROM iaa_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
+    loaded_db.execute(text("DELETE FROM agreement_agency"))
+    loaded_db.execute(text("DELETE FROM agreement_agency_version"))
     loaded_db.execute(text("DELETE FROM procurement_shop_fee"))
     loaded_db.execute(text("DELETE FROM procurement_shop_fee_version"))
     loaded_db.execute(text("DELETE FROM procurement_shop"))
@@ -224,6 +392,21 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM ops_db_history"))
     loaded_db.execute(text("DELETE FROM ops_db_history_version"))
     loaded_db.commit()
+
+
+@pytest.fixture()
+def captured_log_messages():
+    """Loguru's own sink-capture pattern (there is no caplog<->loguru bridge configured
+    in this codebase): add a temporary sink that appends formatted records to a list,
+    yield the list, then remove the temporary sink in teardown so it can't leak into
+    other tests even if an assertion in the test body fails.
+    """
+    messages: list[str] = []
+    handler_id = logger.add(lambda message: messages.append(message.record["message"]), level="INFO")
+    try:
+        yield messages
+    finally:
+        logger.remove(handler_id)
 
 
 # ---- Query tests ----
@@ -545,6 +728,128 @@ def test_backfill_is_idempotent(db_with_agreements):
     assert len(trackers_after_second) == len(trackers_after_first)
     assert len(actions_after_second) == len(actions_after_first)
     assert len(linked_blis_second) == len(linked_blis_first)
+
+
+def test_backfill_logs_agreements_touched_count(db_with_agreements, captured_log_messages):
+    """All 6 IN_EXECUTION agreements (9001-9004, 9007, 9008) get something created or
+    linked on a first run, so all 6 should be reported as touched."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    summary = [m for m in captured_log_messages if m.startswith("Backfill complete.")]
+    assert len(summary) == 1
+    assert "touched 6 agreement(s) (out of 6 found)." in summary[0]
+
+
+def test_backfill_second_run_touches_zero_agreements(db_with_agreements, captured_log_messages):
+    """A second run finds the same 6 agreements (the query doesn't depend on backfill
+    state) but should touch none of them, since everything is already created/linked."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+    captured_log_messages.clear()
+
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    summary = [m for m in captured_log_messages if m.startswith("Backfill complete.")]
+    assert len(summary) == 1
+    assert "touched 0 agreement(s) (out of 6 found)." in summary[0]
+
+
+def test_backfill_counts_touched_on_promotion_only_run(loaded_db, captured_log_messages):
+    """An agreement whose NEW_AWARD action/tracker already exist (PLANNED/ACTIVE, from an
+    earlier IN_EXECUTION-only run) and whose BLIs are already linked must still be counted
+    as touched when this run promotes the action to AWARDED and completes/approves the
+    tracker — those are real mutations with no create/link counter of their own.
+
+    Uses an isolated agreement (not the shared db_with_agreements fixture) so the touched
+    count in the summary log reflects only this one agreement."""
+    sys_user = get_or_create_sys_user(loaded_db)
+    loaded_db.commit()
+    uid = sys_user.id
+
+    project = ResearchProject(id=9100, title="Promotion Only Test Project", short_title="POTP")
+    loaded_db.add(project)
+    loaded_db.commit()
+
+    proc_shop = ProcurementShop(id=9100, name="Promotion Only PSC", abbr="POPSC", created_by=uid)
+    loaded_db.add(proc_shop)
+    loaded_db.commit()
+
+    contract = ContractAgreement(
+        id=9023,
+        name="Contract Promotion Only",
+        project_id=9100,
+        awarding_entity_id=9100,
+        created_by=uid,
+        updated_by=uid,
+    )
+    loaded_db.add(contract)
+    loaded_db.commit()
+
+    new_award_action = ProcurementAction(
+        agreement_id=9023,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=9100,
+        created_by=uid,
+    )
+    loaded_db.add(new_award_action)
+    loaded_db.flush()
+
+    new_award_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9023, procurement_action=new_award_action.id, created_by=uid
+    )
+    loaded_db.add(new_award_tracker)
+    loaded_db.flush()
+
+    mod_action = ProcurementAction(
+        agreement_id=9023,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=9100,
+        created_by=uid,
+    )
+    loaded_db.add(mod_action)
+    loaded_db.flush()
+
+    mod_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9023, procurement_action=mod_action.id, status=ProcurementTrackerStatus.ACTIVE, created_by=uid
+    )
+    mod_tracker.activate_first_step()
+    loaded_db.add(mod_tracker)
+    loaded_db.flush()
+
+    obligated_bli = ContractBudgetLineItem(
+        id=90023,
+        agreement_id=9023,
+        amount=2300,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 10, 1),
+        procurement_action_id=new_award_action.id,
+        created_by=uid,
+    )
+    execution_bli = ContractBudgetLineItem(
+        id=90024,
+        agreement_id=9023,
+        amount=2400,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        procurement_action_id=mod_action.id,
+        created_by=uid,
+    )
+    loaded_db.add_all([obligated_bli, execution_bli])
+    loaded_db.commit()
+
+    backfill_procurement_records(loaded_db, sys_user)
+
+    loaded_db.refresh(new_award_action)
+    loaded_db.refresh(new_award_tracker)
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
+    assert new_award_tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert new_award_tracker.get_step(ProcurementTrackerStepType.AWARD).award_approval_status == "APPROVED"
+
+    summary = [m for m in captured_log_messages if m.startswith("Backfill complete.")]
+    assert len(summary) == 1
+    assert "touched 1 agreement(s) (out of 1 found)." in summary[0]
 
 
 # ---- BLI linking tests (non-mod) ----
@@ -869,6 +1174,33 @@ def test_mod_scenario_links_in_execution_blis_to_modification(db_with_agreements
         ), f"BLI {bli_id} (IN_EXECUTION) should be linked to MODIFICATION action {mod_action.id}"
 
 
+def test_mod_scenario_new_award_step_is_approved(db_with_agreements):
+    """The NEW_AWARD tracker's AWARD step must be Budget-Team-approved, not just its
+    tracker COMPLETED — the Awards and Modifications tab gates on award_approval_status,
+    not tracker/step status (see agreement_award_history._approved_trackers_by_action)."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9007,
+            ProcurementTracker.procurement_action == new_award_action.id,
+        )
+    ).scalar_one()
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step is not None
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date == date(2024, 1, 15)
+
+
 def test_mod_scenario_sets_award_date_on_new_award_action(db_with_agreements):
     """NEW_AWARD action should have date_awarded_obligated set to the earliest OBLIGATED date_needed."""
     sys_user = get_or_create_sys_user(db_with_agreements)
@@ -1052,3 +1384,448 @@ def test_backfill_without_type_filter_processes_all(db_with_agreements):
             select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement_id)
         ).scalar_one_or_none()
         assert tracker is not None, f"Agreement {agreement_id} should have a tracker"
+
+
+# ---- Missing award tracker (CONTRACT/AA OBLIGATED, no tracker) query tests ----
+
+
+def test_missing_award_tracker_query_finds_obligated_contract(db_with_agreements):
+    """Agreement 9009: CONTRACT, OBLIGATED BLI, no tracker → included."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9009 in result_ids
+
+
+def test_missing_award_tracker_query_finds_obligated_aa(db_with_agreements):
+    """Agreement 9010: AA, OBLIGATED BLI, no tracker → included (AA is eligible)."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9010 in result_ids
+
+
+def test_missing_award_tracker_query_excludes_agreement_with_tracker(db_with_agreements):
+    """Agreement 9011 has an OBLIGATED BLI but already has a tracker → excluded."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9011 not in result_ids
+
+
+def test_missing_award_tracker_query_excludes_in_execution_only(db_with_agreements):
+    """Agreement 9001 has only an IN_EXECUTION BLI (no OBLIGATED) → excluded."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9001 not in result_ids
+
+
+def test_missing_award_tracker_query_excludes_grant(db_with_agreements):
+    """Agreement 9012: GRANT with an OBLIGATED BLI and no tracker → excluded, GRANT is not eligible."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9012 not in result_ids
+
+
+def test_missing_award_tracker_query_finds_obligated_iaa(db_with_agreements):
+    """Agreement 9013: IAA, OBLIGATED BLI, no tracker → included (IAA is eligible).
+
+    IAA awards backfilled this way are not yet shown on the Awards and Modifications
+    tab (ops_api's AgreementAwardHistoryService._SUPPORTED_AGREEMENT_TYPES is still
+    CONTRACT/AA only) — see the comment on AWARD_BACKFILL_AGREEMENT_TYPES."""
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9013 in result_ids
+
+
+# ---- Missing award tracker backfill tests ----
+
+
+def test_backfill_missing_award_creates_completed_tracker_for_obligated(db_with_agreements):
+    """Agreement 9009: OBLIGATED BLI, no tracker/action → COMPLETED tracker + AWARDED action created."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9009,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.date_awarded_obligated == date(2023, 5, 1)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9009,
+            ProcurementTracker.procurement_action == action.id,
+        )
+    ).scalar_one()
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert len(tracker.steps) == 6
+    for step in tracker.steps:
+        assert step.status == ProcurementTrackerStepStatus.COMPLETED
+
+    bli = db_with_agreements.get(BudgetLineItem, 90012)
+    assert bli.procurement_action_id == action.id
+
+
+def test_backfill_missing_award_step_is_approved(db_with_agreements):
+    """The backfilled AWARD step must be Budget-Team-approved so the award shows on the tab."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9009)
+    ).scalar_one()
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step is not None
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date == date(2023, 5, 1)
+
+
+def test_backfill_missing_award_leaves_date_unset_when_date_needed_is_null(db_with_agreements):
+    """When every OBLIGATED BLI's date_needed is null, the backfill must leave the award
+    date unset rather than guessing — no fallback to an agreement's existing award_date,
+    since fabricating a date here would mask a real data gap that should instead be
+    resolved by asking OPRE for the correct date."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    uid = sys_user.id
+
+    contract = ContractAgreement(
+        id=9020,
+        name="Contract Obligated Null Date Needed",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    db_with_agreements.add(contract)
+    db_with_agreements.commit()
+
+    bli = ContractBudgetLineItem(
+        id=90020,
+        agreement_id=9020,
+        amount=2000,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=None,
+        created_by=uid,
+    )
+    db_with_agreements.add(bli)
+    db_with_agreements.commit()
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9020,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.date_awarded_obligated is None
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9020,
+            ProcurementTracker.procurement_action == action.id,
+        )
+    ).scalar_one()
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+    assert award_step.award_date is None
+
+
+def test_missing_award_tracker_query_includes_agreement_with_only_modification_tracker(db_with_agreements):
+    """An agreement whose only existing tracker is a MODIFICATION (no NEW_AWARD tracker
+    at all) must still be found — excluding on ANY tracker, rather than specifically a
+    NEW_AWARD one, would leave its OBLIGATED BLI permanently un-awarded."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    uid = sys_user.id
+
+    contract = ContractAgreement(
+        id=9021,
+        name="Contract Obligated With Only Mod Tracker",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    db_with_agreements.add(contract)
+    db_with_agreements.commit()
+
+    bli = ContractBudgetLineItem(
+        id=90021,
+        agreement_id=9021,
+        amount=2100,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 9, 1),
+        created_by=uid,
+    )
+    db_with_agreements.add(bli)
+    db_with_agreements.commit()
+
+    mod_action = ProcurementAction(
+        agreement_id=9021,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        created_by=uid,
+    )
+    db_with_agreements.add(mod_action)
+    db_with_agreements.commit()
+
+    mod_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9021, procurement_action=mod_action.id, created_by=uid
+    )
+    db_with_agreements.add(mod_tracker)
+    db_with_agreements.commit()
+
+    results = get_agreements_missing_award_tracker(db_with_agreements)
+    result_ids = {a.id for a in results}
+    assert 9021 in result_ids
+
+
+def test_backfill_missing_award_backfills_when_only_modification_tracker_exists(db_with_agreements):
+    """The backfill itself must create a NEW_AWARD tracker/action for an agreement that
+    only has a MODIFICATION tracker, and must not touch that MODIFICATION tracker."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    uid = sys_user.id
+
+    contract = ContractAgreement(
+        id=9022,
+        name="Contract Obligated With Only Mod Tracker 2",
+        project_id=9000,
+        awarding_entity_id=9000,
+        created_by=uid,
+        updated_by=uid,
+    )
+    db_with_agreements.add(contract)
+    db_with_agreements.commit()
+
+    bli = ContractBudgetLineItem(
+        id=90022,
+        agreement_id=9022,
+        amount=2200,
+        status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2023, 9, 15),
+        created_by=uid,
+    )
+    db_with_agreements.add(bli)
+    db_with_agreements.commit()
+
+    mod_action = ProcurementAction(
+        agreement_id=9022,
+        award_type=AwardType.MODIFICATION,
+        status=ProcurementActionStatus.PLANNED,
+        created_by=uid,
+    )
+    db_with_agreements.add(mod_action)
+    db_with_agreements.commit()
+
+    mod_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=9022, procurement_action=mod_action.id, created_by=uid
+    )
+    db_with_agreements.add(mod_tracker)
+    db_with_agreements.commit()
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9022,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert new_award_action.status == ProcurementActionStatus.AWARDED
+
+    new_award_tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9022,
+            ProcurementTracker.procurement_action == new_award_action.id,
+        )
+    ).scalar_one()
+    assert new_award_tracker.status == ProcurementTrackerStatus.COMPLETED
+    award_step = new_award_tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+
+    bli_after = db_with_agreements.get(BudgetLineItem, 90022)
+    assert bli_after.procurement_action_id == new_award_action.id
+
+    # The existing MODIFICATION tracker/action must be left untouched.
+    db_with_agreements.refresh(mod_tracker)
+    db_with_agreements.refresh(mod_action)
+    assert mod_tracker.status == ProcurementTrackerStatus.ACTIVE
+    assert mod_action.status == ProcurementActionStatus.PLANNED
+
+
+def test_backfill_missing_award_reuses_existing_action(db_with_agreements):
+    """Agreement 9010 (AA) already has an AWARDED action — backfill should reuse it, not duplicate."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    existing_action = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9010)
+    ).scalar_one()
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    actions = (
+        db_with_agreements.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == 9010))
+        .scalars()
+        .all()
+    )
+    assert len(actions) == 1
+    assert actions[0].id == existing_action.id
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9010,
+            ProcurementTracker.procurement_action == existing_action.id,
+        )
+    ).scalar_one()
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+
+    # Its OBLIGATED BLI (bli_13, date_needed=2022-02-01) should be preferred over the
+    # existing action's own date_awarded_obligated (2022-01-01) for the AWARD step's date.
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_date == date(2022, 2, 1)
+
+    bli = db_with_agreements.get(BudgetLineItem, 90013)
+    assert bli.procurement_action_id == existing_action.id
+
+
+def test_backfill_missing_award_skips_agreement_with_existing_tracker(db_with_agreements):
+    """Agreement 9011 already has a NEW_AWARD tracker/action — it should not be touched
+    (no duplicate created) at all."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    trackers_before = (
+        db_with_agreements.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9011))
+        .scalars()
+        .all()
+    )
+    assert len(trackers_before) == 1
+    original_status = trackers_before[0].status
+
+    actions_before = (
+        db_with_agreements.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == 9011))
+        .scalars()
+        .all()
+    )
+    assert len(actions_before) == 1
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    trackers_after = (
+        db_with_agreements.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9011))
+        .scalars()
+        .all()
+    )
+    assert len(trackers_after) == 1
+    assert trackers_after[0].id == trackers_before[0].id
+    assert trackers_after[0].status == original_status
+
+    actions_after = (
+        db_with_agreements.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == 9011))
+        .scalars()
+        .all()
+    )
+    assert len(actions_after) == 1
+    assert actions_after[0].id == actions_before[0].id
+
+
+def test_backfill_missing_award_never_touches_grant(db_with_agreements):
+    """GRANT (9012) is not eligible — never gets a tracker/action, even though it has
+    an OBLIGATED BLI and no tracker."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9012)
+    ).scalar_one_or_none()
+    assert tracker is None, "Agreement 9012 (GRANT) should not have been backfilled"
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9012)
+    ).scalar_one_or_none()
+    assert action is None, "Agreement 9012 (GRANT) should not have been backfilled"
+
+
+def test_backfill_missing_award_creates_completed_tracker_for_iaa(db_with_agreements):
+    """Agreement 9013 (IAA): OBLIGATED BLI, no tracker/action → COMPLETED tracker +
+    AWARDED action created, same as CONTRACT/AA. Not shown on the Awards and
+    Modifications tab yet (that's a separate, frontend-touching product decision —
+    see the comment on AWARD_BACKFILL_AGREEMENT_TYPES), but the backend records exist."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9013,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.status == ProcurementActionStatus.AWARDED
+    assert action.date_awarded_obligated == date(2023, 8, 1)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9013,
+            ProcurementTracker.procurement_action == action.id,
+        )
+    ).scalar_one()
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+
+    award_step = tracker.get_step(ProcurementTrackerStepType.AWARD)
+    assert award_step.award_approval_status == "APPROVED"
+
+    bli = db_with_agreements.get(BudgetLineItem, 90016)
+    assert bli.procurement_action_id == action.id
+
+
+def test_backfill_missing_award_is_idempotent(db_with_agreements):
+    """Running the backfill twice should not create duplicate trackers, actions, or BLI links."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    trackers_first = db_with_agreements.execute(select(ProcurementTracker)).scalars().all()
+    actions_first = db_with_agreements.execute(select(ProcurementAction)).scalars().all()
+
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    trackers_second = db_with_agreements.execute(select(ProcurementTracker)).scalars().all()
+    actions_second = db_with_agreements.execute(select(ProcurementAction)).scalars().all()
+
+    assert len(trackers_second) == len(trackers_first)
+    assert len(actions_second) == len(actions_first)
+
+
+def test_backfill_missing_award_logs_agreements_touched_count(db_with_agreements, captured_log_messages):
+    """All 4 eligible agreements (9007 CONTRACT mod-scenario, 9009 CONTRACT, 9010 AA,
+    9013 IAA — each has an OBLIGATED BLI and no tracker at this point) get something
+    created or linked on a first run, so all 4 should be reported as touched."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    summary = [m for m in captured_log_messages if m.startswith("Award tracker backfill complete.")]
+    assert len(summary) == 1
+    assert "touched 4 agreement(s) (out of 4 found)." in summary[0]
+
+
+def test_full_backfill_pipeline_handles_mod_scenario_consistently(db_with_agreements):
+    """Running both backfill passes (as main() does) on the mod-scenario agreement 9007
+    should produce the same end state as backfill_procurement_records() alone."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+    backfill_missing_award_trackers(db_with_agreements, sys_user)
+
+    actions = (
+        db_with_agreements.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == 9007))
+        .scalars()
+        .all()
+    )
+    assert len(actions) == 2
+
+    trackers = (
+        db_with_agreements.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9007))
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 2

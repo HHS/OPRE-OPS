@@ -32,6 +32,7 @@ function GrantNumberListItem({ id, title, periodStart, periodEnd, setFormDataByI
             <section className="display-flex flex-justify">
                 <h2
                     className="margin-0"
+                    style={{ fontSize: "16px", fontWeight: "600" }}
                     data-cy={`Grant ${id}-grant-number-item-title`}
                 >
                     {title}

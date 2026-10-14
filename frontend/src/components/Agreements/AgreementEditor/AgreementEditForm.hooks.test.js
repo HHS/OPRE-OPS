@@ -80,6 +80,7 @@ vi.mock("./AgreementEditorContext.hooks", () => ({
 }));
 
 import useAgreementEditForm from "./AgreementEditForm.hooks";
+import suite from "./AgreementEditFormSuite";
 
 const makeAgreement = (overrides = {}) => ({
     id: undefined,
@@ -846,11 +847,12 @@ describe("useAgreementEditForm - runValidate project_officer validation", () => 
     it("isReviewMode effect flags a new unsaved agreement so the required service_requirement_type check fires", () => {
         // Regression guard: this effect's suite.run() must pass isNewAgreement like runValidate
         // does, or the AgreementEditFormSuite required-field rule (gated on data.isNewAgreement)
-        // silently never runs for it. (issue #6230)
+        // silently never runs for it. Uses a non-CONTRACT/AA type so this only passes via the
+        // isNewAgreement branch, not the separately-required CONTRACT/AA branch. (issue #6230)
         useEditAgreementMock.mockReturnValue(
             makeEditState({
                 id: undefined,
-                agreement_type: "CONTRACT",
+                agreement_type: "DIRECT_OBLIGATION",
                 service_requirement_type: null
             })
         );
@@ -913,5 +915,263 @@ describe("useAgreementEditForm - procurement-shop change request gating (SKIP_CR
         // No approval modal — the change is saved directly.
         expect(result.current.showModal).toBe(false);
         expect(updateAgreementMock).toHaveBeenCalled();
+    });
+});
+
+describe("useAgreementEditForm - procurement shop lock from backend _meta (OPS-6312)", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useGetVersionQueryMock.mockReturnValue({ data: { skip_cr_for_draft_planned: false } });
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1/edit" });
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it("disables the dropdown and shows the backend's message when procurementShopLockedMessage is set, even though isAgreementAwarded is false (the production shape — agreements with no is_awarded but a locking budget line)", () => {
+        useSelectorMock.mockReturnValue(false); // not superuser
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 522,
+                awarding_entity_id: null,
+                _meta: {
+                    procurementShopLockedMessage:
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(true);
+        expect(result.current.disabledMessage()).toBe(
+            "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
+        );
+    });
+
+    it("stays disabled with the same message for a superuser — the backend rule has no superuser exemption", () => {
+        useSelectorMock.mockReturnValue(true); // superuser
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 10,
+                _meta: {
+                    procurementShopLockedMessage: "The Procurement Shop cannot be edited on an awarded agreement."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        expect(result.current.isProcurementShopDisabled).toBe(true);
+        expect(result.current.disabledMessage()).toBe("The Procurement Shop cannot be edited on an awarded agreement.");
+    });
+
+    it("is enabled, with disabledMessage() falling back to 'Disabled', when procurementShopLockedMessage is null", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: 7, _meta: { procurementShopLockedMessage: null } }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+        expect(result.current.disabledMessage()).toBe("Disabled");
+    });
+
+    it("is enabled when _meta is entirely absent (the create-agreement wizard flow)", () => {
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(makeEditState({ id: undefined }));
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+    });
+
+    it("no longer depends on agreement.in_review — an unrelated BLI change request in review does not disable the field or show the proc-shop tooltip", () => {
+        // Before #6312, disabledMessage() branched on agreement.in_review (true for ANY in-review
+        // change request, including BLI-only ones), independent of isProcurementShopDisabled's
+        // own gate. That let an awarded agreement with only a BLI CR in review show the
+        // "pending edits...for the Procurement Shop" tooltip for the wrong reason. The backend
+        // message is now the only source, so an unrelated in-review flag has no effect.
+        useSelectorMock.mockReturnValue(false);
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 99,
+                in_review: true,
+                change_requests_in_review: [{ has_proc_shop_change: false }],
+                _meta: { procurementShopLockedMessage: null }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: false });
+
+        expect(result.current.isProcurementShopDisabled).toBe(false);
+        expect(result.current.disabledMessage()).toBe("Disabled");
+    });
+
+    it("keeps shouldRequestChange false when locked, even on the mixed-status shape (areAnyBudgetLinesPlanned true) where useHasStateChanged(null) would otherwise report a change at mount", () => {
+        // Guards the fix to shouldRequestChange's `&& !procurementShopLockedMessage` conjunct.
+        // Without it, this assertion would still pass vacuously unless areAnyBudgetLinesPlanned
+        // is true (it's a required conjunct of shouldRequestChange) — so this must set it true
+        // to actually exercise parity gap #4's shape.
+        useSelectorMock.mockReturnValue(false); // not superuser/budget-team, so canEditDirectly is false
+        hasStateChangedMock.mockReturnValue(true); // simulates useHasStateChanged(null) === true at mount
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 525,
+                awarding_entity_id: null,
+                _meta: {
+                    procurementShopLockedMessage:
+                        "The Procurement Shop cannot be edited because this agreement has budget lines in Executing or Obligated status."
+                }
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm({
+            isAgreementAwarded: false,
+            areAnyBudgetLinesPlanned: true
+        });
+
+        expect(result.current.shouldRequestChange).toBe(false);
+    });
+});
+
+describe("useAgreementEditForm - service_requirement_type on load for existing agreements", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it.each([
+        ["agreement details edit", "/agreements/123", true],
+        ["edit wizard", "/agreements/edit/123", undefined]
+    ])("flags a null value on an existing CONTRACT and disables Save (%s)", (_label, pathname, isEditMode) => {
+        useLocationMock.mockReturnValue({ pathname });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
+        expect(result.current.shouldDisableBtn).toBe(true);
+    });
+
+    it("does not flag an existing CONTRACT that has a value", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
+        expect(result.current.shouldDisableBtn).toBe(false);
+    });
+
+    it("clears the error and enables Save once the user picks a value", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toContain("This is required information");
+        expect(result.current.shouldDisableBtn).toBe(true);
+
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+        // The on-load effect's forceServiceReqTypeValidationRerender() call schedules a
+        // follow-up render after runValidate mutates the suite's internal state, so a single
+        // rerender() (to commit the new agreement) is enough to observe the update.
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+        expect(result.current.res.isTested("service_requirement_type")).toBe(true);
+        expect(result.current.shouldDisableBtn).toBe(false);
+    });
+
+    it("does not flag a new unsaved agreement on load before the user interacts", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ id: undefined, agreement_type: "CONTRACT", service_requirement_type: null })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm();
+        rerender();
+
+        expect(result.current.res.getErrors("service_requirement_type")).toEqual([]);
+    });
+
+    it("does not re-validate service_requirement_type when an unrelated field changes", () => {
+        useLocationMock.mockReturnValue({ pathname: "/agreements/123" });
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+
+        const runSpy = vi.spyOn(suite, "run");
+        const { rerender } = renderUseAgreementEditForm({ isEditMode: true });
+        rerender();
+
+        const srtRunCalls = () => runSpy.mock.calls.filter(([, field]) => field === "service_requirement_type").length;
+        const callsAfterMount = srtRunCalls();
+        expect(callsAfterMount).toBeGreaterThan(0);
+
+        // Renaming the agreement produces a new `agreement` object (and thus a new `runValidate`
+        // reference), but id and service_requirement_type are unchanged, so the on-load check
+        // should not run again.
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Legacy Contract Renamed",
+                project_id: 1,
+                agreement_type: "CONTRACT",
+                service_requirement_type: "SEVERABLE"
+            })
+        );
+        rerender();
+
+        expect(srtRunCalls()).toBe(callsAfterMount);
+
+        runSpy.mockRestore();
     });
 });

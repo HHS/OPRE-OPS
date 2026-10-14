@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterTags from "./BLIFilterTags";
-import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 // Mock child components
 vi.mock("../../../components/UI/FilterTags/FilterTags", () => ({
@@ -26,8 +26,6 @@ vi.mock("../../../components/UI/FilterTags/FilterTagsWrapper", () => ({
 
 describe("BLIFilterTags", () => {
     const mockSetFilters = vi.fn();
-    // Use Approach A (default) for tests - same behavior as current PR
-    const mockFyHelpers = getFiscalYearHelpers(false);
 
     const defaultFilters = {
         fiscalYears: [],
@@ -48,7 +46,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -68,7 +65,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -86,7 +82,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -105,7 +100,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -132,7 +126,6 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={filtersWithNullish}
                     setFilters={mockSetFilters}
-                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -151,7 +144,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -185,7 +177,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -196,13 +187,13 @@ describe("BLIFilterTags", () => {
             expect(mockSetFilters).toHaveBeenCalled();
         });
 
-        // For fiscalYears, empty array means "All" → set to null
+        // Under Model B, removing the last FY tag produces [] (not null)
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback({
             fiscalYears: [{ id: 2024, title: 2024 }]
         });
 
-        expect(result.fiscalYears).toBeNull();
+        expect(result.fiscalYears).toEqual([]);
     });
 
     it.each([
@@ -221,7 +212,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -254,7 +244,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -275,12 +264,48 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
         expect(screen.getByTestId("remove-tag-DRAFT")).toBeInTheDocument();
         expect(screen.getByTestId("remove-tag-PLANNED")).toBeInTheDocument();
+    });
+
+    it("renders and removes the In Review status tag", async () => {
+        const filters = {
+            ...defaultFilters,
+            bliStatus: [
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
+            ]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`)).toBeInTheDocument();
+
+        const removeButton = screen.getByTestId(`remove-tag-${BLI_STATUS.IN_REVIEW}`);
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({
+            bliStatus: [
+                { id: 1, title: BLI_STATUS.DRAFT },
+                { id: 2, title: BLI_STATUS.IN_REVIEW }
+            ]
+        });
+
+        expect(result.bliStatus).toHaveLength(1);
+        expect(result.bliStatus[0].title).toBe(BLI_STATUS.DRAFT);
     });
 
     it("renders budget range tag", () => {
@@ -293,7 +318,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -310,7 +334,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -335,7 +358,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -356,7 +378,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -374,7 +395,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -391,7 +411,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filtersWithDisplayName}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
         expect(screen.getByTestId("remove-tag-Display Name Only")).toBeInTheDocument();
@@ -404,7 +423,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filtersWithNameOnly}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
         expect(screen.getByTestId("remove-tag-Full Name Only")).toBeInTheDocument();
@@ -423,7 +441,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -456,7 +473,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -489,7 +505,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -513,7 +528,6 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={allNullFilters}
                     setFilters={mockSetFilters}
-                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -534,7 +548,6 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
-                fyHelpers={mockFyHelpers}
             />
         );
 

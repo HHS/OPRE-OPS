@@ -1,12 +1,16 @@
 """Concrete validation rules for agreement updates."""
 
-from models import Agreement, AgreementType, BudgetLineItemStatus, ResearchMethodology, SpecialTopic
+from models import Agreement, AgreementType, ResearchMethodology, SpecialTopic
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import check_user_association
+from ops_api.ops.utils.agreements_helpers import (
+    ProcurementShopLockReason,
+    check_user_association,
+    get_procurement_shop_locked_reason,
+)
 from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
@@ -58,7 +62,14 @@ class AgreementTypeImmutableRule(ValidationRule):
 
 
 class ProcurementShopChangeRule(ValidationRule):
-    """Validates procurement shop changes based on budget line status."""
+    """
+    Validates procurement shop changes based on budget line status and in-review change requests.
+
+    Calls ``get_procurement_shop_locked_reason`` (``agreements_helpers.py``) for the BLI and
+    change-request checks, so the UI's disabled-dropdown signal and this rule's rejection can't
+    drift apart (OPS-6312). Deliberately does NOT raise on the AWARDED reason — that's
+    ImmutableAwardedFieldsRule's job (it exempts superusers; this rule doesn't exempt anyone).
+    """
 
     @property
     def name(self) -> str:
@@ -66,28 +77,23 @@ class ProcurementShopChangeRule(ValidationRule):
 
     def validate(self, agreement: Agreement, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
-        if "awarding_entity_id" in updated_fields and agreement.awarding_entity_id != updated_fields.get(
+        if "awarding_entity_id" not in updated_fields or agreement.awarding_entity_id == updated_fields.get(
             "awarding_entity_id"
         ):
-            if any(
-                list(BudgetLineItemStatus.__members__.values()).index(bli.status)
-                >= list(BudgetLineItemStatus.__members__.values()).index(BudgetLineItemStatus.IN_EXECUTION)
-                for bli in agreement.budget_line_items
-            ):
-                raise ValidationError(
-                    {
-                        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
-                    }
-                )
+            return
 
-            if agreement.change_requests_in_review and any(
-                cr.has_proc_shop_change for cr in agreement.change_requests_in_review
-            ):
-                raise ValidationError(
-                    {
-                        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement that is currently in review."
-                    }
-                )
+        reason = get_procurement_shop_locked_reason(agreement, context.user)
+        if reason == ProcurementShopLockReason.BLI_IN_EXECUTION:
+            raise ValidationError(
+                {
+                    "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+                }
+            )
+        if reason == ProcurementShopLockReason.CHANGE_REQUEST_IN_REVIEW:
+            raise ValidationError(
+                {"awarding_entity_id": "Cannot change Procurement Shop for an Agreement that is currently in review."}
+            )
+        # AWARDED is deliberately not raised here; ImmutableAwardedFieldsRule owns that (and exempts superusers).
 
 
 class ResearchMetadataRule(ValidationRule):

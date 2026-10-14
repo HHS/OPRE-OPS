@@ -254,6 +254,7 @@ data/
 
 # Claude Code
 .claude/settings.local.json
+.playwright-mcp/
 
 .vscode/mcp.json
 
@@ -270,3 +271,6 @@ storybook-static
 
 .worktrees/
 progress/
+performance_tests/results/**/*.html
+performance_tests/results/**/*.csv
+performance_tests/results/**/*_stats_history.csv

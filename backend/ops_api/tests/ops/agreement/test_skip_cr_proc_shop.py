@@ -135,7 +135,7 @@ def test_proc_shop_change_applies_directly_when_flag_on(
 ):
     """Flag ON + PLANNED BLI: proc-shop change applies immediately (200), no change request."""
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
 
     service = AgreementsService(loaded_db)
     agreement, status_code = service.update(
@@ -161,7 +161,7 @@ def test_proc_shop_change_creates_cr_when_flag_off(
 ):
     """Flag OFF + PLANNED BLI: proc-shop change routes through a change request (202). Regression."""
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
     monkeypatch.setattr("ops_api.ops.services.change_requests.current_user", loaded_db.get(User, 522))
 
     service = AgreementsService(loaded_db)
@@ -193,17 +193,20 @@ def test_proc_shop_change_still_blocked_for_in_execution_when_flag_on(
     from ops_api.ops.services.ops_service import ValidationError
 
     monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: test_admin_user)
-    monkeypatch.setattr("ops_api.ops.services.agreements.associated_with_agreement", lambda _: True)
+    monkeypatch.setattr("ops_api.ops.services.agreements.check_user_association", lambda *_: True)
 
     test_planned_bli.status = BudgetLineItemStatus.IN_EXECUTION
     loaded_db.commit()
 
     service = AgreementsService(loaded_db)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         service.update(
             test_grant_agreement.id,
             {"awarding_entity_id": 2, "agreement_cls": GrantAgreement},
         )
+    assert exc_info.value.validation_errors == {
+        "awarding_entity_id": "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
+    }
 
 
 def test_proc_shop_change_via_edit_bundle_writes_history_when_flag_on(

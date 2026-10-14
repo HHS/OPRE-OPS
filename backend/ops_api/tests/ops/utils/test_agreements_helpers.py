@@ -8,6 +8,7 @@ from unittest.mock import Mock
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from models import AgreementType, GrantAgreement
 from models.budget_line_items import BudgetLineItemStatus
 from ops_api.ops.utils.agreements_helpers import (
     AGREEMENT_NAME_UNIQUE_INDEX,
@@ -16,6 +17,7 @@ from ops_api.ops.utils.agreements_helpers import (
     get_pre_award_notification_directors_for_agreement,
     is_agreement_name_unique_violation,
     is_unique_violation,
+    update_agreement,
 )
 
 
@@ -214,3 +216,36 @@ class TestGetPreAwardNotificationDirectors:
 
         assert directors == []
         assert deputies == []
+
+
+class TestUpdateAgreement:
+    """Tests for update_agreement(agreement, data) — the generic mass-assignment helper
+    used by the change-request approval flow (ChangeRequestService._apply_agreement_changes)."""
+
+    def test_update_agreement_sets_allowed_column(self):
+        agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+        update_agreement(agreement, {"name": "Updated Grant Name"})
+        assert agreement.name == "Updated Grant Name"
+
+    def test_update_agreement_ignores_keys_that_are_not_real_columns(self):
+        agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+        update_agreement(agreement, {"not_a_real_column": "value"})
+        assert not hasattr(agreement, "not_a_real_column")
+
+    def test_update_agreement_refuses_to_set_awarded_grant_number(self):
+        """OPS-6308: awarded_grant_number must stay unreachable through the change-request
+        approval flow's generic mass-assignment (update_agreement, called from
+        ChangeRequestService._apply_agreement_changes with the raw, unvalidated
+        requested_change_data blob) the same way it's excluded from GrantAgreementData's
+        write schema on the normal create/update API. Without this guard, a Division
+        Director could PATCH a change request's requested_change_data directly, then
+        approve it, and spoof/duplicate a Grant's ODN despite the write-schema restriction."""
+        agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+        update_agreement(agreement, {"awarded_grant_number": "ODN-SPOOFED"})
+        assert agreement.awarded_grant_number is None
+
+    def test_update_agreement_still_applies_other_fields_alongside_the_disallowed_one(self):
+        agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+        update_agreement(agreement, {"name": "Updated Name", "awarded_grant_number": "ODN-SPOOFED"})
+        assert agreement.name == "Updated Name"
+        assert agreement.awarded_grant_number is None

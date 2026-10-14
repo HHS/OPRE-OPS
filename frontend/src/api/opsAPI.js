@@ -79,6 +79,7 @@ export const opsApi = createApi({
         "SpecialTopics",
         "ServicesComponents",
         "GrantNumbers",
+        "ProductServiceCodes",
         "ChangeRequests",
         "Divisions",
         "Documents",
@@ -98,13 +99,15 @@ export const opsApi = createApi({
                     portfolio,
                     agreementName,
                     nickName,
+                    odn,
                     agreementType,
                     projectTitle,
                     contractNumber,
                     awardType,
                     awardingEntityId,
                     division,
-                    includeProcurement
+                    includeProcurement,
+                    includeBudgetLines = true
                 },
                 onlyMy,
                 sortConditions,
@@ -136,6 +139,9 @@ export const opsApi = createApi({
                 if (nickName) {
                     nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
+                if (odn) {
+                    odn.forEach((value) => queryParams.push(`odn=${encodeURIComponent(value)}`));
+                }
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
@@ -160,6 +166,9 @@ export const opsApi = createApi({
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
+                }
+                if (!includeBudgetLines) {
+                    queryParams.push("include_budget_lines=false");
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -442,6 +451,15 @@ export const opsApi = createApi({
             query: (id) => `/budget-line-items/${id}`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItemsBatch: builder.query({
+            query: ({ ids }) => ({
+                url: "/budget-line-items-batch/",
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: { ids }
+            }),
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -525,7 +543,7 @@ export const opsApi = createApi({
             providesTags: ["Projects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, filters } = {}) => {
                 const queryParams = [];
 
                 // Add filter parameters if they exist and are not empty
@@ -571,21 +589,12 @@ export const opsApi = createApi({
                     }
                 }
 
-                // Legacy fiscal year parameter (when not using filters)
-                if (
-                    fiscalYear &&
-                    fiscalYear !== "All" &&
-                    (!filters || !filters.fiscalYear || filters.fiscalYear.length === 0)
-                ) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
-                }
-
                 if (sortConditions) {
                     queryParams.push(`sort_field=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
-                    // FY_TOTAL sort requires a fiscal year to sort by
-                    if (sortConditions === "FY_TOTAL" && fiscalYear && fiscalYear !== "All") {
-                        queryParams.push(`sort_fiscal_year=${fiscalYear}`);
+                    // FY_TOTAL sort requires a single resolved fiscal year to sort by
+                    if (sortConditions === "FY_TOTAL" && filters?.fiscalYear?.length === 1) {
+                        queryParams.push(`sort_fiscal_year=${filters.fiscalYear[0].id}`);
                     }
                 }
                 if (limit !== undefined && limit !== null) {
@@ -1337,7 +1346,7 @@ export const {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
-    useLazyGetBudgetLineItemQuery,
+    useLazyGetBudgetLineItemsBatchQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,

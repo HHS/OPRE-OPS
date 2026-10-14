@@ -123,6 +123,19 @@ paths:
           style: form
           explode: true
         - in: query
+          name: odn
+          description: >
+            Order/document number (ODN) to find agreements by exact match (case-insensitive).
+            Matches Contract po_number, Assisted Acquisition task_order_number, or Grant
+            awarded_grant_number. IAA and Direct Obligation agreements have no ODN-equivalent
+            field and are never returned by this filter.
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
           name: only_my
           description: Only includes agreements that a user owns
           schema:
@@ -482,6 +495,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -549,6 +563,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -4417,6 +4432,39 @@ paths:
                         format: float
                     description: The range of budget line totals (amount + fees) available in the dataset
 
+  /budget-line-items-batch/:
+    post:
+      tags:
+        - Budget Line Items
+      operationId: getBudgetLineItemsBatch
+      description: >-
+        Bulk-fetch full budget line item representations for a list of ids in a single
+        request. POST (not GET) only because the id list travels in a JSON body rather
+        than a query string, which has practical length limits a large portfolio/fiscal-year
+        combo can exceed. This is a read, gated by the same permission as
+        GET /budget-line-items/{id}. Unknown ids are silently omitted from the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetLineItemsBatchRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetLineItem"
+        "400":
+          description: Bad Request — ids missing, empty, or exceeds the 50-item limit
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
   /budget-line-items/:
     get:
       tags:
@@ -7889,6 +7937,18 @@ components:
           type: integer
         division:
           $ref: "#/components/schemas/Division"
+    BudgetLineItemsBatchRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: integer
+          example: [1, 2, 3]
     BudgetLineItemRequest:
       type: object
       properties:
@@ -9784,6 +9844,25 @@ components:
             - awarding_entity_id
             - agreement_reason
 
+    AgreementMetaSchema:
+      description: >-
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage.
+      allOf:
+        - $ref: "#/components/schemas/MetaSchema"
+        - type: object
+          properties:
+            procurementShopLockedMessage:
+              type: string
+              nullable: true
+              description: >-
+                Server-computed human-readable reason the Procurement Shop dropdown is locked
+                (any budget line in Executing or Obligated status; a procurement-shop
+                change request in review; or the agreement is awarded, for non-super users) that
+                the frontend cannot derive on its own. Null when the Procurement Shop can be
+                changed. Only populated on GET /agreements/{id} — always null in the
+                GET /agreements list response, since computing it there would add a database
+                query per row.
+
     AgreementResponse:
       allOf:
         - $ref: "#/components/schemas/AgreementData"
@@ -9853,7 +9932,7 @@ components:
                 - NEW
                 - CONTINUING
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name
@@ -9920,7 +9999,7 @@ components:
             updated_on:
               $ref: "#/components/parameters/updated_on"
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name
@@ -10009,6 +10088,14 @@ components:
             nofo_number:
               type: string
               nullable: true
+            awarded_grant_number:
+              type: string
+              nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true
@@ -10033,6 +10120,14 @@ components:
             nofo_number:
               type: string
               nullable: true
+            awarded_grant_number:
+              type: string
+              nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
             aln_numbers:
               type: array
               nullable: true
@@ -10254,7 +10349,7 @@ components:
           description: CAN (Contract Account Number) ID
         status:
           type: string
-          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED, PLANNED_MOD]
+          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED]
           description: Status of the budget line item
         date_needed:
           type: string

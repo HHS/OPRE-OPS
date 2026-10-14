@@ -29,10 +29,11 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
- * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" suppresses the FY Obligated value.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
+export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowActions = false }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -41,7 +42,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const fyObligatedAmount = isSuccess && selectedFiscalYear !== "All" ? Number(agreement?.fy_obligated ?? 0) : null;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyObligatedAmount = isSuccess && !isAllFY ? Number(agreement?.fy_obligated ?? 0) : null;
 
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
@@ -66,7 +68,9 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
         ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
         : "";
 
-    const changeIcons = canEditByRole ? (
+    const showRowActions = canEditByRole && !disableRowActions;
+
+    const changeIcons = showRowActions ? (
         <ChangeIcons
             item={agreement ?? {}}
             isItemEditable={isEditable ?? false}
@@ -97,8 +101,10 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded && canEditByRole ? (
+                {isRowActive && !isExpanded && showRowActions ? (
                     <div>{changeIcons}</div>
+                ) : isAllFY ? (
+                    formatCurrency(lifetimeObligated)
                 ) : fyObligatedAmount !== null ? (
                     formatCurrency(fyObligatedAmount)
                 ) : (
@@ -188,7 +194,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear }) => {
                         </dl>
                     </>
                 )}
-                {canEditByRole && (
+                {showRowActions && (
                     <div
                         className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"

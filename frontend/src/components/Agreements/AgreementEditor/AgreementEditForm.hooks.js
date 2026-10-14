@@ -100,6 +100,10 @@ const useAgreementEditForm = (
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
+    // Forces a re-render once the on-load service_requirement_type check below has run, so
+    // `res = suite.get()` (read during render) reflects that suite.run() call instead of
+    // depending on some other effect happening to also call setState on the same commit.
+    const [, forceServiceReqTypeValidationRerender] = React.useState(0);
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -153,7 +157,7 @@ const useAgreementEditForm = (
         nofo_number: nofoNumber,
         aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
-        _meta: { immutable_awarded_fields: immutableFields = [] } = {}
+        _meta: { immutable_awarded_fields: immutableFields = [], procurementShopLockedMessage = null } = {}
     } = agreement;
 
     const {
@@ -213,25 +217,30 @@ const useAgreementEditForm = (
         areAnyBudgetLinesPlanned &&
         !isAgreementAwarded &&
         !canEditDirectly &&
-        !skipCrForDraftPlanned;
+        !skipCrForDraftPlanned &&
+        // Guards against useHasStateChanged(selectedProcurementShop) reporting "changed" at
+        // mount for agreements that have no procurement shop set (selectedProcurementShop is
+        // null) — a locked shop must never show the "send to approval" modal, since the save
+        // it would lead to can never succeed anyway (OPS-6312).
+        !procurementShopLockedMessage;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
             suite.run(
                 {
                     ...agreement,
-                    // Only enforce service_requirement_type presence while creating (see suite).
-                    // Some existing non-grant agreements legitimately have no
-                    // service_requirement_type; failing here would disable Save Changes on the
-                    // edit screens for a field the user never touched. (issue #6230)
+                    // New agreements of any non-grant type require service_requirement_type (see suite).
                     isNewAgreement: !agreement?.id,
+                    // Backend-locked Procurement Shop is never "missing" — see the suite's
+                    // procurement-shop-select test (OPS-6312).
+                    procurementShopLocked: Boolean(procurementShopLockedMessage),
                     ...overrides,
                     [name]: value
                 },
                 name
             );
         },
-        [agreement]
+        [agreement, procurementShopLockedMessage]
     );
 
     React.useEffect(() => {
@@ -239,16 +248,29 @@ const useAgreementEditForm = (
             suite.run({
                 ...agreement,
                 isNewAgreement: !agreement?.id,
+                procurementShopLocked: Boolean(procurementShopLockedMessage),
                 "procurement-shop-select": selectedProcurementShop
             });
         }
-    }, [isReviewMode, agreement, selectedProcurementShop]);
+    }, [isReviewMode, agreement, selectedProcurementShop, procurementShopLockedMessage]);
 
     React.useEffect(() => {
         if (!isWizardMode) {
             runValidate("project_id", agreement?.project_id);
         }
     }, [isWizardMode, agreement?.project_id, runValidate]);
+
+    React.useEffect(() => {
+        if (agreement?.id) {
+            // Edit mode only validates touched fields; surface a missing value on legacy agreements up front.
+            runValidate("service_requirement_type", agreement?.service_requirement_type);
+            forceServiceReqTypeValidationRerender((tick) => tick + 1);
+        }
+        // runValidate is intentionally omitted: it's recreated on every agreement field change
+        // (useCallback deps: [agreement]), which would re-run this check on every keystroke in
+        // unrelated fields instead of only when id/service_requirement_type actually change.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agreement?.id, agreement?.service_requirement_type]);
 
     React.useEffect(() => {
         if (errorProductServiceCodes || errorProjects) {
@@ -676,19 +698,10 @@ const useAgreementEditForm = (
         setAgreementProcurementShopId(procurementShop?.id);
     };
 
-    const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
-        (changeRequest) => changeRequest.has_proc_shop_change
-    );
-
-    const isProcurementShopDisabled = !isSuperUser && (hasProcurementShopChangeRequest || isAgreementAwarded);
-    const disabledMessage = () => {
-        if (agreement.in_review) {
-            return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
-        } else if (isAgreementAwarded) {
-            return "The Procurement Shop cannot be edited on an awarded agreement.";
-        }
-        return "Disabled";
-    };
+    // The backend owns this rule (AgreementsService._get_procurement_shop_locked_message).
+    // Re-deriving it here is what caused #6312 — do not add local conditions.
+    const isProcurementShopDisabled = Boolean(procurementShopLockedMessage);
+    const disabledMessage = () => procurementShopLockedMessage ?? "Disabled";
 
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);

@@ -84,7 +84,6 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Only PLANNED and IN_EXECUTION budget lines require pre-award validation.
     // DRAFT lines aren't yet committed for approval; OBLIGATED lines have already
     // completed the full award cycle and don't need pre-award checks.
-    // PLANNED_MOD lines are excluded because modifications follow a separate approval path.
     const validatableBudgetLines = useMemo(
         () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
         [allBudgetLines]

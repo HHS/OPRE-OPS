@@ -1,5 +1,4 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import authSlice from "./components/Auth/authSlice";
 import userSlice from "./pages/users/detail/userSlice";
 import userEditSlice from "./pages/users/edit/userSlice";
@@ -12,7 +11,6 @@ const rootReducer = combineReducers({
     [opsApi.reducerPath]: opsApi.reducer,
     [opsAuthApi.reducerPath]: opsAuthApi.reducer,
     [githubApi.reducerPath]: githubApi.reducer,
-    canDetail: canDetailSlice,
     auth: authSlice,
     userDetail: userSlice,
     userDetailEdit: userEditSlice,

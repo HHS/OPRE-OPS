@@ -93,9 +93,6 @@ Uses **Conventional Commits** enforced by commitlint.
 - **Single line only, under 100 characters** — no multiline body, no blank lines
 - **No trailers** — no `Co-Authored-By`, no `Signed-off-by`, nothing after the subject line
 - Always commit with `git commit -m "type: description"` — never HEREDOC (multiline fails commitlint)
-- **Single line only, under 100 characters** — no multiline body, no blank lines
-- **No trailers** — no `Co-Authored-By`, no `Signed-off-by`, nothing after the subject line
-- Always commit with `git commit -m "type: description"` — never HEREDOC (multiline fails commitlint)
 
 ## Branching
 
