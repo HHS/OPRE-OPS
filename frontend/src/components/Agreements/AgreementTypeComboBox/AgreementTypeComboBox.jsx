@@ -23,11 +23,12 @@ export const AgreementTypeComboBox = ({
 }) => {
     const canonicalOrder = Object.values(AgreementType);
     const typeOptions = agreementTypeOptions.map((type, index) => {
+        const canonicalIndex = canonicalOrder.indexOf(type);
         const typeOption = {
             id: index + 1,
             title: convertCodeForDisplay("agreementType", type),
             type: type,
-            order: canonicalOrder.indexOf(type)
+            order: canonicalIndex === -1 ? Number.MAX_SAFE_INTEGER : canonicalIndex
         };
         return typeOption;
     });

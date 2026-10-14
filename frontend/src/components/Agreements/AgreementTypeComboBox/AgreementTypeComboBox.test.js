@@ -108,4 +108,22 @@ describe("AgreementTypeComboBox", () => {
             "Misc"
         ]);
     });
+
+    it("sorts an unrecognized agreement type to the end instead of the top", () => {
+        const { container } = render(
+            <AgreementTypeComboBox
+                selectedAgreementTypes={null}
+                setSelectedAgreementTypes={mockSetSelectedAgreementTypes}
+                agreementTypeOptions={["NEW_TYPE", "CONTRACT", "GRANT"]}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const optionLabels = Array.from(container.querySelectorAll('[id*="option"]')).map((el) => el.textContent);
+
+        expect(optionLabels).toEqual(["Contract", "Grant", "NEW_TYPE"]);
+    });
 });
