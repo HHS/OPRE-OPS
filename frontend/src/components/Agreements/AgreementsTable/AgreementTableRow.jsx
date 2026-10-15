@@ -23,8 +23,7 @@ import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
 import { useCanEditByRole } from "../../../hooks/user.hooks";
-import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
-import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -71,6 +70,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
         : "";
 
     const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const listCrumb = useListCrumb("agreements");
     const agreementPath = `/agreements/${agreement?.id}`;
 
     const showRowActions = canEditByRole && !disableRowActions;
@@ -93,9 +93,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                 <Link
                     className="text-ink text-no-underline"
                     to={agreementPath}
-                    onClick={() =>
-                        setBreadcrumbTrail({ targetPath: agreementPath, ancestors: [LIST_CRUMBS.agreements] })
-                    }
+                    onClick={() => setBreadcrumbTrail({ targetPath: agreementPath, ancestors: [listCrumb] })}
                     aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip

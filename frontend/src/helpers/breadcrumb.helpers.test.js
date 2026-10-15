@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { trailMatchesPath, resolveAncestryForChildren } from "./breadcrumb.helpers";
+import { LIST_CRUMBS, trailMatchesPath, resolveAncestryForChildren, withListQuery } from "./breadcrumb.helpers";
 
 const portfolios = { label: "Portfolios", to: "/portfolios" };
 const portfolioA = { label: "Portfolio A", to: "/portfolios/5" };
@@ -68,5 +68,22 @@ describe("resolveAncestryForChildren", () => {
             fallbackCrumb
         });
         expect(result).toEqual([cans, can1]);
+    });
+});
+
+describe("withListQuery", () => {
+    it("appends the current query when on the list page, so the crumb restores the tab", () => {
+        expect(
+            withListQuery(LIST_CRUMBS.agreements, { pathname: "/agreements", search: "?filter=my-agreements" })
+        ).toEqual({
+            label: "Agreements",
+            to: "/agreements?filter=my-agreements"
+        });
+    });
+
+    it("returns the canonical crumb when not on the list page", () => {
+        expect(withListQuery(LIST_CRUMBS.agreements, { pathname: "/agreements/5", search: "?x=1" })).toBe(
+            LIST_CRUMBS.agreements
+        );
     });
 });

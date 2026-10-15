@@ -82,7 +82,7 @@ const ProjectSpending = () => {
     // Ancestry recorded by the agreement links below, so an agreement opened from
     // here shows "… > <project> > <agreement>".
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: project?.title ?? "Project", to: `/projects/${projectId}` },
+        ownCrumb: { label: project?.title ?? "Project" },
         fallbackCrumb: LIST_CRUMBS.projects
     });
 

@@ -6,8 +6,7 @@ import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandab
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
-import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
-import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -45,6 +44,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
 
     const agreementList = project.agreement_name_list ?? [];
     const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const listCrumb = useListCrumb("projects");
     const projectPath = `/projects/${project.id}`;
 
     const visibleColumns = [
@@ -52,7 +52,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             <Link
                 className="text-ink text-no-underline"
                 to={projectPath}
-                onClick={() => setBreadcrumbTrail({ targetPath: projectPath, ancestors: [LIST_CRUMBS.projects] })}
+                onClick={() => setBreadcrumbTrail({ targetPath: projectPath, ancestors: [listCrumb] })}
             >
                 {project.title}
             </Link>
@@ -94,7 +94,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                                     onClick={() =>
                                         setBreadcrumbTrail({
                                             targetPath: `/agreements/${agreement.id}`,
-                                            ancestors: [LIST_CRUMBS.projects]
+                                            ancestors: [listCrumb]
                                         })
                                     }
                                     className="bg-primary-lighter text-ink text-no-underline font-sans-3xs padding-x-1 padding-y-05 radius-md margin-right-1 margin-bottom-1"

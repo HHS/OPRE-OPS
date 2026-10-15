@@ -29,7 +29,7 @@ import { tableSortCodes } from "../../../helpers/utils";
  */
 const PortfolioList = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
 
@@ -41,7 +41,7 @@ const PortfolioList = () => {
     const {
         setSelectedFiscalYear,
         activeTab,
-        setActiveTab,
+        setActiveTab: setActiveTabState,
         filters,
         setFilters,
         fiscalYear,
@@ -52,6 +52,12 @@ const PortfolioList = () => {
         isLoading,
         isError
     } = usePortfolioList({ currentUserId, searchParams });
+
+    // Mirror the active tab into `?tab=` so a breadcrumb back to this list restores it.
+    const setActiveTab = (tabId) => {
+        setActiveTabState(tabId);
+        setSearchParams(tabId === "all" ? {} : { tab: tabId }, { replace: true });
+    };
 
     // Table sorting state - default to static order matching the legend
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(

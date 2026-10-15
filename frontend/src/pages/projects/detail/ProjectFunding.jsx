@@ -50,7 +50,7 @@ const ProjectFunding = () => {
     // Ancestry recorded by the CAN links below, so a CAN opened from here shows
     // "… > <project> > <CAN>".
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: project?.title ?? "Project", to: `/projects/${projectId}` },
+        ownCrumb: { label: project?.title ?? "Project" },
         fallbackCrumb: LIST_CRUMBS.projects
     });
 

@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet, useLocation, useParams, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import App from "../../../App";
-import { LIST_CRUMBS, resolveAncestryForChildren } from "../../../helpers/breadcrumb.helpers";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useGetPortfolioByIdQuery,
     useGetPortfolioFundingSummaryQuery,
@@ -43,13 +43,11 @@ const PortfolioDetail = () => {
 
     // Compose the ancestry that child entry-point links (CanCard, CANBudgetLineTable)
     // should record. A portfolio is reached directly from the Portfolios list, so its
-    // parent crumb is always the Portfolios list; the leaf is this portfolio.
+    // parent crumb is always the Portfolios list; the leaf is this portfolio, linking
+    // back to the current tab and selected FY (read from `?fy=` on load).
     const { pathname } = useLocation();
-    const storedTrail = useSelector((state) => state.sessionUI?.navContext?.trail);
-    const linkAncestry = resolveAncestryForChildren({
-        trail: storedTrail,
-        pathname,
-        ownCrumb: { label: portfolio?.name ?? "Portfolio", to: `/portfolios/${portfolioId}` },
+    const linkAncestry = useAncestryForChildren({
+        ownCrumb: { label: portfolio?.name ?? "Portfolio", to: `${pathname}?fy=${fiscalYear}` },
         fallbackCrumb: LIST_CRUMBS.portfolios
     });
 

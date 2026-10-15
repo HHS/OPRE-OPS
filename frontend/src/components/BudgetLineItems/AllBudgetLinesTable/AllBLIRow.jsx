@@ -16,8 +16,7 @@ import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
-import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
-import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -52,6 +51,7 @@ const AllBLIRow = ({ budgetLine }) => {
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
 
     const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const listCrumb = useListCrumb("budgetLines");
     const agreementPath = budgetLine?.agreement?.id ? `/agreements/${budgetLine.agreement.id}` : "";
 
     const TableRowData = (
@@ -65,7 +65,7 @@ const AllBLIRow = ({ budgetLine }) => {
                             onClick={() =>
                                 setBreadcrumbTrail({
                                     targetPath: agreementPath,
-                                    ancestors: [LIST_CRUMBS.budgetLines]
+                                    ancestors: [listCrumb]
                                 })
                             }
                             className="text-ink text-no-underline"

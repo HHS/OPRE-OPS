@@ -26,6 +26,18 @@ export const LIST_CRUMBS = {
 };
 
 /**
+ * Return a list crumb that links back to the list's current tab when the user
+ * is on that list page (e.g. "/agreements?filter=my-agreements"), so following
+ * the crumb restores the tab. Off the list page, the canonical crumb is returned.
+ *
+ * @param {BreadcrumbAncestor} listCrumb - A `LIST_CRUMBS` entry.
+ * @param {{ pathname: string, search?: string }} location - The current location.
+ * @returns {BreadcrumbAncestor}
+ */
+export const withListQuery = (listCrumb, { pathname, search = "" }) =>
+    pathname === listCrumb.to ? { ...listCrumb, to: `${listCrumb.to}${search}` } : listCrumb;
+
+/**
  * Decide whether a stored trail applies to the current location.
  *
  * Matches when the current pathname is the trail's target base path OR a

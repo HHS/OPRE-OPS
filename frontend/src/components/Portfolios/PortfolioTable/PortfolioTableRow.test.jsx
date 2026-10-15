@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
-import { MemoryRouter } from "react-router-dom";
+import { renderWithProviders } from "../../../test-utils";
 import PortfolioTableRow from "./PortfolioTableRow";
 
 describe("PortfolioTableRow", () => {
@@ -22,12 +23,12 @@ describe("PortfolioTableRow", () => {
         fiscalYear: 2025
     };
 
-    const renderWithRouter = (component) => {
-        return render(<MemoryRouter>{component}</MemoryRouter>);
+    const renderRow = (component) => {
+        return renderWithProviders(component);
     };
 
     it("renders portfolio name as link", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         const link = screen.getByRole("link", { name: "Child Care (CC)" });
         expect(link).toBeInTheDocument();
@@ -35,20 +36,20 @@ describe("PortfolioTableRow", () => {
     });
 
     it("displays total funding with currency format", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         expect(screen.getByText("$10,000,000.00")).toBeInTheDocument();
     });
 
     it("displays spending (planned + obligated + in_execution)", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         // Spending = 2,000,000 + 3,000,000 + 1,000,000 = 6,000,000
         expect(screen.getByText("$6,000,000.00")).toBeInTheDocument();
     });
 
     it("displays available funding", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         expect(screen.getByText("$5,000,000.00")).toBeInTheDocument();
     });
@@ -62,7 +63,7 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithZeroTotal}
                 fiscalYear={2025}
@@ -86,7 +87,7 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithZeroSpending}
                 fiscalYear={2025}
@@ -112,7 +113,7 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithZeroAvailable}
                 fiscalYear={2025}
@@ -131,7 +132,7 @@ describe("PortfolioTableRow", () => {
             fundingSummary: null
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithoutFunding}
                 fiscalYear={2025}
@@ -151,7 +152,7 @@ describe("PortfolioTableRow", () => {
             abbreviation: "NON-OPRE"
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={nonOprePortfolio}
                 fiscalYear={2025}
@@ -169,7 +170,7 @@ describe("PortfolioTableRow", () => {
             abbreviation: null
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithoutName}
                 fiscalYear={2025}
@@ -191,7 +192,7 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithLargeNumbers}
                 fiscalYear={2025}
@@ -216,7 +217,7 @@ describe("PortfolioTableRow", () => {
             }
         };
 
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={portfolioWithSmallNumbers}
                 fiscalYear={2025}
@@ -231,7 +232,7 @@ describe("PortfolioTableRow", () => {
     });
 
     it("includes fiscal year in link", () => {
-        renderWithRouter(
+        renderRow(
             <PortfolioTableRow
                 portfolio={mockPortfolio}
                 fiscalYear={2023}
@@ -243,7 +244,7 @@ describe("PortfolioTableRow", () => {
     });
 
     it("renders as table row with correct number of cells", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         // Verify the row renders by checking for link (unique to first cell)
         const link = screen.getByRole("link", { name: "Child Care (CC)" });
@@ -256,10 +257,21 @@ describe("PortfolioTableRow", () => {
     });
 
     it("applies correct link styling", () => {
-        renderWithRouter(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         const link = screen.getByRole("link");
         expect(link).toHaveClass("text-ink");
         expect(link).toHaveClass("text-no-underline");
+    });
+
+    it("records a Portfolios-list breadcrumb trail when the portfolio link is clicked", async () => {
+        const { store } = renderRow(<PortfolioTableRow {...defaultProps} />);
+
+        await userEvent.click(screen.getByRole("link"));
+
+        expect(store.getState().sessionUI.navContext.trail).toEqual({
+            targetPath: `/portfolios/${defaultProps.portfolio.id}`,
+            ancestors: [{ label: "Portfolios", to: "/portfolios" }]
+        });
     });
 });
