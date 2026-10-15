@@ -734,6 +734,89 @@ describe("AgreementBudgetLines", () => {
         });
     });
 
+    describe("Modified LOE: Change BL Status button guard (OPS-3072)", () => {
+        const regularUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [{ name: USER_ROLES.VIEWER_EDITOR }]
+                    }
+                })
+            }
+        });
+        const defaultProps = {
+            agreement: { ...mockAgreement, _meta: { isEditable: true } },
+            isEditMode: false,
+            setIsEditMode: vi.fn(),
+            isAgreementNotDeveloped: false,
+            isAgreementAwarded: true,
+            isPreAwardInReview: false,
+            isAwardInReview: false,
+            isPostPreAwardLocked: false
+        };
+        const renderWith = (props = {}) =>
+            render(
+                <Provider store={regularUserStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("Change BL Status is disabled when Awarded with no Draft BLIs", () => {
+            renderWith({
+                agreement: {
+                    ...mockAgreement,
+                    _meta: { isEditable: true },
+                    budget_line_items: [
+                        { id: 1, status: "OBLIGATED" },
+                        { id: 2, status: "PLANNED" }
+                    ]
+                }
+            });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+        });
+
+        test("Change BL Status remains enabled when Awarded with a Draft BLI", () => {
+            renderWith({
+                agreement: {
+                    ...mockAgreement,
+                    _meta: { isEditable: true },
+                    budget_line_items: [
+                        { id: 1, status: "DRAFT" },
+                        { id: 2, status: "OBLIGATED" }
+                    ]
+                }
+            });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+
+        test("Change BL Status remains enabled when not Awarded, regardless of Draft BLIs", () => {
+            renderWith({
+                isAgreementAwarded: false,
+                agreement: {
+                    ...mockAgreement,
+                    _meta: { isEditable: true },
+                    budget_line_items: [{ id: 1, status: "OBLIGATED" }]
+                }
+            });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+    });
+
     describe("CLIN column", () => {
         const editorStore = configureStore({
             reducer: {

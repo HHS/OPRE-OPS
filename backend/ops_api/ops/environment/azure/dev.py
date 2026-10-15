@@ -46,3 +46,8 @@ HOST_HEADER_PREFIX = "opre-ops-dev-app-backend."
 # Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
 # Enabled in dev for testing (overrides the default-OFF in default_settings.py).
 SKIP_CR_FOR_DRAFT_PLANNED = True
+
+# Allow amount-only edits on OBLIGATED BLIs on Awarded agreements (OPS-3072, Modified LOE
+# contract mod, slice 1). Enabled in dev for testing; left OFF in staging/prod until the
+# full modified-LOE flow (button guard, modal, Award & Modifications list) ships.
+ENABLE_MODIFIED_LOE_EDITS = True

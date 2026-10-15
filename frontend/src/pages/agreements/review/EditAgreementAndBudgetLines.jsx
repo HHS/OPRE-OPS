@@ -94,6 +94,9 @@ const EditAgreementAndBudgetLines = () => {
     // requiring Division Director approval — one modal covers both cases.
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
+    // OPS-3072 (Modified LOE): on an Awarded agreement, the same modal swaps to a
+    // contract-modification-specific message instead of a second, stacked confirmation.
+    const [requiresContractModification, setRequiresContractModification] = useState(false);
 
     // Page-level dirty state aggregated from both sub-forms for the nav-away blocker.
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
@@ -141,7 +144,8 @@ const EditAgreementAndBudgetLines = () => {
     // Nav-away blocker. Shows one of two modals depending on whether the pending changes
     // require DD approval. `saveChanges` receives the intended destination so the success
     // alert redirects there instead of the fixed returnTo URL.
-    const requiresApproval = requiresFinancialApproval || procurementShopChangeState.shouldRequestChange;
+    const requiresApproval =
+        requiresFinancialApproval || requiresContractModification || procurementShopChangeState.shouldRequestChange;
 
     const saveAndNavigateTo = async (destination) => {
         const saved = await fireBundleSave(destination ?? returnTo);
@@ -264,9 +268,14 @@ const EditAgreementAndBudgetLines = () => {
 
     const handlePageSave = () => {
         if (isSaving) return;
-        // Both procurement-shop and BLI financial changes route through change requests that
-        // need Division Director approval — show one confirmation covering either case.
-        if (procurementShopChangeState.shouldRequestChange || requiresFinancialApproval) {
+        // Procurement-shop changes, BLI financial changes, and (on an Awarded agreement)
+        // Modified-LOE edits all route through change requests that need Division Director
+        // approval — show one confirmation covering any of these cases.
+        if (
+            procurementShopChangeState.shouldRequestChange ||
+            requiresFinancialApproval ||
+            requiresContractModification
+        ) {
             setShowFinancialApprovalModal(true);
             return;
         }
@@ -331,7 +340,11 @@ const EditAgreementAndBudgetLines = () => {
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showFinancialApprovalModal && (
                     <ConfirmationModal
-                        heading="Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                        heading={
+                            isAgreementAwarded
+                                ? "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?"
+                                : "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                        }
                         actionButtonText="Send to Approval"
                         secondaryButtonText="Continue Editing"
                         setShowModal={setShowFinancialApprovalModal}
@@ -377,6 +390,7 @@ const EditAgreementAndBudgetLines = () => {
                     onValidityChange={setIsBudgetLinesValid}
                     bundleSliceRef={blisSliceRef}
                     onFinancialChangeStateChange={setRequiresFinancialApproval}
+                    onContractModificationStateChange={setRequiresContractModification}
                     onHasUnsavedChangesChange={setHasBLIsChanged}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">

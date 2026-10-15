@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import {
+    buildEditedBudgetLinePayload,
     buildSaveSuccessAlert,
     computeBudgetLinePageErrors,
     feesForCards,
@@ -143,5 +144,60 @@ describe("buildSaveSuccessAlert", () => {
         });
         expect(alert.heading).toBe("Changes Sent to Approval");
         expect(alert.message).toContain("BL 501 Deletion");
+    });
+});
+
+describe("buildEditedBudgetLinePayload — Modified LOE amount edit (OPS-3072)", () => {
+    const baseArgs = {
+        servicesComponentNumber: 1,
+        grantNumberNumber: null,
+        grantNumbers: [],
+        enteredDescription: "",
+        selectedCan: { id: 500 },
+        selectedProcurementShop: { fee_percentage: 0 },
+        enteredAmount: 600000,
+        needByDate: "01/01/2043",
+        isGrant: false
+    };
+    const currentBudgetLine = {
+        status: BLI_STATUS.OBLIGATED,
+        amount: 500000,
+        date_needed: "2043-01-01",
+        can_id: 500,
+        services_component_number: 1
+    };
+    const originalBudgetLine = { amount: 500000, date_needed: "2043-01-01", can_id: 500 };
+
+    it("flags financialSnapshotChanged for an OBLIGATED BLI's amount edit when the agreement is Awarded", () => {
+        const payload = buildEditedBudgetLinePayload({
+            ...baseArgs,
+            currentBudgetLine,
+            originalBudgetLine,
+            selectedAgreement: { is_awarded: true }
+        });
+        expect(payload.financialSnapshotChanged).toBe(true);
+        expect(payload.tempChangeRequest).toEqual({ amount: 600000 });
+    });
+
+    it("does NOT flag financialSnapshotChanged for the same OBLIGATED edit when the agreement is not Awarded", () => {
+        const payload = buildEditedBudgetLinePayload({
+            ...baseArgs,
+            currentBudgetLine,
+            originalBudgetLine,
+            selectedAgreement: { is_awarded: false }
+        });
+        expect(payload.financialSnapshotChanged).toBeUndefined();
+        expect(payload.tempChangeRequest).toBeUndefined();
+    });
+
+    it("still flags financialSnapshotChanged for a PLANNED BLI's amount edit regardless of award state (unchanged behavior)", () => {
+        const plannedBudgetLine = { ...currentBudgetLine, status: BLI_STATUS.PLANNED };
+        const payload = buildEditedBudgetLinePayload({
+            ...baseArgs,
+            currentBudgetLine: plannedBudgetLine,
+            originalBudgetLine,
+            selectedAgreement: { is_awarded: false }
+        });
+        expect(payload.financialSnapshotChanged).toBe(true);
     });
 });

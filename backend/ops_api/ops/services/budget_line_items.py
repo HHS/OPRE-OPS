@@ -53,6 +53,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     create_budget_line_item_instance,
     get_bli_locked_message,
     is_bli_editable,
+    is_modified_loe_amount_edit,
     is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
@@ -1034,6 +1035,13 @@ class BudgetLineItemService:
         if "agreement_id" in updated_fields and updated_fields["agreement_id"] != budget_line_item.agreement_id:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
 
+        # Use the raw request JSON to determine what the caller actually sent.
+        # updated_fields contains Marshmallow load_default values for all schema fields
+        # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
+        # so it cannot reliably tell us which fields the caller intended to change.
+        request_obj = updated_fields.get("request")
+        edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
+
         # Pre-award / post-pre-award locks. These fire the specific, actionable message
         # BEFORE the generic is_bli_editable fallback so the user sees why editing is blocked. Both
         # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
@@ -1046,19 +1054,17 @@ class BudgetLineItemService:
         # Exception: clin_id-only edits are allowed for any authorized user — CLIN assignment is
         # part of the award workflow (COR assigns CLINs before submitting for award approval).
         if not is_budget_team(current_user):
-            # Use the raw request JSON to determine what the caller actually sent.
-            # updated_fields contains Marshmallow load_default values for all schema fields
-            # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
-            # so it cannot reliably tell us which fields the caller intended to change.
-            request_obj = updated_fields.get("request")
-            edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
             clin_only_edit = edit_keys <= {"clin_id"}
             if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
                 raise ValidationError(
                     {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
                 )
 
-        if not is_bli_editable(budget_line_item):
+        # Modified-LOE carve-out (OPS-3072, AC1): an amount-only edit on an OBLIGATED BLI
+        # whose agreement is already Awarded bypasses the editable-status rejection below,
+        # behind the ENABLE_MODIFIED_LOE_EDITS flag. It still falls through to the ordinary
+        # change-request/Division-Director-approval workflow — see _handle_change_requests.
+        if not is_bli_editable(budget_line_item) and not is_modified_loe_amount_edit(budget_line_item, edit_keys):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))

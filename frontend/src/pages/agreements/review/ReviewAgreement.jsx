@@ -179,7 +179,8 @@ export const ReviewAgreement = () => {
             <AgreementActionAccordion
                 setAction={handleActionChange}
                 optionOneDisabled={!anyBudgetLinesDraft}
-                optionTwoDisabled={!anyBudgetLinePlanned}
+                optionTwoDisabled={!anyBudgetLinePlanned || isAgreementAwarded}
+                isAgreementAwarded={isAgreementAwarded}
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"

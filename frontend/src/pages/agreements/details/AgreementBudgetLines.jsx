@@ -100,7 +100,13 @@ const AgreementBudgetLines = ({
         !isAwardInReview &&
         !isPostPreAwardLocked &&
         (isSuperUser || canRegularUserEdit);
-    const canRequestStatusChange = isAgreementEditable;
+    // On an Awarded agreement, Planned→Executing now requires a Contract Modification (OPS-3072),
+    // so the only status change left to offer here is Draft→Planned — disable the button outright
+    // when there's no Draft BLI left to transition.
+    const hasDraftBLI = (agreement?.budget_line_items ?? []).some((bli) =>
+        draftBudgetLineStatuses.includes(bli.status)
+    );
+    const canRequestStatusChange = isAgreementEditable && (!isAgreementAwarded || hasDraftBLI);
     // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
     const showEditWizard = isEditMode && isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
@@ -123,6 +129,8 @@ const AgreementBudgetLines = ({
                 return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
             case allBudgetLinesInReview:
                 return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
+            case isAgreementAwarded && !hasDraftBLI:
+                return EDIT_DISABLED_TOOLTIPS.awardedNoDraftBLIs;
             default:
                 return EDIT_DISABLED_TOOLTIPS.notTeamMemberBLStatus;
         }
