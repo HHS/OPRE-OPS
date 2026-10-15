@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "../../../test-utils";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import { ProcurementDetailsTableRow } from "./ProcurementDetailsTableRow";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 
@@ -46,17 +47,15 @@ const renderRow = (props = {}) => {
         fiscalYear
     };
 
-    return render(
-        <MemoryRouter>
-            <table>
-                <tbody>
-                    <ProcurementDetailsTableRow
-                        {...defaultProps}
-                        {...props}
-                    />
-                </tbody>
-            </table>
-        </MemoryRouter>
+    return renderWithProviders(
+        <table>
+            <tbody>
+                <ProcurementDetailsTableRow
+                    {...defaultProps}
+                    {...props}
+                />
+            </tbody>
+        </table>
     );
 };
 
@@ -178,5 +177,16 @@ describe("ProcurementDetailsTableRow", () => {
         expect(screen.getByText("5")).toBeInTheDocument();
         expect(screen.getByText("2")).toBeInTheDocument();
         expect(screen.getByText("1")).toBeInTheDocument();
+    });
+
+    it("records a Procurement Dashboard breadcrumb trail when the agreement link is clicked", async () => {
+        const { store } = renderRow();
+
+        await userEvent.click(screen.getByRole("link", { name: /Agreement A/i }));
+
+        expect(store.getState().sessionUI.navContext.trail).toEqual({
+            targetPath: "/agreements/10",
+            ancestors: [{ label: "Procurement Dashboard", to: "/procurement-dashboard" }]
+        });
     });
 });

@@ -14,6 +14,8 @@ import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
 import ProjectSpendingAgreementsTableLoading from "../../../components/Projects/ProjectSpendingAgreementsTable/ProjectSpendingAgreementsTableLoading";
 import ProjectSpendingTotalsCard from "../../../components/Projects/ProjectSpendingTotalsCard";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Derives the default fiscal year to display.
@@ -75,6 +77,13 @@ const ProjectSpending = () => {
     } = useGetAgreementsByResearchProjectFilterQuery(projectId, {
         refetchOnMountOrArgChange: true,
         skip: !projectId || projectId === -1
+    });
+
+    // Ancestry recorded by the agreement links below, so an agreement opened from
+    // here shows "… > <project> > <agreement>".
+    const linkAncestry = useAncestryForChildren({
+        ownCrumb: { label: project?.title ?? "Project", to: `/projects/${projectId}` },
+        fallbackCrumb: LIST_CRUMBS.projects
     });
 
     // Set default FY once spending data arrives — all hooks must run before any early returns
@@ -243,6 +252,7 @@ const ProjectSpending = () => {
                             agreements={agreementsForFY}
                             fiscalYear={selectedFY}
                             fyTotals={fyTotals}
+                            ancestry={linkAncestry}
                         />
                     ))}
             </section>

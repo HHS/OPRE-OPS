@@ -9,6 +9,8 @@ import ProjectFundingCANsTable from "../../../components/Projects/ProjectFunding
 import ProjectFundingCANsTableLoading from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 
 /**
@@ -44,6 +46,13 @@ const ProjectFunding = () => {
             skip: !projectId || projectId === -1
         }
     );
+
+    // Ancestry recorded by the CAN links below, so a CAN opened from here shows
+    // "… > <project> > <CAN>".
+    const linkAncestry = useAncestryForChildren({
+        ownCrumb: { label: project?.title ?? "Project", to: `/projects/${projectId}` },
+        fallbackCrumb: LIST_CRUMBS.projects
+    });
 
     const is404 = projectError?.status === 404;
 
@@ -125,6 +134,7 @@ const ProjectFunding = () => {
                     <ProjectFundingCANsTable
                         cans={fundingData?.cans ?? []}
                         fiscalYear={fiscalYear}
+                        ancestry={linkAncestry}
                     />
                 )}
             </section>

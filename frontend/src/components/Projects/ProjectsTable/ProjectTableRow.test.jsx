@@ -1,7 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
+import { renderWithProviders } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import ProjectTableRow from "./ProjectTableRow";
 
 const MOCK_PROJECT = {
@@ -30,17 +30,15 @@ const MOCK_PROJECT_NO_AGREEMENTS = {
 };
 
 const renderRow = (project = MOCK_PROJECT, selectedFiscalYear = "2026") =>
-    render(
-        <MemoryRouter>
-            <table>
-                <tbody>
-                    <ProjectTableRow
-                        project={project}
-                        selectedFiscalYear={selectedFiscalYear}
-                    />
-                </tbody>
-            </table>
-        </MemoryRouter>
+    renderWithProviders(
+        <table>
+            <tbody>
+                <ProjectTableRow
+                    project={project}
+                    selectedFiscalYear={selectedFiscalYear}
+                />
+            </tbody>
+        </table>
     );
 
 describe("ProjectTableRow", () => {
@@ -193,5 +191,29 @@ describe("ProjectTableRow", () => {
     it("renders the testid on the main row", () => {
         renderRow();
         expect(screen.getByTestId("project-table-row-10")).toBeInTheDocument();
+    });
+
+    it("records a Projects-list breadcrumb trail when the project link is clicked", async () => {
+        const { store } = renderRow();
+
+        await userEvent.click(screen.getByRole("link", { name: MOCK_PROJECT.title }));
+
+        expect(store.getState().sessionUI.navContext.trail).toEqual({
+            targetPath: "/projects/10",
+            ancestors: [{ label: "Projects", to: "/projects" }]
+        });
+    });
+
+    it("records a Projects-list breadcrumb trail when an agreement tag is clicked", async () => {
+        const user = userEvent.setup();
+        const { store } = renderRow();
+
+        await user.click(screen.getByTestId("expand-row"));
+        await user.click(screen.getAllByTestId("agreement-tag")[0]);
+
+        expect(store.getState().sessionUI.navContext.trail).toEqual({
+            targetPath: "/agreements/1",
+            ancestors: [{ label: "Projects", to: "/projects" }]
+        });
     });
 });

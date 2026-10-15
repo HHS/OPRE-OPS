@@ -1,5 +1,7 @@
 import { useCallback } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { resolveAncestryForChildren } from "../helpers/breadcrumb.helpers";
 import { setTrail } from "../sessionUISlice";
 
 /**
@@ -21,4 +23,20 @@ export const useSetBreadcrumbTrail = () => {
         },
         [dispatch]
     );
+};
+
+/**
+ * Resolves the ancestry a detail page should hand to the entry-point links it
+ * renders (see `resolveAncestryForChildren`), reading the stored trail and the
+ * current location.
+ *
+ * @param {Object} params
+ * @param {import("../sessionUISlice").BreadcrumbAncestor} params.ownCrumb - The current page's own crumb.
+ * @param {import("../sessionUISlice").BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
+ * @returns {import("../sessionUISlice").BreadcrumbAncestor[]}
+ */
+export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
+    const { pathname } = useLocation();
+    const trail = useSelector((state) => state.sessionUI?.navContext?.trail);
+    return resolveAncestryForChildren({ trail, pathname, ownCrumb, fallbackCrumb });
 };
