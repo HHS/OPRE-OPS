@@ -1881,9 +1881,12 @@ def test_budget_line_items_in_review_status_combines_with_real_status_via_or(aut
     loaded_db.commit()
 
     try:
+        # Scoped via agreement_id to this isolated agreement, and limit raised above the
+        # default page size of 10 — otherwise the assertion depends on these two rows
+        # landing on the first default-sorted page out of the full shared dataset.
         response = auth_client.get(
             url_for("api.budget-line-items-group"),
-            query_string={"budget_line_status": ["DRAFT", "IN_REVIEW"]},
+            query_string={"budget_line_status": ["DRAFT", "IN_REVIEW"], "agreement_id": agreement.id, "limit": 50},
         )
         assert response.status_code == 200
         returned_ids = {item["id"] for item in response.json}
