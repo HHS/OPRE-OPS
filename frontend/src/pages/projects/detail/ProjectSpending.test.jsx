@@ -116,10 +116,10 @@ describe("ProjectSpending", () => {
         });
     });
 
-    const renderComponent = (id = "1000") =>
+    const renderComponent = (id = "1000", search = "") =>
         render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={[`/projects/${id}/spending`]}>
+                <MemoryRouter initialEntries={[`/projects/${id}/spending${search}`]}>
                     <Routes>
                         <Route
                             path="/projects/:id/spending"
@@ -168,5 +168,17 @@ describe("ProjectSpending", () => {
         // FY 2043 lists three agreements but only two have spending
         expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-agreement-count", "2");
         expect(screen.getByTestId("totals-card")).toHaveAttribute("data-fy-total", "1000");
+    });
+
+    it("seeds the fiscal year from the ?fy= search param when that FY has data", () => {
+        renderComponent("1000", "?fy=2043");
+
+        expect(screen.getByRole("combobox")).toHaveValue("2043");
+    });
+
+    it("falls back to the default fiscal year when the ?fy= param has no data", () => {
+        renderComponent("1000", "?fy=1999");
+
+        expect(screen.getByRole("combobox")).toHaveValue("2044");
     });
 });

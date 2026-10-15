@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
@@ -22,7 +22,12 @@ const ProjectFunding = () => {
     const { id } = useParams();
     const projectId = id ? +id : -1;
 
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    // A `?fy=` param (set by breadcrumb links back to this tab) seeds the selected FY.
+    const [searchParams] = useSearchParams();
+    const fiscalYearFromUrl = searchParams.get("fy");
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(
+        fiscalYearFromUrl ? Number(fiscalYearFromUrl) : getCurrentFiscalYear()
+    );
     const fiscalYear = Number(selectedFiscalYear);
 
     /** @type {{data?: import("../../../types/ProjectTypes").Project | undefined, error?: Object, isLoading: boolean}} */
@@ -48,9 +53,10 @@ const ProjectFunding = () => {
     );
 
     // Ancestry recorded by the CAN links below, so a CAN opened from here shows
-    // "… > <project> > <CAN>".
+    // "… > <project> > <CAN>"; the project crumb links back to this tab and FY.
+    const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: project?.title ?? "Project" },
+        ownCrumb: { label: project?.title ?? "Project", to: `${pathname}?fy=${fiscalYear}` },
         fallbackCrumb: LIST_CRUMBS.projects
     });
 
