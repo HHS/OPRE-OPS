@@ -7,7 +7,7 @@ export default {
         docs: {
             description: {
                 component:
-                    "Context-aware breadcrumb trail. When a stored nav-context trail matches the current path, its ancestors render as links; otherwise the canonical route hierarchy is used. Home and the leaf name always render."
+                    "Context-aware breadcrumb trail. When the current location carries a trail (React Router location state) for the current path, its ancestors render as links; otherwise the canonical route hierarchy is used. Home and the leaf name always render."
             }
         }
     },
@@ -16,25 +16,25 @@ export default {
     }
 };
 
-/** Fallback: no stored trail — only Home and the leaf render (route crumbs require a data router). */
+/** Fallback: no carried trail — only Home and the leaf render (route crumbs require a data router). */
 export const Fallback = {
     args: {
         currentName: "Agreement 1"
     }
 };
 
-/** Context-aware: a stored trail for the current path renders ancestor links. */
-export const WithStoredTrail = {
+/** Context-aware: a carried trail for the current path renders ancestor links. */
+export const WithCarriedTrail = {
     args: {
         currentName: "Agreement 1"
     },
     parameters: {
-        reactRouter: { initialEntries: ["/agreements/1"] },
-        store: {
-            preloadedState: {
-                sessionUI: {
-                    navContext: {
-                        trail: {
+        reactRouter: {
+            initialEntries: [
+                {
+                    pathname: "/agreements/1",
+                    state: {
+                        breadcrumbTrail: {
                             targetPath: "/agreements/1",
                             ancestors: [
                                 { label: "Portfolios", to: "/portfolios" },
@@ -43,7 +43,7 @@ export const WithStoredTrail = {
                         }
                     }
                 }
-            }
+            ]
         }
     }
 };
@@ -54,12 +54,12 @@ export const DeepTrail = {
         currentName: "Agreement 1"
     },
     parameters: {
-        reactRouter: { initialEntries: ["/agreements/1"] },
-        store: {
-            preloadedState: {
-                sessionUI: {
-                    navContext: {
-                        trail: {
+        reactRouter: {
+            initialEntries: [
+                {
+                    pathname: "/agreements/1",
+                    state: {
+                        breadcrumbTrail: {
                             targetPath: "/agreements/1",
                             ancestors: [
                                 { label: "Portfolios", to: "/portfolios" },
@@ -69,7 +69,7 @@ export const DeepTrail = {
                         }
                     }
                 }
-            }
+            ]
         }
     }
 };

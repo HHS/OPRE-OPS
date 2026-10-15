@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import sessionUIReducer, {
-    setTrail,
-    clearTrail,
     setListFilters,
     setListFiscalYear,
     resetListFilters,
@@ -13,45 +11,15 @@ import { logout } from "./components/Auth/authSlice";
 // expected shape the same way so the test doesn't duplicate literals.
 const freshState = () => sessionUIReducer(undefined, { type: "@@INIT" });
 
-describe("sessionUISlice — navContext", () => {
-    it("returns the initial state with a null trail and per-page filter defaults", () => {
+describe("sessionUISlice — initial state", () => {
+    it("returns the per-page filter defaults", () => {
         const state = freshState();
-        expect(state.navContext.trail).toBeNull();
         expect(state.listFilters.agreements.filters).toEqual(listFilterDefaults.agreements.filters);
         expect(state.listFilters.cans.selectedFiscalYear).toEqual(listFilterDefaults.cans.selectedFiscalYear);
         expect(state.listFilters.budgetLines.selectedFiscalYear).toBe("All");
         expect(state.listFilters.agreements.selectedFiscalYear).toBe("All");
         expect(state.listFilters.projects.selectedFiscalYear).toBe("All");
         expect(state.listFilters.procurementDashboard).not.toHaveProperty("selectedFiscalYear");
-    });
-
-    it("setTrail stores the trail", () => {
-        const trail = {
-            targetPath: "/agreements/1",
-            ancestors: [
-                { label: "Portfolios", to: "/portfolios" },
-                { label: "Portfolio A", to: "/portfolios/5" }
-            ]
-        };
-        const state = sessionUIReducer(freshState(), setTrail(trail));
-        expect(state.navContext.trail).toEqual(trail);
-    });
-
-    it("setTrail overwrites a previously stored trail", () => {
-        const first = { targetPath: "/cans/1", ancestors: [{ label: "CANs", to: "/cans" }] };
-        const second = { targetPath: "/agreements/2", ancestors: [{ label: "Agreements", to: "/agreements" }] };
-        let state = sessionUIReducer(freshState(), setTrail(first));
-        state = sessionUIReducer(state, setTrail(second));
-        expect(state.navContext.trail).toEqual(second);
-    });
-
-    it("clearTrail resets the trail to null", () => {
-        let state = sessionUIReducer(
-            freshState(),
-            setTrail({ targetPath: "/cans/1", ancestors: [{ label: "CANs", to: "/cans" }] })
-        );
-        state = sessionUIReducer(state, clearTrail());
-        expect(state.navContext.trail).toBeNull();
     });
 });
 
@@ -96,15 +64,13 @@ describe("sessionUISlice — listFilters", () => {
 });
 
 describe("sessionUISlice — logout reset", () => {
-    it("resets ALL session UI state (trail + filters) on logout", () => {
+    it("resets ALL session UI state on logout", () => {
         let state = sessionUIReducer(
             freshState(),
-            setTrail({ targetPath: "/cans/1", ancestors: [{ label: "CANs", to: "/cans" }] })
+            setListFilters({ page: "agreements", filters: { portfolio: [{ id: 1 }] } })
         );
-        state = sessionUIReducer(state, setListFilters({ page: "agreements", filters: { portfolio: [{ id: 1 }] } }));
         state = sessionUIReducer(state, logout());
         expect(state).toEqual(freshState());
-        expect(state.navContext.trail).toBeNull();
         expect(state.listFilters.agreements.filters).toEqual(listFilterDefaults.agreements.filters);
     });
 });

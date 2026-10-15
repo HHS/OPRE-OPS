@@ -19,7 +19,7 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
  * @property {number} totalFunding
  * @property {number} fiscalYear
  * @property {'portfolio' | 'can'} [tableType]
- * @property {import("../../../sessionUISlice").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to each row's agreement link (composed by the embedding page).
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to each row's agreement link (composed by the embedding page).
  */
 
 /**

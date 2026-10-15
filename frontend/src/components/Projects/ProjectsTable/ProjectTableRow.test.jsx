@@ -1,5 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import ProjectTableRow from "./ProjectTableRow";
@@ -38,7 +38,8 @@ const renderRow = (project = MOCK_PROJECT, selectedFiscalYear = "2026") =>
                     selectedFiscalYear={selectedFiscalYear}
                 />
             </tbody>
-        </table>
+        </table>,
+        { withLocationProbe: true }
     );
 
 describe("ProjectTableRow", () => {
@@ -194,11 +195,11 @@ describe("ProjectTableRow", () => {
     });
 
     it("records a Projects-list breadcrumb trail when the project link is clicked", async () => {
-        const { store } = renderRow();
+        renderRow();
 
         await userEvent.click(screen.getByRole("link", { name: MOCK_PROJECT.title }));
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({
+        expect(getProbedTrail()).toEqual({
             targetPath: "/projects/10",
             ancestors: [{ label: "Projects", to: "/projects" }]
         });
@@ -206,12 +207,12 @@ describe("ProjectTableRow", () => {
 
     it("records a Projects-list breadcrumb trail when an agreement tag is clicked", async () => {
         const user = userEvent.setup();
-        const { store } = renderRow();
+        renderRow();
 
         await user.click(screen.getByTestId("expand-row"));
         await user.click(screen.getAllByTestId("agreement-tag")[0]);
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({
+        expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/1",
             ancestors: [{ label: "Projects", to: "/projects" }]
         });

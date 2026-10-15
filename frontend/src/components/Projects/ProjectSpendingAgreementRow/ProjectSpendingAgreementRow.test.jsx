@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProjectSpendingAgreementRow from "./ProjectSpendingAgreementRow";
@@ -39,7 +39,8 @@ const renderRow = ({ fyTotal = null, fiscalYear = 2043, ancestry } = {}) =>
                     ancestry={ancestry}
                 />
             </tbody>
-        </table>
+        </table>,
+        { withLocationProbe: true }
     );
 
 describe("ProjectSpendingAgreementRow", () => {
@@ -157,11 +158,11 @@ describe("ProjectSpendingAgreementRow", () => {
             { label: "Projects", to: "/projects" },
             { label: "Project X", to: "/projects/7" }
         ];
-        const { store } = renderRow({ ancestry });
+        renderRow({ ancestry });
 
         await userEvent.click(screen.getByRole("link", { name: /African American Child/i }));
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({
+        expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/1",
             ancestors: ancestry
         });

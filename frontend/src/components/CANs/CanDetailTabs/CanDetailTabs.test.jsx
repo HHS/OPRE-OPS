@@ -61,6 +61,6 @@ describe("CanDetailTabs", () => {
         const spendingTab = screen.getByText("CAN Spending");
         fireEvent.click(spendingTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`);
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { state: undefined });
     });
 });

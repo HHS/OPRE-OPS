@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import { describe, it, expect } from "vitest";
 import ProjectFundingCANsTable from "./ProjectFundingCANsTable";
 
@@ -110,16 +110,17 @@ describe("ProjectFundingCANsTable", () => {
             { label: "Projects", to: "/projects" },
             { label: "Project X", to: "/projects/7" }
         ];
-        const { store } = renderWithProviders(
+        renderWithProviders(
             <ProjectFundingCANsTable
                 cans={mockCANs}
                 fiscalYear={2025}
                 ancestry={ancestry}
-            />
+            />,
+            { withLocationProbe: true }
         );
 
         await userEvent.click(screen.getByRole("link", { name: "G99MVT3" }));
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({ targetPath: "/cans/515", ancestors: ancestry });
+        expect(getProbedTrail()).toEqual({ targetPath: "/cans/515", ancestors: ancestry });
     });
 });

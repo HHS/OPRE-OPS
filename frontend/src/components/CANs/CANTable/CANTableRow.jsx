@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
-import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * CanTableRow component of CANTable
@@ -23,7 +24,6 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
-    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const listCrumb = useListCrumb("cans");
     const canPath = `/cans/${canId}`;
 
@@ -36,7 +36,7 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                 >
                     <Link
                         to={canPath}
-                        onClick={() => setBreadcrumbTrail({ targetPath: canPath, ancestors: [listCrumb] })}
+                        state={buildTrailState(canPath, [listCrumb])}
                         className="text-ink text-no-underline"
                     >
                         {name}

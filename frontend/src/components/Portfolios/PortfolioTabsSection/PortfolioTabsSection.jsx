@@ -1,6 +1,7 @@
 import styles from "./PortfolioTabsSection.module.scss";
 import { Link, useLocation } from "react-router-dom";
 import TabsSection from "../../UI/TabsSection";
+import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Tabs (navigation) section for the portfolio page.
@@ -10,6 +11,8 @@ import TabsSection from "../../UI/TabsSection";
  */
 const PortfolioTabsSection = ({ portfolioId }) => {
     const location = useLocation();
+    // Keep the breadcrumb trail when switching tabs.
+    const trailState = useForwardedTrailState();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
 
@@ -32,6 +35,7 @@ const PortfolioTabsSection = ({ portfolioId }) => {
         return (
             <Link
                 to={pathName}
+                state={trailState}
                 className={location.pathname === pathName ? selected : notSelected}
                 key={pathName}
             >

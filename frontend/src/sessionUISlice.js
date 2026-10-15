@@ -8,20 +8,10 @@ import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "./constants";
  * but is intentionally lost on browser refresh / new tab (in-memory Redux) and
  * cleared on logout.
  *
- * Deliverable A (breadcrumbs) uses `navContext.trail`.
- * Deliverable B (filter persistence) uses `listFilters` — per-page filter +
- * fiscal-year selections that persist across client-side navigation so a user
- * returning to a list via breadcrumb keeps their filters applied.
- *
- * Both share a single logout-reset hook (see `extraReducers`).
- *
- * @typedef {Object} BreadcrumbAncestor
- * @property {string} label - The crumb text.
- * @property {string} to - The path the crumb links to.
- *
- * @typedef {Object} BreadcrumbTrail
- * @property {string} targetPath - Destination base pathname the trail applies to (e.g. "/agreements/123").
- * @property {BreadcrumbAncestor[]} ancestors - Crumbs shown before the leaf, in order.
+ * `listFilters` holds per-page filter + fiscal-year selections that persist
+ * across client-side navigation, so a user returning to a list via breadcrumb
+ * keeps their filters applied. (Breadcrumb trails themselves travel as router
+ * location state; see `helpers/breadcrumb.helpers.js`.)
  */
 
 /**
@@ -114,10 +104,6 @@ const buildListFiltersInitialState = () =>
     Object.fromEntries(Object.entries(listFilterDefaults).map(([page, def]) => [page, buildPageState(def)]));
 
 const initialState = {
-    navContext: {
-        /** @type {BreadcrumbTrail | null} */
-        trail: null
-    },
     listFilters: buildListFiltersInitialState()
 };
 
@@ -125,23 +111,6 @@ const sessionUISlice = createSlice({
     name: "sessionUI",
     initialState,
     reducers: {
-        /**
-         * Record the breadcrumb trail for a destination, set synchronously at
-         * click time (before navigation) so the destination renders with the
-         * correct crumbs and no first-paint flicker.
-         * @param {typeof initialState} state
-         * @param {{ payload: BreadcrumbTrail }} action
-         */
-        setTrail: (state, action) => {
-            state.navContext.trail = action.payload;
-        },
-        /**
-         * Clear any stored breadcrumb trail.
-         * @param {typeof initialState} state
-         */
-        clearTrail: (state) => {
-            state.navContext.trail = null;
-        },
         /**
          * Replace the applied filters for a list page.
          * @param {typeof initialState} state
@@ -182,6 +151,6 @@ const sessionUISlice = createSlice({
 });
 
 export { listFilterDefaults };
-export const { setTrail, clearTrail, setListFilters, setListFiscalYear, resetListFilters } = sessionUISlice.actions;
+export const { setListFilters, setListFiscalYear, resetListFilters } = sessionUISlice.actions;
 
 export default sessionUISlice.reducer;

@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import { describe, it, expect, vi } from "vitest";
 import { ProcurementDetailsTableRow } from "./ProcurementDetailsTableRow";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
@@ -55,7 +55,8 @@ const renderRow = (props = {}) => {
                     {...props}
                 />
             </tbody>
-        </table>
+        </table>,
+        { withLocationProbe: true }
     );
 };
 
@@ -180,11 +181,11 @@ describe("ProcurementDetailsTableRow", () => {
     });
 
     it("records a Procurement Dashboard breadcrumb trail when the agreement link is clicked", async () => {
-        const { store } = renderRow();
+        renderRow();
 
         await userEvent.click(screen.getByRole("link", { name: /Agreement A/i }));
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({
+        expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/10",
             ancestors: [{ label: "Procurement Dashboard", to: "/procurement-dashboard" }]
         });

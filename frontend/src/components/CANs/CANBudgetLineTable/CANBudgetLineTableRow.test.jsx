@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import { formatDateNeeded } from "../../../helpers/utils";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import { budgetLine } from "../../../tests/data";
 import userEvent from "@testing-library/user-event";
 
@@ -94,7 +94,7 @@ describe("CANBudgetLineTableRow", () => {
             { label: "Portfolio A", to: "/portfolios/5" },
             { label: "CAN 1", to: "/cans/1" }
         ];
-        const { store } = renderWithProviders(
+        renderWithProviders(
             <CANBudgetLineTableRow
                 budgetLine={mockBudgetLine}
                 blId={mockBudgetLine.id}
@@ -109,12 +109,13 @@ describe("CANBudgetLineTableRow", () => {
                 creationDate={mockBudgetLine.created_on}
                 description={mockBudgetLine.line_description}
                 ancestry={ancestry}
-            />
+            />,
+            { withLocationProbe: true }
         );
 
         await userEvent.click(screen.getByRole("link"));
 
-        const trail = store.getState().sessionUI.navContext.trail;
+        const trail = getProbedTrail();
         expect(trail.targetPath).toBe(`/agreements/${mockBudgetLine.agreement.id}`);
         expect(trail.ancestors).toEqual(ancestry);
     });

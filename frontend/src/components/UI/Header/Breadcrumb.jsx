@@ -1,35 +1,37 @@
-import { Link, useLocation, useMatches } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { Link, useMatches } from "react-router-dom";
 import PropTypes from "prop-types";
-import { trailMatchesPath } from "../../../helpers/breadcrumb.helpers";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
+import { useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Breadcrumb component
  *
- * Renders a context-aware trail when a stored nav-context trail applies to the
- * current location (i.e. the user drilled in via a known navigation path);
+ * Renders a context-aware trail when the current location carries a trail that
+ * applies to it (i.e. the user drilled in via a known navigation path);
  * otherwise falls back to the canonical route hierarchy derived from React
  * Router `handle.crumb` functions. `Home` and the leaf `currentName` are always
  * rendered.
+ *
+ * Each trail crumb carries the crumbs before it as its own trail, so going
+ * back to an ancestor keeps that ancestor's context (e.g. clicking "CAN 1" in
+ * "Portfolios > Portfolio A > CAN 1 > Agreement" shows "Portfolios > Portfolio A > CAN 1").
  *
  * @param {Object} props - Properties passed to component
  * @param {string} props.currentName - The name of the current (leaf) breadcrumb
  * @returns {React.JSX.Element} - The rendered component
  */
 const Breadcrumb = ({ currentName }) => {
-    const { pathname } = useLocation();
-    const trail = useSelector((state) => state.sessionUI?.navContext?.trail);
+    const trail = useBreadcrumbTrail();
     const matches = useMatches();
 
-    const useStoredTrail = trailMatchesPath(trail, pathname);
-
     let intermediateCrumbs;
-    if (useStoredTrail) {
-        // Context-aware trail: render the stored ancestors as links.
+    if (trail) {
+        // Context-aware trail: render the carried ancestors as links.
         intermediateCrumbs = trail.ancestors.map((ancestor, index) => (
             <Link
                 key={index}
                 to={ancestor.to}
+                state={index > 0 ? buildTrailState(ancestor.to, trail.ancestors.slice(0, index)) : undefined}
                 className="text-primary"
             >
                 {ancestor.label}
