@@ -452,7 +452,11 @@ def test_existing_agreement_handling(db_for_aas):
 
     # Verify budget lines were created
     budget_lines = (
-        db_for_aas.execute(select(AABudgetLineItem).where(AABudgetLineItem.agreement_id == new_agreement.id))
+        db_for_aas.execute(
+            select(AABudgetLineItem)
+            .where(AABudgetLineItem.agreement_id == new_agreement.id)
+            .order_by(AABudgetLineItem.id)
+        )
         .scalars()
         .all()
     )

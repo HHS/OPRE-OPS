@@ -327,7 +327,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             });
                         // TODO: unable to delete agreement?
@@ -427,7 +427,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // hover over the first review card
                         cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on first button data-cy approve-agreement
-                        cy.get("[data-cy='approve-agreement']").click();
+                        cy.get("[data-cy='approve-agreement']").first().click();
                         // get h1 to have content Approval for
                         cy.get("h1").contains(/approval for budget change/i);
                         // get content in review-card
@@ -459,20 +459,32 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId's status was set to PLANNED at creation and the declined
+                                // budget-change CR only alters amount, so it stays PLANNED — only
+                                // a super user can clean up the agreement directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });
@@ -537,12 +549,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 }).then((response) => {
                     expect(response.status).to.eq(202);
                     expect(response.body.id).to.exist;
-                    const bliId = response.body.id;
-                    return { agreementId, bliId };
+                    return { agreementId };
                 });
             })
             // test interactions
-            .then(({ agreementId, bliId }) => {
+            .then(({ agreementId }) => {
                 cy.contains("Sign-Out")
                     .click()
                     .then(() => {
@@ -573,29 +584,32 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get('[data-cy="confirm-action"]').click();
                         cy.get("[data-cy='review-card']")
                             .should("exist")
+                            // The BLI is PLANNED with an in-review budget change request (the
+                            // approval was cancelled, not decided), so a direct DELETE is now
+                            // blocked (#5819). The agreement delete below cascade-removes it.
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
-                            })
-                            .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId's status was set to PLANNED at creation and the reviewer
+                                // clicked cancel (no BLI-delete attempted), so it stays PLANNED —
+                                // only a super user can clean up the agreement directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });

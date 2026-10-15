@@ -11,6 +11,7 @@ from models import (
     ChangeRequest,
     Division,
     Document,
+    GrantNumber,
     Notification,
     Portfolio,
     PortfolioStatus,
@@ -34,6 +35,7 @@ from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyItemAPI,
     AgreementAgencyListAPI,
 )
+from ops_api.ops.resources.agreement_award_history import AgreementAwardHistoryItemAPI
 from ops_api.ops.resources.agreement_edit_bundle import AgreementEditBundleAPI
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
@@ -46,6 +48,7 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import (
+    BudgetLineItemsBatchAPI,
     BudgetLineItemsItemAPI,
     BudgetLineItemsListAPI,
     BudgetLineItemsListFilterOptionAPI,
@@ -75,6 +78,7 @@ from ops_api.ops.resources.change_requests import (
     ChangeRequestListAPI,
 )
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
+from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
@@ -139,6 +143,9 @@ from ops_api.ops.utils.version import VersionAPI
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
+AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC = AgreementAwardHistoryItemAPI.as_view(
+    "agreements-award-history-item", Agreement
+)
 AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 
 # Agreement History Endpoint
@@ -176,6 +183,7 @@ CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history", CANHis
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
+BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC = BudgetLineItemsBatchAPI.as_view("budget-line-items-batch", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC = BudgetLineItemsListFilterOptionAPI.as_view(
     "budget-line-items-filters", BudgetLineItem
 )
@@ -283,6 +291,10 @@ NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-gr
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
+
+# GrantNumber ENDPOINTS
+GRANT_NUMBER_ITEM_API_VIEW_FUNC = GrantNumberItemAPI.as_view("grant-number-item", GrantNumber)
+GRANT_NUMBER_LIST_API_VIEW_FUNC = GrantNumberListAPI.as_view("grant-number-group", GrantNumber)
 
 # Azure SAS Token ENDPOINTS
 AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")

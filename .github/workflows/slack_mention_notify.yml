@@ -1,0 +1,126 @@
+name: Notify Slack on PR/Issue Mention
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+
+# Serialize runs per commenter so the rate-limit check (which reads this workflow's own,
+# eventually-consistent run history) can't be raced by a burst of comments from one actor.
+concurrency:
+  group: notify-mention-${{ github.event.comment.user.login }}
+  cancel-in-progress: false
+
+jobs:
+  notify-mention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Restrict to org members/collaborators so a public-repo commenter can't trigger real Slack pings
+    if: contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    steps:
+      - name: Rate limit check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.event.comment.user.login }}
+          MAX_RUNS: "5"
+          WINDOW_MINUTES: "10"
+        run: |
+          # Even a trusted member/collaborator account can be compromised or turn malicious,
+          # so cap how many times this workflow can fire per commenter in a rolling window --
+          # using GitHub's own run history as state, since Actions has no persistent store.
+          since=$(date -u -d "${WINDOW_MINUTES} minutes ago" +%Y-%m-%dT%H:%M:%SZ)
+          # Filename below must match this workflow's own file -- if this file is ever
+          # renamed, update it too, or this 404s and falls into the retry loop below,
+          # which treats a persistently unverifiable count as rate-limited (fail-safe).
+          run_count=""
+          for attempt in 1 2 3; do
+            if run_count=$(gh api -X GET "repos/${REPO}/actions/workflows/slack_mention_notify.yml/runs" \
+              -f actor="$ACTOR" -f created=">=${since}" --jq '.total_count' 2>/dev/null); then
+              break
+            fi
+            run_count=""
+            sleep "$((attempt * 3))"
+          done
+
+          if [ -z "$run_count" ] || ! [[ "$run_count" =~ ^[0-9]+$ ]]; then
+            echo "::warning::Could not verify ${ACTOR}'s rate limit after retries; skipping Slack notification as a precaution."
+            echo "rate_limited=true" >> "$GITHUB_ENV"
+          else
+            # total_count includes this run itself (already recorded as in-progress by the
+            # time this step runs), so compare prior triggers only against MAX_RUNS.
+            prior_count=$((run_count - 1))
+            if [ "$prior_count" -ge "$MAX_RUNS" ]; then
+              echo "::warning::${ACTOR} has triggered this workflow ${run_count} times in the last ${WINDOW_MINUTES} minutes (limit ${MAX_RUNS}); skipping Slack notification."
+              echo "rate_limited=true" >> "$GITHUB_ENV"
+            fi
+          fi
+
+      - name: Checkout (for slack_user_map.json)
+        if: env.rate_limited != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: |
+            .github/slack_user_map.json
+          sparse-checkout-cone-mode: false
+
+      - name: Find mentions and notify Slack
+        if: env.rate_limited != 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          IS_PR: ${{ github.event.issue.pull_request && 'true' || 'false' }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Strip fenced code blocks so mentions inside code samples don't trigger a false positive.
+          # Detection-accuracy limitation only: an unclosed ``` fence deletes to EOF (dropping any
+          # later mentions), and indented or ~~~-style fences aren't recognized and won't be stripped.
+          body_no_code=$(printf '%s\n' "$COMMENT_BODY" | sed '/^```/,/^```/d')
+
+          # Trailing (?!/) excludes @org/team-name team mentions -- those aren't individual
+          # users and would otherwise leave a mangled "@org" fallback in the Slack message.
+          mentions=$(printf '%s' "$body_no_code" \
+            | { grep -oP '(?<![\w.@-])@[a-zA-Z0-9](?:-?[a-zA-Z0-9]){0,38}\b(?!/)' || true; } \
+            | sed 's/^@//' | sort -u)
+
+          if [ -z "$mentions" ]; then
+            echo "No user mentions found in comment, skipping Slack notification."
+            exit 0
+          fi
+
+          # Resolve each mentioned GitHub username to a Slack member ID via the
+          # mapping file, falling back to the plain @username text if unmapped.
+          mention_text=""
+          while IFS= read -r gh_user; do
+            gh_user_lower=$(printf '%s' "$gh_user" | tr '[:upper:]' '[:lower:]')
+            # `|| slack_id=""` keeps a missing/malformed map file from aborting the whole
+            # step under set -e -- fall back to the plain @username text for that mention.
+            slack_id=$(jq -r --arg u "$gh_user_lower" '.[$u] // empty' .github/slack_user_map.json) || slack_id=""
+            if [ -n "$slack_id" ]; then
+              mention_text="${mention_text}<@${slack_id}> "
+            else
+              mention_text="${mention_text}@${gh_user} "
+            fi
+          done <<< "$mentions"
+
+          kind="issue"
+          if [ "$IS_PR" = "true" ]; then
+            kind="pull request"
+          fi
+
+          # Slack mrkdwn treats &, <, > as syntax (e.g. closing a <url|label> link early to
+          # inject new links or <!channel> mentions) -- escape them per Slack's formatting spec.
+          escaped_title=$(printf '%s' "$ISSUE_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+
+          text="*${COMMENT_AUTHOR}* mentioned ${mention_text}in a comment on ${kind} <${COMMENT_URL}|${REPO}#${ISSUE_NUMBER}: ${escaped_title}>"
+
+          payload=$(jq -n --arg text "$text" '{text: $text}')
+          curl -s --fail-with-body --connect-timeout 5 --max-time 10 \
+            -X POST -H 'Content-Type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"

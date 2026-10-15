@@ -30,10 +30,6 @@ import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "./constants";
  * load. `selectedFiscalYear` is persisted alongside `filters` because the
  * resolved query blends both — persisting only `filters` would silently reset
  * the fiscal year on return.
- *
- * The BudgetLines fiscal-year filter is derived (approach A/B, query-param
- * driven) and resolves to `null` today, so a `null` default is safe here; the
- * derived helpers stay in the page, out of the slice.
  */
 const listFilterDefaults = {
     agreements: {
@@ -46,7 +42,7 @@ const listFilterDefaults = {
             contractNumber: [],
             awardType: []
         },
-        selectedFiscalYear: getCurrentFiscalYear()
+        selectedFiscalYear: "All"
     },
     cans: {
         filters: {
@@ -60,16 +56,15 @@ const listFilterDefaults = {
     },
     budgetLines: {
         filters: {
-            fiscalYears: null,
+            fiscalYears: [],
             portfolios: [],
             bliStatus: [],
             budgetRange: null,
             agreementTypes: [],
             agreementTitles: [],
             canActivePeriods: []
-        }
-        // No page-level selectedFiscalYear: the FY dropdown is derived from
-        // filters.fiscalYears via the A/B helpers.
+        },
+        selectedFiscalYear: "All"
     },
     portfolios: {
         filters: {
@@ -87,7 +82,7 @@ const listFilterDefaults = {
             agreementSearch: [],
             projectType: []
         },
-        selectedFiscalYear: getCurrentFiscalYear()
+        selectedFiscalYear: "All"
     },
     procurementDashboard: {
         filters: {

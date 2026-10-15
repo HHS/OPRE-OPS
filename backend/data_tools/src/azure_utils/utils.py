@@ -5,13 +5,20 @@ import io
 import os
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 from urllib.parse import urlparse
 
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from azure.storage.blob import BlobServiceClient, ContainerClient
+from azure.storage.blob import (
+    BlobSasPermissions,
+    BlobServiceClient,
+    ContainerClient,
+    ContentSettings,
+    generate_blob_sas,
+)
 from loguru import logger
 
 from data_tools.environment.pytest import PytestConfig
@@ -19,6 +26,11 @@ from data_tools.environment.types import DataToolsConfig
 
 logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
 logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG")
+
+# The user-assigned managed identity's client id, when running attached to one (e.g. the data-tools
+# Container App Jobs). Blob/Vault access must select this identity explicitly; a bare
+# DefaultAzureCredential cannot resolve a user-assigned MI when no system-assigned identity exists.
+MI_CLIENT_ID = os.getenv("MI_CLIENT_ID")
 
 
 @dataclass
@@ -30,6 +42,11 @@ class AzureStorageAccount:
 
 
 def get_secret(vault_url: str, key_name: str) -> str:
+    # Left as a bare DefaultAzureCredential, matching its long-standing behaviour. An earlier
+    # revision of this branch pinned the user-assigned MI client id here for the usage-metrics job,
+    # but that job no longer reads Key Vault at run time (its secrets are injected as Container App
+    # secrets), so the only remaining caller is the FILE_STORAGE_AUTH_METHOD=access_key path in
+    # get_csv below -- and changing its credential resolution would be an unrelated behaviour change.
     credential = DefaultAzureCredential()
     secret_client = SecretClient(vault_url=vault_url, credential=credential)
     secret = secret_client.get_secret(key_name)
@@ -98,9 +115,6 @@ def get_csv(csv_path: str, config: DataToolsConfig = PYTEST_CONFIG, dialect: str
         return csv.DictReader(open(csv_path, "r"), dialect=dialect)
 
 
-MI_CLIENT_ID = os.getenv("MI_CLIENT_ID")
-
-
 def get_csv_using_mi_or_rbac(parts: tuple, dialect: str = "excel-tab", client_id: str = MI_CLIENT_ID) -> csv.DictReader:
     """
     Get a CSV file from a remote URL using Managed Identity.
@@ -142,3 +156,92 @@ def get_blob(container_client: ContainerClient, blob_name: str) -> bytes:
     bytes_data = container_client.download_blob(blob_name).readall()
     logger.info(f"Downloaded {len(bytes_data)} bytes.")
     return bytes_data
+
+
+def upload_blob(
+    account_url: str,
+    container_name: str,
+    blob_name: str,
+    data: bytes,
+    client_id: str = MI_CLIENT_ID,
+    content_type: str | None = None,
+) -> None:
+    """
+    Upload a blob to Azure Blob Storage using Managed Identity (or RBAC when no client ID is set).
+
+    Mirrors ``get_csv_using_mi_or_rbac``: the client is built inline from ``DefaultAzureCredential``
+    inside a context manager so it is closed after the upload. Requires the identity to have write
+    access (e.g. ``Storage Blob Data Contributor``) on the target container.
+
+    :param account_url: The storage account URL, e.g. "https://<account>.blob.core.windows.net".
+    :param container_name: The name of the container to upload to.
+    :param blob_name: The full blob name (may include a prefix, e.g. "reports/usage-metrics.csv").
+    :param data: The blob contents as bytes.
+    :param client_id: The client ID to use for Managed Identity.
+    :param content_type: Optional MIME type recorded as the blob's Content-Type so browsers
+        downloading it (e.g. via a SAS link) save it correctly. When None, Azure defaults apply.
+    """
+    logger.info(f"Uploading blob {blob_name!r} to container {container_name!r} at {account_url}.")
+
+    if client_id is None:
+        logger.warning("No client ID provided. Using RBAC.")
+        credential = DefaultAzureCredential()
+    else:
+        credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+
+    content_settings = ContentSettings(content_type=content_type) if content_type else None
+    with BlobServiceClient(account_url, credential=credential) as blob_service_client:
+        container_client = blob_service_client.get_container_client(container=container_name)
+        container_client.upload_blob(name=blob_name, data=data, overwrite=True, content_settings=content_settings)
+        logger.info(f"Uploaded {len(data)} bytes to {blob_name!r}.")
+
+
+def build_blob_sas_url(
+    account_url: str,
+    container_name: str,
+    blob_name: str,
+    account_key: str,
+    expiry_days: int,
+) -> str:
+    """Build a read-only, time-limited SAS download URL for a single blob.
+
+    Signs an *account-key* SAS (not a user-delegation SAS) so the link can outlive the 7-day cap
+    that Azure imposes on user-delegation keys -- the report link needs a longer window (e.g. 90
+    days). The caller supplies ``account_key``; for the scheduled usage-metrics job it arrives as a
+    Container App secret injected by Terraform at apply time, so the key is never in source control
+    and the job needs no Key Vault access at run time.
+
+    The returned URL is a bearer token: anyone who holds it can read the blob until it expires.
+    Scope it to the single report blob and keep the expiry as short as the use case allows; the
+    report contains named-user data.
+
+    :param account_url: The storage account URL, e.g. "https://<account>.blob.core.windows.net".
+    :param container_name: The container the blob lives in.
+    :param blob_name: The full blob name (may include a prefix, e.g. "reports/usage-metrics.xlsx").
+    :param account_key: The storage account access key used to sign the SAS.
+    :param expiry_days: How many days from now the link stays valid (must be > 0).
+    :return: A full https URL with the SAS query string appended.
+    """
+    if expiry_days <= 0:
+        raise ValueError(f"expiry_days must be > 0, got {expiry_days}.")
+
+    parsed_account_url = urlparse(account_url if "://" in account_url else f"https://{account_url}")
+    if not parsed_account_url.hostname:
+        raise ValueError(f"account_url must include a hostname, got {account_url!r}.")
+    account_name = parsed_account_url.hostname.split(".")[0]
+    expiry = datetime.now(timezone.utc) + timedelta(days=expiry_days)
+    sas_token = generate_blob_sas(
+        account_name=account_name,
+        container_name=container_name,
+        blob_name=blob_name,
+        account_key=account_key,
+        permission=BlobSasPermissions(read=True),
+        expiry=expiry,
+    )
+    # Build the URL from the *parsed* origin rather than the raw input. Concatenating the raw value
+    # would turn a trailing slash into "…blob.core.windows.net//data/reports/x.xlsx", which Azure
+    # reads as a different canonical resource than the one the signature above covers -- so the
+    # upload succeeds and every emailed link fails. The scheme is normalised here too, so a
+    # scheme-less account URL still yields an https link.
+    origin = f"{parsed_account_url.scheme or 'https'}://{parsed_account_url.netloc}"
+    return f"{origin}/{container_name}/{blob_name}?{sas_token}"

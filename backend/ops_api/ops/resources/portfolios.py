@@ -29,6 +29,7 @@ class PortfolioItemAPI(BaseItemAPI):
                 selectinload(Portfolio.team_leaders),
                 selectinload(Portfolio.urls),
                 selectinload(Portfolio.division).selectinload(Division.division_director),
+                selectinload(Portfolio.division).selectinload(Division.deputy_division_director),
             )
         )
         item = current_app.db_session.scalar(stmt)
@@ -58,6 +59,7 @@ class PortfolioListAPI(BaseListAPI):
             selectinload(Portfolio.team_leaders),  # Many-to-many: portfolio -> users
             selectinload(Portfolio.urls),  # One-to-many: portfolio -> urls
             selectinload(Portfolio.division).selectinload(Division.division_director),  # Many-to-one with nested
+            selectinload(Portfolio.division).selectinload(Division.deputy_division_director),
         )
 
         if project_id is not None:
@@ -97,4 +99,6 @@ def add_additional_fields_to_portfolio_response(
     return {
         "team_leaders": [tm.to_dict() for tm in portfolio.team_leaders],
         "division": portfolio.division.to_dict() if portfolio.division else None,
+        "division_director": portfolio.division_director,
+        "deputy_division_director": portfolio.deputy_division_director,
     }

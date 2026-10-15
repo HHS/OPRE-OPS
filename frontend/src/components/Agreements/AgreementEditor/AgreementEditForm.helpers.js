@@ -1,11 +1,14 @@
 import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 
+// Procurement Shop deliberately has NO entry here. AgreementEditForm.hooks.js's
+// isProcurementShopDisabled derives entirely from the backend's _meta.procurementShopLockedMessage
+// (which already covers the awarded case) — adding one here would resurrect the dead,
+// superuser-exempt duplicate of that rule that caused #6312. Don't add it back.
 const AWARDED_DISABLED_FIELDS = {
     [AgreementFields.Name]: "name",
     [AgreementFields.ContractType]: "contract_type",
     [AgreementFields.ServiceRequirementType]: "service_requirement_type",
     [AgreementFields.ProductServiceCode]: "product_service_code_id",
-    [AgreementFields.ProcurementShop]: "awarding_entity_id",
     [AgreementFields.AgreementReason]: "agreement_reason",
     [AgreementFields.RequestingAgency]: "requesting_agency_id",
     [AgreementFields.ServicingAgency]: "servicing_agency_id"

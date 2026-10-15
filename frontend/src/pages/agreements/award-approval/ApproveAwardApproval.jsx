@@ -29,6 +29,7 @@ export const ApproveAwardApproval = () => {
         allBudgetLines,
         executingTotal,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         requestorNotes,
         handleApprove,
@@ -39,12 +40,18 @@ export const ApproveAwardApproval = () => {
         showModal,
         setShowModal,
         modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         isSubmitting,
         submitError,
         hasPermission,
         approvalAlreadyProcessed,
         obligatedDate,
         setObligatedDate,
+        runValidate,
+        validatorRes,
+        isObligatedDateInvalid,
         MemoizedDatePicker
     } = useApproveAwardApproval(agreementId);
 
@@ -76,7 +83,20 @@ export const ApproveAwardApproval = () => {
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                    handleSecondary={modalProps.handleSecondary}
                     closeModal={modalProps.closeModal}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    setShowModal={setShowBlockerModal}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
                 />
             )}
 
@@ -89,8 +109,7 @@ export const ApproveAwardApproval = () => {
                 Review the agreement details and the Signed Award attached below. Confirm that the CLINs have been
                 entered correctly and that all the agreement details match the award exactly. Make any final edits, as
                 needed. After the Budget Team approves, the agreement will change to Awarded. This will change the
-                budget lines in Executing Status to Obligated Status, and change budget lines in Planned Status to
-                Planned - Mod Status.
+                budget lines in Executing Status to Obligated Status.
             </p>
 
             {approvalAlreadyProcessed && (
@@ -122,6 +141,7 @@ export const ApproveAwardApproval = () => {
                     ...group,
                     budgetLines: group.budgetLines.filter((bli) => bli.status !== "DRAFT")
                 }))}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
                 showCLINColumn={true}
                 executingTotalInstructions="Review the total of all budget lines in Executing Status."
@@ -193,6 +213,52 @@ export const ApproveAwardApproval = () => {
                         </dl>
                     </div>
                 </div>
+                {/* OPS-5892: Modification #, Purchase Order #, Task Order # */}
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Modification #</dt>
+                            <dd className="margin-0 text-bold">{step6?.modification_number || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Purchase Order #</dt>
+                            <dd className="margin-0 text-bold">{step6?.purchase_order_number || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-4">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Task Order #</dt>
+                            <dd className="margin-0 text-bold">{step6?.task_order_number || "—"}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </Accordion>
+
+            {/* OPS-5892: Review Agreement Title — proposed title overwrites the current one on approval */}
+            <Accordion
+                heading="Review Agreement Title"
+                level={2}
+            >
+                <p>
+                    Please confirm the updated Agreement Title matches the signed award exactly. On approval, this title
+                    will overwrite the current agreement title and be locked from editing.
+                </p>
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-6">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Current Agreement Title</dt>
+                            <dd className="margin-0 text-bold">{agreement?.name || "—"}</dd>
+                        </dl>
+                    </div>
+                    <div className="grid-col-6">
+                        <dl className="font-12px margin-0">
+                            <dt className="text-base-dark">Updated Agreement Title</dt>
+                            <dd className="margin-0 text-bold">{step6?.agreement_title || "—"}</dd>
+                        </dl>
+                    </div>
+                </div>
             </Accordion>
 
             {/* Review Signed Award — upload disabled (feature-flagged) */}
@@ -227,7 +293,11 @@ export const ApproveAwardApproval = () => {
                         label="Obligated Date"
                         hint="mm/dd/yyyy"
                         value={obligatedDate}
-                        onChange={(e) => setObligatedDate(e.target.value)}
+                        onChange={(e) => {
+                            runValidate("obligatedDate", e.target.value);
+                            setObligatedDate(e.target.value);
+                        }}
+                        messages={validatorRes.getErrors("obligatedDate") || []}
                         isDisabled={approvalAlreadyProcessed}
                     />
                 </div>
@@ -283,8 +353,7 @@ export const ApproveAwardApproval = () => {
                     >
                         I understand that approving for Award means all information in this agreement is correct
                         (matches the award exactly) and can be changed to Awarded in OPS. I understand this action will
-                        change budget lines in Executing Status to Obligated Status and budget lines in Planned Status
-                        will change to Planned Mod Status.
+                        change budget lines in Executing Status to Obligated Status.
                     </label>
                 </div>
             </div>
@@ -304,7 +373,7 @@ export const ApproveAwardApproval = () => {
                     className="usa-button usa-button--outline margin-right-2"
                     onClick={() =>
                         navigate(
-                            `/agreements/review/${agreementId}/edit?returnTo=/agreements/${agreementId}/review-award`
+                            `/agreements/${agreementId}/edit-award?returnTo=/agreements/${agreementId}/review-award`
                         )
                     }
                     disabled={isSubmitting || approvalAlreadyProcessed}
@@ -316,7 +385,10 @@ export const ApproveAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleApprove}
-                    disabled={isSubmitting || approvalAlreadyProcessed || !understandsApproval}
+                    disabled={
+                        isSubmitting || approvalAlreadyProcessed || !understandsApproval || isObligatedDateInvalid
+                    }
+                    title={isObligatedDateInvalid ? "Enter the Obligated Date before approving for Award." : undefined}
                     data-cy="approve-award-btn"
                 >
                     {isSubmitting ? "Processing..." : "Approve Award"}

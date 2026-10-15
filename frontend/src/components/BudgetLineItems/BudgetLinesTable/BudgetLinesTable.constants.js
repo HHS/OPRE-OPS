@@ -9,3 +9,26 @@ export const BUDGET_LINE_TABLE_HEADERS = [
     { heading: "Total", value: tableSortCodes.budgetLineCodes.TOTAL },
     { heading: "Status", value: tableSortCodes.budgetLineCodes.STATUS }
 ];
+
+// Grant budget lines have no procurement shop, so no Fee or Total columns.
+export const GRANT_BUDGET_LINE_TABLE_HEADERS = [
+    { heading: "BL ID #", value: tableSortCodes.budgetLineCodes.BL_ID_NUMBER },
+    { heading: "Obligate By", value: tableSortCodes.budgetLineCodes.OBLIGATE_BY },
+    { heading: "FY", value: tableSortCodes.budgetLineCodes.FISCAL_YEAR },
+    { heading: "CAN", value: tableSortCodes.budgetLineCodes.CAN_NUMBER },
+    { heading: "Amount", value: tableSortCodes.budgetLineCodes.AMOUNT },
+    { heading: "Status", value: tableSortCodes.budgetLineCodes.STATUS }
+];
+
+// Awarded contract budget lines add a sortable CLIN column after BL ID #.
+export const AWARDED_CONTRACT_BUDGET_LINE_TABLE_HEADERS = [
+    { heading: "BL ID #", value: tableSortCodes.budgetLineCodes.BL_ID_NUMBER },
+    { heading: "CLIN", value: tableSortCodes.budgetLineCodes.CLIN },
+    { heading: "Obligate By", value: tableSortCodes.budgetLineCodes.OBLIGATE_BY },
+    { heading: "FY", value: tableSortCodes.budgetLineCodes.FISCAL_YEAR },
+    { heading: "CAN", value: tableSortCodes.budgetLineCodes.CAN_NUMBER },
+    { heading: "Amount", value: tableSortCodes.budgetLineCodes.AMOUNT },
+    { heading: "Fee", value: tableSortCodes.budgetLineCodes.FEES },
+    { heading: "Total", value: tableSortCodes.budgetLineCodes.TOTAL },
+    { heading: "Status", value: tableSortCodes.budgetLineCodes.STATUS }
+];

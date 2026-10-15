@@ -3,7 +3,13 @@ import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../store";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import { useIsUserSuperUser, useGetLoggedInUserFullName, useIsUserOnlyProcurementTeam } from "./user.hooks";
+import {
+    useIsUserSuperUser,
+    useIsUserBudgetTeam,
+    useGetLoggedInUserFullName,
+    useIsUserOnlyProcurementTeam,
+    useCanEditByRole
+} from "./user.hooks";
 import { USER_ROLES } from "../components/Users/User.constants";
 
 // Helper function to create wrapper with Redux provider
@@ -128,6 +134,72 @@ describe("useIsUserSuperUser", () => {
     });
 });
 
+describe("useIsUserBudgetTeam", () => {
+    it("returns true when user has BUDGET_TEAM role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [{ id: 5, name: USER_ROLES.BUDGET_TEAM }]
+                }
+            }
+        });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(true);
+    });
+
+    it("returns true when user has BUDGET_TEAM alongside other roles", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [
+                        { id: 4, name: USER_ROLES.USER_ADMIN },
+                        { id: 5, name: USER_ROLES.BUDGET_TEAM }
+                    ]
+                }
+            }
+        });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(true);
+    });
+
+    it("returns false when user has a different role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR }]
+                }
+            }
+        });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when user has no roles", () => {
+        const { Wrapper } = createWrapper({
+            auth: { activeUser: { id: 1, roles: [] } }
+        });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when roles is null", () => {
+        const { Wrapper } = createWrapper({
+            auth: { activeUser: { id: 1, roles: null } }
+        });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when no active user exists", () => {
+        const { Wrapper } = createWrapper({ auth: { activeUser: null } });
+        const { result } = renderHook(() => useIsUserBudgetTeam(), { wrapper: Wrapper });
+        expect(result.current).toBe(false);
+    });
+});
+
 describe("useIsUserOnlyProcurementTeam", () => {
     it("returns true when user has only PROCUREMENT_TEAM role", () => {
         const { Wrapper } = createWrapper({
@@ -239,6 +311,85 @@ describe("useIsUserOnlyProcurementTeam", () => {
         });
 
         expect(result.current).toBe(false);
+    });
+});
+
+describe("useCanEditByRole", () => {
+    it("returns true when user is a super user", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                    is_superuser: true
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useCanEditByRole(), { wrapper: Wrapper });
+
+        expect(result.current).toBe(true);
+    });
+
+    it("returns false when user has only the READ_ONLY role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [{ id: 8, name: USER_ROLES.READ_ONLY }]
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useCanEditByRole(), { wrapper: Wrapper });
+
+        expect(result.current).toBe(false);
+    });
+
+    it("returns true when user has READ_ONLY alongside SUPER_USER (superuser wins)", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [
+                        { id: 8, name: USER_ROLES.READ_ONLY },
+                        { id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }
+                    ],
+                    is_superuser: true
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useCanEditByRole(), { wrapper: Wrapper });
+
+        expect(result.current).toBe(true);
+    });
+
+    it("returns true when user has a non-read-only role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    roles: [{ id: 2, name: USER_ROLES.VIEWER_EDITOR }]
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useCanEditByRole(), { wrapper: Wrapper });
+
+        expect(result.current).toBe(true);
+    });
+
+    it("returns true when no active user exists (no roles, not read-only)", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: null
+            }
+        });
+
+        const { result } = renderHook(() => useCanEditByRole(), { wrapper: Wrapper });
+
+        expect(result.current).toBe(true);
     });
 });
 

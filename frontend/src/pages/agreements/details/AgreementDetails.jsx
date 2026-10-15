@@ -1,5 +1,5 @@
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { AgreementType } from "../agreements.constants";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import AgreementDetailsView from "./AgreementDetailsView";
@@ -18,6 +18,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
+ * @param {boolean} [props.isPostPreAwardLocked] - if the agreement is permanently locked after full pre-award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -31,14 +32,43 @@ const AgreementDetails = ({
     isAgreementAwarded = false,
     hasAgreementChanged = false,
     isPreAwardInReview = false,
-    isAwardInReview = false
+    isAwardInReview = false,
+    isPostPreAwardLocked = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
+    const canEditByRole = useCanEditByRole();
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    const grantNumbers = isGrant ? (agreement?.grant_numbers ?? []) : [];
+
+    const { nofoPeriodStart, nofoPeriodEnd } = grantNumbers.reduce(
+        (acc, gn) => ({
+            nofoPeriodStart:
+                gn.period_start && (!acc.nofoPeriodStart || gn.period_start < acc.nofoPeriodStart)
+                    ? gn.period_start
+                    : acc.nofoPeriodStart,
+            nofoPeriodEnd:
+                gn.period_end && (!acc.nofoPeriodEnd || gn.period_end > acc.nofoPeriodEnd)
+                    ? gn.period_end
+                    : acc.nofoPeriodEnd
+        }),
+        { nofoPeriodStart: null, nofoPeriodEnd: null }
+    );
+
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
-    const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
-    // Editing is not yet supported for grant agreements, so the Edit button is disabled for them.
-    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
+    // Intentionally blocks the Details edit form during all procurement locks (pre-award review,
+    // award review, and post-pre-award lock), not just post-pre-award. This is broader than the
+    // OPS-2280 PR scope but correct: if the header already shows editing as disabled for those
+    // states, the form should not be reachable via URL params either.
+    // The role gate belongs here, not only on the button: `isEditMode` comes from the `?mode=edit`
+    // URL param (see Agreement.jsx) with no role check, so without it a read-only team member could
+    // reach the live edit form by URL even with the Edit button hidden.
+    const isEditable =
+        canEditByRole &&
+        !isPreAwardInReview &&
+        !isAwardInReview &&
+        !isPostPreAwardLocked &&
+        (isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped));
 
     return (
         <article>
@@ -48,10 +78,13 @@ const AgreementDetails = ({
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
+                canUserEdit={isSuperUser || (agreement?._meta?.isEditable ?? false)}
+                isAgreementNotDeveloped={isAgreementNotDeveloped}
                 hasUnsavedChanges={hasAgreementChanged}
                 isPreAwardInReview={isPreAwardInReview}
                 isAwardInReview={isAwardInReview}
-                isGrant={isGrant}
+                isPostPreAwardLocked={isPostPreAwardLocked}
+                showEditButton={canEditByRole}
             />
 
             {isEditMode && isEditable ? (
@@ -69,6 +102,8 @@ const AgreementDetails = ({
                     projectOfficer={projectOfficer}
                     alternateProjectOfficer={alternateProjectOfficer}
                     isAgreementAwarded={isAgreementAwarded}
+                    nofoPeriodStart={nofoPeriodStart}
+                    nofoPeriodEnd={nofoPeriodEnd}
                 />
             )}
         </article>

@@ -18,6 +18,10 @@ import styles from "./table.module.css";
  * @property {string | null} [selectedHeader] - The header that has been chosen as sort condition.
  * @property {boolean | null} [sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
  * @property {string} [className] - Additional class names to add to the table - optional.
+ * @property {boolean} [sortable] - When false, headers render as plain text instead of sort
+ *   buttons, regardless of whether a heading has a `value`. Use when `onClickHeader` has no
+ *   real effect (e.g. a static snapshot with no sort state) so controls aren't rendered as
+ *   if they do something.
  */
 
 /**
@@ -36,7 +40,8 @@ const Table = ({
     onClickHeader,
     selectedHeader = "",
     sortDescending,
-    className = ""
+    className = "",
+    sortable = true
 }) => {
     /**
      * Adds a width to specific columns
@@ -64,44 +69,60 @@ const Table = ({
             <thead>
                 <tr>
                     {firstHeadingSlot && firstHeadingSlot}
-                    {tableHeadings.map((header, index) => (
-                        <th
-                            key={index}
-                            scope="col"
-                            style={setColumnWidth(header)}
-                            aria-sort={
-                                header.value === selectedHeader ? (sortDescending ? "descending" : "ascending") : "none"
-                            }
-                        >
-                            <button
-                                type="button"
-                                data-cy={header.value}
-                                className="usa-table__header__button cursor-pointer"
-                                title={`Click to sort by ${header.heading}`}
-                                onClick={() => {
-                                    onClickHeader?.(header.value, sortDescending == null ? true : !sortDescending);
-                                }}
+                    {tableHeadings.map((header, index) => {
+                        const isSortable = sortable && Boolean(header.value);
+                        return (
+                            <th
+                                key={index}
+                                scope="col"
+                                style={setColumnWidth(header)}
+                                aria-sort={
+                                    isSortable && header.value === selectedHeader
+                                        ? sortDescending
+                                            ? "descending"
+                                            : "ascending"
+                                        : "none"
+                                }
                             >
-                                {header.heading}
-                                {header.value === selectedHeader && (
-                                    <>
-                                        {!sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowUp}
-                                                className="margin-left-05 height-2 width-2 cursor-pointer"
-                                            />
+                                {isSortable ? (
+                                    <button
+                                        type="button"
+                                        data-cy={header.value}
+                                        className="usa-table__header__button cursor-pointer"
+                                        title={`Click to sort by ${header.heading}`}
+                                        onClick={() => {
+                                            onClickHeader?.(
+                                                header.value,
+                                                sortDescending == null ? true : !sortDescending
+                                            );
+                                        }}
+                                    >
+                                        {header.heading}
+                                        {header.value === selectedHeader && (
+                                            <>
+                                                {!sortDescending && (
+                                                    <FontAwesomeIcon
+                                                        icon={faArrowUp}
+                                                        className="margin-left-05 height-2 width-2 cursor-pointer"
+                                                    />
+                                                )}
+                                                {sortDescending && (
+                                                    <FontAwesomeIcon
+                                                        icon={faArrowDown}
+                                                        className="margin-left-05 height-2 width-2 cursor-pointer"
+                                                    />
+                                                )}
+                                            </>
                                         )}
-                                        {sortDescending && (
-                                            <FontAwesomeIcon
-                                                icon={faArrowDown}
-                                                className="margin-left-05 height-2 width-2 cursor-pointer"
-                                            />
-                                        )}
-                                    </>
+                                    </button>
+                                ) : header.heading ? (
+                                    header.heading
+                                ) : (
+                                    <span className="usa-sr-only">Expand row</span>
                                 )}
-                            </button>
-                        </th>
-                    ))}
+                            </th>
+                        );
+                    })}
                 </tr>
             </thead>
             <tbody>{children}</tbody>

@@ -3,17 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 
-export const useNavigateAgreementReview = () => {
-    const navigate = useNavigate();
-    /**
-     * Navigates to the agreement review page.
-     * @param {number} id - The id of the agreement to review.
-     */
-    return (id) => {
-        navigate(`/agreements/review/${id}`);
-    };
-};
-
 export const useHandleEditAgreement = () => {
     const navigate = useNavigate();
     /**

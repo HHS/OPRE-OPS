@@ -41,5 +41,6 @@ export const KEY_NAMES = {
     CAN: "can_id",
     DATE_NEEDED: "date_needed",
     STATUS: "status",
-    PROC_SHOP: "awarding_entity_id"
+    PROC_SHOP: "awarding_entity_id",
+    DELETE: "delete"
 };

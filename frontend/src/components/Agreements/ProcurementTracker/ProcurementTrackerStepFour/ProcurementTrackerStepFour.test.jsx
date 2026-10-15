@@ -163,7 +163,8 @@ describe("ProcurementTrackerStepFour", () => {
             handleConfirm: vi.fn()
         },
         cancelModalStep4: mockCancelModalStep4,
-        handleSaveNotes: mockHandleSaveNotes
+        handleSaveNotes: mockHandleSaveNotes,
+        isStepPatchInFlight: false
     };
 
     const defaultProps = {
@@ -412,6 +413,7 @@ describe("ProcurementTrackerStepFour", () => {
         it("renders notes when provided", () => {
             useProcurementTrackerStepFour.mockReturnValue({
                 ...defaultHookReturn,
+                step4Notes: "Vendor selected after evaluation",
                 step4NotesLabel: "Vendor selected after evaluation"
             });
 
@@ -557,6 +559,8 @@ describe("ProcurementTrackerStepFour", () => {
         });
 
         it("clicking Save Notes calls handleSaveNotes with stepFourData.id", () => {
+            useProcurementTrackerStepFour.mockReturnValue({ ...defaultHookReturn, step4Notes: "A note" });
+
             render(<ProcurementTrackerStepFour {...defaultProps} />);
 
             const saveNotesButton = screen.getByRole("button", { name: /save notes/i });
@@ -573,6 +577,18 @@ describe("ProcurementTrackerStepFour", () => {
             fireEvent.click(saveNotesButton);
 
             expect(mockHandleStepFourComplete).not.toHaveBeenCalled();
+        });
+
+        it("disables the Save Notes control while a step PATCH is in flight (mutual-exclusion guard)", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4Notes: "A note",
+                isStepPatchInFlight: true
+            });
+
+            render(<ProcurementTrackerStepFour {...defaultProps} />);
+
+            expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
         });
     });
 
@@ -618,9 +634,10 @@ describe("ProcurementTrackerStepFour", () => {
             fireEvent.click(screen.getByRole("button", { name: /edit notes/i }));
             expect(screen.getByTestId("text-area")).toBeInTheDocument();
 
-            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
 
             expect(mockHandleSaveNotes).not.toHaveBeenCalled();
+            expect(mockResetStep4Notes).toHaveBeenCalledWith("Existing notes");
             expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
             expect(screen.getByRole("button", { name: /edit notes/i })).toBeInTheDocument();
         });

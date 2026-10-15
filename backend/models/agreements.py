@@ -20,7 +20,7 @@ from sqlalchemy import (
     Index,
     func,
 )
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.dialects.postgresql import ARRAY, ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
 from models.base import BaseModel
@@ -456,6 +456,19 @@ class Agreement(BaseModel):
     def in_review(self) -> bool:
         return self.change_requests_in_review is not None
 
+    @property
+    def is_award_approval_requested(self) -> bool:
+        # Local import avoids a circular import: the ops_api utils layer imports models.
+        from ops_api.ops.utils.budget_line_items_helpers import is_award_approval_requested
+
+        return is_award_approval_requested(self)
+
+    @property
+    def is_post_pre_award_locked(self) -> bool:
+        from ops_api.ops.utils.budget_line_items_helpers import is_post_pre_award_locked
+
+        return is_post_pre_award_locked(self)
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
@@ -512,6 +525,21 @@ class Agreement(BaseModel):
         return date_to_fiscal_year(self.award_date)
 
     @property
+    def has_non_draft_budget_lines(self) -> bool:
+        """
+        Whether any budget line item on this agreement is not in Draft status.
+
+        Single source of truth for this predicate — used by ``award_type`` below and by
+        ``AgreementsService`` (delete guard and deletability meta) so the rule can't drift
+        between those call sites. A NULL status does not count as non-draft.
+        """
+        from models.budget_line_items import BudgetLineItemStatus
+
+        return any(
+            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
+        )
+
+    @property
     def award_type(self) -> Optional[str]:
         """
         Classify agreement as NEW, CONTINUING, or None for Budget Team reporting.
@@ -522,14 +550,9 @@ class Agreement(BaseModel):
 
         Returns the name of an AgreementClassification enum value (e.g. "NEW", "CONTINUING").
         """
-        from models.budget_line_items import BudgetLineItemStatus
         from models.utils.fiscal_year import get_current_fiscal_year
 
-        has_non_draft_blis = any(
-            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
-        )
-
-        if not has_non_draft_blis:
+        if not self.has_non_draft_budget_lines:
             return None
 
         if not self.is_awarded:
@@ -726,8 +749,17 @@ class GrantAgreement(Agreement):
     number_of_years: Mapped[Optional[int]] = mapped_column(Integer)
     number_of_grants: Mapped[Optional[int]] = mapped_column(Integer)
     nofo_number: Mapped[Optional[str]] = mapped_column(String)
-    aln_number: Mapped[Optional[str]] = mapped_column(String)
+    aln_numbers: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String))
     funding_period_months: Mapped[Optional[int]] = mapped_column(Integer)
+    awarded_grant_number: Mapped[Optional[str]] = mapped_column(String)
+
+    grant_numbers: Mapped[list["GrantNumber"]] = relationship(
+        "GrantNumber",
+        primaryjoin="GrantAgreement.id == foreign(GrantNumber.agreement_id)",
+        back_populates="agreement",
+        lazy="selectin",
+        cascade="all, delete",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,

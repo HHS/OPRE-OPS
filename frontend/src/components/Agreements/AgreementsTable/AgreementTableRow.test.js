@@ -98,7 +98,8 @@ const baseAgreement = {
     notes: "Test notes",
     created_on: "2021-10-21T03:24:00",
     _meta: {
-        isEditable: true
+        isEditable: true,
+        isDeletable: true
     }
 };
 
@@ -134,7 +135,8 @@ const createMockStore = (
 const renderComponent = (
     userRoles = [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
     agreementData = baseAgreement,
-    isSuperUser = false
+    isSuperUser = false,
+    disableRowActions = false
 ) => {
     const store = createMockStore(userRoles, isSuperUser);
 
@@ -146,7 +148,10 @@ const renderComponent = (
             >
                 <table>
                     <tbody>
-                        <AgreementTableRow agreement={agreementData} />
+                        <AgreementTableRow
+                            agreement={agreementData}
+                            disableRowActions={disableRowActions}
+                        />
                     </tbody>
                 </table>
             </Router>
@@ -213,6 +218,27 @@ describe("AgreementTableRow", () => {
             expect(editButton).not.toBeDisabled();
         });
 
+        test("super user can edit GRANT agreements from the table row", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], grantAgreement, true);
+
+            const user = userEvent.setup();
+
+            // Hover over the table row to activate it and show ChangeIcons
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            // Should see edit button that is not disabled
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).not.toBeDisabled();
+        });
+
         test("super user sees edit button enabled (and no locked message tooltip)", async () => {
             // API returns isEditable: true for super users
             const agreementWithoutUserOnTeam = {
@@ -247,7 +273,7 @@ describe("AgreementTableRow", () => {
                 budget_line_items: [
                     { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED", fiscal_year: 2025 }
                 ],
-                _meta: { isEditable: true } // API returns true for super users
+                _meta: { isEditable: true, isDeletable: true } // API returns true for super users
             };
 
             renderComponent(
@@ -266,6 +292,23 @@ describe("AgreementTableRow", () => {
             const deleteButton = screen.getByTestId("delete-row");
             expect(deleteButton).toBeInTheDocument();
             expect(deleteButton).not.toBeDisabled();
+        });
+
+        test("super user cannot delete when the backend says it's not deletable (no client-side bypass)", async () => {
+            const lockedAgreement = {
+                ...baseAgreement,
+                _meta: { isEditable: true, isDeletable: false }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], lockedAgreement, true);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
         });
     });
 
@@ -299,6 +342,84 @@ describe("AgreementTableRow", () => {
 
             expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
             expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+
+        test("read-only user sees the FY Obligated amount (not blank) on hover", async () => {
+            renderComponent([{ id: 1, name: USER_ROLES.READ_ONLY, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByText("$0")).toBeInTheDocument();
+        });
+    });
+
+    describe("disableRowActions", () => {
+        test("non-read-only user still sees the FY Obligated amount (not blank) on hover when disableRowActions is true", async () => {
+            // OPS-6308 regression: a non-read-only (default VIEWER_EDITOR) user has
+            // canEditByRole === true, so the hover-swap condition that decides whether to
+            // render the ChangeIcons slot in the amount cell must also check
+            // disableRowActions, or the amount silently disappears on hover even though
+            // disableRowActions already correctly suppresses the icons themselves.
+            renderComponent(undefined, baseAgreement, false, true);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByText("$0")).toBeInTheDocument();
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+
+        test("non-read-only user does not see change icons in the expanded row when disableRowActions is true", async () => {
+            renderComponent(undefined, baseAgreement, false, true);
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Super User with Read-Only Role Permissions", () => {
+        test("super user who also holds the read-only role still sees edit/delete icons on hover", async () => {
+            renderComponent(
+                [
+                    { id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                    { id: 2, name: USER_ROLES.READ_ONLY, is_superuser: true }
+                ],
+                baseAgreement,
+                true
+            );
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.getByTestId("edit-row")).toBeInTheDocument();
+            expect(screen.getByTestId("delete-row")).toBeInTheDocument();
+        });
+
+        test("super user who also holds the read-only role still sees change icons in the expanded row", async () => {
+            renderComponent(
+                [
+                    { id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true },
+                    { id: 2, name: USER_ROLES.READ_ONLY, is_superuser: true }
+                ],
+                baseAgreement,
+                true
+            );
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.getByTestId("edit-row")).toBeInTheDocument();
+            expect(screen.getByTestId("delete-row")).toBeInTheDocument();
         });
     });
 
@@ -344,6 +465,43 @@ describe("AgreementTableRow", () => {
             expect(editButton).toBeDisabled();
         });
 
+        test("regular user can edit GRANT agreements from the table row when they are a team member", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], grantAgreement);
+
+            const user = userEvent.setup();
+
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const editButton = screen.getByTestId("edit-row");
+            expect(editButton).toBeInTheDocument();
+            expect(editButton).not.toBeDisabled();
+        });
+
+        test("grant agreement expanded row hides contract-only fields", async () => {
+            const grantAgreement = {
+                ...baseAgreement,
+                agreement_type: "GRANT",
+                _meta: { isEditable: true }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], grantAgreement);
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
+            expect(screen.queryByText("Contract #")).not.toBeInTheDocument();
+            expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
+        });
+
         test("regular user can edit editable agreements of developed type when user is on team", async () => {
             renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], baseAgreement);
 
@@ -357,6 +515,59 @@ describe("AgreementTableRow", () => {
             const editButton = screen.getByTestId("edit-row");
             expect(editButton).toBeInTheDocument();
             expect(editButton).not.toBeDisabled();
+        });
+
+        test("regular team member can delete an agreement when the backend says it's deletable", async () => {
+            // baseAgreement._meta already has isDeletable: true
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).not.toBeDisabled();
+        });
+
+        test("regular team member cannot delete an agreement when the backend says it's not deletable", async () => {
+            // All budget lines are DRAFT here (the old client-side rule would have allowed delete) —
+            // isDeletable: false alone must be what disables the button.
+            const nonDeletableAgreement = {
+                ...baseAgreement,
+                budget_line_items: [{ amount: 100, fees: 5, status: "DRAFT", fiscal_year: 2025 }],
+                _meta: { isEditable: true, isDeletable: false }
+            };
+
+            renderComponent([{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], nonDeletableAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
+        });
+
+        test("regular team member cannot delete when _meta.isDeletable is omitted", async () => {
+            const agreementMissingIsDeletable = {
+                ...baseAgreement,
+                _meta: { isEditable: true } // no isDeletable key at all
+            };
+
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }],
+                agreementMissingIsDeletable
+            );
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            const deleteButton = screen.getByTestId("delete-row");
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
         });
     });
 });

@@ -13,8 +13,8 @@ const CreateAgreement = () => {
     });
 
     return (
-        <App>
-            <EditAgreementProvider>
+        <App breadCrumbName="Create New Agreement">
+            <EditAgreementProvider budgetLines={agreement?.budget_line_items ?? []}>
                 <CreateEditAgreement
                     budgetLines={agreement?.budget_line_items ?? []}
                     setAgreementId={setAgreementId}

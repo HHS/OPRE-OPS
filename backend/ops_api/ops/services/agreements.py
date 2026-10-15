@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from typing import Any, List, Optional, Sequence, Type
+from typing import Any, List, Literal, Optional, Type
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, distinct, func, or_, select, union
+from sqlalchemy import Select, case, distinct, false, func, or_, select, union, union_all
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -22,6 +22,7 @@ from models import (
     ContractAgreement,
     Division,
     GrantAgreement,
+    GrantNumber,
     OpsEventType,
     Portfolio,
     PortfolioTeamLeaders,
@@ -34,6 +35,7 @@ from models import (
     Vendor,
 )
 from models.agreements import AgreementType
+from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 from models.procurement_tracker import ProcurementTrackerStatus
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
@@ -44,7 +46,13 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
+from ops_api.ops.utils.agreements_helpers import (
+    ProcurementShopLockReason,
+    check_user_association,
+    get_procurement_shop_locked_reason,
+    has_proc_shop_blocking_bli,
+    is_agreement_name_unique_violation,
+)
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -71,6 +79,7 @@ class AgreementFilters:
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
+    odn: Optional[list[str]] = None
     name: Optional[list[str]] = None
     search: Optional[list[str]] = None
     only_my: Optional[list[bool]] = None
@@ -100,6 +109,7 @@ class AgreementFilters:
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
+            odn=data.get("odn", []),
             name=data.get("name", []),
             search=data.get("search", []),
             only_my=data.get("only_my", []),
@@ -162,6 +172,7 @@ class AgreementsService(OpsService[Agreement]):
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])
         services_components_data = create_request.pop("services_components", [])
+        grant_numbers_data = create_request.pop("grant_numbers", [])
 
         try:
             # STEP 1: Create agreement (existing logic)
@@ -182,24 +193,27 @@ class AgreementsService(OpsService[Agreement]):
             self.db_session.add(agreement)
             self.db_session.flush()  # Flush to get agreement.id WITHOUT committing transaction
 
-            # STEP 2: Create services components FIRST (so BLIs can reference them)
+            # STEP 2: Create services components and grant numbers FIRST (so BLIs can
+            # reference them via services_component_ref / grant_number_ref).
             sc_ref_map, sc_count = self._create_services_components(agreement.id, services_components_data)
+            gn_ref_map, gn_count = self._create_grant_numbers(agreement.id, grant_numbers_data)
 
-            # STEP 3: Create budget line items, resolving services_component_ref
-            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map)
+            # STEP 3: Create budget line items, resolving services_component_ref / grant_number_ref
+            bli_count = self._create_budget_line_items(agreement, budget_line_items_data, sc_ref_map, gn_ref_map)
 
             # STEP 4: Commit the entire transaction
             self.db_session.commit()
 
             logger.info(
-                f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items "
-                f"and {sc_count} services components"
+                f"Successfully created Agreement id={agreement.id} with {bli_count} budget line items, "
+                f"{sc_count} services components, and {gn_count} grant numbers"
             )
 
             # STEP 5: Return enriched response
             return agreement, {
                 "budget_line_items_created": bli_count,
                 "services_components_created": sc_count,
+                "grant_numbers_created": gn_count,
             }
 
         except IntegrityError as e:
@@ -266,11 +280,52 @@ class AgreementsService(OpsService[Agreement]):
 
         return sc_ref_map, sc_count
 
+    def _create_grant_numbers(
+        self, agreement_id: int, grant_numbers_data: list[dict[str, Any]]
+    ) -> tuple[dict[str, int], int]:
+        """
+        Create grant numbers for an agreement.
+
+        Args:
+            agreement_id: The agreement ID to associate with grant numbers
+            grant_numbers_data: List of grant number data dictionaries
+
+        Returns:
+            Tuple of (gn_ref_map, gn_count) where:
+                - gn_ref_map: Map of temporary reference to actual GrantNumber ID
+                - gn_count: Number of grant numbers created
+        """
+        gn_ref_map = {}  # Map temporary ref -> actual GrantNumber ID
+        gn_count = 0
+
+        for idx, gn_data in enumerate(grant_numbers_data):
+            # Extract temporary reference (default to string index if not provided)
+            temp_ref = gn_data.pop("ref", None) or str(idx)
+
+            # Set agreement_id on the grant number
+            gn_data["agreement_id"] = agreement_id
+
+            # Create grant number directly (skip authorization - user already authorized for agreement)
+            new_gn = GrantNumber(**gn_data)
+            self.db_session.add(new_gn)
+            self.db_session.flush()  # Flush to get new_gn.id
+
+            # Store mapping of temporary reference to actual ID
+            gn_ref_map[temp_ref] = new_gn.id
+            gn_count += 1
+
+            logger.debug(
+                f"Created GrantNumber with ref={temp_ref!r} -> id={new_gn.id!r} for agreement_id={agreement_id!r}"
+            )
+
+        return gn_ref_map, gn_count
+
     def _create_budget_line_items(
         self,
         agreement: Agreement,
         budget_line_items_data: list[dict[str, Any]],
         sc_ref_map: dict[str, int],
+        gn_ref_map: dict[str, int] | None = None,
     ) -> int:
         """
         Create budget line items for an agreement.
@@ -279,14 +334,16 @@ class AgreementsService(OpsService[Agreement]):
             agreement: The agreement to associate with budget line items
             budget_line_items_data: List of budget line item data dictionaries
             sc_ref_map: Map of services component references to IDs for resolution
+            gn_ref_map: Map of grant number references to IDs for resolution (grant BLIs)
 
         Returns:
             Number of budget line items created
 
         Raises:
-            ValidationError: If services_component_ref is invalid
+            ValidationError: If services_component_ref or grant_number_ref is invalid
             ResourceNotFoundError: If referenced CAN doesn't exist
         """
+        gn_ref_map = gn_ref_map or {}
         bli_count = 0
 
         for bli_data in budget_line_items_data:
@@ -307,6 +364,25 @@ class AgreementsService(OpsService[Agreement]):
                 logger.debug(
                     f"Resolved services_component_ref {services_component_ref!r} "
                     f"to services_component_id={sc_ref_map[services_component_ref]!r}"
+                )
+
+            # Resolve grant_number_ref to grant_number_id (grant BLIs; if provided and not None)
+            grant_number_ref = bli_data.pop("grant_number_ref", None)
+            if grant_number_ref is not None:
+                if grant_number_ref not in gn_ref_map:
+                    raise ValidationError(
+                        {
+                            "grant_number_ref": [
+                                f"Invalid grant_number_ref {grant_number_ref!r}. "
+                                f"No grant number with that reference exists in the request. "
+                                f"Available references: {list(gn_ref_map.keys())}"
+                            ]
+                        }
+                    )
+                bli_data["grant_number_id"] = gn_ref_map[grant_number_ref]
+                logger.debug(
+                    f"Resolved grant_number_ref {grant_number_ref!r} "
+                    f"to grant_number_id={gn_ref_map[grant_number_ref]!r}"
                 )
 
             # Set agreement_id on the budget line item
@@ -357,6 +433,13 @@ class AgreementsService(OpsService[Agreement]):
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]
+
+        # grant_numbers are a nested collection only meaningful at creation time. The Grant schema
+        # loads them with a load_default of [], so a PUT that omits them arrives here as an empty
+        # list. Merging an empty collection would disassociate any existing grant numbers by nulling
+        # their (NOT NULL) agreement_id, raising an IntegrityError. Grant numbers are managed via
+        # their own endpoints, so drop them from the agreement update entirely.
+        updated_fields.pop("grant_numbers", None)
 
         # unpack the awarding_entity_id if it exists since we handle it separately (after the merge)
         awarding_entity_id = None
@@ -422,14 +505,19 @@ class AgreementsService(OpsService[Agreement]):
         if not agreement:
             raise ResourceNotFoundError("Agreement", id)
 
-        if not associated_with_agreement(id):
+        user = get_current_user()
+        reason = self._deletion_blocked_reason(agreement, user)
+        if reason == "not_associated":
             raise AuthorizationError(
                 f"User is not associated with the agreement for id: {id}.",
                 "Agreement",
             )
-
-        if agreement.is_awarded:
+        if reason == "awarded":
             raise ValidationError({"is_awarded": ["Cannot delete an awarded agreement."]})
+        if reason == "non_draft_bli":
+            raise ValidationError(
+                {"budget_line_items": ["Cannot delete an agreement with budget lines that are not in Draft status."]}
+            )
 
         self.db_session.delete(agreement)
         self.db_session.commit()
@@ -460,54 +548,66 @@ class AgreementsService(OpsService[Agreement]):
         Returns:
             Tuple of (paginated agreements list, metadata dict with count/limit/offset)
         """
-        # Import helper functions from resources
         filters = AgreementFilters.parse_filters(data)
 
-        # Collect all agreements across types using existing resource helpers
-        all_results = []
-        for agreement_cls in agreement_classes:
-            agreements = _get_agreements(self.db_session, agreement_cls, data, include_procurement)
-            all_results.extend(agreements)
+        # Step 1: Get all matching IDs via UNION ALL (DB-level, no full object load).
+        # SQL-sortable sorts (currently AGREEMENT only) are applied here; computed-property sorts
+        # fall back to Python over the full ID set.
+        all_ids = _get_all_matching_ids(self.db_session, agreement_classes, data, self)
 
-        # Filter by award_type (computed property, must be done post-query)
+        # Step 2: Filter by award_type via SQL, preserving the sort order from Step 1.
         if filters.award_type:
-            all_results = [a for a in all_results if a.award_type in filters.award_type]
+            award_type_expr = _build_award_type_sql_expr(get_current_fiscal_year())
+            award_rows = self.db_session.execute(
+                select(Agreement.id, award_type_expr).where(Agreement.id.in_(all_ids))
+            ).all()
+            matching = {r.id for r in award_rows if r.award_type in filters.award_type}
+            all_ids = [aid for aid in all_ids if aid in matching]
 
-        # Sort combined results
-        if filters.sort_conditions and len(filters.sort_conditions) > 0:
-            sort_condition = filters.sort_conditions[0]
-            sort_descending = (
-                filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
-            )
-            all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
+        # Step 3: Apply computed-property sorts in Python (loads full objects only when needed).
+        sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
+        sort_descending = (
+            filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
+        )
+        if sort_condition and not _is_sql_sortable(sort_condition):
+            sort_agreements = self.db_session.scalars(select(Agreement).where(Agreement.id.in_(all_ids))).all()
+            sort_agreements = _sort_agreements(sort_agreements, sort_condition, sort_descending, filters.fiscal_year)
+            all_ids = [a.id for a in sort_agreements]
 
-        # Calculate count before slicing
-        total_count = len(all_results)
+        total_count = len(all_ids)
 
-        # Calculate aggregate totals before pagination (for summary cards)
-        totals = _compute_agreement_totals(all_results)
+        # Step 4: SQL aggregate totals across the full filtered set (no BLI rows loaded).
+        totals = _compute_agreement_totals_sql(self.db_session, all_ids)
 
-        # Calculate procurement overview and step summary before pagination (only when requested)
+        # Step 5: Pagination — slice IDs, then fetch only the page rows.
+        if filters.limit is not None and filters.offset is not None:
+            limit_value = filters.limit[0]
+            offset_value = filters.offset[0]
+        else:
+            limit_value = total_count
+            offset_value = 0
+
+        page_ids = all_ids[offset_value : offset_value + limit_value]
+        paginated_results = _get_page_agreements(self.db_session, page_ids, include_procurement)
+
+        # Step 6: Procurement aggregates must cover ALL filtered agreements, not just the page.
+        # useGetAllAgreements keeps only page-0 metadata, so if we scoped these to paginated_results
+        # the overview card and step counts would undercount once there are >limit matching agreements.
+        # The E2E consistency test compares two metadata fields (both from this same response), so
+        # computing both over the full set keeps them consistent while being correct.
         procurement_overview = None
         procurement_step_summary = None
         procurement_days_in_step = None
         if include_procurement:
+            all_procurement_agreements = _get_page_agreements(self.db_session, all_ids, include_procurement=True)
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
             )
-            procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
-            procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(all_results)
-
-        # Apply pagination slicing
-        if filters.limit is not None and filters.offset is not None:
-            limit_value = filters.limit[0]
-            offset_value = filters.offset[0]
-            paginated_results = all_results[offset_value : offset_value + limit_value]
-        else:
-            paginated_results = all_results
-            limit_value = total_count
-            offset_value = 0
+            procurement_overview = _compute_procurement_overview(all_procurement_agreements, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(
+                all_procurement_agreements, overview_fiscal_year
+            )
+            procurement_days_in_step = _compute_days_in_procurement_step(all_procurement_agreements)
 
         metadata = {
             "count": total_count,
@@ -525,14 +625,11 @@ class AgreementsService(OpsService[Agreement]):
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
-        # Block if any BLIs are IN_EXECUTION or higher (use explicit set, not ordinal position,
-        # to avoid PLANNED_MOD sorting after OBLIGATED in the enum definition order)
-        _blocked_statuses = {
-            BudgetLineItemStatus.IN_EXECUTION,
-            BudgetLineItemStatus.OBLIGATED,
-            BudgetLineItemStatus.PLANNED_MOD,
-        }
-        if any(bli.status in _blocked_statuses for bli in agreement.budget_line_items):
+        # Mirrors ProcurementShopChangeRule's BLI-status check via the shared predicate (OPS-6312)
+        # so this defense-in-depth guard can't drift from the validation rule that normally catches
+        # this first. No user is available at this call site, so the (user-aware) full reason
+        # lookup — get_procurement_shop_locked_reason — isn't used here.
+        if has_proc_shop_blocking_bli(agreement):
             raise ValidationError(
                 "Cannot change Procurement Shop for an Agreement if any Budget Lines are in Execution or higher."
             )
@@ -544,11 +641,18 @@ class AgreementsService(OpsService[Agreement]):
             # self._update_draft_blis_proc_shop_fees(agreement)
             return None
 
-        # Create a change request if at least one BLI is in PLANNED or PLANNED_MOD status
-        if any(
-            bli.status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.PLANNED_MOD)
-            for bli in agreement.budget_line_items
-        ):
+        # At least one BLI is in PLANNED status. Normally this needs a Change
+        # Request for Division Director approval. When the SKIP_CR_FOR_DRAFT_PLANNED
+        # capability is enabled (per-environment), apply the change directly instead —
+        # matching the same flag's behavior for BLI Draft→Planned edits. The awarding_entity_id
+        # assignment lands on the identity-mapped agreement before the resource re-serializes it,
+        # so agreement history still records the "Change to Procurement Shop" entry via the
+        # UPDATE_AGREEMENT field diff (see resources/agreements.py and agreement_edit_bundle.py).
+        if any(bli.status == BudgetLineItemStatus.PLANNED for bli in agreement.budget_line_items):
+            if current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
+                agreement.awarding_entity_id = new_value
+                return None
+
             change_request_service = ChangeRequestService(current_app.db_session)
             with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
                 change_request = change_request_service.create(
@@ -773,9 +877,67 @@ class AgreementsService(OpsService[Agreement]):
         An agreement is editable if the user is associated with the agreement.
 
         N.B. Currently the agreement is always editable if the user is a super user -
-        this is also checked in associated_with_agreement, but we want to be explicit here since this is a key part of the logic.
+        the super user check short-circuits before check_user_association is called.
         """
-        return user.is_superuser or associated_with_agreement(agreement.id)
+        return user.is_superuser or check_user_association(agreement, user)
+
+    def _deletion_blocked_reason(
+        self, agreement: Agreement, user: User, is_editable: bool | None = None
+    ) -> Literal["not_associated", "awarded", "non_draft_bli"] | None:
+        """
+        Which single rule (if any) blocks deleting this agreement for this user, or None if
+        deletion is allowed. This is the one place the delete-guard conditions live — ``delete``
+        and ``_get_locked_message`` both branch on this instead of each re-checking the same
+        conditions independently, so a future guard only has to be added here once instead of
+        risking drift between the DELETE endpoint and the trash-icon meta.
+        """
+        if is_editable is None:
+            is_editable = self._is_editable(agreement, user)
+        if not is_editable:
+            return "not_associated"
+        if agreement.is_awarded:
+            return "awarded"
+        if not user.is_superuser and agreement.has_non_draft_budget_lines:
+            return "non_draft_bli"
+        return None
+
+    def _get_locked_message(self, agreement: Agreement, user: User, is_editable: bool | None = None) -> str | None:
+        """
+        Human-readable reason the delete control is locked, or None if it isn't locked. The
+        resource layer derives ``isDeletable`` from ``locked_message is None`` so the trash-icon
+        meta and the DELETE endpoint can never drift apart.
+        """
+        reason = self._deletion_blocked_reason(agreement, user, is_editable)
+        if reason == "not_associated":
+            return "Only team members on this agreement can edit or delete"
+        if reason == "awarded":
+            return "Cannot delete an awarded agreement"
+        if reason == "non_draft_bli":
+            return "Cannot delete an agreement with budget lines that are not in Draft status"
+        return None
+
+    def _get_procurement_shop_locked_message(self, agreement: Agreement, user: User) -> str | None:
+        """
+        Human-readable reason the Procurement Shop control is locked for ``user`` on
+        ``agreement``, or None if it isn't locked. Mirrors ``_get_locked_message`` above: the
+        reason code (``get_procurement_shop_locked_reason``) is kept separate from this display
+        copy so ``ProcurementShopChangeRule``'s API error strings and this tooltip text can differ
+        without the underlying rule drifting (OPS-6312).
+        """
+        reason = get_procurement_shop_locked_reason(agreement, user)
+        if reason == ProcurementShopLockReason.BLI_IN_EXECUTION:
+            return (
+                "The Procurement Shop cannot be edited because this agreement has budget lines in "
+                "Executing or Obligated status."
+            )
+        if reason == ProcurementShopLockReason.CHANGE_REQUEST_IN_REVIEW:
+            return (
+                "There are pending edits In Review for the Procurement Shop.\n It cannot be edited "
+                "until pending edits have been approved or declined."
+            )
+        if reason == ProcurementShopLockReason.AWARDED:
+            return "The Procurement Shop cannot be edited on an awarded agreement."
+        return None
 
 
 def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
@@ -883,14 +1045,22 @@ def _percent(value, total):
     return float(round((float(value) / float(total)) * 100))
 
 
-def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
-    """Compute aggregate totals across all filtered agreements for summary cards."""
+def _compute_agreement_totals_sql(session: Session, agreement_ids: list[int]) -> dict[str, Any]:
+    """Compute aggregate totals for summary cards using SQL aggregates.
+
+    Replaces the Python-iteration version for the list endpoint.
+    Groups BLI amount+fees by agreement_id — no Agreement join in the outer query,
+    which avoids auto-correlation in the BudgetLineItem.fees SQL expression.
+    award_type (NEW/CONTINUING) is classified via SQL CASE with correlated EXISTS.
+    type_counts and total_agreements_count include all-DRAFT agreements via a
+    separate lightweight fetch.
+    """
     totals = {
-        "total_contract_amount": Decimal("0"),
-        "total_partner_amount": Decimal("0"),
-        "total_grant_amount": Decimal("0"),
-        "total_direct_obligation_amount": Decimal("0"),
-        "total_agreements_count": len(all_results),
+        "total_contract_amount": 0.0,
+        "total_partner_amount": 0.0,
+        "total_grant_amount": 0.0,
+        "total_direct_obligation_amount": 0.0,
+        "total_agreements_count": len(agreement_ids),
         "type_counts": {},
         "new_count": 0,
         "new_type_counts": {},
@@ -898,40 +1068,105 @@ def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
         "continuing_type_counts": {},
     }
 
-    for agreement in all_results:
-        ag_type = agreement.agreement_type
-        ag_total = agreement.agreement_total
+    if not agreement_ids:
+        return totals
 
-        if ag_type == AgreementType.CONTRACT:
-            totals["total_contract_amount"] += ag_total
-        elif ag_type in (AgreementType.AA, AgreementType.IAA):
-            totals["total_partner_amount"] += ag_total
-        elif ag_type == AgreementType.GRANT:
-            totals["total_grant_amount"] += ag_total
-        elif ag_type == AgreementType.DIRECT_OBLIGATION:
-            totals["total_direct_obligation_amount"] += ag_total
-
-        type_key = ag_type.name
+    # Single query for (id, agreement_type, award_type) — drives type_counts and
+    # new/continuing counts. Merges the old Query 0 + Query 2 into one round-trip.
+    current_fy = get_current_fiscal_year()
+    award_type_expr = _build_award_type_sql_expr(current_fy)
+    meta_rows = session.execute(
+        select(Agreement.id, Agreement.agreement_type, award_type_expr).where(Agreement.id.in_(agreement_ids))
+    ).all()
+    id_to_type = {row.id: row.agreement_type for row in meta_rows}
+    for row in meta_rows:
+        type_key = row.agreement_type.name
         totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
+        _accumulate_award_counts(totals, row.award_type, type_key)
 
-        award = agreement.award_type
-        if award == "NEW":
-            totals["new_count"] += 1
-            totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
-        elif award == "CONTINUING":
-            totals["continuing_count"] += 1
-            totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
-
-    # Convert Decimals to floats for JSON serialization
-    for key in [
-        "total_contract_amount",
-        "total_partner_amount",
-        "total_grant_amount",
-        "total_direct_obligation_amount",
-    ]:
-        totals[key] = float(totals[key])
+    # Query 1: SUM(amount + fees) grouped by agreement_id.
+    # Query directly against budget_line_item with no Agreement join — this avoids
+    # auto-correlation in BudgetLineItem.fees which references cls.agreement_id.
+    # The fees expression correlates on the outer BLI row's agreement_id, which resolves
+    # correctly when the outer query is on budget_line_item itself.
+    total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
+    amount_rows = session.execute(
+        select(BudgetLineItem.agreement_id, total_expr.label("total"))
+        .where(BudgetLineItem.agreement_id.in_(agreement_ids))
+        .where(
+            or_(
+                BudgetLineItem.is_obe.is_(True),
+                BudgetLineItem.status.is_(None),  # NULL status matches Python None != DRAFT → True
+                BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+            )
+        )
+        .group_by(BudgetLineItem.agreement_id)
+    ).all()
+    for row in amount_rows:
+        if row.total is not None:
+            ag_type = id_to_type.get(row.agreement_id)
+            if ag_type is not None:
+                _bucket_amount_by_type(totals, ag_type, float(row.total))
 
     return totals
+
+
+def _bucket_amount_by_type(totals: dict, ag_type: AgreementType, amount: float) -> None:
+    """Accumulate a dollar amount into the correct type bucket in the totals dict."""
+    if ag_type == AgreementType.CONTRACT:
+        totals["total_contract_amount"] += amount
+    elif ag_type in (AgreementType.AA, AgreementType.IAA):
+        totals["total_partner_amount"] += amount
+    elif ag_type == AgreementType.GRANT:
+        totals["total_grant_amount"] += amount
+    elif ag_type == AgreementType.DIRECT_OBLIGATION:
+        totals["total_direct_obligation_amount"] += amount
+
+
+def _accumulate_award_counts(totals: dict, award: str | None, type_key: str) -> None:
+    """Increment the new/continuing counters for one agreement."""
+    if award == "NEW":
+        totals["new_count"] += 1
+        totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
+    elif award == "CONTINUING":
+        totals["continuing_count"] += 1
+        totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
+
+
+def _build_award_type_sql_expr(current_fy: int):
+    """Build the SQLAlchemy CASE expression that classifies each agreement as NEW/CONTINUING/None."""
+    has_non_draft = (
+        select(BudgetLineItem.id)
+        .where(BudgetLineItem.agreement_id == Agreement.id)
+        .where(BudgetLineItem.status.isnot(None))
+        .where(BudgetLineItem.status != BudgetLineItemStatus.DRAFT)
+        .correlate(Agreement)
+        .exists()
+    )
+    awarded_date = (
+        select(ProcurementAction.date_awarded_obligated)
+        .where(ProcurementAction.agreement_id == Agreement.id)
+        .where(ProcurementAction.status.in_([ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]))
+        .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+        .order_by(ProcurementAction.created_on.desc())
+        .correlate(Agreement)
+        .limit(1)
+        .scalar_subquery()
+    )
+    award_fy_expr = case(
+        (awarded_date.is_(None), None),
+        else_=case(
+            (func.extract("month", awarded_date) >= 10, func.extract("year", awarded_date) + 1),
+            else_=func.extract("year", awarded_date),
+        ),
+    )
+    return case(
+        (~has_non_draft, None),
+        (awarded_date.is_(None), "NEW"),
+        (award_fy_expr.is_(None), "NEW"),
+        (current_fy <= award_fy_expr, "NEW"),
+        else_="CONTINUING",
+    ).label("award_type")
 
 
 def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int | None) -> dict[str, Any]:
@@ -941,7 +1176,6 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     """
     tracked_statuses = [
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.PLANNED_MOD,
         BudgetLineItemStatus.IN_EXECUTION,
         BudgetLineItemStatus.OBLIGATED,
     ]
@@ -1085,32 +1319,107 @@ def _compute_days_in_procurement_step(
     return days_in_step
 
 
-def _get_agreements(
+# TYPE is excluded: native Postgres ENUM sorts by declaration order (CONTRACT, GRANT,
+# DIRECT_OBLIGATION, IAA, AA), but the frontend expects alphabetical order (AA, CONTRACT,
+# DIRECT OBLIGATION, GRANT, IAA) matching the old Python str(agreement_type) sort.
+_SQL_SORTABLE = {AgreementSortCondition.AGREEMENT}
+
+
+def _is_sql_sortable(sort_condition: AgreementSortCondition) -> bool:
+    return sort_condition in _SQL_SORTABLE
+
+
+def _get_all_matching_ids(
     session: Session,
-    agreement_cls: Type[Agreement],
+    agreement_classes: list[Type[Agreement]],
     data: dict[str, Any],
-    include_procurement: bool = False,
-) -> Sequence[Agreement]:
-    query = _build_base_query(agreement_cls, include_procurement)
-    query = _apply_filters(query, agreement_cls, data)
+    service: "AgreementsService",
+) -> list[int]:
+    """Return all matching agreement IDs across all subclass tables via UNION ALL.
 
-    logger.debug(f"query: {query}")
-    all_results = session.scalars(query).all()
+    SQL-sortable sorts (AGREEMENT only — TYPE is excluded because Postgres native ENUM
+    sorts by declaration order, not alphabetically) are applied here so the returned list
+    is already ordered. Ownership filter (only_my) is pushed to SQL.
+    """
+    filters = AgreementFilters.parse_filters(data)
+    sort_condition = filters.sort_conditions[0] if filters.sort_conditions else None
+    sort_descending = (
+        filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
+    )
 
-    return _filter_by_ownership(all_results, data.get("only_my", []))
+    id_queries = []
+    for agreement_cls in agreement_classes:
+        q = select(agreement_cls.id).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
+        q = _apply_filters(q, agreement_cls, data)
+        only_my = data.get("only_my", [])
+        if only_my and True in only_my:
+            current_user = get_current_user()
+            q = service._apply_user_association_filter(q, current_user)
+        id_queries.append(q)
 
+    union_subq = union_all(*id_queries).subquery()
 
-def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool = False) -> Select[tuple[Agreement]]:
-    query = select(agreement_cls).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
+    if _is_sql_sortable(sort_condition):
+        agreement_alias = Agreement.__table__
+        if sort_condition == AgreementSortCondition.AGREEMENT:
+            # COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort.
+            # Without it, en_US.utf8 collation treats spaces/hyphens differently from Python.
+            from sqlalchemy import text
 
-    if include_procurement:
-        query = query.options(
-            selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
-            selectinload(agreement_cls.procurement_trackers),
-            selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+            sort_col = func.lower(agreement_alias.c.name).op("COLLATE")(text('"C"')).label("sort_key")
+        inner = (
+            select(union_subq.c.id, sort_col)
+            .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
+            .distinct()
+            .subquery()
         )
+        order_expr = inner.c.sort_key.desc() if sort_descending else inner.c.sort_key
+        id_query = select(inner.c.id).order_by(order_expr)
+    else:
+        # No sort requested — use id order to match the previous behaviour (each subclass
+        # query was ordered by agreement_cls.id, producing a deterministic stable result).
+        id_query = select(union_subq.c.id).distinct().order_by(union_subq.c.id)
 
-    return query.order_by(agreement_cls.id)
+    rows = session.execute(id_query).all()
+    return [row[0] for row in rows]
+
+
+def _get_page_agreements(
+    session: Session,
+    page_ids: list[int],
+    include_procurement: bool = False,
+) -> list[Agreement]:
+    """Fetch full Agreement objects for a page of IDs with eager loads for serialization."""
+    if not page_ids:
+        return []
+
+    from sqlalchemy.orm import joinedload
+
+    options = [
+        selectinload(Agreement.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
+        selectinload(Agreement.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .selectinload(Portfolio.team_leaders),
+        selectinload(Agreement.budget_line_items)
+        .joinedload(BudgetLineItem.can)
+        .joinedload(CAN.portfolio)
+        .joinedload(Portfolio.division),
+        selectinload(Agreement.procurement_actions),
+        selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+        joinedload(Agreement.project),
+        selectinload(Agreement.team_members),
+        selectinload(Agreement.services_components),
+    ]
+    if include_procurement:
+        from models.procurement_tracker import ProcurementTracker
+
+        options.append(selectinload(Agreement.procurement_trackers).selectinload(ProcurementTracker.steps))
+
+    agreements = session.scalars(select(Agreement).where(Agreement.id.in_(page_ids)).options(*options)).all()
+
+    id_to_agreement = {a.id: a for a in agreements}
+    return [id_to_agreement[i] for i in page_ids if i in id_to_agreement]
 
 
 def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]) -> Select[Agreement]:
@@ -1220,7 +1529,40 @@ def _apply_agreement_specific_filters(
         if foa:
             query = query.where(agreement_cls.foa.in_(foa))
 
+    query = _apply_odn_filter(query, agreement_cls, data)
+
     return query
+
+
+def _apply_odn_filter(
+    query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
+) -> Select[Agreement]:
+    """Apply the odn (order/document number) exact-match, case-insensitive lookup filter.
+
+    Scoped to the agreement types that have an ODN-equivalent field. IAA and Direct
+    Obligation agreements have no such field and must be positively excluded, not just
+    left unfiltered.
+
+    Values are trimmed and empty/whitespace-only values are dropped server-side (not just
+    by the frontend) so a value only submitted via the UI's own trimming — or a caller that
+    skips it entirely — can't produce a false match against a stored empty string, and a
+    bare `?odn=` is treated the same as omitting the filter rather than matching nothing.
+    """
+    odn_values = [value.strip() for value in data.get("odn", [])]
+    odn_values = [value for value in odn_values if value]
+    if not odn_values:
+        return query
+
+    if agreement_cls == ContractAgreement:
+        odn_column = agreement_cls.po_number
+    elif agreement_cls == AaAgreement:
+        odn_column = agreement_cls.task_order_number
+    elif agreement_cls == GrantAgreement:
+        odn_column = agreement_cls.awarded_grant_number
+    else:
+        return query.where(false())
+
+    return query.where(func.lower(odn_column).in_([value.lower() for value in odn_values]))
 
 
 def _apply_search_filter(
@@ -1235,15 +1577,6 @@ def _apply_search_filter(
                 query = query.where(agreement_cls.name.ilike(f"%{search_term}%"))
 
     return query
-
-
-def _filter_by_ownership(results, only_my):
-    """
-    Filter results based on ownership if 'only_my' is True.
-    """
-    if only_my and True in only_my:
-        return [agreement for agreement in results if associated_with_agreement(agreement.id)]
-    return results
 
 
 def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
@@ -1266,6 +1599,15 @@ def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None
             return sorted(results, key=end_date_sort, reverse=sort_descending)
         case AgreementSortCondition.FY_OBLIGATED:
             fy = resolve_fiscal_year(fiscal_years)
+            if fy is None:
+                # All FYs selected (empty filter) — sort by lifetime obligated (sum across all FYs).
+                # TODO: when multiple FYs are selected via the Compare Fiscal Years filter, this also
+                # falls through here and sorts by lifetime_obligated rather than the sum of fy_obligated
+                # for only the selected years. This is a known limitation: it only produces a misleading
+                # order when an agreement has large obligations outside the selected comparison window that
+                # outweigh its in-window obligations. Address in a follow-up if Compare FY sort becomes a
+                # user-reported issue.
+                return sorted(results, key=lifetime_obligated_sort, reverse=sort_descending)
             return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
@@ -1277,6 +1619,10 @@ def project_sort(agreement):
 
 def agreement_total_sort(agreement):
     return agreement.agreement_total
+
+
+def lifetime_obligated_sort(agreement):
+    return agreement.lifetime_obligated
 
 
 def next_budget_line_sort(agreement):
@@ -1305,12 +1651,17 @@ def end_date_sort(agreement):
 
 
 def resolve_fiscal_year(fiscal_years):
-    """Get the effective fiscal year from filter list, defaulting to current FY."""
+    """Return the single fiscal year from the filter list, or None when ambiguous.
+
+    Returns an int when exactly one fiscal year is provided. Returns None for an
+    empty list, None, or multiple fiscal years — callers should treat None as
+    "all fiscal years" and choose an appropriate fallback (e.g. lifetime totals).
+    """
     if fiscal_years and len(fiscal_years) == 1:
         return int(fiscal_years[0])
     if fiscal_years and len(fiscal_years) > 1:
-        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); falling back to current FY.")
-    return get_current_fiscal_year()
+        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); no single FY resolved.")
+    return None
 
 
 def fy_obligated_sort(agreement, fiscal_year):

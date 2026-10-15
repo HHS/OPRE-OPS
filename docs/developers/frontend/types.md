@@ -53,7 +53,7 @@ Let's say you have a CANs component ytree like this:
 
 ```markdown
 src/components/CANs
-├── CANBudgetSummary
+├── CANBudgetByFYCard
 ├── CANTable
 ├── CanTypes.d.ts
 ```

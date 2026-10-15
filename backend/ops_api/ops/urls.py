@@ -3,6 +3,7 @@ from flask import Blueprint
 from ops_api.ops.views import (
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
+    AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC,
     AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
@@ -10,6 +11,7 @@ from ops_api.ops.views import (
     AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
     AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
+    BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC,
@@ -31,6 +33,8 @@ from ops_api.ops.views import (
     DIVISIONS_LIST_API_VIEW_FUNC,
     DOCUMENT_ITEM_API_VIEW_FUNC,
     DOCUMENT_LIST_API_VIEW_FUNC,
+    GRANT_NUMBER_ITEM_API_VIEW_FUNC,
+    GRANT_NUMBER_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
     LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
@@ -163,6 +167,14 @@ def register_api(api_bp: Blueprint) -> None:
         "/budget-line-items-filters/",
         view_func=BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC,
     )
+    api_bp.add_url_rule(
+        "/budget-line-items-batch/",
+        view_func=BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC,
+        # BudgetLineItemsBatchAPI only overrides post(); without this, Flask also registers
+        # the inherited BaseListAPI.get(), which has no @is_authorized check and would return
+        # every BudgetLineItem row unpaginated.
+        methods=["POST"],
+    )
 
     api_bp.add_url_rule(
         "/procurement-shops/<int:id>",
@@ -289,6 +301,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
+        "/agreements/<int:id>/award-history/",
+        view_func=AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/agreements/<int:id>/edit-bundle",
         view_func=AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     )
@@ -330,6 +346,14 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/services-components/",
         view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/grant-numbers/<int:id>",
+        view_func=GRANT_NUMBER_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/grant-numbers/",
+        view_func=GRANT_NUMBER_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/procurement-actions/<int:id>",

@@ -5,8 +5,9 @@ import classnames from "vest/classnames";
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
-    useGetProjectsQuery,
+    useGetAllProjectsQuery,
     useGetProductServiceCodesQuery,
+    useGetVersionQuery,
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
@@ -19,8 +20,9 @@ import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import { useIsUserBudgetTeam } from "../../../hooks/user.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
-import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
@@ -93,12 +95,15 @@ const useAgreementEditForm = (
     const setServicingAgency = useUpdateAgreement("servicing_agency");
     // Grant Details setters (Project Specialist reuses alternate_project_officer_id — no new setter)
     const setNofoNumber = useUpdateAgreement("nofo_number");
-    const setAlnNumber = useUpdateAgreement("aln_number");
     const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
+    // Forces a re-render once the on-load service_requirement_type check below has run, so
+    // `res = suite.get()` (read during render) reflects that suite.run() call instead of
+    // depending on some other effect happening to also call setState on the same commit.
+    const [, forceServiceReqTypeValidationRerender] = React.useState(0);
 
     const navigate = useNavigate();
     const dispatch = useEditAgreementDispatch();
@@ -150,23 +155,16 @@ const useAgreementEditForm = (
         special_topics: specialTopics,
         research_methodologies: researchMethodologies,
         nofo_number: nofoNumber,
-        aln_number: alnNumber,
+        aln_numbers: alnNumbers,
         funding_period_months: fundingPeriodMonths,
-        _meta: { immutable_awarded_fields: immutableFields = [] } = {}
+        _meta: { immutable_awarded_fields: immutableFields = [], procurementShopLockedMessage = null } = {}
     } = agreement;
 
     const {
-        data: projectsResponse,
+        data: projects = [],
         error: errorProjects,
         isLoading: isLoadingProjects
-    } = useGetProjectsQuery(
-        {},
-        {
-            skip: isWizardMode
-        }
-    );
-
-    const projects = projectsResponse?.projects ?? [];
+    } = useGetAllProjectsQuery(undefined, { skip: isWizardMode });
 
     const {
         data: productServiceCodes = [],
@@ -205,36 +203,74 @@ const useAgreementEditForm = (
     }, [agreementType]);
 
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
-    const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
+    const isBudgetTeam = useIsUserBudgetTeam();
+    // Superusers and Budget Team members bypass the procurement-shop change-request workflow.
+    const canEditDirectly = isSuperUser || isBudgetTeam;
+    // Per-environment capability: when ON, a procurement-shop change applies immediately (no
+    // Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Defaults to
+    // false until the version query resolves so the approval UX is never suppressed prematurely.
+    // The backend is the enforcement authority; this only drives the modal/alert copy.
+    const { data: versionData } = useGetVersionQuery();
+    const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const shouldRequestChange =
+        hasProcurementShopChanged &&
+        areAnyBudgetLinesPlanned &&
+        !isAgreementAwarded &&
+        !canEditDirectly &&
+        !skipCrForDraftPlanned &&
+        // Guards against useHasStateChanged(selectedProcurementShop) reporting "changed" at
+        // mount for agreements that have no procurement shop set (selectedProcurementShop is
+        // null) — a locked shop must never show the "send to approval" modal, since the save
+        // it would lead to can never succeed anyway (OPS-6312).
+        !procurementShopLockedMessage;
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
             suite.run(
                 {
                     ...agreement,
+                    // New agreements of any non-grant type require service_requirement_type (see suite).
+                    isNewAgreement: !agreement?.id,
+                    // Backend-locked Procurement Shop is never "missing" — see the suite's
+                    // procurement-shop-select test (OPS-6312).
+                    procurementShopLocked: Boolean(procurementShopLockedMessage),
                     ...overrides,
                     [name]: value
                 },
                 name
             );
         },
-        [agreement]
+        [agreement, procurementShopLockedMessage]
     );
 
     React.useEffect(() => {
         if (isReviewMode) {
             suite.run({
                 ...agreement,
+                isNewAgreement: !agreement?.id,
+                procurementShopLocked: Boolean(procurementShopLockedMessage),
                 "procurement-shop-select": selectedProcurementShop
             });
         }
-    }, [isReviewMode, agreement, selectedProcurementShop]);
+    }, [isReviewMode, agreement, selectedProcurementShop, procurementShopLockedMessage]);
 
     React.useEffect(() => {
         if (!isWizardMode) {
             runValidate("project_id", agreement?.project_id);
         }
     }, [isWizardMode, agreement?.project_id, runValidate]);
+
+    React.useEffect(() => {
+        if (agreement?.id) {
+            // Edit mode only validates touched fields; surface a missing value on legacy agreements up front.
+            runValidate("service_requirement_type", agreement?.service_requirement_type);
+            forceServiceReqTypeValidationRerender((tick) => tick + 1);
+        }
+        // runValidate is intentionally omitted: it's recreated on every agreement field change
+        // (useCallback deps: [agreement]), which would re-run this check on every keystroke in
+        // unrelated fields instead of only when id/service_requirement_type actually change.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agreement?.id, agreement?.service_requirement_type]);
 
     React.useEffect(() => {
         if (errorProductServiceCodes || errorProjects) {
@@ -306,9 +342,6 @@ const useAgreementEditForm = (
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
-    // REVIEW: NEW — mirrors the isAgreementAA pattern directly above.
-    // Consumed by AgreementEditForm.jsx to hide contract controls and by shouldDisableBtn (indirectly,
-    // via the suite's isGrant guards letting the button enable with only name + project_id).
     const isGrant = agreementType === AGREEMENT_TYPES.GRANT;
     const shouldDisableBtn =
         !agreementTitle ||
@@ -316,10 +349,7 @@ const useAgreementEditForm = (
         !agreementType ||
         res.hasErrors() ||
         hasUniquenessErrors ||
-        (isAgreementAA && (!servicingAgency || !requestingAgency)) ||
-        // NOFO Number is the grant-equivalent hard requirement to Title — enforced both here
-        // (explicit check, mirroring !agreementTitle) and via the Vest suite's nofo_number test.
-        (isGrant && !nofoNumber);
+        (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -380,6 +410,27 @@ const useAgreementEditForm = (
         });
     };
 
+    const setAlnNumbers = (alnNumbers) => {
+        dispatch({
+            type: "SET_ALN_NUMBERS",
+            payload: alnNumbers ? alnNumbers : []
+        });
+    };
+
+    const addAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "ADD_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
+    const removeAlnNumber = (alnNumber) => {
+        dispatch({
+            type: "REMOVE_ALN_NUMBER",
+            payload: alnNumber
+        });
+    };
+
     const saveAgreement = React.useCallback(
         async (
             redirectUrl = null,
@@ -403,8 +454,7 @@ const useAgreementEditForm = (
 
             if (id) {
                 try {
-                    const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
-                    console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
+                    await updateAgreement({ id: id, data: cleanData }).unwrap();
                     if (!suppressSuccessAlert) {
                         if (shouldRequestChange) {
                             setAlert(
@@ -427,7 +477,6 @@ const useAgreementEditForm = (
                     }
                     return true;
                 } catch (rejected) {
-                    console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
                     if (!suppressErrorAlert) {
                         setAlert({
                             type: "error",
@@ -465,8 +514,11 @@ const useAgreementEditForm = (
         if (isEditMode && setIsEditMode) setIsEditMode(false);
     }, [setHasAgreementChanged, isEditMode, setIsEditMode]);
 
+    // In review mode (EditAgreementAndBudgetLines) the page registers its own blocker
+    // covering both agreement and BLI changes. Disable the form-level blocker there so
+    // only one blocker is live at a time — React Router supports only one per router.
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
-        hasChanged: hasAgreementChanged,
+        hasChanged: !isReviewMode && hasAgreementChanged,
         saveChanges: blockerSaveChanges,
         onExit: blockerOnExit
     });
@@ -561,8 +613,7 @@ const useAgreementEditForm = (
                     servicing_agency_id: servicingAgency ? servicingAgency.id : null
                 };
                 const { cleanData } = cleanAgreementForApi(data);
-                const response = await addAgreement(cleanData).unwrap();
-                console.log(`CREATE: agreement draft saved: ${JSON.stringify(response, null, 2)}`);
+                await addAgreement(cleanData).unwrap();
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
@@ -607,8 +658,7 @@ const useAgreementEditForm = (
                 if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
-                        .then((fulfilled) => {
-                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        .then(() => {
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Edits Cancelled",
@@ -616,8 +666,7 @@ const useAgreementEditForm = (
                                 redirectUrl: "/agreements"
                             });
                         })
-                        .catch((rejected) => {
-                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        .catch(() => {
                             setAlert({
                                 type: "error",
                                 heading: "Error",
@@ -647,34 +696,20 @@ const useAgreementEditForm = (
         setAgreementProcurementShopId(procurementShop?.id);
     };
 
-    const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
-        (changeRequest) => changeRequest.has_proc_shop_change
-    );
+    // The backend owns this rule (AgreementsService._get_procurement_shop_locked_message).
+    // Re-deriving it here is what caused #6312 — do not add local conditions.
+    const isProcurementShopDisabled = Boolean(procurementShopLockedMessage);
+    const disabledMessage = () => procurementShopLockedMessage ?? "Disabled";
 
-    const isProcurementShopDisabled = !isSuperUser && (hasProcurementShopChangeRequest || isAgreementAwarded);
-    const disabledMessage = () => {
-        if (agreement.in_review) {
-            return "There are pending edits In Review for the Procurement Shop.\n It cannot be edited until pending edits have been approved or declined.";
-        } else if (isAgreementAwarded) {
-            return "The Procurement Shop cannot be edited on an awarded agreement.";
-        }
-        return "Disabled";
-    };
-
-    // REVIEW: CHANGED — added GRANT branch that clears all contract-only state.
-    // This is payload hygiene: if a user selects Contract, starts typing, then switches to Grant,
-    // the stale contract values (contract_type, vendor, PO, etc.) would otherwise be sent to the API.
-    // The suite guards already prevent those fields from blocking Submit, but the payload would still
-    // contain junk. Clearing here ensures a clean 4-field payload (name, nick_name, description,
-    // agreement_type + project_id) regardless of prior user interaction.
-    // Note: team_members uses UPDATE_AGREEMENT (not a dedicated SET_TEAM_MEMBERS) because the reducer
-    // only has ADD_TEAM_MEMBER and REMOVE_TEAM_MEMBER; UPDATE_AGREEMENT sets the key directly.
     const handleAgreementFilterChange = (value) => {
         setSelectedAgreementFilter(value);
-        if (value === AGREEMENT_TYPES.CONTRACT) {
-            setAgreementType(AGREEMENT_TYPES.CONTRACT);
-            clearGrantOnlyFields();
-        } else if (value === AGREEMENT_TYPES.GRANT) {
+        if (value === AGREEMENT_TYPES.GRANT) {
+            // Grants use grant_numbers, not services components — clear them so a component
+            // added under a prior CONTRACT/DIRECT_OBLIGATION/PARTNER selection doesn't ride
+            // along in the grant's create payload. Services Components cannot be added while
+            // already GRANT (step 3 shows the grant-numbers form instead), so this is the only
+            // branch that ever needs to clear them. (issue #6230)
+            dispatch({ type: "CLEAR_SERVICES_COMPONENTS" });
             suite.reset();
             setAgreementType(AGREEMENT_TYPES.GRANT);
             setContractType(null);
@@ -688,13 +723,29 @@ const useAgreementEditForm = (
             dispatch({ type: "UPDATE_AGREEMENT", key: "team_members", value: [] });
             dispatch({ type: "SET_RESEARCH_METHODOLOGIES", payload: [] });
             dispatch({ type: "SET_SPECIAL_TOPICS", payload: [] });
+            return;
+        }
+
+        if (value === AGREEMENT_TYPES.CONTRACT) {
+            setAgreementType(AGREEMENT_TYPES.CONTRACT);
         } else if (value === AGREEMENT_TYPES.DIRECT_OBLIGATION) {
             setAgreementType(AGREEMENT_TYPES.DIRECT_OBLIGATION);
-            clearGrantOnlyFields();
         } else {
             // PARTNER
             setAgreementType(null);
-            clearGrantOnlyFields();
+        }
+        // Contracts/Direct Obligations/Partner use services components, not grant numbers —
+        // clear them so a grant number added under a prior GRANT selection doesn't ride along
+        // in the non-grant create payload. Grant Numbers cannot be added unless already GRANT,
+        // so this is the only branch that ever needs to clear them. (issue #6230)
+        dispatch({ type: "CLEAR_GRANT_NUMBERS" });
+        clearGrantOnlyFields();
+        // Only restore the default when it's actually missing (i.e. the prior selection was
+        // GRANT, which nulled it). An explicit SEVERABLE choice must survive toggling among
+        // CONTRACT/DIRECT_OBLIGATION/PARTNER — those never touch service_requirement_type
+        // themselves, so unconditionally restoring here would silently discard it. (issue #6230)
+        if (!serviceReqType) {
+            restoreServiceReqTypeDefault();
         }
     };
 
@@ -704,8 +755,17 @@ const useAgreementEditForm = (
     // types carries over exactly as PO/Alt-PO already does today — no data-loss reason to null it.
     const clearGrantOnlyFields = () => {
         setNofoNumber(null);
-        setAlnNumber(null);
+        setAlnNumbers([]);
         setFundingPeriodMonths(null);
+    };
+
+    // Re-apply the Non-Severable default when switching to a non-grant type. The GRANT branch
+    // nulls service_requirement_type to shape the grant payload, but defaultState's default is
+    // only ever applied as useReducer's initial argument, so nothing restores it on the way
+    // back. Must not be left null: AaAgreementData rejects null (400) and formatServiceComponent
+    // returns undefined for any other value. (issue #6230)
+    const restoreServiceReqTypeDefault = () => {
+        setServiceReqType(SERVICE_REQ_TYPES.NON_SEVERABLE);
     };
 
     return {
@@ -735,10 +795,12 @@ const useAgreementEditForm = (
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
         nofoNumber,
-        alnNumber,
+        alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumber,
+        setAlnNumbers,
+        addAlnNumber,
+        removeAlnNumber,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
@@ -747,7 +809,7 @@ const useAgreementEditForm = (
         vendorDisabled,
         immutableFields,
         isAgreementAA,
-        isGrant, // REVIEW: NEW — added to return so AgreementEditForm.jsx can destructure it
+        isGrant,
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,

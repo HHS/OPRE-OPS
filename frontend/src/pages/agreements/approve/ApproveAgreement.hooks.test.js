@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
@@ -14,6 +14,8 @@ const useGetAgreementByIdQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateChangeRequestMutationMock = vi.fn();
+// Stable reference so any grantNumbers-dependent memo/effect doesn't loop.
+const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 const useGetAllCansMock = vi.fn();
 const useChangeRequestsForBudgetLinesMock = vi.fn();
 const useChangeRequestsForProcurementShopMock = vi.fn();
@@ -24,13 +26,16 @@ vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
 }));
 
+const mockUseBlocker = vi.fn(() => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }));
+
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
         useNavigate: () => navigateMock,
         useParams: () => useParamsMock(),
-        useSearchParams: () => useSearchParamsMock()
+        useSearchParams: () => useSearchParamsMock(),
+        useBlocker: (...args) => mockUseBlocker(...args)
     };
 });
 
@@ -38,6 +43,7 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: (...args) => useGetAgreementByIdQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args),
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
+    useGetGrantNumbersListQuery: () => EMPTY_GRANT_NUMBERS_RESULT,
     useUpdateChangeRequestMutation: (...args) => useUpdateChangeRequestMutationMock(...args)
 }));
 
@@ -240,5 +246,156 @@ describe("useApproveAgreement", () => {
                 heading: "Changes Approved"
             })
         );
+    });
+});
+
+describe("useApproveAgreement — navigation blocker", () => {
+    let mockProceed;
+    let mockReset;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockProceed = vi.fn();
+        mockReset = vi.fn();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+
+        useSelectorMock.mockImplementation((selector) =>
+            selector({
+                auth: {
+                    activeUser: { id: 1, roles: [{ name: "REVIEWER_APPROVER" }] }
+                }
+            })
+        );
+        useParamsMock.mockReturnValue({ id: "1" });
+        useSearchParamsMock.mockReturnValue([new URLSearchParams("type=status-change&to=EXECUTING")]);
+        checkAuthMock.mockReturnValue(false);
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            data: baseAgreement,
+            error: null,
+            isLoading: false,
+            isSuccess: true
+        });
+        useGetProcurementShopsQueryMock.mockReturnValue({ data: [] });
+        useGetServicesComponentsListQueryMock.mockReturnValue({ data: [] });
+        reviewCRMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
+        useUpdateChangeRequestMutationMock.mockReturnValue([reviewCRMock]);
+        useGetAllCansMock.mockReturnValue({ cans: [] });
+        useChangeRequestsForBudgetLinesMock.mockReturnValue("");
+        useChangeRequestsForProcurementShopMock.mockReturnValue("");
+        getUserFullNameFromIdMock.mockReturnValue("Alex Reviewer");
+    });
+
+    it("does not block navigation when form is clean", () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        renderHook(() => useApproveAgreement());
+
+        const shouldBlock = capturedCb({
+            currentLocation: { pathname: "/agreements/1/approve" },
+            nextLocation: { pathname: "/agreements" }
+        });
+        expect(shouldBlock).toBe(false);
+    });
+
+    it("blocks navigation when notes are entered", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        const { result } = renderHook(() => useApproveAgreement());
+
+        act(() => result.current.setNotes("some reviewer notes"));
+
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/approve" },
+                nextLocation: { pathname: "/agreements" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("blocks navigation when confirmation checkbox is checked", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+
+        const { result } = renderHook(() => useApproveAgreement());
+
+        act(() => result.current.setConfirmation(true));
+
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/approve" },
+                nextLocation: { pathname: "/agreements" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("shows correct copy when blocker fires", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = renderHook(() => useApproveAgreement());
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(true);
+            expect(result.current.blockerModalProps.heading).toBe("Save changes before leaving?");
+            expect(result.current.blockerModalProps.actionButtonText).toBe("Go back");
+            expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
+        });
+    });
+
+    it("resets blocker and hides modal on handleConfirm (Go back)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = renderHook(() => useApproveAgreement());
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        result.current.blockerModalProps.handleConfirm();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockReset).toHaveBeenCalled();
+            expect(mockProceed).not.toHaveBeenCalled();
+        });
+    });
+
+    it("proceeds with navigation on handleSecondary (Leave without saving)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = renderHook(() => useApproveAgreement());
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        await result.current.blockerModalProps.handleSecondary();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockProceed).toHaveBeenCalled();
+            expect(mockReset).not.toHaveBeenCalled();
+        });
+    });
+
+    it("resets blocker and hides modal on closeModal (Escape)", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+
+        const { result } = renderHook(() => useApproveAgreement());
+        await waitFor(() => expect(result.current.showBlockerModal).toBe(true));
+
+        result.current.blockerModalProps.closeModal();
+
+        await waitFor(() => {
+            expect(result.current.showBlockerModal).toBe(false);
+            expect(mockReset).toHaveBeenCalled();
+            expect(mockProceed).not.toHaveBeenCalled();
+        });
     });
 });

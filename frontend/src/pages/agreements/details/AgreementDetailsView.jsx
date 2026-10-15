@@ -1,10 +1,15 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
+import { dateToYearMonthDay } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
+import {
+    getAlnTitle,
+    sortAlnNumbers
+} from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
 
 /**
  * @component - Renders the details of an agreement
@@ -13,9 +18,18 @@ import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constan
  * @param {import("../../../types/UserTypes").SafeUser} props.projectOfficer - The project officer object for the agreement.
  * @param {import("../../../types/UserTypes").SafeUser} props.alternateProjectOfficer - The alternate project officer object for the agreement.
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
+ * @param {string|null} [props.nofoPeriodStart] - ISO 8601 date string for the earliest grant number period_start (grants only)
+ * @param {string|null} [props.nofoPeriodEnd] - ISO 8601 date string for the latest grant number period_end (grants only)
  * @returns {React.ReactElement} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer, isAgreementAwarded = false }) => {
+const AgreementDetailsView = ({
+    agreement,
+    projectOfficer,
+    alternateProjectOfficer,
+    isAgreementAwarded = false,
+    nofoPeriodStart = null,
+    nofoPeriodEnd = null
+}) => {
     if (!agreement) {
         return <p>No agreement</p>;
     }
@@ -120,18 +134,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dd>
                         </dl>
                     )}
-                    {isFieldVisible(agreement.agreement_type, AgreementFields.AlnNumber) && (
-                        <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">ALN Number</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="aln-number-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={agreement?.aln_number ?? NO_DATA}
-                                />
-                            </dd>
-                        </dl>
-                    )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.GrantFundingPeriod) && (
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Grant Funding Period</dt>
@@ -148,7 +150,65 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             </dd>
                         </dl>
                     )}
-
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.NofoPeriod) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">NOFO Period</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="nofo-period-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={(() => {
+                                        const start = dateToYearMonthDay(nofoPeriodStart);
+                                        const end = dateToYearMonthDay(nofoPeriodEnd);
+                                        const startStr =
+                                            start.year && start.month && start.day
+                                                ? `${start.month}/${start.day}/${start.year}`
+                                                : null;
+                                        const endStr =
+                                            end.year && end.month && end.day
+                                                ? `${end.month}/${end.day}/${end.year}`
+                                                : null;
+                                        if (startStr && endStr) return `${startStr} - ${endStr}`;
+                                        if (startStr) return startStr;
+                                        if (endStr) return endStr;
+                                        return "TBD";
+                                    })()}
+                                />
+                            </dd>
+                        </dl>
+                    )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.AlnNumber) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">ALN Numbers</dt>
+                            {agreement?.aln_numbers && agreement?.aln_numbers?.length > 0 ? (
+                                <>
+                                    {[...agreement.aln_numbers].sort(sortAlnNumbers).map((alnNumber) => (
+                                        <dd
+                                            key={alnNumber}
+                                            className="margin-0 margin-top-05"
+                                        >
+                                            <Tag
+                                                dataCy={`aln-number-tag-${alnNumber}`}
+                                                tagStyle="primaryDarkTextLightBackground"
+                                                text={getAlnTitle(alnNumber)}
+                                            />
+                                        </dd>
+                                    ))}
+                                </>
+                            ) : (
+                                <dd
+                                    key="no-data-aln-number"
+                                    className="margin-0 margin-top-05"
+                                >
+                                    <Tag
+                                        dataCy="no-data-aln-number"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={NO_DATA}
+                                    />
+                                </dd>
+                            )}
+                        </dl>
+                    )}
                     <div className="display-flex">
                         {/* NOTE: Partner Type on the Front End is agreement_type from the Back End  */}
                         {isFieldVisible(agreement.agreement_type, AgreementFields.PartnerType) && (
@@ -359,7 +419,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         .map((methodology) => (
                                             <dd
                                                 key={methodology.id}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                                className="margin-0 margin-top-05"
                                             >
                                                 <Tag
                                                     dataCy={`methodology-tag-${methodology.id}`}
@@ -372,7 +432,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             ) : (
                                 <dd
                                     key="no-data-methodology"
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className="margin-0 margin-top-05"
                                 >
                                     <Tag
                                         dataCy="no-data-methodology"
@@ -393,7 +453,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                         .map((specialTopic) => (
                                             <dd
                                                 key={specialTopic.id}
-                                                className="margin-0 margin-top-1 margin-bottom-2"
+                                                className="margin-0 margin-top-05"
                                             >
                                                 <Tag
                                                     dataCy={`special-topic-tag-${specialTopic.id}`}
@@ -406,7 +466,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                             ) : (
                                 <dd
                                     key="no-data-special-topic"
-                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                    className="margin-0 margin-top-05"
                                 >
                                     <Tag
                                         dataCy="no-data-special-topic"
@@ -428,7 +488,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                             {agreement.division_directors.map((director, index) => (
                                                 <dd
                                                     key={index}
-                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                    className="margin-0 margin-top-05"
                                                 >
                                                     <Tag
                                                         dataCy="division-director-tag"
@@ -460,7 +520,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                             {agreement.team_leaders.map((leader, index) => (
                                                 <dd
                                                     key={index}
-                                                    className="margin-0 margin-top-1 margin-bottom-2"
+                                                    className="margin-0 margin-top-05"
                                                 >
                                                     <Tag
                                                         dataCy="team-leader-tag"
@@ -529,7 +589,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     .map((member) => (
                                         <dd
                                             key={member.id}
-                                            className="margin-0 margin-top-1 margin-bottom-2"
+                                            className="margin-0 margin-top-05"
                                         >
                                             <Tag
                                                 dataCy={`team-member-tag-${member.id}`}
@@ -540,7 +600,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     ))}
                             </>
                         ) : (
-                            <dd className="margin-0 margin-top-1 margin-bottom-2">
+                            <dd className="margin-0 margin-top-05">
                                 <Tag
                                     dataCy="team-member-tag-no-data"
                                     tagStyle="primaryDarkTextLightBackground"

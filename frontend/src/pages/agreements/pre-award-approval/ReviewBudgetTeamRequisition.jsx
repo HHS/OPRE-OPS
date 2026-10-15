@@ -29,6 +29,7 @@ export const ReviewBudgetTeamRequisition = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedExecutingBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         requestorNotes,
@@ -38,7 +39,8 @@ export const ReviewBudgetTeamRequisition = () => {
         requisitionNumber,
         setRequisitionNumber,
         requisitionDate,
-        setRequisitionDate,
+        handleDateChange,
+        requisitionDateError,
         attestationChecked,
         setAttestationChecked,
         MemoizedDatePicker,
@@ -47,12 +49,14 @@ export const ReviewBudgetTeamRequisition = () => {
         modalProps,
         isSubmitting,
         submitError,
+        setSubmitError,
         handleApprove,
         handleSaveDraft,
         handleCancel,
         isFormValid,
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        canSaveDraft
     } = useReviewBudgetTeamRequisition(agreementId);
 
     if (isLoading) {
@@ -92,6 +96,9 @@ export const ReviewBudgetTeamRequisition = () => {
                     heading="Submission Error"
                     message={submitError}
                     isClosable={true}
+                    setIsAlertVisible={(visible) => {
+                        if (!visible) setSubmitError("");
+                    }}
                     headingLevel={2}
                 />
             )}
@@ -123,6 +130,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedExecutingBudgetLinesByServicesComponent}
+                totalGrantNumbers={(grantNumbers ?? []).length}
                 executingTotal={executingTotal}
             />
 
@@ -239,9 +247,9 @@ export const ReviewBudgetTeamRequisition = () => {
                             label="Requisition Approval Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
+                            onChange={handleDateChange}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
+                            messages={requisitionDateError}
                             isRequiredNoShow={true}
                         />
                     </div>
@@ -306,8 +314,8 @@ export const ReviewBudgetTeamRequisition = () => {
                 <button
                     className="usa-button usa-button--outline margin-right-2"
                     type="button"
-                    onClick={handleSaveDraft}
-                    disabled={isSubmitting || approvalAlreadyProcessed}
+                    onClick={() => handleSaveDraft()}
+                    disabled={isSubmitting || approvalAlreadyProcessed || !canSaveDraft}
                     data-cy="save-draft-btn"
                 >
                     Save Draft

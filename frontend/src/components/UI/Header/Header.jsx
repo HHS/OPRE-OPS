@@ -17,7 +17,7 @@ const Header = () => {
     };
 
     return (
-        <header className="usa-header usa-header--extended bg-brand-primary">
+        <header className="usa-header usa-header--extended">
             <div className="usa-navbar padding-top-105 bg-white">
                 <div
                     className="usa-logo"
@@ -39,9 +39,9 @@ const Header = () => {
             </div>
             <nav
                 aria-label="Primary navigation"
-                className="usa-nav bg-base-lightest"
+                className="usa-nav"
             >
-                <div className="usa-nav__inner bg-white">
+                <div className="usa-nav__inner bg-white border-top border-base-lighter">
                     <NavMenu />
                     <div className="usa-nav__secondary">
                         <AuthSection />

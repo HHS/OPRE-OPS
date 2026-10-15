@@ -49,11 +49,9 @@ export const useListFilters = (page) => {
     );
 
     // Change the fiscal year AND reset this page's other filters to defaults, as
-    // a single atomic gesture. Persistence keeps filters across navigation, but
-    // changing FY is an explicit "start over for a new year" action — a filter
-    // (e.g. a budget range) valid in one FY is not meaningful in another. This
-    // is the one place all FY-aware list pages funnel through, so the reset
-    // behavior stays consistent (see resetListFilters in sessionUISlice).
+    // a single atomic gesture. Only for pages whose FY change starts over (today:
+    // Portfolios). Pages that preserve other filters across an FY change
+    // (Agreements, Projects, Budget Lines, CANs) use setSelectedFiscalYear.
     const changeFiscalYear = useCallback(
         (newFiscalYear) => {
             dispatch(resetListFilters({ page }));

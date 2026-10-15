@@ -116,6 +116,19 @@ paths:
           style: form
           explode: true
         - in: query
+          name: odn
+          description: >
+            Order/document number (ODN) to find agreements by exact match (case-insensitive).
+            Matches Contract po_number, Assisted Acquisition task_order_number, or Grant
+            awarded_grant_number. IAA and Direct Obligation agreements have no ODN-equivalent
+            field and are never returned by this filter.
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
           name: only_my
           description: Only includes agreements that a user owns
           schema:
@@ -475,6 +488,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -542,6 +556,7 @@ paths:
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request changes awarding_entity_id (Procurement Shop) while any budget line is in Executing or Obligated status, or while a procurement-shop change request is in review (see _meta.procurementShopLockedMessage)
             - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
@@ -727,6 +742,51 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found - Agreement does not exist
+  /agreements/{id}/award-history/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementAwardHistory
+      summary: Get award & modification history for a Contract or AA agreement
+      description: |
+        Returns one flat record per completed procurement action (the initial
+        award plus each completed modification) for a Contract or AA agreement.
+        Data is aggregated from the procurement action, its completed
+        procurement tracker's AWARD and PRE_AWARD steps, the linked vendor and
+        agreement modification, and the agreement's own PO/task order/contract
+        numbers.
+
+        Only Contract and AA agreements are supported; any other agreement type
+        returns 400. Fields with no underlying data are returned as null; the
+        frontend applies its own "TBD" fallback at render time.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "200":
+          description: OK - Successfully retrieved award & modification history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AgreementAwardHistoryRecord"
+        "400":
+          description: Bad Request - Agreement is not a Contract or AA agreement
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
   /agreements/{id}/edit-bundle:
     patch:
       tags:
@@ -757,7 +817,8 @@ paths:
         `services_components` / `budget_line_items` arrays inside the `agreement`
         section are rejected — they must be sent at the top level of the bundle.
 
-        Reviewer notifications for any change requests produced by BLI updates are
+        Reviewer notifications for any change requests produced by BLI updates or
+        deletions (PLANNED / IN_EXECUTION lines route to a deletion change request) are
         sent **after** the bundle commit succeeds. If a notification fails, the change
         request id is returned in `failed_notification_change_request_ids` so the
         client can surface a "saved, but the approval request didn't go out" message.
@@ -3088,6 +3149,12 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: exclude_system_admin
+          in: query
+          description: Exclude the System Admin ETL user from results
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -3833,9 +3900,12 @@ paths:
         - Total spending across all agreements
         - Spending totals by fiscal year
         - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
-        - Agreements grouped by fiscal year
+        - Agreements grouped by fiscal year (any budget line status)
+        - Agreements with non-DRAFT spending, grouped by fiscal year
 
-        Only includes non-DRAFT budget line items (or OBE items regardless of status).
+        Totals and the spending-type breakdown only include non-DRAFT budget line items
+        (or OBE items regardless of status). `agreements_by_fy` lists an agreement for
+        every fiscal year in which it has a budget line, regardless of status.
         Totals include both BLI amounts and fees.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -3872,7 +3942,16 @@ paths:
                     grant: "0.00"
                     partner: "0.00"
                     direct_obligation: "0.00"
+                  "2025":
+                    contract: "25000.00"
+                    grant: "0.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
                 agreements_by_fy:
+                  "2023": [1, 2]
+                  "2024": [1]
+                  "2025": [2, 3]
+                agreements_with_spending_by_fy:
                   "2023": [1, 2]
                   "2024": [1]
                   "2025": [2]
@@ -4335,6 +4414,39 @@ paths:
                         format: float
                     description: The range of budget line totals (amount + fees) available in the dataset
 
+  /budget-line-items-batch/:
+    post:
+      tags:
+        - Budget Line Items
+      operationId: getBudgetLineItemsBatch
+      description: >-
+        Bulk-fetch full budget line item representations for a list of ids in a single
+        request. POST (not GET) only because the id list travels in a JSON body rather
+        than a query string, which has practical length limits a large portfolio/fiscal-year
+        combo can exceed. This is a read, gated by the same permission as
+        GET /budget-line-items/{id}. Unknown ids are silently omitted from the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetLineItemsBatchRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetLineItem"
+        "400":
+          description: Bad Request — ids missing, empty, or exceeds the 50-item limit
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
   /budget-line-items/:
     get:
       tags:
@@ -4514,7 +4626,12 @@ paths:
       tags:
         - Budget Line Items
       operationId: updateBudgetLineItem
-      description: Update a budget line item (full update)
+      description: >-
+        Update a budget line item (full update). PLANNED and IN_EXECUTION budget line items are
+        editable: non-budget changes (e.g. line_description, services_component_id, comments) apply
+        directly and return 200, while budget-field changes (amount, can_id, date_needed) route
+        through an approval change request and return 202. Editing is blocked (400) once the
+        agreement reaches Pre-Award/Award or while the BLI is already in review.
       requestBody:
         required: true
         content:
@@ -4523,7 +4640,13 @@ paths:
               $ref: "#/components/schemas/BudgetLineItemRequest"
       responses:
         "200":
-          description: OK
+          description: OK — changes applied directly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
+        "202":
+          description: Accepted — a change request was created and is awaiting approval
           content:
             application/json:
               schema:
@@ -4540,7 +4663,10 @@ paths:
       tags:
         - Budget Line Items
       operationId: partialUpdateBudgetLineItem
-      description: Partially update a budget line item
+      description: >-
+        Partially update a budget line item. Same routing as PUT: non-budget changes apply directly
+        (200), budget-field changes (amount, can_id, date_needed) route through an approval change
+        request (202).
       requestBody:
         required: true
         content:
@@ -4549,7 +4675,13 @@ paths:
               $ref: "#/components/schemas/BudgetLineItemRequest"
       responses:
         "200":
-          description: OK
+          description: OK — changes applied directly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
+        "202":
+          description: Accepted — a change request was created and is awaiting approval
           content:
             application/json:
               schema:
@@ -4566,10 +4698,15 @@ paths:
       tags:
         - Budget Line Items
       operationId: deleteBudgetLineItem
-      description: Delete a budget line item
+      description: >-
+        Delete a budget line item. A DRAFT budget line item (and any delete by a super user) is
+        hard-deleted immediately and returns 200. A PLANNED or IN_EXECUTION budget line item routes
+        through an approval workflow: a deletion change request is created and 202 is returned; the
+        budget line item is deleted only once that request is approved. Deletion is blocked (400)
+        once the agreement reaches Pre-Award/Award or while the budget line item is already in review.
       responses:
         "200":
-          description: OK
+          description: OK — budget line item deleted
           content:
             application/json:
               schema:
@@ -4579,6 +4716,19 @@ paths:
                     type: string
                   id:
                     type: integer
+        "202":
+          description: Accepted — a deletion change request was created and is awaiting approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: integer
+        "400":
+          description: Bad Request
         "401":
           description: Unauthorized
         "404":
@@ -4793,10 +4943,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServicesComponent"
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
     patch:
@@ -4824,10 +4980,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServicesComponent"
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
     delete:
@@ -4853,6 +5015,170 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
+        "500":
+          description: Internal Server Error
+  /grant-numbers/:
+    get:
+      tags:
+        - Grant Numbers
+      operationId: getGrantNumbers
+      description: Get Grant Numbers
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantNumbers"
+    post:
+      tags:
+        - Grant Numbers
+      operationId: createGrantNumber
+      summary: Create a new Grant Number
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequestPost"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /grant-numbers/{id}:
+    get:
+      tags:
+        - Grant Numbers
+      operationId: getGrantNumberById
+      description: Get Grant Number by id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantNumber"
+    put:
+      tags:
+        - Grant Numbers
+      operationId: putGrantNumber
+      summary: Update a Grant Number (Over-write)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Grant Numbers
+      operationId: patchGrantNumber
+      summary: Update a Grant Number (Merge)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantNumberRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+        - Grant Numbers
+      operationId: deleteGrantNumber
+      summary: Delete a Grant Number
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ServicesComponent deleted
+                  id:
+                    type: integer
+                    example: 1
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
   /change-requests/:
@@ -5486,8 +5812,14 @@ paths:
                 properties:
                   version:
                     type: string
+                  skip_cr_for_draft_planned:
+                    type: boolean
+                    description: >-
+                      When true, Draft→Planned status changes and in-Planned budget-detail
+                      edits apply immediately instead of creating a Change Request.
                 example:
                   version: "1.0.0"
+                  skip_cr_for_draft_planned: false
   /azure/sas-token/:
     get:
       tags:
@@ -6618,6 +6950,7 @@ components:
         - total_by_fiscal_year
         - spending_type_by_fiscal_year
         - agreements_by_fy
+        - agreements_with_spending_by_fy
       properties:
         total:
           type: string
@@ -6651,7 +6984,22 @@ components:
               direct_obligation: "0.00"
         agreements_by_fy:
           type: object
-          description: Agreement IDs grouped by fiscal year
+          description: Agreement IDs grouped by fiscal year, for any budget line status
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+          example:
+            "2023": [1, 2]
+            "2024": [1]
+            "2025": [2, 3]
+        agreements_with_spending_by_fy:
+          type: object
+          description: >-
+            Agreement IDs grouped by fiscal year, limited to agreements with non-DRAFT
+            (or OBE) budget lines in that fiscal year. Always a subset of
+            agreements_by_fy - agreement 3 below is listed for FY 2025 but has only
+            DRAFT budget lines there, so it contributes no spending.
           additionalProperties:
             type: array
             items:
@@ -6679,6 +7027,66 @@ components:
             "2043": "1234567.00"
             "2044": "890000.00"
             "2045": "151217218.00"
+    AgreementAwardHistoryRecord:
+      description: |
+        One flat award/modification record for the Award & Modifications tab.
+        Fields with no underlying data are null.
+      type: object
+      properties:
+        fiscal_year_label:
+          type: string
+          description: Accordion header, e.g. "FY 2024 Award" or "FY 2025 Mod 1"
+          example: FY 2024 Award
+        award_date:
+          type: string
+          format: date
+          nullable: true
+        award_amount:
+          type: string
+          nullable: true
+          description: Decimal amount as string for precision
+        contract_total:
+          type: string
+          nullable: true
+          description: Cumulative agreement total as string for precision
+        contract_number:
+          type: string
+          nullable: true
+        modification_number:
+          type: string
+          nullable: true
+          description: >-
+            The Modification # entered on the award step ("Base", "P00001"...) when present;
+            otherwise "Base" for the initial award, or the modification number (e.g. "Mod 1")
+        requisition_approval_date:
+          type: string
+          format: date
+          nullable: true
+        requisition_number:
+          type: string
+          nullable: true
+        vendor_name:
+          type: string
+          nullable: true
+        vendor_unique_entity_id:
+          type: string
+          nullable: true
+          description: Unique Entity ID (SAM.gov ID); sourced from vendor.duns
+        vendor_type:
+          type: string
+          nullable: true
+        purchase_order_number:
+          type: string
+          nullable: true
+          description: >-
+            The Purchase Order # entered on the award step for this cycle; falls back to the
+            agreement-level po_number when the step has none
+        task_order_number:
+          type: string
+          nullable: true
+          description: >-
+            The Task Order # entered on the award step for this cycle; falls back to the
+            agreement-level task_order_number when the step has none
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object
@@ -7204,6 +7612,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7292,6 +7704,10 @@ components:
           type: integer
           nullable: true
           description: ID of the associated services component
+        grant_number_id:
+          type: integer
+          nullable: true
+          description: ID of the associated grant number (grant budget line items only)
         amount:
           type: number
           format: float
@@ -7494,6 +7910,18 @@ components:
           type: integer
         division:
           $ref: "#/components/schemas/Division"
+    BudgetLineItemsBatchRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: integer
+          example: [1, 2, 3]
     BudgetLineItemRequest:
       type: object
       properties:
@@ -7524,6 +7952,10 @@ components:
           example: 1
         services_component_id:
           type: integer
+          example: 1
+        grant_number_id:
+          type: integer
+          nullable: true
           example: 1
         requestor_notes:
           description: optional notes added to a Change Request when a POST is made that creates a CR
@@ -7583,6 +8015,12 @@ components:
         has_status_change:
           type: boolean
           example: false
+        has_delete_change:
+          type: boolean
+          example: false
+          description: >-
+            True when the change request is a request to delete the budget line item (carries a
+            {"delete": true} sentinel in requested_change_data). On approval the BLI is deleted.
         has_proc_shop_change:
           type: boolean
           example: false
@@ -7760,13 +8198,85 @@ components:
           example: false
         description:
           type: string
+          nullable: true
+        sub_component:
+          type: string
+          nullable: true
+          example: "SC1.1"
+        period_start:
+          type: string
+          format: date
+          nullable: true
+          example: "2023-05-06"
+        period_end:
+          type: string
+          format: date
+          nullable: true
+          example: "2023-06-30"
+    ServicesComponentRequestPost:
+      allOf:
+        - $ref: "#/components/schemas/ServicesComponentRequest"
+      required:
+        - agreement_id
+        - number
+        - optional
+    GrantNumbers:
+      description: OPS List of Grant Numbers
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/GrantNumber"
+    GrantNumber:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        agreement_id:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
+        description:
+          type: string
         display_title:
           type: string
         display_name:
           type: string
-        clin_id:
+        period_start:
+          type: string
+          example: "2023-05-06"
+        period_end:
+          type: string
+          example: "2023-06-30"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    GrantNumberRequest:
+      type: object
+      properties:
+        agreement_id:
           type: integer
           example: 1
+        number:
+          type: integer
+          example: 1
+        description:
+          type: string
+        display_title:
+          type: string
+        display_name:
+          type: string
         period_start:
           type: string
           example: "2023-05-06"
@@ -7774,12 +8284,11 @@ components:
           type: string
           example: "2023-06-30"
       required:
-        - contract_agreement_id
+        - agreement_id
         - number
-        - optional
-    ServicesComponentRequestPost:
+    GrantNumberRequestPost:
       allOf:
-        - $ref: "#/components/schemas/ServicesComponentRequest"
+        - $ref: "#/components/schemas/GrantNumberRequest"
     AgreementEditBundleRequest:
       type: object
       description: |
@@ -7790,9 +8299,9 @@ components:
           description: |
             Agreement-level fields to update (partial). Validated against the
             per-agreement-type schema, keyed off the existing agreement's type.
-            Nested `services_components` / `budget_line_items` arrays are rejected —
-            send those at the top level of the bundle so the orchestrator can
-            apply create / update / delete atomically.
+            Nested `services_components` / `grant_numbers` / `budget_line_items` arrays
+            are rejected — send those at the top level of the bundle so the
+            orchestrator can apply create / update / delete atomically.
           oneOf:
             - $ref: "#/components/schemas/AgreementData"
             - $ref: "#/components/schemas/ContractAgreementData"
@@ -7836,6 +8345,43 @@ components:
             delete:
               type: array
               description: IDs of services components to delete.
+              items:
+                type: integer
+        grant_numbers:
+          type: object
+          description: Grant number create / update / delete buckets (grant agreements only).
+          properties:
+            create:
+              type: array
+              description: |
+                Grant numbers to create. Each item may include a `ref` string,
+                reserved for a future grant budget-line-item feature to reference
+                the newly-created grant number; not consumed anywhere yet.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/GrantNumberRequest"
+                  - type: object
+                    properties:
+                      ref:
+                        type: string
+                        description: |
+                          Optional client-supplied identifier resolved to the
+                          new grant number's id within this bundle.
+            update:
+              type: array
+              description: Grant numbers to update. Each item must include `id`.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/GrantNumberRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+            delete:
+              type: array
+              description: IDs of grant numbers to delete.
               items:
                 type: integer
         budget_line_items:
@@ -8536,7 +9082,7 @@ components:
             reviewer_notes:
               type: string
               nullable: true
-              description: Notes from the approver (max 150 characters, required when declining)
+              description: Notes from the approver (optional, max 150 characters)
     ProcurementTrackerAwardStep:
       allOf:
         - $ref: "#/components/schemas/ProcurementTrackerStep"
@@ -8621,6 +9167,48 @@ components:
               format: date
               nullable: true
               description: Date the contract was awarded
+            agreement_title:
+              type: string
+              nullable: true
+              description: >-
+                Proposed agreement title entered during the award request (OPS-5892, max 200 characters).
+                Applied to the agreement name on Budget Team approval, after which it is immutable.
+            modification_number:
+              type: string
+              nullable: true
+              enum:
+                - Base
+                - P00001
+                - P00002
+                - P00003
+                - P00004
+                - P00005
+                - P00006
+                - P00007
+                - P00008
+                - P00009
+                - P00010
+                - P00011
+                - P00012
+                - P00013
+                - P00014
+                - P00015
+                - P00016
+                - P00017
+                - P00018
+                - P00019
+                - P00020
+              description: >-
+                Modification # for the award (OPS-5892). "Base" identifies the original award;
+                subsequent modification versions are P00001..P00020.
+            purchase_order_number:
+              type: string
+              nullable: true
+              description: Purchase Order # (ODN provided to the Budget Team) (OPS-5892, max 100 characters)
+            task_order_number:
+              type: string
+              nullable: true
+              description: Task Order # from the signed award (OPS-5892, max 100 characters)
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -8644,9 +9232,11 @@ components:
         notes:
           type: string
           nullable: true
+          maxLength: 750
           description: >-
             Additional notes about this step (ACQUISITION_PLANNING,
-            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps)
+            PRE_SOLICITATION, SOLICITATION, and EVALUATION steps).
+            Max 750 characters.
         target_completion_date:
           type: string
           format: date
@@ -8717,6 +9307,51 @@ components:
           description: >-
             Obligated date entered by Budget Team on award approval (OPS-2280).
             Used to set date_needed on obligated BLIs and the ProcurementAction obligated date.
+        agreement_title:
+          type: string
+          nullable: true
+          maxLength: 200
+          description: >-
+            Proposed agreement title for AWARD steps (OPS-5892, max 200 characters). Applied to
+            the agreement name on Budget Team approval.
+        modification_number:
+          type: string
+          nullable: true
+          enum:
+            - Base
+            - P00001
+            - P00002
+            - P00003
+            - P00004
+            - P00005
+            - P00006
+            - P00007
+            - P00008
+            - P00009
+            - P00010
+            - P00011
+            - P00012
+            - P00013
+            - P00014
+            - P00015
+            - P00016
+            - P00017
+            - P00018
+            - P00019
+            - P00020
+          description: >-
+            Modification # for AWARD steps (OPS-5892). "Base" identifies the original award;
+            subsequent modification versions are P00001..P00020. Any other value is rejected.
+        purchase_order_number:
+          type: string
+          nullable: true
+          maxLength: 100
+          description: Purchase Order # (ODN) for AWARD steps (OPS-5892, max 100 characters)
+        task_order_number:
+          type: string
+          nullable: true
+          maxLength: 100
+          description: Task Order # for AWARD steps (OPS-5892, max 100 characters)
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.
@@ -8938,6 +9573,19 @@ components:
         isEditable:
           type: boolean
           description: Whether the budget line item is associated with an agreement and can be edited
+        isDeletable:
+          type: boolean
+          description: >-
+            Whether the delete control should be enabled for this budget line item. A DRAFT BLI
+            deletes immediately; PLANNED/IN_EXECUTION deletions route through an approval change
+            request. False when the BLI is not editable (e.g. in review, OBE, or the agreement has
+            reached Pre-Award/Award).
+        lockedMessage:
+          type: string
+          nullable: true
+          description: >-
+            Server-computed human-readable reason the budget line item is locked when the frontend
+            cannot derive it on its own (e.g. the agreement has reached Pre-Award). Null when editable.
         total_count:
           type: integer
           description: Total number of budget line items in the system matching the query
@@ -9090,12 +9738,23 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
-              type: string
+            aln_numbers:
+              type: array
               nullable: true
+              items:
+                type: string
             funding_period_months:
               type: integer
               nullable: true
+              enum: [12, 18]
+            grant_numbers:
+              type: array
+              description: |
+                Optional array of grant numbers to create atomically with the agreement.
+                Grant-only — not present on other agreement types. All items created in
+                a single transaction - if any fails, all are rolled back.
+              items:
+                $ref: "#/components/schemas/NestedGrantNumberData"
 
     DirectAgreementData:
       allOf:
@@ -9128,6 +9787,21 @@ components:
         isEditable:
           type: boolean
           default: false
+        isDeletable:
+          type: boolean
+          default: false
+          description: >-
+            Whether the delete control should be enabled for this agreement. False when the user
+            is not a team member (or otherwise associated with the agreement), the agreement is
+            awarded, or — unless the user is a super user — the agreement has any budget line
+            item that is not in Draft status.
+        lockedMessage:
+          type: string
+          nullable: true
+          description: >-
+            Server-computed human-readable reason the agreement's delete control is locked (e.g.
+            not a team member, awarded, or a non-Draft budget line) that the frontend cannot
+            derive on its own. Null when deletable.
         immutable_awarded_fields:
           type: array
           items:
@@ -9140,6 +9814,25 @@ components:
             - product_service_code_id
             - awarding_entity_id
             - agreement_reason
+
+    AgreementMetaSchema:
+      description: >-
+        Agreement-specific extension of MetaSchema adding procurementShopLockedMessage.
+      allOf:
+        - $ref: "#/components/schemas/MetaSchema"
+        - type: object
+          properties:
+            procurementShopLockedMessage:
+              type: string
+              nullable: true
+              description: >-
+                Server-computed human-readable reason the Procurement Shop dropdown is locked
+                (any budget line in Executing or Obligated status; a procurement-shop
+                change request in review; or the agreement is awarded, for non-super users) that
+                the frontend cannot derive on its own. Null when the Procurement Shop can be
+                changed. Only populated on GET /agreements/{id} — always null in the
+                GET /agreements list response, since computing it there would add a database
+                query per row.
 
     AgreementResponse:
       allOf:
@@ -9171,6 +9864,12 @@ components:
                 type: string
             in_review:
               type: boolean
+            is_award_approval_requested:
+              type: boolean
+              description: Whether the agreement has a pending award approval request (step 6)
+            is_post_pre_award_locked:
+              type: boolean
+              description: Whether BLI editing is permanently locked after full pre-award approval
             authorized_user_ids:
               type: array
               items:
@@ -9204,7 +9903,7 @@ components:
                 - NEW
                 - CONTINUING
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name
@@ -9271,7 +9970,7 @@ components:
             updated_on:
               $ref: "#/components/parameters/updated_on"
             _meta:
-              $ref: "#/components/schemas/MetaSchema"
+              $ref: "#/components/schemas/AgreementMetaSchema"
           required:
             - id
             - display_name
@@ -9360,12 +10059,27 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
+            awarded_grant_number:
               type: string
               nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
+            aln_numbers:
+              type: array
+              nullable: true
+              items:
+                type: string
             funding_period_months:
               type: integer
               nullable: true
+            grant_numbers:
+              type: array
+              description: Grant numbers associated with this agreement. Grant-only.
+              items:
+                $ref: "#/components/schemas/GrantNumber"
 
     GrantListAgreementResponse:
       allOf:
@@ -9377,12 +10091,27 @@ components:
             nofo_number:
               type: string
               nullable: true
-            aln_number:
+            awarded_grant_number:
               type: string
               nullable: true
+              readOnly: true
+              description: |
+                The grant's order/document number (ODN), assigned during Grant award.
+                Not yet populated by a real award workflow — currently set via test/seed
+                data only, never through the create/update API.
+            aln_numbers:
+              type: array
+              nullable: true
+              items:
+                type: string
             funding_period_months:
               type: integer
               nullable: true
+            grant_numbers:
+              type: array
+              description: Grant numbers associated with this agreement. Grant-only.
+              items:
+                $ref: "#/components/schemas/GrantNumber"
 
     DirectAgreementResponse:
       allOf:
@@ -9591,7 +10320,7 @@ components:
           description: CAN (Contract Account Number) ID
         status:
           type: string
-          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED, PLANNED_MOD]
+          enum: [DRAFT, PLANNED, IN_EXECUTION, OBLIGATED]
           description: Status of the budget line item
         date_needed:
           type: string
@@ -9610,6 +10339,19 @@ components:
             Matches the 'ref' field in the services_components array.
             If the services component has no 'ref', use its array index as a string ("0", "1", etc.).
             Cannot be used with services_component_id.
+          nullable: true
+        grant_number_id:
+          type: integer
+          description: |
+            Reference to an existing grant number by database ID (grant budget line items).
+            Cannot be used with grant_number_ref, or with any services component link.
+          nullable: true
+        grant_number_ref:
+          type: string
+          description: |
+            Reference to a grant number being created in the same request.
+            Matches the 'ref' field in the grant_numbers array.
+            Cannot be used with grant_number_id, or with any services component link.
           nullable: true
         comments:
           type: string
@@ -9652,6 +10394,39 @@ components:
           type: string
           format: date
           description: End date of the period
+          nullable: true
+
+    NestedGrantNumberData:
+      type: object
+      description: |
+        Grant number data for nested creation within agreement requests.
+        Excludes agreement_id (set automatically) and adds 'ref' field, reserved for
+        a future grant budget-line-item feature; not consumed anywhere yet.
+      required:
+        - number
+      properties:
+        ref:
+          type: string
+          description: |
+            Temporary reference identifier for this grant number.
+            If not provided, the array index (as a string) will be used.
+          nullable: true
+        number:
+          type: integer
+          description: Sequence number of the grant number
+        description:
+          type: string
+          description: Description of the grant number
+          nullable: true
+        period_start:
+          type: string
+          format: date
+          description: Period of performance start date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          description: Period of performance end date
           nullable: true
 
 
@@ -10344,8 +11119,8 @@ components:
       description: >-
         Example PATCH request body for approvers to respond to a pre-award
         approval request. The approval_status field must be either APPROVED
-        or DECLINED. The reviewer_notes field is optional when approving
-        but required when declining (max 150 characters). Server-controlled
+        or DECLINED. The reviewer_notes field is optional for both
+        approving and declining (max 150 characters). Server-controlled
         fields (approval_responded_by, approval_responded_date) are set
         automatically from the current user and timestamp.
       value:

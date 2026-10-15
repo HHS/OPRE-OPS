@@ -8,26 +8,7 @@ This is the data loading and ETL backend for OPRE OPS. It imports TSV/CSV and JS
 
 ### Package Management
 
-**Use pipenv for all Python dependencies:**
-
-```bash
-cd backend/data_tools
-
-# Install dependencies (always use --dev for development)
-pipenv install --dev
-
-# Add a new package
-pipenv install package-name
-
-# Add a development dependency
-pipenv install --dev package-name
-
-# Enter pipenv shell (then you can omit "pipenv run" prefix)
-pipenv shell
-
-# Update Pipfile.lock
-pipenv lock
-```
+**Use pipenv for all Python dependencies**, run from `backend/data_tools`. Always install with `--dev` for development (`pipenv install --dev`).
 
 ### Running the ETL (load_data.py)
 
@@ -178,24 +159,14 @@ def test_transform_creates_projects(loaded_db):
 
 ### Key Fixtures
 
+Defined in `tests/conftest.py`:
+
 - **db_service** (session): Ensures Postgres is up; returns `(db_session, engine)`.
 - **loaded_db**: Session with history triggers registered; rolls back and cleans `ops_db_history` after each test.
 
 ### Fee Percentage and Conventions
 
 Same as the rest of the backend: fee percentages are stored as whole numbers (e.g. `5.0` = 5%). Use `datetime.date` for dates and model enums (e.g. `ContractType`) rather than raw strings.
-
-## Important Files
-
-- **src/load_data.py**: CLI entrypoint; dispatches to per-type `transform` functions.
-- **src/common/db.py**: `init_db`, `init_db_from_config`, `setup_triggers`.
-- **src/common/utils.py**: `get_config`, `get_or_create_sys_user`, and shared helpers.
-- **environment/types.py**: `DataToolsConfig` protocol.
-- **environment/local.py**, **environment/dev.py**, **environment/azure.py**: Config implementations.
-- **scripts/initial_data.sh**: Schema reset + migrations + initial_data SQL.
-- **scripts/import_test_data.sh**: Schema + migrations + JSON5 static data.
-- **scripts/load_data.sh**: Wrapper for `load_data.py`.
-- **tests/conftest.py**: Pytest fixtures and history trigger setup for tests.
 
 ## Environment Variables
 
@@ -207,6 +178,39 @@ Typical variables (used by configs and scripts):
 - **FILE_STORAGE_AUTH_METHOD**: e.g. `rbac` for Azure blob with RBAC.
 - **LOG_LEVEL**: Logging level (default `INFO`).
 - **ENV**: Passed to scripts (e.g. `local` vs non-local) for connection and schema behavior.
+- **ACS_CONNECTION_STRING**: Azure Communication Services connection string used by `disable_users.py` to send account-disabled notification and inactivity-warning emails. Injected as a Container App secret in deployed environments; unset (`None`) locally/dev/pytest, which skips sending emails entirely.
+- **EMAIL_SENDER_ADDRESS**: The verified ACS "From" address for `disable_users.py` notification emails, e.g. `DoNotReply@<verified-domain>`. Unset (`None`) locally/dev/pytest.
+- **CONTAINER_APP_JOB_NAME**: Set automatically by Azure Container Apps; `AzureConfig` derives `environment_label`/`frontend_url` from it (`stg` → Staging, `prod` → Production, otherwise `None`). `disable_users.py` emails 7..1-day inactivity warnings during the 13:00 UTC run, only in Staging/Production.
+
+## Scheduled Usage Metrics Report (OPS-4148)
+
+An Azure Container App Job aggregates `ops_event` activity into a two-sheet `.xlsx` (per-day /
+division / role counts + a per-user sign-in list) and uploads it to Blob storage under `reports/`
+for the UX team; it can optionally email a time-limited SAS download link via ACS. Code:
+`src/usage_metrics/`; wrapper: `scripts/usage_metrics.sh`.
+
+**The job is owned by Terraform**, not by a script in this repo: the `deployments/usage-metrics`
+Terragrunt stack in HHS/OPRE-OPS-Data creates it as `opre-ops-<env>-app-usage-metrics` and injects
+both email secrets (`ACS_CONNECTION_STRING`, `FILE_STORAGE_ACCOUNT_KEY`) as Container App secrets at
+apply time, so the job needs no Key Vault access at run time.
+`scripts/azure/create_usage_metrics_job.sh` is **deprecated** and kept only as a rollback path.
+
+**Schedule:** one report per sprint, on the **last Friday of each two-week sprint**. Cron cannot
+express "every other Friday", so the cron (`50 23 * * 5`) fires every Friday and
+`should_generate_report` skips the off-sprint ones using `USAGE_METRICS_SPRINT_ANCHOR_DATE` (a known
+sprint-end Friday). Half the runs are deliberate no-ops. To test-fire, start a **per-execution**
+override with `USAGE_METRICS_FORCE_RUN=true` through the REST API, copying the job's complete
+container (image, `args`, all env vars) as the runbook shows. Never set it as a committed Terraform
+input, which would silently make the report weekly.
+
+**Never use `az containerapp job start --env-vars` / `--image` on any `ops-data-tools` job.** The
+override replaces the container and the CLI drops the job's `args`, so the image's default `CMD`
+(`import_test_data.sh`) runs instead. It drops the `ops` schema and loads test seed data.
+
+**Note:** the per-user sheet contains named user data — treat `reports/` as sensitive.
+
+Full runbook (staging/prod enablement steps, verified env values, SAS/email wiring, schedule) lives
+in `scripts/azure/USAGE_METRICS_JOB.md`. Read it before enabling or deploying the job.
 
 ## Integration with ops_api and Docker
 

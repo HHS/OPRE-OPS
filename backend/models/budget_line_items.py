@@ -34,12 +34,7 @@ from typing_extensions import Any, override
 
 from models import CAN, Agreement, AgreementType
 from models.base import BaseModel
-from models.change_requests import (
-    AgreementChangeRequest,
-    BudgetLineItemChangeRequest,
-    ChangeRequestStatus,
-    ChangeRequestType,
-)
+from models.change_requests import AgreementChangeRequest, BudgetLineItemChangeRequest
 
 
 class BudgetLineItemStatus(str, Enum):
@@ -50,7 +45,14 @@ class BudgetLineItemStatus(str, Enum):
     PLANNED = "PLANNED"
     IN_EXECUTION = "IN_EXECUTION"
     OBLIGATED = "OBLIGATED"
-    PLANNED_MOD = "PLANNED_MOD"
+
+    @classmethod
+    def _missing_(cls, value):
+        # Retired status; coerce stale rows instead of raising LookupError if the
+        # backfill migration hasn't reached this row yet (rolling deploy, replica lag).
+        if value == "PLANNED_MOD":
+            return cls.PLANNED
+        return None
 
 
 class BudgetLineSortCondition(Enum):
@@ -329,8 +331,7 @@ class BudgetLineItem(BaseModel):
 
         queries = [
             select(BudgetLineItemChangeRequest).where(
-                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.in_review_filter(),
                 BudgetLineItemChangeRequest.budget_line_item_id == self.id,
             )
         ]
@@ -339,8 +340,7 @@ class BudgetLineItem(BaseModel):
         if agreement_id:
             queries.append(
                 select(AgreementChangeRequest).where(
-                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
-                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.in_review_filter(),
                     AgreementChangeRequest.agreement_id == agreement_id,
                 )
             )
@@ -553,6 +553,30 @@ class GrantBudgetLineItem(BudgetLineItem):
     bns_number: Mapped[Optional[str]] = mapped_column(String)
     committed_date: Mapped[Optional[date]] = mapped_column(Date)
     fa_signed_date: Mapped[Optional[date]] = mapped_column(Date)
+
+    # A grant number is the grant BLI's analog of a Contract BLI's services component.
+    # It lives on this subclass (not the base) because it only applies to grant BLIs;
+    # services_component_id sits on the base for legacy reasons.
+    grant_number_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("grant_number.id", ondelete="SET NULL"),
+    )
+    grant_number: Mapped[Optional["GrantNumber"]] = relationship(
+        "GrantNumber", backref="budget_line_items", passive_deletes=True
+    )
+
+    @classmethod
+    def get_required_fields_for_status_change(cls) -> list[str]:
+        """
+        Grant BLIs require a grant number (not a services component) to change status.
+        """
+        return [
+            "date_needed",
+            "can_id",
+            "amount",
+            "agreement_id",
+            "grant_number_id",
+        ]
 
 
 class DirectObligationBudgetLineItem(BudgetLineItem):

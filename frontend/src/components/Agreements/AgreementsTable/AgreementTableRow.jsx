@@ -1,8 +1,7 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -12,19 +11,18 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TextClip from "../../UI/Text/TextClip";
 import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
-    areAllBudgetLinesInStatus,
     getAgreementContractNumber,
     getAgreementEndDate,
+    getAgreementLockedMessage,
     getAgreementName,
     getAgreementStartDate,
     getProcurementShopDisplay,
-    getResearchProjectName,
-    isThereAnyBudgetLines
+    getResearchProjectName
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
-import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
-import { useIsUserReadOnly } from "../../../hooks/user.hooks";
+import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
+import { useCanEditByRole } from "../../../hooks/user.hooks";
 import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 
@@ -33,9 +31,11 @@ import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
  * @component
  * @param {Object} props - The component props.
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year; "All" shows Lifetime Obligated instead of FY Obligated.
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreement }) => {
+export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowActions = false }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -44,7 +44,8 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const fyObligatedAmount = isSuccess ? Number(agreement?.fy_obligated ?? 0) : 0;
+    const isAllFY = selectedFiscalYear === "All";
+    const fyObligatedAmount = isSuccess && !isAllFY ? Number(agreement?.fy_obligated ?? 0) : null;
 
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
@@ -55,47 +56,26 @@ export const AgreementTableRow = ({ agreement }) => {
     const awardType = AWARD_TYPE_LABELS[agreement?.award_type] ?? NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
-    const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
-    const isReadOnly = useIsUserReadOnly();
+    const canEditByRole = useCanEditByRole();
 
-    const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
-    const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
-    const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
+    const canUserEditAgreement = isSuccess && agreement?._meta?.isEditable;
+    const isAgreementTypeNotDeveloped = isSuccess && isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
-    const canUserDeleteAgreement =
-        isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
-    const handleSubmitAgreementForApproval = useNavigateAgreementReview();
+    const canUserDeleteAgreement = isSuccess && (agreement?._meta?.isDeletable ?? false);
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
-    const [searchParams] = useSearchParams();
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
+    const lockedMessage = isSuccess
+        ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
+        : "";
 
     const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const agreementPath = `/agreements/${agreement?.id}`;
 
-    function getLockedMessage() {
-        const lockedMessages = {
-            notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
-            notDeveloped:
-                "This agreement cannot be edited because it is not developed yet, \nplease contact the Budget Team.",
-            default: "Disabled"
-        };
-        switch (true) {
-            case isSuperUser:
-                return "";
-            case !canUserEditAgreement:
-                return lockedMessages.notTeamMember;
-            case isAgreementTypeNotDeveloped:
-                return lockedMessages.notDeveloped;
-            default:
-                return lockedMessages.default;
-        }
-    }
-    const lockedMessage = getLockedMessage();
+    const showRowActions = canEditByRole && !disableRowActions;
 
-    const changeIcons = !isReadOnly ? (
+    const changeIcons = showRowActions ? (
         <ChangeIcons
             item={agreement ?? {}}
             isItemEditable={isEditable ?? false}
@@ -104,8 +84,6 @@ export const AgreementTableRow = ({ agreement }) => {
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
             duplicateIcon={false}
-            sendToReviewIcon={!forApprovalUrl}
-            handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
     ) : null;
 
@@ -131,7 +109,15 @@ export const AgreementTableRow = ({ agreement }) => {
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : formatCurrency(fyObligatedAmount)}
+                {isRowActive && !isExpanded && showRowActions ? (
+                    <div>{changeIcons}</div>
+                ) : isAllFY ? (
+                    formatCurrency(lifetimeObligated)
+                ) : fyObligatedAmount !== null ? (
+                    formatCurrency(fyObligatedAmount)
+                ) : (
+                    NO_DATA
+                )}
             </td>
         </>
     );
@@ -150,12 +136,6 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
                 </dl>
-                {/* REVIEW: NEW — gates Procurement Shop / Subtotal / Fees / Lifetime Obligated for GRANT rows.
-                    Grants have no procurement shop and no BLIs at creation time, so these cells would all
-                    show TBD or $0 and are misleading. Using a string literal "GRANT" rather than importing
-                    the AGREEMENT_TYPES constant because this file already uses the string form elsewhere
-                    (e.g. isNotDevelopedYet) and adding another import for a one-liner guard would be noisy.
-                    QUESTION FOR REVIEW: should we import AGREEMENT_TYPES.GRANT here for consistency? */}
                 {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
                     <>
                         <dl
@@ -193,12 +173,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 className="display-flex padding-right-4"
                 style={{ justifyContent: "space-between" }}
             >
-                {/* REVIEW: NEW — gates Contract # / Award Type / spacer / Vendor for GRANT rows.
-                    Change-icons div intentionally kept outside this gate so delete/edit icons
-                    still render for grants. The spacer dl (&nbsp;) is a layout placeholder that
-                    existed before this change; it's included in the gate since it only makes sense
-                    when Contract # and Vendor are present. */}
-                {agreement?.agreement_type !== "GRANT" && (
+                {agreement?.agreement_type !== AGREEMENT_TYPES.GRANT && (
                     <>
                         <dl className="font-12px">
                             <dt className="margin-0 text-base-dark">Contract #</dt>
@@ -227,9 +202,9 @@ export const AgreementTableRow = ({ agreement }) => {
                         </dl>
                     </>
                 )}
-                {!isReadOnly && (
+                {showRowActions && (
                     <div
-                        className="flex-align-self-end margin-bottom-1"
+                        className="flex-align-self-end margin-bottom-1 margin-left-auto"
                         data-cy="change-icons-expanded"
                     >
                         {changeIcons}

@@ -8,7 +8,7 @@ from loguru import logger
 from marshmallow import ValidationError
 from marshmallow.experimental.context import Context
 
-from models import BaseModel, BudgetLineItem, OpsEventType
+from models import BaseModel, BudgetLineItem, BudgetLineItemStatus, OpsEventType
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -18,6 +18,7 @@ from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemListFilterOptionResponseSchema,
     BudgetLineItemListResponseSchema,
     BudgetLineItemResponseSchema,
+    BudgetLineItemsBatchRequestSchema,
     MetaSchema,
     PATCHRequestBodySchema,
     POSTRequestBodySchema,
@@ -33,6 +34,11 @@ from ops_api.ops.services.budget_line_items import (
 )
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import (
+    compute_bli_editable,
+    compute_bli_is_deletable,
+    get_bli_locked_message,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_super_user
@@ -101,12 +107,26 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def delete(self, id: int) -> Response:
-        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            old_bli: BudgetLineItem = service.get(id)
-            service.delete(id)
-            meta.metadata.update({"deleted_bli": old_bli.to_dict()})
-            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        old_bli: BudgetLineItem = service.get(id)
+        old_bli_dict = old_bli.to_dict()
+
+        # Peek at how the delete will be handled so we only emit a DELETE_BLI audit event for an
+        # actual hard-delete. PLANNED/IN_EXECUTION deletions route to a change request (202) and
+        # emit their own CREATE_CHANGE_REQUEST event inside the service; emitting DELETE_BLI here
+        # would write a spurious "Budget Line Deleted" history record on mere request submission.
+        is_immediate_delete = is_super_user(current_user, current_app) or old_bli.status == BudgetLineItemStatus.DRAFT
+
+        if is_immediate_delete:
+            with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+                _, status_code, _ = service.delete(id)
+                meta.metadata.update({"deleted_bli": old_bli_dict})
+                return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, status_code)
+
+        _, status_code, _ = service.delete(id)
+        return make_response_with_headers(
+            {"message": "BudgetLineItem deletion submitted for approval", "id": id}, status_code
+        )
 
 
 class BudgetLineItemsListAPI(BaseListAPI):
@@ -202,45 +222,89 @@ def _list_item_meta(
     is_super: bool,
     user_agreement_associations: dict,
 ) -> dict:
-    """Build _meta for a single BLI in the list response (pagination + isEditable)."""
+    """Build _meta for a single BLI in the list response (pagination + isEditable/isDeletable)."""
     meta = meta_schema.dump(data_for_meta)
     in_review = serialized_bli.get("in_review", False)
     if is_budget_team:
-        meta["isEditable"] = _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+        is_associated = True
     elif serialized_bli.get("agreement_id"):
         agreement_id = serialized_bli["agreement_id"]
         if agreement_id not in user_agreement_associations:
             user_agreement_associations[agreement_id] = associated_with_agreement(agreement_id)
         is_associated = user_agreement_associations[agreement_id]
-        meta["isEditable"] = is_associated and _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+    else:
+        is_associated = False
+
+    if is_associated:
+        meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
+        meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
+        meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
     else:
         meta["isEditable"] = False
+        meta["isDeletable"] = False
+        meta["lockedMessage"] = None
     return meta
 
 
-def _is_bli_editable_optimized(budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool) -> bool:
+class BudgetLineItemsBatchAPI(BaseListAPI):
     """
-    Optimized version of is_bli_editable that uses pre-computed in_review value
-    instead of querying the database.
+    Bulk-fetch full BudgetLineItem representations for a list of ids in a single request.
+
+    POST (not GET) only because the id list needs to travel in a JSON body rather than a
+    query string, which has practical length limits a large portfolio/fiscal-year combo
+    can exceed. This is still a read, gated by the same GET permission as the other BLI
+    read endpoints. Unknown ids are silently omitted from the response.
     """
-    from models import BudgetLineItemStatus
 
-    if budget_line_item is None:
-        return False
-    # Check if status is editable
-    editable = is_super or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-    ]
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._request_schema = BudgetLineItemsBatchRequestSchema()
+        # List schema: in_review/change_requests_in_review are load_only (batch-loaded and
+        # injected below instead), avoiding the per-row lazy-loads BudgetLineItemResponseSchema
+        # would trigger by dumping those from the BLI model properties.
+        self._response_schema_collection = BudgetLineItemListResponseSchema(many=True)
+        self._cr_schema = GenericChangeRequestResponseSchema(many=True)
+        self._meta_schema = MetaSchema()
 
-    # Use pre-computed in_review instead of querying
-    if in_review:
-        editable = False
+    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    def post(self) -> Response:
+        data = self._request_schema.load(request.json)
 
-    if not is_super and budget_line_item.is_obe:
-        editable = False
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        budget_line_items = service.get_batch(data["ids"])
 
-    return editable
+        bli_dict = {bli.id: bli for bli in budget_line_items}
+        bli_ids = list(bli_dict.keys())
+        agreement_ids = [bli.agreement_id for bli in budget_line_items]
+        change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
+
+        # Computed once per request (not per BLI) and reused via _list_item_meta, same as
+        # BudgetLineItemsListAPI.get - avoids a Role lookup and an association check per row.
+        is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+        is_super = is_super_user(current_user, current_app)
+        user_agreement_associations: dict = {}
+
+        serialized_blis = self._response_schema_collection.dump(budget_line_items)
+        for serialized_bli in serialized_blis:
+            bli_id = serialized_bli.get("id")
+            agreement_id = serialized_bli.get("agreement_id")
+            change_requests = get_change_requests_for_bli(bli_id, agreement_id, change_requests_data)
+            in_review = change_requests is not None
+            serialized_bli["in_review"] = in_review
+            serialized_bli["change_requests_in_review"] = (
+                self._cr_schema.dump(change_requests) if change_requests else None
+            )
+            serialized_bli["_meta"] = _list_item_meta(
+                serialized_bli,
+                bli_dict.get(bli_id),
+                {},
+                self._meta_schema,
+                is_budget_team,
+                is_super,
+                user_agreement_associations,
+            )
+
+        return make_response_with_headers(serialized_blis)
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):

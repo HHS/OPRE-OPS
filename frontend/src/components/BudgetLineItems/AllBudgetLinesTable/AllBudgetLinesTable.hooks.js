@@ -29,11 +29,22 @@ function useAllBudgetLinesTable(budgetLines) {
                     .unwrap()
                     .then((fulfilled) => {
                         console.log("Deleted BLI:", fulfilled);
-                        setAlert({
-                            type: "success",
-                            heading: "Budget Line Deleted",
-                            message: `The budget line ${budgetLineDisplayName} has been successfully deleted.`
-                        });
+                        if (fulfilled?.statusCode === 202) {
+                            // PLANNED/IN_EXECUTION deletions route to an approval change request.
+                            // Reuse the edit-via-CR alert copy verbatim.
+                            setAlert({
+                                type: "success",
+                                heading: "Changes Sent to Approval",
+                                message:
+                                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement."
+                            });
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Budget Line Deleted",
+                                message: `The budget line ${budgetLineDisplayName} has been successfully deleted.`
+                            });
+                        }
                     })
                     .catch((rejected) => {
                         console.error("Error Deleting Budget Line");

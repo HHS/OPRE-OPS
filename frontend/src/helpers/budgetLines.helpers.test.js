@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import {
     BLI_STATUS,
     getBudgetLineCreatedDate,
@@ -6,6 +7,13 @@ import {
     hasBlIsInReview,
     hasAnyBliInSelectedStatus,
     groupByServicesComponent,
+    groupByGrantNumber,
+    findGrantPeriodStart,
+    findGrantPeriodEnd,
+    findGrantDescription,
+    findGrantee,
+    findGrantOrganizationType,
+    findGrantState,
     isBLIPermanent,
     canLabel,
     BLILabel,
@@ -14,7 +22,8 @@ import {
     getTooltipLabel,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel,
-    calculateProcShopFeePercentage
+    calculateProcShopFeePercentage,
+    handleExport
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -302,6 +311,72 @@ describe("groupByServicesComponent", () => {
         ]);
     });
 });
+describe("groupByGrantNumber", () => {
+    it("should group budget lines by grant number", () => {
+        const budgetLines = [
+            { id: 1, grant_number_number: 1 },
+            { id: 2, grant_number_number: 2 },
+            { id: 3, grant_number_number: 1 }
+        ];
+        const result = groupByGrantNumber(budgetLines);
+
+        expect(result).toEqual([
+            {
+                grantNumberNumber: 1,
+                budgetLines: [
+                    { id: 1, grant_number_number: 1 },
+                    { id: 3, grant_number_number: 1 }
+                ]
+            },
+            {
+                grantNumberNumber: 2,
+                budgetLines: [{ id: 2, grant_number_number: 2 }]
+            }
+        ]);
+    });
+
+    it("should resolve grant number by id when grant_number_number is missing", () => {
+        const budgetLines = [
+            { id: 1, grant_number_id: 10 },
+            { id: 2, grant_number_id: 20 },
+            { id: 3 } // no link -> unassociated bucket (0)
+        ];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [{ id: 1, grant_number_id: 10 }] },
+            { grantNumberNumber: 2, budgetLines: [{ id: 2, grant_number_id: 20 }] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 3 }] }
+        ]);
+    });
+
+    it("should include grant numbers without budget lines and keep the unassociated bucket last", () => {
+        const budgetLines = [{ id: 1, grant_number_number: 0 }];
+        const grantNumbers = [
+            { id: 10, number: 1 },
+            { id: 20, number: 2 }
+        ];
+        const result = groupByGrantNumber(budgetLines, grantNumbers);
+
+        expect(result).toEqual([
+            { grantNumberNumber: 1, budgetLines: [] },
+            { grantNumberNumber: 2, budgetLines: [] },
+            { grantNumberNumber: 0, budgetLines: [{ id: 1, grant_number_number: 0 }] }
+        ]);
+    });
+
+    it("should return an empty array if no budget lines are provided", () => {
+        expect(groupByGrantNumber([])).toEqual([]);
+    });
+
+    it("should return an empty array (not throw) for invalid input", () => {
+        expect(groupByGrantNumber(null)).toEqual([]);
+    });
+});
 describe("isBLIPermanent", () => {
     it("should return true if the budget line is permanent", () => {
         const result = isBLIPermanent(budgetLine);
@@ -413,13 +488,36 @@ describe("areAllBudgetLinesInReview helpers", () => {
 });
 
 describe("getTooltipLabel", () => {
-    it("returns the executing-status tooltip", () => {
+    it("prefers the backend-supplied lockedMessage when present", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.EXECUTING,
+            _meta: { lockedMessage: "This budget line can't be edited because the agreement has reached Pre-Award." }
+        });
+        expect(result).toBe("This budget line can't be edited because the agreement has reached Pre-Award.");
+    });
+    it("returns an empty string for an executing budget line with no lockedMessage (now editable)", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.EXECUTING });
-        expect(result).toBe("If you need to edit a budget line in Executing Status, please contact the budget team");
+        expect(result).toBe("");
     });
     it("returns the obligated-status tooltip", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED });
         expect(result).toBe("Obligated budget lines cannot be edited");
+    });
+    it("returns the OBE tooltip", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.PLANNED, is_obe: true });
+        expect(result).toBe("Budget lines that are overcome by events (OBE) cannot be edited");
+    });
+    it("gives lockedMessage precedence over the OBLIGATED branch", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED, _meta: { lockedMessage: "Locked X" } });
+        expect(result).toBe("Locked X");
+    });
+    it("gives lockedMessage precedence over the OBE branch", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.PLANNED,
+            is_obe: true,
+            _meta: { lockedMessage: "Locked Y" }
+        });
+        expect(result).toBe("Locked Y");
     });
     it("returns an empty string for any other status", () => {
         const result = getTooltipLabel({ status: "SOMETHING_ELSE" });
@@ -633,5 +731,209 @@ describe("calculateProcShopFeePercentage", () => {
     it("returns 0 when agreement is null", () => {
         const bli = { procurement_shop_fee: null, agreement: null };
         expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+});
+
+describe("findGrantPeriodStart / findGrantPeriodEnd / findGrantDescription", () => {
+    const grantNumbers = [
+        { number: 1, period_start: "2026-01-01", period_end: "2026-12-31", description: "First grant" },
+        { number: 2, period_start: "2027-01-01", period_end: "2027-12-31", description: "Second grant" },
+        { number: 3, period_start: null, period_end: null, description: null }
+    ];
+
+    describe("findGrantPeriodStart", () => {
+        it("returns period_start for a matching grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 1)).toBe("2026-01-01");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodStart(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodStart(null, 1)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is undefined", () => {
+            expect(findGrantPeriodStart(undefined, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when period_start is null on the matched grant", () => {
+            expect(findGrantPeriodStart(grantNumbers, 3)).toBeNull();
+        });
+
+        it("returns undefined for the unassociated bucket (number 0)", () => {
+            expect(findGrantPeriodStart(grantNumbers, 0)).toBeUndefined();
+        });
+
+        it("resolves a string grouping key against a numeric grant number", () => {
+            // Grouping keys (grant_number_number) can arrive as strings from editor/form state
+            // while GrantNumber.number is numeric; the lookup must still resolve.
+            expect(findGrantPeriodStart(grantNumbers, "1")).toBe("2026-01-01");
+        });
+    });
+
+    describe("findGrantPeriodEnd", () => {
+        it("returns period_end for a matching grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 2)).toBe("2027-12-31");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantPeriodEnd(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantPeriodEnd(null, 1)).toBeUndefined();
+        });
+    });
+
+    describe("findGrantDescription", () => {
+        it("returns description for a matching grant number", () => {
+            expect(findGrantDescription(grantNumbers, 1)).toBe("First grant");
+        });
+
+        it("returns undefined for an unknown grant number", () => {
+            expect(findGrantDescription(grantNumbers, 99)).toBeUndefined();
+        });
+
+        it("returns undefined when grantNumbers is null", () => {
+            expect(findGrantDescription(null, 1)).toBeUndefined();
+        });
+
+        it("returns null (not undefined) when description is null on the matched grant", () => {
+            expect(findGrantDescription(grantNumbers, 3)).toBeNull();
+        });
+    });
+});
+
+describe("findGrantee / findGrantOrganizationType / findGrantState", () => {
+    // Award-time fields. Present on grant 1, absent on grant 2 (the common case today, where the
+    // backend does not yet serialize them), so the caller falls back to "TBD" for grant 2.
+    const grantNumbers = [
+        { number: 1, grantee_name: "University of Example", organization_type: "Educational Institution", state: "NY" },
+        { number: 2 }
+    ];
+
+    it("returns the grantee name when present", () => {
+        expect(findGrantee(grantNumbers, 1)).toBe("University of Example");
+    });
+
+    it("returns the organization type when present", () => {
+        expect(findGrantOrganizationType(grantNumbers, 1)).toBe("Educational Institution");
+    });
+
+    it("returns the state when present", () => {
+        expect(findGrantState(grantNumbers, 1)).toBe("NY");
+    });
+
+    it("returns undefined when the field is absent on the matched grant", () => {
+        expect(findGrantee(grantNumbers, 2)).toBeUndefined();
+        expect(findGrantOrganizationType(grantNumbers, 2)).toBeUndefined();
+        expect(findGrantState(grantNumbers, 2)).toBeUndefined();
+    });
+
+    it("returns undefined for an unknown grant number", () => {
+        expect(findGrantee(grantNumbers, 99)).toBeUndefined();
+        expect(findGrantOrganizationType(grantNumbers, 99)).toBeUndefined();
+        expect(findGrantState(grantNumbers, 99)).toBeUndefined();
+    });
+
+    it("returns undefined when grantNumbers is null", () => {
+        expect(findGrantee(null, 1)).toBeUndefined();
+        expect(findGrantOrganizationType(null, 1)).toBeUndefined();
+        expect(findGrantState(null, 1)).toBeUndefined();
+    });
+});
+
+describe("handleExport", () => {
+    /** Build a minimal fetched BLI shaped like the export's paginated response. */
+    const makeBli = (overrides = {}) => ({
+        id: 100,
+        status: "PLANNED",
+        services_component_id: 1,
+        portfolio_id: 1,
+        fiscal_year: 2044,
+        amount: 1000,
+        fees: 50,
+        proc_shop_fee_percentage: 5,
+        line_description: "desc",
+        comments: "note",
+        in_review: false,
+        date_needed: "2044-06-01",
+        can: { display_name: "CAN-1" },
+        clin: { id: 9, number: 42 },
+        agreement: {
+            name: "Agreement 1",
+            agreement_type: "CONTRACT",
+            project: { title: "Project 1", project_type: "RESEARCH" },
+            procurement_shop: { abbr: "GCS" }
+        },
+        ...overrides
+    });
+
+    /** Run handleExport with mocked triggers and return the object passed to exportTableToXlsx. */
+    const runExport = async (fetchedBlis, includeClin) => {
+        const exportTableToXlsx = vi.fn().mockResolvedValue(undefined);
+        const setIsExporting = vi.fn();
+        const budgetLineTrigger = vi.fn(() => Promise.resolve({ data: fetchedBlis }));
+        const serviceComponentTrigger = vi.fn((id) => ({
+            unwrap: () => Promise.resolve({ id, display_name: `SC ${id}` })
+        }));
+        const portfolioTrigger = vi.fn((id) => ({
+            unwrap: () => Promise.resolve({ id, name: `Portfolio ${id}` })
+        }));
+
+        await handleExport(
+            exportTableToXlsx,
+            setIsExporting,
+            { agreementIds: [1] },
+            fetchedBlis,
+            budgetLineTrigger,
+            serviceComponentTrigger,
+            portfolioTrigger,
+            fetchedBlis.length,
+            includeClin
+        );
+
+        expect(exportTableToXlsx).toHaveBeenCalledTimes(1);
+        return exportTableToXlsx.mock.calls[0][0];
+    };
+
+    it("omits the CLIN column and uses currencyColumns [11, 13] by default", async () => {
+        const args = await runExport([makeBli()], false);
+
+        expect(args.headers).not.toContain("CLIN");
+        expect(args.currencyColumns).toEqual([11, 13]);
+        // SubTotal / Procurement shop fee sit at the unshifted indices.
+        expect(args.headers[11]).toBe("SubTotal");
+        expect(args.headers[13]).toBe("Procurement shop fee");
+    });
+
+    it("inserts the CLIN column after SC and shifts currencyColumns to [12, 14] when includeClin is true", async () => {
+        const args = await runExport([makeBli()], true);
+
+        expect(args.headers[5]).toBe("SC");
+        expect(args.headers[6]).toBe("CLIN");
+        expect(args.currencyColumns).toEqual([12, 14]);
+        expect(args.headers[12]).toBe("SubTotal");
+        expect(args.headers[14]).toBe("Procurement shop fee");
+    });
+
+    it("exports 'N/A' in the CLIN column for a DRAFT budget line", async () => {
+        const args = await runExport([makeBli({ status: "DRAFT" })], true);
+        const row = args.rowMapper(makeBli({ status: "DRAFT" }));
+        expect(row[6]).toBe("N/A");
+    });
+
+    it("exports the CLIN number for a non-DRAFT budget line with an assigned CLIN", async () => {
+        const args = await runExport([makeBli()], true);
+        const row = args.rowMapper(makeBli({ clin: { id: 9, number: 42 } }));
+        expect(row[6]).toBe(42);
+    });
+
+    it("exports 'TBD' for a non-DRAFT budget line with no CLIN", async () => {
+        const args = await runExport([makeBli()], true);
+        const row = args.rowMapper(makeBli({ clin: null }));
+        expect(row[6]).toBe("TBD");
     });
 });

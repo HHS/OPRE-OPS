@@ -1,6 +1,7 @@
 import AgreementBLIAccordion from "../../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../../components/GrantNumbers/GrantNumberAccordion";
 import ReviewExecutingTotalAccordion from "../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import {
     findDescription,
@@ -8,6 +9,11 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../../helpers/servicesComponent.helpers";
+import {
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../../helpers/budgetLines.helpers";
 import { VALIDATABLE_BLI_STATUSES } from "../constants";
 
 /**
@@ -16,6 +22,7 @@ import { VALIDATABLE_BLI_STATUSES } from "../constants";
  * @property {any} agreement - The agreement object
  * @property {any[]} servicesComponents - Services components for the agreement
  * @property {any[]} groupedBudgetLines - Budget lines grouped by services component
+ * @property {number} [totalGrantNumbers] - Total count of grant numbers on the agreement (grants only)
  * @property {number} executingTotal - Total of executing budget lines
  * @property {boolean} [showCLINColumn] - Whether to show CLIN number column in the BLI table
  * @property {string} [executingTotalInstructions] - Override instructions for the Review Executing Total section
@@ -38,11 +45,13 @@ export const BudgetLinesReviewAccordion = ({
     agreement,
     servicesComponents,
     groupedBudgetLines,
+    totalGrantNumbers,
     executingTotal,
     showCLINColumn = false,
     executingTotalInstructions = undefined,
     showBudgetLineErrors = false
 }) => {
+    const isGrant = agreement?.agreement_type === "GRANT";
     return (
         <>
             {/* Budget Lines Review */}
@@ -60,10 +69,52 @@ export const BudgetLinesReviewAccordion = ({
                     groupedBudgetLines
                         .filter(
                             (group) =>
-                                // Hide "BLs not associated with a Services Component" when empty
-                                group.serviceComponentGroupingLabel !== "0" || group.budgetLines.length > 0
+                                // Hide the "not associated" bucket (SC or grant number) when empty
+                                (isGrant
+                                    ? String(group.grantNumberNumber) !== "0"
+                                    : group.serviceComponentGroupingLabel !== "0") || group.budgetLines.length > 0
                         )
                         .map((/** @type {any} */ group, /** @type {number} */ index) => {
+                            if (isGrant) {
+                                return (
+                                    <GrantNumberAccordion
+                                        key={`${group.grantNumberNumber}-${index}`}
+                                        grantNumberNumber={group.grantNumberNumber}
+                                        totalGrantNumbers={totalGrantNumbers}
+                                        withMetadata={true}
+                                        periodStart={findGrantPeriodStart(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        periodEnd={findGrantPeriodEnd(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                        description={findGrantDescription(
+                                            agreement?.grant_numbers,
+                                            group.grantNumberNumber
+                                        )}
+                                    >
+                                        {group.budgetLines.length > 0 ? (
+                                            <AgreementBLIReviewTable
+                                                readOnly={true}
+                                                budgetLines={group.budgetLines}
+                                                isReviewMode={true}
+                                                servicesComponentNumber={group.grantNumberNumber}
+                                                action=""
+                                                clin={{ showColumn: showCLINColumn }}
+                                                errorStatuses={
+                                                    showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            <p className="text-center margin-y-7">
+                                                No budget lines in this grant number.
+                                            </p>
+                                        )}
+                                    </GrantNumberAccordion>
+                                );
+                            }
                             const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                                 ? group.serviceComponentGroupingLabel
                                 : group.servicesComponentNumber;
@@ -86,7 +137,7 @@ export const BudgetLinesReviewAccordion = ({
                                             isReviewMode={true}
                                             servicesComponentNumber={group.servicesComponentNumber}
                                             action=""
-                                            showCLINColumn={showCLINColumn}
+                                            clin={{ showColumn: showCLINColumn }}
                                             errorStatuses={showBudgetLineErrors ? VALIDATABLE_BLI_STATUSES : undefined}
                                         />
                                     ) : (

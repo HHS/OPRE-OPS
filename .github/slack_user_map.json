@@ -1,0 +1,11 @@
+{
+    "_comment": "Map GitHub usernames (lowercase) to Slack member IDs, used by slack_mention_notify.yml to turn @github-mentions into real Slack pings. Find a Slack member ID via a user's profile > More (kebab menu) > Copy member ID.",
+    "rajohnson90": "U070RCWHMCL",
+    "weimiao67": "U04P2UN6N0K",
+    "josbell": "U02D0HFJ725",
+    "santi-3rd": "U074V0UH1D4",
+    "jonnalley": "U02FKHMF2GN",
+    "npage123": "U02933CUQ",
+    "kimschulke": "U013RKN5CEN",
+    "andressacurvelo": "U03U61WS6Q0"
+}

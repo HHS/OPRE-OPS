@@ -65,6 +65,9 @@ vi.mock("../../../components/UI/Modals/ConfirmationModal", () => ({
     __esModule: true,
     default: () => <div data-testid="confirmation-modal" />
 }));
+vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
+    SaveChangesAndExitModal: ({ heading }) => <div data-testid="save-changes-modal">{heading}</div>
+}));
 vi.mock("../../../components/UI/PageHeader", () => ({
     __esModule: true,
     default: ({ title, subTitle }) => (
@@ -107,6 +110,9 @@ const baseHookResult = () => ({
     setNotes: vi.fn(),
     setShowModal: vi.fn(),
     showModal: false,
+    showBlockerModal: false,
+    setShowBlockerModal: vi.fn(),
+    blockerModalProps: {},
     statusChangeTo: "IN_EXECUTION",
     statusForTitle: "- Executing",
     title: "Approval for Status Change - Executing",
@@ -192,5 +198,26 @@ describe("ApproveAgreement", () => {
         expect(handleApproveChangeRequests).toHaveBeenCalledTimes(2);
         expect(handleApproveChangeRequests.mock.calls[0][0]).toBe("REJECT");
         expect(handleApproveChangeRequests.mock.calls[1][0]).toBe("APPROVE");
+    });
+
+    it("shows navigate-away modal with correct heading when showBlockerModal is true", () => {
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            showBlockerModal: true,
+            blockerModalProps: {
+                heading: "Save changes before leaving?",
+                description:
+                    "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+                actionButtonText: "Go back",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: vi.fn(),
+                handleSecondary: vi.fn(),
+                closeModal: vi.fn()
+            }
+        });
+        renderWithRouter();
+
+        expect(screen.getByTestId("save-changes-modal")).toBeInTheDocument();
+        expect(screen.getByText("Save changes before leaving?")).toBeInTheDocument();
     });
 });

@@ -1,6 +1,7 @@
 """Service for procurement tracker step operations."""
 
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
@@ -25,6 +26,7 @@ from models import (
     User,
 )
 from models.budget_line_items import BudgetLineItemStatus
+from models.procurement_workflow import AWARD_APPROVED_STATUS
 from models.utils import generate_events_update
 from ops_api.ops.services.notification_constants import AwardNotificationTitle, PreAwardNotificationTitle
 from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -214,6 +216,11 @@ class ProcurementTrackerStepService:
                 "contract_number": "award_contract_number",
                 "award_amount": "award_amount",
                 "award_date": "award_date",
+                # OPS-5892: additional award fields
+                "agreement_title": "award_agreement_title",
+                "modification_number": "award_modification_number",
+                "purchase_order_number": "award_purchase_order_number",
+                "task_order_number": "award_task_order_number",
             },
         }
 
@@ -388,16 +395,22 @@ class ProcurementTrackerStepService:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
                     if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
                         # Only mark AWARDED on step completion if Budget Team has already approved
-                        # (award_approval_status == "APPROVED"). If approval is still pending,
+                        # (award_approval_status == AWARD_APPROVED_STATUS). If approval is still pending,
                         # the agreement will be awarded when Budget Team approves via _handle_award_approval.
                         if procurement_action.status == ProcurementActionStatus.AWARDED:
                             logger.debug(
                                 "Procurement action already AWARDED by budget team approval — skipping on step completion"
                             )
                         elif (
-                            isinstance(step, DefaultProcurementTrackerStep) and step.award_approval_status == "APPROVED"
+                            isinstance(step, DefaultProcurementTrackerStep)
+                            and step.award_approval_status == AWARD_APPROVED_STATUS
                         ):
                             procurement_action.status = ProcurementActionStatus.AWARDED
+                            # Normally unreachable: award approval (_handle_award_approval) already sets
+                            # status=AWARDED and date_awarded_obligated together, so the AWARDED guard above
+                            # short-circuits this branch. This only fires in a legacy/edge ordering where
+                            # approval_status is APPROVED but the action was never marked AWARDED and no date
+                            # was recorded — fall back to today so the action is not left without a date.
                             if procurement_action.date_awarded_obligated is None:
                                 procurement_action.date_awarded_obligated = date.today()
                                 logger.debug(
@@ -1004,48 +1017,148 @@ class ProcurementTrackerStepService:
 
         return list(self.db_session.scalars(stmt).all())
 
+    @staticmethod
+    def _apply_proposed_agreement_title(step, agreement):
+        """Apply the proposed agreement title (entered during the award request) to the agreement.
+
+        Called on award approval, after which edits to the name through the agreement service are
+        blocked by awarded-agreement immutability (OPS-5892).
+
+        This writes ``agreement.name`` directly rather than going through ``AgreementsService.update()``
+        on purpose:
+
+        - It must land in the same transaction as the rest of the approval (BLI transitions,
+          ProcurementAction status). ``AgreementsService.update()`` commits, which would split the
+          approval into two commits and leave a partially-approved state reachable on failure.
+        - ``AgreementsService.update()`` expects a full agreement update payload (including
+          ``agreement_cls``) and runs the whole AgreementValidator, so an unrelated pre-existing
+          agreement-level validation failure would block a valid award approval.
+        - ``ContractAgreement.immutable_awarded_fields`` includes ``name``, but
+          ``ImmutableAwardedFieldsRule`` is only registered on the AgreementsService update path and
+          not in the Step 6 validator chain, so nothing rejects this write. Do not assume ordering
+          protects it: a single PATCH carrying both ``status: COMPLETED`` and
+          ``approval_status: APPROVED`` runs ``_advance_active_step_if_needed`` first, which can
+          already have marked the ProcurementAction AWARDED — so ``agreement.is_awarded`` may be
+          True by the time this runs. The name is the field the COR is being asked to finalize at
+          this step, so it has to stay writable here; routing this through
+          ``AgreementsService.update()`` would start getting it rejected. Pinned by
+          test_step_6_proposed_agreement_title.py::test_name_is_written_even_though_it_is_an_immutable_awarded_field.
+
+        Row-level auditing is unaffected — ``OpsDBHistory`` tracks the change via SQLAlchemy events.
+        """
+        proposed_title = getattr(step, "award_agreement_title", None)
+        if proposed_title and proposed_title.strip():
+            agreement.name = proposed_title.strip()
+            logger.debug(f"Applied proposed award title to agreement {agreement.id} via award approval")
+
+    # Numeric(12, 2) → 10 integer digits. BudgetLineItem.amount is itself Numeric(12, 2),
+    # so a handful of large lines can exceed the column. Exceeding it must cost us the
+    # snapshot, never the award (see _snapshot_agreement_total).
+    _AGREEMENT_TOTAL_MAX = Decimal("9999999999.99")
+
+    @staticmethod
+    def _snapshot_agreement_total(procurement_action: ProcurementAction, agreement: Agreement) -> None:
+        """
+        Capture the agreement's dollar total onto the procurement action, once.
+
+        Write-once by design: a point-in-time snapshot of every non-DRAFT budget line
+        (amount + fees) at the moment of award, surfaced as "Contract Total" on the
+        Awards & Modifications tab. Never recomputed — later BLI edits must not
+        retroactively change what was awarded.
+
+        Note the deliberate name collision: Agreement.agreement_total is the *live*
+        computed property; ProcurementAction.agreement_total is this frozen snapshot.
+        """
+        if procurement_action.agreement_total is not None:
+            logger.debug(
+                f"ProcurementAction {procurement_action.id} already has agreement_total "
+                f"{procurement_action.agreement_total} — leaving the existing snapshot untouched"
+            )
+            return
+
+        # Quantize explicitly rather than letting Numeric(12, 2) round implicitly on INSERT:
+        # BudgetLineItem.fees is (fee_rate / 100) * amount, which routinely yields sub-cent
+        # values (e.g. 4.8% of $1,000.33 = $48.01584), so the raw sum can carry 4+ decimals.
+        total = agreement.agreement_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # A zero snapshot is indistinguishable to a reader from "we know it was $0", and
+        # formatCurrency renders it "$0". Leaving NULL keeps the field honest ("TBD") and,
+        # critically, still correctable — write-once would otherwise make $0 permanent.
+        if total == 0:
+            logger.warning(
+                f"Agreement {agreement.id} has a zero non-DRAFT total at award; "
+                f"leaving ProcurementAction {procurement_action.id}.agreement_total NULL"
+            )
+            return
+
+        # Overflow must not abort the award. db_session.commit() covers the whole award
+        # transaction (BLI obligations, status, date, notifications), and the resource's
+        # patch has no try/except — so a DataError here would roll ALL of that back and
+        # return a 500, silently un-awarding the agreement.
+        if total > ProcurementTrackerStepService._AGREEMENT_TOTAL_MAX:
+            logger.error(
+                f"agreement_total {total} exceeds Numeric(12, 2) for ProcurementAction "
+                f"{procurement_action.id}; skipping snapshot to protect the award transaction"
+            )
+            return
+
+        procurement_action.agreement_total = total
+        logger.debug(f"Snapshotted agreement_total {total} onto ProcurementAction {procurement_action.id}")
+
     def _handle_award_approval(self, step, approval_status, obligated_date, current_user):
         """
         Apply BLI transitions and mark procurement action AWARDED when award is approved.
 
-        When approval_status == "APPROVED":
-        - IN_EXECUTION BLIs → OBLIGATED (and set date_needed to obligated_date if provided)
-        - PLANNED BLIs → PLANNED_MOD
+        When approval_status == AWARD_APPROVED_STATUS:
+        - IN_EXECUTION BLIs → OBLIGATED (date_needed set to the provided obligated_date)
         - Sets procurement_action.date_awarded_obligated if not already set
         - Marks procurement_action status as AWARDED
 
         Args:
             step: The ProcurementTrackerStep being updated
             approval_status: The new award approval status string
-            obligated_date: Optional date to set on IN_EXECUTION BLIs
+            obligated_date: Date to set on IN_EXECUTION BLIs. Required on approval
+                (enforced by AwardApprovalObligatedDateRequiredRule); never defaulted to today.
             current_user: User making the update
         """
-        if approval_status != "APPROVED":
+        if approval_status != AWARD_APPROVED_STATUS:
             return
 
+        # The obligated date is required on award approval (enforced by
+        # AwardApprovalObligatedDateRequiredRule) and must never be assumed to be today —
+        # it is generally first documented in another system.
         agreement = step.procurement_tracker.agreement
+
+        # OPS-5892: apply the proposed agreement title exactly at approval.
+        self._apply_proposed_agreement_title(step, agreement)
+
         for bli in agreement.budget_line_items:
             if bli.status == BudgetLineItemStatus.IN_EXECUTION:
                 bli.status = BudgetLineItemStatus.OBLIGATED
+                # Defense-in-depth: the validator guarantees obligated_date on the production
+                # path, but guard here so a direct/internal call with None never nulls date_needed.
                 if obligated_date is not None:
                     bli.date_needed = obligated_date
                 logger.debug(f"Transitioned BLI {bli.id} IN_EXECUTION → OBLIGATED")
-            elif bli.status == BudgetLineItemStatus.PLANNED:
-                bli.status = BudgetLineItemStatus.PLANNED_MOD
-                logger.debug(f"Transitioned BLI {bli.id} PLANNED → PLANNED_MOD")
 
         # Set procurement action date and status — only for NEW_AWARD actions
         # (consistent with _advance_active_step_if_needed which gates on NEW_AWARD)
         if step.procurement_tracker.procurement_action:
             procurement_action = self.db_session.get(ProcurementAction, step.procurement_tracker.procurement_action)
             if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
-                if procurement_action.date_awarded_obligated is None:
-                    procurement_action.date_awarded_obligated = obligated_date or date.today()
-                    logger.debug(
-                        f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
-                    )
-                procurement_action.status = ProcurementActionStatus.AWARDED
-                logger.debug("Marked procurement action as AWARDED via award approval")
+                # Require an obligated_date before marking AWARDED — an action must never be
+                # AWARDED without a recorded obligation date. The production path is guarded by
+                # AwardApprovalObligatedDateRequiredRule; this couples the service method
+                # itself so direct/internal callers cannot produce an inconsistent state.
+                if obligated_date is not None:
+                    if procurement_action.date_awarded_obligated is None:
+                        procurement_action.date_awarded_obligated = obligated_date
+                        logger.debug(
+                            f"Set date_awarded_obligated to {procurement_action.date_awarded_obligated} via award approval"
+                        )
+                    procurement_action.status = ProcurementActionStatus.AWARDED
+                    logger.debug("Marked procurement action as AWARDED via award approval")
+                    self._snapshot_agreement_total(procurement_action, agreement)
 
     def _handle_award_approval_notifications(
         self,
@@ -1105,7 +1218,7 @@ class ProcurementTrackerStepService:
 
         # Case 2: Award was approved — notify requester + broader team
         new_award_status = data.get("approval_status")
-        award_approved_transitioned = new_award_status == "APPROVED" and old_award_approval_status in (
+        award_approved_transitioned = new_award_status == AWARD_APPROVED_STATUS and old_award_approval_status in (
             None,
             "PENDING",
         )

@@ -11,6 +11,14 @@ export const data = [
         `
     },
     {
+        heading: "Agreement Title",
+        content: `The formal or official title of an agreement which should match the signed award exactly`
+    },
+    {
+        heading: "Agreement Nickname",
+        content: `The more user-friendly version of the agreement title. An internal nickname or acronym mostly commonly used by staff`
+    },
+    {
         heading: "Appropriation",
         content: `The fiscal year in which money was appropriated to OPRE from Congress`
     },
@@ -31,7 +39,6 @@ export const data = [
 - Executing - BL is in the procurement process, in progress to be formally committed
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
-- Overcome By Events - BL is overcome by events and it is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from the CAN or Portfolio Budget
       `
     },
     {
@@ -40,7 +47,7 @@ export const data = [
     },
     {
         heading: "CLIN",
-        content: `Contract Line Item Number which aligns Budget Lines to line items in an awarded contract. They are used as a reference point between the Procurement Shop and OPRE.`
+        content: `Contract Line Item Number, which aligns Budget Lines to line items in an awarded contract. They are used as a reference point between the Procurement Shop and OPRE.`
     },
     {
         heading: "First Award",
@@ -90,7 +97,7 @@ export const data = [
     },
     {
         heading: "OBE",
-        content: `Budget line is “overcome by events” and is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from any CANs`
+        content: `Budget line is “overcome by events” and is no longer happening. The budget line amount is still included in the agreement total, but not subtracted from any CANs.`
     },
     {
         heading: "Optional Services Component (OSC)",
@@ -106,24 +113,7 @@ export const data = [
     },
     {
         heading: "Portfolio",
-        content: `A Portfolio of work at OPRE, typically grouped by research focus area and/or funding stream. These are the current portfolios in OPS:
-
-- Portfolios within the Office of the Director
-- OD
-- Non-OPRE
-- Portfolios within the Division of Child & Family Development
-- Child Welfare Research
-- Head Start Research
-- Child Care Research
-- Portfolios within the Division of Economic Independence
-- Welfare Research
-- Portfolios within the Division of Family Strengthening
-- Adolescent Development Research
-- Healthy Marriage and Responsible Fatherhood Research
-- Home Visiting Research
-- Portfolios within the Office of Chief Data Officer
-- [not yet developed, coming soon]
-      `
+        content: `A Portfolio of work at OPRE, typically grouped by research focus area and/or funding stream.`
     },
     {
         heading: "Project",
@@ -141,7 +131,7 @@ export const data = [
         content: `Services Components - Describe detailed work outlined in an agreement. All Services Components have a Period of Performance (start and end date) that describes when the work will be completed. There are two types of SC formats: Non-Severable and Severable.`
     },
     {
-        heading: "Spending ",
+        heading: "Spending",
         content: `The sum of Budget Lines in Planned, Executing, and Obligated Status`
     },
     {
@@ -167,6 +157,10 @@ export const data = [
     {
         heading: "Cost Plus Award Fee (CPAW)",
         content: `A contract type utilized when a contract pays the contractor back for their costs and includes extra money as a reward based on how well they perform. The better the job they do—like staying on schedule, doing quality work, and managing costs—the more of the reward they can earn.`
+    },
+    {
+        heading: "Division",
+        content: `Divisions in OPS represent organizational hierarchy and workflows. Divisions are assigned ownership to any agreements using their Portfolios CANs. Divisions are focused on workflow management whereas Portfolios are focused on funding.`
     },
     {
         heading: "Service Requirement Type",
@@ -204,7 +198,7 @@ export const data = [
         heading: "Procurement Shop",
         content: `A department or team within the government responsible for acquiring goods and services. In OPS, the Procurement Shops used by OPRE are:
 
-- Office of Mission Acquisition Solutions (OMAS), formerly known as Program Support Center (PSC)
+- Office of Acquisition Management Services (OAMS), formerly known as Program Support Center (PSC)
 - Government Contracting Services (GCS)
 - National Institute of Health (NIH)
 - Interior Business Center (IBC)
@@ -215,7 +209,7 @@ export const data = [
         content: `Houses the financial systems of record for ACF.  All financial transactions go through the PSC Financial Branch, and UFM (Unified Financial Management System).`
     },
     {
-        heading: "Office of Mission Acquisition Solutions (OMAS)",
+        heading: "Office of Acquisition Management Services (OAMS)",
         content: `A procurement office that resides in ACF and is a main contracting office supporting OPRE. A procurement shop formerly known as Program Support Center (PSC Contract Shop).`
     },
     {
@@ -331,7 +325,7 @@ export const data = [
     },
     {
         heading: "Continuing Agreement",
-        content: `An Agreement that is awarded and continuing on into the next fiscal year after its award`
+        content: `An Agreement that is awarded and continuing on into the next fiscal year after its award.`
     },
     {
         heading: "New Agreement",

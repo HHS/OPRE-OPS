@@ -30,7 +30,7 @@ describe("Procurement Tracker Read-Only View for Procurement Team Role", () => {
         cy.get(".usa-checkbox__input").should("not.exist");
         cy.get("#users-combobox-input").should("not.exist");
         cy.get("#step-1-date-completed").should("not.exist");
-        cy.get("#notes").should("not.exist");
+        cy.get("#notes-step-1").should("not.exist");
         cy.get('[data-cy="cancel-button"]').should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("not.exist");
 
@@ -49,7 +49,7 @@ describe("Procurement Tracker Read-Only View for Procurement Team Role", () => {
         cy.get(".usa-checkbox__input").should("not.exist");
         cy.get("#users-combobox-input").should("not.exist");
         cy.get("#step-2-date-completed").should("not.exist");
-        cy.get("#notes").should("not.exist");
+        cy.get("#notes-step-2").should("not.exist");
         cy.get('[data-cy="cancel-button"]').should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("not.exist");
 
@@ -70,7 +70,7 @@ describe("Procurement Tracker Read-Only View for Procurement Team Role", () => {
         cy.get(".usa-checkbox__input").should("not.exist");
         cy.get("#users-combobox-input").should("not.exist");
         cy.get("#step-3-date-completed").should("not.exist");
-        cy.get("#notes").should("not.exist");
+        cy.get("#notes-step-3").should("not.exist");
         cy.get('[data-cy="cancel-button"]').should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("not.exist");
 
@@ -91,7 +91,7 @@ describe("Procurement Tracker Read-Only View for Procurement Team Role", () => {
         cy.get(".usa-checkbox__input").should("not.exist");
         cy.get("#users-combobox-input").should("not.exist");
         cy.get("#step-4-date-completed").should("not.exist");
-        cy.get("#notes").should("not.exist");
+        cy.get("#notes-step-4").should("not.exist");
         cy.get('[data-cy="cancel-button"]').should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("not.exist");
 
@@ -111,7 +111,7 @@ describe("Procurement Tracker Read-Only View for Procurement Team Role", () => {
         cy.get(".usa-checkbox__input").should("not.exist");
         cy.get("#users-combobox-input").should("not.exist");
         cy.get("#step-5-date-completed").should("not.exist");
-        cy.get("#notes").should("not.exist");
+        cy.get("#notes-step-5").should("not.exist");
         cy.get('[data-cy="cancel-button"]').should("not.exist");
         cy.get('[data-cy="continue-btn"]').should("not.exist");
 

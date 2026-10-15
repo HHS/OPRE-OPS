@@ -41,14 +41,17 @@ vi.mock("./CANFilterTags", () => ({
 
 vi.mock("./CANFiscalYearSelect", () => ({
     default: ({ fiscalYear, setSelectedFiscalYear }) => (
-        <select
-            data-testid="can-fiscal-year-select"
-            value={fiscalYear}
-            onChange={(e) => setSelectedFiscalYear(e.target.value)}
-        >
-            <option value={fiscalYear}>{fiscalYear}</option>
-            <option value="All">All</option>
-        </select>
+        <>
+            <select
+                data-testid="can-fiscal-year-select"
+                value={fiscalYear}
+                onChange={(e) => setSelectedFiscalYear(e.target.value)}
+            >
+                {fiscalYear !== "All" && <option value={fiscalYear}>{fiscalYear}</option>}
+                <option value="All">All</option>
+            </select>
+            <span data-testid="can-fiscal-year-value">{String(fiscalYear)}</span>
+        </>
     )
 }));
 
@@ -140,6 +143,10 @@ describe("CanList", () => {
         // Change fiscal year to "All"
         const fiscalYearSelect = screen.getByTestId("can-fiscal-year-select");
         await user.selectOptions(fiscalYearSelect, "All");
+
+        // The dropdown must display the active selection, not the numeric fiscalYear prop
+        // (which is undefined for "All") — CanList.jsx passes selectedFiscalYear.
+        await waitFor(() => expect(screen.getByTestId("can-fiscal-year-value")).toHaveTextContent("All"));
 
         // Wait for the component to re-render with new params
         await waitFor(() => {

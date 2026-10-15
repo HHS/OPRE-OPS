@@ -19,7 +19,9 @@ describe("sessionUISlice — navContext", () => {
         expect(state.navContext.trail).toBeNull();
         expect(state.listFilters.agreements.filters).toEqual(listFilterDefaults.agreements.filters);
         expect(state.listFilters.cans.selectedFiscalYear).toEqual(listFilterDefaults.cans.selectedFiscalYear);
-        expect(state.listFilters.budgetLines).not.toHaveProperty("selectedFiscalYear");
+        expect(state.listFilters.budgetLines.selectedFiscalYear).toBe("All");
+        expect(state.listFilters.agreements.selectedFiscalYear).toBe("All");
+        expect(state.listFilters.projects.selectedFiscalYear).toBe("All");
         expect(state.listFilters.procurementDashboard).not.toHaveProperty("selectedFiscalYear");
     });
 

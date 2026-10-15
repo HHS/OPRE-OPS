@@ -77,6 +77,8 @@ export const opsApi = createApi({
         "ResearchMethodologies",
         "SpecialTopics",
         "ServicesComponents",
+        "GrantNumbers",
+        "ProductServiceCodes",
         "ChangeRequests",
         "Divisions",
         "Documents",
@@ -96,13 +98,15 @@ export const opsApi = createApi({
                     portfolio,
                     agreementName,
                     nickName,
+                    odn,
                     agreementType,
                     projectTitle,
                     contractNumber,
                     awardType,
                     awardingEntityId,
                     division,
-                    includeProcurement
+                    includeProcurement,
+                    includeBudgetLines = true
                 },
                 onlyMy,
                 sortConditions,
@@ -131,6 +135,9 @@ export const opsApi = createApi({
                 if (nickName) {
                     nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
+                if (odn) {
+                    odn.forEach((value) => queryParams.push(`odn=${encodeURIComponent(value)}`));
+                }
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
@@ -155,6 +162,9 @@ export const opsApi = createApi({
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
+                }
+                if (!includeBudgetLines) {
+                    queryParams.push("include_budget_lines=false");
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -433,6 +443,15 @@ export const opsApi = createApi({
             query: (id) => `/budget-line-items/${id}`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItemsBatch: builder.query({
+            query: ({ ids }) => ({
+                url: "/budget-line-items-batch/",
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: { ids }
+            }),
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -460,10 +479,14 @@ export const opsApi = createApi({
                 url: `/budget-line-items/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            // Surface the HTTP status so callers can distinguish an immediate delete (200) from a
+            // deletion routed to an approval change request (202, PLANNED/IN_EXECUTION).
+            transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
+        // NOTE: will fetch 50 agreements due to limit on backend
         getAgreementsByResearchProjectFilter: builder.query({
-            query: (id) => `/agreements/?project_id=${id}`,
+            query: (id) => `/agreements/?project_id=${id}&limit=${MAX_RESULTS_LIMIT}&offset=0`,
             transformResponse: (response) => {
                 if (Array.isArray(response)) return response;
                 if (response.data) return response.data;
@@ -512,7 +535,7 @@ export const opsApi = createApi({
             providesTags: ["Projects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, filters } = {}) => {
                 const queryParams = [];
 
                 // Add filter parameters if they exist and are not empty
@@ -555,21 +578,12 @@ export const opsApi = createApi({
                     }
                 }
 
-                // Legacy fiscal year parameter (when not using filters)
-                if (
-                    fiscalYear &&
-                    fiscalYear !== "All" &&
-                    (!filters || !filters.fiscalYear || filters.fiscalYear.length === 0)
-                ) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
-                }
-
                 if (sortConditions) {
                     queryParams.push(`sort_field=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
-                    // FY_TOTAL sort requires a fiscal year to sort by
-                    if (sortConditions === "FY_TOTAL" && fiscalYear && fiscalYear !== "All") {
-                        queryParams.push(`sort_fiscal_year=${fiscalYear}`);
+                    // FY_TOTAL sort requires a single resolved fiscal year to sort by
+                    if (sortConditions === "FY_TOTAL" && filters?.fiscalYear?.length === 1) {
+                        queryParams.push(`sort_fiscal_year=${filters.fiscalYear[0].id}`);
                     }
                 }
                 if (limit !== undefined && limit !== null) {
@@ -613,6 +627,11 @@ export const opsApi = createApi({
         getAgreementSpendingById: builder.query({
             query: (id) => `/agreements/${id}/spending/`,
             providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "BudgetLineItems"]
+        }),
+        getAgreementAwardHistoryById: builder.query({
+            query: (id) => `/agreements/${id}/award-history/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ProcurementTrackers"]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
@@ -723,10 +742,13 @@ export const opsApi = createApi({
             providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
-            query: ({ excludeReadOnlyUsers } = {}) => {
+            query: ({ excludeReadOnlyUsers, excludeSystemAdmin } = {}) => {
                 const queryParams = [];
                 if (excludeReadOnlyUsers) {
                     queryParams.push("exclude_read_only=true");
+                }
+                if (excludeSystemAdmin) {
+                    queryParams.push("exclude_system_admin=true");
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/users/${queryString}`;
@@ -1098,6 +1120,9 @@ export const opsApi = createApi({
         getAzureSasToken: builder.query({
             query: () => `/azure/sas-token`
         }),
+        getVersion: builder.query({
+            query: () => `/version/`
+        }),
         addServicesComponent: builder.mutation({
             query: (data) => {
                 return {
@@ -1134,6 +1159,43 @@ export const opsApi = createApi({
                 method: "DELETE"
             }),
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        addGrantNumber: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/grant-numbers/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
+        }),
+        updateGrantNumber: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/grant-numbers/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
+        }),
+        getGrantNumberById: builder.query({
+            query: (id) => `/grant-numbers/${id}`,
+            providesTags: ["GrantNumbers"]
+        }),
+        getGrantNumbersList: builder.query({
+            query: (agreementId) => `/grant-numbers/?agreement_id=${agreementId}`,
+            providesTags: ["GrantNumbers"]
+        }),
+        deleteGrantNumber: builder.mutation({
+            query: (id) => ({
+                url: `/grant-numbers/${id}`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ["GrantNumbers", "Agreements", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
             query: ({ userId, limit, offset }) => {
@@ -1273,7 +1335,7 @@ export const {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
-    useLazyGetBudgetLineItemQuery,
+    useLazyGetBudgetLineItemsBatchQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
@@ -1336,6 +1398,11 @@ export const {
     useLazyGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
+    useAddGrantNumberMutation,
+    useUpdateGrantNumberMutation,
+    useGetGrantNumberByIdQuery,
+    useGetGrantNumbersListQuery,
+    useDeleteGrantNumberMutation,
     useGetChangeRequestsListQuery,
     useUpdateChangeRequestMutation,
     useGetDivisionsQuery,
@@ -1346,11 +1413,13 @@ export const {
     useUpdateDocumentStatusMutation,
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
+    useGetAgreementAwardHistoryByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery,
-    useGetPendingAwardApprovalsQuery
+    useGetPendingAwardApprovalsQuery,
+    useGetVersionQuery
 } = opsApi;

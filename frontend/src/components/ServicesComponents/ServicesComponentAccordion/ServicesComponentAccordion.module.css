@@ -1,0 +1,18 @@
+.header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.name {
+    flex: 0 0 auto;
+}
+
+.description {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: normal;
+}

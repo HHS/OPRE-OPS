@@ -160,19 +160,19 @@ export function getChangeRequestsForTooltip(changeRequests, procurementShops, bu
         changeRequests.forEach((changeRequest) => {
             if (changeRequest?.requested_change_data?.amount) {
                 changeRequestsMessages.push(
-                    `Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                    `Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount) || "TBD"} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                 );
             }
             if (changeRequest?.requested_change_data?.date_needed) {
                 changeRequestsMessages.push(
-                    `Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                    `Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed) || "TBD"} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                 );
             }
             if (changeRequest?.requested_change_data?.can_id) {
                 let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
                 let canName = matchingCan?.display_name || "TBD";
 
-                changeRequestsMessages.push(`CAN: ${budgetLine.can?.display_name} to ${canName}`);
+                changeRequestsMessages.push(`CAN: ${budgetLine.can?.display_name || "TBD"} to ${canName}`);
             }
             if (changeRequest?.requested_change_data?.status) {
                 changeRequestsMessages.push(
@@ -232,19 +232,21 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
                     let bliId = `BL ${budgetLine.id}`;
                     if (changeRequest?.requested_change_data?.amount) {
                         changeRequestsMessages.add(
-                            `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                            `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount) || "TBD"} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                         );
                     }
                     if (changeRequest?.requested_change_data?.date_needed) {
                         changeRequestsMessages.add(
-                            `${bliId} Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                            `${bliId} Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed) || "TBD"} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                         );
                     }
                     if (changeRequest?.requested_change_data?.can_id) {
                         let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
                         let canName = matchingCan?.display_name || "TBD";
 
-                        changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can?.display_name} to ${canName}`);
+                        changeRequestsMessages.add(
+                            `${bliId} CAN: ${budgetLine.can?.display_name || "TBD"} to ${canName}`
+                        );
                     }
                     if (changeRequest?.requested_change_data?.status) {
                         changeRequestsMessages.add(
@@ -290,18 +292,18 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
             if (isBudgetChange) {
                 if (changeRequest?.requested_change_data?.amount) {
                     changeRequestsMessages.add(
-                        `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount) || "TBD"} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.date_needed) {
                     changeRequestsMessages.add(
-                        `${bliId} Obligate By Date: ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        `${bliId} Obligate By Date: ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed) || "TBD"} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.can_id) {
                     let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
                     let canName = matchingCan?.display_name || "TBD";
-                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can?.display_name} to ${canName}`);
+                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can?.display_name || "TBD"} to ${canName}`);
                 }
             }
             if (!isBudgetChange) {

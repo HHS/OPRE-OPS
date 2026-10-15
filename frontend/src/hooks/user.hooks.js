@@ -52,6 +52,11 @@ export const useIsUserSuperUser = () => {
     return useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 };
 
+export const useIsUserBudgetTeam = () => {
+    const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    return roles.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
+};
+
 export const useIsUserOnlyProcurementTeam = () => {
     const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     return roles.length === 1 && roles[0]?.name === USER_ROLES.PROCUREMENT_TEAM;
@@ -60,6 +65,19 @@ export const useIsUserOnlyProcurementTeam = () => {
 export const useIsUserReadOnly = () => {
     const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     return roles.some((role) => role?.name === USER_ROLES.READ_ONLY);
+};
+
+/**
+ * Read-only users can never edit, regardless of team-member association (`_meta.isEditable` is
+ * derived from team membership, not role, so it can't distinguish a read-only team member).
+ * `roles` is a list, so a user can hold READ_ONLY alongside SUPER_USER; superuser wins, matching
+ * every other editability check that composes with this hook.
+ * @returns {boolean} - True if the user's role permits editing (superuser or not read-only).
+ */
+export const useCanEditByRole = () => {
+    const isSuperUser = useIsUserSuperUser();
+    const isReadOnly = useIsUserReadOnly();
+    return isSuperUser || !isReadOnly;
 };
 
 export default useGetUserFullNameFromId;

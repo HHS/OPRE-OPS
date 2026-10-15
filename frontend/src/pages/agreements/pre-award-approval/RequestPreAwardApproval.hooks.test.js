@@ -1,13 +1,15 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setupStore } from "../../../store";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
+import { POP_RANGE_ERROR_KEY } from "./suite";
 
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetServicesComponentsListQuery: vi.fn(),
+    useGetGrantNumbersListQuery: vi.fn(() => ({ data: [] })),
     useGetDocumentsByAgreementIdQuery: vi.fn(),
     useGetProcurementTrackersByAgreementIdQuery: vi.fn(),
     useUpdateProcurementTrackerStepMutation: vi.fn(),
@@ -29,13 +31,16 @@ vi.mock("../../../helpers/budgetLines.helpers", async (importOriginal) => {
     };
 });
 
+const mockUseBlocker = vi.fn(() => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }));
+const navigateMock = vi.fn();
+
 vi.mock("react-router-dom", async (importOriginal) => {
     /** @type {any} */
     const actual = await importOriginal();
     return {
         ...actual,
-        useNavigate: () => vi.fn(),
-        useBlocker: () => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() })
+        useNavigate: () => navigateMock,
+        useBlocker: (...args) => mockUseBlocker(...args)
     };
 });
 
@@ -113,6 +118,126 @@ const setup = (agreement, trackerData = buildTrackerData()) => {
     const store = setupStore({ auth: { activeUser: null } });
     return renderHook(() => useRequestPreAwardApproval(1), { wrapper: wrapperFor(store) });
 };
+
+describe("useRequestPreAwardApproval — navigation blocker", () => {
+    let mockProceed;
+    let mockReset;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockProceed = vi.fn();
+        mockReset = vi.fn();
+        mockUseBlocker.mockReturnValue({ state: "unblocked", proceed: mockProceed, reset: mockReset });
+    });
+
+    it("does not block navigation when form is clean", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+        const shouldBlock = capturedCb({
+            currentLocation: { pathname: "/agreements/1/pre-award" },
+            nextLocation: { pathname: "/agreements/1/details" }
+        });
+        expect(shouldBlock).toBe(false);
+    });
+
+    it("blocks navigation when form has changes", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+        result.current.setNotes("some note");
+        await waitFor(() => {
+            const shouldBlock = capturedCb({
+                currentLocation: { pathname: "/agreements/1/pre-award" },
+                nextLocation: { pathname: "/agreements/1/details" }
+            });
+            expect(shouldBlock).toBe(true);
+        });
+    });
+
+    it("bypasses the blocker and navigates to the edit page on handleEdit", async () => {
+        let capturedCb;
+        mockUseBlocker.mockImplementation((cb) => {
+            capturedCb = cb;
+            return { state: "unblocked", proceed: mockProceed, reset: mockReset };
+        });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current).toBeDefined());
+
+        // Typed notes -> hasChanged=true, so the blocker would fire on navigation.
+        act(() => {
+            result.current.setNotes("some note");
+        });
+
+        const nav = {
+            currentLocation: { pathname: "/agreements/1/pre-award-approval" },
+            nextLocation: { pathname: "/agreements/review/1/edit" }
+        };
+
+        // BEFORE handleEdit: predicate blocks (isNavigating=false).
+        await waitFor(() => expect(capturedCb(nav)).toBe(true));
+
+        // handleEdit sets the isNavigating bypass then navigates to the edit form.
+        act(() => {
+            result.current.handleEdit();
+        });
+
+        // AFTER handleEdit: the bypass is set so the predicate no longer blocks, and
+        // navigate got the encoded returnTo URL. NOTE: with useBlocker mocked, this
+        // guards the bypass-flag contract and the URL — but not the flushSync timing
+        // itself (react-router's synchronous re-check on a real forward push is what
+        // requires flushSync; that is only observable with a real router, not here).
+        expect(capturedCb(nav)).toBe(false);
+        expect(navigateMock).toHaveBeenCalledWith(
+            "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
+        );
+    });
+
+    it("shows correct copy when blocker fires", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => {
+            expect(result.current.showModal).toBe(true);
+            expect(result.current.modalProps.heading).toBe(
+                "Are you sure you want to cancel your pre-award request? Your progress will not be saved."
+            );
+            expect(result.current.modalProps.actionButtonText).toBe("Cancel Pre-Award");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Continue editing");
+        });
+    });
+
+    it("proceeds with navigation and hides modal on handleConfirm", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current.showModal).toBe(true));
+        result.current.modalProps.handleConfirm();
+        await waitFor(() => {
+            expect(result.current.showModal).toBe(false);
+            expect(mockProceed).toHaveBeenCalled();
+            expect(mockReset).not.toHaveBeenCalled();
+        });
+    });
+
+    it("resets blocker and hides modal on closeModal", async () => {
+        mockUseBlocker.mockReturnValue({ state: "blocked", proceed: mockProceed, reset: mockReset });
+        const { result } = setup(buildAgreement());
+        await waitFor(() => expect(result.current.showModal).toBe(true));
+        result.current.modalProps.closeModal();
+        await waitFor(() => {
+            expect(result.current.showModal).toBe(false);
+            expect(mockReset).toHaveBeenCalled();
+            expect(mockProceed).not.toHaveBeenCalled();
+        });
+    });
+});
 
 describe("useRequestPreAwardApproval — validation wiring", () => {
     beforeEach(() => {
@@ -212,6 +337,44 @@ describe("useRequestPreAwardApproval — validation wiring", () => {
         const { result } = setup(agreement);
         await waitFor(() => expect(result.current).toBeDefined());
         expect(result.current.hasBLIError).toBe(false);
+    });
+
+    it("shows a single POP-range message no matter how many BLs violate it", async () => {
+        const isoDaysFromNow = (days) => {
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString().slice(0, 10);
+        };
+
+        const agreement = buildAgreement({
+            budget_line_items: [
+                {
+                    id: 101,
+                    status: "PLANNED",
+                    amount: 1500,
+                    can_id: 1,
+                    services_component_id: 1,
+                    date_needed: isoDaysFromNow(2), // before PoP start
+                    sc_period_start: isoDaysFromNow(10),
+                    sc_period_end: isoDaysFromNow(100)
+                },
+                {
+                    id: 102,
+                    status: "IN_EXECUTION",
+                    amount: 800,
+                    can_id: 1,
+                    services_component_id: 1,
+                    date_needed: isoDaysFromNow(200), // after PoP end
+                    sc_period_start: isoDaysFromNow(10),
+                    sc_period_end: isoDaysFromNow(100)
+                }
+            ]
+        });
+
+        const { result } = setup(agreement);
+        await waitFor(() => expect(result.current.isAlertActive).toBe(true));
+
+        expect(result.current.pageErrors[POP_RANGE_ERROR_KEY]).toEqual(["Budget Line Obligate By"]);
     });
 
     it("exposes the filtered validatable budget lines list", async () => {

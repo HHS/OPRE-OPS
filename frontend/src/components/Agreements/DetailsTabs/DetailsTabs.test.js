@@ -57,6 +57,24 @@ describe("DetailsTabs", () => {
         expect(screen.getByText("SCs & Budget Lines")).toBeInTheDocument();
     });
 
+    it("renders 'Grants & Budget Lines' tab label for grant agreements", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        isGrant={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("Grants & Budget Lines")).toBeInTheDocument();
+        expect(screen.queryByText("SCs & Budget Lines")).not.toBeInTheDocument();
+    });
+
     it("shows developed-only tabs when agreement is developed", () => {
         render(
             <Provider store={store}>
@@ -66,6 +84,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={true}
                         hasInExecutionBli={true}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -74,6 +93,48 @@ describe("DetailsTabs", () => {
         expect(screen.getByText("Award & Modifications")).toBeInTheDocument();
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
         expect(screen.getByText("Documents")).toBeInTheDocument();
+    });
+
+    it("hides Award & Modifications for developed, non-grant agreements that aren't Contract or AA", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        isContractOrAa={false}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.queryByText("Award & Modifications")).not.toBeInTheDocument();
+        // Procurement Tracker and Documents aren't restricted to Contract/AA.
+        expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
+        expect(screen.getByText("Documents")).toBeInTheDocument();
+    });
+
+    it("does not show Award & Modifications, Procurement Tracker, or Documents tabs for grants", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        hasInExecutionBli={true}
+                        isGrant={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Grants & Budget Lines")).toBeInTheDocument();
+        expect(screen.queryByText("Award & Modifications")).not.toBeInTheDocument();
+        expect(screen.queryByText("Procurement Tracker")).not.toBeInTheDocument();
+        expect(screen.queryByText("Documents")).not.toBeInTheDocument();
     });
 
     it("does not show developed-only tabs when agreement is not developed", () => {
@@ -131,7 +192,7 @@ describe("DetailsTabs", () => {
         expect(procurementTrackerButton).not.toBeDisabled();
     });
 
-    it("disables Award & Modifications tab when agreement is not awarded", () => {
+    it("enables Award & Modifications tab even when agreement is not awarded", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -140,13 +201,34 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
         );
 
         const awardButton = screen.getByText("Award & Modifications");
-        expect(awardButton).toBeDisabled();
+        expect(awardButton).not.toBeDisabled();
+    });
+
+    it("navigates to Award & Modifications when the tab is clicked while not awarded", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        hasInExecutionBli={false}
+                        isContractOrAa={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        fireEvent.click(screen.getByText("Award & Modifications"));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/award-modifications");
     });
 
     it("disables Documents tab when agreement is not awarded", () => {
@@ -215,6 +297,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={true}
                         hasInExecutionBli={true}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -252,7 +335,7 @@ describe("DetailsTabs", () => {
         expect(procurementTrackerButton).not.toBeDisabled();
     });
 
-    it("renders tooltips for Award & Modifications and Documents tabs when disabled", () => {
+    it("renders a tooltip for the Documents tab when disabled but not for Award & Modifications", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -261,6 +344,7 @@ describe("DetailsTabs", () => {
                         isAgreementNotDeveloped={false}
                         isAgreementAwarded={false}
                         hasInExecutionBli={false}
+                        isContractOrAa={true}
                     />
                 </MemoryRouter>
             </Provider>
@@ -269,7 +353,7 @@ describe("DetailsTabs", () => {
         const awardButton = screen.getByText("Award & Modifications");
         const documentsButton = screen.getByText("Documents");
 
-        expect(awardButton).toBeDisabled();
+        expect(awardButton).not.toBeDisabled();
         expect(documentsButton).toBeDisabled();
     });
 

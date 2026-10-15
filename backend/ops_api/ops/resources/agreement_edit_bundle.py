@@ -52,6 +52,12 @@ class AgreementEditBundleAPI(BaseItemAPI):
 
             meta.metadata.update({"bundle_result": asdict(result)})
 
+            # Surface the agreement field diff (scoped to a directly-applied procurement-shop
+            # change) so the UPDATE_AGREEMENT history subscriber records "Change to Procurement
+            # Shop". None for every other bundle save, leaving history behavior unchanged.
+            if service.agreement_updates is not None:
+                meta.metadata.update({"agreement_updates": service.agreement_updates})
+
             response_body = {"message": "Agreement edit bundle saved", "id": id, **asdict(result)}
             status_code = 202 if result.change_request_ids else 200
             return make_response_with_headers(response_body, status_code)

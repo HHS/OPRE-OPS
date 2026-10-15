@@ -107,7 +107,7 @@ function AgreementBLIAccordion({
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 {showToggle && (
                     <ToggleButton
-                        btnText="After Approval"
+                        btnText="After Change"
                         handleToggle={() => setAfterApproval(!afterApproval)}
                         isToggleOn={afterApproval}
                     />

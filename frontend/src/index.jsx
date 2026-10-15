@@ -7,7 +7,6 @@ import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute"
 import ApproveAgreement from "./pages/agreements/approve";
 import Agreement from "./pages/agreements/details/Agreement";
 import AgreementsList from "./pages/agreements/list/AgreementsList";
-import BenefitsGrid from "./pages/home/BenefitsGrid";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
@@ -21,13 +20,16 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
+import HomeLanding from "./pages/home/HomeLanding";
+import { HOME_RELATIVE_PATHS } from "./pages/home/homeRoutes";
 import Login from "./pages/Login";
+import OpsAtAGlanceContent from "./pages/home/ops-at-a-glance/OpsAtAGlanceContent";
+import OpsBenefitsContent from "./pages/home/ops-benefits/OpsBenefitsContent";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import ProjectsList from "./pages/projects/list/ProjectsList";
-import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import EditAgreementAndBudgetLines from "./pages/agreements/review/EditAgreementAndBudgetLines";
@@ -37,12 +39,12 @@ import {
     ApprovePreAwardApproval,
     ReviewBudgetTeamRequisition
 } from "./pages/agreements/pre-award-approval";
-import { RequestAwardApproval, ApproveAwardApproval } from "./pages/agreements/award-approval";
+import { RequestAwardApproval, ApproveAwardApproval, EditAwardApproval } from "./pages/agreements/award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
-import WhatsNext from "./pages/home/whats-next";
+import WhatsNewContent from "./pages/home/whats-new/WhatsNewContent";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
@@ -71,18 +73,40 @@ const router = createBrowserRouter(
                 path="/"
                 element={<Home />}
             >
-                <Route
-                    path="" // default for home page
-                    element={<BenefitsGrid />}
-                />
-                <Route
-                    path="release-notes"
-                    element={<ReleaseNotes />}
-                />
-                <Route
-                    path="next"
-                    element={<WhatsNext />}
-                />
+                <Route element={<HomeLanding />}>
+                    <Route
+                        path={HOME_RELATIVE_PATHS.whatsNew}
+                        element={<WhatsNewContent />}
+                    />
+                    <Route
+                        path={HOME_RELATIVE_PATHS.opsAtAGlance}
+                        element={<OpsAtAGlanceContent />}
+                    />
+                    <Route
+                        path={HOME_RELATIVE_PATHS.opsBenefits}
+                        element={<OpsBenefitsContent />}
+                    />
+                    {/* Compatibility routes: keep legacy bookmarks/links working instead of
+                        falling through to the catch-all /error redirect. */}
+                    <Route
+                        path={HOME_RELATIVE_PATHS.releaseNotes}
+                        element={
+                            <Navigate
+                                to="/"
+                                replace
+                            />
+                        }
+                    />
+                    <Route
+                        path={HOME_RELATIVE_PATHS.next}
+                        element={
+                            <Navigate
+                                to={`/${HOME_RELATIVE_PATHS.opsAtAGlance}`}
+                                replace
+                            />
+                        }
+                    />
+                </Route>
             </Route>
             <Route
                 path="/version"
@@ -253,6 +277,16 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/create"
                     element={<CreateAgreement />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
                 />
                 <Route
                     path="/agreements/edit/:id/*"
@@ -362,6 +396,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/:id/review-award"
                     element={<ApproveAwardApproval />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/edit-award"
+                    element={<EditAwardApproval />}
                     handle={{
                         crumb: () => (
                             <Link

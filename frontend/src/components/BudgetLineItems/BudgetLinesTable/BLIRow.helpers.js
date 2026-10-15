@@ -26,3 +26,18 @@ export const futureDateErrorClass = (item, isReviewMode) => {
 export const addErrorClassIfNotFound = (item, isReviewMode) => {
     return isReviewMode && (!item || item === NO_DATA) ? "table-item-error" : "";
 };
+
+/**
+ * Whether a budget line's Obligate By date (date_needed) falls outside its services
+ * component's PoP window (sc_period_start/sc_period_end, inclusive). Only evaluates when
+ * both the date and the full PoP range are present — missing data is flagged by other rules.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine - The budget line item.
+ * @returns {boolean} - True if date_needed is outside the PoP range.
+ */
+export const isDateOutsidePopRange = (budgetLine) => {
+    const { date_needed, sc_period_start, sc_period_end } = budgetLine ?? {};
+    if (!date_needed || !sc_period_start || !sc_period_end) {
+        return false;
+    }
+    return date_needed < sc_period_start || date_needed > sc_period_end;
+};

@@ -25,7 +25,7 @@ const servicesComponentData = {
     optional: false,
     description: "This is a description.",
     period_start: "2024-01-01",
-    period_end: "2025-01-01"
+    period_end: "2050-01-01"
 };
 
 const budgetLineData = {
@@ -297,7 +297,7 @@ const fillRequiredAgreementDetails = () => {
 const addServicesComponentViaUi = () => {
     cy.get("#servicesComponentSelect").select("1");
     cy.get("#pop-start-date").type("01/01/2024");
-    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#pop-end-date").type("01/01/2050");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("[data-cy='alert']").should("contain", "successfully added");

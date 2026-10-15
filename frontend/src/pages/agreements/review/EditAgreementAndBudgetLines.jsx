@@ -4,6 +4,7 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
     useUpdateAgreementEditBundleMutation
 } from "../../../api/opsAPI";
@@ -12,11 +13,13 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -68,6 +71,10 @@ const EditAgreementAndBudgetLines = () => {
     // Bumped on save failure so the editor reseeds services_components from the
     // server-cached list, reverting any optimistic edits the user had in flight.
     const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
+    // Mirrors servicesComponentsReseedKey for grant numbers (grant agreements only).
+    const [grantNumbersReseedKey, setGrantNumbersReseedKey] = useState(0);
+    // Mirrors servicesComponentsReseedKey for budget line items.
+    const [budgetLinesReseedKey, setBudgetLinesReseedKey] = useState(0);
 
     // Children populate these refs with `{ getSlice }` callbacks so the page can
     // read their current edits synchronously when the user clicks Save Changes.
@@ -88,6 +95,11 @@ const EditAgreementAndBudgetLines = () => {
     const [requiresFinancialApproval, setRequiresFinancialApproval] = useState(false);
     const [showFinancialApprovalModal, setShowFinancialApprovalModal] = useState(false);
 
+    // Page-level dirty state aggregated from both sub-forms for the nav-away blocker.
+    const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+    const [hasBLIsChanged, setHasBLIsChanged] = useState(false);
+    const hasPageChanged = hasAgreementChanged || hasBLIsChanged;
+
     const {
         data: agreement,
         error: errorAgreement,
@@ -106,6 +118,15 @@ const EditAgreementAndBudgetLines = () => {
         skip: !isValidId
     });
 
+    const {
+        data: grantNumbers,
+        error: errorGrantNumbers,
+        isLoading: isLoadingGrantNumbers
+    } = useGetGrantNumbersListQuery(agreementId, {
+        refetchOnMountOrArgChange: true,
+        skip: !isValidId
+    });
+
     const [updateEditBundle] = useUpdateAgreementEditBundleMutation();
 
     useEffect(() => {
@@ -117,7 +138,29 @@ const EditAgreementAndBudgetLines = () => {
         }
     }, [agreement]);
 
+    // Nav-away blocker. Shows one of two modals depending on whether the pending changes
+    // require DD approval. `saveChanges` receives the intended destination so the success
+    // alert redirects there instead of the fixed returnTo URL.
+    const requiresApproval = requiresFinancialApproval || procurementShopChangeState.shouldRequestChange;
+
+    const saveAndNavigateTo = async (destination) => {
+        const saved = await fireBundleSave(destination ?? returnTo);
+        if (!saved) throw new Error("Save failed");
+    };
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef } =
+        useNavigationBlocker({
+            hasChanged: hasPageChanged,
+            saveChanges: saveAndNavigateTo,
+            onExit: () => {
+                setHasAgreementChanged(false);
+                setHasBLIsChanged(false);
+            },
+            requiresApproval
+        });
+
     const handleCancel = () => {
+        setIsCancelling(true);
         navigate(returnTo);
     };
 
@@ -131,18 +174,27 @@ const EditAgreementAndBudgetLines = () => {
         if (bliSlice.services_components) {
             bundle.services_components = bliSlice.services_components;
         }
+        if (bliSlice.grant_numbers) {
+            bundle.grant_numbers = bliSlice.grant_numbers;
+        }
         if (bliSlice.budget_line_items) {
             bundle.budget_line_items = bliSlice.budget_line_items;
         }
         return bundle;
     };
 
-    const fireBundleSave = async () => {
+    /**
+     * Execute the atomic edit-bundle save.
+     * @param {string} [destination=returnTo] - Where to redirect after a successful save.
+     *   Defaults to `returnTo` (the review page). The nav-away modal passes the user's
+     *   intended destination so they land where they clicked, not back on the review page.
+     */
+    const fireBundleSave = async (destination = returnTo) => {
         if (isSaving) return;
         setIsSaving(true);
         try {
             const bundle = buildBundle();
-            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
+            const result = await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
@@ -151,18 +203,43 @@ const EditAgreementAndBudgetLines = () => {
                         budgetLines: agreement?.budget_line_items ?? [],
                         oldProcurementShop,
                         newProcurementShop,
-                        redirectUrl: returnTo
+                        redirectUrl: destination
                     })
                 );
+            } else if (result?.change_request_ids?.length) {
+                // Backend created change requests (e.g. budget team outside award-approval context) —
+                // edits are pending DD approval, not applied immediately.
+                setAlert({
+                    type: "success",
+                    heading: "Changes Sent to Approval",
+                    message:
+                        "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    redirectUrl: destination
+                });
             } else {
                 setAlert({
                     type: "success",
                     heading: "Changes Saved",
                     message: "Your changes have been saved.",
-                    redirectUrl: returnTo
+                    redirectUrl: destination
                 });
             }
+            // Synchronously bypass the blocker before the alert redirects. The RTK
+            // refetch triggered by a successful save can re-fire child dirty-state
+            // callbacks before Alert's useEffect navigates, re-enabling the blocker
+            // and intercepting the redirect. Setting a ref is synchronous and is
+            // read directly by the blocker predicate on the next navigation attempt.
+            isBypassingRef.current = true;
+            blisSliceRef.current?.resetUnsavedChanges?.();
+            setHasAgreementChanged(false);
+            setHasBLIsChanged(false);
             scrollToTop();
+            // Reset the bypass after the alert's navigate fires (next tick) so the
+            // blocker is re-enabled if the user makes further edits on the page.
+            setTimeout(() => {
+                isBypassingRef.current = false;
+            }, 0);
+            return true;
         } catch (error) {
             const detail =
                 error?.data?.error ||
@@ -174,9 +251,12 @@ const EditAgreementAndBudgetLines = () => {
                 message: `An error occurred while saving. ${detail}`
             });
             // Bundle save is atomic — on failure the server state is unchanged.
-            // Reseed services_components so optimistic edits revert to the server
-            // copy, leaving the form consistent for the user to retry.
+            // Reseed services_components / grant_numbers so optimistic edits revert to the
+            // server copy, leaving the form consistent for the user to retry.
             setServicesComponentsReseedKey((key) => key + 1);
+            setGrantNumbersReseedKey((key) => key + 1);
+            setBudgetLinesReseedKey((key) => key + 1);
+            return false;
         } finally {
             setIsSaving(false);
         }
@@ -194,12 +274,12 @@ const EditAgreementAndBudgetLines = () => {
     };
 
     useEffect(() => {
-        if (!isValidId || errorAgreement || errorServicesComponent) {
+        if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
             navigate("/error");
         }
-    }, [isValidId, errorAgreement, errorServicesComponent, navigate]);
+    }, [isValidId, errorAgreement, errorServicesComponent, errorGrantNumbers, navigate]);
 
-    if (isLoadingAgreement || isLoadingServicesComponents) {
+    if (isLoadingAgreement || isLoadingServicesComponents || isLoadingGrantNumbers) {
         return (
             <App breadCrumbName="Edit Agreement and Budget Lines">
                 <h1>Loading...</h1>
@@ -207,7 +287,7 @@ const EditAgreementAndBudgetLines = () => {
         );
     }
 
-    if (!isValidId || errorAgreement || errorServicesComponent) {
+    if (!isValidId || errorAgreement || errorServicesComponent || errorGrantNumbers) {
         return null;
     }
 
@@ -243,6 +323,10 @@ const EditAgreementAndBudgetLines = () => {
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
                 servicesComponentsReseedKey={servicesComponentsReseedKey}
+                grantNumbers={grantNumbers ?? []}
+                grantNumbersReseedKey={grantNumbersReseedKey}
+                budgetLines={agreement?.budget_line_items ?? []}
+                budgetLinesReseedKey={budgetLinesReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showFinancialApprovalModal && (
@@ -254,6 +338,18 @@ const EditAgreementAndBudgetLines = () => {
                         handleConfirm={fireBundleSave}
                     />
                 )}
+                {showBlockerModal && (
+                    <SaveChangesAndExitModal
+                        heading={blockerModalProps.heading}
+                        description={blockerModalProps.description}
+                        actionButtonText={blockerModalProps.actionButtonText}
+                        secondaryButtonText={blockerModalProps.secondaryButtonText}
+                        handleConfirm={blockerModalProps.handleConfirm}
+                        handleSecondary={blockerModalProps.handleSecondary}
+                        closeModal={blockerModalProps.closeModal}
+                        setShowModal={setShowBlockerModal}
+                    />
+                )}
                 <AgreementEditForm
                     isReviewMode={true}
                     isAgreementAwarded={isAgreementAwarded}
@@ -262,9 +358,11 @@ const EditAgreementAndBudgetLines = () => {
                     onValidityChange={setIsAgreementFormValid}
                     onProcurementShopChangeStateChange={setProcurementShopChangeState}
                     bundleSliceRef={agreementSliceRef}
+                    setHasAgreementChanged={setHasAgreementChanged}
                 />
                 <CreateBLIsAndSCs
                     workflow="agreement"
+                    isAgreementAwarded={isAgreementAwarded}
                     budgetLines={agreement?.budget_line_items ?? []}
                     selectedAgreement={agreement}
                     selectedProcurementShop={agreement?.procurement_shop ?? {}}
@@ -279,6 +377,7 @@ const EditAgreementAndBudgetLines = () => {
                     onValidityChange={setIsBudgetLinesValid}
                     bundleSliceRef={blisSliceRef}
                     onFinancialChangeStateChange={setRequiresFinancialApproval}
+                    onHasUnsavedChangesChange={setHasBLIsChanged}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button

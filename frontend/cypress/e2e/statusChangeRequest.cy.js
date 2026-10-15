@@ -74,7 +74,9 @@ const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                expect(response.body.data, "agreement history entries")
+                    .to.be.an("array")
+                    .and.have.length.greaterThan(0);
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);
@@ -129,8 +131,14 @@ it("BLI Status Change", () => {
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]', { timeout: 10000 })
                 .should("be.visible")
                 .check({ force: true });
-            // Ensure the "check all" box is actually checked in CI
-            cy.get("#check-all-0", { timeout: 10000 }).should("be.visible").check({ force: true });
+            // Wait for the "check all" checkbox to become enabled (React needs to propagate
+            // the "actionable" flag onto budgetLines before this checkbox is interactive) before
+            // checking it. The checkbox itself is visually covered by its USWDS label, so
+            // {force: true} is still required to click it — but asserting not.be.disabled first
+            // ensures we don't force-click through a still-disabled checkbox, which fires no
+            // onChange and leaves the row unselected.
+            cy.get("#check-all-0", { timeout: 15000 }).should("be.visible").and("not.be.disabled");
+            cy.get("#check-all-0").check({ force: true });
             cy.get("#check-all-0", { timeout: 10000 }).should("be.checked");
             cy.get('[type="checkbox"]', { timeout: 10000 })
                 .should("have.length", 2)

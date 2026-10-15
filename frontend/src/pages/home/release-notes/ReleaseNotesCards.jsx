@@ -12,62 +12,24 @@ import Tag from "../../../components/UI/Tag";
  */
 
 /**
- * @component - Displays a summary of the latest release notes, including release date, version, and counts of changes.
+ * @component - Displays the summary of the latest release notes: release date, version,
+ * and counts of changes. Headings are h3 to nest under the homepage's "OPS Updates" h2.
  * @param {ReleaseNotesCardProps} props - Component props.
- * @returns {React.ReactElement} The rendered release notes summary card.
+ * @returns {React.ReactElement} The rendered left card.
  */
-const ReleaseNotesCards = ({
+export function LeftCard({
     releaseDate,
     lastVersion,
     totalReleaseChanges,
     totalNewFeatures,
     totalFixes,
     totalImprovements
-}) => {
-    return (
-        <section
-            className="display-flex flex-justify"
-            data-cy="release-notes-cards"
-        >
-            <LeftCard
-                releaseDate={releaseDate}
-                lastVersion={lastVersion}
-                totalReleaseChanges={totalReleaseChanges}
-                totalNewFeatures={totalNewFeatures}
-                totalFixes={totalFixes}
-                totalImprovements={totalImprovements}
-            />
-            <RightCard />
-        </section>
-    );
-};
-
-/**
- * @component - Displays a card noting that data is now updated directly in OPS.
- * @private
- * @returns {React.ReactElement} The rendered right card.
- */
-function RightCard() {
-    return (
-        <RoundedBox>
-            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Data updates</h2>
-            <p className="font-sans-lg text-bold line-height-sans-1">All data should now be updated directly in OPS</p>
-        </RoundedBox>
-    );
-}
-
-/**
- * @component - LeftCard component displays the summary of the latest release notes.
- * @private
- * @param {ReleaseNotesCardProps} props - Component props.
- * @returns {React.ReactElement} The rendered left card.
- */
-function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatures, totalFixes, totalImprovements }) {
+}) {
     return (
         <RoundedBox>
             <div className="display-flex flex-justify">
                 <article>
-                    <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h2>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h3>
                     <Tag
                         text={releaseDate}
                         className="bg-brand-primary-light text-primary"
@@ -75,7 +37,7 @@ function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatu
                 </article>
 
                 <article>
-                    <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h2>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h3>
                     <Tag
                         text={`Version ${lastVersion}`}
                         className="bg-brand-primary-light text-primary"
@@ -109,5 +71,3 @@ function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatu
         </RoundedBox>
     );
 }
-
-export default ReleaseNotesCards;
