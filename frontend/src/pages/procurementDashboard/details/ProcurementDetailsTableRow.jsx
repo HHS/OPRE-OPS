@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
-import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import TableRowExpandable from "../../../components/UI/TableRowExpandable";
 import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../../components/UI/Text/TextClip";
@@ -57,6 +56,7 @@ export const ProcurementDetailsTableRow = ({
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
 
     const setBreadcrumbTrail = useSetBreadcrumbTrail();
+    const listCrumb = useListCrumb("procurementDashboard");
     const agreementPath = `/agreements/${agreement?.id}`;
 
     const getStatusCount = (status) => budgetLineItems.filter((bli) => bli.status === status).length;
@@ -67,9 +67,7 @@ export const ProcurementDetailsTableRow = ({
                 <Link
                     className="text-ink text-no-underline"
                     to={agreementPath}
-                    onClick={() =>
-                        setBreadcrumbTrail({ targetPath: agreementPath, ancestors: [LIST_CRUMBS.procurementDashboard] })
-                    }
+                    onClick={() => setBreadcrumbTrail({ targetPath: agreementPath, ancestors: [listCrumb] })}
                     aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip
