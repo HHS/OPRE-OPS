@@ -1,5 +1,6 @@
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { Link } from "react-router-dom";
+import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { useGetAgreementSpendingByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
@@ -31,9 +32,11 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
  * @param {number} props.fiscalYear - The selected fiscal year.
  * @param {number | null} props.fyTotal - Fallback FY total from the parent.
+ * @param {import("../../../sessionUISlice").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry recorded when navigating to the agreement.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
+const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry = [] }) => {
+    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
 
     const { data: agreementSpending } = useGetAgreementSpendingByIdQuery(agreement?.id, {
@@ -72,6 +75,9 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
                 <Link
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement?.id}`}
+                    onClick={() =>
+                        setBreadcrumbTrail({ targetPath: `/agreements/${agreement?.id}`, ancestors: ancestry })
+                    }
                     aria-label={`View agreement details for ${agreementName}`}
                 >
                     <TextClip

@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithProviders } from "../../../test-utils";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 
@@ -40,13 +40,11 @@ describe("ProcurementDetailsTable", () => {
     };
 
     const renderComponent = (props = {}) =>
-        render(
-            <MemoryRouter>
-                <ProcurementDetailsTable
-                    {...defaultProps}
-                    {...props}
-                />
-            </MemoryRouter>
+        renderWithProviders(
+            <ProcurementDetailsTable
+                {...defaultProps}
+                {...props}
+            />
         );
 
     it("renders table headings", () => {

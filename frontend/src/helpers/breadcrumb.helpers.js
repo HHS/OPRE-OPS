@@ -20,7 +20,9 @@ export const LIST_CRUMBS = {
     portfolios: { label: "Portfolios", to: "/portfolios" },
     agreements: { label: "Agreements", to: "/agreements" },
     cans: { label: "CANs", to: "/cans" },
-    budgetLines: { label: "Budget Lines", to: "/budget-lines" }
+    budgetLines: { label: "Budget Lines", to: "/budget-lines" },
+    projects: { label: "Projects", to: "/projects" },
+    procurementDashboard: { label: "Procurement Dashboard", to: "/procurement-dashboard" }
 };
 
 /**
