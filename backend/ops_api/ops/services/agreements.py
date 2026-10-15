@@ -1218,7 +1218,13 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
 
 
 def _get_active_step(agreement: Agreement) -> int | None:
-    """Return the active procurement tracker step number for an agreement, or None."""
+    """Return the active procurement tracker step number for an agreement, or None.
+
+    Awarded agreements are excluded entirely (OPS-6384) — once awarded, the dashboard
+    should stop tracking the agreement regardless of tracker/step completion state.
+    """
+    if agreement.is_awarded:
+        return None
     for tracker in agreement.procurement_trackers:
         if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.active_step_number is not None:
             return tracker.active_step_number
@@ -1285,6 +1291,9 @@ def _compute_days_in_procurement_step(
     days_in_step: dict[int, dict[int, int]] = {}
 
     for agreement in all_results:
+        if agreement.is_awarded:
+            continue
+
         tracker = next(
             (
                 tracker

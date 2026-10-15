@@ -1826,12 +1826,13 @@ def _make_mock_tracker(active_step_number, status=None):
     return tracker
 
 
-def _make_mock_procurement_agreement(blis=None, trackers=None, agreement_id=1):
+def _make_mock_procurement_agreement(blis=None, trackers=None, agreement_id=1, is_awarded=False):
     """Helper to create a mock agreement for procurement tests."""
     ag = MagicMock()
     ag.id = agreement_id
     ag.budget_line_items = blis or []
     ag.procurement_trackers = trackers or []
+    ag.is_awarded = is_awarded
     return ag
 
 
@@ -2034,6 +2035,20 @@ class TestComputeProcurementStepSummary:
         result = _compute_procurement_step_summary([ag], fiscal_year=2025)
         assert result["total_agreement_count"] == 0
 
+    def test_skips_awarded_agreement_even_at_active_step(self):
+        """An awarded agreement must be excluded regardless of tracker/step state (OPS-6384)."""
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        tracker = _make_mock_tracker(6)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker], is_awarded=True)
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+
+        assert result["total_agreement_count"] == 0
+        step6 = next(s for s in result["step_data"] if s["step"] == 6)
+        assert step6["agreements"] == 0
+
     def test_zero_division_guard(self):
         result = _compute_procurement_step_summary([], fiscal_year=2025)
         for step in result["step_data"]:
@@ -2187,6 +2202,15 @@ class TestComputeDaysInProcurementStep:
 
         assert result == {4: {7: 10}}
         assert 2 not in result
+
+    def test_skips_awarded_agreement(self):
+        """An awarded agreement must be excluded regardless of tracker state (OPS-6384)."""
+        step = _make_mock_step(1, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(1, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1, is_awarded=True)
+
+        result = _compute_days_in_procurement_step([ag])
+        assert result == {}
 
 
 class TestAgreementDivisionFilter:
