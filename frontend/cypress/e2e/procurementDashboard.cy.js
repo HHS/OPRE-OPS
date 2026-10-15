@@ -32,20 +32,29 @@ describe("Procurement Dashboard - Summary/Details Consistency", () => {
         cy.get("[data-cy='procurement-overview-card']", { timeout: 30000 }).should("exist");
     });
 
-    it("step accordion agreement counts match summary card counts", () => {
+    it("step accordion agreement counts never exceed summary card counts", () => {
+        // OPS-6384: the Overview card counts agreements by budget-line status (unaware of
+        // award status), while the step accordion now excludes awarded agreements entirely
+        // (ProcurementDetails.jsx). An awarded agreement that still has a budget line in a
+        // tracked status for the fiscal year is counted once in the Overview card but
+        // contributes zero to every step accordion — so the two totals can legitimately
+        // diverge now. The accordion total can never exceed the Overview total, though,
+        // since the accordion is strictly a subset (non-awarded agreements only).
         getAgreementCount().then((totalFromOverview) => {
             // Expand all detail accordions
             cy.get("[data-cy^='step-builder-accordion-']").each(($accordion) => {
                 cy.wrap($accordion).find("button.usa-accordion__button").click();
             });
 
-            // Sum agreement counts from each expanded step
-            cy.get("[data-cy='details-step-agreements-count']").then(($counts) => {
+            // Sum agreement counts from each expanded step (steps with zero agreements
+            // after frontend filtering render no count badge at all, so this only sums
+            // whichever badges are actually present).
+            cy.get("body").then(($body) => {
                 let totalFromDetails = 0;
-                $counts.each((_, el) => {
+                $body.find("[data-cy='details-step-agreements-count']").each((_, el) => {
                     totalFromDetails += parseInt(el.textContent, 10) || 0;
                 });
-                expect(totalFromDetails).to.equal(totalFromOverview);
+                expect(totalFromDetails).to.be.at.most(totalFromOverview);
             });
         });
     });
