@@ -129,7 +129,7 @@ export const codesToDisplayText = {
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated",
-        PLANNED_MOD: "Planned Mod"
+        IN_REVIEW: "In Review"
     },
     validation: {
         name: "Name",
@@ -150,7 +150,11 @@ export const codesToDisplayText = {
         amount: "Amount",
         can: "CAN",
         services_component: "Services Component",
-        date_needed: "Obligate By Date"
+        grant_number: "Grant Number",
+        date_needed: "Obligate By Date",
+        // POP_RANGE_ERROR_KEY (see suite.js) — shown as a single generic line regardless
+        // of how many budget lines violate the PoP window.
+        date_needed_pop_range: "Obligate By Date Outside Period of Performance"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
@@ -191,7 +195,8 @@ export const codesToDisplayText = {
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
-        services_component: "Services Component"
+        services_component: "Services Component",
+        grant_number: "Grant Number"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
@@ -208,7 +213,8 @@ export const codesToDisplayText = {
         amount: "Amount",
         can_id: "CAN",
         date_needed: "Obligate By Date",
-        status: "Status"
+        status: "Status",
+        delete: "Deleted"
     },
     methodOfTransfer: {
         DIRECT: "Direct",
@@ -224,7 +230,7 @@ export const codesToDisplayText = {
     projectOfficer: {
         AA: "COR",
         CONTRACT: "COR",
-        GRANT: "Federal Project Officer",
+        GRANT: "FPO",
         DIRECT_OBLIGATION: "Project Officer",
         IAA: "COR",
         MISCELLANEOUS: "Project Officer"
@@ -259,6 +265,7 @@ export const tableSortCodes = {
         AGREEMENT_NAME: "AGREEMENT_NAME",
         AGREEMENT_TYPE: "AGREEMENT_TYPE",
         SERVICES_COMPONENT: "SERVICE_COMPONENT",
+        CLIN: "CLIN",
         OBLIGATE_BY: "OBLIGATE_BY",
         CAN_NUMBER: "CAN_NUMBER",
         PORTFOLIO: "PORTFOLIO",
@@ -436,7 +443,6 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-            case BLI_STATUS.PLANNED_MOD:
                 return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
                 return "text-brand-data-viz-bl-by-status-3";
@@ -451,7 +457,6 @@ export const statusToClassName = (status, styleType = "text") => {
             case BLI_STATUS.DRAFT:
                 return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-            case BLI_STATUS.PLANNED_MOD:
                 return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
                 return "brand-data-viz-bl-by-status-3";

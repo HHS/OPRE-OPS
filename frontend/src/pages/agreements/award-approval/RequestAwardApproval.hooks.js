@@ -10,10 +10,16 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate, formatDateForApi } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import {
+    DEFAULT_MODIFICATION_NUMBER,
+    getSeededAwardFields,
+    hasAwardFieldChanges
+} from "../../../components/Agreements/AwardRequestForm/awardForm.helpers";
 import suite from "./RequestAwardApproval.suite";
 
 // Memoize DatePicker outside the hook to avoid recreating on every render
@@ -26,6 +32,7 @@ const MemoizedDatePicker = React.memo(DatePicker);
  */
 export default function useRequestAwardApproval(agreementId) {
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,6 +52,14 @@ export default function useRequestAwardApproval(agreementId) {
     const [contractNumber, setContractNumber] = useState("");
     const [awardAmount, setAwardAmount] = useState("");
     const [awardDate, setAwardDate] = useState("");
+
+    // OPS-5892: additional award fields
+    const [agreementTitle, setAgreementTitle] = useState("");
+    const [modificationNumber, setModificationNumber] = useState(DEFAULT_MODIFICATION_NUMBER);
+    const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
+    const [taskOrderNumber, setTaskOrderNumber] = useState("");
+    // Seed-once guard so refetches don't clobber user edits
+    const [isSeeded, setIsSeeded] = useState(false);
 
     // Validation
     const [validationResult, setValidationResult] = useState(suite.get());
@@ -121,8 +136,28 @@ export default function useRequestAwardApproval(agreementId) {
 
     const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
 
+    // OPS-5892: baseline for the four additional award fields. Seeded from a prior step 6
+    // submission when one exists — a declined request keeps its values, so a COR resubmitting does
+    // not have to re-enter the PO # / Task Order # — and otherwise from the agreement name and the
+    // "Base" default. Shared with hasChanged so a pristine form never trips the blocker.
+    const seededAwardFields = useMemo(() => getSeededAwardFields(step6, agreement), [step6, agreement]);
+
+    // Seed once. Guard with isSeeded so a refetch never clobbers the user's edits, and wait for the
+    // tracker query so a first render without step6 does not seed the fallbacks prematurely.
+    React.useEffect(() => {
+        if (isSeeded || !agreement || isLoadingTrackers) return;
+        setAgreementTitle(seededAwardFields.agreementTitle);
+        setModificationNumber(seededAwardFields.modificationNumber);
+        setPurchaseOrderNumber(seededAwardFields.purchaseOrderNumber);
+        setTaskOrderNumber(seededAwardFields.taskOrderNumber);
+        setIsSeeded(true);
+    }, [isSeeded, agreement, isLoadingTrackers, seededAwardFields]);
+
     /**
-     * Track if any changes have been made to the form
+     * Track if any changes have been made to the form.
+     * Pre-filled/defaulted fields (agreement title, modification #, PO #, Task Order #) must be
+     * compared against their seeded/default values — never against "" — otherwise the blocker
+     * fires on a pristine form.
      */
     const hasChanged = useMemo(() => {
         return (
@@ -131,9 +166,25 @@ export default function useRequestAwardApproval(agreementId) {
             contractNumber.trim() !== "" ||
             awardAmount !== "" ||
             awardDate !== "" ||
+            hasAwardFieldChanges(
+                { agreementTitle, modificationNumber, purchaseOrderNumber, taskOrderNumber },
+                seededAwardFields
+            ) ||
             Object.keys(clinAssignments).length > 0
         );
-    }, [notes, selectedVendor, contractNumber, awardAmount, awardDate, clinAssignments]);
+    }, [
+        notes,
+        selectedVendor,
+        contractNumber,
+        awardAmount,
+        awardDate,
+        agreementTitle,
+        modificationNumber,
+        purchaseOrderNumber,
+        taskOrderNumber,
+        seededAwardFields,
+        clinAssignments
+    ]);
 
     /**
      * Navigation blocker - prevents accidental navigation when there are unsaved changes
@@ -148,9 +199,9 @@ export default function useRequestAwardApproval(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel? Your changes will not be saved.",
-                actionButtonText: "Yes, Cancel",
-                secondaryButtonText: "Continue Editing",
+                heading: "Are you sure you want to cancel your award request? Your progress will not be saved.",
+                actionButtonText: "Cancel Award",
+                secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
                     flushSync(() => {
@@ -188,7 +239,11 @@ export default function useRequestAwardApproval(agreementId) {
             vendor: selectedVendor?.id,
             contractNumber,
             awardAmount,
-            awardDate
+            awardDate,
+            agreementTitle,
+            modificationNumber,
+            purchaseOrderNumber,
+            taskOrderNumber
         };
         suite.run(allData);
         const finalValidation = suite.get();
@@ -226,7 +281,11 @@ export default function useRequestAwardApproval(agreementId) {
                     vendor_id: selectedVendor?.id,
                     contract_number: contractNumber.trim(),
                     award_amount: parseFloat(awardAmount),
-                    award_date: formatDateForApi(awardDate)
+                    award_date: formatDateForApi(awardDate),
+                    agreement_title: agreementTitle.trim(),
+                    modification_number: modificationNumber,
+                    purchase_order_number: purchaseOrderNumber.trim(),
+                    task_order_number: taskOrderNumber.trim()
                 }
             }).unwrap();
 
@@ -235,8 +294,12 @@ export default function useRequestAwardApproval(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate(`/agreements/${agreementId}/procurement-tracker`, {
-                state: { awardApprovalSuccess: true }
+            setAlert({
+                type: "success",
+                heading: "Agreement Sent to Award Approval",
+                message:
+                    "This agreement has been successfully sent to the Budget Team to review. Once approved, the Executing Budget Lines will change to Obligated status and the Agreement will be Awarded.",
+                redirectUrl: `/agreements/${agreementId}/procurement-tracker`
             });
         } catch (error) {
             console.error("Failed to request award approval:", error);
@@ -251,9 +314,9 @@ export default function useRequestAwardApproval(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your changes will not be saved.",
-            actionButtonText: "Yes, Cancel",
-            secondaryButtonText: "Continue Editing",
+            heading: "Are you sure you want to cancel your award request? Your progress will not be saved.",
+            actionButtonText: "Cancel Award",
+            secondaryButtonText: "Continue editing",
             handleConfirm: () => {
                 setShowModal(false);
                 setIsNavigating(true);
@@ -293,6 +356,14 @@ export default function useRequestAwardApproval(agreementId) {
         setAwardAmount,
         awardDate,
         setAwardDate,
+        agreementTitle,
+        setAgreementTitle,
+        modificationNumber,
+        setModificationNumber,
+        purchaseOrderNumber,
+        setPurchaseOrderNumber,
+        taskOrderNumber,
+        setTaskOrderNumber,
         runValidate,
         validationResult,
         MemoizedDatePicker,

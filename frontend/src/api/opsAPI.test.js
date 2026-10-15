@@ -4,6 +4,7 @@ import { server } from "../tests/mocks";
 import { http, HttpResponse } from "msw";
 import { setupStore } from "../store";
 import { opsApi } from "./opsAPI";
+import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 
 // Helper function to create a test store for RTK Query testing
 function setupApiStore(api, preloadedState) {
@@ -630,7 +631,7 @@ describe("opsAPI - Agreements Pagination", () => {
                 opsApi.endpoints.getAgreements.initiate({
                     filters: {
                         fiscalYear: [{ title: "FY 2026" }],
-                        budgetLineStatus: [{ status: "IN_REVIEW" }],
+                        budgetLineStatus: [{ status: BLI_STATUS.IN_REVIEW }],
                         portfolio: [{ id: 7 }],
                         agreementName: [{ display_name: "Ops Name" }],
                         agreementType: [{ type: "Grant Type" }],
@@ -646,7 +647,7 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             expect(capturedUrl).toContain("fiscal_year=2026");
-            expect(capturedUrl).toContain("budget_line_status=IN_REVIEW");
+            expect(capturedUrl).toContain(`budget_line_status=${BLI_STATUS.IN_REVIEW}`);
             expect(capturedUrl).toContain("portfolio=7");
             expect(capturedUrl).toContain("name=Ops%20Name");
             expect(capturedUrl).toContain("agreement_type=Grant%20Type");
@@ -801,6 +802,39 @@ describe("opsAPI - Agreements Pagination", () => {
 
             expect(capturedUrl).toContain("/api/v1/agreements/42");
             expect(capturedUrl).not.toContain("?");
+        });
+    });
+
+    describe("getAgreementAwardHistoryById query", () => {
+        it("builds the award-history endpoint and unwraps the data array", async () => {
+            let capturedUrl = "";
+            const records = [{ fiscal_year_label: "FY 2024 Award" }];
+            server.use(
+                http.get("*/api/v1/agreements/:id/award-history/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: records });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            const result = await storeRef.store.dispatch(opsApi.endpoints.getAgreementAwardHistoryById.initiate(42));
+
+            expect(capturedUrl).toContain("/api/v1/agreements/42/award-history/");
+            // transformResponse unwraps { data: [...] } to the bare array.
+            expect(result.data).toEqual(records);
+        });
+
+        it("returns an empty array when the response has no data", async () => {
+            server.use(
+                http.get("*/api/v1/agreements/:id/award-history/", () => {
+                    return HttpResponse.json({});
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            const result = await storeRef.store.dispatch(opsApi.endpoints.getAgreementAwardHistoryById.initiate(7));
+
+            expect(result.data).toEqual([]);
         });
     });
 });
@@ -997,6 +1031,27 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("enable_obe=true");
     });
 
+    it("forwards a selected IN_REVIEW status as budget_line_status on getBudgetLineItems", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/budget-line-items/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getBudgetLineItems.initiate({
+                filters: {
+                    bliStatus: [{ status: BLI_STATUS.IN_REVIEW }]
+                }
+            })
+        );
+
+        expect(capturedUrl).toContain(`budget_line_status=${BLI_STATUS.IN_REVIEW}`);
+    });
+
     it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {
         let capturedUrl = "";
         server.use(
@@ -1122,6 +1177,61 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
     });
 });
 
+describe("opsAPI - getUsers query parameter construction", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("omits exclude params when no options are provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getUsers.initiate());
+
+        expect(capturedUrl).not.toContain("exclude_read_only=");
+        expect(capturedUrl).not.toContain("exclude_system_admin=");
+    });
+
+    it("includes exclude_system_admin=true when excludeSystemAdmin is set", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getUsers.initiate({ excludeSystemAdmin: true }));
+
+        expect(capturedUrl).toContain("exclude_system_admin=true");
+        expect(capturedUrl).not.toContain("exclude_read_only=");
+    });
+
+    it("combines exclude_read_only=true and exclude_system_admin=true when both are set", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/users/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getUsers.initiate({ excludeReadOnlyUsers: true, excludeSystemAdmin: true })
+        );
+
+        expect(capturedUrl).toContain("exclude_read_only=true");
+        expect(capturedUrl).toContain("exclude_system_admin=true");
+        expect(capturedUrl).toContain("exclude_read_only=true&exclude_system_admin=true");
+    });
+});
+
 describe("opsAPI - getAllProjects queryFn pagination", () => {
     afterEach(() => server.resetHandlers());
 
@@ -1206,5 +1316,56 @@ describe("opsAPI - getAllProjects queryFn pagination", () => {
         const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(result.data).toEqual([]);
+    });
+});
+
+describe("opsAPI - getVersion", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("requests /version/ and returns the version + capability flag", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/version/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ version: "1.2.3", skip_cr_for_draft_planned: true });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getVersion.initiate(undefined));
+
+        expect(capturedUrl).toContain("/api/v1/version/");
+        expect(result.data).toEqual({ version: "1.2.3", skip_cr_for_draft_planned: true });
+    });
+});
+
+describe("opsAPI - getAgreementsByResearchProjectFilter", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("requests the project's agreements up to the backend's ceiling", async () => {
+        // The backend defaults to limit=10 and caps at 50, so without an explicit limit a
+        // project with more than 10 agreements silently loses the rest (issue #6139).
+        let capturedUrl = "";
+        const agreements = [{ id: 1 }, { id: 2 }];
+        server.use(
+            http.get("*/api/v1/agreements/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: agreements, count: 2, limit: 50, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getAgreementsByResearchProjectFilter.initiate(1001)
+        );
+
+        expect(capturedUrl).toContain("project_id=1001");
+        expect(capturedUrl).toContain("limit=50");
+        expect(capturedUrl).toContain("offset=0");
+
+        // The envelope must be unwrapped to a bare array. ProjectSpending filters this with
+        // Array.isArray, so a broken unwrap silently empties the agreements list instead of
+        // erroring anywhere.
+        expect(result.data).toEqual(agreements);
     });
 });

@@ -16,7 +16,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerSolicitationStep | undefined} stepThreeData - The data for step three of the procurement tracker.
  * @param {Function} handleSetCompletedStepNumber - Callback to update completed step state.
  */
-export default function useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepThree(
+    stepThreeData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
@@ -24,7 +28,12 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [patchStepThree] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStep3Complete`, so `isStepPatchInFlight` is true for either in-flight
+    // PATCH. Threading it into both the Save Notes editor and the Complete button
+    // makes them mutually exclusive, preventing two concurrent PATCHes (a Save
+    // Notes landing after Complete could otherwise revert `notes` to a stale value).
+    const [patchStepThree, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     // @ts-expect-error - These functions handle undefined values gracefully
@@ -63,8 +72,21 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         notes: step3Notes,
         setNotes: setStep3Notes,
         resetNotes: resetStep3Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepThree, stepThreeData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        selectedUser?.id ||
+        step3DateCompleted ||
+        solicitationPeriodStartDate ||
+        solicitationPeriodEndDate ||
+        isSolicitationClosed ||
+        step3Notes.trim() !== (stepThreeData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     const cancelStep3 = () => {
         setIsSolicitationClosed(false);
@@ -72,7 +94,10 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         setSolicitationPeriodEndDate("");
         setSelectedUser({});
         setStep3DateCompleted("");
-        resetStep3Notes(stepThreeData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepThreeData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep3Notes();
         suite.reset();
     };
 
@@ -103,6 +128,8 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
                 stepId,
                 data: payload
             }).unwrap();
+            setSolicitationPeriodStartDate("");
+            setSolicitationPeriodEndDate("");
             console.log("Procurement Tracker Step 3 solicitation dates updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 3 solicitation dates", error);
@@ -164,6 +191,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         step3Notes,
         setStep3Notes,
         resetStep3Notes,
+        notesResetKey,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -179,7 +207,9 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
         modalProps,
         cancelModalStep3,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleSolicitationDatesSubmit,
-        handleStep3Complete
+        handleStep3Complete,
+        hasChanges
     };
 }

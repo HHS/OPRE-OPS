@@ -17,6 +17,9 @@ import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
 import SummaryBox from "../SummaryBox";
+import AlnNumbersComboBox from "../AlnNumbersComboBox";
+import AlnNumberList from "../AlnNumberList/AlnNumberList";
+import GrantFundingPeriodSelect from "../GrantFundingPeriodSelect";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -96,10 +99,11 @@ const AgreementEditForm = ({
         selectedProjectOfficer,
         selectedAlternateProjectOfficer,
         nofoNumber,
-        alnNumber,
+        alnNumbers,
         fundingPeriodMonths,
         setNofoNumber,
-        setAlnNumber,
+        addAlnNumber,
+        removeAlnNumber,
         setFundingPeriodMonths,
         showModal,
         setShowModal,
@@ -108,7 +112,7 @@ const AgreementEditForm = ({
         vendorDisabled,
         immutableFields,
         isAgreementAA,
-        isGrant, // REVIEW: NEW — destructured from hook; used to hide contract block and Continue button
+        isGrant,
         isSuperUser,
         shouldDisableBtn,
         changeSelectedProject,
@@ -266,28 +270,43 @@ const AgreementEditForm = ({
                     setShowModal={setShowBlockerModal}
                 />
             )}
-            <Select
-                className={cn("agreement-type-filter")}
-                label="Agreement Type"
-                messages={res.getErrors("agreement-type-filter")}
-                name="agreement-type-filter"
-                options={agreementFilterOptions}
-                onChange={(name, value) => {
-                    handleAgreementFilterChange(value);
-                    runValidate(name, value);
-                }}
-                isDisabled={isAgreementCreated}
-                value={selectedAgreementFilter || ""}
-                tooltipMsg="Agreement Type cannot be changed once an agreement is created"
-                isRequired
-            />
+            <h2 className="font-sans-lg margin-top-3">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
+            <div className="padding-top-3">
+                <Select
+                    className={cn("agreement-type-filter")}
+                    label="Agreement Type"
+                    messages={res.getErrors("agreement-type-filter")}
+                    name="agreement-type-filter"
+                    options={agreementFilterOptions}
+                    onChange={(name, value) => {
+                        handleAgreementFilterChange(value);
+                        runValidate(name, value);
+                    }}
+                    isDisabled={isAgreementCreated}
+                    value={selectedAgreementFilter || ""}
+                    tooltipMsg="Agreement Type cannot be changed once an agreement is created"
+                    isRequired
+                />
+            </div>
             {isWizardMode && (
                 <>
                     <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
                     <p className="margin-top-1">
-                        Tell us a little more about this agreement. Make sure you complete the required information in
-                        order to proceed. For everything else you can skip the parts you do not know or come back to
-                        edit the information later.
+                        {!isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. Make sure you complete the required
+                                information in order to proceed. For everything else you can skip the parts you do not
+                                know or come back to edit the information later.
+                            </span>
+                        )}
+                        {isGrant && (
+                            <span>
+                                Tell us a little more about this agreement. For grants, the agreement title should match
+                                the NOFO name. If you don’t know it yet, enter a draft name and edit it later. Complete
+                                the required information to proceed, and skip anything you don’t know for now.
+                            </span>
+                        )}
                     </p>
                 </>
             )}
@@ -425,45 +444,43 @@ const AgreementEditForm = ({
                     )}
                 </>
             )}
-            {/* REVIEW: NEW — Grant Details block (#5926). Sits above the contract block, matching the
-                design's order (Agreement Details → Grant Details). FPO reuses project_officer_id and
-                Project Specialist reuses alternate_project_officer_id (relabeled at the display layer). */}
             {isGrant && (
                 <>
                     <h3 className="font-sans-lg text-semibold margin-top-3">Grant Details</h3>
                     <p>
-                        Please complete the information below for this grant. You can enter this information now or come
-                        back and edit the information later.
+                        Please complete the information below for this grant. In OPS, a grant agreement is a single NOFO
+                        number. You also can come back later to edit this information at any time or once everything is
+                        finalized.
                     </p>
-                    <Input
-                        name="nofo_number"
-                        label="NOFO Number"
-                        messages={res.getErrors("nofo_number")}
-                        className={cn("nofo_number")}
-                        isRequired={true}
-                        value={nofoNumber || ""}
-                        onChange={(name, value) => {
-                            setNofoNumber(value);
-                            runValidate(name, value);
-                        }}
-                    />
-                    {/* Grant Funding Period — numeric input, unit "months". No stepper component exists
-                        yet (see plan step 8); ships as a plain Input with digit-only filtering. */}
-                    <Input
-                        name="funding_period_months"
-                        label="Grant Funding Period (months)"
-                        value={fundingPeriodMonths ?? ""}
-                        onChange={(name, value) => {
-                            if (/^[0-9]*$/.test(value)) {
-                                setFundingPeriodMonths(value === "" ? null : Number(value));
-                            }
-                        }}
-                    />
-                    <Input
-                        name="aln_number"
-                        label="ALN Number"
-                        value={alnNumber || ""}
-                        onChange={(name, value) => setAlnNumber(value)}
+                    <div className="width-card-lg">
+                        <Input
+                            name="nofo_number"
+                            label="NOFO Number"
+                            className={cn("nofo_number")}
+                            value={nofoNumber || ""}
+                            onChange={(name, value) => {
+                                setNofoNumber(value);
+                                runValidate(name, value);
+                            }}
+                        />
+                    </div>
+                    <div className="width-card-lg">
+                        <GrantFundingPeriodSelect
+                            value={fundingPeriodMonths}
+                            onChange={(name, value) => setFundingPeriodMonths(value)}
+                        />
+                    </div>
+                    <div className="margin-top-3 width-card-lg">
+                        <AlnNumbersComboBox
+                            selectedAlnNumbers={alnNumbers}
+                            addAlnNumber={addAlnNumber}
+                            overrideStyles={{ width: "15em" }}
+                        />
+                    </div>
+                    <h3 className="font-sans-sm text-semibold">ALN Numbers Added</h3>
+                    <AlnNumberList
+                        selectedAlnNumbers={alnNumbers}
+                        removeAlnNumber={removeAlnNumber}
                     />
                     <div className="display-flex margin-top-3">
                         <ProjectOfficerComboBox
@@ -511,11 +528,6 @@ const AgreementEditForm = ({
                     />
                 </>
             )}
-            {/* REVIEW: NEW — wraps ContractTypeSelect through Notes TextArea (the entire contract-only
-                control block). When Grant is selected none of these render, so the form shows only
-                the 4 grant fields: type filter Select, Title Input, Nickname Input, Description TextArea.
-                The AA controls above are already gated by selectedAgreementFilter === PARTNER / isAgreementAA
-                so they also won't appear for grants. */}
             {!isGrant && (
                 <>
                     <ContractTypeSelect
@@ -555,7 +567,7 @@ const AgreementEditForm = ({
                         name="product_service_code_id"
                         label="Product Service Code"
                         messages={res.getErrors("product_service_code_id")}
-                        className={cn("product_service_code_id")}
+                        className={`margin-top-3 ${cn("product_service_code_id")}`}
                         selectedProductServiceCode={selectedProductServiceCode || ""}
                         codes={productServiceCodes}
                         onChange={(name, value) => {
@@ -741,24 +753,16 @@ const AgreementEditForm = ({
                                 Save Draft
                             </button>
                         )}
-                        {/* REVIEW: NEW — hides Continue in wizard mode for grants.
-                            Continue advances to Step 3 (budget lines, out of scope for this slice)
-                            and does NOT persist a new agreement, so reaching it without a Save Draft
-                            would lose the grant. In non-wizard (edit/review) mode Continue renders
-                            as "Save Changes" and must still be available, so the gate is
-                            !(isGrant && isWizardMode) rather than just !isGrant. */}
-                        {!(isGrant && isWizardMode) && (
-                            <button
-                                type="button"
-                                id="continue"
-                                className="usa-button"
-                                onClick={handleContinue}
-                                disabled={shouldDisableBtn}
-                                data-cy="continue-btn"
-                            >
-                                {isWizardMode ? "Continue" : "Save Changes"}
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            id="continue"
+                            className="usa-button"
+                            onClick={handleContinue}
+                            disabled={shouldDisableBtn}
+                            data-cy="continue-btn"
+                        >
+                            {isWizardMode ? "Continue" : "Save Changes"}
+                        </button>
                     </div>
                 </div>
             )}

@@ -16,7 +16,11 @@ import useSaveNotes from "../useSaveNotes";
  * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
  * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepTwo(
+    stepTwoData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
     const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
@@ -30,7 +34,13 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepTwoComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value).
+    const [patchStepTwo, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by ?? -1);
@@ -73,8 +83,22 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         notes: step2Notes,
         setNotes: setStep2Notes,
         resetNotes: resetStep2Notes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepTwo, stepTwoData?.notes, setAlert);
+
+    const hasChanges = Boolean(
+        isPreSolicitationPackageFinalized ||
+        draftSolicitationDate ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        step2DateCompleted ||
+        revisedTargetDate ||
+        step2Notes.trim() !== (stepTwoData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
@@ -90,6 +114,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
                 stepId,
                 data: payload
             }).unwrap();
+            setTargetCompletionDate("");
             console.log("Procurement Tracker Step 2 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 2", error);
@@ -175,8 +200,12 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setSelectedUser({});
         setTargetCompletionDate("");
         setStep2DateCompleted("");
-        resetStep2Notes(stepTwoData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepTwoData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStep2Notes();
         setRevisedTargetDate("");
+        suite.reset();
     };
 
     const cancelModalStep2 = () => {
@@ -194,6 +223,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     return {
         cancelStepTwo,
         handleSaveNotes,
+        isStepPatchInFlight,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,
@@ -211,6 +241,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2Notes,
         setStep2Notes,
         resetStep2Notes,
+        notesResetKey,
         step2NotesLabel,
         runValidate,
         validatorRes,
@@ -225,6 +256,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         cancelModalStep2,
         isPastDue,
         revisedTargetDate,
-        setRevisedTargetDate
+        setRevisedTargetDate,
+        hasChanges
     };
 }

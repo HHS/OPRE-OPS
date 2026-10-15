@@ -28,14 +28,14 @@ const validContractData = {
 };
 
 describe("AgreementEditFormSuite — GRANT", () => {
-    it("passes with only the required grant fields (name, project_id, nofo_number)", () => {
+    it("passes with only the required grant fields (name, project_id)", () => {
         const result = suite.run(validGrantData);
         expect(result.hasErrors()).toBe(false);
     });
 
-    it("fails when nofo_number is blank", () => {
+    it("passes when nofo_number is blank", () => {
         const result = suite.run({ ...validGrantData, nofo_number: "" });
-        expect(result.hasErrors("nofo_number")).toBe(true);
+        expect(result.hasErrors("nofo_number")).toBe(false);
     });
 
     it("passes nofo_number when provided", () => {
@@ -80,6 +80,17 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
         expect(result.hasErrors("procurement-shop-select")).toBe(true);
     });
 
+    it("does not fail procurement-shop-select when missing AND locked by the backend (OPS-6312)", () => {
+        // A locked, empty Procurement Shop (e.g. an obligated agreement with no shop set yet)
+        // must not surface a "required" error the user can never clear — the field is disabled.
+        const result = suite.run({
+            ...validContractData,
+            "procurement-shop-select": undefined,
+            procurementShopLocked: true
+        });
+        expect(result.hasErrors("procurement-shop-select")).toBe(false);
+    });
+
     it("fails service_requirement_type when missing", () => {
         const result = suite.run({
             ...validContractData,
@@ -91,6 +102,66 @@ describe("AgreementEditFormSuite — CONTRACT regression", () => {
     it("does not require nofo_number for contracts", () => {
         const result = suite.run(validContractData);
         expect(result.hasErrors("nofo_number")).toBe(false);
+    });
+
+    it("fails a null service_requirement_type when creating a new agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: null,
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails an empty-string service_requirement_type when creating a new agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: "",
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails a null service_requirement_type when creating a new non-CONTRACT/AA agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
+            service_requirement_type: null,
+            isNewAgreement: true
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails a null service_requirement_type when editing an existing CONTRACT", () => {
+        const result = suite.run({
+            ...validContractData,
+            service_requirement_type: null,
+            isNewAgreement: false
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("fails a null service_requirement_type when editing an existing AA", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "AA",
+            "agreement-type-filter": "AA",
+            service_requirement_type: null,
+            isNewAgreement: false
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(true);
+    });
+
+    it("does not fail a null service_requirement_type when editing an existing non-CONTRACT/AA agreement", () => {
+        const result = suite.run({
+            ...validContractData,
+            agreement_type: "DIRECT_OBLIGATION",
+            "agreement-type-filter": "DIRECT_OBLIGATION",
+            service_requirement_type: null,
+            isNewAgreement: false
+        });
+        expect(result.hasErrors("service_requirement_type")).toBe(false);
     });
 });
 

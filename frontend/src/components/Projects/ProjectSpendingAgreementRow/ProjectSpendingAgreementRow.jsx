@@ -22,8 +22,10 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  * A read-only expandable table row for the Project Spending Agreements table.
  *
  * The FY Total comes from `GET /agreements/:id/spending/` (per-agreement, per-FY).
- * The `fyTotal` prop is used as a fallback while the query is in flight or if the
- * endpoint has no entry for the selected FY.
+ * That endpoint omits an FY entirely when none of that FY's budget lines count toward
+ * spending (all DRAFT and not OBE), so a loaded response with no entry for the selected
+ * FY resolves to $0. The `fyTotal` prop is only a fallback until the response resolves —
+ * the query may be in flight, errored, or skipped.
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
@@ -38,7 +40,15 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
         skip: !agreement?.id
     });
     const fyTotalFromEndpoint = agreementSpending?.fy_total?.[fiscalYear];
-    const resolvedFyTotal = fyTotalFromEndpoint != null ? Number(fyTotalFromEndpoint) : fyTotal;
+    let resolvedFyTotal = fyTotal;
+    if (fyTotalFromEndpoint != null) {
+        resolvedFyTotal = Number(fyTotalFromEndpoint);
+    } else if (agreementSpending) {
+        // The spending query resolved but has no entry for this FY, which means none of
+        // this agreement's budget lines for the FY count toward spending (all DRAFT and
+        // not OBE). That is $0, not unknown.
+        resolvedFyTotal = 0;
+    }
 
     const agreementName = getAgreementName(agreement) ?? NO_DATA;
     const agreementType = getAgreementType(agreement?.agreement_type) ?? NO_DATA;

@@ -316,7 +316,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
@@ -334,16 +334,28 @@ describe("Procurement Shop Change Requests at the card level", () => {
                         );
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId is still PLANNED (only a deletion change request was created
+                        // above), so only a super user can clean up the agreement directly
+                        // (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -456,20 +468,32 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId is still PLANNED (only a deletion change request was created
+                        // above), so only a super user can clean up the agreement directly
+                        // (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -537,10 +561,16 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 testLogin("division-director");
 
                 cy.visit("/agreements?filter=change-requests");
-                cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").first().click();
+                cy.get("[data-cy='review-card']")
+                    .contains(/procurement shop/i)
+                    .should("exist");
+                cy.get("[data-cy='review-card']")
+                    .contains(/procurement shop/i)
+                    .closest("[data-cy='review-card']")
+                    .find("[data-cy='approve-agreement']")
+                    .click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                // NOTE: After Approval toggle is default on
+                // NOTE: After Change toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("[data-testid='term-container']")
@@ -560,7 +590,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
                 // NOTE: Before Approval toggle is now in play
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get('[data-cy="button-toggle-After Change"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
                 cy.get(".usa-table").should("exist");
@@ -606,20 +636,32 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId is still PLANNED (only a deletion change request was created
+                        // above), so only a super user can clean up the agreement directly
+                        // (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });
@@ -684,10 +726,16 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 testLogin("division-director");
 
                 cy.visit("/agreements?filter=change-requests");
-                cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").first().click();
+                cy.get("[data-cy='review-card']")
+                    .contains(/procurement shop/i)
+                    .should("exist");
+                cy.get("[data-cy='review-card']")
+                    .contains(/procurement shop/i)
+                    .closest("[data-cy='review-card']")
+                    .find("[data-cy='approve-agreement']")
+                    .click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
-                // NOTE: After Approval toggle is default on
+                // NOTE: After Change toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
                 // check agreement meta for css class  of text-brand-portfolio-budget-graph-3
                 cy.get("[data-testid='term-container']")
@@ -707,7 +755,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 //     .should("contain", "$199,433,046.00")
                 //     .and("contain", "$40,000,000.00");
                 // NOTE: Before Approval toggle is now in play
-                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                cy.get('[data-cy="button-toggle-After Change"]').first().click();
                 cy.get("[data-cy='currency-summary-card']").contains(/gcs/i);
                 cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
                 cy.get(".usa-table").should("exist");
@@ -752,20 +800,32 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 Accept: "application/json"
                             }
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(202);
                         });
                     })
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
+                        // bliId is still PLANNED (only a deletion change request was created
+                        // above), so only a super user can clean up the agreement directly
+                        // (see #5658).
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
             });
     });

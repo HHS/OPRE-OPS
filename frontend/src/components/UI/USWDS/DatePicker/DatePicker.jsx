@@ -156,7 +156,10 @@ function DatePicker({
             >
                 <input
                     ref={inputRef}
-                    className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
+                    // Static on purpose: USWDS adds usa-date-picker__internal-input to this node,
+                    // and a className change would make React wipe it. The error class is
+                    // toggled on the visible cloned input by the effect above.
+                    className="usa-input"
                     id={id}
                     name={name}
                     aria-labelledby={`${id}-label`}

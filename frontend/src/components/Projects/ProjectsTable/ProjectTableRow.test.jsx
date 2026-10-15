@@ -69,8 +69,10 @@ describe("ProjectTableRow", () => {
     });
 
     it("renders TBD for null dates", () => {
-        renderRow(MOCK_PROJECT_NO_AGREEMENTS);
-        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(2);
+        // Use "All" so the FY Total cell is hidden — only start and end produce TBD
+        renderRow(MOCK_PROJECT_NO_AGREEMENTS, "All");
+        // start and end dates are null → TBD; project_total is 0 → $0 (not TBD)
+        expect(screen.getAllByText("TBD").length).toBe(2);
     });
 
     it("renders the FY total as currency for the selected fiscal year", () => {
@@ -81,6 +83,18 @@ describe("ProjectTableRow", () => {
     it("renders the project total as currency", () => {
         renderRow();
         expect(screen.getByText("$800,000.00")).toBeInTheDocument();
+    });
+
+    it("renders '$0' for a zero project total (not TBD)", () => {
+        renderRow(MOCK_PROJECT_NO_AGREEMENTS);
+        expect(screen.getByText("$0")).toBeInTheDocument();
+    });
+
+    it("hides the FY Total cell when selectedFiscalYear is 'All'", () => {
+        renderRow(MOCK_PROJECT, "All");
+        // With selectedFiscalYear "All": Project, Type, Start, End, Project Total = 5 data cells
+        // FY total ($500,000.00) must not appear
+        expect(screen.queryByText("$500,000.00")).not.toBeInTheDocument();
     });
 
     it("renders a chevron expand button", () => {

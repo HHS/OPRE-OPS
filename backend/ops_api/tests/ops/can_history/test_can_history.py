@@ -334,6 +334,31 @@ def test_update_can_can_history(loaded_db, app_ctx):
     assert description_can_history_event.fiscal_year == 2025
 
 
+def test_update_can_funding_details_can_history(loaded_db, app_ctx):
+    update_can_event = loaded_db.get(OpsEvent, 75)
+    can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 75)).scalars().all()
+    )
+    assert len(can_update_history_events) == 2
+
+    appropriation_event = next(e for e in can_update_history_events if "appropriation" in e.history_message)
+    assert appropriation_event.history_title == "Funding Details Edited"
+    assert (
+        appropriation_event.history_message
+        == "Steve Tekell edited the funding details appropriation from 75-25-1512 to 75-2529-1512"
+    )
+    assert appropriation_event.history_type == CANHistoryType.CAN_FUNDING_DETAILS_EDITED
+    assert appropriation_event.fiscal_year == 2026
+
+    fiscal_year_event = next(e for e in can_update_history_events if "fiscal year" in e.history_message)
+    assert fiscal_year_event.history_title == "Funding Details Edited"
+    assert fiscal_year_event.history_message == "Steve Tekell edited the funding details fiscal year from 2025 to 2026"
+    assert fiscal_year_event.history_type == CANHistoryType.CAN_FUNDING_DETAILS_EDITED
+    assert fiscal_year_event.fiscal_year == 2026
+
+
 def test_update_can_funding_budget_can_history(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 22)
     can_history_trigger(update_can_event, loaded_db)

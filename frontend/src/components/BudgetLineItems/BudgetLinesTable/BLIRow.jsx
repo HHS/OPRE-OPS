@@ -5,6 +5,7 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
+    getClinDisplayValue,
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
@@ -20,7 +21,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
-import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+import { addErrorClassIfNotFound, futureDateErrorClass, isDateOutsidePopRange } from "./BLIRow.helpers";
 
 /**
  * @typedef {Object} BLIRowProps
@@ -31,7 +32,8 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
+ * @property {boolean} [isGrant] - Whether this is a grant budget line (omits Fee/Total cells).
+ * @property {boolean} [showClinColumn] - Whether to show the CLIN cell (awarded contract agreements only).
  */
 
 /**
@@ -46,18 +48,22 @@ const BLIRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false
+    isBLIInCurrentWorkflow = false,
+    isGrant = false,
+    showClinColumn = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = (budgetLine?.amount ?? 0) + (budgetLine?.fees ?? 0);
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
+    const isBudgetLineDeletable = budgetLine._meta?.isDeletable ?? isBudgetLineEditable;
     const location = useLocation();
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
     const changeIcons = (
@@ -70,6 +76,7 @@ const BLIRow = ({
                 scrollToCenter("budget-line-form");
             }}
             isItemEditable={isBudgetLineEditable}
+            isItemDeletable={isBudgetLineDeletable}
             duplicateIcon={true}
             lockedMessage={lockedMessage}
         />
@@ -89,13 +96,25 @@ const BLIRow = ({
                     BLILabel(budgetLine)
                 )}
             </td>
+            {showClinColumn && !isGrant && <td>{getClinDisplayValue(budgetLine)}</td>}
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
-                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)}`}
+                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)} ${
+                    isReviewMode && isOutsidePopRange ? "table-item-error" : ""
+                }`}
             >
-                {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
+                {isReviewMode && isOutsidePopRange ? (
+                    <Tooltip
+                        label="Obligate By date is outside the agreement’s Period of Performance"
+                        position="right"
+                    >
+                        <span>{formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}</span>
+                    </Tooltip>
+                ) : (
+                    formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)
+                )}
             </td>
             <td>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
             <td className={addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)}>
@@ -104,15 +123,20 @@ const BLIRow = ({
             <td className={isReviewMode && budgetLine?.amount == null ? "table-item-error" : ""}>
                 {budgetLine?.amount != null ? formatCurrency(budgetLine.amount) : NO_DATA}
             </td>
-            <td>
-                <Tooltip
-                    label={getProcurementShopFeeTooltip(budgetLine)}
-                    position="left"
-                >
-                    <span>{formatCurrency(budgetLine?.fees)}</span>
-                </Tooltip>
-            </td>
-            <td>{formatCurrency(budgetLineTotalPlusFees)}</td>
+            {/* Grants have no procurement shop, so no Fee or Total columns. */}
+            {!isGrant && (
+                <>
+                    <td>
+                        <Tooltip
+                            label={getProcurementShopFeeTooltip(budgetLine)}
+                            position="left"
+                        >
+                            <span>{formatCurrency(budgetLine?.fees)}</span>
+                        </Tooltip>
+                    </td>
+                    <td>{formatCurrency(budgetLineTotalPlusFees)}</td>
+                </>
+            )}
             <td>
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
@@ -130,7 +154,7 @@ const BLIRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={isGrant ? 7 : showClinColumn ? 10 : 9}
             className="border-top-none"
             style={expandedRowBGColor}
         >
@@ -156,10 +180,13 @@ const BLIRow = ({
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
                 </dl>
-                <dl className="grid-col-auto margin-top-0 font-12px">
-                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
-                </dl>
+                {/* Grants have no procurement shop. */}
+                {!isGrant && (
+                    <dl className="grid-col-auto margin-top-0 font-12px">
+                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                        <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
+                    </dl>
+                )}
                 <div className="grid-col display-flex flex-justify-end flex-align-end margin-bottom-1">
                     {!readOnly && changeIcons}
                 </div>

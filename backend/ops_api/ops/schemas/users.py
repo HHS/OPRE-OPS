@@ -35,6 +35,7 @@ class QueryParameters(Schema):
     last_name: Optional[str] = fields.String()
     roles: Optional[list[str]] = custom_types.List(fields.String())
     exclude_read_only: Optional[bool] = fields.Boolean(load_default=False)
+    exclude_system_admin: Optional[bool] = fields.Boolean(load_default=False)
 
 
 class RoleSchema(Schema):

@@ -42,3 +42,7 @@ AUTHLIB_OAUTH_CLIENTS = {
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "opre-ops-dev-app-backend."
+
+# Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
+# Enabled in dev for testing (overrides the default-OFF in default_settings.py).
+SKIP_CR_FOR_DRAFT_PLANNED = True

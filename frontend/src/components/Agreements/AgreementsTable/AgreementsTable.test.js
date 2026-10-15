@@ -2,9 +2,11 @@ import { Provider } from "react-redux";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AgreementsTable from "./AgreementsTable";
+import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
 import { configureStore } from "@reduxjs/toolkit";
-import { vi } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 import { opsApi } from "../../../api/opsAPI";
+import { NO_DATA } from "../../../constants";
 
 // Mock API calls
 vi.mock("../../../api/opsAPI", async () => {
@@ -63,7 +65,7 @@ const agreements = [
         agreement_subtotal: 300,
         total_agreement_fees: 15,
         agreement_total: 315,
-        lifetime_obligated: 0,
+        lifetime_obligated: 75000,
         fy_obligated: "0",
         created_by: 1,
         notes: "Test notes",
@@ -143,4 +145,58 @@ it("does not render contract-only expanded fields for a GRANT agreement row", ()
     expect(screen.queryByText("Procurement Shop")).not.toBeInTheDocument();
     expect(screen.queryByText("Award Type")).not.toBeInTheDocument();
     expect(screen.queryByText("Vendor")).not.toBeInTheDocument();
+});
+
+describe("getTableHeadingsWithFY", () => {
+    it("returns 'Lifetime Obligated' when fiscalYear is 'All'", () => {
+        const headings = getTableHeadingsWithFY("All");
+        const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
+        expect(fyHeading.heading).toBe("Lifetime Obligated");
+    });
+
+    it("returns year-specific label for a specific fiscal year", () => {
+        const headings = getTableHeadingsWithFY("2025");
+        const fyHeading = headings.find((h) => h.heading.includes("Obligated"));
+        expect(fyHeading.heading).toBe("FY25 Obligated");
+    });
+});
+
+it("Lifetime Obligated column header is sortable (not disabled) when selectedFiscalYear is 'All'", () => {
+    const setSortConditions = vi.fn();
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="All"
+                    sortConditions="AGREEMENT"
+                    sortDescending={false}
+                    setSortConditions={setSortConditions}
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    const fyHeader = screen.getByRole("button", { name: /Lifetime Obligated/i });
+    expect(fyHeader).not.toHaveAttribute("aria-disabled");
+    fyHeader.click();
+    expect(setSortConditions).toHaveBeenCalled();
+});
+
+it("shows 'Lifetime Obligated' column header and lifetime obligated value in the FY column when selectedFiscalYear is 'All'", () => {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="All"
+                />
+            </BrowserRouter>
+        </Provider>
+    );
+
+    expect(screen.getByText("Lifetime Obligated")).toBeInTheDocument();
+    expect(screen.queryByText("FY26 Obligated")).not.toBeInTheDocument();
+    expect(screen.queryByText(NO_DATA)).not.toBeInTheDocument();
+    expect(screen.getByText("$75,000.00")).toBeInTheDocument();
 });

@@ -20,6 +20,7 @@ class Permission(Enum):
     CAN = auto()
     CHANGE_REQUEST = auto()
     DIVISION = auto()
+    GRANT_NUMBER = auto()
     HISTORY = auto()
     NOTIFICATION = auto()
     PACKAGE = auto()

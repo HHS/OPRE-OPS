@@ -3,7 +3,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { getLocalISODate } from "../../../../helpers/utils";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -37,6 +36,7 @@ const ProcurementTrackerStepOne = ({
     handleSetCompletedStepNumber,
     authorizedUsers,
     isDisabled,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -49,9 +49,11 @@ const ProcurementTrackerStepOne = ({
         MemoizedDatePicker,
         setStep1Notes,
         resetStep1Notes,
+        notesResetKey,
         step1Notes,
         handleStep1Complete,
         handleSaveNotes,
+        isStepPatchInFlight,
         cancelModalStep1,
         disableStep1Buttons,
         modalProps,
@@ -62,7 +64,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !isDisabled);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !isDisabled, onDirtyChange);
 
     return (
         <>
@@ -165,11 +167,16 @@ const ProcurementTrackerStepOne = ({
                                 maxDate={getLocalISODate()}
                             />
                         </div>
-                        <StepNotesForm
+                        <StepNotesEditor
+                            textAreaName="notes-step-1"
                             notes={step1Notes}
                             setNotes={setStep1Notes}
-                            onSave={() => handleSaveNotes(stepOneData?.id)}
-                            isDisabled={isDisabled}
+                            resetNotes={resetStep1Notes}
+                            savedNotes={stepOneData?.notes}
+                            stepId={stepOneData?.id}
+                            onSave={handleSaveNotes}
+                            isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
@@ -221,20 +228,21 @@ const ProcurementTrackerStepOne = ({
                             term="Date Completed"
                             description={step1DateCompletedLabel}
                         />
-                        <div className="width-full">
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <StepNotesEditor
-                                notes={step1Notes}
-                                setNotes={setStep1Notes}
-                                resetNotes={resetStep1Notes}
-                                notesLabel={step1NotesLabel}
-                                savedNotes={stepOneData?.notes}
-                                stepId={stepOneData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-1"
+                        notes={step1Notes}
+                        setNotes={setStep1Notes}
+                        resetNotes={resetStep1Notes}
+                        savedNotes={stepOneData?.notes}
+                        stepId={stepOneData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>

@@ -1,4 +1,3 @@
-import AgencyInfo from "./AgencyInfo";
 import Identifier from "./Identifier";
 
 const Footer = () => {
@@ -18,9 +17,6 @@ const Footer = () => {
                 >
                     Return to top
                 </button>
-            </div>
-            <div className="usa-footer__secondary-section">
-                <AgencyInfo />
             </div>
             <Identifier />
         </footer>

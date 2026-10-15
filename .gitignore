@@ -254,7 +254,8 @@ data/
 
 # Claude Code
 .claude/settings.local.json
-.claude/stories/
+.playwright-mcp/
+
 .vscode/mcp.json
 
 /frontend/frontend/public/mockServiceWorker.js
@@ -270,3 +271,6 @@ storybook-static
 
 .worktrees/
 progress/
+performance_tests/results/**/*.html
+performance_tests/results/**/*.csv
+performance_tests/results/**/*_stats_history.csv

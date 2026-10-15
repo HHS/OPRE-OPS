@@ -45,3 +45,7 @@ AUTHLIB_OAUTH_CLIENTS = {
 HOST_HEADER_PREFIX = "opre-ops-stg-app-backend."
 
 SUPER_USER = "SUPER_USER"
+
+# Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
+# Enabled in staging for testing (overrides the default-OFF in default_settings.py).
+SKIP_CR_FOR_DRAFT_PLANNED = True

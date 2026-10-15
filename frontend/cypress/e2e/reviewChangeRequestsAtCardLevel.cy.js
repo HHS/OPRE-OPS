@@ -169,20 +169,32 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId's Draft->Planned change was approved above, so it is still
+                                // PLANNED (only a deletion change request was created above), so
+                                // only a super user can clean up the agreement directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });
@@ -289,7 +301,7 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             });
                         // TODO: unable to delete agreement?
@@ -431,20 +443,33 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId was created directly PLANNED, and the amount-only budget
+                                // change CR approved above doesn't change its status, so it is
+                                // still PLANNED; only a super user can clean up the agreement
+                                // directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });
@@ -572,20 +597,33 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId was created directly PLANNED, and the CAN-only budget
+                                // change CR approved above doesn't change its status, so it is
+                                // still PLANNED; only a super user can clean up the agreement
+                                // directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });
@@ -716,20 +754,33 @@ describe("Review Change Requests at Card Level", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    expect(response.status).to.eq(202);
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId was created directly PLANNED, and the date-only budget
+                                // change CR approved above doesn't change its status, so it is
+                                // still PLANNED; only a super user can clean up the agreement
+                                // directly (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });

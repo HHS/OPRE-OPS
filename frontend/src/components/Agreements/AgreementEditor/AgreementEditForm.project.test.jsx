@@ -25,6 +25,7 @@ vi.mock("../SummaryBox", () => ({ default: () => <div /> }));
 vi.mock("../ProjectOfficerComboBox", () => ({ default: () => <div /> }));
 vi.mock("../ResearchMethodologyComboBox", () => ({ default: () => <div /> }));
 vi.mock("../SpecialTopicComboBox", () => ({ default: () => <div /> }));
+vi.mock("../AlnNumbersComboBox", () => ({ default: () => <div /> }));
 vi.mock("../TeamMemberComboBox", () => ({ default: () => <div /> }));
 vi.mock("../TeamMemberList", () => ({ default: () => <div /> }));
 vi.mock("../../Projects/ProjectComboBox", () => ({
@@ -59,10 +60,11 @@ const baseHookState = {
     selectedAlternateProjectOfficer: null,
     isGrant: false,
     nofoNumber: "",
-    alnNumber: "",
+    alnNumbers: [],
     fundingPeriodMonths: null,
     setNofoNumber: vi.fn(),
-    setAlnNumber: vi.fn(),
+    addAlnNumber: vi.fn(),
+    removeAlnNumber: vi.fn(),
     setFundingPeriodMonths: vi.fn(),
     showModal: false,
     setShowModal: vi.fn(),

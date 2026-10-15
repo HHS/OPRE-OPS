@@ -4,10 +4,12 @@ import typing
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.experimental.context import Context
+from marshmallow.validate import Length
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition, ProjectType
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.schemas.clins import CLINSchema  # noqa: F401 - imported for Marshmallow registry
+from ops_api.ops.schemas.grant_number import GrantNumberSchema  # noqa: F401 - imported for Marshmallow registry
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
@@ -54,6 +56,7 @@ class RequestBodySchema(Schema):
     comments = fields.Str(allow_none=True, load_default=None)
     proc_shop_fee_percentage = fields.Float(allow_none=True, load_default=None)
     services_component_id = fields.Int(allow_none=True)
+    grant_number_id = fields.Int(allow_none=True)
     clin_id = fields.Int(allow_none=True)
     requestor_notes = fields.Str(allow_none=True)
 
@@ -69,6 +72,7 @@ class PATCHRequestBodySchema(RequestBodySchema):
 class PUTRequestBodySchema(RequestBodySchema):
     agreement_id = fields.Int(required=True)
     services_component_id = fields.Int(allow_none=True, load_default=None)
+    grant_number_id = fields.Int(allow_none=True, load_default=None)
     clin_id = fields.Int(allow_none=True, load_default=None)
 
 
@@ -88,7 +92,11 @@ class NestedBudgetLineItemRequestSchema(RequestBodySchema):
     2. services_component_ref: Reference to a services component being created
        in the same request (matched against the 'ref' field on services components)
 
-    Only one of services_component_id or services_component_ref should be provided.
+    Grant budget line items reference a grant number the same two ways, via
+    grant_number_id / grant_number_ref (matched against the 'ref' on grant_numbers).
+
+    A budget line item links to at most one grouping concept: provide only one of
+    {services_component_id, services_component_ref, grant_number_id, grant_number_ref}.
     """
 
     # New field for referencing services components being created in same request
@@ -102,23 +110,53 @@ class NestedBudgetLineItemRequestSchema(RequestBodySchema):
         },
     )
 
+    # Grant analog: reference a grant number being created in the same request
+    grant_number_ref = fields.Str(
+        allow_none=True,
+        load_default=None,
+        metadata={
+            "description": "Reference to a grant number being created in the same request. "
+            "Matched against the 'ref' field in the grant_numbers array. "
+            "Cannot be used with grant_number_id."
+        },
+    )
+
     @validates_schema
-    def validate_services_component_reference(self, data, **kwargs):
+    def validate_grouping_reference(self, data, **kwargs):
         """
-        Validate that only one of services_component_id or services_component_ref is provided.
+        Validate the grouping link for a nested budget line item:
+        - services_component_id and services_component_ref are mutually exclusive,
+        - grant_number_id and grant_number_ref are mutually exclusive,
+        - a services component link and a grant number link cannot both be present.
 
         Raises:
-            ValidationError: If both fields are provided.
+            ValidationError: If any of the above are violated.
         """
-        has_id = "services_component_id" in data and data["services_component_id"] is not None
-        has_ref = "services_component_ref" in data and data["services_component_ref"] is not None
+        has_sc_id = data.get("services_component_id") is not None
+        has_sc_ref = data.get("services_component_ref") is not None
+        has_gn_id = data.get("grant_number_id") is not None
+        has_gn_ref = data.get("grant_number_ref") is not None
 
-        if has_id and has_ref:
+        if has_sc_id and has_sc_ref:
             raise ValidationError(
                 "Cannot specify both services_component_id and services_component_ref. "
                 "Use services_component_id to reference an existing services component, "
                 "or services_component_ref to reference one being created in this request.",
                 field_name="services_component_ref",
+            )
+
+        if has_gn_id and has_gn_ref:
+            raise ValidationError(
+                "Cannot specify both grant_number_id and grant_number_ref. "
+                "Use grant_number_id to reference an existing grant number, "
+                "or grant_number_ref to reference one being created in this request.",
+                field_name="grant_number_ref",
+            )
+
+        if (has_sc_id or has_sc_ref) and (has_gn_id or has_gn_ref):
+            raise ValidationError(
+                "A budget line item cannot link to both a services component and a grant number.",
+                field_name="grant_number_ref",
             )
 
 
@@ -138,6 +176,8 @@ class MetaSchema(Schema):
     total_obligated_amount = fields.Float(load_default=None, dump_default=None, required=False)
     total_overcome_by_events_amount = fields.Float(load_default=None, dump_default=None, required=False)
     isEditable = fields.Bool(dump_default=False, required=True)
+    isDeletable = fields.Bool(dump_default=False, load_default=False, required=False)
+    lockedMessage = fields.Str(allow_none=True, dump_default=None, load_default=None, required=False)
 
 
 class QueryParametersSchema(PaginationListSchema):
@@ -160,6 +200,17 @@ class QueryParametersSchema(PaginationListSchema):
     agreement_type = fields.List(fields.String(), required=False)
     agreement_name = fields.List(fields.String(), required=False)
     can_active_period = fields.List(fields.String(), required=False)
+
+
+class BudgetLineItemsBatchRequestSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields
+
+    ids = fields.List(
+        fields.Integer(),
+        required=True,
+        validate=Length(min=1, max=50, error="ids must contain between 1 and 50 items"),
+    )
 
 
 class BLIFiltersQueryParametersSchema(Schema):
@@ -257,6 +308,16 @@ class BudgetLineItemResponseSchema(Schema):
     can = fields.Nested(BudgetLineItemCANSchema(), required=True)
     can_id = fields.Int(required=True)
     services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    # grant_number_id is only set on grant BLIs; contract/other BLIs dump null.
+    # grant_number is nested so the frontend can group by grant number (its `number`)
+    # after refetch without a second lookup.
+    grant_number_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    grant_number = fields.Nested(
+        "ops_api.ops.schemas.grant_number.GrantNumberSchema",
+        load_default=None,
+        dump_default=None,
+        allow_none=True,
+    )
     clin_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
     clin = fields.Nested("ops_api.ops.schemas.clins.CLINSchema", load_default=None, dump_default=None, allow_none=True)
     amount = fields.Float(required=True)

@@ -1,6 +1,8 @@
 import { faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Tooltip from "../UI/USWDS/Tooltip";
+import { getEditDisabledTooltip } from "../../helpers/agreement.helpers";
+import EditingIndicator from "../UI/EditingIndicator";
+import DisabledEditButton from "./DisabledEditButton";
 
 /**
  * @component - Agreement detail header.
@@ -9,11 +11,16 @@ import Tooltip from "../UI/USWDS/Tooltip";
  * @param {string} props.details - The details to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
- * @param {boolean} props.isEditable - Whether the agreement is editable.
+ * @param {boolean} props.isEditable - Whether the agreement is editable (enable source of truth for the button).
+ * @param {boolean} [props.canUserEdit] - Whether the user has base edit permission (superuser or team member).
+ * @param {boolean} [props.isAgreementNotDeveloped] - Whether the agreement type is not developed yet.
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes.
  * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
  * @param {boolean} [props.isAwardInReview] - Whether award approval is in review.
- * @param {boolean} [props.isGrant] - Whether the agreement is a grant (editing not yet supported).
+ * @param {boolean} [props.isPostPreAwardLocked] - Whether the agreement is permanently locked after full pre-award approval.
+ * @param {boolean} [props.showEditButton] - Whether to render the Edit button at all. Set to false for
+ *   read-only users, who can never edit any agreement — for them neither the enabled button nor the
+ *   disabled button-plus-tooltip is meaningful, since there is no state in which they could edit.
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({
@@ -22,24 +29,23 @@ export const AgreementDetailHeader = ({
     isEditMode,
     setIsEditMode,
     isEditable,
+    canUserEdit = false,
+    isAgreementNotDeveloped = false,
     hasUnsavedChanges = false,
     isPreAwardInReview = false,
     isAwardInReview = false,
-    isGrant = false
+    isPostPreAwardLocked = false,
+    showEditButton = true
 }) => {
-    const isInReview = isPreAwardInReview || isAwardInReview;
-    // Editing is disabled when the agreement is in review, or when it is a grant (grant editing is not yet supported).
-    const isEditDisabled = isInReview || isGrant;
-    let editDisabledTooltipLabel;
-    if (isGrant) {
-        editDisabledTooltipLabel = "Editing is not yet available for grant agreements.";
-    } else if (isPreAwardInReview) {
-        editDisabledTooltipLabel =
-            "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
-    } else {
-        editDisabledTooltipLabel =
-            "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
-    }
+    // `isEditable` (computed by the parent) is the single source of truth for whether the button
+    // is enabled. When it is false, the button is shown disabled with a tooltip explaining why.
+    const editDisabledTooltipLabel = getEditDisabledTooltip({
+        canUserEdit,
+        isAgreementNotDeveloped,
+        isPreAwardInReview,
+        isAwardInReview,
+        isPostPreAwardLocked
+    });
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
@@ -56,8 +62,8 @@ export const AgreementDetailHeader = ({
                         Unsaved Changes
                     </div>
                 )}
-                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and editing is not disabled */}
-                {!isEditMode && isEditable && !isEditDisabled && (
+                {/* ENABLED EDIT BUTTON - when not in edit mode and editing is allowed */}
+                {showEditButton && !isEditMode && isEditable && (
                     <button
                         type="button"
                         id="edit"
@@ -74,42 +80,13 @@ export const AgreementDetailHeader = ({
                         <span className="text-primary">Edit</span>
                     </button>
                 )}
-                {/* DISABLED EDIT BUTTON - when in approval review or when the agreement is a grant */}
-                {!isEditMode && isEditable && isEditDisabled && (
-                    <Tooltip label={editDisabledTooltipLabel}>
-                        <span
-                            id="edit-disabled"
-                            className="usa-button--unstyled usa-button--disabled display-flex flex-align-center"
-                            aria-disabled="true"
-                            data-cy="edit-disabled"
-                            tabIndex={0}
-                            role="button"
-                        >
-                            <FontAwesomeIcon
-                                icon={faPen}
-                                className="height-2 width-2 margin-right-1"
-                                aria-hidden="true"
-                            />
-                            <span>Edit</span>
-                        </span>
-                    </Tooltip>
+                {/* DISABLED EDIT BUTTON - shown (with tooltip) when editing is not allowed */}
+                {showEditButton && !isEditMode && !isEditable && (
+                    <DisabledEditButton label={editDisabledTooltipLabel} />
                 )}
                 {isEditMode && (
                     <div className="margin-left-auto">
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="2x"
-                            className="text-black height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                            title="edit"
-                            data-position="top"
-                            aria-hidden="true"
-                        />
-                        <span
-                            id="editing"
-                            className="text-black"
-                        >
-                            Editing...
-                        </span>
+                        <EditingIndicator />
                     </div>
                 )}
             </div>

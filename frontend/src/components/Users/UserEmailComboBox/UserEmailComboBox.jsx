@@ -11,7 +11,11 @@ import ComboBox from "../../UI/Form/ComboBox";
 function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
     const navigate = useNavigate();
     /** @type {{data?: import("../../../types/UserTypes").User[] | undefined, error?: Object, isLoading: boolean}} */
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
+    const {
+        data: users,
+        error: errorUsers,
+        isLoading: isLoadingUsers
+    } = useGetUsersQuery({ excludeSystemAdmin: true });
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;

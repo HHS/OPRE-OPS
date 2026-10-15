@@ -1,6 +1,5 @@
 import Table from "../../UI/Table";
 import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementTableRow from "./AgreementTableRow";
 
 /**
@@ -11,6 +10,12 @@ import AgreementTableRow from "./AgreementTableRow";
  * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort the table in descending order
  * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition
  * @param {string} props.selectedFiscalYear - The selected fiscal year for the FY Obligated column
+ * @param {boolean} [props.disableRowActions] - When true, hides edit/delete row actions. Use for
+ *   non-cache-subscribed result sets (e.g. a one-off search) where a mutation wouldn't be reflected
+ *   back into the displayed rows.
+ * @param {boolean} [props.disableSorting] - When true, column headers render as plain text instead
+ *   of sort buttons. Use when there's no sort state wired up (e.g. a static snapshot), so headers
+ *   don't present as interactive controls that silently do nothing.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({
@@ -18,23 +23,32 @@ export const AgreementsTable = ({
     sortDescending,
     sortConditions,
     setSortConditions,
-    selectedFiscalYear
+    selectedFiscalYear,
+    disableRowActions = false,
+    disableSorting = false
 }) => {
-    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear, getCurrentFiscalYear());
+    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear);
+
+    const handleClickHeader = (headerValue, isDescending) => {
+        setSortConditions(headerValue, isDescending);
+    };
 
     return (
         <>
             <Table
                 tableHeadings={tableHeadings}
                 selectedHeader={sortConditions}
-                onClickHeader={setSortConditions}
+                onClickHeader={handleClickHeader}
                 sortDescending={sortDescending}
+                sortable={!disableSorting}
             >
                 {agreements.length > 0 &&
                     agreements?.map((agreement) => (
                         <AgreementTableRow
                             key={agreement?.id}
                             agreement={agreement}
+                            selectedFiscalYear={selectedFiscalYear}
+                            disableRowActions={disableRowActions}
                         />
                     ))}
             </Table>

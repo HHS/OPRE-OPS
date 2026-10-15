@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from "react";
  * @property {FilterItem[]} activePeriod
  * @property {FilterItem[]} portfolio
  * @property {FilterItem[]} transfer
- * @property {[number, number]} budget
+ * @property {[number, number] | []} budget
  * @property {FilterItem[]} can
  */
 

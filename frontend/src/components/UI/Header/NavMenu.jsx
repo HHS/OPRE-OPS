@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
+import { HOME_CHILD_PATHS } from "../../../pages/home/homeRoutes";
 import { PROCUREMENT_DASHBOARD_ROLES, USER_ROLES } from "../../Users/User.constants";
 
 const NavMenu = () => {
@@ -21,10 +22,7 @@ const NavMenu = () => {
 
     const getNavLinkClass = ({ isActive }, pathname = null) => {
         // Custom logic for Home route to include child routes
-        if (
-            pathname === "/" &&
-            (location.pathname === "/" || location.pathname === "/release-notes" || location.pathname === "/next")
-        ) {
+        if (pathname === "/" && HOME_CHILD_PATHS.includes(location.pathname)) {
             return "usa-current";
         }
         return isActive ? "usa-current" : "";

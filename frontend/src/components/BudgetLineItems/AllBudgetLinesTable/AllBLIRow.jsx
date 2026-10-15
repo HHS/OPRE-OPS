@@ -31,7 +31,14 @@ const AllBLIRow = ({ budgetLine }) => {
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
-    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
+    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
+    // Grant BLIs link to a grant number instead of a services component; show it in the same column.
+    // The response serializes the nested grant_number so no extra fetch is needed.
+    const isGrant = budgetLine?.agreement?.agreement_type === "GRANT";
+    const linkDisplayName = isGrant
+        ? (budgetLine?.grant_number?.display_title ??
+          (budgetLine?.grant_number?.number ? `Grant ${budgetLine.grant_number.number}` : NO_DATA))
+        : serviceComponentName;
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { data: budgetLinePortfolio, isLoading: isPortfolioLoading } = useGetPortfolioByIdQuery(
         budgetLine?.portfolio_id
@@ -85,7 +92,7 @@ const AllBLIRow = ({ budgetLine }) => {
                     />
                 </div>
             </td>
-            <td data-cy="service-component">{serviceComponentName}</td>
+            <td data-cy="service-component">{linkDisplayName}</td>
             <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
             <td data-cy="can">{budgetLine?.can?.display_name}</td>
             <td data-cy="portfolio-name">

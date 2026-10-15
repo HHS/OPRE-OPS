@@ -8,11 +8,18 @@ import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import GrantNumberAccordion from "../../../components/GrantNumbers/GrantNumberAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { SaveChangesAndExitModal } from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import {
+    BLI_STATUS,
+    findGrantDescription,
+    findGrantPeriodEnd,
+    findGrantPeriodStart
+} from "../../../helpers/budgetLines.helpers";
 import {
     findDescription,
     findIfOptional,
@@ -36,6 +43,8 @@ const ApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
+        isGrant,
+        grantNumbers,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
@@ -57,6 +66,9 @@ const ApproveAgreement = () => {
         setNotes,
         setShowModal,
         showModal,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         statusChangeTo,
         statusForTitle,
         title,
@@ -84,6 +96,18 @@ const ApproveAgreement = () => {
                     actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     secondaryButtonText={modalProps.secondaryButtonText}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
 
@@ -126,6 +150,9 @@ const ApproveAgreement = () => {
                         <BeforeApprovalContent
                             groupedBudgetLinesByServicesComponent={groupedBeforeApprovalBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
+                            isGrant={isGrant}
+                            grantNumbers={grantNumbers ?? []}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -133,6 +160,9 @@ const ApproveAgreement = () => {
                         <AfterApprovalContent
                             groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
                             servicesComponents={servicesComponents}
+                            isGrant={isGrant}
+                            grantNumbers={grantNumbers ?? []}
+                            totalGrantNumbers={(grantNumbers ?? []).length}
                             changeRequestType={changeRequestType}
                             urlChangeToStatus={urlChangeToStatus}
                         />
@@ -237,9 +267,42 @@ const ApproveAgreement = () => {
 };
 
 const BeforeApprovalContent = React.memo(
-    ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
+    ({
+        groupedBudgetLinesByServicesComponent,
+        servicesComponents,
+        isGrant,
+        grantNumbers,
+        totalGrantNumbers,
+        changeRequestType,
+        urlChangeToStatus
+    }) => (
         <>
             {groupedBudgetLinesByServicesComponent.map((group, index) => {
+                if (isGrant) {
+                    return (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
+                            withMetadata={true}
+                            periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                            periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                            description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
+                        >
+                            {group.budgetLines.length > 0 ? (
+                                <BLIDiffTable
+                                    budgetLines={group.budgetLines}
+                                    changeType={changeRequestType}
+                                    statusChangeTo={urlChangeToStatus}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this grant number yet.
+                                </p>
+                            )}
+                        </GrantNumberAccordion>
+                    );
+                }
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;
@@ -275,9 +338,42 @@ const BeforeApprovalContent = React.memo(
 BeforeApprovalContent.displayName = "BeforeApprovalContent";
 
 const AfterApprovalContent = React.memo(
-    ({ groupedUpdatedBudgetLinesByServicesComponent, servicesComponents, changeRequestType, urlChangeToStatus }) => (
+    ({
+        groupedUpdatedBudgetLinesByServicesComponent,
+        servicesComponents,
+        isGrant,
+        grantNumbers,
+        totalGrantNumbers,
+        changeRequestType,
+        urlChangeToStatus
+    }) => (
         <>
             {groupedUpdatedBudgetLinesByServicesComponent.map((group, index) => {
+                if (isGrant) {
+                    return (
+                        <GrantNumberAccordion
+                            key={`${group.grantNumberNumber}-${index}`}
+                            grantNumberNumber={group.grantNumberNumber}
+                            totalGrantNumbers={totalGrantNumbers}
+                            withMetadata={true}
+                            periodStart={findGrantPeriodStart(grantNumbers, group.grantNumberNumber)}
+                            periodEnd={findGrantPeriodEnd(grantNumbers, group.grantNumberNumber)}
+                            description={findGrantDescription(grantNumbers, group.grantNumberNumber)}
+                        >
+                            {group.budgetLines.length > 0 ? (
+                                <BLIDiffTable
+                                    budgetLines={group.budgetLines}
+                                    changeType={changeRequestType}
+                                    statusChangeTo={urlChangeToStatus}
+                                />
+                            ) : (
+                                <p className="text-center margin-y-7">
+                                    You have not added any budget lines to this grant number yet.
+                                </p>
+                            )}
+                        </GrantNumberAccordion>
+                    );
+                }
                 const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                     ? group.serviceComponentGroupingLabel
                     : group.servicesComponentNumber;

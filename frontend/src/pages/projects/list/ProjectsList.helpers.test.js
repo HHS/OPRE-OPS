@@ -73,6 +73,14 @@ describe("handleProjectsExport", () => {
     });
 
     it("should batch-fetch all projects with correct params", async () => {
+        const filters = {
+            fiscalYear: [{ id: 2026, title: 2026 }],
+            portfolio: [],
+            projectSearch: [],
+            agreementSearch: [],
+            projectType: []
+        };
+
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -81,17 +89,18 @@ describe("handleProjectsExport", () => {
             2026,
             "TITLE",
             false,
-            120
+            120,
+            filters
         );
 
         // 120 / 50 = 3 pages
         expect(mockTrigger).toHaveBeenCalledTimes(3);
         expect(mockTrigger).toHaveBeenCalledWith({
+            filters,
             sortConditions: "TITLE",
             sortDescending: false,
             page: 0,
-            limit: 50,
-            fiscalYear: 2026
+            limit: 50
         });
         expect(mockTrigger).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
         expect(mockTrigger).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));
@@ -117,7 +126,7 @@ describe("handleProjectsExport", () => {
                 "Start Date",
                 "End Date",
                 "FY26 Total",
-                "Project Total",
+                "Lifetime Total",
                 "Total Agreements",
                 "Agreements"
             ],
@@ -127,7 +136,7 @@ describe("handleProjectsExport", () => {
         });
     });
 
-    it("should call exportTableToXlsx with generic FY Total header when All is selected", async () => {
+    it("should omit FY Total column from export when All is selected", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -146,12 +155,12 @@ describe("handleProjectsExport", () => {
                     "Type",
                     "Start Date",
                     "End Date",
-                    "FY Total",
-                    "Project Total",
+                    "Lifetime Total",
                     "Total Agreements",
                     "Agreements"
                 ],
-                filename: "projects_all"
+                filename: "projects_all",
+                currencyColumns: [4]
             })
         );
     });
@@ -184,7 +193,7 @@ describe("handleProjectsExport", () => {
         ]);
     });
 
-    it("should map empty FY total when FY is All", async () => {
+    it("should map row without FY Total slot when FY is All (Lifetime Total at index 4)", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -200,7 +209,9 @@ describe("handleProjectsExport", () => {
         const rowMapper = callArgs.rowMapper;
 
         const result = rowMapper(mockProjects[0]);
-        expect(result[4]).toBe("");
+        // Row: [title, type, start, end, projectTotal, totalAgreements, agreementNames]
+        expect(result.length).toBe(7);
+        expect(result[4]).toBe(800000); // Lifetime Total at index 4 (no FY Total slot)
     });
 
     it("should map empty FY total when project has no data for selected FY", async () => {
@@ -243,7 +254,7 @@ describe("handleProjectsExport", () => {
         expect(result[3]).toBe("TBD");
     });
 
-    it("should export empty string for zero project_total", async () => {
+    it("should export 0 for zero project_total (not empty string — a real zero value)", async () => {
         await handleProjectsExport(
             mockExportTableToXlsx,
             mockSetIsExporting,
@@ -258,9 +269,9 @@ describe("handleProjectsExport", () => {
         const callArgs = mockExportTableToXlsx.mock.calls[0][0];
         const rowMapper = callArgs.rowMapper;
 
-        // mockProjects[1] has project_total: "0"
+        // mockProjects[1] has project_total: "0" — a real zero, not missing data
         const result = rowMapper(mockProjects[1]);
-        expect(result[5]).toBe("");
+        expect(result[5]).toBe(0);
     });
 
     it("should preserve zero FY total as 0 (not blank)", async () => {

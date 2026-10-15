@@ -53,7 +53,7 @@ const defaultToggleEditMode = vi.fn();
 
 const renderComponent = (
     project,
-    { canEdit = false, isEditMode = false, toggleEditMode = defaultToggleEditMode } = {}
+    { canEdit = false, isEditMode = false, canEditByRole = true, toggleEditMode = defaultToggleEditMode } = {}
 ) => {
     const router = createMemoryRouter([
         {
@@ -63,6 +63,7 @@ const renderComponent = (
                     project={project}
                     canEdit={canEdit}
                     isEditMode={isEditMode}
+                    canEditByRole={canEditByRole}
                     toggleEditMode={toggleEditMode}
                 />
             )
@@ -217,6 +218,20 @@ describe("ProjectDetailsView", () => {
         expect(editButton).not.toHaveAttribute("aria-disabled");
     });
 
+    it("hides the edit button entirely for read-only users, even when canEdit is true", () => {
+        renderComponent(baseProject, { canEdit: true, canEditByRole: false });
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: "You do not have permission to edit this project" })
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows the edit button for a superuser who also holds the read-only role", () => {
+        renderComponent(baseProject, { canEdit: true, canEditByRole: true });
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
     it("calls toggleEditMode when the edit button is clicked", async () => {
         const toggleFn = vi.fn();
         renderComponent(baseProject, { canEdit: true, toggleEditMode: toggleFn });
@@ -259,5 +274,11 @@ describe("ProjectDetailsView", () => {
     it("hides edit button when in edit mode", () => {
         renderComponent(baseProject, { canEdit: true, isEditMode: true });
         expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    });
+
+    it("falls back to the read-only view instead of the edit form when isEditMode is true but canEditByRole is false", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true, canEditByRole: false });
+        expect(screen.queryByLabelText(/project title/i)).not.toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
     });
 });

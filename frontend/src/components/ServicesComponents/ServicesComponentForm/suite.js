@@ -1,10 +1,15 @@
-import { create, enforce, only, test } from "vest";
+import { create, enforce, test } from "vest";
 
-const suite = create((data = {}, fieldName) => {
-    only(fieldName); // only run the tests for the field that changed
-
+/**
+ * Vest validation suite for the ServicesComponentForm required fields.
+ *
+ * Expected data fields:
+ *   - servicesComponentSelect: number — the selected SC number
+ */
+const suite = create((data = {}) => {
     test("servicesComponentSelect", "This is required information", () => {
-        enforce(data.servicesComponentSelect).isNotBlank();
+        // servicesComponentSelect is a number (the SC number); treat 0 / falsy as blank
+        enforce(data.servicesComponentSelect).isNumeric().greaterThan(0);
     });
 });
 

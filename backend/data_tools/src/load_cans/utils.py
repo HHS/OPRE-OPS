@@ -85,19 +85,22 @@ def validate_data(data: CANData) -> bool:
     """
     Validate the data in a CanData instance.
 
+    A blank SYS_CAN_ID means this row can only create a brand-new CAN (no update fallback is
+    possible without a DB lookup), so PORTFOLIO must be present up front — mirroring the hard
+    requirement enforced later in _resolve_portfolio for new CANs — so a batch with a bad new-CAN
+    row fails atomically here rather than after some rows have already been committed.
+
     :param data: The CanData instance to validate.
 
     :return: True if the data is valid, False otherwise.
     """
-    return all(
-        [
-            data.FISCAL_YEAR is not None,
-            data.CAN_NBR is not None,
-            data.PORTFOLIO is not None,
-            data.FUNDING_SOURCE is not None,
-            data.METHOD_OF_TRANSFER is not None,
-        ]
-    )
+    checks = [
+        data.FISCAL_YEAR is not None,
+        data.CAN_NBR is not None,
+    ]
+    if data.SYS_CAN_ID is None:
+        checks.append(data.PORTFOLIO is not None)
+    return all(checks)
 
 
 def validate_all(data: List[CANData]) -> bool:
@@ -111,6 +114,203 @@ def validate_all(data: List[CANData]) -> bool:
     return sum(1 for d in data if validate_data(d)) == len(data)
 
 
+def _find_existing_can(data: CANData, session: Session) -> Optional[CAN]:
+    """
+    Look up an existing CAN by SYS_CAN_ID, falling back to a lookup by CAN_NBR.
+
+    :param data: The CANData instance to use.
+    :param session: The database session to use.
+
+    :return: The existing CAN, or None if not found.
+    """
+    can = session.get(CAN, data.SYS_CAN_ID) if data.SYS_CAN_ID else None
+    if not can:
+        can = session.execute(select(CAN).where(CAN.number == data.CAN_NBR)).scalar_one_or_none()
+        if can:
+            logger.info(f"*** found existing CAN by number {can.number} instead of ID")
+    return can
+
+
+def _resolve_portfolio(data: CANData, is_new: bool, session: Session) -> Optional[Portfolio]:
+    """
+    Resolve PORTFOLIO to a Portfolio. Required when creating a new CAN; a blank PORTFOLIO on an
+    update returns None so the caller can leave the CAN's existing portfolio alone.
+
+    :param data: The CANData instance to use.
+    :param is_new: Whether this row is creating a brand-new CAN.
+    :param session: The database session to use.
+
+    :return: The resolved Portfolio, or None if PORTFOLIO was blank on an update.
+    :raises ValueError: If PORTFOLIO is blank on a new CAN, or doesn't match a known Portfolio.
+    """
+    if not data.PORTFOLIO:
+        if is_new:
+            raise ValueError("PORTFOLIO is required when creating a new CAN.")
+        return None
+    portfolio = session.execute(select(Portfolio).where(Portfolio.abbreviation == data.PORTFOLIO)).scalar_one_or_none()
+    if not portfolio:
+        raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
+    return portfolio
+
+
+def _diff_values(pairs: dict, enum_keys: frozenset = frozenset()) -> dict:
+    """
+    Compare old/new value pairs and build a changes dict for any that differ.
+
+    :param pairs: mapping of change-key -> (old_value, new_value) tuples.
+    :param enum_keys: keys whose values are enums and should be serialized via their `.name`.
+
+    :return: {key: {"old_value": ..., "new_value": ...}} for values that differ.
+    """
+    changes = {}
+    for key, (old_value, new_value) in pairs.items():
+        if old_value == new_value:
+            continue
+        if key in enum_keys:
+            changes[key] = {
+                "old_value": old_value.name if old_value else None,
+                "new_value": new_value.name if new_value else None,
+            }
+        else:
+            changes[key] = {"old_value": old_value, "new_value": new_value}
+    return changes
+
+
+def _update_can_fields(can: CAN, data: CANData, portfolio: Optional[Portfolio], sys_user: User) -> dict:
+    """
+    Update an existing CAN's attributes and return a changes dict of whatever differs from before
+    the update.
+
+    Blank NICK_NAME/PORTFOLIO leave the existing value untouched. CAN_DESCRIPTION is intentionally
+    full-replacement (not blank-preserving) — a description is expected to always be present in
+    the source data, so a blank value on an update is treated as a real change, not an omission.
+
+    :param can: The existing CAN to update.
+    :param data: The CANData instance to use.
+    :param portfolio: The resolved Portfolio, or None to leave the CAN's portfolio alone.
+    :param sys_user: The system user to use.
+
+    :return: {field: {"old_value": ..., "new_value": ...}} for fields that changed.
+    """
+    old_values = {
+        "number": can.number,
+        "description": can.description,
+        "nick_name": can.nick_name,
+        "portfolio_id": can.portfolio_id,
+    }
+
+    can.number = data.CAN_NBR
+    can.description = data.CAN_DESCRIPTION
+    if data.NICK_NAME:
+        can.nick_name = data.NICK_NAME
+    if portfolio:
+        can.portfolio = portfolio
+    can.updated_by = sys_user.id
+    can.updated_on = datetime.now()
+
+    # can.portfolio_id isn't populated until flush, so diff against the resolved portfolio's id
+    # directly rather than reading the (still-stale) FK column back off `can`.
+    new_portfolio_id = portfolio.id if portfolio else old_values["portfolio_id"]
+
+    return _diff_values(
+        {
+            "number": (old_values["number"], can.number),
+            "description": (old_values["description"], can.description),
+            "nick_name": (old_values["nick_name"], can.nick_name),
+            "portfolio_id": (old_values["portfolio_id"], new_portfolio_id),
+        }
+    )
+
+
+_FUNDING_DETAILS_FIELDS = (
+    "fiscal_year",
+    "fund_code",
+    "allowance",
+    "sub_allowance",
+    "allotment",
+    "appropriation",
+    "method_of_transfer",
+    "funding_source",
+    "funding_partner",
+)
+_FUNDING_DETAILS_ENUM_FIELDS = frozenset({"method_of_transfer", "funding_source"})
+
+
+def _capture_funding_details_values(funding_details: Optional[CANFundingDetails]) -> dict:
+    """
+    Snapshot a CANFundingDetails' comparable fields, or all-None if there is none.
+
+    :param funding_details: The CANFundingDetails to snapshot, or None.
+
+    :return: {field: value} for each of _FUNDING_DETAILS_FIELDS.
+    """
+    if not funding_details:
+        return {field_name: None for field_name in _FUNDING_DETAILS_FIELDS}
+    return {field_name: getattr(funding_details, field_name) for field_name in _FUNDING_DETAILS_FIELDS}
+
+
+def _track_funding_details_changes(can: CAN, old_funding_details: dict, is_new: bool) -> dict:
+    """
+    Diff a CAN's current funding_details against a prior snapshot, keyed as `funding_details.<field>`.
+    When the CAN had no funding_details before (old_funding_details is empty), every field is treated
+    as a None -> new_value change, so the first-ever funding_details record for an existing CAN always
+    produces an UPDATE_CAN history event.
+
+    :param can: The CAN whose funding_details was just created/updated.
+    :param old_funding_details: A snapshot from _capture_funding_details_values, or {} if there was none.
+    :param is_new: Whether this row is creating a brand-new CAN.
+
+    :return: {field: {"old_value": ..., "new_value": ...}} for funding_details fields that changed.
+    """
+    if is_new or not can.funding_details:
+        return {}
+    if not old_funding_details:
+        old_funding_details = _capture_funding_details_values(None)
+
+    fd = can.funding_details
+    return _diff_values(
+        {
+            f"funding_details.{field_name}": (old_funding_details[field_name], getattr(fd, field_name))
+            for field_name in _FUNDING_DETAILS_FIELDS
+        },
+        enum_keys=frozenset(f"funding_details.{field_name}" for field_name in _FUNDING_DETAILS_ENUM_FIELDS),
+    )
+
+
+def _record_can_event(can: CAN, sys_user: User, session: Session, is_new: bool, changes: dict) -> None:
+    """
+    Create and commit the OpsEvent (CREATE_NEW_CAN or UPDATE_CAN) and fire the history trigger. No
+    event is created for an update with no actual changes.
+
+    :param can: The CAN that was just created/updated.
+    :param sys_user: The system user to use.
+    :param session: The database session to use.
+    :param is_new: Whether this row created a brand-new CAN.
+    :param changes: The changes dict from updating the CAN and its funding_details.
+    """
+    if not is_new and not changes:
+        logger.info(f"No changes detected for CAN with id {can.id} and number {can.number}, skipping event creation")
+        return
+
+    event = OpsEvent(event_status=OpsEventStatus.SUCCESS, created_by=sys_user.id)
+    if is_new:
+        event.event_type = OpsEventType.CREATE_NEW_CAN
+        event.event_details = {"new_can": can.to_dict()}
+        session.add(event)
+        session.commit()
+        logger.info(f"Created Ops Event for new CAN with id {can.id} and number {can.number}")
+    else:
+        event.event_type = OpsEventType.UPDATE_CAN
+        event.event_details = {"can_updates": {"owner_id": can.id, "changes": changes}}
+        session.add(event)
+        session.commit()
+        logger.info(
+            f"Created Ops Event for existing CAN with id {can.id} and number {can.number} with {len(changes)} changes"
+        )
+
+    can_history_trigger_func(event, session, sys_user)
+
+
 def create_models(data: CANData, sys_user: User, session: Session) -> None:
     """
     Upsert a CAN and its associated CANFundingDetails.
@@ -122,28 +322,21 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
     logger.debug(f"Creating models for {data}")
 
     try:
-        portfolio = session.execute(
-            select(Portfolio).where(Portfolio.abbreviation == data.PORTFOLIO)
-        ).scalar_one_or_none()
-        if not portfolio:
-            raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
-
         base_date = datetime(data.FISCAL_YEAR - 1, 10, 1)
-        is_new = False
 
-        can = session.get(CAN, data.SYS_CAN_ID) if data.SYS_CAN_ID else None
-        if not can:
-            can = session.execute(select(CAN).where(CAN.number == data.CAN_NBR)).scalar_one_or_none()
+        can = _find_existing_can(data, session)
+        is_new = can is None
+
+        portfolio = _resolve_portfolio(data, is_new, session)
+
+        changes = {}
+        old_funding_details = {}
 
         if can:
-            can.number = data.CAN_NBR
-            can.description = data.CAN_DESCRIPTION
-            can.nick_name = data.NICK_NAME
-            can.portfolio = portfolio
-            can.updated_by = sys_user.id
-            can.updated_on = datetime.now()
+            if can.funding_details:
+                old_funding_details = _capture_funding_details_values(can.funding_details)
+            changes = _update_can_fields(can, data, portfolio, sys_user)
         else:
-            is_new = True
             can = CAN(
                 id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
                 number=data.CAN_NBR,
@@ -159,8 +352,14 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         try:
             validate_fund_code(data)
             can.funding_details = get_or_create_funding_details(data, sys_user, can.funding_details)
+            changes.update(_track_funding_details_changes(can, old_funding_details, is_new))
         except ValueError as e:
-            logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
+            # Intentional: a new CAN with an invalid fund code, or missing required
+            # METHOD_OF_TRANSFER/FUNDING_SOURCE, still gets created with funding_details=None
+            # rather than failing the whole row. See test_create_models_new_can_blank_*.
+            logger.warning(
+                f"Skipping creating funding details for {data} due to invalid or missing required funding data. {e}"
+            )
 
         if is_new:
             session.add(can)
@@ -171,18 +370,7 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         else:
             session.commit()
             logger.info(f"Upserted CAN {can.number} with id {can.id}")
-
-            event = OpsEvent(
-                event_type=OpsEventType.CREATE_NEW_CAN,
-                event_status=OpsEventStatus.SUCCESS,
-                event_details={"new_can": can.to_dict()},
-                created_by=sys_user.id,
-            )
-            session.add(event)
-            session.commit()
-            logger.info(f"Created Ops Event for CAN with id {can.id} and number {can.number}")
-
-            can_history_trigger_func(event, session, sys_user)
+            _record_can_event(can, sys_user, session, is_new, changes)
 
     except Exception as e:
         session.rollback()
@@ -215,11 +403,27 @@ def get_or_create_funding_details(
 
     appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR or "", data.APPROP_POSTFIX or ""])
 
-    method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
-    funding_source = (
-        CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU
-    )
-    funding_partner = data.FUNDING_PARTNER
+    if existing:
+        # Blank METHOD_OF_TRANSFER/FUNDING_SOURCE leave the existing value alone.
+        method_of_transfer = (
+            CANMethodOfTransfer[data.METHOD_OF_TRANSFER] if data.METHOD_OF_TRANSFER else existing.method_of_transfer
+        )
+        funding_source = (
+            (CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU)
+            if data.FUNDING_SOURCE
+            else existing.funding_source
+        )
+    else:
+        if not data.METHOD_OF_TRANSFER:
+            raise ValueError("METHOD_OF_TRANSFER is required to create funding details.")
+        if not data.FUNDING_SOURCE:
+            raise ValueError("FUNDING_SOURCE is required to create funding details.")
+        method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
+        funding_source = (
+            CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU
+        )
+    # Blank FUNDING_PARTNER leaves the existing value alone; it's never required.
+    funding_partner = data.FUNDING_PARTNER if data.FUNDING_PARTNER else (existing.funding_partner if existing else None)
 
     if existing:
         existing.fiscal_year = fiscal_year
@@ -270,6 +474,7 @@ def validate_fund_code(data: CANData) -> None:
     length_of_appropriation = data.FUND[10]
     if length_of_appropriation not in ["0", "1", "2", "5", "3", "8"]:
         raise ValueError(f"Invalid length of appropriation {length_of_appropriation}")
+
     direct_or_reimbursable = data.FUND[11]
     if direct_or_reimbursable not in ["D", "R"]:
         raise ValueError(f"Invalid direct or reimbursable {direct_or_reimbursable}")

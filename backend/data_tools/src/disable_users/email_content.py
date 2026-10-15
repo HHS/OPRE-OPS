@@ -1,0 +1,60 @@
+"""Subject/body text for the disable_users notification and inactivity-warning emails (OPS-2102).
+
+Edit the strings and functions below to change what gets sent -- this file has no
+sending logic, only text.
+"""
+
+DISABLED_USER_SUBJECT = "Your OPS user account has been disabled"
+
+ADMIN_SUMMARY_SUBJECT = "OPS: user account(s) automatically disabled"
+
+
+def disabled_user_body(email: str) -> str:
+    """Body of the email sent to a user whose own account was just disabled."""
+    return (
+        f"Your OPRE OPS user account associated with the email address ({email}) has been automatically disabled due to prolonged "
+        "inactivity.\n\n"
+        "If you need continued access to OPS, please create an ORBIT ticket to request reactivation. Do not reply to this email."
+    )
+
+
+def admin_summary_body(disabled_users: list[dict]) -> str:
+    """Body of the summary email sent to all active USER_ADMINs.
+
+    ``disabled_users`` is a list of dicts with "full_name", "division", and "email" keys,
+    one per user disabled in this run. "division" must be the division's display name
+    (a string, e.g. "Division of Data and Improvement", or "N/A" if the user has none) --
+    not the numeric Division foreign key.
+    """
+    lines = ["The automated inactivity check just disabled the following OPS user account(s):", ""]
+    for user in disabled_users:
+        lines.append(f"- {user['full_name']} ({user['division']}) - {user['email']}")
+    lines.append("")
+    lines.append(
+        "This is an automated compliance notification. You are receiving this notification because you are a User Admin in OPS. No action is required unless one of "
+        "these accounts should be reactivated."
+    )
+    return "\n".join(lines)
+
+
+def _days(days_remaining: int) -> str:
+    return "1 day" if days_remaining == 1 else f"{days_remaining} days"
+
+
+def inactivity_warning_subject(days_remaining: int, environment_label: str) -> str:
+    """Subject of the daily warning sent to a user whose account will soon be disabled.
+
+    Prefixed with "[STAGING] " when ``environment_label`` is "Staging"; otherwise untagged.
+    """
+    prefix = "[STAGING] " if environment_label == "Staging" else ""
+    return f"{prefix}Your OPS user account will be disabled within {_days(days_remaining)}"
+
+
+def inactivity_warning_body(email: str, days_remaining: int, environment_label: str, frontend_url: str) -> str:
+    """Body of the daily warning sent to a user whose account will soon be disabled."""
+    return (
+        f"Your OPRE OPS {environment_label} user account associated with the email address ({email}) will be "
+        f"automatically disabled within {_days(days_remaining)} due to inactivity.\n\n"
+        f"To keep your account active, log in to OPS {environment_label}:\n{frontend_url}\n\n"
+        "Do not reply to this email."
+    )

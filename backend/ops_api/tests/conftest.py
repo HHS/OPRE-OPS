@@ -123,7 +123,7 @@ def is_loaded(db: Engine) -> bool:
         return False
 
 
-def _wait_for_db(engine: Engine, timeout: float = 120.0, pause: float = 1.0) -> None:
+def _wait_for_db(engine: Engine, timeout: float = 300.0, pause: float = 1.0) -> None:
     ref = timeit.default_timer()
     while (timeit.default_timer() - ref) < timeout:
         if is_loaded(engine):
@@ -191,7 +191,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
         # Sequential mode — delegate to pytest-docker fixtures
         docker_services = request.getfixturevalue("docker_services")
         admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
-        docker_services.wait_until_responsive(timeout=120.0, pause=1.0, check=lambda: is_loaded(admin_engine))
+        docker_services.wait_until_responsive(timeout=300.0, pause=1.0, check=lambda: is_loaded(admin_engine))
 
         engine = create_engine(
             f"postgresql://ops:ops@{docker_ip}:5432/postgres",  # pragma: allowlist secret

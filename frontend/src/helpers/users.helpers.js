@@ -176,7 +176,9 @@ export const normalizePortfolioUsers = (portfolio) => {
     if (!portfolio || typeof portfolio !== "object") return portfolio;
     return {
         ...portfolio,
-        team_leaders: normalizeUsers(portfolio.team_leaders)
+        team_leaders: normalizeUsers(portfolio.team_leaders),
+        division_director: normalizeUser(portfolio.division_director),
+        deputy_division_director: normalizeUser(portfolio.deputy_division_director)
     };
 };
 

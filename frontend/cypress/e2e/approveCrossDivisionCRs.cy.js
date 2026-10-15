@@ -279,9 +279,14 @@ describe("Approve Cross Division Change Requests", () => {
                                         Accept: "application/json"
                                     }
                                 }).then((response) => {
-                                    expect(response.status).to.eq(200);
+                                    // bliId1's Draft->Planned change was approved above, so it is now
+                                    // PLANNED. Per #5819, deleting a PLANNED BLI creates a deletion
+                                    // change request (202) instead of an immediate hard delete. The
+                                    // agreement delete below still cleans it up via cascade.
+                                    expect(response.status).to.eq(202);
 
-                                    // Delete second BLI
+                                    // Delete second BLI — bliId2's status change CR was never
+                                    // approved, so it is still DRAFT and hard-deletes immediately (200).
                                     cy.request({
                                         method: "DELETE",
                                         url: `http://localhost:8080/api/v1/budget-line-items/${bliId2}`,
@@ -295,16 +300,28 @@ describe("Approve Cross Division Change Requests", () => {
                                 });
                             })
                             .then(() => {
-                                cy.request({
-                                    method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                                    headers: {
-                                        Authorization: bearer_token,
-                                        Accept: "application/json"
-                                    }
-                                }).then((response) => {
-                                    expect(response.status).to.eq(200);
-                                });
+                                // bliId1 is still PLANNED (only a deletion change request was created
+                                // above), so only a super user can clean up the agreement directly
+                                // (see #5658).
+                                cy.contains("Sign-Out")
+                                    .click()
+                                    .then(() => {
+                                        localStorage.clear();
+                                        testLogin("power-user");
+                                    })
+                                    .then(() => {
+                                        const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                        cy.request({
+                                            method: "DELETE",
+                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            headers: {
+                                                Authorization: powerUserBearerToken,
+                                                Accept: "application/json"
+                                            }
+                                        }).then((response) => {
+                                            expect(response.status).to.eq(200);
+                                        });
+                                    });
                             });
                     });
             });

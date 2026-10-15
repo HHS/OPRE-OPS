@@ -1,9 +1,11 @@
 import io
 from unittest.mock import MagicMock
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
+
+import pytest
 
 from data_tools.environment.azure import AzureConfig
-from data_tools.src.azure_utils.utils import get_csv, get_csv_using_mi_or_rbac
+from data_tools.src.azure_utils.utils import build_blob_sas_url, get_csv, get_csv_using_mi_or_rbac, get_secret
 
 
 def test_get_csv(mocker):
@@ -41,6 +43,51 @@ def test_get_csv(mocker):
     assert data[0]["CAN_DESCRIPTION"] == "Healthy Marriages Responsible Fatherhood - OPRE"
 
 
+def test_build_blob_sas_url_shape(mocker):
+    generate = mocker.patch(
+        "data_tools.src.azure_utils.utils.generate_blob_sas",
+        return_value="sig=abc&se=2026-11-17T00%3A00%3A00Z",
+    )
+
+    url = build_blob_sas_url(
+        "https://opreopsprodappsa.blob.core.windows.net",
+        "data",
+        "reports/usage-metrics-2026-08-19.xlsx",
+        "the-account-key",
+        90,
+    )
+
+    # The account name is derived from the host, and the blob path + SAS query are appended.
+    kwargs = generate.call_args.kwargs
+    assert kwargs["account_name"] == "opreopsprodappsa"
+    assert kwargs["container_name"] == "data"
+    assert kwargs["blob_name"] == "reports/usage-metrics-2026-08-19.xlsx"
+    assert kwargs["account_key"] == "the-account-key"
+    assert kwargs["permission"].read is True
+
+    parsed = urlparse(url)
+    assert parsed.scheme == "https"
+    assert parsed.path == "/data/reports/usage-metrics-2026-08-19.xlsx"
+    assert "sig" in parse_qs(parsed.query)
+
+
+@pytest.mark.parametrize("bad_expiry", [0, -1])
+def test_build_blob_sas_url_rejects_non_positive_expiry(bad_expiry):
+    with pytest.raises(ValueError):
+        build_blob_sas_url("https://acct.blob.core.windows.net", "data", "reports/x.xlsx", "key", bad_expiry)
+
+
+def test_get_secret_uses_default_credential(mocker):
+    credential = mocker.patch("data_tools.src.azure_utils.utils.DefaultAzureCredential")
+    secret_client = mocker.patch("data_tools.src.azure_utils.utils.SecretClient")
+    secret_client.return_value.get_secret.return_value.value = "the-key"
+
+    result = get_secret("https://vault.example.com", "file-storage-access-key")
+
+    assert result == "the-key"
+    credential.assert_called_once_with()
+
+
 def test_get_csv_using_mi(mocker):
     # Test with a remote file using managed identity credentials
     csv_string = "id,name\n1,DIV1\n2,DIV2\n3,DIV3\n"
@@ -62,3 +109,24 @@ def test_get_csv_using_mi(mocker):
     assert data[1]["name"] == "DIV2"
     assert data[2]["id"] == "3"
     assert data[2]["name"] == "DIV3"
+
+
+@pytest.mark.parametrize("account_url", ["https://acct.blob.core.windows.net", "https://acct.blob.core.windows.net/"])
+def test_build_blob_sas_url_tolerates_trailing_slash(account_url):
+    """A trailing slash must not produce a double slash in the path.
+
+    The signature covers the canonical single-slash resource, so "…net//data/reports/x.xlsx" is a
+    different resource than the one signed -- the upload succeeds and every emailed link fails. The
+    Terraform stack builds this URL without a trailing slash today, but an operator overriding
+    usageMetricsStorageAccountUrl by hand would hit it.
+    """
+    url = build_blob_sas_url(account_url, "data", "reports/x.xlsx", "a" * 86 + "==", 90)
+
+    assert url.split("?")[0] == "https://acct.blob.core.windows.net/data/reports/x.xlsx"
+    assert ".net//" not in url
+
+
+def test_build_blob_sas_url_adds_scheme_when_missing():
+    url = build_blob_sas_url("acct.blob.core.windows.net", "data", "reports/x.xlsx", "a" * 86 + "==", 90)
+
+    assert url.startswith("https://acct.blob.core.windows.net/data/reports/x.xlsx?")

@@ -84,7 +84,8 @@ const ProjectSpending = () => {
         }
     }, [spendingData, selectedFY]);
 
-    // FYs that have spending data, sorted descending — must be before early returns
+    // Every FY that has any budget line, including draft-only years with no spending,
+    // sorted descending — must be before early returns
     const availableFYs = React.useMemo(
         () =>
             Object.keys(spendingData?.agreements_by_fy ?? {})
@@ -104,6 +105,8 @@ const ProjectSpending = () => {
     // Fallback per-agreement FY total, passed to each row while the per-agreement
     // spending query is in flight. Only populated when exactly one agreement exists
     // in the FY (where the project-level total equals the agreement-level total).
+    // Uses the raw (un-defaulted) value so a missing `total_by_fiscal_year` entry
+    // — e.g. a draft-only FY — is left out rather than treated as a real $0 total.
     const fyTotals = React.useMemo(() => {
         const fyTotal = spendingData?.total_by_fiscal_year?.[selectedFY];
         if (agreementsForFY.length === 1 && fyTotal != null) {
@@ -115,7 +118,10 @@ const ProjectSpending = () => {
     // Summary card values
     const fyTotal = Number(spendingData?.total_by_fiscal_year?.[selectedFY] ?? 0);
     const lifetimeTotal = Number(spendingData?.total ?? 0);
-    const fyAgreementCount = spendingData?.agreements_by_fy?.[selectedFY]?.length ?? 0;
+    // Counts only agreements with non-draft spending. `agreements_by_fy` is deliberately
+    // not used here: it includes draft-only agreements, which must appear in the list
+    // below but must not change this summary number (issue #6139).
+    const fyAgreementCount = spendingData?.agreements_with_spending_by_fy?.[selectedFY]?.length ?? 0;
 
     // Donut chart data — spending by agreement type for selected FY
     const donutData = React.useMemo(() => {

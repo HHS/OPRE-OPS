@@ -196,7 +196,7 @@ describe("Power User tests", () => {
             });
     });
 
-    it("cannot edit a GRANT agreement budget lines because editing is not yet supported", () => {
+    it("can access editing on a GRANT agreement budget lines", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -238,14 +238,11 @@ describe("Power User tests", () => {
                     })
                     .then(({ agreementId, bliId }) => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        // Editing is not yet supported for grants: the Edit button and the
-                        // Request BL Status Change button should be disabled instead of clickable.
-                        cy.get("#edit").should("not.exist");
-                        cy.get("#edit-disabled").should("exist").and("have.attr", "aria-disabled", "true");
-                        cy.get('[data-cy="bli-continue-btn"]').should("not.exist");
-                        cy.get('[data-cy="bli-continue-btn-disabled"]')
-                            .should("exist")
-                            .and("have.attr", "aria-disabled", "true");
+                        // Grant editing is now supported: the Edit control is enabled (not the
+                        // disabled variant). The full grant edit flow is covered by
+                        // editGrantAgreement.cy.js; here we just verify the control is available.
+                        cy.get("#edit").should("exist");
+                        cy.get("#edit-disabled").should("not.exist");
 
                         cy.request({
                             method: "DELETE",

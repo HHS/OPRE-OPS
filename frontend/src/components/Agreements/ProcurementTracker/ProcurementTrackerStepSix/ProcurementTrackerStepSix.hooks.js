@@ -19,7 +19,11 @@ const MemoizedDatePicker = DatePicker; // DatePicker is already React.memo'd at 
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
  * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepSix(
+    stepSixData,
+    handleSetCompletedStepNumber,
+    onDirtyChange = undefined
+) {
     const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
         () => stepSixData?.approval_requested ?? false
     );
@@ -34,7 +38,14 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [patchStepSix] = useUpdateProcurementTrackerStepMutation();
+    // A single mutation instance backs both `handleSaveNotes` and
+    // `handleStepSixComplete`, so `isStepPatchInFlight` is true for either
+    // in-flight PATCH. Threading it into both the Save Notes editor and the
+    // Complete button makes them mutually exclusive, preventing two concurrent
+    // PATCHes (a Save Notes landing after Complete could otherwise revert `notes`
+    // to a stale value). This complements `isSubmitting`, which additionally keeps
+    // the Complete button disabled until the status refetch lands.
+    const [patchStepSix, { isLoading: isStepPatchInFlight }] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
     const stepSixCompletedByUserName = useGetUserFullNameFromId(stepSixData?.task_completed_by ?? -1);
@@ -64,8 +75,22 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         notes: stepSixNotes,
         setNotes: setStepSixNotes,
         resetNotes: resetStepSixNotes,
+        notesResetKey,
         handleSaveNotes
     } = useSaveNotes(patchStepSix, stepSixData?.notes, setAlert);
+
+    // Compare isAwardCheckboxChecked against the server-persisted value so that a
+    // form that already has approval_requested=true does not falsely report dirty on mount.
+    const hasChanges = Boolean(
+        isAwardCheckboxChecked !== (stepSixData?.approval_requested ?? false) ||
+        selectedUser?.id ||
+        targetCompletionDate ||
+        stepSixDateCompleted ||
+        stepSixNotes.trim() !== (stepSixData?.notes ?? "").trim()
+    );
+    React.useEffect(() => {
+        onDirtyChange?.(hasChanges);
+    }, [hasChanges, onDirtyChange]);
 
     /**
      * Handles the submission of the target completion date for step six, updating the procurement tracker step with the new date.
@@ -82,6 +107,9 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
                 data: payload
             }).unwrap();
             setTargetCompletionDate("");
+            // Reset checkbox to server value so hasChanges clears and the nav-away blocker
+            // does not fire when the user is redirected to the award approval flow.
+            setIsAwardCheckboxChecked(stepSixData?.approval_requested ?? false);
             console.log("Procurement Tracker Step 6 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 6", error);
@@ -141,11 +169,14 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
      */
     const cancelStepSix = () => {
         suite.reset(); // Clear validation state
-        setIsAwardCheckboxChecked(false);
+        setIsAwardCheckboxChecked(stepSixData?.approval_requested ?? false);
         setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStepSixDateCompleted("");
-        resetStepSixNotes(stepSixData?.notes ?? "");
+        // No argument: restore the last committed note. Passing the raw
+        // stepSixData?.notes prop would wipe a just-saved note during the window
+        // before the invalidation refetch lands.
+        resetStepSixNotes();
         setShowModal(false);
     };
 
@@ -154,9 +185,9 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
      */
     const cancelModalStepSix = () => {
         setModalProps({
-            heading: "Are you sure you want to cancel Step 6?",
-            actionButtonText: "Cancel Step 6",
-            secondaryButtonText: "Continue Step 6",
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 cancelStepSix();
             }
@@ -166,6 +197,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
 
     return {
         handleSaveNotes,
+        isStepPatchInFlight,
         isAwardCheckboxChecked,
         setIsAwardCheckboxChecked,
         selectedUser,
@@ -177,6 +209,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         stepSixNotes,
         setStepSixNotes,
         resetStepSixNotes,
+        notesResetKey,
         isSubmitting,
         showModal,
         setShowModal,
@@ -191,6 +224,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         stepSixNotesLabel,
         MemoizedDatePicker,
         runValidate,
-        validatorRes
+        validatorRes,
+        hasChanges
     };
 }

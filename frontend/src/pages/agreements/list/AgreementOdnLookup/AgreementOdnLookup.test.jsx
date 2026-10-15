@@ -1,0 +1,275 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useLazyGetAgreementsQuery } from "../../../../api/opsAPI";
+import AgreementOdnLookup from "./AgreementOdnLookup";
+
+vi.mock("../../../../api/opsAPI");
+
+const mockSetAlert = vi.fn();
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: () => ({ setAlert: mockSetAlert })
+}));
+
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate
+    };
+});
+
+vi.mock("../../../../components/Agreements/AgreementsTable", () => ({
+    default: ({ agreements, disableRowActions, disableSorting }) => (
+        <div
+            data-testid="agreements-table"
+            data-disable-row-actions={String(disableRowActions)}
+            data-disable-sorting={String(disableSorting)}
+        >
+            {agreements.map((agreement) => (
+                <div key={agreement.id}>{agreement.name}</div>
+            ))}
+        </div>
+    )
+}));
+
+const renderComponent = () =>
+    render(
+        <BrowserRouter>
+            <AgreementOdnLookup />
+        </BrowserRouter>
+    );
+
+const typeAndSubmit = (value) => {
+    const input = screen.getByLabelText(/find agreement by odn/i);
+    fireEvent.change(input, { target: { value } });
+    fireEvent.click(screen.getByRole("button", { name: /find/i }));
+};
+
+describe("AgreementOdnLookup", () => {
+    let unwrapMock;
+    let triggerMock;
+
+    beforeEach(() => {
+        mockNavigate.mockClear();
+        mockSetAlert.mockClear();
+        unwrapMock = vi.fn();
+        triggerMock = vi.fn(() => ({ unwrap: unwrapMock }));
+        useLazyGetAgreementsQuery.mockReturnValue([triggerMock]);
+    });
+
+    it("navigates to the agreement when exactly one match is found", async () => {
+        unwrapMock.mockResolvedValue({ agreements: [{ id: 42, name: "Match" }], count: 1 });
+        renderComponent();
+
+        typeAndSubmit("ODN-0001");
+
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/agreements/42"));
+        expect(triggerMock).toHaveBeenCalledWith({ filters: { odn: ["ODN-0001"] }, page: 0, limit: 50 });
+    });
+
+    it("renders the results table when multiple matches are found", async () => {
+        unwrapMock.mockResolvedValue({
+            agreements: [
+                { id: 1, name: "First" },
+                { id: 2, name: "Second" }
+            ],
+            count: 2
+        });
+        renderComponent();
+
+        typeAndSubmit("ODN-SHARED");
+
+        const table = await screen.findByTestId("agreements-table");
+        expect(table).toBeInTheDocument();
+        // Results come from a one-time snapshot, not a live cache subscription, so row
+        // edit/delete actions must be disabled here (a mutation elsewhere wouldn't be
+        // reflected back into this list).
+        expect(table).toHaveAttribute("data-disable-row-actions", "true");
+        // No sort state is wired up for this snapshot, so headers must not render as
+        // sort controls that silently do nothing.
+        expect(table).toHaveAttribute("data-disable-sorting", "true");
+        expect(screen.getByText("First")).toBeInTheDocument();
+        expect(screen.getByText("Second")).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+
+        // The "N agreements match" status message must not be a heading: this widget sits
+        // between the page's <h1> and its <h2> subtitle, so an <h3> here would skip/invert
+        // the page's heading hierarchy (a11y regression).
+        expect(screen.queryByRole("heading", { name: /agreements match odn/i })).not.toBeInTheDocument();
+        expect(screen.getByText(/2 agreements match odn/i).tagName).toBe("P");
+    });
+
+    it("fetches every page when matches exceed the server's per-request page limit", async () => {
+        const firstPageAgreements = Array.from({ length: 50 }, (_, index) => ({
+            id: index + 1,
+            name: `Agreement ${index + 1}`
+        }));
+        const secondPageAgreements = [{ id: 51, name: "Agreement 51" }];
+        unwrapMock
+            .mockResolvedValueOnce({ agreements: firstPageAgreements, count: 51 })
+            .mockResolvedValueOnce({ agreements: secondPageAgreements, count: 51 });
+        renderComponent();
+
+        typeAndSubmit("ODN-MANY");
+
+        expect(await screen.findByText("Agreement 51")).toBeInTheDocument();
+        expect(triggerMock).toHaveBeenCalledTimes(2);
+        expect(triggerMock).toHaveBeenNthCalledWith(2, { filters: { odn: ["ODN-MANY"] }, page: 1, limit: 50 });
+        expect(screen.getByText(/51 agreements match odn/i)).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("renders an accessible no-match message when there are zero matches", async () => {
+        unwrapMock.mockResolvedValue({ agreements: [], count: 0 });
+        renderComponent();
+
+        typeAndSubmit("ODN-NONE");
+
+        const message = await screen.findByText(/no agreements found with odn/i);
+        expect(message).toBeInTheDocument();
+        expect(message).toHaveAttribute("role", "status");
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("shows the no-match state instead of throwing when count is 1 but no row is returned", async () => {
+        // E.g. the agreement was deleted between the backend computing count and fetching
+        // the page — count === 1 but agreements is empty. Must not throw on agreements[0].id.
+        unwrapMock.mockResolvedValue({ agreements: [], count: 1 });
+        renderComponent();
+
+        typeAndSubmit("ODN-RACE");
+
+        const message = await screen.findByText(/no agreements found with odn/i);
+        expect(message).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+    });
+
+    it("ignores a duplicate submission while a lookup is already in flight", async () => {
+        let resolveFirst;
+        unwrapMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })
+        );
+        renderComponent();
+
+        typeAndSubmit("ODN-DUPLICATE");
+        expect(triggerMock).toHaveBeenCalledTimes(1);
+
+        // The Find button is disabled while loading, and a second submit attempt (e.g. a
+        // double Enter/click before the first request resolves) must not fire another request.
+        const findButton = screen.getByRole("button", { name: /find/i });
+        expect(findButton).toBeDisabled();
+        fireEvent.click(findButton);
+        expect(triggerMock).toHaveBeenCalledTimes(1);
+
+        resolveFirst({ agreements: [{ id: 1, name: "Match" }], count: 1 });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/agreements/1"));
+    });
+
+    it("shows the matches it did fetch even if a later page fails, rather than discarding everything", async () => {
+        const firstPageAgreements = Array.from({ length: 50 }, (_, index) => ({
+            id: index + 1,
+            name: `Agreement ${index + 1}`
+        }));
+        unwrapMock
+            .mockResolvedValueOnce({ agreements: firstPageAgreements, count: 51 })
+            .mockRejectedValueOnce(new Error("transient network error"));
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        renderComponent();
+
+        typeAndSubmit("ODN-PARTIAL-FAILURE");
+
+        expect(await screen.findByText("Agreement 1")).toBeInTheDocument();
+        expect(screen.getByText(/50 agreements match odn/i)).toBeInTheDocument();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalled();
+
+        consoleErrorSpy.mockRestore();
+    });
+
+    it("trims whitespace and does not submit an empty value", () => {
+        renderComponent();
+
+        typeAndSubmit("   ");
+
+        expect(triggerMock).not.toHaveBeenCalled();
+    });
+
+    it("surfaces an error alert and does not get stuck loading when the lookup fails", async () => {
+        unwrapMock.mockRejectedValue(new Error("network error"));
+        renderComponent();
+
+        typeAndSubmit("ODN-ERROR");
+
+        await waitFor(() =>
+            expect(mockSetAlert).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "error", message: expect.stringContaining("error looking up") })
+            )
+        );
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(screen.queryByText(/searching for agreement/i)).not.toBeInTheDocument();
+    });
+
+    it("ignores a stale response from an earlier submission superseded by a later one", async () => {
+        let resolveFirst;
+        const firstPromise = new Promise((resolve) => {
+            resolveFirst = resolve;
+        });
+        unwrapMock
+            .mockImplementationOnce(() => firstPromise)
+            .mockImplementationOnce(() => Promise.resolve({ agreements: [{ id: 99, name: "Second" }], count: 1 }));
+        renderComponent();
+
+        typeAndSubmit("ODN-FIRST");
+        typeAndSubmit("ODN-SECOND");
+
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/agreements/99"));
+        mockNavigate.mockClear();
+
+        resolveFirst({ agreements: [{ id: 1, name: "First" }], count: 1 });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("does not navigate or alert when a lookup resolves after the component has unmounted", async () => {
+        let resolveLookup;
+        unwrapMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveLookup = resolve;
+                })
+        );
+        const { unmount } = render(
+            <BrowserRouter>
+                <AgreementOdnLookup />
+            </BrowserRouter>
+        );
+
+        typeAndSubmit("ODN-CANCELED");
+        unmount();
+
+        // The request resolves after the user has already closed/navigated away from the
+        // lookup (e.g. closed the modal) — its side effects must be fully suppressed.
+        resolveLookup({ agreements: [{ id: 123, name: "Should Not Navigate" }], count: 1 });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(mockSetAlert).not.toHaveBeenCalled();
+    });
+
+    it("submits via Enter key in the input (native form submission)", async () => {
+        unwrapMock.mockResolvedValue({ agreements: [{ id: 7, name: "Enter Match" }], count: 1 });
+        renderComponent();
+
+        const input = screen.getByLabelText(/find agreement by odn/i);
+        fireEvent.change(input, { target: { value: "ODN-ENTER" } });
+        fireEvent.submit(screen.getByTestId("agreement-odn-lookup-form"));
+
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/agreements/7"));
+    });
+});

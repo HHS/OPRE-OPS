@@ -215,6 +215,11 @@ def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, own
     new_special_topics = set(new_serialized_obj.get("special_topics", []))
     removed_special_topics = list(old_special_topics - new_special_topics)
     added_special_topics = list(new_special_topics - old_special_topics)
+    # Use sets to find differences in ALN numbers
+    old_aln_numbers = set(old_serialized_obj.get("aln_numbers") or [])
+    new_aln_numbers = set(new_serialized_obj.get("aln_numbers") or [])
+    removed_aln_numbers = sorted(old_aln_numbers - new_aln_numbers)
+    added_aln_numbers = sorted(new_aln_numbers - old_aln_numbers)
 
     # Check for items removed/added in lists
     if removed_bli_items or added_bli_items:
@@ -238,6 +243,11 @@ def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, own
         updates["research_methodology_changes"] = {
             "research_methodologies_ids_removed": removed_research_methodologies,
             "research_methodologies_ids_added": added_research_methodologies,
+        }
+    if removed_aln_numbers or added_aln_numbers:
+        updates["aln_number_changes"] = {
+            "aln_numbers_removed": removed_aln_numbers,
+            "aln_numbers_added": added_aln_numbers,
         }
     return updates
 

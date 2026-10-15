@@ -30,6 +30,7 @@ class CANHistoryType(Enum):
     CAN_DIVISION_DELETED = auto()
     CAN_DIVISION_EDITED = auto()
     CAN_CARRY_FORWARD_CALCULATED = auto()
+    CAN_FUNDING_DETAILS_EDITED = auto()  # CANFundingDetails
 
 
 class CANHistory(BaseModel):
@@ -41,9 +42,7 @@ class CANHistory(BaseModel):
     history_title: Mapped[str]
     history_message: Mapped[str] = mapped_column(Text)
     timestamp: Mapped[str]
-    history_type: Mapped[CANHistoryType] = mapped_column(
-        ENUM(CANHistoryType), nullable=True
-    )
+    history_type: Mapped[CANHistoryType] = mapped_column(ENUM(CANHistoryType), nullable=True)
     fiscal_year: Mapped[int]
 
 
@@ -72,7 +71,7 @@ def can_history_trigger_func(
                 history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
                 timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
-                fiscal_year = current_fiscal_year
+                fiscal_year=current_fiscal_year,
             )
             history_events.append(history_event)
         case OpsEventType.UPDATE_CAN:
@@ -88,7 +87,7 @@ def can_history_trigger_func(
                     event.event_details["can_updates"]["owner_id"],
                     event.id,
                     session,
-                    system_user
+                    system_user,
                 )
                 history_events.extend(history_items)
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
@@ -102,7 +101,7 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
                 timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
-                fiscal_year=current_fiscal_year
+                fiscal_year=current_fiscal_year,
             )
             history_events.append(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_BUDGET:
@@ -120,7 +119,7 @@ def can_history_trigger_func(
                     history_message=f"{event_user.full_name} edited the FY {current_fiscal_year} budget from {old_budget} to {new_budget}",
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=CANHistoryType.CAN_FUNDING_EDITED,
-                    fiscal_year=current_fiscal_year
+                    fiscal_year=current_fiscal_year,
                 )
                 history_events.append(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
@@ -134,7 +133,7 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_RECEIVED_CREATED,
-                fiscal_year=current_fiscal_year
+                fiscal_year=current_fiscal_year,
             )
             history_events.append(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_RECEIVED:
@@ -151,7 +150,7 @@ def can_history_trigger_func(
                     history_message=f"{event_user.full_name} edited funding received for funding ID {event.event_details['funding_received_updates']['funding_id']} from {old_funding} to {new_funding}",
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=CANHistoryType.CAN_RECEIVED_EDITED,
-                    fiscal_year=current_fiscal_year
+                    fiscal_year=current_fiscal_year,
                 )
                 history_events.append(history_event)
         case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
@@ -165,7 +164,7 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} deleted funding received for funding ID {event.event_details['deleted_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_RECEIVED_DELETED,
-                fiscal_year=current_fiscal_year
+                fiscal_year=current_fiscal_year,
             )
             history_events.append(history_event)
     add_history_events(history_events, session)
@@ -203,67 +202,112 @@ def create_can_update_history_event(
     event_history = []
     match property_name:
         case "nick_name":
-            event_history.append(CANHistory(
-                can_id=can_id,
-                ops_event_id=ops_event_id,
-                history_title="Nickname Edited",
-                history_message=f"Nickname changed from {old_value} to {new_value} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} edited the nickname from {old_value} to {new_value}",
-                timestamp=updated_on,
-                history_type=CANHistoryType.CAN_NICKNAME_EDITED,
-                fiscal_year=current_fiscal_year
-            ))
+            event_history.append(
+                CANHistory(
+                    can_id=can_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Nickname Edited",
+                    history_message=(
+                        f"Nickname changed from {old_value} to {new_value} during FY {current_fiscal_year} data import"
+                        if updated_by_sys_user
+                        else f"{updated_by_user.full_name} edited the nickname from {old_value} to {new_value}"
+                    ),
+                    timestamp=updated_on,
+                    history_type=CANHistoryType.CAN_NICKNAME_EDITED,
+                    fiscal_year=current_fiscal_year,
+                )
+            )
         case "description":
-            event_history.append(CANHistory(
-                can_id=can_id,
-                ops_event_id=ops_event_id,
-                history_title="Description Edited",
-                history_message=f"{updated_by_user.full_name} edited the description",
-                timestamp=updated_on,
-                history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
-                fiscal_year=current_fiscal_year
-            ))
+            event_history.append(
+                CANHistory(
+                    can_id=can_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Description Edited",
+                    history_message=f"{updated_by_user.full_name} edited the description",
+                    timestamp=updated_on,
+                    history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
+                    fiscal_year=current_fiscal_year,
+                )
+            )
         case "portfolio_id":
             old_portfolio = session.get(Portfolio, old_value)
             new_portfolio = session.get(Portfolio, new_value)
-            event_history.append(CANHistory(
-                can_id=can_id,
-                ops_event_id=ops_event_id,
-                history_title="CAN Portfolio Edited",
-                history_message=f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} changed the portfolio from {old_portfolio.name} to {new_portfolio.name}",
-                timestamp=updated_on,
-                history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
-                fiscal_year=current_fiscal_year
-            ))
+            event_history.append(
+                CANHistory(
+                    can_id=can_id,
+                    ops_event_id=ops_event_id,
+                    history_title="CAN Portfolio Edited",
+                    history_message=(
+                        f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during FY {current_fiscal_year} data import"
+                        if updated_by_sys_user
+                        else f"{updated_by_user.full_name} changed the portfolio from {old_portfolio.name} to {new_portfolio.name}"
+                    ),
+                    timestamp=updated_on,
+                    history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
+                    fiscal_year=current_fiscal_year,
+                )
+            )
             if old_portfolio.division_id != new_portfolio.division_id:
-                event_history.append(CANHistory(
-                can_id=can_id,
-                ops_event_id=ops_event_id,
-                history_title="CAN Division Edited",
-                history_message=f"CAN division changed from {old_portfolio.division.name} to {new_portfolio.division.name} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} changed the division from {old_portfolio.division.name} to {new_portfolio.division.name}",
-                timestamp=updated_on,
-                history_type=CANHistoryType.CAN_DIVISION_EDITED,
-                fiscal_year=current_fiscal_year
-            ))
+                event_history.append(
+                    CANHistory(
+                        can_id=can_id,
+                        ops_event_id=ops_event_id,
+                        history_title="CAN Division Edited",
+                        history_message=(
+                            f"CAN division changed from {old_portfolio.division.name} to {new_portfolio.division.name} during FY {current_fiscal_year} data import"
+                            if updated_by_sys_user
+                            else f"{updated_by_user.full_name} changed the division from {old_portfolio.division.name} to {new_portfolio.division.name}"
+                        ),
+                        timestamp=updated_on,
+                        history_type=CANHistoryType.CAN_DIVISION_EDITED,
+                        fiscal_year=current_fiscal_year,
+                    )
+                )
+        case str() as name if name.startswith("funding_details."):
+            field_label = name.removeprefix("funding_details.").replace("_", " ")
+            event_history.append(
+                CANHistory(
+                    can_id=can_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Funding Details Edited",
+                    history_message=(
+                        f"Funding details {field_label} changed from {old_value} to {new_value} during FY {current_fiscal_year} data import"
+                        if updated_by_sys_user
+                        else f"{updated_by_user.full_name} edited the funding details {field_label} from {old_value} to {new_value}"
+                    ),
+                    timestamp=updated_on,
+                    history_type=CANHistoryType.CAN_FUNDING_DETAILS_EDITED,
+                    fiscal_year=current_fiscal_year,
+                )
+            )
         case _:
             logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
 
     return event_history
 
+
 def add_history_events(events: List[CANHistory], session):
-    '''Add a list of CANHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''
+    """Add a list of CANHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates."""
     for event in events:
         # Query the database for existing events
         can_history_items = session.query(CANHistory).where(CANHistory.ops_event_id == event.ops_event_id).all()
 
         # Also check pending objects in the session that haven't been flushed yet
-        pending_items = [obj for obj in session.new if isinstance(obj, CANHistory) and obj.ops_event_id == event.ops_event_id]
+        pending_items = [
+            obj for obj in session.new if isinstance(obj, CANHistory) and obj.ops_event_id == event.ops_event_id
+        ]
 
         # Combine both database and pending items
         all_items = can_history_items + pending_items
 
         duplicate_found = False
         for item in all_items:
-            if item.timestamp == event.timestamp and item.history_type == event.history_type and item.history_message == event.history_message and item.fiscal_year == event.fiscal_year:
+            if (
+                item.timestamp == event.timestamp
+                and item.history_type == event.history_type
+                and item.history_message == event.history_message
+                and item.fiscal_year == event.fiscal_year
+            ):
                 # enough fields match that we're willing to say this is a duplicate.
                 duplicate_found = True
                 break

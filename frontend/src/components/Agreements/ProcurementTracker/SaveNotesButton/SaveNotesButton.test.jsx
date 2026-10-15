@@ -30,4 +30,27 @@ describe("SaveNotesButton", () => {
 
         expect(screen.getByRole("button", { name: /save notes/i })).toBeDisabled();
     });
+
+    it("renders the check icon in the primary color when enabled", () => {
+        render(<SaveNotesButton onClick={vi.fn()} />);
+
+        // eslint-disable-next-line testing-library/no-node-access
+        const icon = screen.getByRole("button", { name: /save notes/i }).querySelector("svg");
+        expect(icon).toHaveClass("text-primary");
+        expect(icon).not.toHaveClass("text-disabled");
+    });
+
+    it("renders the check icon in the disabled color when disabled", () => {
+        render(
+            <SaveNotesButton
+                onClick={vi.fn()}
+                isDisabled
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-node-access
+        const icon = screen.getByRole("button", { name: /save notes/i }).querySelector("svg");
+        expect(icon).toHaveClass("text-disabled");
+        expect(icon).not.toHaveClass("text-primary");
+    });
 });

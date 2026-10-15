@@ -35,8 +35,8 @@ from ops_api.ops.resources.agreements_constants import (
 from ops_api.ops.schemas.agreements import (
     AgreementFiltersQueryParametersSchema,
     AgreementListFilterOptionResponseSchema,
+    AgreementMetaSchema,
     AgreementRequestSchema,
-    MetaSchema,
 )
 from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year
 from ops_api.ops.services.budget_line_items import (
@@ -81,6 +81,7 @@ class AgreementItemAPI(BaseItemAPI):
                 item,
                 AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
                 context={"fiscal_year": effective_fy},
+                include_procurement_shop_lock=True,
             )
 
             response = make_response_with_headers(serialized_agreement)
@@ -164,6 +165,9 @@ class AgreementListAPI(BaseListAPI):
             include_procurement_list = data.pop("include_procurement", [False])
             include_procurement = include_procurement_list[0] if include_procurement_list else False
 
+            include_budget_lines_list = data.pop("include_budget_lines", [True])
+            include_budget_lines = include_budget_lines_list[0] if include_budget_lines_list else True
+
             logger.debug("Beginning agreement queries")
             service = AgreementsService(current_app.db_session)
             agreements, metadata = service.get_list(agreement_classes, data, include_procurement)
@@ -183,6 +187,7 @@ class AgreementListAPI(BaseListAPI):
                     agreement,
                     AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
                     context=schema_context,
+                    include_budget_lines=include_budget_lines,
                 )
 
                 agreement_response.append(serialized_agreement)
@@ -424,7 +429,12 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
 
 
 def _serialize_agreement_with_meta(
-    service: AgreementsService, agreement: Agreement, schema_mapping: dict[AgreementType, Any], context: dict = None
+    service: AgreementsService,
+    agreement: Agreement,
+    schema_mapping: dict[AgreementType, Any],
+    context: dict = None,
+    include_budget_lines: bool = True,
+    include_procurement_shop_lock: bool = False,
 ) -> dict:
     """
     Serialize an agreement with its metadata.
@@ -432,23 +442,43 @@ def _serialize_agreement_with_meta(
     Note: The schema includes a _meta field, but we populate it manually here
     because we need to compute isEditable based on the current user's permissions
     and the agreement's awarded state.
+
+    ``include_procurement_shop_lock`` is False by default (the list endpoint, which shares this
+    function, doesn't set it): ``Agreement.change_requests_in_review`` is a property that issues
+    its own SELECT on every access and isn't eager-loaded for the list query, so computing it for
+    every row would add a query per agreement to the list response. Only the single-agreement GET
+    (used by all three edit screens) opts in. See AgreementsService._get_procurement_shop_locked_message.
     """
     schema_type = schema_mapping.get(agreement.agreement_type)
     if schema_type is None:
         raise ValueError(f"No schema mapping found for agreement type: {agreement.agreement_type}")
-    schema = schema_type(exclude=["_meta"])  # Exclude _meta from schema dump since we'll set it manually
+    exclude_fields = ["_meta"]
+    if not include_budget_lines:
+        exclude_fields.append("budget_line_items")
+    schema = schema_type(exclude=exclude_fields)
     if context:
         schema.context = context
     serialized_agreement = schema.dump(agreement)
 
-    # Add _meta to each budget line item
-    get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
+    # Add _meta to each budget line item (only when included)
+    if include_budget_lines:
+        get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
 
-    # Add _meta to the agreement itself
-    meta_schema = MetaSchema()
+    # Add _meta to the agreement itself. is_editable is computed once and reused so
+    # _get_locked_message doesn't have to re-derive it; isDeletable is derived from
+    # locked_message rather than a separate predicate, so the two can never drift apart.
+    meta_schema = AgreementMetaSchema()
+    is_editable = service._is_editable(agreement, current_user)
+    locked_message = service._get_locked_message(agreement, current_user, is_editable)
+    procurement_shop_locked_message = (
+        service._get_procurement_shop_locked_message(agreement, current_user) if include_procurement_shop_lock else None
+    )
     data_for_meta = {
-        "isEditable": service._is_editable(agreement, current_user),
+        "isEditable": is_editable,
+        "isDeletable": locked_message is None,
+        "lockedMessage": locked_message,
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
+        "procurementShopLockedMessage": procurement_shop_locked_message,
     }
     serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)
 

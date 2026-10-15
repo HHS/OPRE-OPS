@@ -28,6 +28,7 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
     budget_line_item_id = fields.Int(required=False, allow_none=True)
     has_budget_change = fields.Bool(load_default=False)
     has_status_change = fields.Bool(load_default=False)
+    has_delete_change = fields.Bool(load_default=False)
     has_proc_shop_change = fields.Bool(load_default=False)
 
     class Meta:

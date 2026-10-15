@@ -33,6 +33,35 @@ DOWNGRADE_SQL = text("""
     WHERE name = 'REVIEWER_APPROVER'
     """)
 
+# Regression test for #5658 — mirrors the pattern above for the delete-agreement-permission
+# migration, which grants a single permission across three roles rather than several
+# permissions on one role.
+_delete_agreement_migration_file = (
+    Path(__file__).resolve().parents[3]
+    / "alembic"
+    / "versions"
+    / "2026_09_12_0346-38e2556364d7_add_delete_agreement_permission.py"
+)
+_delete_agreement_spec = importlib.util.spec_from_file_location(
+    "_delete_agreement_migration", _delete_agreement_migration_file
+)
+_delete_agreement_mod = importlib.util.module_from_spec(_delete_agreement_spec)
+_delete_agreement_spec.loader.exec_module(_delete_agreement_mod)
+DELETE_AGREEMENT_ROLES = _delete_agreement_mod.ROLES_TO_UPDATE
+
+DELETE_AGREEMENT_UPGRADE_SQL = text("""
+    UPDATE ops.role
+    SET permissions = array_append(permissions, 'DELETE_AGREEMENT')
+    WHERE name = :role
+      AND NOT ('DELETE_AGREEMENT' = ANY(permissions))
+    """)
+
+DELETE_AGREEMENT_DOWNGRADE_SQL = text("""
+    UPDATE ops.role
+    SET permissions = array_remove(permissions, 'DELETE_AGREEMENT')
+    WHERE name = :role
+    """)
+
 
 def test_get_roles(auth_client, app_ctx):
     response = auth_client.get(url_for("auth.roles_get"))
@@ -255,4 +284,66 @@ def test_migration_downgrade_removes_permissions(loaded_db):
     # Restore for other tests
     for perm in NEW_PERMISSIONS:
         loaded_db.execute(UPGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
+
+
+def test_delete_agreement_migration_upgrade_adds_missing_permission(loaded_db):
+    """Regression test for #5658. Simulate pre-migration state by removing DELETE_AGREEMENT
+    from all three roles, then verify upgrade adds it back to each."""
+    for role_name in DELETE_AGREEMENT_ROLES:
+        loaded_db.execute(DELETE_AGREEMENT_DOWNGRADE_SQL, {"role": role_name})
+    loaded_db.commit()
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        loaded_db.refresh(role)
+        assert "DELETE_AGREEMENT" not in role.permissions
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        loaded_db.execute(DELETE_AGREEMENT_UPGRADE_SQL, {"role": role_name})
+    loaded_db.commit()
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        loaded_db.refresh(role)
+        assert "DELETE_AGREEMENT" in role.permissions
+
+
+def test_delete_agreement_migration_upgrade_is_idempotent(loaded_db):
+    """Regression test for #5658. Verify running upgrade when the permission already exists
+    (as it does from JSON5 seed data) is a no-op for all three roles."""
+    perms_before = {}
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        perms_before[role_name] = list(role.permissions)
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        loaded_db.execute(DELETE_AGREEMENT_UPGRADE_SQL, {"role": role_name})
+    loaded_db.commit()
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        loaded_db.refresh(role)
+        assert role.permissions == perms_before[role_name]
+
+
+def test_delete_agreement_migration_downgrade_removes_permission(loaded_db):
+    """Regression test for #5658. Verify downgrade removes DELETE_AGREEMENT from all three
+    roles, then restore it so other tests relying on the permission are unaffected."""
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        assert "DELETE_AGREEMENT" in role.permissions
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        loaded_db.execute(DELETE_AGREEMENT_DOWNGRADE_SQL, {"role": role_name})
+    loaded_db.commit()
+
+    for role_name in DELETE_AGREEMENT_ROLES:
+        role = loaded_db.execute(select(Role).where(Role.name == role_name)).scalar_one()
+        loaded_db.refresh(role)
+        assert "DELETE_AGREEMENT" not in role.permissions
+
+    # Restore for other tests
+    for role_name in DELETE_AGREEMENT_ROLES:
+        loaded_db.execute(DELETE_AGREEMENT_UPGRADE_SQL, {"role": role_name})
     loaded_db.commit()

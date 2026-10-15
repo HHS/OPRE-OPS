@@ -133,6 +133,36 @@ info:
         assert call_count_after_second == call_count_after_first
 
 
+def test_version_endpoint_exposes_skip_cr_flag_default_false(auth_client, app):
+    """The /version/ endpoint reports the skip-CR capability flag (default False)."""
+    openapi_content = """
+openapi: 3.1.0
+info:
+  title: Test API
+  version: 0.1.1
+"""
+    with patch("builtins.open", mock_open(read_data=openapi_content)):
+        with patch.dict(app.config, {"SKIP_CR_FOR_DRAFT_PLANNED": False}):
+            response = auth_client.get("/api/v1/version/")
+            assert response.status_code == 200
+            assert response.json["skip_cr_for_draft_planned"] is False
+
+
+def test_version_endpoint_exposes_skip_cr_flag_when_enabled(auth_client, app):
+    """When the capability is enabled in config, /version/ reports it as True."""
+    openapi_content = """
+openapi: 3.1.0
+info:
+  title: Test API
+  version: 0.1.1
+"""
+    with patch("builtins.open", mock_open(read_data=openapi_content)):
+        with patch.dict(app.config, {"SKIP_CR_FOR_DRAFT_PLANNED": True}):
+            response = auth_client.get("/api/v1/version/")
+            assert response.status_code == 200
+            assert response.json["skip_cr_for_draft_planned"] is True
+
+
 def test_get_api_version_static_method():
     """Test that get_api_version can be called as a static method."""
     openapi_content = """

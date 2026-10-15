@@ -1,5 +1,4 @@
 import TableLoadingSkeleton from "../../UI/TableLoadingSkeleton";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
 
 const COLUMN_WIDTHS = ["75%", "50%", "45%", "45%", "60%", "60%"];
@@ -11,7 +10,7 @@ const COLUMN_WIDTHS = ["75%", "50%", "45%", "45%", "60%", "60%"];
  * @returns {React.ReactElement}
  */
 const AgreementsTableLoading = ({ selectedFiscalYear }) => {
-    const headings = getTableHeadingsWithFY(selectedFiscalYear, getCurrentFiscalYear()).map(({ heading }) => heading);
+    const headings = getTableHeadingsWithFY(selectedFiscalYear).map(({ heading }) => heading);
 
     return (
         <TableLoadingSkeleton

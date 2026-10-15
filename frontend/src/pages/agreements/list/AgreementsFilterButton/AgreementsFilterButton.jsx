@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import FiscalYearComboBox from "../../../../components/UI/Form/FiscalYearComboBox";
@@ -19,6 +20,8 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, isLoadingOptions = false }) => {
+    const [showModal, setShowModal] = useState(false);
+
     const {
         fiscalYear,
         setFiscalYear,
@@ -35,9 +38,8 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         awardType,
         setAwardType,
         applyFilter,
-        resetFilter,
-        currentFiscalYear
-    } = useAgreementsFilterButton(filters, setFilters);
+        resetFilter
+    } = useAgreementsFilterButton(filters, setFilters, showModal);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
@@ -51,7 +53,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={`Fiscal Year ${currentFiscalYear}`}
+                defaultString=""
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
@@ -149,6 +151,8 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             applyFilter={applyFilter}
             resetFilter={resetFilter}
             fieldsetList={fieldsetList}
+            showModal={showModal}
+            setShowModal={setShowModal}
         />
     );
 };

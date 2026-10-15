@@ -160,7 +160,8 @@ const CanFunding = ({
             )}
             <div className="display-flex flex-justify">
                 <h2>{!isEditMode ? "CAN Funding" : `Review FY ${fiscalYear} Funding Information`}</h2>
-                {!isReadOnly &&
+                {isBudgetTeamMember &&
+                    !isReadOnly &&
                     (!showButton ? (
                         <Tooltip
                             label="Only data from the current fiscal year can be edited."

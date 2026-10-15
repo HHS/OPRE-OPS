@@ -98,6 +98,7 @@ const baseHookResult = () => ({
     setNotes: vi.fn(),
     handleSubmit: vi.fn(),
     handleCancel: vi.fn(),
+    handleEdit: vi.fn(),
     projectOfficerName: "John Doe",
     alternateProjectOfficerName: "Jane Smith",
     isApprovalPending: false,
@@ -457,15 +458,19 @@ describe("RequestPreAwardApproval", () => {
             expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
         });
 
-        it("navigates to the edit page with encoded returnTo on click", async () => {
+        it("calls handleEdit on click", async () => {
+            const handleEditMock = vi.fn();
+            requestPreAwardApprovalHookMock.mockReturnValue({
+                ...baseHookResult(),
+                handleEdit: handleEditMock
+            });
+
             const user = userEvent.setup();
             render(<RequestPreAwardApproval />);
 
             await user.click(screen.getByRole("button", { name: "Edit" }));
 
-            expect(navigateMock).toHaveBeenCalledWith(
-                "/agreements/review/1/edit?returnTo=%2Fagreements%2F1%2Fpre-award-approval"
-            );
+            expect(handleEditMock).toHaveBeenCalledTimes(1);
         });
 
         it("disables the Edit button when agreement is not editable", () => {

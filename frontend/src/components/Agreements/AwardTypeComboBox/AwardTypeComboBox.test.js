@@ -109,6 +109,7 @@ describe("AwardTypeComboBox", () => {
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         const selectContainer = container.querySelector(".award-type-combobox__control");
-        expect(selectContainer).toHaveStyle({ minWidth: "30rem" });
+        // 30rem === 480px at the default 16px root font-size (jsdom default; no global stylesheet in unit tests)
+        expect(getComputedStyle(selectContainer).minWidth).toBe("480px");
     });
 });

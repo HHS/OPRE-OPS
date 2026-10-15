@@ -6,6 +6,7 @@ import {
     useAddDocumentMutation,
     useUpdateDocumentStatusMutation
 } from "../../../api/opsAPI";
+import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
 import {
     convertFileSizeToMB,
@@ -26,6 +27,7 @@ import { VALIDATABLE_BLI_STATUSES } from "./constants";
  */
 export default function useRequestPreAwardApproval(agreementId) {
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));
     const [isUploading, setIsUploading] = useState(false);
@@ -46,11 +48,13 @@ export default function useRequestPreAwardApproval(agreementId) {
     const {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines,
         executingTotal,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
         step4,
@@ -80,7 +84,6 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Only PLANNED and IN_EXECUTION budget lines require pre-award validation.
     // DRAFT lines aren't yet committed for approval; OBLIGATED lines have already
     // completed the full award cycle and don't need pre-award checks.
-    // PLANNED_MOD lines are excluded because modifications follow a separate approval path.
     const validatableBudgetLines = useMemo(
         () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
         [allBudgetLines]
@@ -173,9 +176,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel? Your changes will not be saved.",
-                actionButtonText: "Yes, Cancel",
-                secondaryButtonText: "Continue Editing",
+                heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+                actionButtonText: "Cancel Pre-Award",
+                secondaryButtonText: "Continue editing",
                 handleConfirm: () => {
                     setShowModal(false);
                     flushSync(() => {
@@ -275,8 +278,12 @@ export default function useRequestPreAwardApproval(agreementId) {
             flushSync(() => {
                 setIsNavigating(true);
             });
-            navigate(`/agreements/${agreementId}/procurement-tracker`, {
-                state: { success: true }
+            setAlert({
+                type: "success",
+                heading: "Agreement Sent to Pre-Award Approval",
+                message:
+                    "This agreement has been successfully sent to your Division Director to review. After it's approved, the Budget Team will submit the requisition, and then you can upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS).",
+                redirectUrl: `/agreements/${agreementId}/procurement-tracker`
             });
         } catch {
             setSubmitError("Failed to submit approval request. Please try again.");
@@ -287,9 +294,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your changes will not be saved.",
-            actionButtonText: "Yes, Cancel",
-            secondaryButtonText: "Continue Editing",
+            heading: "Are you sure you want to cancel your pre-award request? Your progress will not be saved.",
+            actionButtonText: "Cancel Pre-Award",
+            secondaryButtonText: "Continue editing",
             handleConfirm: () => {
                 setShowModal(false);
                 setIsNavigating(true);
@@ -301,18 +308,32 @@ export default function useRequestPreAwardApproval(agreementId) {
         });
     };
 
+    const handleEdit = () => {
+        const returnTo = encodeURIComponent(`/agreements/${agreementId}/pre-award-approval`);
+        // flushSync forces the isNavigating commit (and blocker re-registration) before
+        // navigate() so the blocker's synchronous forward-push check sees isNavigating=true
+        // and lets the edit navigation through instead of showing the cancel modal.
+        flushSync(() => {
+            setIsNavigating(true);
+        });
+        navigate(`/agreements/review/${agreementId}/edit?returnTo=${returnTo}`);
+    };
+
     return {
         agreement,
         isLoading,
+        isFetching,
         allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
         executingTotal, // Total calculated from executing budget lines only
         notes,
         setNotes,
         handleSubmit,
         handleCancel,
+        handleEdit,
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
+        grantNumbers,
         groupedBudgetLinesByServicesComponent,
         selectedFile,
         handleFileChange,

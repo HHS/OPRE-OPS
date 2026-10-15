@@ -1,8 +1,11 @@
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import useUnsavedChangesBlocker from "../../../hooks/useUnsavedChangesBlocker.hooks";
 import {
     useGetAgreementByIdQuery,
+    useGetGrantNumbersListQuery,
     useGetProcurementShopsQuery,
     useGetServicesComponentsListQuery,
     useUpdateChangeRequestMutation
@@ -11,7 +14,8 @@ import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
-import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { AgreementType } from "../agreements.constants";
+import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests, titleGenerator } from "../../../helpers/changeRequests.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
@@ -91,6 +95,17 @@ const useApproveAgreement = () => {
     }
     const [afterApproval, setAfterApproval] = useToggle(true);
 
+    const hasChanged = React.useMemo(() => notes.trim() !== "" || confirmation, [notes, confirmation]);
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps } = useUnsavedChangesBlocker({
+        hasChanged,
+        heading: "Save changes before leaving?",
+        description:
+            "You have unsaved changes in this approval review. If you leave without completing this review, these changes will be lost.",
+        actionButtonText: "Go back",
+        secondaryButtonText: "Leave without saving"
+    });
+
     const {
         data: agreement,
         error: errorAgreement,
@@ -107,6 +122,8 @@ const useApproveAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
+    const { data: grantNumbers } = useGetGrantNumbersListQuery(agreement?.id, { skip: !agreement });
+    const isGrant = agreement?.agreement_type === AgreementType.GRANT;
     const { data: procurementShops } = useGetProcurementShopsQuery({});
 
     const budgetLinesInReview =
@@ -317,6 +334,11 @@ const useApproveAgreement = () => {
                       false // isAfterApproval = false
                   );
                   beforeApprovalBudgetLines.forEach((bli) => {
+                      if (isGrant) {
+                          const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                          bli.grant_number_number = budgetLineGrantNumber?.number ?? 0;
+                          return;
+                      }
                       const budgetLineServicesComponent = servicesComponents?.find(
                           (sc) => sc.id === bli.services_component_id
                       );
@@ -327,9 +349,11 @@ const useApproveAgreement = () => {
                       bli.services_component_number = budgetLineScNumber ?? 0;
                       bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
                   });
-                  const groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-                      ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
-                      : [];
+                  const groupedBeforeApprovalBudgetLinesByServicesComponent = !beforeApprovalBudgetLines
+                      ? []
+                      : isGrant
+                        ? groupByGrantNumber(beforeApprovalBudgetLines, grantNumbers ?? [])
+                        : groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents);
 
                   // For "After Approval" view - show updated state
                   const approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
@@ -340,6 +364,11 @@ const useApproveAgreement = () => {
                       true // isAfterApproval = true
                   );
                   approvedBudgetLinesPreview.forEach((bli) => {
+                      if (isGrant) {
+                          const budgetLineGrantNumber = grantNumbers?.find((gn) => gn.id === bli.grant_number_id);
+                          bli.grant_number_number = budgetLineGrantNumber?.number ?? 0;
+                          return;
+                      }
                       const budgetLineServicesComponent = servicesComponents?.find(
                           (sc) => sc.id === bli.services_component_id
                       );
@@ -350,9 +379,11 @@ const useApproveAgreement = () => {
                       bli.services_component_number = budgetLineScNumber ?? 0;
                       bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
                   });
-                  const groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-                      ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
-                      : [];
+                  const groupedUpdatedBudgetLinesByServicesComponent = !approvedBudgetLinesPreview
+                      ? []
+                      : isGrant
+                        ? groupByGrantNumber(approvedBudgetLinesPreview, grantNumbers ?? [])
+                        : groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents);
 
                   return {
                       groupedBeforeApprovalBudgetLinesByServicesComponent,
@@ -374,6 +405,11 @@ const useApproveAgreement = () => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
+                // Clear dirty state before navigating so the blocker does not fire
+                flushSync(() => {
+                    setNotes("");
+                    setConfirmation(false);
+                });
                 navigate("/agreements?filter=change-requests");
             }
         });
@@ -522,10 +558,14 @@ const useApproveAgreement = () => {
                         setAlert({
                             type: "error",
                             heading: "Error Sending Agreement Edits",
-                            message: "There was an error sending your edits for approval. Please try again.",
-                            redirectUrl: "/error"
+                            message: "There was an error sending your edits for approval. Please try again."
                         });
                     } else {
+                        // Clear dirty state before navigating so the blocker does not fire
+                        flushSync(() => {
+                            setNotes("");
+                            setConfirmation(false);
+                        });
                         setAlert({
                             type: alertType,
                             heading: alertHeading,
@@ -549,6 +589,8 @@ const useApproveAgreement = () => {
         checkBoxText,
         confirmation,
         errorAgreement,
+        isGrant,
+        grantNumbers,
         groupedBeforeApprovalBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
@@ -570,6 +612,9 @@ const useApproveAgreement = () => {
         setNotes,
         setShowModal,
         showModal,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps,
         statusChangeTo,
         statusForTitle,
         title,

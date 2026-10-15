@@ -2,7 +2,7 @@ import os
 from threading import Lock
 
 import yaml
-from flask import jsonify
+from flask import current_app, jsonify
 from flask.views import MethodView
 
 # Cache the API version at module load time to avoid reading the file on every request
@@ -43,4 +43,11 @@ class VersionAPI(MethodView):
         return _load_api_version()
 
     def get(self):
-        return jsonify({"version": self.get_api_version()})
+        # Read the flag live from config each request so it reflects the running
+        # environment (only the version string is module-cached).
+        return jsonify(
+            {
+                "version": self.get_api_version(),
+                "skip_cr_for_draft_planned": current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False),
+            }
+        )

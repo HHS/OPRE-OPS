@@ -23,6 +23,8 @@ export type Portfolio = {
     division: Division;
     urls?: URL[];
     team_leaders?: SafeUser[];
+    division_director?: SafeUser | null;
+    deputy_division_director?: SafeUser | null;
     created_by?: any;
     created_by_user?: any;
     created_on?: any;

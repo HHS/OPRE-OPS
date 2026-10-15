@@ -4,7 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
-import StepNotesForm from "../StepNotesForm/StepNotesForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -37,6 +36,7 @@ const ProcurementTrackerStepThree = ({
     isDisabled,
     handleSetCompletedStepNumber,
     isActiveStep,
+    onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const {
@@ -51,6 +51,7 @@ const ProcurementTrackerStepThree = ({
         step3Notes,
         setStep3Notes,
         resetStep3Notes,
+        notesResetKey,
         step3CompletedByUserName,
         step3DateCompletedLabel,
         solicitationStartDateLabel,
@@ -66,10 +67,11 @@ const ProcurementTrackerStepThree = ({
         modalProps,
         cancelModalStep3,
         handleSaveNotes,
+        isStepPatchInFlight,
         handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
-    } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber, onDirtyChange);
 
     // Check if solicitation dates exist (either saved or entered)
     const hasSavedSolicitationDates =
@@ -86,14 +88,16 @@ const ProcurementTrackerStepThree = ({
         !step3DateCompleted ||
         validatorRes.hasErrors() ||
         missingSolicitationDates ||
-        !stepThreeData?.id;
+        !stepThreeData?.id ||
+        isStepPatchInFlight;
 
     const isSolicitationDatesSaveDisabled =
         isDisabled ||
         validatorRes.hasErrors("solicitationPeriodStartDate") ||
         validatorRes.hasErrors("solicitationPeriodEndDate") ||
         !solicitationPeriodStartDate ||
-        !solicitationPeriodEndDate;
+        !solicitationPeriodEndDate ||
+        isStepPatchInFlight;
 
     return (
         <>
@@ -286,11 +290,16 @@ const ProcurementTrackerStepThree = ({
                             />
                         </div>
 
-                        <StepNotesForm
+                        <StepNotesEditor
+                            textAreaName="notes-step-3"
                             notes={step3Notes}
                             setNotes={setStep3Notes}
-                            onSave={() => handleSaveNotes(stepThreeData?.id)}
-                            isDisabled={isDisabled}
+                            resetNotes={resetStep3Notes}
+                            savedNotes={stepThreeData?.notes}
+                            stepId={stepThreeData?.id}
+                            onSave={handleSaveNotes}
+                            isDisabled={isDisabled || isStepPatchInFlight}
+                            resetSignal={notesResetKey}
                         />
 
                         <div className="margin-top-2 display-flex flex-justify-end">
@@ -366,20 +375,21 @@ const ProcurementTrackerStepThree = ({
                             term="Date Completed"
                             description={step3DateCompletedLabel ?? undefined}
                         />
-                        <div style={{ gridColumn: "1 / -1" }}>
-                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                            <StepNotesEditor
-                                notes={step3Notes}
-                                setNotes={setStep3Notes}
-                                resetNotes={resetStep3Notes}
-                                notesLabel={step3NotesLabel}
-                                savedNotes={stepThreeData?.notes}
-                                stepId={stepThreeData?.id}
-                                onSave={handleSaveNotes}
-                                isDisabled={isDisabled}
-                            />
-                        </div>
                     </dl>
+                    {/* Rendered as a sibling after the </dl>, not inside it: StepNotesEditor
+                    emits its own <dl>, which is not a valid child of a <dl> (even via a div). */}
+                    <StepNotesEditor
+                        textAreaName="notes-step-3"
+                        notes={step3Notes}
+                        setNotes={setStep3Notes}
+                        resetNotes={resetStep3Notes}
+                        savedNotes={stepThreeData?.notes}
+                        stepId={stepThreeData?.id}
+                        onSave={handleSaveNotes}
+                        isDisabled={isDisabled || isStepPatchInFlight}
+                        startInReadMode
+                        resetSignal={notesResetKey}
+                    />
                 </div>
             )}
         </>
