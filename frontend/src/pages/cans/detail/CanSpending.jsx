@@ -29,7 +29,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {number} obligatedFunding
  * @property {number} totalFunding
  * @property {boolean} [isTableLoading]
- * @property {import("../../../sessionUISlice").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to the budget-line table's agreement links.
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to the budget-line table's agreement links.
  */
 
 /**

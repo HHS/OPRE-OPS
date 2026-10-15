@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { LIST_CRUMBS, trailMatchesPath, resolveAncestryForChildren, withListQuery } from "./breadcrumb.helpers";
+import {
+    buildTrailState,
+    getTrailFromState,
+    LIST_CRUMBS,
+    resolveAncestryForChildren,
+    resourceBasePath,
+    trailMatchesPath,
+    withListQuery
+} from "./breadcrumb.helpers";
 
 const portfolios = { label: "Portfolios", to: "/portfolios" };
 const portfolioA = { label: "Portfolio A", to: "/portfolios/5" };
@@ -15,6 +23,12 @@ describe("trailMatchesPath", () => {
 
     it("matches a sub-route (tab) beneath the base path", () => {
         expect(trailMatchesPath(trail, "/cans/1/spending")).toBe(true);
+    });
+
+    it("matches a sibling tab of a trail targeted at a tab", () => {
+        expect(trailMatchesPath({ targetPath: "/cans/1/spending?fy=2025", ancestors: [] }, "/cans/1/funding")).toBe(
+            true
+        );
     });
 
     it("does not match a sibling resource with a shared prefix", () => {
@@ -85,5 +99,25 @@ describe("withListQuery", () => {
         expect(withListQuery(LIST_CRUMBS.agreements, { pathname: "/agreements/5", search: "?x=1" })).toBe(
             LIST_CRUMBS.agreements
         );
+    });
+});
+
+describe("buildTrailState / getTrailFromState", () => {
+    it("round-trips a trail through location state", () => {
+        const state = buildTrailState("/cans/1", [cans]);
+        expect(state).toEqual({ breadcrumbTrail: { targetPath: "/cans/1", ancestors: [cans] } });
+        expect(getTrailFromState(state)).toEqual({ targetPath: "/cans/1", ancestors: [cans] });
+    });
+
+    it("returns null when the location carries no trail", () => {
+        expect(getTrailFromState(null)).toBeNull();
+        expect(getTrailFromState({ other: true })).toBeNull();
+    });
+});
+
+describe("resourceBasePath", () => {
+    it("keeps the first two segments and drops the query", () => {
+        expect(resourceBasePath("/cans/1/spending?fy=2025")).toBe("/cans/1");
+        expect(resourceBasePath("/agreements")).toBe("/agreements");
     });
 });

@@ -2,18 +2,57 @@
  * Helpers for composing context-aware breadcrumb trails.
  *
  * The breadcrumb trail records how a user actually arrived at a detail page.
- * It is written synchronously in an entry-point link's click handler — before
- * navigation — because the click site is the only place where both the current
- * page's ancestry and the destination path are known together.
+ * Entry-point links carry it as React Router location state (see
+ * `buildTrailState`), so each history entry keeps its own trail: it survives
+ * browser Back/Forward and refresh, and a page reached any other way (direct
+ * URL, notification, redirect after save) has no trail and falls back to the
+ * route hierarchy instead of showing a stale one.
  *
- * @typedef {import("../sessionUISlice").BreadcrumbAncestor} BreadcrumbAncestor
- * @typedef {import("../sessionUISlice").BreadcrumbTrail} BreadcrumbTrail
+ * @typedef {Object} BreadcrumbAncestor
+ * @property {string} label - The crumb text.
+ * @property {string} to - The path the crumb links to (may include a tab sub-route and query).
+ *
+ * @typedef {Object} BreadcrumbTrail
+ * @property {string} targetPath - Destination path the trail applies to (e.g. "/agreements/123").
+ * @property {BreadcrumbAncestor[]} ancestors - Crumbs shown before the leaf, in order.
  */
+
+/** Location-state key under which a link carries its breadcrumb trail. */
+export const TRAIL_STATE_KEY = "breadcrumbTrail";
+
+/**
+ * Build the location state an entry-point link passes to `<Link state>` so the
+ * destination renders with this trail.
+ *
+ * @param {string} targetPath - The link's destination path.
+ * @param {BreadcrumbAncestor[]} [ancestors] - Crumbs to show before the destination's leaf.
+ * @returns {{ breadcrumbTrail: BreadcrumbTrail }}
+ */
+export const buildTrailState = (targetPath, ancestors = []) => ({
+    [TRAIL_STATE_KEY]: { targetPath, ancestors: [...ancestors] }
+});
+
+/**
+ * Read the breadcrumb trail carried on a location's state, if any.
+ *
+ * @param {unknown} locationState - `useLocation().state`.
+ * @returns {BreadcrumbTrail | null}
+ */
+export const getTrailFromState = (locationState) => locationState?.[TRAIL_STATE_KEY] ?? null;
+
+/**
+ * The resource a path belongs to: its first two segments, without query
+ * (e.g. "/cans/1/spending?fy=2025" → "/cans/1").
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+export const resourceBasePath = (path) => "/" + path.split("?")[0].split("/").filter(Boolean).slice(0, 2).join("/");
 
 /**
  * Canonical list-page crumbs, matching the labels used by the route
  * `handle.crumb` fallbacks. Used as the first ancestor for each drill-down and
- * as the `fallbackCrumb` when a detail page has no matching stored trail.
+ * as the `fallbackCrumb` when a detail page has no matching carried trail.
  * @type {Record<string, BreadcrumbAncestor>}
  */
 export const LIST_CRUMBS = {
@@ -38,12 +77,12 @@ export const withListQuery = (listCrumb, { pathname, search = "" }) =>
     pathname === listCrumb.to ? { ...listCrumb, to: `${listCrumb.to}${search}` } : listCrumb;
 
 /**
- * Decide whether a stored trail applies to the current location.
+ * Decide whether a trail applies to the current location.
  *
- * Matches when the current pathname is the trail's target base path OR a
- * sub-route (tab) beneath it — so the trail survives detail-page tab
- * navigation — but never a sibling resource (e.g. "/cans/12" must not match a
- * trail keyed to "/cans/1").
+ * Matches when the current pathname belongs to the same resource as the
+ * trail's target — any tab of it, so a trail forwarded by tab navigation still
+ * applies — but never a sibling resource (e.g. "/cans/12" must not match a
+ * trail for "/cans/1").
  *
  * @param {BreadcrumbTrail | null | undefined} trail
  * @param {string} pathname - The current location pathname.
@@ -51,18 +90,17 @@ export const withListQuery = (listCrumb, { pathname, search = "" }) =>
  */
 export const trailMatchesPath = (trail, pathname) => {
     if (!trail?.targetPath || !pathname) return false;
-    const base = trail.targetPath;
-    return pathname === base || pathname.startsWith(base + "/");
+    return resourceBasePath(trail.targetPath) === resourceBasePath(pathname);
 };
 
 /**
  * Resolve the ancestor list a detail page should pass to the entry-point links
- * it renders. If a stored trail applies to the current location, the page's
+ * it renders. If the location's trail applies to the current location, the page's
  * ancestors are that trail's ancestors plus the page's own crumb; otherwise
  * the page falls back to its route-based crumb only.
  *
  * @param {Object} params
- * @param {BreadcrumbTrail | null | undefined} params.trail - The stored trail.
+ * @param {BreadcrumbTrail | null | undefined} params.trail - The trail carried on the current location.
  * @param {string} params.pathname - The current location pathname.
  * @param {BreadcrumbAncestor} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb to use when no trail applies (e.g. the "CANs" list link).

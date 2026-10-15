@@ -1,33 +1,44 @@
-import { useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import { LIST_CRUMBS, resolveAncestryForChildren, withListQuery } from "../helpers/breadcrumb.helpers";
-import { setTrail } from "../sessionUISlice";
+import {
+    getTrailFromState,
+    LIST_CRUMBS,
+    resolveAncestryForChildren,
+    TRAIL_STATE_KEY,
+    trailMatchesPath,
+    withListQuery
+} from "../helpers/breadcrumb.helpers";
 
 /**
- * Returns a click handler that records the breadcrumb trail for a destination
- * synchronously (before navigation), so the destination page renders with the
- * correct context-aware crumbs and no first-paint flicker.
- *
- * @returns {(params: { targetPath: string, ancestors?: import("../sessionUISlice").BreadcrumbAncestor[] }) => void}
- *   A function to call from an entry-point link's onClick. `ancestors` is the
- *   full ancestor list for the destination (already composed by the caller,
- *   e.g. via `resolveAncestryForChildren` on a detail page or a static list
- *   crumb + own crumb on a list row).
+ * @typedef {import("../helpers/breadcrumb.helpers").BreadcrumbAncestor} BreadcrumbAncestor
+ * @typedef {import("../helpers/breadcrumb.helpers").BreadcrumbTrail} BreadcrumbTrail
  */
-export const useSetBreadcrumbTrail = () => {
-    const dispatch = useDispatch();
-    return useCallback(
-        ({ targetPath, ancestors = [] }) => {
-            dispatch(setTrail({ targetPath, ancestors: [...ancestors] }));
-        },
-        [dispatch]
-    );
+
+/**
+ * The breadcrumb trail carried on the current location, when it applies to the
+ * current path (see `trailMatchesPath`).
+ *
+ * @returns {BreadcrumbTrail | null}
+ */
+export const useBreadcrumbTrail = () => {
+    const { pathname, state } = useLocation();
+    const trail = getTrailFromState(state);
+    return trailMatchesPath(trail, pathname) ? trail : null;
+};
+
+/**
+ * Location state that detail-page tab navigation passes along so the trail
+ * survives switching tabs (`navigate(path, { state })` / `<Link state>`).
+ *
+ * @returns {{ breadcrumbTrail: BreadcrumbTrail } | undefined}
+ */
+export const useForwardedTrailState = () => {
+    const trail = useBreadcrumbTrail();
+    return trail ? { [TRAIL_STATE_KEY]: trail } : undefined;
 };
 
 /**
  * Resolves the ancestry a detail page should hand to the entry-point links it
- * renders (see `resolveAncestryForChildren`), reading the stored trail and the
+ * renders (see `resolveAncestryForChildren`), from the trail carried on the
  * current location.
  *
  * The page's own crumb links to the current location (tab sub-route + query)
@@ -36,14 +47,13 @@ export const useSetBreadcrumbTrail = () => {
  *
  * @param {Object} params
  * @param {{ label: string, to?: string }} params.ownCrumb - The current page's own crumb.
- * @param {import("../sessionUISlice").BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
- * @returns {import("../sessionUISlice").BreadcrumbAncestor[]}
+ * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
+ * @returns {BreadcrumbAncestor[]}
  */
 export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
-    const { pathname, search } = useLocation();
-    const trail = useSelector((state) => state.sessionUI?.navContext?.trail);
+    const { pathname, search, state } = useLocation();
     return resolveAncestryForChildren({
-        trail,
+        trail: getTrailFromState(state),
         pathname,
         ownCrumb: { label: ownCrumb.label, to: ownCrumb.to ?? `${pathname}${search}` },
         fallbackCrumb
@@ -55,7 +65,7 @@ export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
  * tab when rendered on that list (see `withListQuery`).
  *
  * @param {keyof typeof LIST_CRUMBS} listKey
- * @returns {import("../sessionUISlice").BreadcrumbAncestor}
+ * @returns {BreadcrumbAncestor}
  */
 export const useListCrumb = (listKey) => {
     const location = useLocation();

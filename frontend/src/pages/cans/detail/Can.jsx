@@ -55,7 +55,7 @@ const Can = () => {
 
     // Compose the ancestry that child entry-point links (CANBudgetLineTable) should
     // record when navigating to an agreement. If the user drilled into this CAN via a
-    // known path (e.g. Portfolios > Portfolio A > CAN 1) the stored trail supplies the
+    // known path (e.g. Portfolios > Portfolio A > CAN 1) the carried trail supplies the
     // ancestors; otherwise fall back to the CANs list. The leaf is this CAN, linking
     // back to the current tab and selected FY.
     const { pathname } = useLocation();

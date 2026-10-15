@@ -228,7 +228,7 @@ describe("DetailsTabs", () => {
 
         fireEvent.click(screen.getByText("Award & Modifications"));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/award-modifications");
+        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/award-modifications", { state: undefined });
     });
 
     it("disables Documents tab when agreement is not awarded", () => {
@@ -266,7 +266,7 @@ describe("DetailsTabs", () => {
         const budgetLinesTab = screen.getByText("SCs & Budget Lines");
         fireEvent.click(budgetLinesTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/budget-lines");
+        expect(mockNavigate).toHaveBeenCalledWith("/agreements/1/budget-lines", { state: undefined });
     });
 
     it("applies selected style to the current tab", () => {

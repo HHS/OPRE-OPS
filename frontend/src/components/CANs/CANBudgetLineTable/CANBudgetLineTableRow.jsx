@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -12,7 +13,6 @@ import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
-import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
@@ -33,7 +33,7 @@ import { useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
  * @property {number} creatorId
  * @property {string} creationDate
  * @property {string} description
- * @property {import("../../../sessionUISlice").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry to record when navigating to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry to record when navigating to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
  */
 
 /**
@@ -56,7 +56,6 @@ const CANBudgetLineTableRow = ({
     description,
     ancestry = []
 }) => {
-    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
@@ -76,12 +75,7 @@ const CANBudgetLineTableRow = ({
                         <Link
                             className="text-ink text-no-underline"
                             to={`/agreements/${budgetLine.agreement.id}`}
-                            onClick={() =>
-                                setBreadcrumbTrail({
-                                    targetPath: `/agreements/${budgetLine.agreement.id}`,
-                                    ancestors: ancestry
-                                })
-                            }
+                            state={buildTrailState(`/agreements/${budgetLine.agreement.id}`, ancestry)}
                             aria-label={resolvedAgreementName}
                         >
                             <TextClip

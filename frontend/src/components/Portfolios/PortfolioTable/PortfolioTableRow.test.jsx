@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import PortfolioTableRow from "./PortfolioTableRow";
 
 describe("PortfolioTableRow", () => {
@@ -24,7 +24,7 @@ describe("PortfolioTableRow", () => {
     };
 
     const renderRow = (component) => {
-        return renderWithProviders(component);
+        return renderWithProviders(component, { withLocationProbe: true });
     };
 
     it("renders portfolio name as link", () => {
@@ -265,11 +265,11 @@ describe("PortfolioTableRow", () => {
     });
 
     it("records a Portfolios-list breadcrumb trail when the portfolio link is clicked", async () => {
-        const { store } = renderRow(<PortfolioTableRow {...defaultProps} />);
+        renderRow(<PortfolioTableRow {...defaultProps} />);
 
         await userEvent.click(screen.getByRole("link"));
 
-        expect(store.getState().sessionUI.navContext.trail).toEqual({
+        expect(getProbedTrail()).toEqual({
             targetPath: `/portfolios/${defaultProps.portfolio.id}`,
             ancestors: [{ label: "Portfolios", to: "/portfolios" }]
         });

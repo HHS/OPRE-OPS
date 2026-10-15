@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
-import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * PortfolioTableRow component - displays a single portfolio row with funding data
@@ -13,7 +14,6 @@ import { useListCrumb, useSetBreadcrumbTrail } from "../../../hooks/useBreadcrum
  */
 const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
     const fundingSummary = portfolio.fundingSummary;
-    const setBreadcrumbTrail = useSetBreadcrumbTrail();
     const listCrumb = useListCrumb("portfolios");
     const portfolioPath = `/portfolios/${portfolio.id}`;
 
@@ -32,7 +32,7 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
             <td>
                 <Link
                     to={`${portfolioPath}/spending?fy=${fiscalYear}`}
-                    onClick={() => setBreadcrumbTrail({ targetPath: portfolioPath, ancestors: [listCrumb] })}
+                    state={buildTrailState(portfolioPath, [listCrumb])}
                     className="text-ink text-no-underline"
                 >
                     {portfolio.name || portfolio.abbreviation

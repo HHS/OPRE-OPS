@@ -69,7 +69,17 @@ describe("Tabs", () => {
         const secondTab = screen.getByText("Path 2");
         fireEvent.click(secondTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+    });
+
+    it("forwards the breadcrumb trail carried on the current location to the new tab", () => {
+        const trail = { targetPath: "/test/path1", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
+        mockUseLocation.mockReturnValue({ pathname: "/test/path1", state: { breadcrumbTrail: trail } });
+        render(<Tabs paths={mockPaths} />);
+
+        fireEvent.click(screen.getByText("Path 2"));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: { breadcrumbTrail: trail } });
     });
 
     it("navigates immediately when scrolled, by default (scrollToTopOnChange not set)", () => {
@@ -80,7 +90,7 @@ describe("Tabs", () => {
         fireEvent.click(screen.getByText("Path 2"));
 
         expect(scrollToSpy).not.toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
     });
 
     describe("scrollToTopOnChange", () => {
@@ -108,7 +118,7 @@ describe("Tabs", () => {
             Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
             vi.advanceTimersByTime(20);
 
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
         });
 
         it("falls back to navigating on a timeout if the scroll never settles", () => {
@@ -127,7 +137,7 @@ describe("Tabs", () => {
 
             vi.advanceTimersByTime(2000);
 
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
         });
 
         it("navigates immediately when already scrolled to the top", () => {
@@ -142,7 +152,7 @@ describe("Tabs", () => {
             fireEvent.click(screen.getByText("Path 2"));
 
             expect(scrollToSpy).not.toHaveBeenCalled();
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
         });
 
         it("cancels the pending transition when a different tab is clicked before it settles", () => {
@@ -162,8 +172,8 @@ describe("Tabs", () => {
             Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
             vi.advanceTimersByTime(50);
 
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path3");
+            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2", { state: undefined });
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path3", { state: undefined });
         });
 
         it("does not navigate for a pending transition after the component unmounts", () => {
@@ -209,7 +219,7 @@ describe("Tabs", () => {
 
             vi.advanceTimersByTime(2000);
 
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
+            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2", { state: undefined });
         });
     });
 
