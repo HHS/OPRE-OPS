@@ -125,18 +125,36 @@ describe("Procurement Dashboard - Authorized User", () => {
 
         it("filters agreements by procurement shop when selecting a specific shop", () => {
             getAgreementCount().then((allCount) => {
-                // Open the filter modal and select the first procurement shop option
-                cy.get("button").contains("Filter").click();
-                cy.get(".proc-shop-combobox__control").click();
-                cy.get(".proc-shop-combobox__menu").find(".proc-shop-combobox__option").first().click();
+                // Not every procurement shop necessarily has an agreement in the current fiscal
+                // year, so try shops one at a time (by index, resetting the filter in between)
+                // until one actually filters to >= 1 agreement, rather than assuming the first
+                // (alphabetically-sorted) shop does. The combobox is a multi-select, so the
+                // previous candidate must be cleared via Reset before trying the next one —
+                // otherwise the filter would combine both shops instead of isolating one.
+                const tryShopAtIndex = (index) => {
+                    cy.get("button").contains("Filter").click();
+                    cy.get(".proc-shop-combobox__control").should("be.visible").click();
+                    cy.get(".proc-shop-combobox__menu")
+                        .should("be.visible")
+                        .find(".proc-shop-combobox__option")
+                        .should("have.length.at.least", index + 1)
+                        .eq(index)
+                        .click();
+                    cy.get("button").contains("Apply").click();
 
-                // Apply the filter
-                cy.get("button").contains("Apply").click();
+                    return getAgreementCount().then((filteredCount) => {
+                        if (filteredCount >= 1) {
+                            expect(filteredCount).to.be.at.most(allCount);
+                            return;
+                        }
+                        cy.get("button").contains("Filter").click();
+                        cy.get("button").contains("Reset").click();
+                        cy.get("button").contains("Apply").click();
+                        return tryShopAtIndex(index + 1);
+                    });
+                };
 
-                getAgreementCount().then((filteredCount) => {
-                    expect(filteredCount).to.be.at.most(allCount);
-                    expect(filteredCount).to.be.at.least(1);
-                });
+                tryShopAtIndex(0);
             });
         });
 
