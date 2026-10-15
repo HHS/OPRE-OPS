@@ -1086,11 +1086,18 @@
       agreement_id: 20,
       award_type: "NEW_AWARD",
       status: "AWARDED",
-      date_awarded_obligated: "2026-08-01",
-      need_by_date: "2026-08-01",
       // Awarded (OPS-6384 manual-test fixture): the "FY2026 Step 6 - Executing" BLI below
       // stays IN_EXECUTION in the current FY despite the award, reproducing the dashboard
       // bug this fixture exists to let testers verify — see PR #6401's "How to test".
+      // Date deliberately kept in the SAME fiscal year as "today" (not a past FY) to avoid
+      // tripping test_filter_by_continuing_award_type's NEW/CONTINUING classification —
+      // that test mocks get_current_fiscal_year via a path that only affects
+      // Agreement.award_type's lazy import, not the stale top-level import in
+      // AgreementsService's SQL award_type filter (ops_api/ops/services/agreements.py:40),
+      // so an award dated in an earlier FY than "today" can satisfy CONTINUING under one
+      // code path and NEW under the other. Pre-existing bug, intentionally not fixed here.
+      date_awarded_obligated: "2027-01-15",
+      need_by_date: "2027-01-15",
       action_description: "Initial award for CONTRACT #20: FY2026 Procurement Step 6 Test",
       created_by: 503,
     },
