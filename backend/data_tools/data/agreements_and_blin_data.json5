@@ -1085,9 +1085,12 @@
       id: 107,
       agreement_id: 20,
       award_type: "NEW_AWARD",
-      status: "IN_PROCESS",
-      date_awarded_obligated: null,
+      status: "AWARDED",
+      date_awarded_obligated: "2026-08-01",
       need_by_date: "2026-08-01",
+      // Awarded (OPS-6384 manual-test fixture): the "FY2026 Step 6 - Executing" BLI below
+      // stays IN_EXECUTION in the current FY despite the award, reproducing the dashboard
+      // bug this fixture exists to let testers verify — see PR #6401's "How to test".
       action_description: "Initial award for CONTRACT #20: FY2026 Procurement Step 6 Test",
       created_by: 503,
     },
@@ -17912,7 +17915,9 @@
       agreement_id: 20,
       amount: 4000000.0,
       status: "IN_EXECUTION",
-      date_needed: "2026-09-15T14:00:00",
+      // Set to FY2027 (not FY2026) so it falls in the current fiscal year as of this
+      // writing (OPS-6384) — will need bumping again once FY2027 ends, like any dated fixture.
+      date_needed: "2027-03-15T14:00:00",
       proc_shop_fee_percentage: 0,
       procurement_action_id: 107,
       on_hold: false,
