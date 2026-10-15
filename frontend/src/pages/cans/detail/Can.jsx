@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -57,9 +57,10 @@ const Can = () => {
     // record when navigating to an agreement. If the user drilled into this CAN via a
     // known path (e.g. Portfolios > Portfolio A > CAN 1) the stored trail supplies the
     // ancestors; otherwise fall back to the CANs list. The leaf is this CAN, linking
-    // back to the current tab.
+    // back to the current tab and selected FY.
+    const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: can?.display_name ?? "CAN" },
+        ownCrumb: { label: can?.display_name ?? "CAN", to: fiscalYear ? `${pathname}?fy=${fiscalYear}` : pathname },
         fallbackCrumb: LIST_CRUMBS.cans
     });
 
