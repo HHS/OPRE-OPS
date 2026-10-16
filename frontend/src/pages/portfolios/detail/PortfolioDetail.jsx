@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Outlet, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
@@ -44,9 +44,8 @@ const PortfolioDetail = () => {
     // should record. A portfolio is reached directly from the Portfolios list, so its
     // parent crumb is always the Portfolios list; the leaf is this portfolio, linking
     // back to the current tab and selected FY (read from `?fy=` on load).
-    const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: portfolio?.name ?? "Portfolio", to: `${pathname}?fy=${fiscalYear}` },
+        ownCrumb: { label: portfolio?.name ?? "Portfolio", fiscalYear },
         fallbackCrumb: LIST_CRUMBS.portfolios
     });
 

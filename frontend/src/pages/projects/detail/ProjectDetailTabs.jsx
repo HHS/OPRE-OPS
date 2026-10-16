@@ -1,7 +1,7 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styles from "../../../components/Agreements/DetailsTabs/DetailsTabs.module.scss";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 const TABS = [
     { name: "", label: "Project Details" },
@@ -20,9 +20,7 @@ const TABS = [
  */
 const ProjectDetailTabs = ({ projectId }) => {
     const location = useLocation();
-    const navigate = useNavigate();
-    // Keep the breadcrumb trail when switching tabs.
-    const trailState = useForwardedTrailState();
+    const navigate = useTrailNavigate();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;
@@ -41,7 +39,7 @@ const ProjectDetailTabs = ({ projectId }) => {
                         type="button"
                         key={pathName}
                         className={`${isSelected ? selected : notSelected} ${tab.disabled ? styles.btnDisabled : ""}`}
-                        onClick={() => navigate(pathName, { state: trailState })}
+                        onClick={() => navigate(pathName)}
                         disabled={tab.disabled}
                         data-cy={`project-tab-${tab.label}`}
                     >

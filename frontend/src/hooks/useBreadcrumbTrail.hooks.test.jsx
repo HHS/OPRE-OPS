@@ -1,4 +1,5 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
+import { getProbedTrail, LocationProbe } from "../test-utils";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { buildTrailState } from "../helpers/breadcrumb.helpers";
@@ -6,7 +7,8 @@ import {
     useAncestryForChildren,
     useBreadcrumbTrail,
     useForwardedTrailState,
-    useListCrumb
+    useListCrumb,
+    useTrailNavigate
 } from "./useBreadcrumbTrail.hooks";
 
 const renderAt = (hook, url, trail) => {
@@ -59,12 +61,20 @@ describe("useListCrumb", () => {
 describe("useAncestryForChildren", () => {
     const fallbackCrumb = { label: "CANs", to: "/cans" };
 
-    it("defaults the page's own crumb to the current tab and query", () => {
+    it("defaults the page's own crumb to the current tab", () => {
         const { result } = renderAt(
             () => useAncestryForChildren({ ownCrumb: { label: "CAN 1" }, fallbackCrumb }),
             "/cans/1/funding?x=1"
         );
-        expect(result.current).toEqual([fallbackCrumb, { label: "CAN 1", to: "/cans/1/funding?x=1" }]);
+        expect(result.current).toEqual([fallbackCrumb, { label: "CAN 1", to: "/cans/1/funding" }]);
+    });
+
+    it("adds ?fy= to the own crumb when a fiscalYear is given", () => {
+        const { result } = renderAt(
+            () => useAncestryForChildren({ ownCrumb: { label: "CAN 1", fiscalYear: 2025 }, fallbackCrumb }),
+            "/cans/1/funding"
+        );
+        expect(result.current).toEqual([fallbackCrumb, { label: "CAN 1", to: "/cans/1/funding?fy=2025" }]);
     });
 
     it("uses an explicit ownCrumb.to and prepends the carried trail when it applies", () => {
@@ -74,5 +84,38 @@ describe("useAncestryForChildren", () => {
             { targetPath: "/cans/1", ancestors: [portfolios, portfolioA] }
         );
         expect(result.current).toEqual([portfolios, portfolioA, { label: "CAN 1", to: "/cans/1" }]);
+    });
+});
+
+describe("useTrailNavigate", () => {
+    const renderWithProbe = (url, trail) => {
+        const [pathname] = url.split("?");
+        const entry = { pathname, state: trail ? buildTrailState(trail.targetPath, trail.ancestors) : null };
+        const wrapper = ({ children }) => (
+            <MemoryRouter initialEntries={[entry]}>
+                {children}
+                <LocationProbe />
+            </MemoryRouter>
+        );
+        return renderHook(() => useTrailNavigate(), { wrapper });
+    };
+    const trail = { targetPath: "/agreements/5", ancestors: [portfolios] };
+
+    it("carries the trail to another page of the same resource", () => {
+        const { result } = renderWithProbe("/agreements/5", trail);
+        act(() => result.current("/agreements/5/budget-lines"));
+        expect(getProbedTrail()).toEqual(trail);
+    });
+
+    it("drops the trail when navigating to another resource", () => {
+        const { result } = renderWithProbe("/agreements/5", trail);
+        act(() => result.current("/agreements"));
+        expect(getProbedTrail()).toBeNull();
+    });
+
+    it("leaves an explicit state untouched", () => {
+        const { result } = renderWithProbe("/agreements/5", trail);
+        act(() => result.current("/agreements/5/budget-lines", { state: { other: true } }));
+        expect(getProbedTrail()).toBeNull();
     });
 });

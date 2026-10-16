@@ -54,7 +54,7 @@ describe("ProjectDetailTabs", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Project Funding" }));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/funding", { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/funding");
     });
 
     it("navigates to the spending route when Project Spending tab is clicked", () => {
@@ -62,7 +62,7 @@ describe("ProjectDetailTabs", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Project Spending" }));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/spending", { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/spending");
     });
 
     it("renders no Coming Soon tooltips", () => {

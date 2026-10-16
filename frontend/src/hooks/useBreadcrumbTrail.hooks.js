@@ -1,9 +1,10 @@
-import { useLocation } from "react-router-dom";
+import { useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
     getTrailFromState,
     LIST_CRUMBS,
-    resolveAncestryForChildren,
-    TRAIL_STATE_KEY,
+    toTrailState,
+    trailFor,
     trailMatchesPath,
     withListQuery
 } from "../helpers/breadcrumb.helpers";
@@ -26,38 +27,57 @@ export const useBreadcrumbTrail = () => {
 };
 
 /**
- * Location state that detail-page tab navigation passes along so the trail
- * survives switching tabs (`navigate(path, { state })` / `<Link state>`).
+ * Location state that carries the current trail, for `<Link state>` /
+ * `<Navigate state>` to another page of the same resource (e.g. a tab).
+ * Imperative navigation should use `useTrailNavigate` instead.
  *
  * @returns {{ breadcrumbTrail: BreadcrumbTrail } | undefined}
  */
 export const useForwardedTrailState = () => {
     const trail = useBreadcrumbTrail();
-    return trail ? { [TRAIL_STATE_KEY]: trail } : undefined;
+    return trail ? toTrailState(trail) : undefined;
 };
 
 /**
- * Resolves the ancestry a detail page should hand to the entry-point links it
- * renders (see `resolveAncestryForChildren`), from the trail carried on the
- * current location.
+ * `useNavigate`, but navigating to another page of the same resource (a tab,
+ * an edit flow, a redirect back) carries the current breadcrumb trail along
+ * (see `trailFor`). Calls with an explicit `state`, numeric deltas, and
+ * navigation elsewhere pass through unchanged.
  *
- * The page's own crumb links to the current location (tab sub-route + query)
- * unless `ownCrumb.to` is given, so following it back restores the tab the
- * user left from.
+ * @returns {(to: string | number, options?: import("react-router-dom").NavigateOptions) => void}
+ */
+export const useTrailNavigate = () => {
+    const navigate = useNavigate();
+    const trail = useBreadcrumbTrail();
+    return useCallback(
+        (to, options) => {
+            const nextTrail = typeof to === "string" && !options?.state ? trailFor(trail, to) : null;
+            if (!nextTrail) return options === undefined ? navigate(to) : navigate(to, options);
+            return navigate(to, { ...options, state: toTrailState(nextTrail) });
+        },
+        [navigate, trail]
+    );
+};
+
+/**
+ * The ancestry a detail page hands to the entry-point links it renders: the
+ * carried trail's ancestors (or `fallbackCrumb` when there is none) plus the
+ * page's own crumb.
+ *
+ * The own crumb links to the current tab (pathname), with `?fy=` when a
+ * `fiscalYear` is given, so following it back restores both; pass `to` to
+ * link elsewhere.
  *
  * @param {Object} params
- * @param {{ label: string, to?: string }} params.ownCrumb - The current page's own crumb.
+ * @param {{ label: string, to?: string, fiscalYear?: number | null }} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
  * @returns {BreadcrumbAncestor[]}
  */
 export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
-    const { pathname, search, state } = useLocation();
-    return resolveAncestryForChildren({
-        trail: getTrailFromState(state),
-        pathname,
-        ownCrumb: { label: ownCrumb.label, to: ownCrumb.to ?? `${pathname}${search}` },
-        fallbackCrumb
-    });
+    const { pathname } = useLocation();
+    const trail = useBreadcrumbTrail();
+    const to = ownCrumb.to ?? (ownCrumb.fiscalYear ? `${pathname}?fy=${ownCrumb.fiscalYear}` : pathname);
+    return [...(trail?.ancestors ?? [fallbackCrumb]), { label: ownCrumb.label, to }];
 };
 
 /**

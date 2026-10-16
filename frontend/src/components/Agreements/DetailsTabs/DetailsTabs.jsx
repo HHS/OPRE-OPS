@@ -1,8 +1,8 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import { IS_DOCUMENTS_TAB_READY } from "../../../constants";
-import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -26,9 +26,7 @@ const DetailsTabs = ({
     isContractOrAa = false
 }) => {
     const location = useLocation();
-    const navigate = useNavigate();
-    // Keep the breadcrumb trail when switching tabs.
-    const trailState = useForwardedTrailState();
+    const navigate = useTrailNavigate();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;
@@ -87,7 +85,7 @@ const DetailsTabs = ({
                 className={`${tabSelected ? selected : notSelected} ${path.disabled ? styles.btnDisabled : ""}`}
                 key={pathName}
                 onClick={() => {
-                    navigate(pathName, { state: trailState });
+                    navigate(pathName);
                 }}
                 data-cy={`details-tab-${path.label}`}
                 disabled={path.disabled}

@@ -1,7 +1,7 @@
 import debounce from "lodash/debounce";
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useLocation } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import classnames from "vest/classnames";
 import {
     useAddAgreementMutation,
@@ -106,9 +106,7 @@ const useAgreementEditForm = (
     // depending on some other effect happening to also call setState on the same commit.
     const [, forceServiceReqTypeValidationRerender] = React.useState(0);
 
-    const navigate = useNavigate();
-    // Keep the breadcrumb trail when returning to this agreement's pages.
-    const trailState = useForwardedTrailState();
+    const navigate = useTrailNavigate();
     const dispatch = useEditAgreementDispatch();
     const { setAlert } = useAlert();
 
@@ -686,7 +684,7 @@ const useAgreementEditForm = (
                     });
                 } else if (isEditMode) {
                     setIsEditMode(false);
-                    navigate(`/agreements/${agreement.id}`, { state: trailState });
+                    navigate(`/agreements/${agreement.id}`);
                     return;
                 }
                 scrollToTop();

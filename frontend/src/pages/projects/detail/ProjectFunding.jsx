@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
@@ -53,9 +53,8 @@ const ProjectFunding = () => {
 
     // Ancestry passed to the CAN links below, so a CAN opened from here shows
     // "… > <project> > <CAN>"; the project crumb links back to this tab and FY.
-    const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: project?.title ?? "Project", to: `${pathname}?fy=${fiscalYear}` },
+        ownCrumb: { label: project?.title ?? "Project", fiscalYear },
         fallbackCrumb: LIST_CRUMBS.projects
     });
 

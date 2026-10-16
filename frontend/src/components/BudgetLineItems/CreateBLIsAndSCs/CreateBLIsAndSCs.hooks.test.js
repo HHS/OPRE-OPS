@@ -618,7 +618,7 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(setIsEditModeMock).toHaveBeenCalledWith(false);
-        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", { state: undefined });
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines");
     });
 
     it("keeps the breadcrumb trail when cancelling back to the budget lines", () => {

@@ -1,7 +1,6 @@
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
-import { useNavigate } from "react-router-dom";
-import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 
 /**
@@ -23,14 +22,12 @@ const AgreementDetailsEdit = ({
     isEditMode,
     setIsEditMode
 }) => {
-    const navigate = useNavigate();
-    // Keep the breadcrumb trail when returning to this agreement's pages.
-    const trailState = useForwardedTrailState();
+    const navigate = useTrailNavigate();
     const goBack = () => {
-        navigate(`/agreements/${agreement.id}`, { state: trailState });
+        navigate(`/agreements/${agreement.id}`);
     };
     const goToNext = () => {
-        navigate(`/agreements/${agreement.id}`, { state: trailState });
+        navigate(`/agreements/${agreement.id}`);
     };
     const isReviewMode = false;
     const isAgreementAwarded = agreement?.is_awarded;

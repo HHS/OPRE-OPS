@@ -18,7 +18,15 @@
  */
 
 /** Location-state key under which a link carries its breadcrumb trail. */
-export const TRAIL_STATE_KEY = "breadcrumbTrail";
+const TRAIL_STATE_KEY = "breadcrumbTrail";
+
+/**
+ * Wrap a trail as location state.
+ *
+ * @param {BreadcrumbTrail} trail
+ * @returns {{ breadcrumbTrail: BreadcrumbTrail }}
+ */
+export const toTrailState = (trail) => ({ [TRAIL_STATE_KEY]: trail });
 
 /**
  * Build the location state an entry-point link passes to `<Link state>` so the
@@ -28,9 +36,7 @@ export const TRAIL_STATE_KEY = "breadcrumbTrail";
  * @param {BreadcrumbAncestor[]} [ancestors] - Crumbs to show before the destination's leaf.
  * @returns {{ breadcrumbTrail: BreadcrumbTrail }}
  */
-export const buildTrailState = (targetPath, ancestors = []) => ({
-    [TRAIL_STATE_KEY]: { targetPath, ancestors: [...ancestors] }
-});
+export const buildTrailState = (targetPath, ancestors = []) => toTrailState({ targetPath, ancestors });
 
 /**
  * Read the breadcrumb trail carried on a location's state, if any.
@@ -111,24 +117,4 @@ export const trailFor = (trail, path) => {
     const index = trail.ancestors.findIndex((ancestor) => resourceBasePath(ancestor.to) === base);
     if (index >= 0) return { targetPath: path, ancestors: trail.ancestors.slice(0, index) };
     return trailMatchesPath(trail, path) ? trail : null;
-};
-
-/**
- * Resolve the ancestor list a detail page should pass to the entry-point links
- * it renders. If the location's trail applies to the current location, the page's
- * ancestors are that trail's ancestors plus the page's own crumb; otherwise
- * the page falls back to its route-based crumb only.
- *
- * @param {Object} params
- * @param {BreadcrumbTrail | null | undefined} params.trail - The trail carried on the current location.
- * @param {string} params.pathname - The current location pathname.
- * @param {BreadcrumbAncestor} params.ownCrumb - The current page's own crumb.
- * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb to use when no trail applies (e.g. the "CANs" list link).
- * @returns {BreadcrumbAncestor[]} Ancestors to hand to child links.
- */
-export const resolveAncestryForChildren = ({ trail, pathname, ownCrumb, fallbackCrumb }) => {
-    if (trailMatchesPath(trail, pathname)) {
-        return [...trail.ancestors, ownCrumb];
-    }
-    return [fallbackCrumb, ownCrumb];
 };
