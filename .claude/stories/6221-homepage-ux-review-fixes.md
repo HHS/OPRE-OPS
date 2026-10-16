@@ -13,7 +13,7 @@ Address UX review feedback on the already-implemented homepage redesign: add a m
 
 - [x] "What's New" summary card (left-hand side of homepage) has a caption, matching Figma
 - [x] "OPS at a Glance" caption text is corrected to match Figma
-- [x] "Done" status tag green color is fixed (currently reuses a budget-chart color instead of a semantic color)
+- [x] "Done" status tag green color is fixed — resolved as a same-palette index correction (`can-budget-by-fy-graph-3`, not `-graph-4`), not a switch to a semantic color class; confirmed exact hex match against Figma's own "CAN Budget by FY Graph/3" variable, so Figma's design itself still draws from this chart palette for this tag
 - [x] "Improvements" tag color in the homepage summary card matches Figma
 - [x] "Improvements" tag color on the full release-notes list (What's New tab) matches Figma, for consistency with the summary card
 - [x] "OPS at a Glance" alphabetical-order footnote is positioned below all three roadmap columns (left-aligned under "Done"), not nested under "Not Started Yet"
