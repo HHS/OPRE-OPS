@@ -1,3 +1,4 @@
+import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 import Tabs from "../../UI/Tabs";
 
 /**
@@ -11,6 +12,8 @@ import Tabs from "../../UI/Tabs";
  * @returns {JSX.Element} The rendered JSX element.
  */
 const CanDetailTabs = ({ canId }) => {
+    // Keep the breadcrumb trail when switching tabs.
+    const trailState = useForwardedTrailState();
     const paths = [
         {
             label: "CAN Details",
@@ -26,7 +29,12 @@ const CanDetailTabs = ({ canId }) => {
         }
     ];
 
-    return <Tabs paths={paths} />;
+    return (
+        <Tabs
+            paths={paths}
+            navigationState={trailState}
+        />
+    );
 };
 
 export default CanDetailTabs;

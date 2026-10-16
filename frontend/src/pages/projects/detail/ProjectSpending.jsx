@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import {
     useGetAgreementsByResearchProjectFilterQuery,
@@ -85,9 +85,8 @@ const ProjectSpending = () => {
 
     // Ancestry passed to the agreement links below, so an agreement opened from
     // here shows "… > <project> > <agreement>".
-    const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: project?.title ?? "Project", to: selectedFY ? `${pathname}?fy=${selectedFY}` : pathname },
+        ownCrumb: { label: project?.title ?? "Project", fiscalYear: selectedFY },
         fallbackCrumb: LIST_CRUMBS.projects
     });
 

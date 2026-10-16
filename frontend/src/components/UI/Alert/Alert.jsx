@@ -1,10 +1,8 @@
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { TRAIL_STATE_KEY, trailFor } from "../../../helpers/breadcrumb.helpers";
-import { useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { clearState, setIsActive } from "./alertSlice";
 
 /**
@@ -15,7 +13,9 @@ import { clearState, setIsActive } from "./alertSlice";
  */
 const Alert = ({ children }) => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+    // Keeps the breadcrumb trail when redirecting back into the same agreement
+    // (e.g. award approval → that agreement's procurement tracker).
+    const navigate = useTrailNavigate();
     /**
      * @type {import('../../../hooks/use-alert.hooks').AlertData}
      */
@@ -23,25 +23,20 @@ const Alert = ({ children }) => {
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const waitTime = 6000;
-    const trail = useBreadcrumbTrail();
+    // Reads the latest navigate (and the trail it carries) without re-running the effect.
+    const redirect = useEffectEvent((url) => navigate(url));
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
         if (redirectUrl) {
             setIsFromRedirect(true);
-            // Keep the breadcrumb trail when redirecting back into the same agreement
-            // (e.g. award approval → that agreement's procurement tracker).
-            const redirectTrail = trailFor(trail, redirectUrl);
-            const state = redirectTrail ? { [TRAIL_STATE_KEY]: redirectTrail } : undefined;
-            navigate(redirectUrl, { state });
+            redirect(redirectUrl);
         }
 
         return () => {
             setIsFromRedirect(false);
         };
-        // Only a new redirectUrl should trigger navigation; `trail` is read at that moment.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navigate, redirectUrl]);
+    }, [redirectUrl]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
     useEffect(() => {

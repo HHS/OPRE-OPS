@@ -302,6 +302,6 @@ describe("ProjectDetail", () => {
         // Click the enabled Project Details tab to fire the onClick.
         await user.click(screen.getByRole("button", { name: "Project Details" }));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000", { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000");
     });
 });
