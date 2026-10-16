@@ -1,14 +1,20 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePortfolioList } from "./PortfolioList.hooks";
 import * as opsAPI from "../../../api/opsAPI";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
+import { setupStore } from "../../../store";
 
 // Mock the API
 vi.mock("../../../api/opsAPI", () => ({
     useGetPortfoliosQuery: vi.fn(),
     useGetPortfolioFundingSummaryBatchQuery: vi.fn()
 }));
+
+// usePortfolioList now sources filters from the session slice (useListFilters),
+// so the hook must run inside a Redux Provider. Use a fresh store per test.
+const wrapper = ({ children }) => <Provider store={setupStore()}>{children}</Provider>;
 
 describe("usePortfolioList", () => {
     const mockSearchParams = new URLSearchParams();
@@ -77,7 +83,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.isLoading).toBe(true);
         expect(result.current.isError).toBe(false);
@@ -97,7 +105,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isError).toBe(true);
@@ -117,7 +127,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.portfoliosWithFunding).toHaveLength(3);
@@ -141,7 +153,9 @@ describe("usePortfolioList", () => {
 
         mockSearchParams.set("tab", "my");
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // User 1 is team leader for portfolios 1 and 3
         expect(result.current.filteredPortfolios).toHaveLength(2);
@@ -163,9 +177,48 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.fyBudgetRange).toEqual([10000000, 50000000]);
+    });
+
+    it("keeps the unfiltered budget range when remounting with persisted filters", () => {
+        opsAPI.useGetPortfoliosQuery.mockReturnValue({
+            data: mockAllPortfolios,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        // Filtered requests return only one portfolio; the unfiltered one returns all.
+        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockImplementation((args) => ({
+            data: args.budgetMin !== undefined ? { portfolios: [mockFundingData.portfolios[0]] } : mockFundingData,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        }));
+        const store = setupStore();
+        const sharedWrapper = ({ children }) => <Provider store={store}>{children}</Provider>;
+
+        const { result: firstResult, unmount } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams }),
+            {
+                wrapper: sharedWrapper
+            }
+        );
+        act(() => firstResult.current.setFilters((prev) => ({ ...prev, budgetRange: [20000000, 40000000] })));
+        unmount();
+
+        const { result: secondResult } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams }),
+            {
+                wrapper: sharedWrapper
+            }
+        );
+
+        expect(secondResult.current.filters.budgetRange).toEqual([20000000, 40000000]);
+        expect(secondResult.current.fyBudgetRange).toEqual([10000000, 50000000]);
     });
 
     it("should initialize with current fiscal year by default", () => {
@@ -182,7 +235,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // Should default to current fiscal year (as string since getCurrentFiscalYear returns string)
         const currentYear = new Date().getFullYear();
@@ -205,7 +260,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.activeTab).toBe("all");
     });
@@ -226,7 +283,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.activeTab).toBe("my");
     });
@@ -246,8 +305,9 @@ describe("usePortfolioList", () => {
         });
         const setSearchParams = vi.fn();
 
-        const { result } = renderHook(() =>
-            usePortfolioList({ currentUserId, searchParams: mockSearchParams, setSearchParams })
+        const { result } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams, setSearchParams }),
+            { wrapper }
         );
         result.current.setActiveTab("my");
         result.current.setActiveTab("all");
@@ -270,7 +330,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.filters.portfolios).toEqual([]);
         expect(result.current.filters.budgetRange).toEqual(DEFAULT_PORTFOLIO_BUDGET_RANGE);
@@ -291,7 +353,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // Should only include portfolio 1, others filtered out
         expect(result.current.portfoliosWithFunding).toHaveLength(1);
@@ -312,7 +376,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         expect(result.current.fyBudgetRange).toEqual(DEFAULT_PORTFOLIO_BUDGET_RANGE);
     });
@@ -351,7 +417,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // Should return buffered range (±10%) to avoid slider division by zero
         // Budget is 50000, so range should be [45000, 55001] (Math.ceil handles floating point)
@@ -392,7 +460,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // Should return buffered range (±10%) to avoid slider division by zero
         // All budgets are 50000, so range should be [45000, 55001] (Math.ceil handles floating point)
@@ -413,7 +483,9 @@ describe("usePortfolioList", () => {
             isError: false
         });
 
-        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }));
+        const { result } = renderHook(() => usePortfolioList({ currentUserId, searchParams: mockSearchParams }), {
+            wrapper
+        });
 
         // This should not crash the hook
         expect(() => {

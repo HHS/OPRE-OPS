@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PacmanLoader } from "react-spinners";
@@ -25,6 +25,7 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { USER_ROLES } from "../../../components/Users/User.constants";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 import constants, { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { deriveDropdownValue, mergeFiscalYearOptions, resolveForAPI } from "../../../helpers/fiscalYearFilter.helpers";
@@ -48,22 +49,16 @@ const AgreementsList = () => {
     const isBudgetTeam = userRoles.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
     const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
-    const [filters, setFilters] = useState({
-        portfolio: [],
-        fiscalYear: [],
-        projectTitle: [],
-        agreementType: [],
-        agreementName: [],
-        contractNumber: [],
-        awardType: []
-    });
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice, so returning to this list (e.g. via breadcrumb) keeps
+    // the user's selections applied.
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("agreements");
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
         tableSortCodes.agreementCodes.AGREEMENT,
         false
     );
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -144,7 +139,7 @@ const AgreementsList = () => {
         if (normalizedFYs.length === 0 && prevLen > 0) {
             setSelectedFiscalYear("All");
         }
-    }, [filters.fiscalYear]);
+    }, [filters.fiscalYear, setSelectedFiscalYear]);
 
     // Handle fiscal year shortcut dropdown change.
     // Clears only the Compare FYs override so portfolio/type/etc. filters are preserved.

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
@@ -9,6 +9,7 @@ import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
+import { useListFilters } from "../../hooks/useListFilters.hooks";
 import ProcurementDashboardFilterButton from "./ProcurementDashboardFilterButton";
 import ProcurementDashboardFilterTags from "./ProcurementDashboardFilterTags";
 import ProcurementDashboardTabs from "./summary/ProcurementDashboardTabs";
@@ -29,7 +30,8 @@ const ProcurementDashboard = () => {
     const filterParam = new URLSearchParams(search).get("filter");
     const awardTypeFilter = FILTER_TO_AWARD_TYPE[filterParam] ?? null;
 
-    const [filters, setFilters] = useState({ procShop: [], division: [] });
+    // Filters persist across client-side navigation via the session slice.
+    const { filters, setFilters } = useListFilters("procurementDashboard");
 
     const { data: procurementShops = [] } = useGetProcurementShopsQuery();
     const { data: divisions = [] } = useGetDivisionsQuery();
