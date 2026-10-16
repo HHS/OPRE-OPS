@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useBlocker, useNavigate } from "react-router-dom";
+import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
@@ -132,6 +133,8 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const navigate = useNavigate();
+    // Keep the breadcrumb trail when returning to this agreement's pages.
+    const trailState = useForwardedTrailState();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -756,7 +759,7 @@ const useCreateBLIsAndSCs = (
                     resetForm();
                     dispatch({ type: "RESEED_BUDGET_LINE_ITEMS", payload: [] });
                     setIsEditMode(false);
-                    navigate(getBudgetLinesUrl(selectedAgreement?.id));
+                    navigate(getBudgetLinesUrl(selectedAgreement?.id), { state: trailState });
                     scrollToTop();
                 }
             }
@@ -766,7 +769,7 @@ const useCreateBLIsAndSCs = (
     const handleGoBack = () => {
         if (workflow === "none") {
             setIsEditMode(false);
-            navigate(`/agreements/${selectedAgreement?.id}`);
+            navigate(`/agreements/${selectedAgreement?.id}`, { state: trailState });
         } else {
             goBack();
         }

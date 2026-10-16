@@ -36,11 +36,13 @@ vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
 }));
 
+let mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: null };
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
         useNavigate: () => navigateMock,
+        useLocation: () => mockLocation,
         useBlocker: () => ({
             state: "unblocked",
             proceed: vi.fn(),
@@ -162,6 +164,7 @@ vi.mock("./suite", () => {
 
 describe("useCreateBLIsAndSCs", () => {
     beforeEach(() => {
+        mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: null };
         vi.clearAllMocks();
         // vi.clearAllMocks() clears call history but not a mockReturnValue set by a prior test —
         // restore the module default here so tests that don't override useEditAgreementMock
@@ -614,7 +617,22 @@ describe("useCreateBLIsAndSCs", () => {
         });
 
         expect(setIsEditModeMock).toHaveBeenCalledWith(false);
-        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines");
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", { state: undefined });
+    });
+
+    it("keeps the breadcrumb trail when cancelling back to the budget lines", () => {
+        const trail = { targetPath: "/agreements/1", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
+        mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: { breadcrumbTrail: trail } };
+        const { result } = renderSubject();
+
+        act(() => {
+            result.current.handleCancel();
+        });
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", { state: { breadcrumbTrail: trail } });
     });
 
     it("treats step 3 of the create-agreement wizard as a new agreement, not an edit, on cancel (OPS-6076)", () => {
