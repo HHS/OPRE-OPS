@@ -6,6 +6,54 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-10-16",
+        version: "1.485.5",
+        changes: [
+            {
+                id: "0001",
+                subject: "Consistent filters across lists",
+                type: "Improvements",
+                description:
+                    "Filters now work the same way on the agreements, projects, budget lines, CANs and OPRE budget reporting lists. Reset clears everything in the filter panel without running a search, and Apply always matches exactly what you've set — so if you clear the panel and apply, you'll see all your results again. When you compare multiple fiscal years, the page dropdown now shows \"Multi\" and your fiscal year tags no longer repeat."
+            },
+            {
+                id: "0002",
+                subject: "Cancelling a status change",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where cancelling a status change on an agreement sent you back to the agreements list. You now stay on the agreement you were working on."
+            },
+            {
+                id: "0003",
+                subject: "Procurement shop changes",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where you could pick a new procurement shop on an agreement even when the change couldn't be saved, like when budget lines are already in execution or obligated. The dropdown is now turned off in those cases and explains why, instead of showing a generic error after you save."
+            },
+            {
+                id: "0004",
+                subject: "Portfolio budget lines loading",
+                type: "Fixes",
+                description:
+                    "We fixed a bug on the portfolio budget lines table where the loading placeholder disappeared too early and briefly showed a message saying no budget lines had been added. The table now waits until your budget lines are ready, and reloads properly when you change the fiscal year."
+            },
+            {
+                id: "0005",
+                subject: "Fiscal year dropdown",
+                type: "Fixes",
+                description:
+                    'We fixed a bug where the "All" option jumped to the bottom of the fiscal year dropdown after you picked a specific year. "All" now always stays at the top, wherever you use the fiscal year filter.'
+            },
+            {
+                id: "0006",
+                subject: "Editing CAN funding",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where the edit button appeared on CAN details and CAN funding for people who don't have permission to make those changes. The edit option now only shows for the Budget Team."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-09-11",
         version: "1.464.3",
         changes: [
