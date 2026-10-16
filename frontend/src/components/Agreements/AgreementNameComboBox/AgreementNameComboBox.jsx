@@ -2,6 +2,25 @@ import { useMemo, useEffect } from "react";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useNavigate } from "react-router-dom";
 import { useGetAllAgreements } from "../../../hooks/useGetAllAgreements";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
+
+/**
+ * Builds the shared option shape used by both the pre-fetched-options branch and the
+ * derived-fetch branch of computedAgreementNameOptions below, so a future field addition
+ * only needs to change one place. Ref: issue #6144.
+ * @param {{id: number, name?: string, nick_name?: string}} agreement
+ */
+const buildAgreementNameOption = (agreement) => {
+    const display = getAgreementDisplayName(agreement);
+    return {
+        id: agreement.id,
+        title: display,
+        name: agreement.name,
+        nick_name: agreement.nick_name,
+        display_name: display,
+        searchText: [agreement.name, agreement.nick_name].filter(Boolean).join(" ")
+    };
+};
 
 /**
  * A comboBox for choosing Agreement Name(s).
@@ -45,34 +64,31 @@ export const AgreementNameComboBox = ({
 
     // Extract unique agreement names and create options
     const computedAgreementNameOptions = useMemo(() => {
-        // If options provided via props, use them directly
+        // Both branches below build the same option shape so downstream consumers
+        // (AgreementsFilterTags, BLIFilterTags) don't need to special-case which path
+        // produced the option — see buildAgreementNameOption.
         if (agreementNameOptions !== null) {
-            return agreementNameOptions.map((option) => ({
-                id: option.id,
-                title: option.name,
-                name: option.name,
-                display_name: option.name
-            }));
+            return agreementNameOptions.map(buildAgreementNameOption);
         }
 
         // Otherwise, fetch from agreements
         if (!agreements || agreements.length === 0) return [];
 
-        // Create a Map to ensure uniqueness by display_name
-        const uniqueNames = new Map();
+        // Create a Map to ensure uniqueness by agreement id — NOT by the rendered display
+        // string. Keying by the string would let one agreement's nickname collide with a
+        // different agreement's full name (or vice versa), silently dropping the loser from
+        // this Map. Duplicate labels among distinct ids are a legitimate (if confusing) UI
+        // state; a lost agreement is a data bug. Ref: issue #6144 trap 4.
+        const uniqueAgreements = new Map();
 
         agreements.forEach((agreement) => {
-            if (agreement.display_name && !uniqueNames.has(agreement.display_name)) {
-                uniqueNames.set(agreement.display_name, {
-                    id: agreement.id,
-                    title: agreement.display_name,
-                    display_name: agreement.display_name
-                });
+            if (getAgreementDisplayName(agreement) && !uniqueAgreements.has(agreement.id)) {
+                uniqueAgreements.set(agreement.id, buildAgreementNameOption(agreement));
             }
         });
 
         // Convert Map to array and sort alphabetically
-        return Array.from(uniqueNames.values()).sort((a, b) => a.title.localeCompare(b.title));
+        return Array.from(uniqueAgreements.values()).sort((a, b) => a.title.localeCompare(b.title));
     }, [agreements, agreementNameOptions]);
 
     // Handle navigation on error in useEffect to avoid state updates during render

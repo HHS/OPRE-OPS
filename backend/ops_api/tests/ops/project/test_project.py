@@ -4,11 +4,12 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
-from sqlalchemy import text
+from sqlalchemy import select, text
 
 from models import (
     CAN,
     AdministrativeAndSupportProject,
+    Agreement,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -122,8 +123,8 @@ def test_project_search(auth_client, loaded_db):
     assert len(response.json["data"]) == 0
 
 
-def test_agreement_search(auth_client, loaded_db, test_project):
-    """Test filtering projects by associated agreement names (exact match)."""
+def test_agreement_id_filter(auth_client, loaded_db, test_project):
+    """Test filtering projects by associated agreement id."""
     # Create test agreements associated with test_project
     agreement1 = ContractAgreement(
         name="Research Agreement for Testing 2023",
@@ -137,44 +138,32 @@ def test_agreement_search(auth_client, loaded_db, test_project):
     loaded_db.add(agreement2)
     loaded_db.commit()
 
-    # Search for exact agreement name - should find test_project
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["Research Agreement for Testing 2023"]))
+    # Filter by a single agreement id - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement1.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id in project_ids
 
-    # Search for exact agreement name - should find test_project
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["Support Services Agreement"]))
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement2.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id in project_ids
 
-    # Search for multiple exact agreement names - should find test_project
-    response = auth_client.get(
-        url_for(
-            "api.projects-group",
-            agreement_search=["Research Agreement for Testing 2023", "Support Services Agreement"],
-        )
-    )
+    # Filter by multiple agreement ids - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement1.id, agreement2.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id in project_ids
 
-    # Search for non-existent agreement name - should return no projects or projects without this agreement
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["NonExistentAgreement"]))
+    # Filter by a non-existent agreement id - should return no projects with this agreement
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[999999999]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id not in project_ids
 
-    # Empty search should return no results
-    response = auth_client.get(url_for("api.projects-group", agreement_search=[""]))
-    assert response.status_code == 200
-    assert response.json["count"] == 0
-    assert len(response.json["data"]) == 0
 
-
-def test_agreement_search_multiple_projects(auth_client, loaded_db):
-    """Test agreement search returns all projects with matching agreements (exact match)."""
+def test_agreement_id_filter_multiple_projects(auth_client, loaded_db):
+    """Test agreement id filter returns all projects with matching agreements."""
     # Create two research projects
     project1 = ResearchProject(
         project_type=ProjectType.RESEARCH,
@@ -205,25 +194,23 @@ def test_agreement_search_multiple_projects(auth_client, loaded_db):
     loaded_db.add(agreement2)
     loaded_db.commit()
 
-    # Search for exact agreement name - should find both projects
-    response = auth_client.get(
-        url_for("api.projects-group", agreement_search=["Special Contract Alpha", "Special Contract Beta"])
-    )
+    # Filter by both agreement ids - should find both projects
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement1.id, agreement2.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert project1.id in project_ids
     assert project2.id in project_ids
 
-    # Search for exact agreement name - should find only project1
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["Special Contract Alpha"]))
+    # Filter by only agreement1's id - should find only project1
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement1.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert project1.id in project_ids
     assert project2.id not in project_ids
 
 
-def test_combined_project_and_agreement_search(auth_client, loaded_db, test_project):
-    """Test combining project_search and agreement_search filters (both use exact match)."""
+def test_combined_project_search_and_agreement_id_filter(auth_client, loaded_db, test_project):
+    """Test combining project_search (exact match) and agreement_id filters (AND logic)."""
     # Create an agreement for test_project
     agreement = ContractAgreement(
         name="Integration Test Agreement",
@@ -232,68 +219,72 @@ def test_combined_project_and_agreement_search(auth_client, loaded_db, test_proj
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Search with both exact project short_title and exact agreement name (AND logic)
+    # Search with both exact project short_title and the agreement's id (AND logic)
     # test_project has title "Human Services Interoperability Support" and short_title "HSS"
-    # Should find test_project (short_title exactly matches "HSS" AND has agreement exactly matching "Integration Test Agreement")
-    response = auth_client.get(
-        url_for("api.projects-group", project_search=["HSS"], agreement_search=["Integration Test Agreement"])
-    )
+    # Should find test_project (short_title exactly matches "HSS" AND has this agreement)
+    response = auth_client.get(url_for("api.projects-group", project_search=["HSS"], agreement_id=[agreement.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id in project_ids
 
-    # Search with exact project short_title that matches but agreement name that doesn't
-    # Should NOT find test_project
-    response = auth_client.get(url_for("api.projects-group", project_search=["HSS"], agreement_search=["NonExistent"]))
+    # Search with exact project short_title that matches but an agreement id that doesn't belong
+    # to this project - should NOT find test_project
+    response = auth_client.get(url_for("api.projects-group", project_search=["HSS"], agreement_id=[999999999]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id not in project_ids
 
 
-def test_agreement_search_by_nick_name(auth_client, loaded_db, test_project):
-    """Test filtering projects by agreement nick_name in addition to agreement name (exact match)."""
-    # Create agreements with nick_names
-    agreement1 = ContractAgreement(
-        name="Complex Long Agreement Name 2024",
-        nick_name="CLAN-2024",
-        project_id=test_project.id,
+def test_agreement_id_filter_does_not_match_by_name_or_nick_name_collision(auth_client, loaded_db, test_project):
+    """Regression guard (#6144): the agreement_id filter must match ONLY the agreement id.
+
+    Previously this filter accepted agreement name/nick_name strings and matched them with
+    `Agreement.name.in_(...) OR Agreement.nick_name.in_(...)`. Since nick_name has no uniqueness
+    constraint, agreement B's nickname could collide with a different agreement A's full name
+    (or vice versa), causing a project search for A to also surface B's project. Filtering by
+    id sidesteps this: two distinct agreements can never share an id.
+    """
+    # A second project that should NOT be returned when filtering by test_project's agreement.
+    other_project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Unrelated Collision Project",
+        short_title="UCP",
+        description="Should not appear in results filtered by test_project's agreement id",
     )
-    agreement2 = ContractAgreement(
-        name="Another Agreement",
-        nick_name="SPECIAL-NICKNAME",
-        project_id=test_project.id,
-    )
-    loaded_db.add(agreement1)
-    loaded_db.add(agreement2)
+    loaded_db.add(other_project)
     loaded_db.commit()
 
-    # Search by exact nick_name - should find test_project
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["CLAN-2024"]))
-    assert response.status_code == 200
-    project_ids = [p["id"] for p in response.json["data"]]
-    assert test_project.id in project_ids
+    common_title = "ABC Study Regression Test"
 
-    # Search by exact nick_name - should find test_project
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["SPECIAL-NICKNAME"]))
-    assert response.status_code == 200
-    project_ids = [p["id"] for p in response.json["data"]]
-    assert test_project.id in project_ids
-
-    # Search by exact agreement name - should find test_project
-    response = auth_client.get(url_for("api.projects-group", agreement_search=["Complex Long Agreement Name 2024"]))
-    assert response.status_code == 200
-    project_ids = [p["id"] for p in response.json["data"]]
-    assert test_project.id in project_ids
-
-    # Search with multiple exact terms - should find test_project if ANY agreement matches ANY term
-    # agreement1.name exactly matches "Complex Long Agreement Name 2024"
-    # agreement2.nick_name exactly matches "SPECIAL-NICKNAME"
-    response = auth_client.get(
-        url_for("api.projects-group", agreement_search=["Complex Long Agreement Name 2024", "SPECIAL-NICKNAME"])
+    # Agreement on test_project: full name equals agreement_b's nickname below.
+    agreement_a = ContractAgreement(
+        name=common_title,
+        nick_name=None,
+        project_id=test_project.id,
     )
+    # Agreement on the other project: nickname collides with agreement_a's full name.
+    agreement_b = ContractAgreement(
+        name="Longer Title Regression Test",
+        nick_name=common_title,
+        project_id=other_project.id,
+    )
+    loaded_db.add(agreement_a)
+    loaded_db.add(agreement_b)
+    loaded_db.commit()
+
+    # Filtering by agreement_a's id must return test_project only, never other_project.
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement_a.id]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id in project_ids
+    assert other_project.id not in project_ids
+
+    # Filtering by agreement_b's id must return other_project only, never test_project.
+    response = auth_client.get(url_for("api.projects-group", agreement_id=[agreement_b.id]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json["data"]]
+    assert other_project.id in project_ids
+    assert test_project.id not in project_ids
 
 
 def test_project_type_filter_all_vs_none(auth_client, loaded_db):
@@ -348,10 +339,15 @@ def test_project_type_filter_single_type(auth_client, loaded_db):
 
 def test_agreement_and_fiscal_year_filter(auth_client, loaded_db):
     """Test filtering by agreement and fiscal year at the same time"""
+    agreement_id = loaded_db.scalar(
+        select(Agreement.id).where(Agreement.name == "AA #1: Fathers and Continuous Learning (FCL)")
+    )
+    assert agreement_id is not None
+
     response_research = auth_client.get(
         url_for(
             "api.projects-group",
-            agreement_search=["AA #1: Fathers and Continuous Learning (FCL)"],
+            agreement_id=[agreement_id],
             fiscal_year=[2044],
             limit=50,
         )
@@ -364,7 +360,7 @@ def test_agreement_and_fiscal_year_filter(auth_client, loaded_db):
     response_2 = auth_client.get(
         url_for(
             "api.projects-group",
-            agreement_search=["AA #1: Fathers and Continuous Learning (FCL)"],
+            agreement_id=[agreement_id],
             fiscal_year=[2045],
             limit=50,
         )

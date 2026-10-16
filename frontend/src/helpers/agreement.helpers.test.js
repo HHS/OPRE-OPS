@@ -5,6 +5,7 @@ import {
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
+    getAgreementDisplayName,
     groupAndSortAgreementTypeCounts,
     getPartnerType,
     getFundingMethod,
@@ -18,6 +19,7 @@ import { BLI_STATUS } from "./budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
 import { AgreementType, AgreementFields } from "../pages/agreements/agreements.constants";
 import { NO_DATA } from "../constants";
+import { agreement, agreementWithoutNickname } from "../tests/data";
 
 describe("getProcurementShopSubTotal", () => {
     /** @type {import("../types/AgreementTypes").Agreement} */
@@ -73,6 +75,56 @@ describe("getProcurementShopSubTotal", () => {
         const result = getProcurementShopSubTotal(agreement, [], true);
         // Both DRAFT and PLANNED budget lines from agreement: (100 + 200) + (100 + 200) * 10 / 100 = 300 + 30 = 330
         expect(result).toBe(330);
+    });
+});
+
+describe("getAgreementDisplayName", () => {
+    it("prefers the server-computed display_name when present", () => {
+        expect(getAgreementDisplayName({ display_name: "AACFRC", nick_name: "AACFRC", name: "Full Title" })).toBe(
+            "AACFRC"
+        );
+    });
+
+    it("falls back to nick_name when display_name is absent", () => {
+        expect(getAgreementDisplayName({ nick_name: "HS", name: "Head Start Contract" })).toBe("HS");
+    });
+
+    it("trims a nick_name fallback with surrounding whitespace", () => {
+        expect(getAgreementDisplayName({ nick_name: "  HS  ", name: "Head Start Contract" })).toBe("HS");
+    });
+
+    it("falls back to name when nick_name is null", () => {
+        expect(getAgreementDisplayName({ nick_name: null, name: "Full Title" })).toBe("Full Title");
+    });
+
+    it("falls back to name when nick_name is an empty string", () => {
+        expect(getAgreementDisplayName({ nick_name: "", name: "Full Title" })).toBe("Full Title");
+    });
+
+    it("falls back to name when nick_name is whitespace-only", () => {
+        expect(getAgreementDisplayName({ nick_name: "   ", name: "Full Title" })).toBe("Full Title");
+    });
+
+    it("returns '' for a null agreement without throwing", () => {
+        expect(() => getAgreementDisplayName(null)).not.toThrow();
+        expect(getAgreementDisplayName(null)).toBe("");
+    });
+
+    it("returns '' for an undefined agreement without throwing", () => {
+        expect(() => getAgreementDisplayName(undefined)).not.toThrow();
+        expect(getAgreementDisplayName(undefined)).toBe("");
+    });
+
+    it("returns '' for an empty object with no name/nick_name/display_name", () => {
+        expect(getAgreementDisplayName({})).toBe("");
+    });
+
+    it("uses the fixture's nickname for the shared agreement fixture", () => {
+        expect(getAgreementDisplayName(agreement)).toBe("AACFRC");
+    });
+
+    it("falls back to the full name for the whitespace-nickname fixture", () => {
+        expect(getAgreementDisplayName(agreementWithoutNickname)).toBe(agreement.name);
     });
 });
 

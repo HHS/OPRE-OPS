@@ -31,7 +31,7 @@ class ProjectFilters:
     fiscal_year: Optional[list[int]] = None
     portfolio_id: Optional[list[int]] = None
     project_search: Optional[list[str]] = None
-    agreement_search: Optional[list[str]] = None
+    agreement_ids: Optional[list[int]] = None
     project_type: Optional[list[ProjectType]] = None
     limit: Optional[list[int]] = None
     offset: Optional[list[int]] = None
@@ -43,7 +43,7 @@ class ProjectFilters:
             fiscal_year=data.get("fiscal_year", []) if data else [],
             portfolio_id=data.get("portfolio_id", []) if data else [],
             project_search=data.get("project_search", []) if data else [],
-            agreement_search=data.get("agreement_search", []) if data else [],
+            agreement_ids=data.get("agreement_id", []) if data else [],
             project_type=data.get("project_type", []) if data else [],
             limit=data.get("limit", [10]) if data else [10],
             offset=data.get("offset", [0]) if data else [0],
@@ -307,15 +307,17 @@ class ProjectsService(OpsService[Project]):
                 )
             )
 
-        # Apply agreement search filter using EXISTS subquery
-        if filters.agreement_search:
+        # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
+        # string: the frontend sends the nickname-preferred display value (which may be either
+        # column), and since nick_name has no uniqueness constraint, matching name/nick_name as
+        # strings could let one agreement's nickname collide with a different agreement's full
+        # name (or another agreement's nickname) and surface the wrong project. Ref: #6144.
+        if filters.agreement_ids:
             agreement_subquery = (
                 select(1)
                 .select_from(Agreement)
                 .where(Agreement.project_id == ResearchProject.id)
-                .where(
-                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
-                )
+                .where(Agreement.id.in_(filters.agreement_ids))
                 .exists()
             )
             where_clauses.append(agreement_subquery)
@@ -393,15 +395,17 @@ class ProjectsService(OpsService[Project]):
                 )
             )
 
-        # Apply agreement search filter using EXISTS subquery
-        if filters.agreement_search:
+        # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
+        # string: the frontend sends the nickname-preferred display value (which may be either
+        # column), and since nick_name has no uniqueness constraint, matching name/nick_name as
+        # strings could let one agreement's nickname collide with a different agreement's full
+        # name (or another agreement's nickname) and surface the wrong project. Ref: #6144.
+        if filters.agreement_ids:
             agreement_subquery = (
                 select(1)
                 .select_from(Agreement)
                 .where(Agreement.project_id == AdministrativeAndSupportProject.id)
-                .where(
-                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
-                )
+                .where(Agreement.id.in_(filters.agreement_ids))
                 .exists()
             )
             where_clauses.append(agreement_subquery)

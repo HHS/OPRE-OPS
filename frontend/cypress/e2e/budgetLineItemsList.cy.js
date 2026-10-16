@@ -78,7 +78,7 @@ it("filter button works as expected", () => {
         .click()
         .get(".agreement-name-combobox__menu")
         .find(".agreement-name-combobox__option")
-        .eq(1) // select the second option
+        .contains("Contract #1: African American Child and Family Research Center")
         .click();
     cy.get(".can-active-period-combobox__control")
         .click()

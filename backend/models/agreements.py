@@ -263,7 +263,26 @@ class Agreement(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
+        """Nickname-preferred label for READ-ONLY references (tables, dropdowns,
+        filters, notifications). Do NOT use for the agreement's own page heading
+        or breadcrumb — use `name` / `full_name` there. Ref: issue #6144."""
+        return (self.nick_name or "").strip() or self.name
+
+    @property
+    def full_name(self):
+        """The agreement's full title, never the nickname."""
         return self.name
+
+    @classmethod
+    def display_name_expression(cls):
+        """SQL analogue of `display_name`, for ORDER BY / WHERE.
+
+        Uses regexp_replace rather than TRIM() because Postgres's TRIM() strips only
+        spaces by default, while Python's str.strip() strips all whitespace (tabs,
+        newlines, etc.) — regexp_replace with \\s keeps the two definitions in sync.
+        """
+        trimmed = func.regexp_replace(cls.nick_name, r"^\s+|\s+$", "", "g")
+        return func.coalesce(func.nullif(trimmed, ""), cls.name)
 
     @property
     def sc_start_date(self) -> Optional[date]:

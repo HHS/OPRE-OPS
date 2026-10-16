@@ -6,6 +6,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import AwardRequestForm from "../../../components/Agreements/AwardRequestForm";
@@ -115,7 +116,7 @@ export const RequestAwardApproval = () => {
 
             <PageHeader
                 title="Request Award Approval"
-                subTitle={agreement?.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
 
             <p className="margin-y-3">

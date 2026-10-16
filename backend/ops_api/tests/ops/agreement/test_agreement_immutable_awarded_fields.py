@@ -1,5 +1,6 @@
 """Unit tests for Agreement.immutable_awarded_fields property."""
 
+import pytest
 from flask import url_for
 from sqlalchemy import Integer, String, select
 
@@ -472,5 +473,43 @@ class TestAgreementImmutableAwardedFields:
 
         # Cleanup
         loaded_db.delete(procurement_action)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    @pytest.mark.parametrize(
+        "agreement_factory",
+        [
+            lambda: ContractAgreement(name="Test Contract - Nick Name Guard", agreement_type=AgreementType.CONTRACT),
+            lambda: GrantAgreement(name="Test Grant - Nick Name Guard", agreement_type=AgreementType.GRANT),
+            lambda: IaaAgreement(
+                name="Test IAA - Nick Name Guard",
+                agreement_type=AgreementType.IAA,
+                direction=IAADirectionType.INCOMING,
+            ),
+            lambda: AaAgreement(
+                name="Test AA - Nick Name Guard",
+                agreement_type=AgreementType.AA,
+                requesting_agency_id=1,
+                servicing_agency_id=1,
+            ),
+            lambda: DirectAgreement(
+                name="Test Direct - Nick Name Guard", agreement_type=AgreementType.DIRECT_OBLIGATION
+            ),
+        ],
+        ids=["contract", "grant", "iaa", "aa", "direct"],
+    )
+    def test_nick_name_is_not_an_immutable_awarded_field(self, loaded_db, app_ctx, agreement_factory):
+        """AC 6 guard: nick_name must never be locked once an agreement is awarded, for any agreement type.
+
+        This does not change the existing exact-list/count assertions above — it only
+        asserts the negative for nick_name specifically. Ref: issue #6144.
+        """
+        agreement = agreement_factory()
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        assert "nick_name" not in agreement.immutable_awarded_fields
+
+        # Cleanup
         loaded_db.delete(agreement)
         loaded_db.commit()

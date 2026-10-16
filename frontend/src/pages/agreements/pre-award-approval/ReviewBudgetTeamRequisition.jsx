@@ -6,6 +6,7 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
@@ -80,7 +81,7 @@ export const ReviewBudgetTeamRequisition = () => {
         <App breadCrumbName="Pre-Award Requisition">
             <PageHeader
                 title="Pre-Award Requisition"
-                subTitle={agreement?.name}
+                subTitle={getAgreementDisplayName(agreement)}
             />
 
             <p className="margin-y-3">

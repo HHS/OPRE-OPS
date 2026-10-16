@@ -1,4 +1,5 @@
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 
 export const AgreementSelect = ({
     selectedProject,
@@ -135,11 +136,16 @@ export const AgreementSelect = ({
                         <option value={0}>- Select -</option>
                         {agreements.length > 0 &&
                             agreements.map((agreement) => (
+                                // Known/accepted limitation: native <select> type-ahead jumps to an
+                                // option by matching its *rendered* text. Now that this text is
+                                // nickname-preferred, typing the full title no longer jumps to it —
+                                // only typing the nickname does. AgreementNameComboBox/ComboBox
+                                // (F2/F3) don't have this limitation. Ref: issue #6144 F6.
                                 <option
                                     key={agreement?.id}
                                     value={agreement?.id}
                                 >
-                                    {agreement?.name}
+                                    {getAgreementDisplayName(agreement)}
                                 </option>
                             ))}
                     </select>

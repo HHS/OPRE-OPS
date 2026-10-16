@@ -70,6 +70,9 @@ const AgreementMetaAccordion = ({
                 {/* NOTE: This is the left column*/}
                 <dl className="margin-0 font-12px grid-col">
                     {renderTerm("project", "Project", agreement?.project?.title)}
+                    {/* Must stay raw agreement.name / agreement.nick_name (never nickname-preferred) —
+                        this is the labeled Name/Nickname side-by-side pair the issue explicitly
+                        protects. Ref: issue #6144 F7. */}
                     {renderTerm("name", "Agreement", agreement?.name)}
                     {renderTerm("nickname", AGREEMENT_NICKNAME_LABEL, agreement?.nick_name ?? NO_DATA)}
                     {renderTerm("description", "Description", agreement?.description || NO_DATA)}
