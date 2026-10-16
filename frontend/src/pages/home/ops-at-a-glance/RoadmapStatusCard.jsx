@@ -45,6 +45,8 @@ const RoadmapStatusCard = () => {
                     >
                         <h3
                             className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal"
+                            // Paired with the "*" baked into ROADMAP_STATUS_LABELS[NOT_STARTED] in
+                            // roadmapStatus.constants.js — keep both in sync if the footnote moves.
                             aria-describedby={
                                 column.status === ROADMAP_STATUS.NOT_STARTED ? NOT_STARTED_FOOTNOTE_ID : undefined
                             }

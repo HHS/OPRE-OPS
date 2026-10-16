@@ -31,6 +31,11 @@ export const ROADMAP_STATUS_TAG_CLASSES = {
     the `ROADMAP_STATUS` values above, which stay as-is since they're also the literal
     `status` strings in roadmapData.json and the filter keys shared with CurrentlyDevelopingCard.
     Figma renamed these columns without changing the underlying status taxonomy.
+
+    NOT_STARTED's trailing "*" here is paired with `RoadmapStatusCard`'s `aria-describedby`
+    wiring (keyed off `column.status === ROADMAP_STATUS.NOT_STARTED`), which links this
+    column's heading to the footnote the asterisk refers to. If NOT_STARTED's footnote ever
+    moves to a different column, update both this string and that condition together.
 */
 export const ROADMAP_STATUS_LABELS = {
     [ROADMAP_STATUS.DONE]: "Ready to Use",
