@@ -48,6 +48,15 @@ describe("LeftCard", () => {
         expect(screen.getByText("1 Improvement")).toBeInTheDocument();
     });
 
+    it("renders the Improvements tag using the dedicated release-changes-improvements color, not the Done tag's green", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const improvementTag = screen.getByText("1 Improvement");
+        expect(improvementTag).toHaveClass("bg-brand-release-changes-improvements");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-3");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-4");
+    });
+
     it("renders singular text for single counts", () => {
         const singleCountProps = {
             ...mockProps,
@@ -107,5 +116,12 @@ describe("LeftCard", () => {
         render(<LeftCard {...mockProps} />);
 
         expect(screen.getByText("* See more detail on the What's New tab below")).toBeInTheDocument();
+    });
+
+    it("anchors the footnote to the bottom of the card instead of letting it flow with the content", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const footnote = screen.getByText("* See more detail on the What's New tab below");
+        expect(footnote).toHaveStyle({ marginTop: "auto" });
     });
 });

@@ -2,7 +2,9 @@ import RoadmapStatusCard from "./RoadmapStatusCard";
 
 /**
  * @component - "OPS at a Glance" tab content for the redesigned homepage: a header
- * followed by the Done / Currently Developing / Not Started Yet roadmap status board.
+ * followed by the Ready to Use / In Progress / Up Next / Later roadmap status board
+ * (Figma's labels for the underlying Done / Currently Developing / Not Started Yet
+ * statuses — see `ROADMAP_STATUS_LABELS` in `roadmapStatus.constants.js`).
  * Data is mocked (see `roadmapData.json`) — real data wiring is handled separately (OPS-6331).
  * @returns {React.ReactElement}
  */

@@ -3,6 +3,13 @@ import Tag from "../../components/UI/Tag";
 import { getRoadmapItemsByStatus } from "./roadmapData.helpers";
 import { ROADMAP_STATUS, ROADMAP_STATUS_TAG_CLASSES } from "./roadmapStatus.constants";
 
+/*
+    NOTE: "In Progress" and "Up Next" are hardcoded here rather than read from
+    `ROADMAP_STATUS_LABELS` (used by `RoadmapStatusCard`) because this card's Figma frame
+    ("Current & Next Up") labels the NOT_STARTED column just "Up Next", not "Up Next /
+    Later*" — the two cards are allowed to word the same status differently. Don't "fix"
+    one to match the other without checking both Figma frames first.
+*/
 const CurrentlyDevelopingCard = () => {
     const currentlyDevelopingItems = getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING);
     const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED);

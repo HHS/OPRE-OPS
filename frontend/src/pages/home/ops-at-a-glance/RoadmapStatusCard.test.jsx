@@ -57,12 +57,25 @@ describe("RoadmapStatusCard", () => {
 
         expect(screen.getByText(/Features are listed in alphabetical order/)).toBeInTheDocument();
 
+        const doneColumn = screen.getByTestId("roadmap-column-Done");
+        expect(within(doneColumn).queryByText(/Features are listed in alphabetical order/)).not.toBeInTheDocument();
+
+        const currentlyDevelopingColumn = screen.getByTestId("roadmap-column-Currently Developing");
+        expect(
+            within(currentlyDevelopingColumn).queryByText(/Features are listed in alphabetical order/)
+        ).not.toBeInTheDocument();
+
         const notStartedColumn = screen.getByTestId("roadmap-column-Not Started Yet");
         expect(
             within(notStartedColumn).queryByText(/Features are listed in alphabetical order/)
         ).not.toBeInTheDocument();
+    });
+
+    it("renders the Done tag using the corrected can-budget-by-fy-graph-3 green, not the old graph-4", () => {
+        render(<RoadmapStatusCard />);
 
         const doneColumn = screen.getByTestId("roadmap-column-Done");
-        expect(within(doneColumn).queryByText(/Features are listed in alphabetical order/)).not.toBeInTheDocument();
+        expect(within(doneColumn).getByText("Login")).toHaveClass("bg-brand-can-budget-by-fy-graph-3");
+        expect(within(doneColumn).getByText("Login")).not.toHaveClass("bg-brand-can-budget-by-fy-graph-4");
     });
 });
