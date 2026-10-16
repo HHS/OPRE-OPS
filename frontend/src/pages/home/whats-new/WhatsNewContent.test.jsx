@@ -43,6 +43,12 @@ describe("WhatsNewContent", () => {
         expect(screen.getByText(/This is a list of release notes/)).toBeInTheDocument();
     });
 
+    it("gives the subtitle margin-bottom-4 spacing before the release list, per Figma", () => {
+        render(<WhatsNewContent />);
+
+        expect(screen.getByText(/This is a list of release notes/)).toHaveClass("margin-bottom-4");
+    });
+
     it("renders the latest release in an open Accordion, per Figma", () => {
         render(<WhatsNewContent />);
 

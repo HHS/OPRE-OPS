@@ -108,6 +108,7 @@ html {
     --portfolio-bar-graph-otip: #1975aa;
     --portfolio-bar-graph-dv: #619ad8;
     --release-changes-fixes: #6cd4ff;
+    --release-changes-improvements: #96e6b3;
     --legend-dot-size: 8px;
     --procurement-step-1: #9EAFA9;
     --procurement-step-2: #5ABBB6;
@@ -216,7 +217,8 @@ $themeColors: (
     "portfolio-bar-graph-ocdo": var(--portfolio-bar-graph-ocdo),
     "portfolio-bar-graph-otip": var(--portfolio-bar-graph-otip),
     "portfolio-bar-graph-dv": var(--portfolio-bar-graph-dv),
-    "release-changes-fixes": var(--release-changes-fixes)
+    "release-changes-fixes": var(--release-changes-fixes),
+    "release-changes-improvements": var(--release-changes-improvements)
 );
 
 @each $name, $color in $themeColors {

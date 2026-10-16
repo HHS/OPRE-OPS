@@ -9,7 +9,7 @@ import ReleaseNotesList from "../release-notes/ReleaseNotesList";
 const WhatsNewContent = () => (
     <>
         <h2>What&apos;s New</h2>
-        <p>
+        <p className="margin-bottom-4">
             This is a list of release notes and what&apos;s new in OPS including new features, fixes, and improvements.
         </p>
         <ReleaseNotesList />
