@@ -6,6 +6,47 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-10-16",
+        version: "1.485.5",
+        changes: [
+            {
+                id: "0001",
+                subject: "CAN Funding Edit Access",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where the Edit button on CAN funding details was showing for all users. Now it only appears for Budget Team members, who are the only ones who should be able to make these edits."
+            },
+            {
+                id: "0002",
+                subject: 'Fiscal Year Filter "All" Option',
+                type: "Fixes",
+                description:
+                    'We fixed a bug where the "All" option in the Fiscal Year dropdown would jump to the bottom of the list after you selected a specific year. It now always stays at the top, so it\'s easier to find.'
+            },
+            {
+                id: "0003",
+                subject: "Procurement Shop Dropdown",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where the Procurement Shop dropdown looked editable even when OPS would reject the change. Now it's disabled whenever changing it isn't actually possible, so you don't lose time on an edit that was never going to save."
+            },
+            {
+                id: "0004",
+                subject: "Cancel Status Change Navigation",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where cancelling a status change on an agreement sent you back to the agreements list. Now you'll land back on that agreement's page instead, right where you left off."
+            },
+            {
+                id: "0005",
+                subject: "Standardized Fiscal Year Filtering",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, we standardized how Fiscal Year filtering works across the Agreements, Projects, Budget Line Items, CANs, and OPRE Budget Reporting lists. Comparing fiscal years, resetting filters, and applying filters now behave consistently no matter which list you're on."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-09-11",
         version: "1.464.3",
         changes: [
