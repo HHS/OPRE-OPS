@@ -87,4 +87,18 @@ describe("RoadmapStatusCard", () => {
         expect(tag).toHaveClass("text-brand-data-viz-bl-by-status-5");
         expect(tag).not.toHaveClass("text-ink");
     });
+
+    it("links the Up Next / Later heading to its footnote via aria-describedby, and no other heading", () => {
+        render(<RoadmapStatusCard />);
+
+        const footnote = screen.getByText(/Features are listed in alphabetical order/);
+        const footnoteId = footnote.getAttribute("id");
+        expect(footnoteId).toBeTruthy();
+
+        const upNextHeading = screen.getByRole("heading", { level: 3, name: "Up Next / Later*" });
+        expect(upNextHeading).toHaveAttribute("aria-describedby", footnoteId);
+
+        expect(screen.getByRole("heading", { level: 3, name: "Ready to Use" })).not.toHaveAttribute("aria-describedby");
+        expect(screen.getByRole("heading", { level: 3, name: "In Progress" })).not.toHaveAttribute("aria-describedby");
+    });
 });

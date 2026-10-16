@@ -124,4 +124,15 @@ describe("LeftCard", () => {
         const footnote = screen.getByText("* See more detail on the What's New tab below");
         expect(footnote).toHaveStyle({ marginTop: "auto" });
     });
+
+    it("links the Release Changes heading to its footnote via aria-describedby", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const footnote = screen.getByText("* See more detail on the What's New tab below");
+        const footnoteId = footnote.getAttribute("id");
+        expect(footnoteId).toBeTruthy();
+
+        const heading = screen.getByRole("heading", { level: 3, name: "Release Changes *" });
+        expect(heading).toHaveAttribute("aria-describedby", footnoteId);
+    });
 });
