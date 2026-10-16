@@ -13,6 +13,13 @@ export const getCurrentFiscalYear = (today = new Date()) => {
 };
 
 /**
+ * Parse a fiscal-year URL param (e.g. `?fy=2025`).
+ * @param {string | null} value - The raw param value.
+ * @returns {number | null} The fiscal year, or null when the value isn't a whole year.
+ */
+export const parseFiscalYearParam = (value) => (value && /^\d{4}$/.test(value) ? Number(value) : null);
+
+/**
  * This function calculate a percent based on a numerator and denominator.
  * @param {number} numerator - The numerator. This parameter is required.
  * @param {number} denominator - The denominator. This parameter is required.

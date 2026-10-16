@@ -316,6 +316,13 @@ describe("useCan", () => {
         expect(result.current.isEditMode).toEqual({ detailPage: false, fundingPage: false });
     });
 
+    it("ignores an invalid ?fy= search param", () => {
+        mockSearch = "?fy=abc";
+        const { result } = renderHook(() => useCan());
+
+        expect(result.current.fiscalYear).toBe(2026);
+    });
+
     it("seeds the selected fiscal year from the ?fy= search param", () => {
         mockSearch = "?fy=2025";
         const { result } = renderHook(() => useCan());

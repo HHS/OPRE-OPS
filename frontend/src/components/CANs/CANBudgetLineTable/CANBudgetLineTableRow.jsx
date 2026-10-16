@@ -33,7 +33,7 @@ import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
  * @property {number} creatorId
  * @property {string} creationDate
  * @property {string} description
- * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry to record when navigating to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
  */
 
 /**

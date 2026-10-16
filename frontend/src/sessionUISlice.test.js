@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { getCurrentFiscalYear } from "./helpers/utils";
 import sessionUIReducer, {
     setListFilters,
     setListFiscalYear,
@@ -15,7 +16,7 @@ describe("sessionUISlice — initial state", () => {
     it("returns the per-page filter defaults", () => {
         const state = freshState();
         expect(state.listFilters.agreements.filters).toEqual(listFilterDefaults.agreements.filters);
-        expect(state.listFilters.cans.selectedFiscalYear).toEqual(listFilterDefaults.cans.selectedFiscalYear);
+        expect(state.listFilters.cans.selectedFiscalYear).toEqual(getCurrentFiscalYear());
         expect(state.listFilters.budgetLines.selectedFiscalYear).toBe("All");
         expect(state.listFilters.agreements.selectedFiscalYear).toBe("All");
         expect(state.listFilters.projects.selectedFiscalYear).toBe("All");
@@ -51,7 +52,7 @@ describe("sessionUISlice — listFilters", () => {
         state = sessionUIReducer(state, resetListFilters({ page: "cans" }));
         expect(state.listFilters.cans).toEqual({
             filters: listFilterDefaults.cans.filters,
-            selectedFiscalYear: listFilterDefaults.cans.selectedFiscalYear
+            selectedFiscalYear: getCurrentFiscalYear()
         });
     });
 
@@ -72,5 +73,17 @@ describe("sessionUISlice — logout reset", () => {
         state = sessionUIReducer(state, logout());
         expect(state).toEqual(freshState());
         expect(state.listFilters.agreements.filters).toEqual(listFilterDefaults.agreements.filters);
+    });
+
+    it("recomputes the current-FY default on logout rather than at module load", () => {
+        vi.useFakeTimers();
+        try {
+            vi.setSystemTime(new Date("2031-11-01T12:00:00Z"));
+            const state = sessionUIReducer(freshState(), logout());
+            expect(state.listFilters.cans.selectedFiscalYear).toBe("2032");
+            expect(state.listFilters.portfolios.selectedFiscalYear).toBe("2032");
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

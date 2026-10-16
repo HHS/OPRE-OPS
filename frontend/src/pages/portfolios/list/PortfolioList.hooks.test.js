@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePortfolioList } from "./PortfolioList.hooks";
@@ -184,6 +184,43 @@ describe("usePortfolioList", () => {
         expect(result.current.fyBudgetRange).toEqual([10000000, 50000000]);
     });
 
+    it("keeps the unfiltered budget range when remounting with persisted filters", () => {
+        opsAPI.useGetPortfoliosQuery.mockReturnValue({
+            data: mockAllPortfolios,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        // Filtered requests return only one portfolio; the unfiltered one returns all.
+        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockImplementation((args) => ({
+            data: args.budgetMin !== undefined ? { portfolios: [mockFundingData.portfolios[0]] } : mockFundingData,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        }));
+        const store = setupStore();
+        const sharedWrapper = ({ children }) => <Provider store={store}>{children}</Provider>;
+
+        const { result: firstResult, unmount } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams }),
+            {
+                wrapper: sharedWrapper
+            }
+        );
+        act(() => firstResult.current.setFilters((prev) => ({ ...prev, budgetRange: [20000000, 40000000] })));
+        unmount();
+
+        const { result: secondResult } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams }),
+            {
+                wrapper: sharedWrapper
+            }
+        );
+
+        expect(secondResult.current.filters.budgetRange).toEqual([20000000, 40000000]);
+        expect(secondResult.current.fyBudgetRange).toEqual([10000000, 50000000]);
+    });
+
     it("should initialize with current fiscal year by default", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
@@ -251,6 +288,32 @@ describe("usePortfolioList", () => {
         });
 
         expect(result.current.activeTab).toBe("my");
+    });
+
+    it("switches tabs by writing ?tab= to the URL", () => {
+        opsAPI.useGetPortfoliosQuery.mockReturnValue({
+            data: mockAllPortfolios,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
+            data: mockFundingData,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        const setSearchParams = vi.fn();
+
+        const { result } = renderHook(
+            () => usePortfolioList({ currentUserId, searchParams: mockSearchParams, setSearchParams }),
+            { wrapper }
+        );
+        result.current.setActiveTab("my");
+        result.current.setActiveTab("all");
+
+        expect(setSearchParams).toHaveBeenNthCalledWith(1, { tab: "my" }, { replace: true });
+        expect(setSearchParams).toHaveBeenNthCalledWith(2, {}, { replace: true });
     });
 
     it("should initialize filters as empty", () => {

@@ -264,7 +264,7 @@ describe("PortfolioTableRow", () => {
         expect(link).toHaveClass("text-no-underline");
     });
 
-    it("records a Portfolios-list breadcrumb trail when the portfolio link is clicked", async () => {
+    it("passes a Portfolios-list breadcrumb trail when the portfolio link is clicked", async () => {
         renderRow(<PortfolioTableRow {...defaultProps} />);
 
         await userEvent.click(screen.getByRole("link"));

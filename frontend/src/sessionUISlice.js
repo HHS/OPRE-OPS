@@ -19,7 +19,8 @@ import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "./constants";
  * page's original `useState` initializer so behavior is unchanged on first
  * load. `selectedFiscalYear` is persisted alongside `filters` because the
  * resolved query blends both — persisting only `filters` would silently reset
- * the fiscal year on return.
+ * the fiscal year on return. A function default (`getCurrentFiscalYear`) is
+ * evaluated whenever state is built, so it stays current across Oct 1.
  */
 const listFilterDefaults = {
     agreements: {
@@ -42,7 +43,7 @@ const listFilterDefaults = {
             can: [],
             budget: []
         },
-        selectedFiscalYear: getCurrentFiscalYear()
+        selectedFiscalYear: getCurrentFiscalYear
     },
     budgetLines: {
         filters: {
@@ -62,7 +63,7 @@ const listFilterDefaults = {
             budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
             availablePct: []
         },
-        selectedFiscalYear: getCurrentFiscalYear()
+        selectedFiscalYear: getCurrentFiscalYear
     },
     projects: {
         filters: {
@@ -88,12 +89,17 @@ const listFilterDefaults = {
  * so the exported defaults are never mutated (by Immer freezing or otherwise),
  * and includes `selectedFiscalYear` only for pages that have a page-level FY.
  * Single source of truth for both initial-state construction and reset.
- * @param {{filters: Object, selectedFiscalYear?: string|number}} def
+ * @param {{filters: Object, selectedFiscalYear?: string|number|(() => string)}} def
  * @returns {{filters: Object, selectedFiscalYear?: string|number}}
  */
 const buildPageState = (def) => ({
     filters: structuredClone(def.filters),
-    ...("selectedFiscalYear" in def ? { selectedFiscalYear: def.selectedFiscalYear } : {})
+    ...("selectedFiscalYear" in def
+        ? {
+              selectedFiscalYear:
+                  typeof def.selectedFiscalYear === "function" ? def.selectedFiscalYear() : def.selectedFiscalYear
+          }
+        : {})
 });
 
 /**
@@ -103,17 +109,19 @@ const buildPageState = (def) => ({
 const buildListFiltersInitialState = () =>
     Object.fromEntries(Object.entries(listFilterDefaults).map(([page, def]) => [page, buildPageState(def)]));
 
-const initialState = {
+/** @returns {{ listFilters: ReturnType<typeof buildListFiltersInitialState> }} */
+const buildInitialState = () => ({
     listFilters: buildListFiltersInitialState()
-};
+});
 
 const sessionUISlice = createSlice({
     name: "sessionUI",
-    initialState,
+    // Lazy, so the current-FY defaults are computed when the store is created.
+    initialState: buildInitialState,
     reducers: {
         /**
          * Replace the applied filters for a list page.
-         * @param {typeof initialState} state
+         * @param {ReturnType<typeof buildInitialState>} state
          * @param {{ payload: { page: string, filters: Object } }} action
          */
         setListFilters: (state, action) => {
@@ -123,7 +131,7 @@ const sessionUISlice = createSlice({
         },
         /**
          * Set the selected fiscal year for a list page.
-         * @param {typeof initialState} state
+         * @param {ReturnType<typeof buildInitialState>} state
          * @param {{ payload: { page: string, selectedFiscalYear: string|number } }} action
          */
         setListFiscalYear: (state, action) => {
@@ -133,7 +141,7 @@ const sessionUISlice = createSlice({
         },
         /**
          * Reset a single list page's filters (and fiscal year) back to its defaults.
-         * @param {typeof initialState} state
+         * @param {ReturnType<typeof buildInitialState>} state
          * @param {{ payload: { page: string } }} action
          */
         resetListFilters: (state, action) => {
@@ -146,7 +154,7 @@ const sessionUISlice = createSlice({
     extraReducers: (builder) => {
         // Single logout-reset hook for all session UI state. All logout
         // call-sites dispatch this same action, so one case covers every path.
-        builder.addCase(logout, () => initialState);
+        builder.addCase(logout, () => buildInitialState());
     }
 });
 

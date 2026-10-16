@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { vi, expect, describe, it, beforeEach } from "vitest";
+import { buildTrailState } from "../../../../helpers/breadcrumb.helpers";
 import ProcurementTrackerStepSix from "./ProcurementTrackerStepSix";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
 
@@ -847,7 +848,13 @@ describe("ProcurementTrackerStepSix", () => {
             const button = screen.getByRole("button", { name: /Request Award Approval/i });
             fireEvent.click(button);
 
-            expect(mockNavigate).toHaveBeenCalledWith("/agreements/123/award-approval", { state: undefined });
+            // The approval page's trail ends with this agreement (route-based fallback before it).
+            expect(mockNavigate).toHaveBeenCalledWith("/agreements/123/award-approval", {
+                state: buildTrailState("/agreements/123/award-approval", [
+                    { label: "Agreements", to: "/agreements" },
+                    { label: "Agreement", to: "/agreements/123/procurement-tracker" }
+                ])
+            });
         });
     });
 

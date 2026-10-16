@@ -11,8 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { tableSortCodes } from "../../../helpers/utils";
-import store from "../../../store";
-import { logout } from "../../../components/Auth/authSlice";
+import { setupStore } from "../../../store";
 import AgreementsList from "./AgreementsList";
 
 // Mock the API hooks
@@ -202,15 +201,19 @@ beforeAll(() => {
     document.body.appendChild(root);
 });
 
+// A fresh store per test, so filters/FY persisted in the session slice don't
+// leak across test cases.
+let store;
+beforeEach(() => {
+    store = setupStore();
+});
+
 afterEach(() => {
     // Clean up any modals
     document.body.innerHTML = "";
     const root = document.createElement("div");
     root.setAttribute("id", "root");
     document.body.appendChild(root);
-    // Filters/FY now persist in the shared session slice; reset it between tests
-    // so persisted selections don't leak across test cases (logout resets it).
-    store.dispatch(logout());
 });
 
 describe("AgreementsList - Pagination", () => {

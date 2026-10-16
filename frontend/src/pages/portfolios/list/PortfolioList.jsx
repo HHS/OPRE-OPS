@@ -41,7 +41,7 @@ const PortfolioList = () => {
     const {
         setSelectedFiscalYear,
         activeTab,
-        setActiveTab: setActiveTabState,
+        setActiveTab,
         filters,
         setFilters,
         fiscalYear,
@@ -51,13 +51,7 @@ const PortfolioList = () => {
         fyBudgetRange,
         isLoading,
         isError
-    } = usePortfolioList({ currentUserId, searchParams });
-
-    // Mirror the active tab into `?tab=` so a breadcrumb back to this list restores it.
-    const setActiveTab = (tabId) => {
-        setActiveTabState(tabId);
-        setSearchParams(tabId === "all" ? {} : { tab: tabId }, { replace: true });
-    };
+    } = usePortfolioList({ currentUserId, searchParams, setSearchParams });
 
     // Table sorting state - default to static order matching the legend
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(

@@ -1,9 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { Provider } from "react-redux";
 import { createMemoryRouter, Link, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { setupStore } from "../../../store";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import Breadcrumb from "./Breadcrumb";
 
 /**
@@ -30,13 +29,13 @@ const renderBreadcrumb = ({ initialPath = "/agreements/1", trail, routeHandle } 
                 handle: routeHandle
             }
         ],
-        { initialEntries: [{ pathname: initialPath, state: trail ? { breadcrumbTrail: trail } : null }] }
+        {
+            initialEntries: [
+                { pathname: initialPath, state: trail ? buildTrailState(trail.targetPath, trail.ancestors) : null }
+            ]
+        }
     );
-    return render(
-        <Provider store={setupStore()}>
-            <RouterProvider router={router} />
-        </Provider>
-    );
+    return render(<RouterProvider router={router} />);
 };
 
 const agreementsRouteHandle = {

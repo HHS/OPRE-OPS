@@ -9,7 +9,7 @@ import {
 import FiscalYear from "../../../components/UI/FiscalYear";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
-import { getCurrentFiscalYear, computeDisplayPercents } from "../../../helpers/utils";
+import { getCurrentFiscalYear, computeDisplayPercents, parseFiscalYearParam } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
 import ProjectSpendingAgreementsTableLoading from "../../../components/Projects/ProjectSpendingAgreementsTable/ProjectSpendingAgreementsTableLoading";
@@ -54,7 +54,7 @@ const ProjectSpending = () => {
     // A `?fy=` param (set by breadcrumb links back to this tab) seeds the selected FY
     // when that FY has spending data; otherwise the default FY applies.
     const [searchParams] = useSearchParams();
-    const fiscalYearFromUrl = Number(searchParams.get("fy")) || null;
+    const fiscalYearFromUrl = parseFiscalYearParam(searchParams.get("fy"));
 
     const {
         data: project,
@@ -83,7 +83,7 @@ const ProjectSpending = () => {
         skip: !projectId || projectId === -1
     });
 
-    // Ancestry recorded by the agreement links below, so an agreement opened from
+    // Ancestry passed to the agreement links below, so an agreement opened from
     // here shows "… > <project> > <agreement>".
     const { pathname } = useLocation();
     const linkAncestry = useAncestryForChildren({

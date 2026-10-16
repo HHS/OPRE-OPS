@@ -86,7 +86,7 @@ describe("CANBudgetLineTableRow", () => {
         expect(screen.getByText("$50.00")).toBeInTheDocument(); // fee
     });
 
-    test("records the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
+    test("passes the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
         // Ancestry as it would arrive under the Portfolio spending tab:
         // Portfolios > Portfolio A > CAN 1
         const ancestry = [

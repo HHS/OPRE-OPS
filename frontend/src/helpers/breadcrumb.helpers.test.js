@@ -5,6 +5,7 @@ import {
     LIST_CRUMBS,
     resolveAncestryForChildren,
     resourceBasePath,
+    trailFor,
     trailMatchesPath,
     withListQuery
 } from "./breadcrumb.helpers";
@@ -52,7 +53,7 @@ describe("resolveAncestryForChildren", () => {
     const ownCrumb = can1;
     const fallbackCrumb = cans;
 
-    it("uses the stored trail's ancestors plus own crumb when the trail matches", () => {
+    it("uses the carried trail's ancestors plus own crumb when the trail matches", () => {
         const trail = { targetPath: "/cans/1", ancestors: [portfolios, portfolioA] };
         const result = resolveAncestryForChildren({
             trail,
@@ -119,5 +120,27 @@ describe("resourceBasePath", () => {
     it("keeps the first two segments and drops the query", () => {
         expect(resourceBasePath("/cans/1/spending?fy=2025")).toBe("/cans/1");
         expect(resourceBasePath("/agreements")).toBe("/agreements");
+    });
+});
+
+describe("trailFor", () => {
+    const agreementCrumb = { label: "Agreement X", to: "/agreements/5/procurement-tracker" };
+    const approvalTrail = { targetPath: "/agreements/5/award-approval", ancestors: [portfolios, agreementCrumb] };
+
+    it("ends the trail before an ancestor when navigating back to it", () => {
+        expect(trailFor(approvalTrail, "/agreements/5/procurement-tracker")).toEqual({
+            targetPath: "/agreements/5/procurement-tracker",
+            ancestors: [portfolios]
+        });
+    });
+
+    it("keeps the trail for another page of the same resource", () => {
+        const trail = { targetPath: "/agreements/5", ancestors: [portfolios] };
+        expect(trailFor(trail, "/agreements/5/budget-lines")).toBe(trail);
+    });
+
+    it("drops the trail for an unrelated page", () => {
+        expect(trailFor(approvalTrail, "/agreements")).toBeNull();
+        expect(trailFor(null, "/agreements/5")).toBeNull();
     });
 });

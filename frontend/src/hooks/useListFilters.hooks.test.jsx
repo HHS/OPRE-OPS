@@ -1,6 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { describe, it, expect } from "vitest";
+import { getCurrentFiscalYear } from "../helpers/utils";
 import { setupStore } from "../store";
 import { logout } from "../components/Auth/authSlice";
 import { listFilterDefaults } from "../sessionUISlice";
@@ -20,7 +21,7 @@ describe("useListFilters", () => {
         const store = setupStore();
         const { result } = renderWithStore("cans", store);
         expect(result.current.filters).toEqual(listFilterDefaults.cans.filters);
-        expect(result.current.selectedFiscalYear).toEqual(listFilterDefaults.cans.selectedFiscalYear);
+        expect(result.current.selectedFiscalYear).toEqual(getCurrentFiscalYear());
     });
 
     it("accepts an object update", () => {

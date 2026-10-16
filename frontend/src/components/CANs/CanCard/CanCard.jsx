@@ -16,7 +16,7 @@ import { NO_DATA } from "../../../constants";
  * @param {Object} props - The props
  * @param {number} props.canId - The CAN id
  * @param {number} props.fiscalYear - The fiscal year
- * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry to record when navigating to the CAN (composed by the embedding page).
+ * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry passed to the CAN (composed by the embedding page).
  * @returns {JSX.Element} - The CAN card
  */
 const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
