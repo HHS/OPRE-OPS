@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { TRAIL_STATE_KEY, trailMatchesPath } from "../../../helpers/breadcrumb.helpers";
+import { useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { clearState, setIsActive } from "./alertSlice";
 
 /**
@@ -21,17 +23,23 @@ const Alert = ({ children }) => {
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const waitTime = 6000;
+    const trail = useBreadcrumbTrail();
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
         if (redirectUrl) {
             setIsFromRedirect(true);
-            navigate(redirectUrl);
+            // Keep the breadcrumb trail when redirecting within the same resource
+            // (e.g. award approval → that agreement's procurement tracker).
+            const state = trailMatchesPath(trail, redirectUrl) ? { [TRAIL_STATE_KEY]: trail } : undefined;
+            navigate(redirectUrl, { state });
         }
 
         return () => {
             setIsFromRedirect(false);
         };
+        // Only a new redirectUrl should trigger navigation; `trail` is read at that moment.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate, redirectUrl]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation

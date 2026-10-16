@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useForwardedTrailState } from "../../../../hooks/useBreadcrumbTrail.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
@@ -46,6 +47,8 @@ const ProcurementTrackerStepFive = ({
     isReadOnly = false
 }) => {
     const navigate = useNavigate();
+    // Keep the breadcrumb trail when returning to this agreement's pages.
+    const trailState = useForwardedTrailState();
     const {
         isPreAwardComplete,
         setIsPreAwardComplete,
@@ -257,7 +260,11 @@ const ProcurementTrackerStepFive = ({
                                     <button
                                         type="button"
                                         className="usa-button usa-button--outline"
-                                        onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                        onClick={() =>
+                                            navigate(`/agreements/${agreementId}/pre-award-approval`, {
+                                                state: trailState
+                                            })
+                                        }
                                         disabled={isRequestBtnDisabled}
                                         data-cy="request-pre-award-approval-btn"
                                     >

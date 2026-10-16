@@ -6,7 +6,8 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({ pathname: "/agreements/123/procurement-tracker", state: null })
 }));
 vi.mock("./ProcurementTrackerStepFive.hooks");
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
