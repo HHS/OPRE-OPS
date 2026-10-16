@@ -194,7 +194,7 @@ describe("ProjectTableRow", () => {
         expect(screen.getByTestId("project-table-row-10")).toBeInTheDocument();
     });
 
-    it("records a Projects-list breadcrumb trail when the project link is clicked", async () => {
+    it("passes a Projects-list breadcrumb trail when the project link is clicked", async () => {
         renderRow();
 
         await userEvent.click(screen.getByRole("link", { name: MOCK_PROJECT.title }));
@@ -205,7 +205,7 @@ describe("ProjectTableRow", () => {
         });
     });
 
-    it("records a Projects-list breadcrumb trail when an agreement tag is clicked", async () => {
+    it("passes a Projects-list breadcrumb trail when an agreement tag is clicked", async () => {
         const user = userEvent.setup();
         renderRow();
 

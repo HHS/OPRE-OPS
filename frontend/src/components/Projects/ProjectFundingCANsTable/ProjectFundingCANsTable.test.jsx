@@ -105,7 +105,7 @@ describe("ProjectFundingCANsTable", () => {
         expect(screen.getAllByText("$0").length).toBeGreaterThan(0);
     });
 
-    it("records the provided ancestry as the breadcrumb trail when a CAN link is clicked", async () => {
+    it("passes the provided ancestry as the breadcrumb trail when a CAN link is clicked", async () => {
         const ancestry = [
             { label: "Projects", to: "/projects" },
             { label: "Project X", to: "/projects/7" }

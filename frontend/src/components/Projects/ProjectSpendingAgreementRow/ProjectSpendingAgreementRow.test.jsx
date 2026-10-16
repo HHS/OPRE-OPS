@@ -153,7 +153,7 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(screen.queryByText("Test description")).not.toBeInTheDocument();
     });
 
-    it("records the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
+    it("passes the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
         const ancestry = [
             { label: "Projects", to: "/projects" },
             { label: "Project X", to: "/projects/7" }

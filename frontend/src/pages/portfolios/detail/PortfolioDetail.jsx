@@ -11,14 +11,13 @@ import {
 } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getCurrentFiscalYear, parseFiscalYearParam } from "../../../helpers/utils";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
 import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
     const [searchParams] = useSearchParams();
-    const fiscalYearFromUrl = searchParams.get("fy");
-    const initialFiscalYear = fiscalYearFromUrl ? Number(fiscalYearFromUrl) : getCurrentFiscalYear();
+    const initialFiscalYear = parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear();
 
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(initialFiscalYear);
     const fiscalYear = Number(selectedFiscalYear);

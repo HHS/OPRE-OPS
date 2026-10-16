@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import Tabs from "./Tabs";
 
@@ -74,12 +75,17 @@ describe("Tabs", () => {
 
     it("forwards the breadcrumb trail carried on the current location to the new tab", () => {
         const trail = { targetPath: "/test/path1", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
-        mockUseLocation.mockReturnValue({ pathname: "/test/path1", state: { breadcrumbTrail: trail } });
+        mockUseLocation.mockReturnValue({
+            pathname: "/test/path1",
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        });
         render(<Tabs paths={mockPaths} />);
 
         fireEvent.click(screen.getByText("Path 2"));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: { breadcrumbTrail: trail } });
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", {
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        });
     });
 
     it("navigates immediately when scrolled, by default (scrollToTopOnChange not set)", () => {

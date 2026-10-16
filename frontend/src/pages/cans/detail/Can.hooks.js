@@ -4,7 +4,7 @@ import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getCurrentFiscalYear, parseFiscalYearParam } from "../../../helpers/utils";
 import { getTypesCounts } from "./Can.helpers";
 import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
@@ -23,9 +23,8 @@ export default function useCan() {
 
     // A `?fy=` param (set by breadcrumb links back to this CAN) seeds the selected FY.
     const [searchParams] = useSearchParams();
-    const fiscalYearFromUrl = searchParams.get("fy");
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(
-        fiscalYearFromUrl ? Number(fiscalYearFromUrl) : getCurrentFiscalYear()
+        () => parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear()
     );
     const fiscalYear = selectedFiscalYear === "All" ? null : Number(selectedFiscalYear);
     const canId = parseInt(urlPathParams.id ?? "-1");

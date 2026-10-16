@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { setupStore } from "./store";
+import { getTrailFromState } from "./helpers/breadcrumb.helpers";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 
 export function renderWithProviders(
@@ -53,6 +54,5 @@ export function LocationProbe() {
  * @returns {import("./helpers/breadcrumb.helpers").BreadcrumbTrail | null}
  */
 export function getProbedTrail() {
-    const state = JSON.parse(screen.getByTestId("location-probe").textContent);
-    return state?.breadcrumbTrail ?? null;
+    return getTrailFromState(JSON.parse(screen.getByTestId("location-probe").textContent));
 }

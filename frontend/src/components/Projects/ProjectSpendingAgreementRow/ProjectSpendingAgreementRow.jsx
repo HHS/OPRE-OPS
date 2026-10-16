@@ -32,7 +32,7 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
  * @param {number} props.fiscalYear - The selected fiscal year.
  * @param {number | null} props.fyTotal - Fallback FY total from the parent.
- * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry recorded when navigating to the agreement.
+ * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry passed to the agreement.
  * @returns {React.ReactElement}
  */
 const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry = [] }) => {

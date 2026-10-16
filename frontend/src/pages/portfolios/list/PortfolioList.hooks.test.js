@@ -231,6 +231,31 @@ describe("usePortfolioList", () => {
         expect(result.current.activeTab).toBe("my");
     });
 
+    it("switches tabs by writing ?tab= to the URL", () => {
+        opsAPI.useGetPortfoliosQuery.mockReturnValue({
+            data: mockAllPortfolios,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
+            data: mockFundingData,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        const setSearchParams = vi.fn();
+
+        const { result } = renderHook(() =>
+            usePortfolioList({ currentUserId, searchParams: mockSearchParams, setSearchParams })
+        );
+        result.current.setActiveTab("my");
+        result.current.setActiveTab("all");
+
+        expect(setSearchParams).toHaveBeenNthCalledWith(1, { tab: "my" }, { replace: true });
+        expect(setSearchParams).toHaveBeenNthCalledWith(2, {}, { replace: true });
+    });
+
     it("should initialize filters as empty", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,

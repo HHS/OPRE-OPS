@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { TRAIL_STATE_KEY, trailMatchesPath } from "../../../helpers/breadcrumb.helpers";
+import { TRAIL_STATE_KEY, trailFor } from "../../../helpers/breadcrumb.helpers";
 import { useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { clearState, setIsActive } from "./alertSlice";
 
@@ -29,9 +29,10 @@ const Alert = ({ children }) => {
     useEffect(() => {
         if (redirectUrl) {
             setIsFromRedirect(true);
-            // Keep the breadcrumb trail when redirecting within the same resource
+            // Keep the breadcrumb trail when redirecting back into the same agreement
             // (e.g. award approval → that agreement's procurement tracker).
-            const state = trailMatchesPath(trail, redirectUrl) ? { [TRAIL_STATE_KEY]: trail } : undefined;
+            const redirectTrail = trailFor(trail, redirectUrl);
+            const state = redirectTrail ? { [TRAIL_STATE_KEY]: redirectTrail } : undefined;
             navigate(redirectUrl, { state });
         }
 

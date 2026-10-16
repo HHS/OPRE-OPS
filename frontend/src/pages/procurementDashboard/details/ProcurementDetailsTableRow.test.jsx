@@ -180,7 +180,7 @@ describe("ProcurementDetailsTableRow", () => {
         expect(screen.getByText("1")).toBeInTheDocument();
     });
 
-    it("records a Procurement Dashboard breadcrumb trail when the agreement link is clicked", async () => {
+    it("passes a Procurement Dashboard breadcrumb trail when the agreement link is clicked", async () => {
         renderRow();
 
         await userEvent.click(screen.getByRole("link", { name: /Agreement A/i }));

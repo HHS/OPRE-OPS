@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
+import { buildTrailState } from "../helpers/breadcrumb.helpers";
 import {
     useAncestryForChildren,
     useBreadcrumbTrail,
@@ -10,7 +11,11 @@ import {
 
 const renderAt = (hook, url, trail) => {
     const [pathname, search = ""] = url.split("?");
-    const entry = { pathname, search: search ? `?${search}` : "", state: trail ? { breadcrumbTrail: trail } : null };
+    const entry = {
+        pathname,
+        search: search ? `?${search}` : "",
+        state: trail ? buildTrailState(trail.targetPath, trail.ancestors) : null
+    };
     const wrapper = ({ children }) => <MemoryRouter initialEntries={[entry]}>{children}</MemoryRouter>;
     return renderHook(hook, { wrapper });
 };
@@ -35,7 +40,7 @@ describe("useForwardedTrailState", () => {
     it("returns location state carrying the applicable trail, for tab navigation", () => {
         const trail = { targetPath: "/cans/1", ancestors: [portfolios] };
         const { result } = renderAt(() => useForwardedTrailState(), "/cans/1", trail);
-        expect(result.current).toEqual({ breadcrumbTrail: trail });
+        expect(result.current).toEqual(buildTrailState(trail.targetPath, trail.ancestors));
     });
 
     it("returns undefined when there is no trail", () => {

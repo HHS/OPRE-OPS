@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.helpers";
 
@@ -622,7 +623,11 @@ describe("useCreateBLIsAndSCs", () => {
 
     it("keeps the breadcrumb trail when cancelling back to the budget lines", () => {
         const trail = { targetPath: "/agreements/1", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
-        mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: { breadcrumbTrail: trail } };
+        mockLocation = {
+            pathname: "/agreements/1/budget-lines",
+            search: "",
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        };
         const { result } = renderSubject();
 
         act(() => {
@@ -632,7 +637,9 @@ describe("useCreateBLIsAndSCs", () => {
             result.current.modalProps.handleConfirm();
         });
 
-        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", { state: { breadcrumbTrail: trail } });
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", {
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        });
     });
 
     it("treats step 3 of the create-agreement wizard as a new agreement, not an edit, on cancel (OPS-6076)", () => {

@@ -1,7 +1,7 @@
 /**
  * Helpers for composing context-aware breadcrumb trails.
  *
- * The breadcrumb trail records how a user actually arrived at a detail page.
+ * The breadcrumb trail shows how a user actually arrived at a detail page.
  * Entry-point links carry it as React Router location state (see
  * `buildTrailState`), so each history entry keeps its own trail: it survives
  * browser Back/Forward and refresh, and a page reached any other way (direct
@@ -91,6 +91,26 @@ export const withListQuery = (listCrumb, { pathname, search = "" }) =>
 export const trailMatchesPath = (trail, pathname) => {
     if (!trail?.targetPath || !pathname) return false;
     return resourceBasePath(trail.targetPath) === resourceBasePath(pathname);
+};
+
+/**
+ * The trail to carry when navigating from a page with `trail` to `path`.
+ *
+ * If `path` belongs to one of the trail's ancestors (e.g. returning from an
+ * agreement's approval page to the agreement), the trail is cut just before
+ * that ancestor, so the destination doesn't list itself. Otherwise the trail is
+ * kept only when `path` is the same resource as the trail's target.
+ *
+ * @param {BreadcrumbTrail | null | undefined} trail
+ * @param {string} path - The destination path.
+ * @returns {BreadcrumbTrail | null}
+ */
+export const trailFor = (trail, path) => {
+    if (!trail || !path) return null;
+    const base = resourceBasePath(path);
+    const index = trail.ancestors.findIndex((ancestor) => resourceBasePath(ancestor.to) === base);
+    if (index >= 0) return { targetPath: path, ancestors: trail.ancestors.slice(0, index) };
+    return trailMatchesPath(trail, path) ? trail : null;
 };
 
 /**

@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
+import { LocationProbe } from "../../../test-utils";
 import configureStore from "redux-mock-store";
 import Alert from "./Alert";
 
@@ -60,16 +62,7 @@ describe("Alert component", () => {
     describe("redirectUrl and the breadcrumb trail", () => {
         const trail = { targetPath: "/agreements/5", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
 
-        const LocationState = () => {
-            const location = useLocation();
-            return (
-                <output data-testid="location">
-                    {JSON.stringify({ path: location.pathname, state: location.state })}
-                </output>
-            );
-        };
-
-        const renderAt = (redirectUrl) => {
+        const renderAt = (redirectUrl, initialTrail = trail) => {
             const redirectStore = mockStore({
                 alert: { heading: "Saved", message: "Saved", type: "success", redirectUrl }
             });
@@ -77,7 +70,10 @@ describe("Alert component", () => {
                 <Provider store={redirectStore}>
                     <MemoryRouter
                         initialEntries={[
-                            { pathname: "/agreements/5/award-approval", state: { breadcrumbTrail: trail } }
+                            {
+                                pathname: "/agreements/5/award-approval",
+                                state: buildTrailState(initialTrail.targetPath, initialTrail.ancestors)
+                            }
                         ]}
                     >
                         <Routes>
@@ -86,7 +82,7 @@ describe("Alert component", () => {
                                 element={
                                     <>
                                         <Alert />
-                                        <LocationState />
+                                        <LocationProbe />
                                     </>
                                 }
                             />
@@ -94,13 +90,30 @@ describe("Alert component", () => {
                     </MemoryRouter>
                 </Provider>
             );
-            return JSON.parse(screen.getByTestId("location").textContent);
+            const probe = screen.getByTestId("location-probe");
+            return { path: probe.dataset.pathname, state: JSON.parse(probe.textContent) };
         };
 
         it("keeps the trail when redirecting within the same agreement", () => {
             expect(renderAt("/agreements/5/procurement-tracker")).toEqual({
                 path: "/agreements/5/procurement-tracker",
-                state: { breadcrumbTrail: trail }
+                state: buildTrailState(trail.targetPath, trail.ancestors)
+            });
+        });
+
+        it("ends the trail before the agreement when redirecting back to it from an approval page", () => {
+            const approvalTrail = {
+                targetPath: "/agreements/5/award-approval",
+                ancestors: [
+                    { label: "Portfolios", to: "/portfolios" },
+                    { label: "Agreement 5", to: "/agreements/5/procurement-tracker" }
+                ]
+            };
+            expect(renderAt("/agreements/5/procurement-tracker", approvalTrail)).toEqual({
+                path: "/agreements/5/procurement-tracker",
+                state: buildTrailState("/agreements/5/procurement-tracker", [
+                    { label: "Portfolios", to: "/portfolios" }
+                ])
             });
         });
 
