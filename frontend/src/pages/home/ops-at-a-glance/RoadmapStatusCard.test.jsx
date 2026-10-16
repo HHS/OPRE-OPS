@@ -78,4 +78,13 @@ describe("RoadmapStatusCard", () => {
         expect(within(doneColumn).getByText("Login")).toHaveClass("bg-brand-can-budget-by-fy-graph-3");
         expect(within(doneColumn).getByText("Login")).not.toHaveClass("bg-brand-can-budget-by-fy-graph-4");
     });
+
+    it("renders the In Progress tag text in data-viz-bl-by-status-5, matching Figma, not the generic text-ink", () => {
+        render(<RoadmapStatusCard />);
+
+        const inProgressColumn = screen.getByTestId("roadmap-column-Currently Developing");
+        const tag = within(inProgressColumn).getByText("Viewing Award & Mod info");
+        expect(tag).toHaveClass("text-brand-data-viz-bl-by-status-5");
+        expect(tag).not.toHaveClass("text-ink");
+    });
 });

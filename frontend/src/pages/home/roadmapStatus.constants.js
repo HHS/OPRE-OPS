@@ -18,7 +18,7 @@ export const ROADMAP_STATUS = {
 */
 export const ROADMAP_STATUS_TAG_CLASSES = {
     [ROADMAP_STATUS.DONE]: "bg-brand-can-budget-by-fy-graph-3 text-ink",
-    [ROADMAP_STATUS.CURRENTLY_DEVELOPING]: "bg-brand-data-viz-bl-by-status-3 text-ink",
+    [ROADMAP_STATUS.CURRENTLY_DEVELOPING]: "bg-brand-data-viz-bl-by-status-3 text-brand-data-viz-bl-by-status-5",
     [ROADMAP_STATUS.NOT_STARTED]: "bg-brand-primary-light text-primary"
 };
 

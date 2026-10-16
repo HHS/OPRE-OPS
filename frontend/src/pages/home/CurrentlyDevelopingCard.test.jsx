@@ -47,4 +47,11 @@ describe("CurrentlyDevelopingCard", () => {
         renderWithProviders(<CurrentlyDevelopingCard />);
         expect(screen.queryByText("Login")).not.toBeInTheDocument();
     });
+
+    it("renders the In Progress tag text in data-viz-bl-by-status-5, matching Figma, not the generic text-ink", () => {
+        renderWithProviders(<CurrentlyDevelopingCard />);
+        const tag = screen.getByText("Finish Procurement Tracker");
+        expect(tag).toHaveClass("text-brand-data-viz-bl-by-status-5");
+        expect(tag).not.toHaveClass("text-ink");
+    });
 });
