@@ -4,6 +4,7 @@ import { getRoadmapItemsByStatus } from "../roadmapData.helpers";
 import { ROADMAP_STATUS, ROADMAP_STATUS_LABELS, ROADMAP_STATUS_TAG_CLASSES } from "../roadmapStatus.constants";
 
 const NOT_STARTED_FOOTNOTE = "* Features are listed in alphabetical order, not the order they will be worked on";
+const NOT_STARTED_FOOTNOTE_ID = "roadmap-not-started-footnote";
 
 /**
  * @component - Renders the "OPS at a Glance" roadmap status board: Ready to Use, In
@@ -42,7 +43,12 @@ const RoadmapStatusCard = () => {
                         className="grid-col-12 tablet:grid-col-4"
                         data-testid={`roadmap-column-${column.status}`}
                     >
-                        <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                        <h3
+                            className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal"
+                            aria-describedby={
+                                column.status === ROADMAP_STATUS.NOT_STARTED ? NOT_STARTED_FOOTNOTE_ID : undefined
+                            }
+                        >
                             {ROADMAP_STATUS_LABELS[column.status]}
                         </h3>
                         <span className="font-sans-xl text-bold line-height-sans-1">{column.items.length}</span>
@@ -62,7 +68,12 @@ const RoadmapStatusCard = () => {
                     </div>
                 ))}
             </div>
-            <p className="font-12px text-base-dark margin-top-2 margin-bottom-0">{NOT_STARTED_FOOTNOTE}</p>
+            <p
+                id={NOT_STARTED_FOOTNOTE_ID}
+                className="font-12px text-base-dark margin-top-2 margin-bottom-0"
+            >
+                {NOT_STARTED_FOOTNOTE}
+            </p>
         </RoundedBox>
     );
 };
