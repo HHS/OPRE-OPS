@@ -3,7 +3,7 @@ import { getCurrentFiscalYear } from "./helpers/utils";
 import sessionUIReducer, {
     setListFilters,
     setListFiscalYear,
-    resetListFilters,
+    changeListFiscalYear,
     listFilterDefaults
 } from "./sessionUISlice";
 import { logout } from "./components/Auth/authSlice";
@@ -43,16 +43,18 @@ describe("sessionUISlice — listFilters", () => {
         expect(state.listFilters.agreements.selectedFiscalYear).toBe(listFilterDefaults.agreements.selectedFiscalYear);
     });
 
-    it("resetListFilters restores a page to its defaults", () => {
+    it("changeListFiscalYear sets the fiscal year and resets the page's filters", () => {
         let state = sessionUIReducer(
             freshState(),
-            setListFilters({ page: "cans", filters: { ...listFilterDefaults.cans.filters, can: [{ id: 9 }] } })
+            setListFilters({
+                page: "portfolios",
+                filters: { ...listFilterDefaults.portfolios.filters, portfolios: [{ id: 9 }] }
+            })
         );
-        state = sessionUIReducer(state, setListFiscalYear({ page: "cans", selectedFiscalYear: 2040 }));
-        state = sessionUIReducer(state, resetListFilters({ page: "cans" }));
-        expect(state.listFilters.cans).toEqual({
-            filters: listFilterDefaults.cans.filters,
-            selectedFiscalYear: getCurrentFiscalYear()
+        state = sessionUIReducer(state, changeListFiscalYear({ page: "portfolios", selectedFiscalYear: 2040 }));
+        expect(state.listFilters.portfolios).toEqual({
+            filters: listFilterDefaults.portfolios.filters,
+            selectedFiscalYear: 2040
         });
     });
 

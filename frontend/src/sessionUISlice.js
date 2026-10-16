@@ -140,15 +140,16 @@ const sessionUISlice = createSlice({
             state.listFilters[page].selectedFiscalYear = selectedFiscalYear;
         },
         /**
-         * Reset a single list page's filters (and fiscal year) back to its defaults.
+         * Set a list page's fiscal year and reset its other filters to defaults,
+         * for pages where changing the FY starts over (Portfolios).
          * @param {ReturnType<typeof buildInitialState>} state
-         * @param {{ payload: { page: string } }} action
+         * @param {{ payload: { page: string, selectedFiscalYear: string|number } }} action
          */
-        resetListFilters: (state, action) => {
-            const { page } = action.payload;
+        changeListFiscalYear: (state, action) => {
+            const { page, selectedFiscalYear } = action.payload;
             const def = listFilterDefaults[page];
             if (!def) return;
-            state.listFilters[page] = buildPageState(def);
+            state.listFilters[page] = { filters: structuredClone(def.filters), selectedFiscalYear };
         }
     },
     extraReducers: (builder) => {
@@ -159,6 +160,6 @@ const sessionUISlice = createSlice({
 });
 
 export { listFilterDefaults };
-export const { setListFilters, setListFiscalYear, resetListFilters } = sessionUISlice.actions;
+export const { setListFilters, setListFiscalYear, changeListFiscalYear } = sessionUISlice.actions;
 
 export default sessionUISlice.reducer;

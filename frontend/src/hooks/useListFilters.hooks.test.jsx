@@ -77,12 +77,14 @@ describe("useListFilters", () => {
 
     it("changeFiscalYear resets filters to defaults AND sets the new fiscal year atomically", () => {
         const store = setupStore();
-        const { result } = renderWithStore("cans", store);
-        // Apply a budget + portfolio filter, then change the fiscal year.
-        act(() => result.current.setFilters((prev) => ({ ...prev, can: [{ id: 9 }], budget: [10, 50] })));
+        // Portfolios is the page whose FY change starts over.
+        const { result } = renderWithStore("portfolios", store);
+        act(() =>
+            result.current.setFilters((prev) => ({ ...prev, portfolios: [{ id: 9 }], availablePct: ["over90"] }))
+        );
         act(() => result.current.changeFiscalYear(2030));
         // Filters are back to defaults (not carried across the FY change)...
-        expect(result.current.filters).toEqual(listFilterDefaults.cans.filters);
+        expect(result.current.filters).toEqual(listFilterDefaults.portfolios.filters);
         // ...and the new FY is applied.
         expect(result.current.selectedFiscalYear).toBe(2030);
     });

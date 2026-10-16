@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useSelector, useDispatch, useStore } from "react-redux";
-import { setListFilters, setListFiscalYear, resetListFilters } from "../sessionUISlice";
+import { changeListFiscalYear, setListFilters, setListFiscalYear } from "../sessionUISlice";
 
 /**
  * Session-persistent replacement for a list page's local `useState` filter
@@ -53,10 +53,7 @@ export const useListFilters = (page) => {
     // Portfolios). Pages that preserve other filters across an FY change
     // (Agreements, Projects, Budget Lines, CANs) use setSelectedFiscalYear.
     const changeFiscalYear = useCallback(
-        (newFiscalYear) => {
-            dispatch(resetListFilters({ page }));
-            dispatch(setListFiscalYear({ page, selectedFiscalYear: newFiscalYear }));
-        },
+        (newFiscalYear) => dispatch(changeListFiscalYear({ page, selectedFiscalYear: newFiscalYear })),
         [dispatch, page]
     );
 
