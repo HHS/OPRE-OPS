@@ -42,7 +42,7 @@ pytest-mock = "==3.16.0"
 pytest-xdist = "==3.8.0"
 filelock = "==4.1.2"
 ipython = "==9.17.1"
-pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
+pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.6"}
 black = {extras = ["d"], version = "==26.10.1"}
 isort = "==9.0.2"
 
