@@ -1,16 +1,18 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import CanDetailTabs from "./CanDetailTabs";
 
 // Mock the router hooks
 vi.mock("react-router-dom", () => ({
     BrowserRouter: ({ children }) => <div>{children}</div>,
-    useLocation: () => ({ pathname: "/cans/123" }),
+    useLocation: () => mockLocation,
     useNavigate: () => mockNavigate
 }));
 
 // Create a mock navigate function outside
 const mockNavigate = vi.fn();
+let mockLocation = { pathname: "/cans/123", state: null };
 
 describe("CanDetailTabs", () => {
     const mockCanId = 123;
@@ -18,6 +20,7 @@ describe("CanDetailTabs", () => {
     // Clear mock calls between tests
     beforeEach(() => {
         mockNavigate.mockClear();
+        mockLocation = { pathname: "/cans/123", state: null };
     });
 
     it("renders all tab buttons with correct labels", () => {
@@ -61,6 +64,16 @@ describe("CanDetailTabs", () => {
         const spendingTab = screen.getByText("CAN Spending");
         fireEvent.click(spendingTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`);
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { state: undefined });
+    });
+
+    it("keeps the breadcrumb trail when switching tabs", () => {
+        const trailState = buildTrailState("/cans/123", [{ label: "Portfolios", to: "/portfolios" }]);
+        mockLocation = { pathname: "/cans/123", state: trailState };
+        render(<CanDetailTabs canId={mockCanId} />);
+
+        fireEvent.click(screen.getByText("CAN Spending"));
+
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { state: trailState });
     });
 });

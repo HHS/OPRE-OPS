@@ -7,6 +7,7 @@ const useParamsMock = vi.fn();
 const useGetCanByIdQueryMock = vi.fn();
 const useGetCanFundingQueryMock = vi.fn();
 let mockPathname = "/cans/42";
+let mockSearch = "";
 
 vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
@@ -17,7 +18,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
     return {
         ...actual,
         useParams: () => useParamsMock(),
-        useLocation: () => ({ pathname: mockPathname })
+        useLocation: () => ({ pathname: mockPathname }),
+        useSearchParams: () => [new URLSearchParams(mockSearch)]
     };
 });
 
@@ -85,6 +87,7 @@ const canFixture = {
 
 describe("useCan", () => {
     beforeEach(() => {
+        mockSearch = "";
         vi.clearAllMocks();
         mockPathname = "/cans/42";
 
@@ -311,5 +314,19 @@ describe("useCan", () => {
         rerender();
 
         expect(result.current.isEditMode).toEqual({ detailPage: false, fundingPage: false });
+    });
+
+    it("ignores an invalid ?fy= search param", () => {
+        mockSearch = "?fy=abc";
+        const { result } = renderHook(() => useCan());
+
+        expect(result.current.fiscalYear).toBe(2026);
+    });
+
+    it("seeds the selected fiscal year from the ?fy= search param", () => {
+        mockSearch = "?fy=2025";
+        const { result } = renderHook(() => useCan());
+
+        expect(result.current.fiscalYear).toBe(2025);
     });
 });

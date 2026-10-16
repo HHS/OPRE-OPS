@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { buildTrailState, LIST_CRUMBS } from "../../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../../hooks/useBreadcrumbTrail.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
@@ -22,6 +24,7 @@ import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {number} agreementId - The agreement ID
+ * @property {string} [agreementName] - The agreement name, shown in the approval page's breadcrumb
  * @property {import("../../../../types/BudgetLineTypes").BudgetLine[] | undefined} [budgetLineItems] - Array of budget line items
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
@@ -39,12 +42,20 @@ const ProcurementTrackerStepSix = ({
     isActiveStep,
     authorizedUsers,
     agreementId,
+    agreementName,
     budgetLineItems,
     handleSetCompletedStepNumber,
     onDirtyChange = undefined,
     isReadOnly = false
 }) => {
     const navigate = useNavigate();
+    // The approval page's trail ends with this agreement, so its breadcrumb reads
+    // "… > <agreement> > <approval page>" and links back here.
+    const approvalPath = `/agreements/${agreementId}/award-approval`;
+    const approvalAncestry = useAncestryForChildren({
+        ownCrumb: { label: agreementName ?? "Agreement", to: `/agreements/${agreementId}/procurement-tracker` },
+        fallbackCrumb: LIST_CRUMBS.agreements
+    });
     const {
         isAwardCheckboxChecked,
         setIsAwardCheckboxChecked,
@@ -184,7 +195,9 @@ const ProcurementTrackerStepSix = ({
                             <button
                                 type="button"
                                 className="usa-button usa-button--outline"
-                                onClick={() => navigate(`/agreements/${agreementId}/award-approval`)}
+                                onClick={() =>
+                                    navigate(approvalPath, { state: buildTrailState(approvalPath, approvalAncestry) })
+                                }
                                 disabled={isRequestBtnDisabled}
                                 title={
                                     isRequestBtnDisabled

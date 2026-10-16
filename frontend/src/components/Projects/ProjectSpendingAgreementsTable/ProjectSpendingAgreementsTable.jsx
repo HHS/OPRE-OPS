@@ -16,9 +16,10 @@ import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
  * @param {Record<number, number>} props.fyTotals - Fallback map of agreement id to FY total.
  *   Used while each row's per-agreement spending query is in flight. Only populated
  *   when a single agreement exists in the FY; rows otherwise fetch their own totals.
+ * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry passed to each agreement link.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) => {
+const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals, ancestry = [] }) => {
     const headings = getTableHeadings(fiscalYear); // no empty chevron entry — rendered explicitly below
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -68,6 +69,7 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) =>
                             agreement={agreement}
                             fiscalYear={fiscalYear}
                             fyTotal={fyTotals[agreement.id] ?? null}
+                            ancestry={ancestry}
                         />
                     ))}
                 </tbody>

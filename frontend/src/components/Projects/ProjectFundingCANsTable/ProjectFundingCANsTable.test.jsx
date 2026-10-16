@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import { describe, it, expect } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import ProjectFundingCANsTable from "./ProjectFundingCANsTable";
 
 const mockCANs = [
@@ -35,13 +36,11 @@ const mockCANs = [
 
 describe("ProjectFundingCANsTable", () => {
     const renderComponent = (cans = mockCANs, fiscalYear = 2025) =>
-        render(
-            <MemoryRouter>
-                <ProjectFundingCANsTable
-                    cans={cans}
-                    fiscalYear={fiscalYear}
-                />
-            </MemoryRouter>
+        renderWithProviders(
+            <ProjectFundingCANsTable
+                cans={cans}
+                fiscalYear={fiscalYear}
+            />
         );
 
     it("renders the table with correct column headers for the selected FY", () => {
@@ -58,12 +57,10 @@ describe("ProjectFundingCANsTable", () => {
         expect(screen.getByText("FY 25 Project Funding")).toBeInTheDocument();
 
         rerender(
-            <MemoryRouter>
-                <ProjectFundingCANsTable
-                    cans={mockCANs}
-                    fiscalYear={2024}
-                />
-            </MemoryRouter>
+            <ProjectFundingCANsTable
+                cans={mockCANs}
+                fiscalYear={2024}
+            />
         );
         expect(screen.getByText("FY 24 Project Funding")).toBeInTheDocument();
         expect(screen.queryByText("FY 25 Project Funding")).not.toBeInTheDocument();
@@ -106,5 +103,24 @@ describe("ProjectFundingCANsTable", () => {
     it("renders $0 for zero fy_funding", () => {
         renderComponent([mockCANs[1]]);
         expect(screen.getAllByText("$0").length).toBeGreaterThan(0);
+    });
+
+    it("passes the provided ancestry as the breadcrumb trail when a CAN link is clicked", async () => {
+        const ancestry = [
+            { label: "Projects", to: "/projects" },
+            { label: "Project X", to: "/projects/7" }
+        ];
+        renderWithProviders(
+            <ProjectFundingCANsTable
+                cans={mockCANs}
+                fiscalYear={2025}
+                ancestry={ancestry}
+            />,
+            { withLocationProbe: true }
+        );
+
+        await userEvent.click(screen.getByRole("link", { name: "G99MVT3" }));
+
+        expect(getProbedTrail()).toEqual({ targetPath: "/cans/515", ancestors: ancestry });
     });
 });

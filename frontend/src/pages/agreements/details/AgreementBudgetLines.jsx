@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
@@ -75,7 +76,7 @@ const AgreementBudgetLines = ({
     isPostPreAwardLocked = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();

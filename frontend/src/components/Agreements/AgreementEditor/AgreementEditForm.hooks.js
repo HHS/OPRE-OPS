@@ -1,6 +1,7 @@
 import debounce from "lodash/debounce";
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import classnames from "vest/classnames";
 import {
     useAddAgreementMutation,
@@ -105,7 +106,7 @@ const useAgreementEditForm = (
     // depending on some other effect happening to also call setState on the same commit.
     const [, forceServiceReqTypeValidationRerender] = React.useState(0);
 
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const dispatch = useEditAgreementDispatch();
     const { setAlert } = useAlert();
 

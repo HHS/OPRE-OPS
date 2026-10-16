@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
+import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * PortfolioTableRow component - displays a single portfolio row with funding data
@@ -12,6 +14,8 @@ import { NO_DATA } from "../../../constants";
  */
 const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
     const fundingSummary = portfolio.fundingSummary;
+    const listCrumb = useListCrumb("portfolios");
+    const portfolioPath = `/portfolios/${portfolio.id}`;
 
     // Extract funding values
     const totalFunding = fundingSummary?.total_funding?.amount ?? 0;
@@ -27,7 +31,8 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
         <tr>
             <td>
                 <Link
-                    to={`/portfolios/${portfolio.id}/spending?fy=${fiscalYear}`}
+                    to={`${portfolioPath}/spending?fy=${fiscalYear}`}
+                    state={buildTrailState(portfolioPath, [listCrumb])}
                     className="text-ink text-no-underline"
                 >
                     {portfolio.name || portfolio.abbreviation

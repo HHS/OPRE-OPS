@@ -3,6 +3,8 @@ import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
@@ -50,6 +52,16 @@ const Can = () => {
         toggleDetailPageEditMode,
         toggleFundingPageEditMode
     } = useCan();
+
+    // Compose the ancestry that child entry-point links (CANBudgetLineTable) should
+    // record when navigating to an agreement. If the user drilled into this CAN via a
+    // known path (e.g. Portfolios > Portfolio A > CAN 1) the carried trail supplies the
+    // ancestors; otherwise fall back to the CANs list. The leaf is this CAN, linking
+    // back to the current tab and selected FY.
+    const linkAncestry = useAncestryForChildren({
+        ownCrumb: { label: can?.display_name ?? "CAN", fiscalYear },
+        fallbackCrumb: LIST_CRUMBS.cans
+    });
 
     if (isLoading) {
         return <p>Loading CAN...</p>;
@@ -111,6 +123,7 @@ const Can = () => {
                             plannedFunding={plannedFunding}
                             totalFunding={totalFunding}
                             isTableLoading={isTableLoading}
+                            ancestry={linkAncestry}
                         />
                     }
                 />

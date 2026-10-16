@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
@@ -23,6 +24,7 @@ import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement } from "./AgreementsTable.hooks";
 import { useCanEditByRole } from "../../../hooks/user.hooks";
+import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -67,6 +69,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const lockedMessage = isSuccess
         ? getAgreementLockedMessage(agreement, isSuperUser, isAgreementTypeNotDeveloped)
         : "";
+    const listCrumb = useListCrumb("agreements");
+    const agreementPath = `/agreements/${agreement?.id}`;
 
     const showRowActions = canEditByRole && !disableRowActions;
 
@@ -87,7 +91,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
             <td data-cy="agreement-name">
                 <Link
                     className="text-ink text-no-underline"
-                    to={`/agreements/${agreement?.id}`}
+                    to={agreementPath}
+                    state={buildTrailState(agreementPath, [listCrumb])}
                     aria-label={`View agreement details for ${agreementName || "agreement"}`}
                 >
                     <TextClip

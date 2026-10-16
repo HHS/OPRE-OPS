@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
@@ -8,7 +8,9 @@ import ProjectFundingByPortfolioCard from "../../../components/Projects/ProjectF
 import ProjectFundingCANsTable from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTable";
 import ProjectFundingCANsTableLoading from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getCurrentFiscalYear, parseFiscalYearParam } from "../../../helpers/utils";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 
 /**
@@ -20,7 +22,11 @@ const ProjectFunding = () => {
     const { id } = useParams();
     const projectId = id ? +id : -1;
 
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    // A `?fy=` param (set by breadcrumb links back to this tab) seeds the selected FY.
+    const [searchParams] = useSearchParams();
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(
+        () => parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear()
+    );
     const fiscalYear = Number(selectedFiscalYear);
 
     /** @type {{data?: import("../../../types/ProjectTypes").Project | undefined, error?: Object, isLoading: boolean}} */
@@ -44,6 +50,13 @@ const ProjectFunding = () => {
             skip: !projectId || projectId === -1
         }
     );
+
+    // Ancestry passed to the CAN links below, so a CAN opened from here shows
+    // "… > <project> > <CAN>"; the project crumb links back to this tab and FY.
+    const linkAncestry = useAncestryForChildren({
+        ownCrumb: { label: project?.title ?? "Project", fiscalYear },
+        fallbackCrumb: LIST_CRUMBS.projects
+    });
 
     const is404 = projectError?.status === 404;
 
@@ -125,6 +138,7 @@ const ProjectFunding = () => {
                     <ProjectFundingCANsTable
                         cans={fundingData?.cans ?? []}
                         fiscalYear={fiscalYear}
+                        ancestry={linkAncestry}
                     />
                 )}
             </section>

@@ -19,6 +19,8 @@ import styles from "./Tabs.module.scss";
  *   browser's native scroll-clamping jump most of the way there before any animation can play,
  *   which looks like an abrupt snap. Defaults to false so other consumers (CanDetailTabs,
  *   HelpCenter) keep their existing instant-navigate behavior unchanged.
+ * @property {Object} [navigationState] - Location state passed when switching tabs (e.g. a
+ *   breadcrumb trail to keep across a detail page's tabs).
  */
 
 /**
@@ -26,7 +28,7 @@ import styles from "./Tabs.module.scss";
  * @param {TabsProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered JSX element.
  */
-const Tabs = ({ paths, rightContent, scrollToTopOnChange = false }) => {
+const Tabs = ({ paths, rightContent, scrollToTopOnChange = false, navigationState }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -56,7 +58,7 @@ const Tabs = ({ paths, rightContent, scrollToTopOnChange = false }) => {
             cancelPendingTransition();
 
             if (!scrollToTopOnChange || window.scrollY === 0) {
-                navigate(pathName);
+                navigate(pathName, { state: navigationState });
                 return;
             }
 
@@ -67,7 +69,7 @@ const Tabs = ({ paths, rightContent, scrollToTopOnChange = false }) => {
             // an abrupt snap instead of a smooth scroll.
             const goToTab = () => {
                 cancelPendingTransition();
-                navigate(pathName);
+                navigate(pathName, { state: navigationState });
             };
             // Poll via rAF rather than a flat timeout: a flat delay either fires too early on a
             // long scroll (the snap this change is meant to fix comes right back) or wastes time
