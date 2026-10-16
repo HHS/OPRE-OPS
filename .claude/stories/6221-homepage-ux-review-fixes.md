@@ -11,12 +11,22 @@ Address UX review feedback on the already-implemented homepage redesign: add a m
 
 ## Acceptance Criteria
 
-- [ ] "What's New" summary card (left-hand side of homepage) has a caption, matching Figma
-- [ ] "OPS at a Glance" caption text is corrected to match Figma
-- [ ] "Done" status tag green color is fixed (currently reuses a budget-chart color instead of a semantic color)
-- [ ] "Improvements" tag color in the homepage summary card matches Figma
-- [ ] "Improvements" tag color on the full release-notes list (What's New tab) matches Figma, for consistency with the summary card
-- [ ] "OPS at a Glance" alphabetical-order footnote is positioned below all three roadmap columns (left-aligned under "Done"), not nested under "Not Started Yet"
+- [x] "What's New" summary card (left-hand side of homepage) has a caption, matching Figma
+- [x] "OPS at a Glance" caption text is corrected to match Figma
+- [x] "Done" status tag green color is fixed (currently reuses a budget-chart color instead of a semantic color)
+- [x] "Improvements" tag color in the homepage summary card matches Figma
+- [x] "Improvements" tag color on the full release-notes list (What's New tab) matches Figma, for consistency with the summary card
+- [x] "OPS at a Glance" alphabetical-order footnote is positioned below all three roadmap columns (left-aligned under "Done"), not nested under "Not Started Yet"
+
+### Scope added during review (not in the original AC list above, but delivered in this PR)
+
+- [x] "OPS at a Glance" roadmap column labels renamed to match Figma's current naming ("Ready to Use" / "In Progress" / "Up Next / Later*")
+- [x] Homepage header summary card's labels renamed to match the corresponding Figma rename ("In Progress" / "Up Next")
+- [x] "In Progress" tag text color corrected to Figma's `text-brand-data-viz-bl-by-status-5`, replacing the generic `text-ink`
+- [x] `margin-top-4` spacing added above the homepage tab navigation
+- [x] "What's New" card's new footnote anchored to the bottom of the card via flex layout, instead of flowing with the content
+- [x] Shared `RELEASE_NOTES_TYPE_CLASSES` constant extracted to deduplicate tag-color strings between `ReleaseNote.jsx` and `ReleaseNotesCards.jsx`
+- [x] `aria-describedby`/`id` wiring added linking the "Release Changes *" and "Up Next / Later*" headings to their footnote text, for screen readers
 
 ## Technical Details
 
