@@ -10,8 +10,8 @@ const OpsAtAGlanceContent = () => (
     <>
         <h2>OPS at a Glance</h2>
         <p>
-            This is an overview of OPS development and current state including what&apos;s been done, what&apos;s in
-            progress, and what is still to come.
+            This is an overview of OPS development and current state including what you can use today, what we&apos;re
+            working on, and what&apos;s coming up next.
         </p>
         <RoadmapStatusCard />
     </>

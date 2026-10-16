@@ -93,13 +93,19 @@ describe("LeftCard", () => {
     it("renders the release changes heading", () => {
         render(<LeftCard {...mockProps} />);
 
-        expect(screen.getByText("Release Changes")).toBeInTheDocument();
+        expect(screen.getByText("Release Changes *")).toBeInTheDocument();
     });
 
     it("renders its labels as h3s, nesting under the homepage's 'OPS Updates' h2", () => {
         render(<LeftCard {...mockProps} />);
         expect(screen.getByRole("heading", { level: 3, name: "Last Release" })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 3, name: "OPS Version" })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "Release Changes *" })).toBeInTheDocument();
+    });
+
+    it("renders a footnote pointing to the What's New tab", () => {
+        render(<LeftCard {...mockProps} />);
+
+        expect(screen.getByText("* See more detail on the What's New tab below")).toBeInTheDocument();
     });
 });

@@ -12,7 +12,7 @@ import { RELEASE_NOTES_TYPES } from "./constants";
 const ReleaseNote = ({ subject, type, description }) => {
     const typeClasses = {
         [RELEASE_NOTES_TYPES.NEW_FEATURE]: "bg-brand-primary text-white",
-        [RELEASE_NOTES_TYPES.IMPROVEMENTS]: "bg-brand-can-budget-by-fy-graph-4 text-ink",
+        [RELEASE_NOTES_TYPES.IMPROVEMENTS]: "bg-brand-release-changes-improvements text-ink",
         [RELEASE_NOTES_TYPES.FIXES]: "bg-brand-release-changes-fixes text-ink"
     };
 

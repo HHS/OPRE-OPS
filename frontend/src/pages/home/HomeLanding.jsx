@@ -38,14 +38,16 @@ const HomeLanding = () => {
                 <ReleaseNotesSummaryCard />
                 <CurrentlyDevelopingCard />
             </div>
-            <Tabs
-                paths={[
-                    { pathName: `/${HOME_RELATIVE_PATHS.whatsNew}`, label: "What's New" },
-                    { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
-                    { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
-                ]}
-                scrollToTopOnChange
-            />
+            <div className="margin-top-4">
+                <Tabs
+                    paths={[
+                        { pathName: `/${HOME_RELATIVE_PATHS.whatsNew}`, label: "What's New" },
+                        { pathName: `/${HOME_RELATIVE_PATHS.opsAtAGlance}`, label: "OPS at a Glance" },
+                        { pathName: `/${HOME_RELATIVE_PATHS.opsBenefits}`, label: "OPS Benefits" }
+                    ]}
+                    scrollToTopOnChange
+                />
+            </div>
             <Outlet />
         </>
     );

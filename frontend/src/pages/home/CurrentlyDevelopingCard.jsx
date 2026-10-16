@@ -14,9 +14,7 @@ const CurrentlyDevelopingCard = () => {
                 style={{ gap: "2rem" }}
             >
                 <div className="flex-fill">
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
-                        Currently Developing
-                    </h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">In Progress</h3>
                     <span className="font-sans-xl text-bold line-height-sans-1 display-block margin-bottom-1">
                         {currentlyDevelopingItems.length}
                     </span>
@@ -34,7 +32,7 @@ const CurrentlyDevelopingCard = () => {
                     </div>
                 </div>
                 <div className="flex-fill">
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Next Up</h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Up Next</h3>
                     <div
                         className="display-flex flex-column flex-align-start"
                         style={{ gap: "0.5rem" }}

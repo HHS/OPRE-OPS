@@ -25,12 +25,12 @@ describe("RoadmapStatusCard", () => {
         expect(within(screen.getByTestId("roadmap-column-Not Started Yet")).getByText("2")).toBeInTheDocument();
     });
 
-    it("renders column headings, including the asterisk only on Not Started Yet", () => {
+    it("renders column headings using Figma's labels, including the asterisk only on Up Next / Later", () => {
         render(<RoadmapStatusCard />);
 
-        expect(screen.getByRole("heading", { level: 3, name: "Done" })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 3, name: "Currently Developing" })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 3, name: "Not Started Yet *" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "Ready to Use" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "In Progress" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "Up Next / Later*" })).toBeInTheDocument();
     });
 
     it("renders Done and Currently Developing items in authored order (not sorted)", () => {
@@ -52,11 +52,15 @@ describe("RoadmapStatusCard", () => {
         expect(tagTexts).toEqual(["Apple Feature", "Zebra Feature"]);
     });
 
-    it("renders the alphabetical-order footnote only under Not Started Yet", () => {
+    it("renders the alphabetical-order footnote once, below all columns rather than nested under one", () => {
         render(<RoadmapStatusCard />);
 
+        expect(screen.getByText(/Features are listed in alphabetical order/)).toBeInTheDocument();
+
         const notStartedColumn = screen.getByTestId("roadmap-column-Not Started Yet");
-        expect(within(notStartedColumn).getByText(/Features are listed in alphabetical order/)).toBeInTheDocument();
+        expect(
+            within(notStartedColumn).queryByText(/Features are listed in alphabetical order/)
+        ).not.toBeInTheDocument();
 
         const doneColumn = screen.getByTestId("roadmap-column-Done");
         expect(within(doneColumn).queryByText(/Features are listed in alphabetical order/)).not.toBeInTheDocument();

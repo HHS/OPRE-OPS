@@ -26,7 +26,7 @@ export function LeftCard({
     totalImprovements
 }) {
     return (
-        <RoundedBox>
+        <RoundedBox style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div className="display-flex flex-justify">
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h3>
@@ -45,7 +45,7 @@ export function LeftCard({
                 </article>
 
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Release Changes</h3>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Release Changes *</h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalReleaseChanges}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
@@ -60,7 +60,7 @@ export function LeftCard({
                                 </Tag>
                             )}
                             {totalImprovements > 0 && (
-                                <Tag className="bg-brand-can-budget-by-fy-graph-4 text-ink margin-top-1">
+                                <Tag className="bg-brand-release-changes-improvements text-ink margin-top-1">
                                     {totalImprovements} {totalImprovements > 1 ? "Improvements" : "Improvement"}
                                 </Tag>
                             )}
@@ -68,6 +68,12 @@ export function LeftCard({
                     </div>
                 </article>
             </div>
+            <p
+                className="font-12px text-base-dark margin-bottom-0"
+                style={{ marginTop: "auto" }}
+            >
+                * See more detail on the What&apos;s New tab below
+            </p>
         </RoundedBox>
     );
 }

@@ -15,14 +15,14 @@ vi.mock("./roadmapData.json", () => ({
 }));
 
 describe("CurrentlyDevelopingCard", () => {
-    it("renders the Currently Developing column heading", () => {
+    it("renders the In Progress column heading", () => {
         renderWithProviders(<CurrentlyDevelopingCard />);
-        expect(screen.getByText("Currently Developing")).toBeInTheDocument();
+        expect(screen.getByText("In Progress")).toBeInTheDocument();
     });
 
-    it("renders the Next Up column heading", () => {
+    it("renders the Up Next column heading", () => {
         renderWithProviders(<CurrentlyDevelopingCard />);
-        expect(screen.getByText("Next Up")).toBeInTheDocument();
+        expect(screen.getByText("Up Next")).toBeInTheDocument();
     });
 
     it("renders currently developing item tags", () => {
