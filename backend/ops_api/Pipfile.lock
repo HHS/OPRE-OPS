@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8cf7f4929c68004ee66a582de6063a401ce797345f9873869c0f4595efbf12ff"
+            "sha256": "952aa7fd9afdcc3547ea63892305dea60f4f4b9706b9b80025f9cb1205b12432"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -36,12 +36,12 @@
         },
         "authlib": {
             "hashes": [
-                "sha256:88aebbd9af6757e14e912d5dc007ae1dc1f3e27e3b2152ce7c552ee2c3b3c121",
-                "sha256:f3ecd5f1da737262fb53bf1a4d95c4ea1ad9dd509316587a255c99ab1838a4f0"
+                "sha256:9d17f1702131683a9af223e48c275b13d1520510582371f327a0ef05a370568e",
+                "sha256:c54c963ede35c428d126f5bb5d6f84617e91ace74d6ea9acad659c30f5ff1819"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.8.0"
+            "version": "==1.9.0"
         },
         "azure-core": {
             "hashes": [
@@ -1222,12 +1222,12 @@
         },
         "sqlalchemy-continuum": {
             "hashes": [
-                "sha256:b5e83ddef5306cc8ee9ece6550298ea52673a9b5194ebfe96ebfc1170e573820",
-                "sha256:f8ed24dbe608df9da3fff63070ab64e2179698186e8c7a5aaea9105aa7abf5ae"
+                "sha256:1d03bf2f0d82bd96f2811ee0282acc66620e69b26ce2988ce4b08d68164b6d37",
+                "sha256:8ab272654bc17874f8e69d8170ef98294a4140e339eec67be27b069eb3afae49"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.10'",
-            "version": "==1.8.0"
+            "markers": "python_version >= '3.11'",
+            "version": "==1.9.0"
         },
         "typeguard": {
             "hashes": [
