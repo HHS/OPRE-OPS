@@ -21,6 +21,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     create_budget_line_item_instance,
     get_bli_locked_message,
     get_division_for_budget_line_item,
+    is_modified_loe_amount_edit,
     is_post_pre_award_locked,
     is_pre_award_in_review,
     update_data,
@@ -58,8 +59,9 @@ class _FakeTracker:
 
 
 class _FakeAgreement:
-    def __init__(self, procurement_trackers=None):
+    def __init__(self, procurement_trackers=None, is_awarded=False):
         self.procurement_trackers = procurement_trackers or []
+        self.is_awarded = is_awarded
 
 
 class _FakeBLI:
@@ -559,3 +561,45 @@ def test_always_direct_edit_fields_contains_expected_fields():
         "comments",
         "clin_id",
     }
+
+
+# ---------------------------------------------------------------------------
+# is_modified_loe_amount_edit — OPS-3072 Modified LOE amount-edit carve-out
+# ---------------------------------------------------------------------------
+
+
+def test_is_modified_loe_amount_edit_none_bli(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    assert is_modified_loe_amount_edit(None, {"amount"}) is False
+
+
+def test_is_modified_loe_amount_edit_requires_obligated_status(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    bli = _FakeBLI(BudgetLineItemStatus.PLANNED, agreement=_FakeAgreement(is_awarded=True))
+    assert is_modified_loe_amount_edit(bli, {"amount"}) is False
+
+
+def test_is_modified_loe_amount_edit_requires_flag_on(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
+    bli = _FakeBLI(BudgetLineItemStatus.OBLIGATED, agreement=_FakeAgreement(is_awarded=True))
+    assert is_modified_loe_amount_edit(bli, {"amount"}) is False
+
+
+def test_is_modified_loe_amount_edit_requires_awarded_agreement(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    bli = _FakeBLI(BudgetLineItemStatus.OBLIGATED, agreement=_FakeAgreement(is_awarded=False))
+    assert is_modified_loe_amount_edit(bli, {"amount"}) is False
+
+
+def test_is_modified_loe_amount_edit_requires_amount_only(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    bli = _FakeBLI(BudgetLineItemStatus.OBLIGATED, agreement=_FakeAgreement(is_awarded=True))
+    assert is_modified_loe_amount_edit(bli, {"amount", "can_id"}) is False
+    assert is_modified_loe_amount_edit(bli, {"can_id"}) is False
+    assert is_modified_loe_amount_edit(bli, set()) is False
+
+
+def test_is_modified_loe_amount_edit_true_when_all_conditions_met(app, app_ctx):
+    app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
+    bli = _FakeBLI(BudgetLineItemStatus.OBLIGATED, agreement=_FakeAgreement(is_awarded=True))
+    assert is_modified_loe_amount_edit(bli, {"amount"}) is True

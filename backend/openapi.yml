@@ -5817,9 +5817,16 @@ paths:
                     description: >-
                       When true, Draft→Planned status changes and in-Planned budget-detail
                       edits apply immediately instead of creating a Change Request.
+                  enable_modified_loe_edits:
+                    type: boolean
+                    description: >-
+                      When true, allows an amount-only edit on an OBLIGATED Budget Line Item
+                      whose agreement is already Awarded, routed through the existing Change
+                      Request / Division Director approval workflow (Modified LOE contract mod).
                 example:
                   version: "1.0.0"
                   skip_cr_for_draft_planned: false
+                  enable_modified_loe_edits: false
   /azure/sas-token/:
     get:
       tags:
@@ -8025,6 +8032,13 @@ components:
           type: boolean
           example: false
           description: Present for AGREEMENT_CHANGE_REQUEST; false for BLI-only change requests
+        requires_contract_modification:
+          type: boolean
+          example: false
+          description: >-
+            True when this change request was submitted while its Agreement was already
+            Awarded -- i.e. anything that changes money or time on the awarded contract
+            (Modified LOE contract mod). Agreement-scoped, not BLI-status-scoped.
 
     AgreementChangeRequest:
       allOf:

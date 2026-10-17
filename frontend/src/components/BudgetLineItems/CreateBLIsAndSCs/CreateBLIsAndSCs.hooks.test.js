@@ -470,6 +470,72 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
+    // OPS-3072 (Modified LOE): on an Awarded agreement, saving an OBLIGATED financial change, an
+    // add/delete BL, or an add/delete/edit SC requires a contract modification -- surfaced as a
+    // distinct signal (requiresContractModification) alongside the existing requiresFinancialApproval.
+    it("flags requiresContractModification for an OBLIGATED financial change when the agreement is Awarded", async () => {
+        const obligatedLine = {
+            id: 601,
+            status: "OBLIGATED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [obligatedLine],
+            services_components: []
+        });
+        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        expect(result.current.requiresContractModification).toBe(true);
+    });
+
+    it("does not flag requiresContractModification for the same OBLIGATED financial change when the agreement is not Awarded", async () => {
+        const obligatedLine = {
+            id: 602,
+            status: "OBLIGATED",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [obligatedLine],
+            services_components: []
+        });
+        const { result } = renderSubject({ selectedAgreement: { is_awarded: false } });
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
+        expect(result.current.requiresContractModification).toBe(false);
+    });
+
+    it("flags requiresContractModification for a deleted BL on an Awarded agreement even with no financial change", () => {
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [],
+            deleted_budget_line_items_ids: [999],
+            services_components: []
+        });
+        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+        expect(result.current.requiresContractModification).toBe(true);
+    });
+
+    it("does not flag requiresContractModification when there are no pending edits, even on an Awarded agreement", () => {
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [],
+            services_components: []
+        });
+        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+        expect(result.current.requiresContractModification).toBe(false);
+    });
+
     it("edits a budget line, matching the original by id rather than a stale array index", () => {
         // tempBudgetLines and the `budgetLines` prop are independently-ordered arrays that can
         // drift out of index-alignment after any add/delete/duplicate — put the target BLI at a

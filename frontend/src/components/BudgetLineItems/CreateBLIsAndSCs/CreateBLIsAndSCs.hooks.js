@@ -912,6 +912,22 @@ const useCreateBLIsAndSCs = (
         .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
+    // OPS-3072 (Modified LOE): on an Awarded agreement, saving an add/delete BL, add/delete/
+    // edit SC, or an amount/CAN/date edit (any BLI status, via the widened financial-snapshot
+    // diffing in buildEditedBudgetLinePayload) requires a contract modification -- surfaced as
+    // a distinct confirmation before the same underlying Division-Director-approval save that
+    // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
+    const isAgreementAwarded = Boolean(selectedAgreement?.is_awarded);
+    const hasAddedOrDeletedBLIs =
+        deletedBudgetLines.length > 0 || tempBudgetLines.some((bli) => !("created_on" in bli));
+    const hasAddedOrDeletedOrChangedSCs =
+        deletedServicesComponentsIds.length > 0 ||
+        servicesComponents.some((sc) => !("created_on" in sc) || sc.has_changed);
+    const requiresContractModification =
+        isAgreementAwarded &&
+        !canEditDirectly &&
+        (hasFinancialSnapshotChanges || hasAddedOrDeletedBLIs || hasAddedOrDeletedOrChangedSCs);
+
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
         handleSave,
@@ -977,6 +993,7 @@ const useCreateBLIsAndSCs = (
         totalsForCards,
         isAgreementNotYetDeveloped,
         requiresFinancialApproval,
+        requiresContractModification,
         effectiveScStartDate,
         effectiveScEndDate
     };
