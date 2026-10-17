@@ -1556,9 +1556,10 @@ def search_agreements(session: Session, q: str, limit: int, offset: int) -> tupl
     """Lightweight agreement search for the header type-ahead and the search results page.
 
     Case-insensitive substring match (literal %, _ and \\) on the agreement name, nickname and
-    ODN (see _odn_column). A single query on `agreement` outer-joined by primary key to the three
-    subclass tables that hold an ODN: no budget-line or CAN joins, no totals and no per-row
-    computed values. Each agreement lives in exactly one subclass table, so there are no duplicates.
+    ODN (see _odn_column). One page query on `agreement` outer-joined by primary key to the three
+    subclass tables that hold an ODN, plus one count query over the same filter (two statements, so
+    a concurrent write can skew the count by one): no budget-line or CAN joins, no totals and no
+    per-row computed values. Each agreement lives in exactly one subclass table, so there are no duplicates.
 
     Returns:
         (page of {id, name, nick_name, agreement_type, odn} dicts, total match count)

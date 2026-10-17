@@ -1086,7 +1086,7 @@ paths:
                         odn:
                           type: string
                           nullable: true
-                          description: Order/document number for the agreement type; null for IAA and DIRECT_OBLIGATION
+                          description: Order/document number for the agreement type; null for IAA and DIRECT_OBLIGATION, and when the agreement has no value set
                   count:
                     type: integer
                     description: Total number of matching agreements (independent of limit and offset)

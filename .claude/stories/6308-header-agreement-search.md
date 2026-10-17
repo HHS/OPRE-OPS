@@ -84,7 +84,7 @@ As an OPS user, I want to search for an agreement by its ODN, title or nickname 
 - `backend/ops_api/ops/services/agreements.py`: `_apply_odn_filter` (the type → ODN column mapping to share).
 - `backend/ops_api/ops/urls.py`, `views.py`: route and view registration (view name `agreements-search`).
 - `backend/openapi.yml` and `backend/validate_openapi.sh`; the `sync-openapi` skill.
-- `backend/ops_api/tests/ops/agreement/conftest.py`: `loaded_db`, `auth_client`, `no_perms_auth_client` fixtures.
+- `backend/ops_api/tests/conftest.py`: `loaded_db` (SAVEPOINT-isolated session), `auth_client`, `no_perms_auth_client` fixtures.
 - `frontend/cypress/e2e/agreementOdnLookup.cy.js`: replaced.
 
 ### Dependencies
@@ -131,9 +131,9 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
 ### Implementation Steps
 
 1. **Backend: `GET /agreements-search/`**
-   - **Request schema:** inherit the scalar `PaginationSchema` (`limit` 1–50 default 10, `offset` ≥ 0, `unknown = EXCLUDE`) and load from flat `request.args`. `q = fields.String(required=True)`, stripped in a `pre_load`/`post_load`, then validated `Length(min=1, max=100)`. Blank after stripping, or over 100 characters → 400 (the global `ValidationError` handler maps to 400). Set `allow_none=False` on `limit`/`offset` so `limit=` doesn't pass as `None`. The 2-character minimum is a frontend rule only (a 1-character query is bounded by `limit`).
+   - **Request schema:** inherit the scalar `PaginationSchema` (`limit` 1–50 default 10, `offset` ≥ 0, `unknown = EXCLUDE`) and load from flat `request.args`. `q = fields.String(required=True)`, stripped in a `pre_load`/`post_load`, then validated `Length(min=1, max=100)`. Blank after stripping, over 100 characters, or containing a NUL character (PostgreSQL cannot compare against it and the driver would raise a 500) → 400. `offset` is also capped at the PostgreSQL bigint maximum (a larger `OFFSET` would be a 500) → 400 (the global `ValidationError` handler maps to 400). Set `allow_none=False` on `limit`/`offset` so `limit=` doesn't pass as `None`. The 2-character minimum is a frontend rule only (a 1-character query is bounded by `limit`).
    - **ODN mapping:** refactor the class → ODN column mapping out of `_apply_odn_filter` into `_odn_column(agreement_cls)` (Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`, IAA/Direct → `None`). `_apply_odn_filter` must keep returning `false()` for IAA/Direct; the search leaves the ODN term out. The 22 existing `odn` tests guard this, and a regression check is part of the PR.
-   - **Query:** `select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.agreement_type, odn_expr)` from `Agreement` with outer joins to the three subclass tables on `id`. `odn_expr` is a `CASE` on `agreement_type` (or `coalesce` of the three columns). Filter with `or_(name.icontains(q, autoescape=True), nick_name.icontains(q, autoescape=True), odn_expr.icontains(q, autoescape=True))` (SQLAlchemy 2.x) so `%`, `_` and `\` are matched literally. Confirm it renders as `ILIKE … ESCAPE` against the real DB with a literal-backslash test. Order by `lower(name) COLLATE "C"` (copy the idiom at `services/agreements.py:1365-1380`), then `id`, for stable pagination. No `DISTINCT` is needed: each agreement exists in exactly one subclass table.
+   - **Query:** `select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.agreement_type, odn_expr)` from `Agreement` with outer joins to the three subclass tables on `id`. `odn_expr` is a `CASE` on `agreement_type` (or `coalesce` of the three columns). Filter with `or_(name.icontains(q, autoescape=True), nick_name.icontains(q, autoescape=True), <each subclass ODN column>.icontains(q, autoescape=True))` (SQLAlchemy 2.x; one term per ODN column rather than on the `CASE`, which is equivalent because each agreement has a value in only its own subclass table) so `%`, `_` and `\` are matched literally. Confirm it renders as `ILIKE … ESCAPE` against the real DB with a literal-backslash test. Order by `lower(name) COLLATE "C"` (copy the idiom at `services/agreements.py:1365-1380`), then `id`, for stable pagination. No `DISTINCT` is needed: each agreement exists in exactly one subclass table.
    - **Count:** a separate `select(count())` over the same filtered subquery. Don't use `count(*) OVER ()` with `LIMIT/OFFSET`: an offset past the end returns no rows, so the count would read 0.
    - **Resource:** `AgreementSearchAPI.get` with `@is_authorized(PermissionType.GET, Permission.AGREEMENT)` and **no `OpsEventHandler`**, matching `AgreementListFilterOptionAPI`. Response envelope matches `GET /agreements/`: `{"data": [{"id", "name", "nick_name", "agreement_type", "odn"}], "count", "limit", "offset"}`. `agreement_type` uses `fields.Enum(AgreementType)` (same wire format as the list endpoint), and `nick_name` and `odn` use `allow_none=True`.
    - **Tests** (create their own rows; don't rely on shared seed data that other tests mutate):
@@ -312,6 +312,12 @@ Check `docs/TESTING.md` for the test-type matrix before adding tests. E2E is for
 
 ### Open Questions
 - None. (Two issues found in review were fixed: the search layer no longer paints above `ReactModal` overlays, and a search resolving after focus leaves the box no longer re-opens the dropdown.)
+
+### Known Limitations
+- The total `count` and the page of rows are two separate statements, so a write between them can make `count` differ from the rows by one.
+- Paging is offset-based, so an agreement created, renamed or deleted between page requests can make a row appear twice or be skipped.
+- Accented characters match only in the same Unicode form: a query typed in NFC does not match a stored NFD name (`e` + combining accent), and vice versa. PostgreSQL `ILIKE` does no normalization.
+- Names are ordered by `lower(name)` under `COLLATE "C"` (byte order, as on the list endpoint), so non-ASCII letters sort after all ASCII letters rather than by locale rules.
 
 ### Future Improvements
 - Search the other identifier fields the prototype shows: Contract #, and PO #/Task order # regardless of type, plus `grant_numbers` (needs an EXISTS subquery). Settle whether Direct Obligations get a PO # field.
