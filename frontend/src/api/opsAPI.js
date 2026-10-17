@@ -336,7 +336,9 @@ export const opsApi = createApi({
                 const queryParams = new URLSearchParams({ q, limit: String(limit), offset: String(offset) });
                 return `/agreements-search/?${queryParams.toString()}`;
             },
-            keepUnusedDataFor: 30
+            // Nothing is kept after the last subscriber leaves: with no tags to invalidate it, a cached entry
+            // would be shown (stale, and clickable) while the revisited page refetches.
+            keepUnusedDataFor: 0
         }),
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {

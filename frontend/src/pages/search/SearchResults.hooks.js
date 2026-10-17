@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import { createSearchParams, useSearchParams } from "react-router-dom";
 import { useSearchAgreementsQuery } from "../../api/opsAPI";
+import { MAX_SEARCH_LENGTH } from "../../components/UI/Header/HeaderSearch/HeaderSearch.helpers";
 import { ITEMS_PER_PAGE } from "../../constants";
+
+// The API rejects (HTTP 400) a q over MAX_SEARCH_LENGTH or containing NUL, and an offset past PostgreSQL's
+// bigint range. The URL is user-editable, so clamp what it can send instead of showing an unrecoverable error.
+const MAX_PAGE = 100000;
 
 /**
  * State for the /search?q=&page= results page. The query and page live in the URL so Back,
@@ -9,9 +14,9 @@ import { ITEMS_PER_PAGE } from "../../constants";
  */
 const useSearchResults = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const q = (searchParams.get("q") ?? "").trim();
+    const q = (searchParams.get("q") ?? "").replaceAll("\u0000", "").slice(0, MAX_SEARCH_LENGTH).trim();
     const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
-    const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+    const currentPage = Number.isInteger(pageParam) && pageParam > 0 && pageParam <= MAX_PAGE ? pageParam : 1;
 
     const {
         currentData: data,

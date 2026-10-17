@@ -278,6 +278,22 @@ describe("SearchResults", () => {
         expect(requests[0]).toMatchObject({ offset: "0" });
     });
 
+    it("treats an absurdly large page param as page 1 instead of sending an offset the API rejects", async () => {
+        const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
+        renderPage("/search?q=po&page=9999999999999999999");
+
+        await screen.findByRole("table");
+        expect(requests[0]).toMatchObject({ offset: "0" });
+    });
+
+    it("clamps an over-long or NUL-containing q to what the API accepts", async () => {
+        const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
+        renderPage(`/search?q=${"a".repeat(150)}%00b`);
+
+        await screen.findByRole("table");
+        expect(requests[0].q).toBe("a".repeat(100));
+    });
+
     it("shows pagination when the results fill exactly two pages", async () => {
         mockSearch(({ offset }) => ({ data: [row(Number(offset) + 1)], count: ITEMS_PER_PAGE + 1 }));
         renderPage("/search?q=po");
@@ -350,6 +366,37 @@ describe("SearchResults", () => {
         await screen.findByRole("table");
 
         await waitFor(() => expect(requests).toHaveLength(2), { timeout: 2000 });
+    });
+
+    it("does not show cached rows while a revisited query is being fetched again", async () => {
+        let call = 0;
+        mockSearch(async () => {
+            call += 1;
+            if (call === 1) {
+                return { data: [row(1, { name: "Old name" })], count: 1 };
+            }
+            await delay(400);
+            return { data: [row(1, { name: "New name" })], count: 1 };
+        });
+        const store = setupStore();
+        const tree = (
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/search?q=po"]}>
+                    <SearchResults />
+                </MemoryRouter>
+            </Provider>
+        );
+        const view = render(tree);
+        await screen.findByText("Old name");
+        view.unmount();
+        // The user spends a moment on another page before coming back.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        render(tree);
+
+        // The edit is not in yet: the old name must never be offered (clickable) as if it were current.
+        expect(screen.queryByText("Old name")).not.toBeInTheDocument();
+        expect(await screen.findByText("New name")).toBeInTheDocument();
     });
 
     it("moves focus to the heading once results load", async () => {

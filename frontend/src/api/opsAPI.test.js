@@ -1419,7 +1419,7 @@ describe("opsAPI - searchAgreements cache lifetime", () => {
         server.resetHandlers();
     });
 
-    it("keeps an unsubscribed search result for 30 seconds, then drops it", async () => {
+    it("drops an unsubscribed search result right away so a revisit never shows it stale", async () => {
         server.use(
             http.get("*/api/v1/agreements-search/", () =>
                 HttpResponse.json({ data: [], count: 0, limit: 5, offset: 0 })
@@ -1433,10 +1433,8 @@ describe("opsAPI - searchAgreements cache lifetime", () => {
 
         vi.useFakeTimers();
         subscription.unsubscribe();
-        await vi.advanceTimersByTimeAsync(29_000);
-        expect(cached()).toBe("fulfilled");
+        await vi.advanceTimersByTimeAsync(1_000);
 
-        await vi.advanceTimersByTimeAsync(1_500);
         expect(cached()).toBe("uninitialized");
     });
 });
