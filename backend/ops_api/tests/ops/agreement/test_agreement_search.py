@@ -155,9 +155,19 @@ class TestAgreementSearchOrderingAndPagination:
         assert names.index("zqx grant gamma") < names.index("Zqx Iaa Delta")
 
     def test_equal_names_are_ordered_by_id_and_paginate_without_overlap(self, auth_client, loaded_db, app_ctx):
+        # ix_agreement_name_type_lower is unique on (lower(name), agreement_type), so names that are
+        # equal ignoring case can only coexist across different agreement types: one twin per type.
         twins = [
-            DirectAgreement(name=name, agreement_type=AgreementType.DIRECT_OBLIGATION)
-            for name in ("Zqxtie Twin", "ZQXTIE twin", "zqxtie TWIN", "Zqxtie Twin", "ZQXTIE TWIN")
+            ContractAgreement(name="Zqxtie Twin", agreement_type=AgreementType.CONTRACT),
+            GrantAgreement(name="ZQXTIE twin", agreement_type=AgreementType.GRANT),
+            IaaAgreement(name="zqxtie TWIN", agreement_type=AgreementType.IAA, direction=IAADirectionType.INCOMING),
+            DirectAgreement(name="Zqxtie Twin", agreement_type=AgreementType.DIRECT_OBLIGATION),
+            AaAgreement(
+                name="ZQXTIE TWIN",
+                agreement_type=AgreementType.AA,
+                requesting_agency_id=1,
+                servicing_agency_id=1,
+            ),
         ]
         loaded_db.add_all(twins)
         loaded_db.commit()
