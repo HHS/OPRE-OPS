@@ -1097,7 +1097,7 @@ paths:
               example:
                 data:
                   - id: 6
-                    name: "Fathers and Continuous Learning (FCL)"
+                    name: "CONTRACT #2: Fathers and Continuous Learning (FCL)"
                     nick_name: null
                     agreement_type: CONTRACT
                     odn: "PO-TEST-0001"
