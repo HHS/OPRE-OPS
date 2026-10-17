@@ -1412,3 +1412,31 @@ describe("opsAPI - searchAgreements", () => {
         expect(params.get("offset")).toBe("0");
     });
 });
+
+describe("opsAPI - searchAgreements cache lifetime", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        server.resetHandlers();
+    });
+
+    it("keeps an unsubscribed search result for 30 seconds, then drops it", async () => {
+        server.use(
+            http.get("*/api/v1/agreements-search/", () =>
+                HttpResponse.json({ data: [], count: 0, limit: 5, offset: 0 })
+            )
+        );
+        const { store } = setupApiStore(opsApi);
+        const subscription = store.dispatch(opsApi.endpoints.searchAgreements.initiate({ q: "po" }));
+        await subscription;
+        const cached = () => opsApi.endpoints.searchAgreements.select({ q: "po" })(store.getState()).status;
+        expect(cached()).toBe("fulfilled");
+
+        vi.useFakeTimers();
+        subscription.unsubscribe();
+        await vi.advanceTimersByTimeAsync(29_000);
+        expect(cached()).toBe("fulfilled");
+
+        await vi.advanceTimersByTimeAsync(1_500);
+        expect(cached()).toBe("uninitialized");
+    });
+});

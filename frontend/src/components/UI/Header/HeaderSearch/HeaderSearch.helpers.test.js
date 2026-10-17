@@ -40,11 +40,35 @@ describe("getMatchedField", () => {
     it("trims the query", () => {
         expect(getMatchedField(result, "  hs-ess  ").field).toBe("nick_name");
     });
+
+    it("prefers the title over the nickname when both match", () => {
+        const both = { ...result, odn: null, name: "HS-ESS Services" };
+        expect(getMatchedField(both, "hs-ess").field).toBe("name");
+    });
+
+    it("falls back to the title for an empty or missing query instead of matching everything", () => {
+        expect(getMatchedField(result, "").field).toBe("name");
+        expect(getMatchedField(result, "   ").field).toBe("name");
+        expect(getMatchedField(result, undefined).field).toBe("name");
+    });
+
+    it("returns an empty string value when the fallback title is missing", () => {
+        expect(getMatchedField({ id: 3, name: null, nick_name: null, odn: null }, "x")).toEqual({
+            field: "name",
+            label: "Title",
+            value: ""
+        });
+    });
 });
 
 describe("splitHighlight", () => {
     it("splits around the first case-insensitive match", () => {
         expect(splitHighlight("Early Head Start Head", "head")).toEqual(["Early ", "Head", " Start Head"]);
+    });
+
+    it("matches an upper-case or padded query case-insensitively", () => {
+        expect(splitHighlight("Early Head Start", "HEAD")).toEqual(["Early ", "Head", " Start"]);
+        expect(splitHighlight("Early Head Start", "  head ")).toEqual(["Early ", "Head", " Start"]);
     });
 
     it("returns the whole text when there is no match", () => {
