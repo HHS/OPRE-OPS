@@ -1,5 +1,5 @@
 /* eslint-disable testing-library/no-node-access -- the footer/error rows and <mark> have no role to query by */
-import { configure, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { configure, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
@@ -110,6 +110,47 @@ describe("HeaderSearch", () => {
             );
             // Nothing to show yet: the whole dropdown is hidden, not just emptied.
             expect(listbox.parentElement).not.toBeVisible();
+        });
+
+        it("gives every instance its own input, listbox and option ids", async () => {
+            mockSearch();
+            const store = setupStore({ auth: { isLoggedIn: true, activeUser: { id: 1, roles: [] } } });
+            const user = userEvent.setup();
+            render(
+                <Provider store={store}>
+                    <MemoryRouter>
+                        <HeaderSearch />
+                        <HeaderSearch />
+                    </MemoryRouter>
+                </Provider>
+            );
+            const inputs = screen.getAllByRole("combobox", { name: "Search agreements" });
+            // Each box must settle before focus moves on, or leaving it mid-search would drop its rows.
+            await user.type(inputs[0], "PO-TEST");
+            await waitFor(() => expect(inputs[0]).toHaveAttribute("aria-expanded", "true"));
+            await user.type(inputs[1], "PO-TEST");
+            await waitFor(() => expect(inputs[1]).toHaveAttribute("aria-expanded", "true"));
+
+            const listboxes = screen.getAllByRole("listbox", { hidden: true });
+            const options = screen.getAllByRole("option", { hidden: true });
+            expect(options).toHaveLength(4);
+            const ids = [...inputs.map((input) => input.id), ...listboxes.map((box) => box.id)];
+            const optionIds = options.map((option) => option.id);
+            expect(new Set([...ids, ...optionIds]).size).toBe(ids.length + optionIds.length);
+            expect(ids.every(Boolean) && optionIds.every(Boolean)).toBe(true);
+            // Each input points at its own list.
+            expect(inputs[0]).toHaveAttribute("aria-controls", listboxes[0].id);
+            expect(inputs[1]).toHaveAttribute("aria-controls", listboxes[1].id);
+        });
+
+        it("shows the agreement type in the light blue tag", async () => {
+            mockSearch(() => ({ data: [PO_1], count: 1 }));
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+
+            const option = await screen.findByRole("option");
+            const tag = within(option).getByText("Contract").closest("[class*='bg-brand-primary-light']");
+            expect(tag).toHaveClass("bg-brand-primary-light", "text-brand-primary-dark");
         });
 
         it("expands and lists options once results arrive", async () => {
@@ -576,6 +617,48 @@ describe("HeaderSearch", () => {
             expect(input).not.toHaveAttribute("aria-activedescendant");
         });
 
+        it("swallows neither arrow key while the next query is still loading over stale rows", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+
+            await user.type(input, "X");
+            // The debounce has not fired: the previous rows are on screen but belong to the old text.
+            expect(screen.getByRole("listbox")).toHaveAttribute("aria-busy", "true");
+            expect(fireEvent.keyDown(input, { key: "ArrowDown" })).toBe(true);
+            expect(fireEvent.keyDown(input, { key: "ArrowUp" })).toBe(true);
+        });
+
+        it("ArrowDown reopens a closed list without highlighting a row", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+            // The window lost focus: the list closes but the input still holds the text and the results.
+            fireEvent.blur(input);
+            expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+            expect(fireEvent.keyDown(input, { key: "ArrowDown" })).toBe(false);
+
+            expect(screen.getByRole("listbox")).toBeVisible();
+            expect(input).not.toHaveAttribute("aria-activedescendant");
+        });
+
+        it("Enter does not open a row that was highlighted before the list closed", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+            await user.keyboard("{ArrowDown}");
+            fireEvent.blur(input);
+            expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+            await user.keyboard("{Enter}");
+
+            expect(location()).toBe("/search?q=PO-TEST");
+        });
+
         it("prevents the browser's own submit so the page never reloads", () => {
             const { input } = renderSearch();
 
@@ -722,6 +805,23 @@ describe("HeaderSearch", () => {
             // fireEvent-level keydown is required to set isComposing, which userEvent can't.
             fireEvent.keyDown(input, { key: "Escape", isComposing: true });
             fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+
+            expect(input).toHaveValue("PO-TEST");
+            expect(location()).toBe("/");
+        });
+
+        it("ignores the Safari post-compositionend Enter (keyCode 229, isComposing false)", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+            await user.keyboard("{ArrowDown}");
+
+            // Safari fires the keydown that commits an IME candidate AFTER compositionend, so
+            // isComposing is already false; only keyCode 229 gives it away. It must not open the
+            // highlighted row, clear the box or submit the form.
+            fireEvent.keyDown(input, { key: "Enter", keyCode: 229, isComposing: false });
+            fireEvent.keyDown(input, { key: "Escape", keyCode: 229, isComposing: false });
 
             expect(input).toHaveValue("PO-TEST");
             expect(location()).toBe("/");

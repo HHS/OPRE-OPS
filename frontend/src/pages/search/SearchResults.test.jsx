@@ -162,6 +162,14 @@ describe("SearchResults", () => {
         expect(screen.getByTestId("location")).toHaveTextContent(/^\/search\?q=zzz$/);
     });
 
+    it("keeps the programmatically focusable heading free of a focus outline", () => {
+        renderPage("/search");
+
+        const heading = screen.getByRole("heading", { name: "Search results" });
+        expect(heading).toHaveAttribute("tabindex", "-1");
+        expect(heading).toHaveStyle({ outline: "none" });
+    });
+
     it("wraps long unbroken query text instead of widening the page", async () => {
         mockSearch(() => ({ data: [], count: 0 }));
         renderPage(`/search?q=${"a".repeat(100)}`);
@@ -290,6 +298,22 @@ describe("SearchResults", () => {
     it("treats an absurdly large page param as page 1 instead of sending an offset the API rejects", async () => {
         const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
         renderPage("/search?q=po&page=9999999999999999999");
+
+        await screen.findByRole("table");
+        expect(requests[0]).toMatchObject({ offset: "0" });
+    });
+
+    it("accepts the highest allowed page (100000) and rejects the one after it", async () => {
+        const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
+        renderPage("/search?q=po&page=100000");
+
+        await screen.findByRole("table");
+        expect(requests[0]).toMatchObject({ offset: String(99999 * ITEMS_PER_PAGE) });
+    });
+
+    it("treats the page just past the highest allowed page (100001) as page 1", async () => {
+        const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
+        renderPage("/search?q=po&page=100001");
 
         await screen.findByRole("table");
         expect(requests[0]).toMatchObject({ offset: "0" });
