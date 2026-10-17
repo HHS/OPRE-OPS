@@ -17,7 +17,7 @@ from ops_api.ops.schemas.budget_line_items import (
 )
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
 from ops_api.ops.schemas.grant_number import GrantNumberItemResponse, NestedGrantNumberRequestSchema
-from ops_api.ops.schemas.pagination import PaginationListSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema, PaginationSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -382,3 +382,48 @@ class AgreementListFilterOptionResponseSchema(Schema):
     agreement_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     contract_numbers = fields.List(fields.String(), required=True)
     research_types = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+
+
+class AgreementSearchRequestSchema(PaginationSchema):
+    """Query parameters for the header agreement search (GET /agreements-search/)."""
+
+    class Meta:
+        unknown = EXCLUDE
+
+    q = fields.String(required=True, validate=validate.Length(min=1, max=100, error="q must be 1 to 100 characters"))
+    limit = fields.Integer(
+        load_default=10,
+        dump_default=10,
+        validate=validate.Range(min=1, max=50, error="Limit must be between 1 and 50"),
+        allow_none=False,
+    )
+    offset = fields.Integer(
+        load_default=0,
+        dump_default=0,
+        validate=validate.Range(min=0, error="Offset must be greater than or equal to 0"),
+        allow_none=False,
+    )
+
+    @pre_load
+    def strip_q(self, data, **kwargs):
+        data = dict(data)
+        if isinstance(data.get("q"), str):
+            data["q"] = data["q"].strip()
+        return data
+
+
+class AgreementSearchResultSchema(Schema):
+    """One agreement in the search results. Deliberately minimal: no budget lines, totals or _meta."""
+
+    id = fields.Integer(required=True)
+    name = fields.String(required=True)
+    nick_name = fields.String(allow_none=True)
+    agreement_type = fields.Enum(AgreementType, required=True)
+    odn = fields.String(allow_none=True)
+
+
+class AgreementSearchResponseSchema(Schema):
+    data = fields.List(fields.Nested(AgreementSearchResultSchema), required=True)
+    count = fields.Integer(required=True)
+    limit = fields.Integer(required=True)
+    offset = fields.Integer(required=True)

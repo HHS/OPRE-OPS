@@ -6,7 +6,7 @@ from typing import Any, List, Literal, Optional, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, case, distinct, false, func, or_, select, union, union_all
+from sqlalchemy import Select, case, distinct, false, func, null, or_, select, text, union, union_all
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -1534,6 +1534,76 @@ def _apply_agreement_specific_filters(
     return query
 
 
+def _odn_column(agreement_cls: Type[Agreement]):
+    """Return the column holding the order/document number (ODN) for an agreement type.
+
+    Contract -> po_number, AA -> task_order_number, Grant -> awarded_grant_number. IAA and
+    Direct Obligation agreements have no ODN, so None is returned.
+    """
+    if agreement_cls == ContractAgreement:
+        return agreement_cls.po_number
+    if agreement_cls == AaAgreement:
+        return agreement_cls.task_order_number
+    if agreement_cls == GrantAgreement:
+        return agreement_cls.awarded_grant_number
+    return None
+
+
+_ODN_AGREEMENT_CLASSES = (ContractAgreement, AaAgreement, GrantAgreement)
+
+
+def search_agreements(session: Session, q: str, limit: int, offset: int) -> tuple[list[dict[str, Any]], int]:
+    """Lightweight agreement search for the header type-ahead and the search results page.
+
+    Case-insensitive substring match (literal %, _ and \\) on the agreement name, nickname and
+    ODN (see _odn_column). A single query on `agreement` outer-joined by primary key to the three
+    subclass tables that hold an ODN: no budget-line or CAN joins, no totals and no per-row
+    computed values. Each agreement lives in exactly one subclass table, so there are no duplicates.
+
+    Returns:
+        (page of {id, name, nick_name, agreement_type, odn} dicts, total match count)
+    """
+    # Use the subclass *table* columns, not the ORM attributes: an ORM attribute such as
+    # ContractAgreement.po_number pulls in an inner JOIN to that subclass, which would collide
+    # with (and defeat) the outer joins below.
+    odn_columns = {
+        cls.__mapper__.polymorphic_identity: cls.__table__.c[_odn_column(cls).key] for cls in _ODN_AGREEMENT_CLASSES
+    }
+    odn_expr = case(
+        *[(Agreement.agreement_type == agreement_type, column) for agreement_type, column in odn_columns.items()],
+        else_=null(),
+    ).label("odn")
+
+    base = select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.agreement_type, odn_expr)
+    for cls in _ODN_AGREEMENT_CLASSES:
+        base = base.outerjoin(cls.__table__, cls.__table__.c.id == Agreement.id)
+    base = base.where(
+        or_(
+            Agreement.name.icontains(q, autoescape=True),
+            Agreement.nick_name.icontains(q, autoescape=True),
+            *[column.icontains(q, autoescape=True) for column in odn_columns.values()],
+        )
+    )
+
+    total_count = session.scalar(select(func.count()).select_from(base.subquery()))
+
+    # COLLATE "C" matches the Agreement sort on the list endpoint (see _get_all_matching_ids);
+    # id is the tie-break so pagination is stable.
+    sort_key = func.lower(Agreement.name).op("COLLATE")(text('"C"'))
+    rows = session.execute(base.order_by(sort_key, Agreement.id).limit(limit).offset(offset)).all()
+    results = [
+        {
+            "id": row.id,
+            "name": row.name,
+            "nick_name": row.nick_name,
+            "agreement_type": row.agreement_type,
+            "odn": row.odn,
+        }
+        for row in rows
+    ]
+    return results, total_count
+
+
 def _apply_odn_filter(
     query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]
 ) -> Select[Agreement]:
@@ -1553,13 +1623,8 @@ def _apply_odn_filter(
     if not odn_values:
         return query
 
-    if agreement_cls == ContractAgreement:
-        odn_column = agreement_cls.po_number
-    elif agreement_cls == AaAgreement:
-        odn_column = agreement_cls.task_order_number
-    elif agreement_cls == GrantAgreement:
-        odn_column = agreement_cls.awarded_grant_number
-    else:
+    odn_column = _odn_column(agreement_cls)
+    if odn_column is None:
         return query.where(false())
 
     return query.where(func.lower(odn_column).in_([value.lower() for value in odn_values]))
