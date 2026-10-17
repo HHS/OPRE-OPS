@@ -1,4 +1,4 @@
-import { useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import icons from "../../../../uswds/img/sprite.svg";
 import Tag from "../../Tag";
@@ -38,6 +38,14 @@ export const HeaderSearch = () => {
 
     const hasOptions = isListVisible && results.length > 0;
     const activeOption = hasOptions && activeIndex >= 0 ? results[activeIndex] : null;
+
+    // The dropdown can extend past a short or zoomed viewport: keep the highlighted row on screen.
+    const activeOptionId = activeOption ? optionId(activeOption.id) : null;
+    useEffect(() => {
+        if (activeOptionId) {
+            document.getElementById(activeOptionId)?.scrollIntoView?.({ block: "nearest" });
+        }
+    }, [activeOptionId]);
 
     const handleBlur = (event) => {
         if (!containerRef.current?.contains(event.relatedTarget)) {

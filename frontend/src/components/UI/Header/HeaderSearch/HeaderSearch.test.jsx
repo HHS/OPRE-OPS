@@ -509,6 +509,27 @@ describe("HeaderSearch", () => {
             expect(input).toHaveFocus();
         });
 
+        it("scrolls the highlighted row into view, so it can't sit below a short or zoomed viewport", async () => {
+            mockSearch();
+            const scrollIntoView = vi.fn();
+            Element.prototype.scrollIntoView = scrollIntoView;
+            try {
+                const { user, input } = renderSearch();
+
+                await user.type(input, "PO-TEST");
+                const [first] = await screen.findAllByRole("option");
+                expect(scrollIntoView).not.toHaveBeenCalled();
+
+                await user.keyboard("{ArrowDown}");
+
+                expect(scrollIntoView).toHaveBeenCalledTimes(1);
+                expect(scrollIntoView.mock.contexts[0]).toBe(first);
+                expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+            } finally {
+                delete Element.prototype.scrollIntoView;
+            }
+        });
+
         it("clamps ArrowUp at no highlight, so the next ArrowDown lands on the first row", async () => {
             mockSearch();
             const { user, input } = renderSearch();
@@ -891,6 +912,12 @@ describe("HeaderSearch", () => {
         it("pre-fills from the q param on /search only", () => {
             const { input } = renderSearch(<HeaderSearch />, "/search?q=PO-TEST");
             expect(input).toHaveValue("PO-TEST");
+        });
+
+        it("pre-fills the same sanitised text the results page searches (no NUL, capped, trimmed)", () => {
+            const raw = encodeURIComponent(`${"a".repeat(150)}\u0000  `);
+            const { input } = renderSearch(<HeaderSearch />, `/search?q=${raw}`);
+            expect(input).toHaveValue("a".repeat(100));
         });
 
         it("starts empty on /search without a q param", () => {

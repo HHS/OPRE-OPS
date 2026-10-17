@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMatchedField, splitHighlight } from "./HeaderSearch.helpers";
+import { getMatchedField, sanitizeSearchQuery, splitHighlight } from "./HeaderSearch.helpers";
 
 describe("getMatchedField", () => {
     const result = {
@@ -89,5 +89,18 @@ describe("splitHighlight", () => {
 
     it("skips highlighting when lowercasing changes the string length", () => {
         expect(splitHighlight("İstanbul", "stan")).toEqual(["İstanbul", "", ""]);
+    });
+});
+
+describe("sanitizeSearchQuery", () => {
+    it("removes NUL, caps at 100 characters and trims", () => {
+        expect(sanitizeSearchQuery("  po\u0000-1  ")).toBe("po-1");
+        expect(sanitizeSearchQuery("a".repeat(150))).toBe("a".repeat(100));
+        expect(sanitizeSearchQuery(`${" ".repeat(100)}ab`)).toBe("");
+    });
+
+    it("returns an empty string for null and undefined", () => {
+        expect(sanitizeSearchQuery(null)).toBe("");
+        expect(sanitizeSearchQuery(undefined)).toBe("");
     });
 });

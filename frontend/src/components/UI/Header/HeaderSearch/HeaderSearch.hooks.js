@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useLazySearchAgreementsQuery } from "../../../../api/opsAPI";
-import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH } from "./HeaderSearch.helpers";
+import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH, sanitizeSearchQuery } from "./HeaderSearch.helpers";
 
 export const SEARCH_STATUS = {
     IDLE: "idle",
@@ -30,7 +30,7 @@ const useHeaderSearch = () => {
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
     const isOnSearchPage = pathname === SEARCH_PATH;
-    const urlQuery = isOnSearchPage ? (searchParams.get("q") ?? "") : "";
+    const urlQuery = isOnSearchPage ? sanitizeSearchQuery(searchParams.get("q")) : "";
 
     const [trigger] = useLazySearchAgreementsQuery();
     const [inputValue, setInputValue] = useState(urlQuery);

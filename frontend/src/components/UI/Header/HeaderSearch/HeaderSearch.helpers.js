@@ -10,6 +10,14 @@
 export const MIN_SEARCH_LENGTH = 2;
 export const MAX_SEARCH_LENGTH = 100;
 
+/**
+ * Make an untrusted (URL-supplied) query safe to send: the API rejects NUL and anything over
+ * MAX_SEARCH_LENGTH (HTTP 400). Used by both the results page and the header box so they agree on the text.
+ * @param {string|null|undefined} value - The raw q value.
+ * @returns {string} The query without NUL characters, capped to MAX_SEARCH_LENGTH and trimmed.
+ */
+export const sanitizeSearchQuery = (value) => (value ?? "").replaceAll("\u0000", "").slice(0, MAX_SEARCH_LENGTH).trim();
+
 /** Labels for the field a search matched on. */
 const MATCH_LABELS = {
     odn: "ODN",
