@@ -1,0 +1,114 @@
+.container {
+    position: relative;
+    width: 24rem;
+    max-width: 100%;
+}
+
+.container form.form {
+    // USWDS styles `.usa-header [role="search"]` (float: right; max-width). The extra element
+    // selector outranks it so this stays a normal flex row filling the container.
+    float: none;
+    display: flex;
+    width: 100%;
+    max-width: none;
+}
+
+.inputWrapper {
+    position: relative;
+    flex: 1;
+}
+
+.container .input {
+    margin-top: 0;
+    width: 100%;
+    max-width: none;
+    padding-right: 2rem;
+}
+
+.clearButton {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #565c65;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.submitButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0;
+    margin-right: 0;
+    padding: 0 0.75rem;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: 0.25rem;
+    background: #fff;
+    border: 1px solid #c9c9c9;
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.option {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #dfe1e2;
+    cursor: pointer;
+
+    &:hover,
+    &[aria-selected="true"] {
+        background-color: #e7f6f8;
+    }
+}
+
+.optionTitle {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #005ea2;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.optionTag {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.optionMeta {
+    margin-top: 0.125rem;
+    color: #454545;
+    font-size: 0.75rem;
+}
+
+.message {
+    padding: 0.5rem 0.75rem;
+    color: #454545;
+    font-size: 0.75rem;
+}
+
+.container mark {
+    background-color: #ffe396;
+    color: inherit;
+    padding: 0;
+}

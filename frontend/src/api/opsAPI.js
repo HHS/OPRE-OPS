@@ -333,6 +333,15 @@ export const opsApi = createApi({
             },
             providesTags: ["Agreements"]
         }),
+        searchAgreements: builder.query({
+            // Lightweight search for the header type-ahead and /search page. Deliberately has no
+            // providesTags, so agreement mutations don't trigger background re-fetches of old searches.
+            query: ({ q, limit = 10, offset = 0 }) => {
+                const queryParams = new URLSearchParams({ q, limit: String(limit), offset: String(offset) });
+                return `/agreements-search/?${queryParams.toString()}`;
+            },
+            keepUnusedDataFor: 30
+        }),
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {
                 const queryParams = [];
@@ -1330,6 +1339,8 @@ export const {
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
     useGetAgreementsFilterOptionsQuery,
+    useSearchAgreementsQuery,
+    useLazySearchAgreementsQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
