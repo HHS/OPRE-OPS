@@ -41,10 +41,13 @@
     border-radius: 0.25rem;
 
     // One focus ring around the joined input + button, instead of a ring on the input alone that
-    // spills over the button.
-    &:has(.input:focus) {
-        outline: 0.25rem solid #2491ff;
-        outline-offset: 0;
+    // spills over the button. Only where :has() exists (Firefox < 121, Safari < 15.4 lack it): there
+    // the input keeps its own USWDS focus outline, so focus is never invisible.
+    @supports selector(:has(*)) {
+        &:has(.input:focus) {
+            outline: 0.25rem solid #2491ff;
+            outline-offset: 0;
+        }
     }
 }
 
@@ -62,8 +65,10 @@
     font-size: 0.875rem;
     border-radius: 0.25rem 0 0 0.25rem;
 
-    &:focus {
-        outline: none;
+    @supports selector(:has(*)) {
+        &:focus {
+            outline: none;
+        }
     }
 }
 

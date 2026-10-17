@@ -14,6 +14,7 @@ export const SEARCH_STATUS = {
 const DEBOUNCE_MS = 300;
 const DROPDOWN_LIMIT = 5;
 const SEARCH_PATH = "/search";
+const IME_KEY_CODE = 229;
 
 /**
  * Type-ahead state for the header agreement search.
@@ -181,7 +182,13 @@ const useHeaderSearch = () => {
 
     const handleKeyDown = (event) => {
         // Esc/Enter/arrows during IME composition belong to the IME (e.g. Esc cancels the composition).
-        if (event.nativeEvent?.isComposing) {
+        // Safari fires the keydown that commits a composition AFTER compositionend, so isComposing is
+        // already false there; it still reports keyCode 229 ("processed by an IME").
+        if (event.nativeEvent?.isComposing || event.keyCode === IME_KEY_CODE) {
+            if (event.key === "Enter" && !event.nativeEvent?.isComposing) {
+                // Committing a candidate must not also submit the form (Safari's implicit submit).
+                event.preventDefault();
+            }
             return;
         }
         if (event.key === "Escape") {
