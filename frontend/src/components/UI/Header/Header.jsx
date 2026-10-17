@@ -15,21 +15,26 @@ const Header = () => {
             position: "relative"
         },
         // A zero-height layer as wide as the page column (1024px), centered like the content below
-        // it; the search floats at its right edge, level with the logo.
+        // it; the search floats at its right edge, directly under the user/sign-out links.
         search: {
             position: "absolute",
-            top: "2.25rem",
+            top: "3.625rem",
             left: 0,
             right: 0,
             width: "min(1024px, 100%)",
             height: 0,
             margin: "0 auto",
             boxSizing: "border-box",
-            paddingRight: "1rem",
+            paddingRight: "2rem",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "flex-end",
             zIndex: 100
+        },
+        // USWDS pins the user/sign-out links to the bottom of the logo band; lift them one row so the
+        // search can sit directly underneath, as in the prototype.
+        secondary: {
+            top: "-7.5rem"
         },
         textLogo: {
             color: "#336A90",
@@ -75,7 +80,10 @@ const Header = () => {
             >
                 <div className="usa-nav__inner bg-white border-top border-base-lighter">
                     <NavMenu />
-                    <div className="usa-nav__secondary">
+                    <div
+                        className="usa-nav__secondary"
+                        style={styles.secondary}
+                    >
                         <AuthSection />
                     </div>
                 </div>
