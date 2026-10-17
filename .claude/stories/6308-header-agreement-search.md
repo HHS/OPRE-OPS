@@ -110,8 +110,9 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
 - `frontend/src/components/UI/Header/HeaderSearch/HeaderSearch.helpers.js`: `getMatchedField(result, q)` and `splitHighlight(text, q)`.
 - `frontend/src/components/UI/Header/HeaderSearch/HeaderSearch.module.scss`: dropdown positioning and highlight (CSS Modules, like `Tabs.module.scss`; check whether the gulp step is needed at all for module SCSS before running `bun run uswds:update`).
 - `frontend/src/components/UI/Header/HeaderSearch/HeaderSearch.stories.jsx`: required for `components/UI` (see `frontend/CLAUDE.md`).
+- `frontend/src/components/UI/Header/HeaderSearch/HighlightedText.jsx` (shared `<mark>` renderer), `HighlightedText.stories.jsx`, and `index.js` (re-export).
 - `frontend/src/components/UI/Header/HeaderSearch/HeaderSearch.test.jsx`, `HeaderSearch.helpers.test.js`
-- `frontend/src/pages/search/SearchResults.jsx` + `SearchResults.test.jsx`: the `/search?q=` page.
+- `frontend/src/pages/search/SearchResults.jsx` + `SearchResults.hooks.js` + `SearchResults.test.jsx`: the `/search?q=` page.
 - `frontend/cypress/e2e/headerSearch.cy.js` (2 tests, see step 10).
 
 ### Files to Modify
