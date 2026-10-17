@@ -492,11 +492,24 @@ describe("HeaderSearch", () => {
 
         it("replaces the history entry when searching from /search", async () => {
             mockSearch();
-            const { user, input } = renderSearch(<HeaderSearch />, "/search?q=PO-TEST");
+            const GoBackOne = () => {
+                const navigate = useNavigate();
+                return <button onClick={() => navigate(-1)}>back</button>;
+            };
+            const { user, input } = renderSearch(
+                <>
+                    <HeaderSearch />
+                    <GoBackOne />
+                </>,
+                "/search?q=PO-TEST"
+            );
 
             await user.clear(input);
             await user.type(input, "Head{Enter}");
 
+            expect(location()).toBe("/search?q=Head");
+            // Replaced, not pushed: the only history entry is the new search, so Back has nowhere to go.
+            fireEvent.click(screen.getByRole("button", { name: "back" }));
             expect(location()).toBe("/search?q=Head");
         });
     });
