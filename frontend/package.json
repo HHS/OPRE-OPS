@@ -36,7 +36,7 @@
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
         "sass": "1.105.2",
-        "styled-components": "6.5.3",
+        "styled-components": "6.6.0",
         "vest": "6.3.4"
     },
     "overrides": {
@@ -87,7 +87,7 @@
         "vitest": "4.1.12",
         "storybook": "10.6.2",
         "@storybook/react-vite": "10.6.2",
-        "@chromatic-com/storybook": "5.4.0",
+        "@chromatic-com/storybook": "5.5.1",
         "@storybook/addon-a11y": "10.6.2",
         "@storybook/addon-docs": "10.6.2",
         "@storybook/addon-onboarding": "10.6.2",
