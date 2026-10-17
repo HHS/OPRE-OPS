@@ -82,9 +82,11 @@ const Header = () => {
                 </div>
             </nav>
             {/*
-              Outside .usa-navbar (overflow: auto) so the results dropdown isn't clipped. Rendered after
-              the nav, with no z-index, so DOM order paints it over the nav links but under modal
-              overlays (ReactModal portals are appended to <body>, later still).
+              Outside .usa-navbar (overflow: auto) so the results dropdown isn't clipped. The layer has no
+              z-index and comes after the nav, so the search box paints over the nav links but under modal
+              overlays (ReactModal portals are appended to <body>, later still). Only the open dropdown
+              carries its own z-index (see HeaderSearch.module.scss) so page content can't cover it; a modal
+              can't be opened while it is showing, because moving focus off the box closes it.
             */}
             {isLoggedIn && (
                 <div style={styles.search}>

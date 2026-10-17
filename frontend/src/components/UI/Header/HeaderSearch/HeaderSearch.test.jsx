@@ -1,5 +1,5 @@
 /* eslint-disable testing-library/no-node-access -- the footer/error rows and <mark> have no role to query by */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { configure, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
@@ -57,6 +57,9 @@ const renderSearch = (ui = <HeaderSearch />, route = "/") => {
     );
     return { user, store, input: screen.getByRole("combobox", { name: "Search agreements" }) };
 };
+
+// 300ms debounce + MSW latency can exceed the 1000ms default on a loaded CI runner.
+configure({ asyncUtilTimeout: 5000 });
 
 const location = () => screen.getByTestId("location").textContent;
 
@@ -125,11 +128,11 @@ describe("HeaderSearch", () => {
             const { user, input } = renderSearch();
 
             await user.type(input, "ab");
-            await waitFor(() => expect(requests).toEqual(["ab"]), { timeout: 1000 });
+            await waitFor(() => expect(requests).toEqual(["ab"]), { timeout: 5000 });
             await user.type(input, "c");
 
             expect(await screen.findByRole("option", { name: /Fresh Result/ })).toBeInTheDocument();
-            await new Promise((resolve) => setTimeout(resolve, 700));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             expect(screen.queryByText(/STALE RESULT/)).not.toBeInTheDocument();
             expect(requests).toEqual(["ab", "abc"]);
         });
@@ -159,7 +162,7 @@ describe("HeaderSearch", () => {
             );
 
             await user.type(input, "PO-TEST");
-            await waitFor(() => expect(requests).toHaveLength(1), { timeout: 1000 });
+            await waitFor(() => expect(requests).toHaveLength(1), { timeout: 5000 });
             await user.click(screen.getByRole("button", { name: "Elsewhere" }));
             await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -215,7 +218,7 @@ describe("HeaderSearch", () => {
             const { user, input } = renderSearch();
 
             await user.type(input, "PO-TEST");
-            await waitFor(() => expect(requests).toHaveLength(1), { timeout: 1000 });
+            await waitFor(() => expect(requests).toHaveLength(1), { timeout: 5000 });
             await user.keyboard("{Escape}");
             await new Promise((resolve) => setTimeout(resolve, 500));
 

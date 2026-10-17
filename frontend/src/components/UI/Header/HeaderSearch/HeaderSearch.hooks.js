@@ -11,9 +11,9 @@ export const SEARCH_STATUS = {
     ERROR: "error"
 };
 
-export const DEBOUNCE_MS = 300;
-export const DROPDOWN_LIMIT = 5;
-export const SEARCH_PATH = "/search";
+const DEBOUNCE_MS = 300;
+const DROPDOWN_LIMIT = 5;
+const SEARCH_PATH = "/search";
 
 /**
  * Type-ahead state for the header agreement search.

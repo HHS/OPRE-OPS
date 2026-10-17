@@ -11,7 +11,7 @@ export const MIN_SEARCH_LENGTH = 2;
 export const MAX_SEARCH_LENGTH = 100;
 
 /** Labels for the field a search matched on. */
-export const MATCH_LABELS = {
+const MATCH_LABELS = {
     odn: "ODN",
     name: "Title",
     nick_name: "Nickname"

@@ -55,9 +55,10 @@ describe("Header agreement search", () => {
 
     it("opens an agreement straight from a type-ahead suggestion", () => {
         addAgreement(testAgreement).then((response) => {
-            expect(response.status).to.eq(201);
+            // Register for cleanup before any assertion can throw.
             const agreementId = response.body.id;
             createdAgreementIds.push(agreementId);
+            expect(response.status).to.eq(201);
 
             cy.visit("/");
             cy.get('[data-cy="header-search-input"]').type(testAgreement.po_number);
@@ -79,9 +80,10 @@ describe("Header agreement search", () => {
 
     it("shows full results on Enter and links to the agreement", () => {
         addAgreement(testAgreement).then((response) => {
-            expect(response.status).to.eq(201);
+            // Register for cleanup before any assertion can throw.
             const agreementId = response.body.id;
             createdAgreementIds.push(agreementId);
+            expect(response.status).to.eq(201);
 
             cy.visit("/");
             cy.get('[data-cy="header-search-input"]').type(`${testAgreement.po_number}{enter}`);

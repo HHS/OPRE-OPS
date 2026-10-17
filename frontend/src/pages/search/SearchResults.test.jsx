@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { configure, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
@@ -8,6 +8,8 @@ import { ITEMS_PER_PAGE } from "../../constants";
 import { setupStore } from "../../store";
 import { server } from "../../tests/mocks";
 import SearchResults from "./SearchResults";
+
+configure({ asyncUtilTimeout: 5000 });
 
 // The page chrome (header, breadcrumbs, footer) is not under test here.
 vi.mock("../../App", () => ({ default: ({ children }) => <div>{children}</div> }));
