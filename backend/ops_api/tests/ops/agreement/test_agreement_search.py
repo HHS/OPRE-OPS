@@ -154,6 +154,25 @@ class TestAgreementSearchOrderingAndPagination:
         # lowercase "zqx grant gamma" sorts among the capitalized names, not after them
         assert names.index("zqx grant gamma") < names.index("Zqx Iaa Delta")
 
+    def test_equal_names_are_ordered_by_id_and_paginate_without_overlap(self, auth_client, loaded_db, app_ctx):
+        twins = [
+            DirectAgreement(name=name, agreement_type=AgreementType.DIRECT_OBLIGATION)
+            for name in ("Zqxtie Twin", "ZQXTIE twin", "zqxtie TWIN", "Zqxtie Twin", "ZQXTIE TWIN")
+        ]
+        loaded_db.add_all(twins)
+        loaded_db.commit()
+        try:
+            expected = sorted(twin.id for twin in twins)
+            assert _ids(_search(auth_client, "zqxtie", limit=50)) == expected
+            paged = []
+            for offset in range(len(expected)):
+                paged += _ids(_search(auth_client, "zqxtie", limit=1, offset=offset))
+            assert paged == expected
+        finally:
+            for twin in twins:
+                loaded_db.delete(twin)
+            loaded_db.commit()
+
     def test_pagination_pages_and_count(self, auth_client, search_agreements, app_ctx):
         full = _search(auth_client, "ZQX", limit=50)
         total = full.json["count"]
