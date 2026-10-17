@@ -136,6 +136,18 @@ describe("SearchResults", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
+    it("keeps focus on the heading when a retry fails again", async () => {
+        const requests = mockSearch(() => new Response(null, { status: 500 }));
+        const { user } = renderPage("/search?q=po");
+
+        await screen.findByRole("alert");
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        await waitFor(() => expect(requests).toHaveLength(2));
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
+    });
+
     it("shows a loading message while the first request is in flight", async () => {
         mockSearch(() => ({ data: [row(1)], count: 1 }));
         renderPage("/search?q=po");

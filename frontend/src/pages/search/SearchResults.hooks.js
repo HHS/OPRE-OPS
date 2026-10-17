@@ -47,7 +47,14 @@ const useSearchResults = () => {
         }
     }, [data]);
 
-    return { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, refetch, headingRef };
+    // The Try again button unmounts while the retry loads: park focus on the heading so a failed retry
+    // doesn't leave keyboard users on <body>.
+    const retry = () => {
+        headingRef.current?.focus();
+        refetch();
+    };
+
+    return { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, retry, headingRef };
 };
 
 export default useSearchResults;

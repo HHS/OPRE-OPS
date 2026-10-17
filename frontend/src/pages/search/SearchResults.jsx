@@ -20,7 +20,7 @@ const TABLE_HEADINGS = [
  * @returns {React.ReactElement} The rendered page.
  */
 const SearchResults = () => {
-    const { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, refetch, headingRef } =
+    const { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, retry, headingRef } =
         useSearchResults();
 
     let body;
@@ -36,7 +36,7 @@ const SearchResults = () => {
                 <button
                     type="button"
                     className="usa-button"
-                    onClick={refetch}
+                    onClick={retry}
                 >
                     Try again
                 </button>
