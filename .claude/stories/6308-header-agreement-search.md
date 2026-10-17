@@ -192,8 +192,8 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
    - Empty state, error state, and the existing loading pattern.
 
 7. **Header placement and styles**
-   - Placement: next to/under `AuthSection` as in the prototype, but as its own landmark. The real header has no SCSS file today, so define the layout in `HeaderSearch.module.scss`.
-   - Layout spec: the search input is at least 240 px wide and must not wrap or push `NavMenu` at 1024, 1280 and 1440 px. Dropdown `z-index` above page content and below modals and the USWDS overlay. Check overlap with the notification dropdown.
+   - Placement (as built): `HeaderSearch` is rendered by `Header.jsx` in an absolutely positioned, zero-height layer (inline styles, no header SCSS) outside `.usa-navbar`, so the dropdown is not clipped. The layer is as wide as the 1024 px page column and right-aligned, so the search sits directly under the email / Sign-Out links, which are lifted one row via an inline `top` on `.usa-nav__secondary`. `HeaderSearch.module.scss` styles the input (about 22 rem wide, 36 px tall, per the prototype) and the dropdown.
+   - Layout spec: must not wrap or push `NavMenu` at 1024, 1280 and 1440 px. The dropdown is meant to sit above page content and below modals and overlays, but it currently uses `z-index: 100` inside the header, which paints above the `ReactModal` overlay (`z-index: auto`), so the search box shows on top of the notification panel and other modals. Tracked as a known issue until the layer is lowered or the overlays get an explicit z-index.
    - Add Storybook variants (logged in; open dropdown; no results; error).
 
 8. **Remove the ODN modal**
@@ -310,7 +310,7 @@ Check `docs/TESTING.md` for the test-type matrix before adding tests. E2E is for
 ## Notes
 
 ### Open Questions
-- None currently.
+- None currently. Known issues from review: the search layer paints above `ReactModal` overlays (notification panel); a search that resolves after focus has left the box re-opens the dropdown.
 
 ### Future Improvements
 - Search the other identifier fields the prototype shows: Contract #, and PO #/Task order # regardless of type, plus `grant_numbers` (needs an EXISTS subquery). Settle whether Direct Obligations get a PO # field.
