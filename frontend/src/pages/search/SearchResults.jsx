@@ -20,7 +20,7 @@ const TABLE_HEADINGS = [
  * @returns {React.ReactElement} The rendered page.
  */
 const SearchResults = () => {
-    const { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, headingRef } =
+    const { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, refetch, headingRef } =
         useSearchResults();
 
     let body;
@@ -28,12 +28,19 @@ const SearchResults = () => {
         body = <p data-cy="search-results-prompt">Enter an ODN, agreement title, or nickname to search.</p>;
     } else if (isError) {
         body = (
-            <p
+            <div
                 role="alert"
                 data-cy="search-results-error"
             >
-                There was an error searching for agreements. Please try again.
-            </p>
+                <p>There was an error searching for agreements. Please try again.</p>
+                <button
+                    type="button"
+                    className="usa-button"
+                    onClick={refetch}
+                >
+                    Try again
+                </button>
+            </div>
         );
     } else if (isFetching && results.length === 0) {
         body = (

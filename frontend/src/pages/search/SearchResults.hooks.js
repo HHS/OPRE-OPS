@@ -16,7 +16,8 @@ const useSearchResults = () => {
     const {
         currentData: data,
         isFetching,
-        isError
+        isError,
+        refetch
     } = useSearchAgreementsQuery(
         { q, limit: ITEMS_PER_PAGE, offset: (currentPage - 1) * ITEMS_PER_PAGE },
         { skip: !q }
@@ -46,7 +47,7 @@ const useSearchResults = () => {
         }
     }, [data]);
 
-    return { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, headingRef };
+    return { q, results, count, totalPages, currentPage, setCurrentPage, isFetching, isError, refetch, headingRef };
 };
 
 export default useSearchResults;

@@ -122,6 +122,20 @@ describe("SearchResults", () => {
         expect(await screen.findByRole("alert")).toHaveTextContent("There was an error searching for agreements");
     });
 
+    it("retries the same query from the error state", async () => {
+        let fail = true;
+        const requests = mockSearch(() => (fail ? new Response(null, { status: 500 }) : { data: [row(1)], count: 1 }));
+        const { user } = renderPage("/search?q=po");
+
+        await screen.findByRole("alert");
+        fail = false;
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        expect(await screen.findByRole("table")).toBeInTheDocument();
+        expect(requests).toHaveLength(2);
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
     it("shows a loading message while the first request is in flight", async () => {
         mockSearch(() => ({ data: [row(1)], count: 1 }));
         renderPage("/search?q=po");
