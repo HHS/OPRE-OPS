@@ -124,7 +124,13 @@ const SearchResults = () => {
             >
                 Search results
             </h1>
-            {body}
+            {/* The states echo the query and the table shows matched values: unbroken text must wrap, not widen the page. */}
+            <div
+                style={{ overflowWrap: "anywhere" }}
+                data-cy="search-results-body"
+            >
+                {body}
+            </div>
         </App>
     );
 };

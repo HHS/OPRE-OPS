@@ -172,6 +172,7 @@
     padding: 0.5rem 0.75rem;
     color: #454545;
     font-size: 0.75rem;
+    overflow-wrap: anywhere; // the message echoes the query: 100 unbroken characters must wrap, not widen the page
 }
 
 .container mark {

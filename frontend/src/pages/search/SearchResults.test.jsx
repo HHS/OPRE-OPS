@@ -162,6 +162,15 @@ describe("SearchResults", () => {
         expect(screen.getByTestId("location")).toHaveTextContent(/^\/search\?q=zzz$/);
     });
 
+    it("wraps long unbroken query text instead of widening the page", async () => {
+        mockSearch(() => ({ data: [], count: 0 }));
+        renderPage(`/search?q=${"a".repeat(100)}`);
+
+        const empty = await screen.findByText(/No agreements match/);
+        // eslint-disable-next-line testing-library/no-node-access
+        expect(empty.closest("[data-cy='search-results-body']")).toHaveStyle({ overflowWrap: "anywhere" });
+    });
+
     it("shows an error state when the request fails", async () => {
         mockSearch(() => new Response(null, { status: 500 }));
         renderPage("/search?q=po");
