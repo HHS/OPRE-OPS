@@ -193,7 +193,7 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
 
 7. **Header placement and styles**
    - Placement (as built): `HeaderSearch` is rendered by `Header.jsx` in an absolutely positioned, zero-height layer (inline styles, no header SCSS) outside `.usa-navbar`, so the dropdown is not clipped. The layer is as wide as the 1024 px page column and right-aligned, so the search sits directly under the email / Sign-Out links, which are lifted one row via an inline `top` on `.usa-nav__secondary`. `HeaderSearch.module.scss` styles the input (about 22 rem wide, 36 px tall, per the prototype) and the dropdown.
-   - Layout spec: must not wrap or push `NavMenu` at 1024, 1280 and 1440 px. The dropdown is meant to sit above page content and below modals and overlays, but it currently uses `z-index: 100` inside the header, which paints above the `ReactModal` overlay (`z-index: auto`), so the search box shows on top of the notification panel and other modals. Tracked as a known issue until the layer is lowered or the overlays get an explicit z-index.
+   - Layout spec: must not wrap or push `NavMenu` at 1024, 1280 and 1440 px. The search layer has no `z-index`, so DOM order paints it under `ReactModal` overlays (portaled to `<body>`, later in the DOM). Only the open dropdown carries `z-index: 100` (to clear positioned page content); opening a modal moves focus away, which closes the dropdown.
    - Add Storybook variants (logged in; open dropdown; no results; error).
 
 8. **Remove the ODN modal**
@@ -205,7 +205,7 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
    - Run the full suite first. Tests that render a page wrapping `<App>` (e.g. `Home.test.jsx`, `ErrorPage.test.jsx`) now mount `HeaderSearch`, which needs the `opsApi` reducer/middleware in the test store and could throw otherwise (not just duplicate roles). Default to mocking `HeaderSearch` in those tests. Count the real set from the test run rather than assuming "about 5".
 
 10. **E2E (kept deliberately small, per `docs/TESTING.md`)**
-    - `headerSearch.cy.js` with 2 tests, creating their own agreement via API with a unique `Date.now()` nickname and deleting it in `afterEach` (nicknames are unique):
+    - `headerSearch.cy.js` with 2 tests, creating their own agreement via API with a unique `Date.now()` name and ODN (`po_number`) and deleting it in `afterEach`:
       - Type a partial ODN, **click a dropdown row**, and land on the details page.
       - Press Enter, land on `/search?q=…`, **click a result**, land on the details page; reload `/search` keeps the query.
     - Run `cy.checkA11y()` with the dropdown **open** and on `/search`, as the old spec did in `afterEach`.
@@ -310,7 +310,7 @@ Check `docs/TESTING.md` for the test-type matrix before adding tests. E2E is for
 ## Notes
 
 ### Open Questions
-- None currently. Known issues from review: the search layer paints above `ReactModal` overlays (notification panel); a search that resolves after focus has left the box re-opens the dropdown.
+- None. (Two issues found in review were fixed: the search layer no longer paints above `ReactModal` overlays, and a search resolving after focus leaves the box no longer re-opens the dropdown.)
 
 ### Future Improvements
 - Search the other identifier fields the prototype shows: Contract #, and PO #/Task order # regardless of type, plus `grant_numbers` (needs an EXISTS subquery). Settle whether Direct Obligations get a PO # field.
