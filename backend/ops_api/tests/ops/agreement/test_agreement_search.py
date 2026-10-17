@@ -122,10 +122,14 @@ class TestAgreementSearchMatching:
         assert response.json["count"] == len(ids)
         assert search_agreements["contract"].id in ids
 
-    @pytest.mark.parametrize("q", ["%", "_", "ZQX_PO", "ZQX%1001", "\\"])
+    @pytest.mark.parametrize("q", ["%", "_", "ZQX_PO", "ZQX%1001", "ZQX\\PO", "\\"])
     def test_wildcards_and_backslash_are_literal(self, auth_client, search_agreements, app_ctx, q):
+        # No fixture value contains these characters, so no fixture row may match
+        # (an unescaped % or _ would match them).
         response = _search(auth_client, q)
         assert response.status_code == 200
+        fixture_ids = {agreement.id for agreement in search_agreements.values()}
+        assert fixture_ids.isdisjoint(_ids(response))
         for row in response.json["data"]:
             haystack = " ".join(str(row[key]) for key in ("name", "nick_name", "odn")).lower()
             assert q.lower() in haystack
@@ -174,12 +178,29 @@ class TestAgreementSearchValidation:
         response = auth_client.get(url_for("api.agreements-search"), query_string=params)
         assert response.status_code == 400
 
+    def test_q_with_nul_character_is_400(self, auth_client, app_ctx):
+        assert _search(auth_client, "ab\x00cd").status_code == 400
+
+    def test_offset_of_bigint_max_is_ok(self, auth_client, app_ctx):
+        response = _search(auth_client, "x", offset=2**63 - 1)
+        assert response.status_code == 200
+        assert response.json["data"] == []
+
     def test_q_of_exactly_100_characters_is_ok(self, auth_client, app_ctx):
         assert _search(auth_client, "x" * 100).status_code == 200
 
     @pytest.mark.parametrize(
         "params",
-        [{"limit": 0}, {"limit": 51}, {"limit": ""}, {"limit": "abc"}, {"offset": -1}, {"offset": ""}],
+        [
+            {"limit": 0},
+            {"limit": 51},
+            {"limit": ""},
+            {"limit": "abc"},
+            {"offset": -1},
+            {"offset": ""},
+            {"offset": 2**63},
+            {"offset": "99999999999999999999"},
+        ],
     )
     def test_invalid_pagination_is_400(self, auth_client, app_ctx, params):
         assert _search(auth_client, "ZQX", **params).status_code == 400

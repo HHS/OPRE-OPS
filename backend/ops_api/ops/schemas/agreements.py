@@ -390,7 +390,14 @@ class AgreementSearchRequestSchema(PaginationSchema):
     class Meta:
         unknown = EXCLUDE
 
-    q = fields.String(required=True, validate=validate.Length(min=1, max=100, error="q must be 1 to 100 characters"))
+    q = fields.String(
+        required=True,
+        validate=[
+            validate.Length(min=1, max=100, error="q must be 1 to 100 characters"),
+            # PostgreSQL cannot compare against NUL; the driver raises ValueError (HTTP 500) otherwise
+            validate.Regexp(r"^[^\x00]*$", error="q must not contain NUL characters"),
+        ],
+    )
     limit = fields.Integer(
         load_default=10,
         dump_default=10,
@@ -400,7 +407,8 @@ class AgreementSearchRequestSchema(PaginationSchema):
     offset = fields.Integer(
         load_default=0,
         dump_default=0,
-        validate=validate.Range(min=0, error="Offset must be greater than or equal to 0"),
+        # upper bound is PostgreSQL bigint max: a larger OFFSET raises DataError (HTTP 500)
+        validate=validate.Range(min=0, max=2**63 - 1, error="Offset must be between 0 and 9223372036854775807"),
         allow_none=False,
     )
 
