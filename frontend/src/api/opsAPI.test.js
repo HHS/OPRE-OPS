@@ -1369,3 +1369,74 @@ describe("opsAPI - getAgreementsByResearchProjectFilter", () => {
         expect(result.data).toEqual(agreements);
     });
 });
+
+describe("opsAPI - searchAgreements", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("encodes q exactly once, so & # % + round-trip", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/agreements-search/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 5, offset: 0 });
+            })
+        );
+
+        const q = "A&B #1 100% C++";
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.searchAgreements.initiate({ q, limit: 5, offset: 10 }));
+
+        const params = new URL(capturedUrl).searchParams;
+        expect(params.get("q")).toBe(q);
+        expect(params.get("limit")).toBe("5");
+        expect(params.get("offset")).toBe("10");
+        // Raw query string: each special character is percent-encoded once (no %25 double-encoding).
+        expect(new URL(capturedUrl).search).toContain("q=A%26B+%231+100%25+C%2B%2B");
+        expect(new URL(capturedUrl).search).not.toContain("%2526");
+    });
+
+    it("defaults limit and offset", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/agreements-search/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.searchAgreements.initiate({ q: "po" }));
+
+        const params = new URL(capturedUrl).searchParams;
+        expect(params.get("limit")).toBe("10");
+        expect(params.get("offset")).toBe("0");
+    });
+});
+
+describe("opsAPI - searchAgreements cache lifetime", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        server.resetHandlers();
+    });
+
+    it("keeps an unsubscribed search result for 30 seconds, then drops it", async () => {
+        server.use(
+            http.get("*/api/v1/agreements-search/", () =>
+                HttpResponse.json({ data: [], count: 0, limit: 5, offset: 0 })
+            )
+        );
+        const { store } = setupApiStore(opsApi);
+        const subscription = store.dispatch(opsApi.endpoints.searchAgreements.initiate({ q: "po" }));
+        await subscription;
+        const cached = () => opsApi.endpoints.searchAgreements.select({ q: "po" })(store.getState()).status;
+        expect(cached()).toBe("fulfilled");
+
+        vi.useFakeTimers();
+        subscription.unsubscribe();
+        await vi.advanceTimersByTimeAsync(29_000);
+        expect(cached()).toBe("fulfilled");
+
+        await vi.advanceTimersByTimeAsync(1_500);
+        expect(cached()).toBe("uninitialized");
+    });
+});

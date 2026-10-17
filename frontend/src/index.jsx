@@ -11,6 +11,7 @@ import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
+import SearchResults from "./pages/search/SearchResults";
 import CreateProject from "./pages/projects/CreateProject";
 import ProjectDetail from "./pages/projects/detail/ProjectDetail";
 import ProjectSpending from "./pages/projects/detail/ProjectSpending";
@@ -468,6 +469,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/help-center/*"
                     element={<HelpCenter />}
+                />
+                <Route
+                    path="/search"
+                    element={<SearchResults />}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}

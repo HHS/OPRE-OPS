@@ -37,8 +37,10 @@ from ops_api.ops.schemas.agreements import (
     AgreementListFilterOptionResponseSchema,
     AgreementMetaSchema,
     AgreementRequestSchema,
+    AgreementSearchRequestSchema,
+    AgreementSearchResponseSchema,
 )
-from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year
+from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year, search_agreements
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
@@ -371,6 +373,28 @@ class AgreementListFilterOptionAPI(BaseItemAPI):
         filter_options = service.get_filter_options(data)
 
         return make_response_with_headers(filter_options)
+
+
+class AgreementSearchAPI(BaseItemAPI):
+    """Lightweight agreement search (name, nickname, ODN) for the header type-ahead and results page.
+
+    Deliberately skips OpsEventHandler (like /agreements-filters/): a type-ahead would otherwise
+    write an event row on every debounced keystroke.
+    """
+
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._get_schema = AgreementSearchRequestSchema()
+        self._response_schema = AgreementSearchResponseSchema()
+
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        data = self._get_schema.load(request.args.to_dict())
+        results, count = search_agreements(current_app.db_session, data["q"], data["limit"], data["offset"])
+        response = self._response_schema.dump(
+            {"data": results, "count": count, "limit": data["limit"], "offset": data["offset"]}
+        )
+        return make_response_with_headers(response)
 
 
 def __get_search_clause(agreement_cls, query, search):
