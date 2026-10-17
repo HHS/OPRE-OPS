@@ -586,17 +586,32 @@ describe("HeaderSearch", () => {
             expect(location()).toBe("/search?q=PO-TESTX");
         });
 
-        it("a new response clears a row highlighted while the old list was still showing", async () => {
+        it("Enter right after ArrowDown on stale rows searches the typed text instead of opening the old row", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+
+            await user.type(input, "X");
+            await user.keyboard("{ArrowDown}{Enter}");
+
+            expect(location()).toBe("/search?q=PO-TESTX");
+        });
+
+        it("a new response replaces the stale rows, which could not be highlighted while loading", async () => {
             mockSearch((q) => ({ data: q === "PO-TEST" ? [PO_1, PO_2] : [PO_3], count: q === "PO-TEST" ? 2 : 1 }));
             const { user, input } = renderSearch();
             await user.type(input, "PO-TEST");
             await screen.findAllByRole("option");
 
             await user.type(input, "X");
-            // The debounce has not fired: the previous rows are still on screen and can be highlighted.
+            // The debounce has not fired: the previous rows are still on screen but must not be highlightable.
+            await user.keyboard("{ArrowDown}");
+            expect(input).not.toHaveAttribute("aria-activedescendant");
+            await screen.findByRole("option", { name: /Third Study/ });
             await user.keyboard("{ArrowDown}");
             expect(input).toHaveAttribute("aria-activedescendant");
-            await screen.findByRole("option", { name: /Third Study/ });
+            await user.keyboard("{ArrowUp}");
 
             expect(input).not.toHaveAttribute("aria-activedescendant");
             await user.keyboard("{Enter}");

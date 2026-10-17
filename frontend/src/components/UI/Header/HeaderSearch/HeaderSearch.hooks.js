@@ -188,6 +188,11 @@ const useHeaderSearch = () => {
             clear();
             return;
         }
+        // While the next query is still debouncing / in flight, the rows on screen belong to the previous
+        // text: they must not be highlightable, or Enter would open an agreement for text no longer typed.
+        if (status === SEARCH_STATUS.LOADING && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+            return;
+        }
         if (event.key === "ArrowDown") {
             if (results.length === 0) {
                 return;

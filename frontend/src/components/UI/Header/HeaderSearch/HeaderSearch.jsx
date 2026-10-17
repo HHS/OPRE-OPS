@@ -74,7 +74,7 @@ export const HeaderSearch = () => {
                 <div className={styles.inputWrapper}>
                     <input
                         ref={inputRef}
-                        id="header-search-input"
+                        id={`${listboxId}-input`}
                         name="header-search"
                         type="text"
                         role="combobox"

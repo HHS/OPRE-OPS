@@ -98,6 +98,13 @@
     &[aria-selected="true"] {
         background-color: #e7f6f8;
     }
+
+    // The tint alone is ~1.1:1 against its neighbours and vanishes in forced-colors mode: the
+    // keyboard-highlighted row also gets an outline (kept, and recoloured, by forced colors).
+    &[aria-selected="true"] {
+        outline: 0.125rem solid #005ea2;
+        outline-offset: -0.125rem;
+    }
 }
 
 .optionTitle {
