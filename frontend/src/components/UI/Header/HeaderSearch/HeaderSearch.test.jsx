@@ -79,6 +79,8 @@ const findErrorRow = () =>
         expect(row).toBeInTheDocument();
         return row;
     });
+// Real-time wait used only to prove that something does NOT happen: it must outlast the 300ms debounce
+// (plus request latency), otherwise an absence assertion would pass before the request could ever be sent.
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // AuthSection logs the user out on mount when there is no stored token; irrelevant here.
@@ -281,7 +283,7 @@ describe("HeaderSearch", () => {
             const { user, input } = renderSearch();
 
             await user.type(input, "a");
-            await new Promise((resolve) => setTimeout(resolve, 450));
+            await pause(450);
 
             expect(requests).toHaveLength(0);
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
@@ -302,7 +304,7 @@ describe("HeaderSearch", () => {
             await user.type(input, "c");
 
             expect(await screen.findByRole("option", { name: /Fresh Result/ })).toBeInTheDocument();
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await pause(1000);
             expect(screen.queryByText(/STALE RESULT/)).not.toBeInTheDocument();
             expect(requests).toEqual(["ab", "abc"]);
         });
@@ -313,7 +315,7 @@ describe("HeaderSearch", () => {
 
             await user.type(input, "PO");
             await user.clear(input);
-            await new Promise((resolve) => setTimeout(resolve, 450));
+            await pause(450);
 
             expect(requests).toHaveLength(0);
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
@@ -324,17 +326,12 @@ describe("HeaderSearch", () => {
                 await delay(300);
                 return { data: [PO_1], count: 1 };
             });
-            const { user, input } = renderSearch(
-                <>
-                    <HeaderSearch />
-                    <button type="button">Elsewhere</button>
-                </>
-            );
+            const { user, input } = renderSearch(withElsewhere);
 
             await user.type(input, "PO-TEST");
             await waitFor(() => expect(requests).toHaveLength(1), { timeout: 5000 });
-            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await clickElsewhere(user);
+            await pause(500);
 
             expect(input).not.toHaveFocus();
             expect(input).toHaveAttribute("aria-expanded", "false");
@@ -343,16 +340,11 @@ describe("HeaderSearch", () => {
 
         it("cancels a debounced search when focus leaves the box before it fires", async () => {
             const requests = mockSearch();
-            const { user, input } = renderSearch(
-                <>
-                    <HeaderSearch />
-                    <button type="button">Elsewhere</button>
-                </>
-            );
+            const { user, input } = renderSearch(withElsewhere);
 
             await user.type(input, "PO-TEST");
-            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
-            await new Promise((resolve) => setTimeout(resolve, 450));
+            await clickElsewhere(user);
+            await pause(450);
 
             expect(requests).toHaveLength(0);
             expect(input).toHaveAttribute("aria-expanded", "false");
@@ -360,18 +352,13 @@ describe("HeaderSearch", () => {
 
         it("drops stale rows when focus leaves mid-search, so refocusing can't open an old result", async () => {
             const requests = mockSearch((q) => ({ data: q === "PO-TEST" ? [PO_1] : [PO_2], count: 1 }));
-            const { user, input } = renderSearch(
-                <>
-                    <HeaderSearch />
-                    <button type="button">Elsewhere</button>
-                </>
-            );
+            const { user, input } = renderSearch(withElsewhere);
 
             await user.type(input, "PO-TEST");
             await screen.findByRole("option", { name: /Child Care Study/ });
             await user.type(input, "X");
-            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
-            await new Promise((resolve) => setTimeout(resolve, 450));
+            await clickElsewhere(user);
+            await pause(450);
             await user.click(input);
             await user.keyboard("{ArrowDown}");
 
@@ -467,7 +454,7 @@ describe("HeaderSearch", () => {
             await user.type(input, "PO-TEST");
             await waitFor(() => expect(requests).toHaveLength(1), { timeout: 5000 });
             await user.keyboard("{Escape}");
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await pause(500);
 
             expect(input).toHaveValue("");
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
@@ -733,18 +720,13 @@ describe("HeaderSearch", () => {
 
         it("closes the dropdown when focus leaves the search", async () => {
             mockSearch();
-            const { user, input } = renderSearch(
-                <>
-                    <HeaderSearch />
-                    <button type="button">Elsewhere</button>
-                </>
-            );
+            const { user, input } = renderSearch(withElsewhere);
 
             await user.type(input, "PO-TEST");
             await screen.findAllByRole("option");
             await user.tab(); // clear button, still inside the component
             expect(input).toHaveAttribute("aria-expanded", "true");
-            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
+            await clickElsewhere(user);
 
             expect(input).toHaveAttribute("aria-expanded", "false");
         });
@@ -953,7 +935,7 @@ describe("HeaderSearch", () => {
             fireEvent.click(screen.getByRole("button", { name: "go" }));
 
             await waitFor(() => expect(input).toHaveValue("Other"));
-            await new Promise((resolve) => setTimeout(resolve, 450));
+            await pause(450);
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
             expect(requests).not.toContain("PO-TESXY");
         });
