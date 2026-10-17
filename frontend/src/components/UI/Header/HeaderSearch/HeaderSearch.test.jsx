@@ -146,6 +146,67 @@ describe("HeaderSearch", () => {
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
         });
 
+        it("does not reopen the dropdown when a response arrives after focus leaves the box", async () => {
+            const requests = mockSearch(async () => {
+                await delay(300);
+                return { data: [PO_1], count: 1 };
+            });
+            const { user, input } = renderSearch(
+                <>
+                    <HeaderSearch />
+                    <button type="button">Elsewhere</button>
+                </>
+            );
+
+            await user.type(input, "PO-TEST");
+            await waitFor(() => expect(requests).toHaveLength(1), { timeout: 1000 });
+            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            expect(input).not.toHaveFocus();
+            expect(input).toHaveAttribute("aria-expanded", "false");
+            expect(screen.queryByRole("option")).not.toBeInTheDocument();
+        });
+
+        it("cancels a debounced search when focus leaves the box before it fires", async () => {
+            const requests = mockSearch();
+            const { user, input } = renderSearch(
+                <>
+                    <HeaderSearch />
+                    <button type="button">Elsewhere</button>
+                </>
+            );
+
+            await user.type(input, "PO-TEST");
+            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
+            await new Promise((resolve) => setTimeout(resolve, 450));
+
+            expect(requests).toHaveLength(0);
+            expect(input).toHaveAttribute("aria-expanded", "false");
+        });
+
+        it("drops stale rows when focus leaves mid-search, so refocusing can't open an old result", async () => {
+            const requests = mockSearch((q) => ({ data: q === "PO-TEST" ? [PO_1] : [PO_2], count: 1 }));
+            const { user, input } = renderSearch(
+                <>
+                    <HeaderSearch />
+                    <button type="button">Elsewhere</button>
+                </>
+            );
+
+            await user.type(input, "PO-TEST");
+            await screen.findByRole("option", { name: /Child Care Study/ });
+            await user.type(input, "X");
+            await user.click(screen.getByRole("button", { name: "Elsewhere" }));
+            await new Promise((resolve) => setTimeout(resolve, 450));
+            await user.click(input);
+            await user.keyboard("{ArrowDown}");
+
+            expect(requests).toEqual(["PO-TEST"]);
+            expect(input).toHaveValue("PO-TESTX");
+            expect(screen.queryByRole("option")).not.toBeInTheDocument();
+        });
+
         it("does not reopen the dropdown when a response arrives after Esc", async () => {
             const requests = mockSearch(async () => {
                 await delay(300);

@@ -31,6 +31,13 @@ const useSearchResults = () => {
         setSearchParams(createSearchParams({ q, page: String(page) }));
     };
 
+    // A page past the end (stale link, shrunken results) would show an empty table: jump to the last page.
+    useEffect(() => {
+        if (data && count > 0 && currentPage > totalPages) {
+            setSearchParams(createSearchParams({ q, page: String(totalPages) }), { replace: true });
+        }
+    }, [data, count, currentPage, totalPages, q, setSearchParams]);
+
     // Move focus to the heading once results load so keyboard / screen-reader users land on them.
     const headingRef = useRef(null);
     useEffect(() => {

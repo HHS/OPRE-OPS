@@ -158,6 +158,19 @@ describe("SearchResults", () => {
         expect(screen.queryByRole("navigation", { name: /pagination/i })).not.toBeInTheDocument();
     });
 
+    it("redirects a page past the last one to the last page instead of showing an empty table", async () => {
+        const total = ITEMS_PER_PAGE + 1;
+        mockSearch(({ offset }) => ({
+            data: Number(offset) >= total ? [] : [row(Number(offset) + 1)],
+            count: total,
+            offset: Number(offset)
+        }));
+        renderPage("/search?q=po&page=999");
+
+        await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/search?q=po&page=2"));
+        expect(await screen.findByRole("link", { name: `Agreement ${ITEMS_PER_PAGE + 1}` })).toBeInTheDocument();
+    });
+
     it("moves focus to the heading once results load", async () => {
         mockSearch(() => ({ data: [row(1)], count: 1 }));
         renderPage("/search?q=po");

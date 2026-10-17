@@ -128,7 +128,21 @@ const useHeaderSearch = () => {
         resetResults();
     }, [resetResults]);
 
-    const close = useCallback(() => setIsOpen(false), []);
+    // Focus left the box: also drop any pending/in-flight search, so a late response can't pop the
+    // dropdown back open over whatever the user moved on to.
+    const close = useCallback(() => {
+        const wasLoading = status === SEARCH_STATUS.LOADING;
+        cancelPending();
+        if (wasLoading) {
+            // The rows on screen belong to an older query than the text in the box: drop them so
+            // refocusing can't offer (or Enter open) a stale result.
+            setResults([]);
+            setCount(0);
+            setActiveIndex(-1);
+            setStatus(SEARCH_STATUS.IDLE);
+        }
+        setIsOpen(false);
+    }, [cancelPending, status]);
 
     const goToAgreement = (id) => {
         // Clear the box too: moving between agreements (/agreements/6 -> /agreements/7) keeps the

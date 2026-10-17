@@ -28,8 +28,7 @@ const Header = () => {
             paddingRight: "2rem",
             display: "flex",
             alignItems: "flex-start",
-            justifyContent: "flex-end",
-            zIndex: 100
+            justifyContent: "flex-end"
         },
         // USWDS pins the user/sign-out links to the bottom of the logo band; lift them one row so the
         // search can sit directly underneath, as in the prototype.
@@ -68,12 +67,6 @@ const Header = () => {
                     </Link>
                 </div>
             </div>
-            {/* Outside .usa-navbar (overflow: auto) so the results dropdown isn't clipped. */}
-            {isLoggedIn && (
-                <div style={styles.search}>
-                    <HeaderSearch />
-                </div>
-            )}
             <nav
                 aria-label="Primary navigation"
                 className="usa-nav"
@@ -88,6 +81,16 @@ const Header = () => {
                     </div>
                 </div>
             </nav>
+            {/*
+              Outside .usa-navbar (overflow: auto) so the results dropdown isn't clipped. Rendered after
+              the nav, with no z-index, so DOM order paints it over the nav links but under modal
+              overlays (ReactModal portals are appended to <body>, later still).
+            */}
+            {isLoggedIn && (
+                <div style={styles.search}>
+                    <HeaderSearch />
+                </div>
+            )}
         </header>
     );
 };
