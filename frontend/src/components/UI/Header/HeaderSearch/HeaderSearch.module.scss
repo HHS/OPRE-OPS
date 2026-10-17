@@ -115,6 +115,13 @@
     color: #005ea2;
     font-weight: 700;
     font-size: 0.875rem;
+
+    // A long unbroken name must wrap inside the dropdown instead of widening it (and the page) and
+    // pushing the type tag off-screen: flex items default to min-width: auto.
+    > :first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
 }
 
 .optionTag {
@@ -126,6 +133,7 @@
     margin-top: 0.125rem;
     color: #454545;
     font-size: 0.75rem;
+    overflow-wrap: anywhere; // long unbroken ODNs / nicknames
 }
 
 .message {
