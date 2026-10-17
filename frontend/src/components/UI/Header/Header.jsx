@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import logoIcon from "../../../images/opre-logo.svg";
 import AuthSection from "../../Auth/AuthSection";
 import HeaderSearch from "./HeaderSearch";
+import searchStyles from "./HeaderSearch/HeaderSearch.module.scss";
 import NavMenu from "./NavMenu";
 
 const Header = () => {
@@ -13,22 +14,6 @@ const Header = () => {
         },
         header: {
             position: "relative"
-        },
-        // A zero-height layer as wide as the page column (1024px), centered like the content below
-        // it; the search floats at its right edge, directly under the user/sign-out links.
-        search: {
-            position: "absolute",
-            top: "3.625rem",
-            left: 0,
-            right: 0,
-            width: "min(1024px, 100%)",
-            height: 0,
-            margin: "0 auto",
-            boxSizing: "border-box",
-            paddingRight: "2rem",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "flex-end"
         },
         // USWDS pins the user/sign-out links to the bottom of the logo band; lift them one row so the
         // search can sit directly underneath, as in the prototype.
@@ -89,7 +74,10 @@ const Header = () => {
               can't be opened while it is showing, because moving focus off the box closes it.
             */}
             {isLoggedIn && (
-                <div style={styles.search}>
+                <div
+                    className={searchStyles.layer}
+                    data-cy="header-search-layer"
+                >
                     <HeaderSearch />
                 </div>
             )}
