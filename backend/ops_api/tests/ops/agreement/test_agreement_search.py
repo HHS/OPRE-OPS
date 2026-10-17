@@ -77,7 +77,12 @@ class TestAgreementSearchMatching:
             response = _search(auth_client, q)
             assert response.status_code == 200
             assert _ids(response) == [search_agreements[key].id]
-            assert response.json["data"][0]["odn"] == q
+            row = response.json["data"][0]
+            assert row["odn"] == q
+            # each field is the agreement's own value, not another field's
+            assert row["name"] == search_agreements[key].name
+            assert row["nick_name"] == search_agreements[key].nick_name
+            assert row["agreement_type"] == search_agreements[key].agreement_type.name
 
     def test_odn_match_is_partial_and_case_insensitive(self, auth_client, search_agreements, app_ctx):
         response = _search(auth_client, "po-100")
@@ -134,6 +139,36 @@ class TestAgreementSearchMatching:
             haystack = " ".join(str(row[key]) for key in ("name", "nick_name", "odn")).lower()
             assert q.lower() in haystack
 
+    def test_literal_wildcard_characters_in_data_are_matched_only_literally(self, auth_client, loaded_db, app_ctx):
+        # Positive counterpart of the test above: rows that really contain %, _ and \\ are found, and
+        # their look-alike decoys (what an unescaped wildcard would also match) are not.
+        rows = {
+            name: ContractAgreement(name=name, agreement_type=AgreementType.CONTRACT)
+            for name in [
+                "Zqxlit 100% done",
+                "Zqxlit 100x done",
+                "Zqxlit a_b",
+                "Zqxlit aXb",
+                "Zqxlit back\\slash",
+                "Zqxlit backXslash",
+            ]
+        }
+        loaded_db.add_all(rows.values())
+        loaded_db.commit()
+        try:
+            for q, expected in [
+                ("100%", "Zqxlit 100% done"),
+                ("a_b", "Zqxlit a_b"),
+                ("back\\slash", "Zqxlit back\\slash"),
+            ]:
+                response = _search(auth_client, q)
+                assert response.status_code == 200
+                assert _ids(response) == [rows[expected].id], q
+        finally:
+            for row in rows.values():
+                loaded_db.delete(row)
+            loaded_db.commit()
+
     def test_q_is_trimmed(self, auth_client, search_agreements, app_ctx):
         response = _search(auth_client, "  ZQX-PO-1001  ")
         assert _ids(response) == [search_agreements["contract"].id]
@@ -157,12 +192,17 @@ class TestAgreementSearchOrderingAndPagination:
     def test_equal_names_are_ordered_by_id_and_paginate_without_overlap(self, auth_client, loaded_db, app_ctx):
         # ix_agreement_name_type_lower is unique on (lower(name), agreement_type), so names that are
         # equal ignoring case can only coexist across different agreement types: one twin per type.
+        # Explicit descending ids make the insertion (physical) order the reverse of the id order, so
+        # dropping the id tie-break from the ORDER BY would return the rows in descending id order.
         twins = [
-            ContractAgreement(name="Zqxtie Twin", agreement_type=AgreementType.CONTRACT),
-            GrantAgreement(name="ZQXTIE twin", agreement_type=AgreementType.GRANT),
-            IaaAgreement(name="zqxtie TWIN", agreement_type=AgreementType.IAA, direction=IAADirectionType.INCOMING),
-            DirectAgreement(name="Zqxtie Twin", agreement_type=AgreementType.DIRECT_OBLIGATION),
+            ContractAgreement(id=9_000_005, name="Zqxtie Twin", agreement_type=AgreementType.CONTRACT),
+            GrantAgreement(id=9_000_004, name="ZQXTIE twin", agreement_type=AgreementType.GRANT),
+            IaaAgreement(
+                id=9_000_003, name="zqxtie TWIN", agreement_type=AgreementType.IAA, direction=IAADirectionType.INCOMING
+            ),
+            DirectAgreement(id=9_000_002, name="Zqxtie Twin", agreement_type=AgreementType.DIRECT_OBLIGATION),
             AaAgreement(
+                id=9_000_001,
                 name="ZQXTIE TWIN",
                 agreement_type=AgreementType.AA,
                 requesting_agency_id=1,
@@ -183,6 +223,20 @@ class TestAgreementSearchOrderingAndPagination:
                 loaded_db.delete(twin)
             loaded_db.commit()
 
+    def test_names_are_ordered_bytewise_not_by_locale(self, auth_client, loaded_db, app_ctx):
+        # COLLATE "C" orders by byte value, matching the agreement list endpoint: "é" (0xC3 0xA9) sorts
+        # after "f". A locale collation such as en_US.utf8 would sort "é" before "f".
+        accented = ContractAgreement(name="Zqxcol\u00e9", agreement_type=AgreementType.CONTRACT)
+        plain = GrantAgreement(name="Zqxcolf", agreement_type=AgreementType.GRANT)
+        loaded_db.add_all([accented, plain])
+        loaded_db.commit()
+        try:
+            assert _ids(_search(auth_client, "zqxcol")) == [plain.id, accented.id]
+        finally:
+            loaded_db.delete(accented)
+            loaded_db.delete(plain)
+            loaded_db.commit()
+
     def test_pagination_pages_and_count(self, auth_client, search_agreements, app_ctx):
         full = _search(auth_client, "ZQX", limit=50)
         total = full.json["count"]
@@ -191,6 +245,9 @@ class TestAgreementSearchOrderingAndPagination:
         first = _search(auth_client, "ZQX", limit=2, offset=0)
         second = _search(auth_client, "ZQX", limit=2, offset=2)
         assert first.json["count"] == second.json["count"] == total
+        # limit and offset are echoed back as requested, not as defaults
+        assert (first.json["limit"], first.json["offset"]) == (2, 0)
+        assert (second.json["limit"], second.json["offset"]) == (2, 2)
         assert _ids(first) + _ids(second) == _ids(full)[:4]
 
     def test_count_is_correct_when_offset_is_past_the_end(self, auth_client, search_agreements, app_ctx):
@@ -214,6 +271,11 @@ class TestAgreementSearchValidation:
         response = _search(auth_client, "x", offset=2**63 - 1)
         assert response.status_code == 200
         assert response.json["data"] == []
+
+    def test_unknown_query_parameters_are_ignored(self, auth_client, search_agreements, app_ctx):
+        response = _search(auth_client, "ZQX-PO-1001", unexpected="1", sort="name")
+        assert response.status_code == 200
+        assert _ids(response) == [search_agreements["contract"].id]
 
     def test_q_of_exactly_100_characters_is_ok(self, auth_client, app_ctx):
         assert _search(auth_client, "x" * 100).status_code == 200
