@@ -170,11 +170,11 @@ const useHeaderSearch = () => {
         navigate(`${SEARCH_PATH}?${createSearchParams({ q: trimmed })}`, { replace: isOnSearchPage });
     };
 
-    const isListVisible =
-        isOpen && (results.length > 0 || status === SEARCH_STATUS.EMPTY || status === SEARCH_STATUS.ERROR);
+    const hasListContent = results.length > 0 || status === SEARCH_STATUS.EMPTY || status === SEARCH_STATUS.ERROR;
+    const isListVisible = isOpen && hasListContent;
 
     const reopen = () => {
-        if (results.length > 0 || status === SEARCH_STATUS.EMPTY || status === SEARCH_STATUS.ERROR) {
+        if (hasListContent) {
             setIsOpen(true);
         }
     };

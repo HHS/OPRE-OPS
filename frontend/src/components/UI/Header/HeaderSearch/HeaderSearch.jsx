@@ -157,7 +157,7 @@ export const HeaderSearch = () => {
                                 </span>
                                 <span className={styles.optionTag}>
                                     <Tag
-                                        tagStyle="darkTextLightBackground"
+                                        tagStyle="primaryDarkTextLightBackground"
                                         text={convertCodeForDisplay("agreementType", agreement.agreement_type)}
                                         className="padding-x-1"
                                     />
