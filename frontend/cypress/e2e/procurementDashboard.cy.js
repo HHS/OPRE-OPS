@@ -118,19 +118,40 @@ describe("Procurement Dashboard - Authorized User", () => {
         });
 
         it("filters agreements by procurement shop when selecting a specific shop", () => {
-            getAgreementCount().then((allCount) => {
-                // Open the filter modal and select the first procurement shop option
+            // The dashboard shows the current fiscal year only, so which shops own agreements depends on the
+            // seed data and the date (right after a fiscal-year rollover it can be a single shop). Try the
+            // shops in order and check the first one that has agreements instead of assuming the first option does.
+            const applyShopFilter = (optionIndex) => {
                 cy.get("button").contains("Filter").click();
                 cy.get(".proc-shop-combobox__control").click();
-                cy.get(".proc-shop-combobox__menu").find(".proc-shop-combobox__option").first().click();
-
-                // Apply the filter
+                cy.get(".proc-shop-combobox__menu")
+                    .find(".proc-shop-combobox__option")
+                    .then(($options) => {
+                        expect($options.length, "procurement shop options tried").to.be.greaterThan(optionIndex);
+                        cy.wrap($options[optionIndex]).click();
+                    });
                 cy.get("button").contains("Apply").click();
+            };
 
+            const findShopWithAgreements = (optionIndex, allCount) => {
+                applyShopFilter(optionIndex);
                 getAgreementCount().then((filteredCount) => {
                     expect(filteredCount).to.be.at.most(allCount);
-                    expect(filteredCount).to.be.at.least(1);
+                    if (filteredCount === 0) {
+                        // Back to all shops, then try the next one
+                        cy.get("button").contains("Filter").click();
+                        cy.get("button").contains("Reset").click();
+                        cy.get("button").contains("Apply").click();
+                        findShopWithAgreements(optionIndex + 1, allCount);
+                    } else {
+                        expect(filteredCount).to.be.at.least(1);
+                    }
                 });
+            };
+
+            getAgreementCount().then((allCount) => {
+                expect(allCount).to.be.at.least(1);
+                findShopWithAgreements(0, allCount);
             });
         });
 
