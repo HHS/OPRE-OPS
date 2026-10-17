@@ -241,6 +241,18 @@ describe("HeaderSearch", () => {
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
         });
 
+        it("keeps focus in the input when the mouse goes down on a row, so the click can land", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            const option = await screen.findByRole("option", { name: /Head Start Study/ });
+
+            await user.pointer({ keys: "[MouseLeft>]", target: option });
+
+            expect(input).toHaveFocus();
+            expect(screen.getAllByRole("option")).toHaveLength(2);
+        });
+
         it("moves the active option with ArrowDown/ArrowUp and updates aria-activedescendant", async () => {
             mockSearch();
             const { user, input } = renderSearch();

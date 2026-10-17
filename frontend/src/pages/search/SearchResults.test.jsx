@@ -1,6 +1,6 @@
 import { configure, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -149,6 +149,28 @@ describe("SearchResults", () => {
         expect(await screen.findByRole("link", { name: `Agreement ${ITEMS_PER_PAGE * 2 + 1}` })).toBeInTheDocument();
         // Rows from the previous page are gone.
         expect(screen.queryByRole("link", { name: `Agreement ${ITEMS_PER_PAGE + 1}` })).not.toBeInTheDocument();
+    });
+
+    it("hides the previous page's rows while the next page is loading", async () => {
+        const total = ITEMS_PER_PAGE * 2 + 1;
+        server.use(
+            http.get("*/api/v1/agreements-search/", async ({ request }) => {
+                const offset = Number(new URL(request.url).searchParams.get("offset"));
+                if (offset > 0) {
+                    await delay(300);
+                }
+                return HttpResponse.json({ limit: ITEMS_PER_PAGE, offset, count: total, data: [row(offset + 1)] });
+            })
+        );
+        const { user } = renderPage("/search?q=po");
+        await screen.findByRole("link", { name: "Agreement 1" });
+
+        await user.click(screen.getByRole("button", { name: "Page 2" }));
+
+        // Until page 2 arrives, page 1's rows must not sit under the page-2 URL.
+        expect(screen.queryByRole("link", { name: "Agreement 1" })).not.toBeInTheDocument();
+        expect(screen.getByText("Searching…")).toBeInTheDocument();
+        expect(await screen.findByRole("link", { name: `Agreement ${ITEMS_PER_PAGE + 1}` })).toBeInTheDocument();
     });
 
     it("treats an invalid page param as page 1 and hides pagination for a single page", async () => {
