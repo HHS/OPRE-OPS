@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { setupStore } from "../../../../store";
 import { server } from "../../../../tests/mocks";
@@ -448,6 +448,31 @@ describe("HeaderSearch", () => {
         it("does not pre-fill on other pages", () => {
             const { input } = renderSearch(<HeaderSearch />, "/agreements?q=PO-TEST");
             expect(input).toHaveValue("");
+        });
+
+        it("drops the dropdown and pending search when Back/Forward changes the q param", async () => {
+            const requests = mockSearch();
+            const GoBack = () => {
+                const navigate = useNavigate();
+                return <button onClick={() => navigate("/search?q=Other")}>go</button>;
+            };
+            const { user, input } = renderSearch(
+                <>
+                    <HeaderSearch />
+                    <GoBack />
+                </>,
+                "/search?q=PO-TEST"
+            );
+
+            await user.type(input, "{Backspace}X");
+            await screen.findAllByRole("option");
+            await user.type(input, "Y");
+            fireEvent.click(screen.getByRole("button", { name: "go" }));
+
+            await waitFor(() => expect(input).toHaveValue("Other"));
+            await new Promise((resolve) => setTimeout(resolve, 450));
+            expect(screen.queryByRole("option")).not.toBeInTheDocument();
+            expect(requests).not.toContain("PO-TESXY");
         });
 
         it("replaces the history entry when searching from /search", async () => {

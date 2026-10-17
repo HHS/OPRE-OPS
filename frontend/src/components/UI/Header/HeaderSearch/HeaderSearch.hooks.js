@@ -44,11 +44,6 @@ const useHeaderSearch = () => {
     const requestRef = useRef(null);
     const latestSearchRef = useRef(0);
 
-    // Keep the box in sync with the URL on /search (Back/Forward, links to other searches).
-    useEffect(() => {
-        setInputValue(urlQuery);
-    }, [urlQuery]);
-
     const cancelPending = useCallback(() => {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -65,6 +60,18 @@ const useHeaderSearch = () => {
         setActiveIndex(-1);
         setIsOpen(false);
     }, [cancelPending]);
+
+    // Keep the box in sync with the URL on /search (Back/Forward, links to other searches). The text
+    // changes under the user, so drop any dropdown/pending search that belonged to the old text.
+    const syncedUrlQueryRef = useRef(urlQuery);
+    useEffect(() => {
+        if (syncedUrlQueryRef.current === urlQuery) {
+            return;
+        }
+        syncedUrlQueryRef.current = urlQuery;
+        setInputValue(urlQuery);
+        resetResults();
+    }, [urlQuery, resetResults]);
 
     // The header unmounts on every navigation: drop the timer and invalidate in-flight requests.
     useEffect(() => {
