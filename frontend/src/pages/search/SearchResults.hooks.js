@@ -20,7 +20,9 @@ const useSearchResults = () => {
         refetch
     } = useSearchAgreementsQuery(
         { q, limit: ITEMS_PER_PAGE, offset: (currentPage - 1) * ITEMS_PER_PAGE },
-        { skip: !q }
+        // The endpoint has no cache tags, so agreement edits never invalidate it: always refetch on mount
+        // or when the query/page changes instead of reusing rows cached within keepUnusedDataFor.
+        { skip: !q, refetchOnMountOrArgChange: true }
     );
 
     // currentData (not data) so rows from a previous query/page never show under the new heading.
@@ -39,11 +41,19 @@ const useSearchResults = () => {
         }
     }, [data, count, currentPage, totalPages, q, setSearchParams]);
 
-    // Move focus to the heading once results load so keyboard / screen-reader users land on them.
+    // Move focus to the heading once results load so keyboard / screen-reader users land on them, but
+    // only if focus is still on the page content (or nowhere): never pull it out of the header search
+    // box or any other control the user has since moved to, e.g. while typing the next query.
     const headingRef = useRef(null);
     useEffect(() => {
-        if (data) {
-            headingRef.current?.focus();
+        const heading = headingRef.current;
+        if (!data || !heading) {
+            return;
+        }
+        const active = document.activeElement;
+        const content = heading.closest("main") ?? heading.parentElement;
+        if (!active || active === document.body || content?.contains(active)) {
+            heading.focus();
         }
     }, [data]);
 

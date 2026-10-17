@@ -14,12 +14,19 @@ configure({ asyncUtilTimeout: 5000 });
 // A page size that differs from the production value (25) and the default (10), so a hard-coded size shows up.
 vi.mock("../../constants", async (importOriginal) => ({ ...(await importOriginal()), ITEMS_PER_PAGE: 7 }));
 
-// The page chrome (header, footer) is not under test here; the breadcrumb label is passed through.
+// The page chrome is stubbed with the same shape as DefaultLayout: a header (outside <main>) and the page
+// content inside <main>. The breadcrumb label is passed through.
 vi.mock("../../App", () => ({
     default: ({ children, breadCrumbName }) => (
         <div>
+            <header>
+                <input
+                    aria-label="Header search"
+                    data-testid="header-input"
+                />
+            </header>
             <span data-testid="breadcrumb">{breadCrumbName}</span>
-            {children}
+            <main>{children}</main>
         </div>
     )
 }));
@@ -43,10 +50,10 @@ const BackButton = () => {
 const mockSearch = (respond) => {
     const requests = [];
     server.use(
-        http.get("*/api/v1/agreements-search/", ({ request }) => {
+        http.get("*/api/v1/agreements-search/", async ({ request }) => {
             const params = new URL(request.url).searchParams;
             requests.push(Object.fromEntries(params));
-            const body = respond(Object.fromEntries(params));
+            const body = await respond(Object.fromEntries(params));
             if (body instanceof Response) {
                 return body;
             }
@@ -305,6 +312,44 @@ describe("SearchResults", () => {
 
         await screen.findByRole("link", { name: `Agreement ${ITEMS_PER_PAGE + 1}` });
         await waitFor(() => expect(screen.getByRole("heading", { name: "Search results" })).toHaveFocus());
+    });
+
+    it("does not pull focus out of the header box while the user types there and results arrive", async () => {
+        mockSearch(async () => {
+            await delay(300);
+            return { data: [row(1)], count: 1 };
+        });
+        const { user } = renderPage("/search?q=po");
+        const headerInput = screen.getByTestId("header-input");
+        await user.click(headerInput);
+        await user.keyboard("new query");
+
+        await screen.findByRole("table");
+
+        expect(headerInput).toHaveFocus();
+        expect(headerInput).toHaveValue("new query");
+        expect(screen.getByRole("heading", { name: "Search results" })).not.toHaveFocus();
+    });
+
+    it("asks the server again when a query that is still cached is visited again", async () => {
+        const requests = mockSearch(() => ({ data: [row(1)], count: 1 }));
+        const store = setupStore();
+        const tree = (
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/search?q=po"]}>
+                    <SearchResults />
+                </MemoryRouter>
+            </Provider>
+        );
+        const view = render(tree);
+        await screen.findByRole("table");
+        view.unmount();
+
+        // Same store, within the cache window: renamed or deleted agreements must not show up stale.
+        render(tree);
+        await screen.findByRole("table");
+
+        await waitFor(() => expect(requests).toHaveLength(2), { timeout: 2000 });
     });
 
     it("moves focus to the heading once results load", async () => {

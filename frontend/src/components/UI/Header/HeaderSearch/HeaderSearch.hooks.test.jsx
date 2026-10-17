@@ -131,6 +131,32 @@ describe("useHeaderSearch request lifecycle", () => {
         expect(result.current.results).toEqual([{ id: 2 }]);
     });
 
+    it("drops a response that settles while the next query is still debouncing", async () => {
+        const older = deferredRequest();
+        const newer = deferredRequest();
+        mockTrigger.mockReturnValueOnce(older).mockReturnValueOnce(newer);
+        const { result } = renderHook(() => useHeaderSearch(), { wrapper });
+        await type(result, "ab");
+        await flushDebounce();
+
+        // The user keeps typing; "ab" answers inside the debounce window of "abc".
+        await type(result, "abc");
+        await settle(older, { data: [{ id: 1 }], count: 1 });
+
+        expect(result.current.results).toEqual([]);
+        expect(result.current.status).toBe(SEARCH_STATUS.LOADING);
+        expect(older.abort).toHaveBeenCalled();
+
+        // So blurring now cannot leave rows for "ab" behind to be offered again under "abc".
+        act(() => result.current.close());
+        expect(result.current.results).toEqual([]);
+
+        await type(result, "abc");
+        await flushDebounce();
+        await settle(newer, { data: [{ id: 2 }], count: 1 });
+        expect(result.current.results).toEqual([{ id: 2 }]);
+    });
+
     it("ignores a response that settles after the search was cancelled and another one started", async () => {
         const cancelled = deferredRequest();
         const current = deferredRequest();

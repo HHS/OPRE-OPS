@@ -125,7 +125,10 @@ const useHeaderSearch = () => {
             resetResults();
             return;
         }
-        clearTimeout(timerRef.current);
+        // Invalidate the request for the previous text too, not just its timer: it may settle while
+        // this query is still debouncing and must not install rows for text that is no longer there.
+        // Rows that already settled stay on screen (as the busy list) until this query answers.
+        cancelPending();
         setStatus(SEARCH_STATUS.LOADING);
         timerRef.current = setTimeout(() => runSearch(trimmed), DEBOUNCE_MS);
     };

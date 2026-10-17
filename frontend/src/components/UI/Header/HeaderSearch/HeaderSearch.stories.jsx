@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { userEvent, within } from "storybook/test";
 import HeaderSearch from "./HeaderSearch";
 
@@ -8,26 +9,39 @@ const RESULTS = [
 ];
 
 /**
- * Storybook has no MSW, so stub window.fetch for the search endpoint only.
+ * Storybook has no MSW, so stub window.fetch for the search endpoint only. The stub is installed when
+ * the story mounts and the original fetch is restored when it unmounts, so it never leaks into other
+ * stories. (Stories that stub requests are also rendered in their own iframe on the Docs page, see
+ * `docs.story.inline` below, so concurrently shown variants cannot see each other's stub.)
  * @param {{status?: number, data?: object[], count?: number}} response - What the endpoint returns.
  */
 const withSearchResponse = ({ status = 200, data = RESULTS, count = data.length } = {}) => {
-    const decorator = (Story) => {
-        const originalFetch = window.fetch;
-        window.fetch = (input, init) => {
-            const url = typeof input === "string" ? input : input.url;
-            if (url.includes("/agreements-search/")) {
-                return Promise.resolve(
-                    new Response(JSON.stringify({ data, count, limit: 5, offset: 0 }), {
-                        status,
-                        headers: { "Content-Type": "application/json" }
-                    })
-                );
-            }
-            return originalFetch(input, init);
-        };
-        return <Story />;
+    const StubbedSearch = ({ children }) => {
+        useLayoutEffect(() => {
+            const originalFetch = window.fetch;
+            window.fetch = (input, init) => {
+                const url = typeof input === "string" ? input : input.url;
+                if (url.includes("/agreements-search/")) {
+                    return Promise.resolve(
+                        new Response(JSON.stringify({ data, count, limit: 5, offset: 0 }), {
+                            status,
+                            headers: { "Content-Type": "application/json" }
+                        })
+                    );
+                }
+                return originalFetch(input, init);
+            };
+            return () => {
+                window.fetch = originalFetch;
+            };
+        }, []);
+        return children;
     };
+    const decorator = (Story) => (
+        <StubbedSearch>
+            <Story />
+        </StubbedSearch>
+    );
     decorator.displayName = "withSearchResponse";
     return decorator;
 };
@@ -43,6 +57,9 @@ export default {
     parameters: {
         layout: "padded",
         docs: {
+            // Each story in its own iframe: the stubs above replace window.fetch, which would otherwise be
+            // shared by every variant rendered inline on the same Docs page.
+            story: { inline: false, iframeHeight: 420 },
             description: {
                 component:
                     "Type-ahead agreement search (WAI-ARIA editable combobox). Matches on ODN, agreement title or " +
