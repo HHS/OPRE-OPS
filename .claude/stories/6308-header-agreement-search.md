@@ -319,4 +319,4 @@ Check `docs/TESTING.md` for the test-type matrix before adding tests. E2E is for
 
 ### References
 - Prototype: "Prototype – Header Search | OPS" (claude.ai artifact `Tk5Jg9scwxahzSkzEcMAVd`)
-- Current implementation: `frontend/src/pages/agreements/list/AgreementOdnLookup/`
+- Replaced implementation (removed in this PR): `frontend/src/pages/agreements/list/AgreementOdnLookup/`
