@@ -131,7 +131,9 @@ const useHeaderSearch = () => {
     const close = useCallback(() => setIsOpen(false), []);
 
     const goToAgreement = (id) => {
-        resetResults();
+        // Clear the box too: moving between agreements (/agreements/6 -> /agreements/7) keeps the
+        // same page, so the header isn't remounted and would otherwise hold the old query.
+        clear();
         navigate(`/agreements/${id}`);
     };
 

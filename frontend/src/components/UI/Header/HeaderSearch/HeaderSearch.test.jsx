@@ -172,6 +172,9 @@ describe("HeaderSearch", () => {
             await user.click(await screen.findByRole("option", { name: /Head Start Study/ }));
 
             expect(location()).toBe("/agreements/12");
+            // The header stays mounted when moving between agreements, so the box must clear itself.
+            expect(input).toHaveValue("");
+            expect(screen.queryByRole("option")).not.toBeInTheDocument();
         });
 
         it("moves the active option with ArrowDown/ArrowUp and updates aria-activedescendant", async () => {
@@ -205,6 +208,7 @@ describe("HeaderSearch", () => {
             await user.keyboard("{ArrowDown}{ArrowDown}{Enter}");
 
             expect(location()).toBe("/agreements/12");
+            expect(input).toHaveValue("");
         });
 
         it("Enter with no highlighted row goes to the results page", async () => {
