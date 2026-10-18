@@ -182,7 +182,12 @@ export const HeaderSearch = () => {
                                             />
                                         </span>
                                     )}
-                                    {agreement.odn && agreement.nick_name && " · "}
+                                    {agreement.odn && agreement.nick_name && (
+                                        <>
+                                            {" "}
+                                            <span aria-hidden="true">·</span>{" "}
+                                        </>
+                                    )}
                                     {agreement.nick_name && (
                                         <span>
                                             Nickname:{" "}
