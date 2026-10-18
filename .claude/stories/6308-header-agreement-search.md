@@ -52,7 +52,7 @@ As an OPS user, I want to search for an agreement by its ODN, title or nickname 
 - [ ] **Pressing Enter (no row highlighted) or clicking the magnifier button navigates to `/search?q=<q>`**, including when the value is unchanged since the last search.
 - [ ] Enter with no highlighted row opens the results page **even when there's exactly one match** (including a single exact ODN match). No row is highlighted automatically when the dropdown opens.
 - [ ] **Each agreement name on the results page links to `/agreements/:id`.**
-- [ ] Keyboard: ↓/↑ move through the rows, Enter on a highlighted row opens that agreement, Esc (handled on the input only) closes the dropdown and clears the input, and Tab moves on and closes it.
+- [ ] Keyboard: ↓/↑ move through the rows, Enter on a highlighted row opens that agreement, Esc (handled on the input only) closes the dropdown and clears the input, and Tab moves focus on (the dropdown stays open while focus is still inside the search, e.g. on the clear button, and closes once focus leaves it).
 - [ ] The results page lists **all** matches (paginated), with Agreement link · Type · Matched on ("ODN", "Title" or "Nickname" plus the highlighted value), and a "No agreements match" empty state.
 - [ ] No-match dropdown text: "No agreements match "<q>"." plus "Try an ODN, agreement title, or nickname."
 - [ ] On `/search?q=…` the header input is pre-filled from `q`. (After navigating to a details page the input starts empty; product decision.)
@@ -154,7 +154,7 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
 
 2. **API wiring**
    - Add `searchAgreements: builder.query({ query: ({ q, limit, offset }) => ... })` to `opsAPI.js`. Build the query string with `URLSearchParams` (or `encodeURIComponent` exactly once, never both) and test that `&`, `#`, `%` and `+` in `q` round-trip.
-   - **No `providesTags`**, so agreement mutations don't trigger background re-fetches of old searches. Set `keepUnusedDataFor: 30` (a new per-endpoint option; nothing else in `src` sets it).
+   - **No `providesTags`**, so agreement mutations don't trigger background re-fetches of old searches. Set `keepUnusedDataFor: 0` (a new per-endpoint option; nothing else in `src` sets it): with no tags to invalidate, a cached entry would be shown stale and clickable while a revisited page refetches.
    - Export `useLazySearchAgreementsQuery` for the header and `useSearchAgreementsQuery` for the results page. Call the lazy trigger with `preferCacheValue = false` so a repeated query isn't served stale.
 
 3. **Helpers (TDD first)**
