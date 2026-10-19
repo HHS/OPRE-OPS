@@ -27,7 +27,7 @@ branch: OPS-6308/header-agreement-search
 This matches the "Prototype – Header Search | OPS" artifact with **option A** (the explanation lives in the placeholder):
 - A persistent search input in the header, on every authenticated page.
 - Placeholder: `Search agreements` (UX option 3; an info icon beside the box lists what is searched).
-- Matching is case-insensitive and **partial** on three things: the agreement's ODN, its title, and its nickname. The ODN uses the same per-type field as today's lookup (Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`; IAA and Direct Obligation have none).
+- Matching is case-insensitive and **partial** on three things: the agreement's ODN, its title, and its nickname. The ODN uses the same per-type field as today's lookup (Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`; IAA and Direct Obligation have none). **Follow-up (UX option 3):** a Contract's `contract_number` and its own `task_order_number` are searched too, and returned as `contract_number` / `task_order_number` so the UI can label the match ("Contract #" / "Task order #").
 - **Scope note:** the prototype also matches Contract #, PO #/Task order # on every type, and `grant_numbers`. That's deliberately out of scope for now (see Future Improvements).
 
 The user can get to an agreement three ways (all verified by clicking through the prototype):
@@ -46,7 +46,7 @@ As an OPS user, I want to search for an agreement by its ODN, title or nickname 
 - [ ] The header shows a search input with placeholder `Search agreements` (UX option 3; an info icon beside the box lists what is searched) and a search button on every page that shows the header **for a logged-in user**. It is not rendered for logged-out users (e.g. on the error page).
 - [ ] The input has a persistent accessible name. The placeholder isn't the only label (use `aria-label="Search agreements"`).
 - [ ] After a short delay (debounced, about 300 ms) once the user has typed at least 2 characters, a dropdown shows up to 5 matching agreements.
-- [ ] Matching is case-insensitive and partial across title (`name`), `nick_name`, and the ODN: Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`. IAA and Direct Obligation agreements match on title and nickname only. No other identifier fields are searched.
+- [ ] Matching is case-insensitive and partial across title (`name`), `nick_name`, and the ODN: Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`. IAA and Direct Obligation agreements match on title and nickname only. A Contract's `contract_number` and `task_order_number` are also searched (follow-up for the UX info tip, which lists Contract #, Grant #, PO #, Task order #). No other identifier fields are searched (e.g. an AA's `po_number`).
 - [ ] Each dropdown row shows the name, a type tag, and a secondary line "<label>: <value> · Nickname: <nick>", with the matched substring highlighted wherever it appears (name, ODN or nickname).
 - [ ] **Clicking a dropdown row navigates directly to `/agreements/:id`.**
 - [ ] **Pressing Enter (no row highlighted) or clicking the magnifier button navigates to `/search?q=<q>`**, including when the value is unchanged since the last search.
@@ -138,7 +138,7 @@ Add a dedicated, lightweight `GET /agreements-search/?q=&limit=&offset=` endpoin
    - **Resource:** `AgreementSearchAPI.get` with `@is_authorized(PermissionType.GET, Permission.AGREEMENT)` and **no `OpsEventHandler`**, matching `AgreementListFilterOptionAPI`. Response envelope matches `GET /agreements/`: `{"data": [{"id", "name", "nick_name", "agreement_type", "odn"}], "count", "limit", "offset"}`. `agreement_type` uses `fields.Enum(AgreementType)` (same wire format as the list endpoint), and `nick_name` and `odn` use `allow_none=True`.
    - **Tests** (create their own rows; don't rely on shared seed data that other tests mutate):
      - Each type's ODN column matches, partially and case-insensitively.
-     - Wrong-field negatives: a Contract whose `task_order_number` matches, an AA whose `po_number` matches, and any `contract_number` match → **no hit**.
+     - Wrong-field negatives: an AA whose `po_number` matches → **no hit** (originally also a Contract's `task_order_number` / `contract_number`; those are now searched, see the follow-up note above).
      - Name and nickname match; IAA/Direct match on name/nickname only with `odn: null`.
      - An agreement matching on both ODN and name is returned once.
      - `%`, `_` and a literal `\` in input are matched literally.

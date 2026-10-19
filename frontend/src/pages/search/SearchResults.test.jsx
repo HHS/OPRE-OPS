@@ -145,6 +145,22 @@ describe("SearchResults", () => {
         expect(nickRow).toHaveTextContent("Nickname: my-test-nick");
     });
 
+    it("labels a match on a contract's contract number or task order number", async () => {
+        mockSearch(() => ({
+            data: [
+                row(1, { name: "A", contract_number: "CN-7788", task_order_number: "TO-1" }),
+                row(2, { name: "B", contract_number: "CN-1", task_order_number: "TO-7788" })
+            ],
+            count: 2
+        }));
+        renderPage("/search?q=7788");
+
+        await screen.findByRole("table");
+        const [first, second] = screen.getAllByRole("row").slice(1);
+        expect(first).toHaveTextContent("Contract #: CN-7788");
+        expect(second).toHaveTextContent("Task order #: TO-7788");
+    });
+
     it("uses the singular for one agreement", async () => {
         mockSearch(() => ({ data: [row(1)], count: 1 }));
         renderPage("/search?q=Agreement");

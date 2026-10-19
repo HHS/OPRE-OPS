@@ -204,6 +204,29 @@ describe("HeaderSearch", () => {
             expect(screen.getByRole("option").querySelector("mark")).toHaveTextContent("Child");
         });
 
+        it("shows a contract's contract number or task order number only when that is what matched", async () => {
+            const CONTRACT = {
+                ...PO_1,
+                id: 21,
+                name: "Numbers Study",
+                nick_name: null,
+                contract_number: "CN-7788",
+                task_order_number: "TO-9911"
+            };
+            mockSearch(() => ({ data: [CONTRACT], count: 1 }));
+            const { user, input } = renderSearch();
+
+            await user.type(input, "CN-77");
+            const option = await screen.findByRole("option");
+            expect(option).toHaveTextContent("Contract #: CN-7788");
+            expect(option).not.toHaveTextContent("Task order #");
+
+            await user.clear(input);
+            await user.type(input, "TO-99");
+            await waitFor(() => expect(screen.getByRole("option")).toHaveTextContent("Task order #: TO-9911"));
+            expect(screen.getByRole("option")).not.toHaveTextContent("Contract #");
+        });
+
         it("keeps aria-expanded false and exposes no listbox when the dropdown only holds the empty hint", async () => {
             mockSearch(() => ({ data: [], count: 0 }));
             const { user, input } = renderSearch();

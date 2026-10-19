@@ -5,6 +5,8 @@
  * @property {string|null} nick_name
  * @property {string} agreement_type
  * @property {string|null} odn
+ * @property {string|null} [contract_number] - contracts only
+ * @property {string|null} [task_order_number] - contracts only
  */
 
 export const MIN_SEARCH_LENGTH = 2;
@@ -21,6 +23,8 @@ export const sanitizeSearchQuery = (value) => (value ?? "").replaceAll("\u0000",
 /** Labels for the field a search matched on. */
 const MATCH_LABELS = {
     odn: "ODN",
+    contract_number: "Contract #",
+    task_order_number: "Task order #",
     name: "Title",
     nick_name: "Nickname"
 };
@@ -30,7 +34,7 @@ const includesIgnoreCase = (value, needle) =>
 
 /**
  * Work out which field of a search result matched the query, for the "Matched on" text.
- * Priority mirrors how users think of the search: ODN, then title, then nickname.
+ * Priority mirrors how users think of the search: ODN, the other numbers, then title, then nickname.
  * Falls back to the title when nothing matches client-side (e.g. accent/collation differences).
  * @param {AgreementSearchResult} result - A result from GET /agreements-search/.
  * @param {string} q - The search text.
@@ -38,7 +42,7 @@ const includesIgnoreCase = (value, needle) =>
  */
 export const getMatchedField = (result, q) => {
     const needle = (q ?? "").trim().toLowerCase();
-    for (const field of ["odn", "name", "nick_name"]) {
+    for (const field of ["odn", "contract_number", "task_order_number", "name", "nick_name"]) {
         if (needle && includesIgnoreCase(result?.[field], needle)) {
             return { field, label: MATCH_LABELS[field], value: result[field] };
         }

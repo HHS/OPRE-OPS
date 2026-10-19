@@ -1015,13 +1015,15 @@ paths:
       tags:
         - Agreements
       operationId: searchAgreements
-      summary: Search agreements by name, nickname or ODN
+      summary: Search agreements by name, nickname or number
       description: |
         Lightweight search used by the header type-ahead and the search results page.
         Performs a case-insensitive substring match on the agreement name, nickname and
         order/document number (ODN). The ODN is `po_number` for CONTRACT agreements,
         `task_order_number` for AA agreements and `awarded_grant_number` for GRANT agreements;
-        IAA and DIRECT_OBLIGATION agreements have no ODN (`odn` is null). The characters
+        IAA and DIRECT_OBLIGATION agreements have no ODN (`odn` is null). CONTRACT agreements
+        are also matched on `contract_number` and their own `task_order_number`, which are returned
+        (null for other types) so clients can show which number matched. The characters
         `%`, `_` and `\` are matched literally.
 
         Results are ordered by agreement name (case-insensitive), then id. Unlike
@@ -1087,6 +1089,14 @@ paths:
                           type: string
                           nullable: true
                           description: Order/document number for the agreement type; null for IAA and DIRECT_OBLIGATION, and when the agreement has no value set
+                        contract_number:
+                          type: string
+                          nullable: true
+                          description: CONTRACT agreements only (searched); null for other types and when not set
+                        task_order_number:
+                          type: string
+                          nullable: true
+                          description: CONTRACT agreements only (searched); null for other types and when not set. An AA agreement's task order number is returned as `odn`
                   count:
                     type: integer
                     description: Total number of matching agreements (independent of limit and offset)

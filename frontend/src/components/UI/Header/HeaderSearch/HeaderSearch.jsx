@@ -1,8 +1,8 @@
-import { useEffect, useId, useRef } from "react";
+import { Fragment, useEffect, useId, useRef } from "react";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import icons from "../../../../uswds/img/sprite.svg";
 import Tag from "../../Tag";
-import { MAX_SEARCH_LENGTH } from "./HeaderSearch.helpers";
+import { getMatchedField, MAX_SEARCH_LENGTH } from "./HeaderSearch.helpers";
 import useHeaderSearch, { SEARCH_STATUS } from "./HeaderSearch.hooks";
 import styles from "./HeaderSearch.module.scss";
 import HighlightedText from "./HighlightedText";
@@ -48,6 +48,23 @@ export const HeaderSearch = () => {
             document.getElementById(activeOptionId)?.scrollIntoView?.({ block: "nearest" });
         }
     }, [activeOptionId]);
+
+    // Second line of a row: the ODN and nickname when set, plus a contract's contract/task order number
+    // when that is the field the search matched on (otherwise it would only add noise).
+    const metaParts = (agreement) => {
+        const matched = getMatchedField(agreement, searchedQuery);
+        const parts = [];
+        if (agreement.odn) {
+            parts.push({ field: "odn", label: "ODN", value: agreement.odn });
+        }
+        if (matched.field === "contract_number" || matched.field === "task_order_number") {
+            parts.push({ field: matched.field, label: matched.label, value: matched.value });
+        }
+        if (agreement.nick_name) {
+            parts.push({ field: "nick_name", label: "Nickname", value: agreement.nick_name });
+        }
+        return parts;
+    };
 
     const handleBlur = (event) => {
         if (!containerRef.current?.contains(event.relatedTarget)) {
@@ -173,32 +190,25 @@ export const HeaderSearch = () => {
                                     />
                                 </span>
                             </div>
-                            {(agreement.odn || agreement.nick_name) && (
+                            {metaParts(agreement).length > 0 && (
                                 <div className={styles.optionMeta}>
-                                    {agreement.odn && (
-                                        <span>
-                                            ODN:{" "}
-                                            <HighlightedText
-                                                text={agreement.odn}
-                                                query={searchedQuery}
-                                            />
-                                        </span>
-                                    )}
-                                    {agreement.odn && agreement.nick_name && (
-                                        <>
-                                            {" "}
-                                            <span aria-hidden="true">·</span>{" "}
-                                        </>
-                                    )}
-                                    {agreement.nick_name && (
-                                        <span>
-                                            Nickname:{" "}
-                                            <HighlightedText
-                                                text={agreement.nick_name}
-                                                query={searchedQuery}
-                                            />
-                                        </span>
-                                    )}
+                                    {metaParts(agreement).map((part, partIndex) => (
+                                        <Fragment key={part.field}>
+                                            {partIndex > 0 && (
+                                                <>
+                                                    {" "}
+                                                    <span aria-hidden="true">·</span>{" "}
+                                                </>
+                                            )}
+                                            <span>
+                                                {part.label}:{" "}
+                                                <HighlightedText
+                                                    text={part.value}
+                                                    query={searchedQuery}
+                                                />
+                                            </span>
+                                        </Fragment>
+                                    ))}
                                 </div>
                             )}
                         </li>

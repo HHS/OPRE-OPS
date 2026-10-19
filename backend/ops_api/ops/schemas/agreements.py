@@ -426,6 +426,9 @@ class AgreementSearchResultSchema(Schema):
     nick_name = fields.String(allow_none=True)
     agreement_type = fields.Enum(AgreementType, required=True)
     odn = fields.String(allow_none=True)
+    # contracts only: the other two numbers a search can match on (the ODN is the PO number)
+    contract_number = fields.String(allow_none=True)
+    task_order_number = fields.String(allow_none=True)
 
 
 class AgreementSearchResponseSchema(Schema):

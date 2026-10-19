@@ -106,6 +106,29 @@ describe("Header agreement search", () => {
         });
     });
 
+    it("finds a contract by its contract number and by its task order number", () => {
+        const uniqueId = Date.now();
+        addAgreement({
+            ...testAgreement,
+            contract_number: `E2E-CN-${uniqueId}`,
+            task_order_number: `E2E-TO-${uniqueId}`
+        }).then((response) => {
+            createdAgreementIds.push(response.body.id);
+            expect(response.status).to.eq(201);
+
+            cy.visit("/");
+            cy.get('[data-cy="header-search-input"]').type(`E2E-CN-${uniqueId}`);
+            cy.get('[data-cy="header-search-option"]', { timeout: 10000 })
+                .should("have.length", 1)
+                .and("contain.text", `Contract #: E2E-CN-${uniqueId}`);
+
+            cy.get('[data-cy="header-search-input"]').clear().type(`E2E-TO-${uniqueId}`);
+            cy.get('[data-cy="header-search-option"]', { timeout: 10000 })
+                .should("have.length", 1)
+                .and("contain.text", `Task order #: E2E-TO-${uniqueId}`);
+        });
+    });
+
     it("shows a no-match message in the dropdown and on the results page", () => {
         const noMatch = `E2E-NO-MATCH-${Date.now()}`;
         cy.visit("/");

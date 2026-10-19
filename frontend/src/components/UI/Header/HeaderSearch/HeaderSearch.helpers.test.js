@@ -119,3 +119,30 @@ describe("normalizeSearchResponse", () => {
         });
     });
 });
+
+describe("getMatchedField for a contract's other numbers", () => {
+    const contract = {
+        name: "Alpha",
+        nick_name: null,
+        odn: "PO-1",
+        contract_number: "CN-7788",
+        task_order_number: "TO-9911"
+    };
+
+    it("reports the contract number and the task order number by their own labels", () => {
+        expect(getMatchedField(contract, "cn-77")).toEqual({
+            field: "contract_number",
+            label: "Contract #",
+            value: "CN-7788"
+        });
+        expect(getMatchedField(contract, "to-99")).toEqual({
+            field: "task_order_number",
+            label: "Task order #",
+            value: "TO-9911"
+        });
+    });
+
+    it("still prefers the ODN when it matches too", () => {
+        expect(getMatchedField({ ...contract, contract_number: "PO-1-X" }, "PO-1").field).toBe("odn");
+    });
+});
