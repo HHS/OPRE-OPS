@@ -225,9 +225,9 @@
     max-width: 19rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.25rem;
-    // same colors as the app's other (USWDS) tooltips
+    // The app's tooltip background; white (not USWDS's #f0f0f0) text, which reaches 4.5:1 contrast on it.
     background: #71767a;
-    color: #f0f0f0;
+    color: #fff;
     font-size: 0.875rem;
     line-height: 1.35;
     border: 1px solid transparent; // forced-colors mode recolours it, so the tip keeps an edge
