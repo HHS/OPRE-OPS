@@ -243,6 +243,32 @@ describe("AgreementDetailsView", () => {
 
             expect(screen.queryByText("Agreement Period of Performance")).not.toBeInTheDocument();
         });
+
+        it("renders an info tooltip explaining how the PoP range is calculated", () => {
+            const contractAgreement = {
+                ...agreement,
+                agreement_type: "CONTRACT",
+                sc_start_date: "2026-10-01",
+                sc_end_date: "2028-09-30"
+            };
+
+            render(
+                <AgreementDetailsView
+                    agreement={contractAgreement}
+                    projectOfficer={mockProjectOfficer}
+                    alternateProjectOfficer={null}
+                    isAgreementAwarded={false}
+                />
+            );
+
+            const infoIcon = screen.getByLabelText("Agreement Period of Performance info");
+            expect(infoIcon).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components"
+                )
+            ).toBeInTheDocument();
+        });
     });
 
     describe("GRANT details fields", () => {

@@ -1,5 +1,6 @@
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { dateToYearMonthDay } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../../../constants";
 import {
@@ -11,11 +12,12 @@ import {
 } from "../../../helpers/agreement.helpers";
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
+import { AGREEMENT_NICKNAME_LABEL, AgreementFields, PERIOD_OF_PERFORMANCE_TOOLTIP } from "../agreements.constants";
 import {
     getAlnTitle,
     sortAlnNumbers
 } from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @component - Renders the details of an agreement
@@ -106,7 +108,23 @@ const AgreementDetailsView = ({
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.PeriodOfPerformance) && (
                         <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Agreement Period of Performance</dt>
+                            <dt className="margin-0 text-base-dark margin-top-3 display-flex flex-align-center">
+                                <span>Agreement Period of Performance</span>
+                                <Tooltip
+                                    label={PERIOD_OF_PERFORMANCE_TOOLTIP}
+                                    position="right"
+                                >
+                                    <svg
+                                        className="usa-icon height-205 width-205 margin-left-05"
+                                        role="img"
+                                        title={PERIOD_OF_PERFORMANCE_TOOLTIP}
+                                        aria-label="Agreement Period of Performance info"
+                                        data-cy="period-of-performance-info-icon"
+                                    >
+                                        <use href={`${icons}#info_outline`}></use>
+                                    </svg>
+                                </Tooltip>
+                            </dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
                                     dataCy="period-of-performance-tag"
