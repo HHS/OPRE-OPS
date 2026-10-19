@@ -14,7 +14,7 @@ export const SearchInfoTip = () => {
     const tipId = useId();
 
     return (
-        <span
+        <div
             className={styles.infoWrapper}
             onMouseEnter={() => setIsVisible(true)}
             onMouseLeave={() => setIsVisible(false)}
@@ -58,7 +58,7 @@ export const SearchInfoTip = () => {
                     ))}
                 </ul>
             </div>
-        </span>
+        </div>
     );
 };
 
