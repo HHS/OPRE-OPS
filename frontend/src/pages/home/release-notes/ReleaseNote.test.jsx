@@ -39,6 +39,20 @@ describe("ReleaseNote Component", () => {
         expect(screen.getByText("Improvements")).toBeInTheDocument();
     });
 
+    it("renders the Improvements tag using the dedicated release-changes-improvements color, not the Done tag's green", () => {
+        const improvementProps = {
+            ...mockProps,
+            type: /** @type {"New Feature"|"Improvements"|"Fixes"} */ (RELEASE_NOTES_TYPES.IMPROVEMENTS)
+        };
+
+        render(<ReleaseNote {...improvementProps} />);
+
+        const improvementTag = screen.getByText("Improvements");
+        expect(improvementTag).toHaveClass("bg-brand-release-changes-improvements");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-3");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-4");
+    });
+
     it("renders the type tag with correct text for Fixes", () => {
         const fixProps = {
             ...mockProps,
