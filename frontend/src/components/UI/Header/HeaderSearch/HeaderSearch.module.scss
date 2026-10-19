@@ -219,7 +219,7 @@
 .infoTip {
     position: absolute;
     top: calc(100% + 0.5rem);
-    right: 0;
+    right: -0.625rem; // juts out past the icon, as in the prototype
     z-index: 100;
     width: max-content;
     max-width: 19rem;
@@ -242,12 +242,12 @@
         height: 0.5rem;
     }
 
-    // Arrow pointing up at the info icon (the icon is 1.5rem wide and flush with the tip's right edge).
+    // Arrow pointing up at the icon's centre: 0.75rem (half the icon) + 0.625rem (the overhang) from the right.
     &::after {
         content: "";
         position: absolute;
         top: -0.4375rem;
-        right: 0.25rem;
+        right: 0.875rem;
         border-left: 0.5rem solid transparent;
         border-right: 0.5rem solid transparent;
         border-bottom: 0.5rem solid #565c65;
