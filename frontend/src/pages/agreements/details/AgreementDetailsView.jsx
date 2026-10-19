@@ -2,7 +2,13 @@ import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetai
 import Tag from "../../../components/UI/Tag/Tag";
 import { dateToYearMonthDay } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../../../constants";
-import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
+import {
+    formatPeriodOfPerformance,
+    getAgreementType,
+    getFundingMethod,
+    getPartnerType,
+    isFieldVisible
+} from "../../../helpers/agreement.helpers";
 import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
@@ -97,6 +103,18 @@ const AgreementDetailsView = ({
                                 </dd>
                             </dl>
                         </>
+                    )}
+                    {isFieldVisible(agreement.agreement_type, AgreementFields.PeriodOfPerformance) && (
+                        <dl className="margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Agreement Period of Performance</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    dataCy="period-of-performance-tag"
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={formatPeriodOfPerformance(agreement?.sc_start_date, agreement?.sc_end_date)}
+                                />
+                            </dd>
+                        </dl>
                     )}
                     <dl className="margin-0 font-12px">
                         {/* NOTE: Agreement Type is derived from the agreement_type */}
