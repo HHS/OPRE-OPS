@@ -17,7 +17,6 @@ import {
     getAlnTitle,
     sortAlnNumbers
 } from "../../../components/Agreements/AlnNumbersComboBox/AlnNumbersComboBox.constants";
-import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @component - Renders the details of an agreement
@@ -108,29 +107,18 @@ const AgreementDetailsView = ({
                     )}
                     {isFieldVisible(agreement.agreement_type, AgreementFields.PeriodOfPerformance) && (
                         <dl className="margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3 display-flex flex-align-center">
-                                <span>Agreement Period of Performance</span>
-                                <Tooltip
-                                    label={PERIOD_OF_PERFORMANCE_TOOLTIP}
-                                    position="right"
-                                >
-                                    <svg
-                                        className="usa-icon height-205 width-205 margin-left-05"
-                                        role="img"
-                                        title={PERIOD_OF_PERFORMANCE_TOOLTIP}
-                                        aria-label="Agreement Period of Performance info"
-                                        data-cy="period-of-performance-info-icon"
-                                    >
-                                        <use href={`${icons}#info_outline`}></use>
-                                    </svg>
-                                </Tooltip>
-                            </dt>
+                            <dt className="margin-0 text-base-dark margin-top-3">Agreement Period of Performance</dt>
                             <dd className="margin-0 margin-top-1">
-                                <Tag
-                                    dataCy="period-of-performance-tag"
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    text={formatPeriodOfPerformance(agreement?.sc_start_date, agreement?.sc_end_date)}
-                                />
+                                <Tooltip label={PERIOD_OF_PERFORMANCE_TOOLTIP}>
+                                    <Tag
+                                        dataCy="period-of-performance-tag"
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={formatPeriodOfPerformance(
+                                            agreement?.sc_start_date,
+                                            agreement?.sc_end_date
+                                        )}
+                                    />
+                                </Tooltip>
                             </dd>
                         </dl>
                     )}

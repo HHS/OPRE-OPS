@@ -244,7 +244,7 @@ describe("AgreementDetailsView", () => {
             expect(screen.queryByText("Agreement Period of Performance")).not.toBeInTheDocument();
         });
 
-        it("renders an info tooltip explaining how the PoP range is calculated", () => {
+        it("attaches a tooltip explaining the PoP calculation to the date tag itself", () => {
             const contractAgreement = {
                 ...agreement,
                 agreement_type: "CONTRACT",
@@ -261,13 +261,13 @@ describe("AgreementDetailsView", () => {
                 />
             );
 
-            const infoIcon = screen.getByLabelText("Agreement Period of Performance info");
-            expect(infoIcon).toBeInTheDocument();
-            expect(
-                screen.getByText(
-                    "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components"
-                )
-            ).toBeInTheDocument();
+            const tooltipText = screen.getByText(
+                "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components"
+            );
+            const tag = screen.getByText("10/1/2026 - 9/30/2028");
+            expect(tooltipText).toBeInTheDocument();
+            // The tag itself (not a separate icon) is the tooltip trigger
+            expect(tag).toHaveAttribute("aria-describedby", tooltipText.id);
         });
     });
 
