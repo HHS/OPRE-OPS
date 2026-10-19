@@ -88,4 +88,13 @@ describe("useListFilters", () => {
         // ...and the new FY is applied.
         expect(result.current.selectedFiscalYear).toBe(2030);
     });
+
+    it("changeFiscalYear accepts a functional updater resolved against the latest fiscal year", () => {
+        const store = setupStore();
+        const { result } = renderWithStore("portfolios", store);
+        act(() => result.current.changeFiscalYear(2030));
+        act(() => result.current.changeFiscalYear((prev) => prev + 1));
+        expect(result.current.selectedFiscalYear).toBe(2031);
+        expect(result.current.filters).toEqual(listFilterDefaults.portfolios.filters);
+    });
 });

@@ -149,7 +149,7 @@ const sessionUISlice = createSlice({
             const { page, selectedFiscalYear } = action.payload;
             const def = listFilterDefaults[page];
             if (!def) return;
-            state.listFilters[page] = { filters: structuredClone(def.filters), selectedFiscalYear };
+            state.listFilters[page] = { ...buildPageState(def), selectedFiscalYear };
         }
     },
     extraReducers: (builder) => {

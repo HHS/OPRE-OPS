@@ -20,7 +20,7 @@ import { changeListFiscalYear, setListFilters, setListFiscalYear } from "../sess
  *   setFilters: (updater: Object | ((prev: Object) => Object)) => void,
  *   selectedFiscalYear: string|number|undefined,
  *   setSelectedFiscalYear: (updater: (string|number) | ((prev: string|number) => (string|number))) => void,
- *   changeFiscalYear: (newFiscalYear: string|number) => void
+ *   changeFiscalYear: (updater: (string|number) | ((prev: string|number) => (string|number))) => void
  * }}
  */
 export const useListFilters = (page) => {
@@ -52,9 +52,14 @@ export const useListFilters = (page) => {
     // a single atomic gesture. Only for pages whose FY change starts over (today:
     // Portfolios). Pages that preserve other filters across an FY change
     // (Agreements, Projects, Budget Lines, CANs) use setSelectedFiscalYear.
+    // Accepts a value or a functional updater, same as setSelectedFiscalYear.
     const changeFiscalYear = useCallback(
-        (newFiscalYear) => dispatch(changeListFiscalYear({ page, selectedFiscalYear: newFiscalYear })),
-        [dispatch, page]
+        (updater) => {
+            const current = store.getState().sessionUI?.listFilters?.[page]?.selectedFiscalYear;
+            const next = typeof updater === "function" ? updater(current) : updater;
+            dispatch(changeListFiscalYear({ page, selectedFiscalYear: next }));
+        },
+        [dispatch, store, page]
     );
 
     return { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear, changeFiscalYear };
