@@ -191,6 +191,19 @@ describe("HeaderSearch", () => {
             expect(listbox).toHaveAttribute("aria-busy", "false");
         });
 
+        it("highlights with the text the rows were searched with while the next query is still debouncing", async () => {
+            mockSearch(() => ({ data: [PO_1], count: 1 }));
+            const { user, input } = renderSearch();
+            await user.type(input, "Child");
+            const option = await screen.findByRole("option");
+            expect(option.querySelector("mark")).toHaveTextContent("Child");
+
+            // The box now reads "Childx" (no row contains it) but the rows still belong to "Child".
+            await user.type(input, "x");
+
+            expect(screen.getByRole("option").querySelector("mark")).toHaveTextContent("Child");
+        });
+
         it("keeps aria-expanded false and exposes no listbox when the dropdown only holds the empty hint", async () => {
             mockSearch(() => ({ data: [], count: 0 }));
             const { user, input } = renderSearch();

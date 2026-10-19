@@ -23,6 +23,7 @@ export const HeaderSearch = () => {
         activeIndex,
         isListVisible,
         trimmedQuery,
+        searchedQuery,
         handleChange,
         handleKeyDown,
         handleSubmit,
@@ -160,7 +161,7 @@ export const HeaderSearch = () => {
                                 <span>
                                     <HighlightedText
                                         text={agreement.name}
-                                        query={trimmedQuery}
+                                        query={searchedQuery}
                                     />
                                 </span>
                                 <span className={styles.optionTag}>
@@ -178,7 +179,7 @@ export const HeaderSearch = () => {
                                             ODN:{" "}
                                             <HighlightedText
                                                 text={agreement.odn}
-                                                query={trimmedQuery}
+                                                query={searchedQuery}
                                             />
                                         </span>
                                     )}
@@ -193,7 +194,7 @@ export const HeaderSearch = () => {
                                             Nickname:{" "}
                                             <HighlightedText
                                                 text={agreement.nick_name}
-                                                query={trimmedQuery}
+                                                query={searchedQuery}
                                             />
                                         </span>
                                     )}

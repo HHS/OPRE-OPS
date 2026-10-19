@@ -37,6 +37,8 @@ const useHeaderSearch = () => {
     const [inputValue, setInputValue] = useState(urlQuery);
     const [results, setResults] = useState([]);
     const [count, setCount] = useState(0);
+    // The text the rows on screen were searched with: it lags the box while the next query debounces.
+    const [searchedQuery, setSearchedQuery] = useState("");
     const [status, setStatus] = useState(SEARCH_STATUS.IDLE);
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -57,6 +59,7 @@ const useHeaderSearch = () => {
         cancelPending();
         setResults([]);
         setCount(0);
+        setSearchedQuery("");
         setStatus(SEARCH_STATUS.IDLE);
         setActiveIndex(-1);
         setIsOpen(false);
@@ -97,6 +100,7 @@ const useHeaderSearch = () => {
                 }
                 const data = response?.data ?? [];
                 setResults(data);
+                setSearchedQuery(q);
                 setCount(response?.count ?? data.length);
                 setStatus(data.length > 0 ? SEARCH_STATUS.SUCCESS : SEARCH_STATUS.EMPTY);
                 setActiveIndex(-1);
@@ -236,6 +240,7 @@ const useHeaderSearch = () => {
         activeIndex,
         isListVisible,
         trimmedQuery: inputValue.trim(),
+        searchedQuery,
         handleChange,
         handleKeyDown,
         handleSubmit,
