@@ -72,7 +72,12 @@ export const splitHighlight = (text, q) => {
 };
 
 /** What the search matches on, as listed in the info tip next to the box. */
-export const SEARCH_INFO_ITEMS = ["Purchase order (PO) #", "Task order #", "Grant #", "Agreement title or nickname"];
+export const SEARCH_INFO_ITEMS = [
+    "Purchase order (PO) # (contracts)",
+    "Task order # (assisted acquisitions)",
+    "Grant # (grants)",
+    "Agreement title or nickname"
+];
 
 /** Rows and total from a search response, tolerating a missing `data` or `count`. */
 export const normalizeSearchResponse = (response) => {
