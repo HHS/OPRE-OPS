@@ -225,8 +225,9 @@
     max-width: 19rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.25rem;
-    background: #565c65;
-    color: #fff;
+    // same colors as the app's other (USWDS) tooltips
+    background: #71767a;
+    color: #f0f0f0;
     font-size: 0.875rem;
     line-height: 1.35;
     border: 1px solid transparent; // forced-colors mode recolours it, so the tip keeps an edge
@@ -250,7 +251,7 @@
         right: 0.875rem;
         border-left: 0.5rem solid transparent;
         border-right: 0.5rem solid transparent;
-        border-bottom: 0.5rem solid #565c65;
+        border-bottom: 0.5rem solid #71767a;
     }
 
     ul {
