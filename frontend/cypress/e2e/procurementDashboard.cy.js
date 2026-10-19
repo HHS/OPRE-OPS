@@ -118,40 +118,22 @@ describe("Procurement Dashboard - Authorized User", () => {
         });
 
         it("filters agreements by procurement shop when selecting a specific shop", () => {
-            // The dashboard shows the current fiscal year only, so which shops own agreements depends on the
-            // seed data and the date (right after a fiscal-year rollover it can be a single shop). Try the
-            // shops in order and check the first one that has agreements instead of assuming the first option does.
-            const applyShopFilter = (optionIndex) => {
+            getAgreementCount().then((allCount) => {
+                // Open the filter modal and select PSC. The options sort alphabetically, so the first
+                // option (GCS) has no agreements in the current FY of the seed data.
                 cy.get("button").contains("Filter").click();
                 cy.get(".proc-shop-combobox__control").click();
-                cy.get(".proc-shop-combobox__menu")
-                    .find(".proc-shop-combobox__option")
-                    .then(($options) => {
-                        expect($options.length, "procurement shop options tried").to.be.greaterThan(optionIndex);
-                        cy.wrap($options[optionIndex]).click();
-                    });
+                cy.get(".proc-shop-combobox__menu").contains(".proc-shop-combobox__option", "PSC").click();
+
+                // Apply the filter
                 cy.get("button").contains("Apply").click();
-            };
 
-            const findShopWithAgreements = (optionIndex, allCount) => {
-                applyShopFilter(optionIndex);
-                getAgreementCount().then((filteredCount) => {
+                // Retry until the refetch lands instead of reading the count once
+                cy.get("[data-cy='procurement-overview-total-agreements']").should(($el) => {
+                    const filteredCount = parseInt($el.text().match(/(\d+) agreements/)?.[1], 10);
                     expect(filteredCount).to.be.at.most(allCount);
-                    if (filteredCount === 0) {
-                        // Back to all shops, then try the next one
-                        cy.get("button").contains("Filter").click();
-                        cy.get("button").contains("Reset").click();
-                        cy.get("button").contains("Apply").click();
-                        findShopWithAgreements(optionIndex + 1, allCount);
-                    } else {
-                        expect(filteredCount).to.be.at.least(1);
-                    }
+                    expect(filteredCount).to.be.at.least(1);
                 });
-            };
-
-            getAgreementCount().then((allCount) => {
-                expect(allCount).to.be.at.least(1);
-                findShopWithAgreements(0, allCount);
             });
         });
 
