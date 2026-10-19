@@ -183,7 +183,7 @@ describe("Header agreement search", () => {
 
     it("explains what can be searched from the info icon", () => {
         cy.visit("/");
-        cy.get('[data-cy="header-search-info-tip"]').should("not.be.visible");
+        cy.get('[data-cy="header-search-info-tip"]').should("not.exist");
         cy.get('[data-cy="header-search-info"]').focus();
         cy.get('[data-cy="header-search-info-tip"]')
             .should("be.visible")

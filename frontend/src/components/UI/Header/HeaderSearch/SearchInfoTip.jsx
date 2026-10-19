@@ -5,7 +5,8 @@ import styles from "./HeaderSearch.module.scss";
 
 /**
  * Info icon next to the header search that lists what the search matches on. Shows on hover and
- * keyboard focus, hides on blur/leave, and Esc dismisses it without clearing the search box.
+ * keyboard focus, hides on blur/leave, and Esc dismisses it without clearing the search box. The tip is
+ * only in the DOM while shown, so its wording (e.g. "Contract #") never collides with page text.
  * @component
  * @returns {React.ReactElement} The rendered component.
  */
@@ -23,7 +24,7 @@ export const SearchInfoTip = () => {
                 type="button"
                 className={styles.infoButton}
                 aria-label="What can I search for?"
-                aria-describedby={tipId}
+                aria-describedby={isVisible ? tipId : undefined}
                 onFocus={() => setIsVisible(true)}
                 onBlur={() => setIsVisible(false)}
                 onKeyDown={(event) => {
@@ -44,20 +45,21 @@ export const SearchInfoTip = () => {
                     <use href={`${icons}#info_outline`}></use>
                 </svg>
             </button>
-            <div
-                id={tipId}
-                role="tooltip"
-                className={styles.infoTip}
-                hidden={!isVisible}
-                data-cy="header-search-info-tip"
-            >
-                <div>You can search agreements by:</div>
-                <ul>
-                    {SEARCH_INFO_ITEMS.map((item) => (
-                        <li key={item}>{item}</li>
-                    ))}
-                </ul>
-            </div>
+            {isVisible && (
+                <div
+                    id={tipId}
+                    role="tooltip"
+                    className={styles.infoTip}
+                    data-cy="header-search-info-tip"
+                >
+                    <div>You can search agreements by:</div>
+                    <ul>
+                        {SEARCH_INFO_ITEMS.map((item) => (
+                            <li key={item}>{item}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
