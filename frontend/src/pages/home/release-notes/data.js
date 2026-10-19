@@ -6,6 +6,26 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-10-16",
+        version: "1.485.5",
+        changes: [
+            {
+                id: "0001",
+                subject: "Procurement shop changes",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where you could pick a new procurement shop on an agreement even when the change couldn't be saved, like when budget lines are already in execution or obligated. The dropdown is now turned off in those cases and explains why, instead of showing a generic error after you save."
+            },
+            {
+                id: "0002",
+                subject: "Fiscal year dropdown",
+                type: "Fixes",
+                description:
+                    'We fixed a bug where the "All" option jumped to the bottom of the fiscal year dropdown after you picked a specific year. "All" now always stays at the top, wherever you use the fiscal year filter.'
+            }
+        ]
+    },
+    {
         releaseDate: "2026-09-11",
         version: "1.464.3",
         changes: [
