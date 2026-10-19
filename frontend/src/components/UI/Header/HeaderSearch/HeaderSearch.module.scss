@@ -222,13 +222,36 @@
     right: 0;
     z-index: 100;
     width: max-content;
-    max-width: 15rem;
+    max-width: 19rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.25rem;
     background: #565c65;
     color: #fff;
     font-size: 0.875rem;
     line-height: 1.35;
+    border: 1px solid transparent; // forced-colors mode recolours it, so the tip keeps an edge
+
+    // Bridges the gap to the icon so the pointer can travel onto the tip without it closing
+    // (WCAG 1.4.13: content shown on hover must stay hoverable).
+    &::before {
+        content: "";
+        position: absolute;
+        top: -0.5rem;
+        left: 0;
+        right: 0;
+        height: 0.5rem;
+    }
+
+    // Arrow pointing up at the info icon (the icon is 1.5rem wide and flush with the tip's right edge).
+    &::after {
+        content: "";
+        position: absolute;
+        top: -0.4375rem;
+        right: 0.25rem;
+        border-left: 0.5rem solid transparent;
+        border-right: 0.5rem solid transparent;
+        border-bottom: 0.5rem solid #565c65;
+    }
 
     ul {
         margin: 0;
