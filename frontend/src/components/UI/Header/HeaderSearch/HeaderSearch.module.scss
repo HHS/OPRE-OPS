@@ -1,0 +1,187 @@
+// A zero-height layer as wide as the page column (1024px), centered like the content below it; the
+// search floats at its right edge, directly under the user/sign-out links. Below the USWDS desktop
+// breakpoint (64em) the primary nav and user links are hidden and the header collapses to the logo
+// row, so the layer drops back into the flow as its own row instead of floating over the page.
+.layer {
+    position: absolute;
+    top: 3.625rem;
+    left: 0;
+    right: 0;
+    width: min(1024px, 100%);
+    height: 0;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding-right: 2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+
+    @media (max-width: 63.99em) {
+        position: static;
+        height: auto;
+        padding: 0.5rem 1rem;
+        justify-content: flex-start;
+    }
+}
+
+.container {
+    position: relative;
+    // Prototype: ~307px input + 48px button, 36px tall.
+    width: 22.2rem;
+    max-width: 100%;
+}
+
+.container form.form {
+    // USWDS styles `.usa-header [role="search"]` (float: right; max-width). The extra element
+    // selector outranks it so this stays a normal flex row filling the container.
+    float: none;
+    display: flex;
+    width: 100%;
+    max-width: none;
+    border-radius: 0.25rem;
+
+    // One focus ring around the joined input + button, instead of a ring on the input alone that
+    // spills over the button. Only where :has() exists (Firefox < 121, Safari < 15.4 lack it): there
+    // the input keeps its own USWDS focus outline, so focus is never invisible.
+    @supports selector(:has(*)) {
+        &:has(.input:focus) {
+            outline: 0.25rem solid #2491ff;
+            outline-offset: 0;
+        }
+    }
+}
+
+.inputWrapper {
+    position: relative;
+    flex: 1;
+}
+
+.container .input {
+    margin-top: 0;
+    width: 100%;
+    max-width: none;
+    height: 2.25rem;
+    padding-right: 2rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem 0 0 0.25rem;
+
+    @supports selector(:has(*)) {
+        &:focus {
+            outline: none;
+        }
+    }
+}
+
+.clearButton {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #565c65;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        color: #1b1b1b;
+    }
+}
+
+// `.usa-button` adds margin-right: 0.5rem and a full radius; flush it against the input.
+.container .submitButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 3rem;
+    width: 3rem;
+    height: 2.25rem;
+    margin: 0;
+    padding: 0;
+    border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: 0.25rem; // sits right under the 4px focus ring
+    background: #fff;
+    border: 1px solid #c9c9c9;
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.option {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #dfe1e2;
+    cursor: pointer;
+
+    &:hover,
+    &[aria-selected="true"] {
+        background-color: #e7f6f8;
+    }
+
+    // The tint alone is ~1.1:1 against its neighbours and vanishes in forced-colors mode: the
+    // keyboard-highlighted row also gets an outline (kept, and recoloured, by forced colors).
+    &[aria-selected="true"] {
+        outline: 0.125rem solid #005ea2;
+        outline-offset: -0.125rem;
+    }
+}
+
+.optionTitle {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #005ea2;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.35; // prototype: tight stacked rows, not the 1.6 body leading
+
+    // A long unbroken name must wrap inside the dropdown instead of widening it (and the page) and
+    // pushing the type tag off-screen: flex items default to min-width: auto.
+    > :first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+.optionTag {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.optionMeta {
+    margin-top: 0.125rem;
+    color: #454545;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere; // long unbroken ODNs / nicknames
+}
+
+.message {
+    padding: 0.5rem 0.75rem;
+    color: #454545;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere; // the message echoes the query: 100 unbroken characters must wrap, not widen the page
+}
+
+.container mark {
+    background-color: #ffe396;
+    color: inherit;
+    padding: 0;
+}

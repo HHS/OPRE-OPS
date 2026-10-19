@@ -9,6 +9,7 @@ from ops_api.ops.views import (
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    AGREEMENT_SEARCH_API_VIEW_FUNC,
     AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_BATCH_API_VIEW_FUNC,
@@ -319,6 +320,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements-filters/",
         view_func=AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements-search/",
+        view_func=AGREEMENT_SEARCH_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

@@ -98,7 +98,6 @@ export const opsApi = createApi({
                     portfolio,
                     agreementName,
                     nickName,
-                    odn,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -134,9 +133,6 @@ export const opsApi = createApi({
                 }
                 if (nickName) {
                     nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
-                }
-                if (odn) {
-                    odn.forEach((value) => queryParams.push(`odn=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
@@ -332,6 +328,17 @@ export const opsApi = createApi({
                 return `/agreements-filters/${queryString}`;
             },
             providesTags: ["Agreements"]
+        }),
+        searchAgreements: builder.query({
+            // Lightweight search for the header type-ahead and /search page. Deliberately has no
+            // providesTags, so agreement mutations don't trigger background re-fetches of old searches.
+            query: ({ q, limit = 10, offset = 0 }) => {
+                const queryParams = new URLSearchParams({ q, limit: String(limit), offset: String(offset) });
+                return `/agreements-search/?${queryParams.toString()}`;
+            },
+            // Nothing is kept after the last subscriber leaves: with no tags to invalidate it, a cached entry
+            // would be shown (stale, and clickable) while the revisited page refetches.
+            keepUnusedDataFor: 0
         }),
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {
@@ -1330,6 +1337,8 @@ export const {
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
     useGetAgreementsFilterOptionsQuery,
+    useSearchAgreementsQuery,
+    useLazySearchAgreementsQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,
