@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMatchedField, sanitizeSearchQuery, splitHighlight } from "./HeaderSearch.helpers";
+import { getMatchedField, normalizeSearchResponse, sanitizeSearchQuery, splitHighlight } from "./HeaderSearch.helpers";
 
 describe("getMatchedField", () => {
     const result = {
@@ -102,5 +102,20 @@ describe("sanitizeSearchQuery", () => {
     it("returns an empty string for null and undefined", () => {
         expect(sanitizeSearchQuery(null)).toBe("");
         expect(sanitizeSearchQuery(undefined)).toBe("");
+    });
+});
+
+describe("normalizeSearchResponse", () => {
+    it("returns the rows and total as given", () => {
+        expect(normalizeSearchResponse({ data: [{ id: 1 }], count: 7 })).toEqual({ results: [{ id: 1 }], count: 7 });
+    });
+
+    it("falls back to an empty list, and to the row count when the total is missing", () => {
+        expect(normalizeSearchResponse(undefined)).toEqual({ results: [], count: 0 });
+        expect(normalizeSearchResponse({})).toEqual({ results: [], count: 0 });
+        expect(normalizeSearchResponse({ data: [{ id: 1 }, { id: 2 }] })).toEqual({
+            results: [{ id: 1 }, { id: 2 }],
+            count: 2
+        });
     });
 });

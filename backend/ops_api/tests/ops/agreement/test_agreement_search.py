@@ -267,6 +267,16 @@ class TestAgreementSearchValidation:
     def test_q_with_nul_character_is_400(self, auth_client, app_ctx):
         assert _search(auth_client, "ab\x00cd").status_code == 400
 
+    @pytest.mark.parametrize("param", ["odn", "name", "search", "nick_name", "contract_number", "foa"])
+    def test_nul_character_in_a_list_endpoint_text_filter_is_400(self, auth_client, app_ctx, param):
+        response = auth_client.get(url_for("api.agreements-group"), query_string={param: "ab\x00cd"})
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize("params", [{"limit": 0}, {"limit": 51}, {"offset": -1}])
+    def test_out_of_range_limit_or_offset_is_400(self, auth_client, app_ctx, params):
+        response = auth_client.get(url_for("api.agreements-search"), query_string={"q": "x", **params})
+        assert response.status_code == 400
+
     def test_offset_of_bigint_max_is_ok(self, auth_client, app_ctx):
         response = _search(auth_client, "x", offset=2**63 - 1)
         assert response.status_code == 200

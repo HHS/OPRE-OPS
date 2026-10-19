@@ -95,7 +95,7 @@ describe("HeaderSearch", () => {
             expect(input).toHaveAttribute("aria-autocomplete", "list");
             expect(input).toHaveAttribute("aria-expanded", "false");
             expect(input).not.toHaveAttribute("aria-activedescendant");
-            expect(input).toHaveAttribute("placeholder", "ODN, agreement title, or nickname");
+            expect(input).toHaveAttribute("placeholder", "Search agreements");
             // The listbox exists (hidden) so aria-controls never dangles.
             const listbox = screen.getByRole("listbox", { hidden: true });
             expect(input).toHaveAttribute("aria-controls", listbox.id);

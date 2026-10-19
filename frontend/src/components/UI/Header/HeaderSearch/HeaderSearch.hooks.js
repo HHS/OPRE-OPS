@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import debounce from "lodash/debounce";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useLazySearchAgreementsQuery } from "../../../../api/opsAPI";
-import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH, sanitizeSearchQuery } from "./HeaderSearch.helpers";
+import {
+    MAX_SEARCH_LENGTH,
+    MIN_SEARCH_LENGTH,
+    normalizeSearchResponse,
+    sanitizeSearchQuery
+} from "./HeaderSearch.helpers";
 
 export const SEARCH_STATUS = {
     IDLE: "idle",
@@ -43,17 +49,51 @@ const useHeaderSearch = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
 
-    const timerRef = useRef(null);
     const requestRef = useRef(null);
     const latestSearchRef = useRef(0);
 
+    const runSearch = useCallback(
+        async (q) => {
+            requestRef.current?.abort?.();
+            const searchId = ++latestSearchRef.current;
+            const request = trigger({ q, limit: DROPDOWN_LIMIT, offset: 0 }, false);
+            requestRef.current = request;
+
+            try {
+                const response = await request.unwrap();
+                if (searchId !== latestSearchRef.current) {
+                    return;
+                }
+                const { results: data, count: total } = normalizeSearchResponse(response);
+                setResults(data);
+                setSearchedQuery(q);
+                setCount(total);
+                setStatus(data.length > 0 ? SEARCH_STATUS.SUCCESS : SEARCH_STATUS.EMPTY);
+                setActiveIndex(-1);
+                setIsOpen(true);
+            } catch (error) {
+                if (searchId !== latestSearchRef.current || error?.name === "AbortError") {
+                    return;
+                }
+                console.error("Agreement search failed", error);
+                setResults([]);
+                setCount(0);
+                setStatus(SEARCH_STATUS.ERROR);
+                setActiveIndex(-1);
+                setIsOpen(true);
+            }
+        },
+        [trigger]
+    );
+
+    const debouncedSearch = useMemo(() => debounce(runSearch, DEBOUNCE_MS), [runSearch]);
+
     const cancelPending = useCallback(() => {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
+        debouncedSearch.cancel();
         requestRef.current?.abort?.();
         requestRef.current = null;
         latestSearchRef.current += 1;
-    }, []);
+    }, [debouncedSearch]);
 
     const resetResults = useCallback(() => {
         cancelPending();
@@ -80,45 +120,11 @@ const useHeaderSearch = () => {
     // The header unmounts on every navigation: drop the timer and invalidate in-flight requests.
     useEffect(() => {
         return () => {
-            clearTimeout(timerRef.current);
+            debouncedSearch.cancel();
             requestRef.current?.abort?.();
             latestSearchRef.current = -1;
         };
-    }, []);
-
-    const runSearch = useCallback(
-        async (q) => {
-            requestRef.current?.abort?.();
-            const searchId = ++latestSearchRef.current;
-            const request = trigger({ q, limit: DROPDOWN_LIMIT, offset: 0 }, false);
-            requestRef.current = request;
-
-            try {
-                const response = await request.unwrap();
-                if (searchId !== latestSearchRef.current) {
-                    return;
-                }
-                const data = response?.data ?? [];
-                setResults(data);
-                setSearchedQuery(q);
-                setCount(response?.count ?? data.length);
-                setStatus(data.length > 0 ? SEARCH_STATUS.SUCCESS : SEARCH_STATUS.EMPTY);
-                setActiveIndex(-1);
-                setIsOpen(true);
-            } catch (error) {
-                if (searchId !== latestSearchRef.current || error?.name === "AbortError") {
-                    return;
-                }
-                console.error("Agreement search failed", error);
-                setResults([]);
-                setCount(0);
-                setStatus(SEARCH_STATUS.ERROR);
-                setActiveIndex(-1);
-                setIsOpen(true);
-            }
-        },
-        [trigger]
-    );
+    }, [debouncedSearch]);
 
     const handleChange = (event) => {
         const value = event.target.value.slice(0, MAX_SEARCH_LENGTH);
@@ -135,7 +141,7 @@ const useHeaderSearch = () => {
         // Rows that already settled stay on screen (as the busy list) until this query answers.
         cancelPending();
         setStatus(SEARCH_STATUS.LOADING);
-        timerRef.current = setTimeout(() => runSearch(trimmed), DEBOUNCE_MS);
+        debouncedSearch(trimmed);
     };
 
     const clear = useCallback(() => {

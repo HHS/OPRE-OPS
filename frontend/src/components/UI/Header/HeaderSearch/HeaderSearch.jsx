@@ -6,6 +6,7 @@ import { MAX_SEARCH_LENGTH } from "./HeaderSearch.helpers";
 import useHeaderSearch, { SEARCH_STATUS } from "./HeaderSearch.hooks";
 import styles from "./HeaderSearch.module.scss";
 import HighlightedText from "./HighlightedText";
+import SearchInfoTip from "./SearchInfoTip";
 
 /**
  * Site-wide agreement search. Type to see up to five matching agreements (matched on ODN, title
@@ -88,7 +89,7 @@ export const HeaderSearch = () => {
                         type="text"
                         role="combobox"
                         className={`usa-input ${styles.input}`}
-                        placeholder="ODN, agreement title, or nickname"
+                        placeholder="Search agreements"
                         aria-label="Search agreements"
                         aria-autocomplete="list"
                         aria-expanded={hasOptions}
@@ -231,6 +232,8 @@ export const HeaderSearch = () => {
                     </div>
                 )}
             </div>
+
+            <SearchInfoTip />
 
             <div
                 role="status"

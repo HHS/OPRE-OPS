@@ -70,3 +70,12 @@ export const splitHighlight = (text, q) => {
     }
     return [value.slice(0, index), value.slice(index, index + needle.length), value.slice(index + needle.length)];
 };
+
+/** What the search matches on, as listed in the info tip next to the box. */
+export const SEARCH_INFO_ITEMS = ["Purchase order (PO) #", "Task order #", "Grant #", "Agreement title or nickname"];
+
+/** Rows and total from a search response, tolerating a missing `data` or `count`. */
+export const normalizeSearchResponse = (response) => {
+    const results = response?.data ?? [];
+    return { results, count: response?.count ?? results.length };
+};

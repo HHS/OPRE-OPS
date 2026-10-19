@@ -26,7 +26,7 @@ branch: OPS-6308/header-agreement-search
 ### Desired State
 This matches the "Prototype – Header Search | OPS" artifact with **option A** (the explanation lives in the placeholder):
 - A persistent search input in the header, on every authenticated page.
-- Placeholder: `ODN, agreement title, or nickname`.
+- Placeholder: `Search agreements` (UX option 3; an info icon beside the box lists what is searched).
 - Matching is case-insensitive and **partial** on three things: the agreement's ODN, its title, and its nickname. The ODN uses the same per-type field as today's lookup (Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`; IAA and Direct Obligation have none).
 - **Scope note:** the prototype also matches Contract #, PO #/Task order # on every type, and `grant_numbers`. That's deliberately out of scope for now (see Future Improvements).
 
@@ -43,7 +43,7 @@ The user can get to an agreement three ways (all verified by clicking through th
 As an OPS user, I want to search for an agreement by its ODN, title or nickname from anywhere in the app so that I can jump straight to it without opening the Agreements list and filtering.
 
 ### Acceptance Criteria
-- [ ] The header shows a search input with placeholder `ODN, agreement title, or nickname` and a search button on every page that shows the header **for a logged-in user**. It is not rendered for logged-out users (e.g. on the error page).
+- [ ] The header shows a search input with placeholder `Search agreements` (UX option 3; an info icon beside the box lists what is searched) and a search button on every page that shows the header **for a logged-in user**. It is not rendered for logged-out users (e.g. on the error page).
 - [ ] The input has a persistent accessible name. The placeholder isn't the only label (use `aria-label="Search agreements"`).
 - [ ] After a short delay (debounced, about 300 ms) once the user has typed at least 2 characters, a dropdown shows up to 5 matching agreements.
 - [ ] Matching is case-insensitive and partial across title (`name`), `nick_name`, and the ODN: Contract → `po_number`, AA → `task_order_number`, Grant → `awarded_grant_number`. IAA and Direct Obligation agreements match on title and nickname only. No other identifier fields are searched.

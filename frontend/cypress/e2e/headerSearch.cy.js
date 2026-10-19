@@ -105,4 +105,69 @@ describe("Header agreement search", () => {
             cy.url({ timeout: 10000 }).should("include", `/agreements/${agreementId}`);
         });
     });
+
+    it("shows a no-match message in the dropdown and on the results page", () => {
+        const noMatch = `E2E-NO-MATCH-${Date.now()}`;
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type(noMatch);
+
+        cy.get('[data-cy="header-search-no-results"]', { timeout: 10000 }).should("contain.text", noMatch);
+        cy.get('[data-cy="header-search-option"]').should("not.exist");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+
+        cy.get('[data-cy="header-search-input"]').type("{enter}");
+        cy.url({ timeout: 10000 }).should("include", "/search?q=");
+        cy.get('[data-cy="search-results-empty"]', { timeout: 10000 }).should("contain.text", noMatch);
+        cy.checkA11y(null, null, terminalLog);
+    });
+
+    it("lists several matches and opens the highlighted one with the keyboard", () => {
+        const prefix = `E2E Header Search Multi ${Date.now()}`;
+        cy.wrap(["A", "B"]).each((suffix) => {
+            addAgreement({
+                ...testAgreement,
+                name: `${prefix} ${suffix}`,
+                po_number: `E2E-HS-${suffix}-${Date.now()}`
+            }).then((response) => {
+                createdAgreementIds.push(response.body.id);
+                expect(response.status).to.eq(201);
+            });
+        });
+
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type(prefix);
+        cy.get('[data-cy="header-search-option"]', { timeout: 10000 }).should("have.length", 2);
+        cy.get('[data-cy="header-search-footer"]').should("contain.text", "2 results");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+
+        // Options are ordered by name, so the first row is "... A".
+        cy.get('[data-cy="header-search-input"]').type("{downArrow}{enter}");
+        cy.url({ timeout: 10000 }).should("match", /\/agreements\/\d+/);
+        cy.get('[data-cy="header-search-input"]').should("have.value", "");
+    });
+
+    it("shows an error message in the dropdown when the search request fails", () => {
+        cy.intercept("GET", "**/api/v1/agreements-search/**", { statusCode: 500, body: { error: "boom" } });
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type("anything");
+
+        cy.get('[data-cy="header-search-error"]', { timeout: 10000 }).should("contain.text", "Search is unavailable");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+    });
+
+    it("explains what can be searched from the info icon", () => {
+        cy.visit("/");
+        cy.get('[data-cy="header-search-info-tip"]').should("not.be.visible");
+        cy.get('[data-cy="header-search-info"]').focus();
+        cy.get('[data-cy="header-search-info-tip"]')
+            .should("be.visible")
+            .and("contain.text", "You can search agreements by:")
+            .and("contain.text", "Purchase order (PO) #")
+            .and("contain.text", "Agreement title or nickname");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+    });
 });

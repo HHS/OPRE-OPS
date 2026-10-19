@@ -162,6 +162,10 @@ class AaAgreementData(ContractAgreementData):
     service_requirement_type = fields.Enum(ServiceRequirementType)
 
 
+# PostgreSQL cannot compare against NUL; the driver raises ValueError (HTTP 500) otherwise
+NO_NUL = validate.Regexp(r"^[^\x00]*$", error="Value must not contain NUL characters")
+
+
 class AgreementRequestSchema(PaginationListSchema):
     """ "
     Schema used in GET /agreements endpoint to filter agreements.
@@ -175,7 +179,7 @@ class AgreementRequestSchema(PaginationListSchema):
     portfolio = fields.List(fields.Integer(), required=False)
     project_id = fields.List(fields.Integer(), required=False)
     agreement_reason = fields.List(fields.String(), required=False)
-    contract_number = fields.List(fields.String(), required=False)
+    contract_number = fields.List(fields.String(validate=NO_NUL), required=False)
     contract_type = fields.List(fields.String(), required=False)
     agreement_type = fields.List(fields.String(), required=False)
     delivered_status = fields.List(fields.String(), required=False)
@@ -183,11 +187,11 @@ class AgreementRequestSchema(PaginationListSchema):
     division = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
-    nick_name = fields.List(fields.String(), required=False)
-    foa = fields.List(fields.String(), required=False)
-    odn = fields.List(fields.String(), required=False)
-    name = fields.List(fields.String(), required=False)
-    search = fields.List(fields.String(), required=False)  # currently an alias for name
+    nick_name = fields.List(fields.String(validate=NO_NUL), required=False)
+    foa = fields.List(fields.String(validate=NO_NUL), required=False)
+    odn = fields.List(fields.String(validate=NO_NUL), required=False)
+    name = fields.List(fields.String(validate=NO_NUL), required=False)
+    search = fields.List(fields.String(validate=NO_NUL), required=False)  # currently an alias for name
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
@@ -394,16 +398,10 @@ class AgreementSearchRequestSchema(PaginationSchema):
         required=True,
         validate=[
             validate.Length(min=1, max=100, error="q must be 1 to 100 characters"),
-            # PostgreSQL cannot compare against NUL; the driver raises ValueError (HTTP 500) otherwise
-            validate.Regexp(r"^[^\x00]*$", error="q must not contain NUL characters"),
+            NO_NUL,
         ],
     )
-    limit = fields.Integer(
-        load_default=10,
-        dump_default=10,
-        validate=validate.Range(min=1, max=50, error="Limit must be between 1 and 50"),
-        allow_none=False,
-    )
+    # limit (1..50, default 10) is inherited from PaginationSchema; offset needs an upper bound
     offset = fields.Integer(
         load_default=0,
         dump_default=0,

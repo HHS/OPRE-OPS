@@ -1362,11 +1362,7 @@ def _get_all_matching_ids(
     if _is_sql_sortable(sort_condition):
         agreement_alias = Agreement.__table__
         if sort_condition == AgreementSortCondition.AGREEMENT:
-            # COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort.
-            # Without it, en_US.utf8 collation treats spaces/hyphens differently from Python.
-            from sqlalchemy import text
-
-            sort_col = func.lower(agreement_alias.c.name).op("COLLATE")(text('"C"')).label("sort_key")
+            sort_col = _name_sort_key(agreement_alias.c.name).label("sort_key")
         inner = (
             select(union_subq.c.id, sort_col)
             .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
@@ -1552,6 +1548,15 @@ def _odn_column(agreement_cls: Type[Agreement]):
 _ODN_AGREEMENT_CLASSES = (ContractAgreement, AaAgreement, GrantAgreement)
 
 
+def _name_sort_key(name_column):
+    """Case-insensitive agreement-name sort key shared by the list and search endpoints.
+
+    COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort. Without it,
+    en_US.utf8 collation treats spaces/hyphens differently from Python.
+    """
+    return func.lower(name_column).op("COLLATE")(text('"C"'))
+
+
 def search_agreements(session: Session, q: str, limit: int, offset: int) -> tuple[list[dict[str, Any]], int]:
     """Lightweight agreement search for the header type-ahead and the search results page.
 
@@ -1588,10 +1593,10 @@ def search_agreements(session: Session, q: str, limit: int, offset: int) -> tupl
 
     total_count = session.scalar(select(func.count()).select_from(base.subquery()))
 
-    # COLLATE "C" matches the Agreement sort on the list endpoint (see _get_all_matching_ids);
     # id is the tie-break so pagination is stable.
-    sort_key = func.lower(Agreement.name).op("COLLATE")(text('"C"'))
-    rows = session.execute(base.order_by(sort_key, Agreement.id).limit(limit).offset(offset)).all()
+    rows = session.execute(
+        base.order_by(_name_sort_key(Agreement.name), Agreement.id).limit(limit).offset(offset)
+    ).all()
     results = [
         {
             "id": row.id,
