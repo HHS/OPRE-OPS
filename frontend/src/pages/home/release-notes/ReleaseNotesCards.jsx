@@ -35,7 +35,7 @@ export function LeftCard({
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h3>
                     <Tag
                         text={releaseDate}
-                        className="bg-brand-primary-light text-primary"
+                        tagStyle="primaryDarkTextLightBackground"
                     />
                 </article>
 
@@ -43,7 +43,7 @@ export function LeftCard({
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h3>
                     <Tag
                         text={`Version ${lastVersion}`}
-                        className="bg-brand-primary-light text-primary"
+                        tagStyle="primaryDarkTextLightBackground"
                     />
                 </article>
 
