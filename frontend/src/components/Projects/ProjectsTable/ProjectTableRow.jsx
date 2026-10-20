@@ -1,13 +1,12 @@
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { Link } from "react-router-dom";
-import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import TableRowExpandable from "../../UI/TableRowExpandable/TableRowExpandable";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
-import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -44,7 +43,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
         project.project_total !== null && project.project_total !== undefined ? Number(project.project_total) : null;
 
     const agreementList = project.agreement_name_list ?? [];
-    const listCrumb = useListCrumb("projects");
+    const listTrailState = useListTrailState("projects");
     const projectPath = `/projects/${project.id}`;
 
     const visibleColumns = [
@@ -52,7 +51,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             <Link
                 className="text-ink text-no-underline"
                 to={projectPath}
-                state={buildTrailState(projectPath, [listCrumb])}
+                state={listTrailState(projectPath)}
             >
                 {project.title}
             </Link>
@@ -91,7 +90,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                                 <Link
                                     key={agreement.id}
                                     to={`/agreements/${agreement.id}`}
-                                    state={buildTrailState(`/agreements/${agreement.id}`, [listCrumb])}
+                                    state={listTrailState(`/agreements/${agreement.id}`)}
                                     className="bg-primary-lighter text-ink text-no-underline font-sans-3xs padding-x-1 padding-y-05 radius-md margin-right-1 margin-bottom-1"
                                     title={agreement.name}
                                     data-testid="agreement-tag"

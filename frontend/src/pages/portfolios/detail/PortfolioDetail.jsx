@@ -17,9 +17,9 @@ import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
     const [searchParams] = useSearchParams();
-    const initialFiscalYear = parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear();
-
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(initialFiscalYear);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(
+        () => parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear()
+    );
     const fiscalYear = Number(selectedFiscalYear);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");

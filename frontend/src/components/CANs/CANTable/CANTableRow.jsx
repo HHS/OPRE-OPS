@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
-import { useListCrumb } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * CanTableRow component of CANTable
@@ -24,7 +23,7 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
-    const listCrumb = useListCrumb("cans");
+    const listTrailState = useListTrailState("cans");
     const canPath = `/cans/${canId}`;
 
     return (
@@ -36,7 +35,7 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                 >
                     <Link
                         to={canPath}
-                        state={buildTrailState(canPath, [listCrumb])}
+                        state={listTrailState(canPath)}
                         className="text-ink text-no-underline"
                     >
                         {name}

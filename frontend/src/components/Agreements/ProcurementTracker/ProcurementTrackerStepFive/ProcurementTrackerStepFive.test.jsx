@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { vi, expect, describe, it, beforeEach } from "vitest";
+import { buildTrailState } from "../../../../helpers/breadcrumb.helpers";
 import ProcurementTrackerStepFive from "./ProcurementTrackerStepFive";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import DatePicker from "../../../UI/USWDS/DatePicker";
@@ -273,6 +274,32 @@ describe("ProcurementTrackerStepFive", () => {
             const requestButton = screen.getByText("Request Pre-Award Approval");
             expect(requestButton).toBeInTheDocument();
             expect(requestButton).not.toBeDisabled();
+        });
+
+        it("navigates to pre-award approval page when Request Pre-Award Approval is clicked", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    agreementName="Test Agreement"
+                    budgetLineItems={[]}
+                />
+            );
+
+            fireEvent.click(screen.getByText("Request Pre-Award Approval"));
+
+            // The approval page's trail ends with this agreement (route-based fallback before it).
+            expect(mockNavigate).toHaveBeenCalledWith("/agreements/13/pre-award-approval", {
+                state: buildTrailState("/agreements/13/pre-award-approval", [
+                    { label: "Agreements", to: "/agreements" },
+                    { label: "Test Agreement", to: "/agreements/13/procurement-tracker" }
+                ])
+            });
         });
 
         it("renders Request Pre-Award Approval button as disabled when approval already requested", () => {
