@@ -42,7 +42,7 @@ export const SearchInfoTip = () => {
                     focusable="false"
                     role="img"
                 >
-                    <use href={`${icons}#info_outline`}></use>
+                    <use href={`${icons}#info`}></use>
                 </svg>
             </button>
             {isVisible && (
