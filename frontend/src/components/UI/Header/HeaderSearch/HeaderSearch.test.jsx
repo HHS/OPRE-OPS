@@ -244,6 +244,17 @@ describe("HeaderSearch", () => {
             expect(input).toHaveValue("");
         });
 
+        it("separates ODN, a matched contract number and the nickname with one middot each", async () => {
+            const FULL = { ...PO_1, id: 22, contract_number: "PO-TEST-CN", task_order_number: null };
+            mockSearch(() => ({ data: [FULL], count: 1 }));
+            const { user, input } = renderSearch();
+
+            await user.type(input, "PO-TEST-CN");
+
+            const option = await screen.findByRole("option");
+            expect(option).toHaveTextContent("ODN: PO-TEST-0001 · Contract #: PO-TEST-CN · Nickname: CCS");
+        });
+
         it("keeps aria-expanded false and exposes no listbox when the dropdown only holds the empty hint", async () => {
             mockSearch(() => ({ data: [], count: 0 }));
             const { user, input } = renderSearch();
@@ -1043,7 +1054,7 @@ describe("HeaderSearch", () => {
             await user.type(input, "zzz");
 
             expect(await screen.findByText(/No agreements match "zzz"\./)).toBeInTheDocument();
-            expect(screen.getByText(/Try an ODN, agreement title, or nickname\./)).toBeInTheDocument();
+            expect(screen.getByText(/Try a number, agreement title, or nickname\./)).toBeInTheDocument();
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
             expect(screen.getByRole("status")).toHaveTextContent("No results");
         });

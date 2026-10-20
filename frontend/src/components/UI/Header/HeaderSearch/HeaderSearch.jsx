@@ -163,56 +163,59 @@ export const HeaderSearch = () => {
                     hidden={!hasOptions}
                     onMouseDown={(event) => event.preventDefault()}
                 >
-                    {results.map((agreement, index) => (
-                        // Keyboard users act on options through the combobox input (aria-activedescendant + Enter).
-                        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
-                        <li
-                            key={agreement.id}
-                            id={optionId(agreement.id)}
-                            role="option"
-                            aria-selected={index === activeIndex}
-                            className={styles.option}
-                            onClick={() => goToAgreement(agreement.id)}
-                            data-cy="header-search-option"
-                        >
-                            <div className={styles.optionTitle}>
-                                <span>
-                                    <HighlightedText
-                                        text={agreement.name}
-                                        query={searchedQuery}
-                                    />
-                                </span>
-                                <span className={styles.optionTag}>
-                                    <Tag
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        text={convertCodeForDisplay("agreementType", agreement.agreement_type)}
-                                        className="padding-x-1"
-                                    />
-                                </span>
-                            </div>
-                            {metaParts(agreement).length > 0 && (
-                                <div className={styles.optionMeta}>
-                                    {metaParts(agreement).map((part, partIndex) => (
-                                        <Fragment key={part.field}>
-                                            {partIndex > 0 && (
-                                                <>
-                                                    {" "}
-                                                    <span aria-hidden="true">·</span>{" "}
-                                                </>
-                                            )}
-                                            <span>
-                                                {part.label}:{" "}
-                                                <HighlightedText
-                                                    text={part.value}
-                                                    query={searchedQuery}
-                                                />
-                                            </span>
-                                        </Fragment>
-                                    ))}
+                    {results.map((agreement, index) => {
+                        const parts = metaParts(agreement);
+                        return (
+                            // Keyboard users act on options through the combobox input (aria-activedescendant + Enter).
+                            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+                            <li
+                                key={agreement.id}
+                                id={optionId(agreement.id)}
+                                role="option"
+                                aria-selected={index === activeIndex}
+                                className={styles.option}
+                                onClick={() => goToAgreement(agreement.id)}
+                                data-cy="header-search-option"
+                            >
+                                <div className={styles.optionTitle}>
+                                    <span>
+                                        <HighlightedText
+                                            text={agreement.name}
+                                            query={searchedQuery}
+                                        />
+                                    </span>
+                                    <span className={styles.optionTag}>
+                                        <Tag
+                                            tagStyle="primaryDarkTextLightBackground"
+                                            text={convertCodeForDisplay("agreementType", agreement.agreement_type)}
+                                            className="padding-x-1"
+                                        />
+                                    </span>
                                 </div>
-                            )}
-                        </li>
-                    ))}
+                                {parts.length > 0 && (
+                                    <div className={styles.optionMeta}>
+                                        {parts.map((part, partIndex) => (
+                                            <Fragment key={part.field}>
+                                                {partIndex > 0 && (
+                                                    <>
+                                                        {" "}
+                                                        <span aria-hidden="true">·</span>{" "}
+                                                    </>
+                                                )}
+                                                <span>
+                                                    {part.label}:{" "}
+                                                    <HighlightedText
+                                                        text={part.value}
+                                                        query={searchedQuery}
+                                                    />
+                                                </span>
+                                            </Fragment>
+                                        ))}
+                                    </div>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
 
                 {status === SEARCH_STATUS.SUCCESS && (
@@ -230,7 +233,7 @@ export const HeaderSearch = () => {
                     >
                         No agreements match &quot;{trimmedQuery}&quot;.
                         <br />
-                        Try an ODN, agreement title, or nickname.
+                        Try a number, agreement title, or nickname.
                     </div>
                 )}
                 {status === SEARCH_STATUS.ERROR && (

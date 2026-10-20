@@ -93,7 +93,7 @@ describe("SearchResults", () => {
 
         expect(screen.getByRole("heading", { name: "Search results" })).toBeInTheDocument();
         expect(screen.getByTestId("breadcrumb")).toHaveTextContent("Search");
-        expect(screen.getByText("Enter an ODN, agreement title, or nickname to search.")).toBeInTheDocument();
+        expect(screen.getByText("Enter a number, agreement title, or nickname to search.")).toBeInTheDocument();
         await new Promise((resolve) => setTimeout(resolve, 100));
         expect(requests).toHaveLength(0);
     });
@@ -102,7 +102,7 @@ describe("SearchResults", () => {
         const requests = mockSearch(() => ({ data: [], count: 0 }));
         renderPage("/search");
 
-        expect(screen.getByText("Enter an ODN, agreement title, or nickname to search.")).toBeInTheDocument();
+        expect(screen.getByText("Enter a number, agreement title, or nickname to search.")).toBeInTheDocument();
         await new Promise((resolve) => setTimeout(resolve, 100));
         expect(requests).toHaveLength(0);
     });

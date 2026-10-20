@@ -353,3 +353,12 @@ class TestExactOdnFilterRegression:
     def test_exact_odn_never_matches_iaa_or_direct(self, auth_client, search_agreements, app_ctx):
         response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "Banana Direct"})
         assert response.json["count"] == 0
+
+
+def test_search_schema_rejects_null_limit_and_offset():
+    from ops_api.ops.schemas.agreements import AgreementSearchRequestSchema
+
+    schema = AgreementSearchRequestSchema()
+    assert "limit" in schema.validate({"q": "x", "limit": None})
+    assert "offset" in schema.validate({"q": "x", "offset": None})
+    assert schema.validate({"q": "x"}) == {}

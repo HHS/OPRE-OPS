@@ -25,7 +25,7 @@ const SearchResults = () => {
 
     let body;
     if (!q) {
-        body = <p data-cy="search-results-prompt">Enter an ODN, agreement title, or nickname to search.</p>;
+        body = <p data-cy="search-results-prompt">Enter a number, agreement title, or nickname to search.</p>;
     } else if (isError) {
         body = (
             <div
@@ -57,7 +57,7 @@ const SearchResults = () => {
                 role="status"
                 data-cy="search-results-empty"
             >
-                No agreements match &quot;{q}&quot;. Try an ODN, agreement title, or nickname.
+                No agreements match &quot;{q}&quot;. Try a number, agreement title, or nickname.
             </p>
         );
     } else {

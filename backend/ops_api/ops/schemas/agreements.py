@@ -401,7 +401,14 @@ class AgreementSearchRequestSchema(PaginationSchema):
             NO_NUL,
         ],
     )
-    # limit (1..50, default 10) is inherited from PaginationSchema; offset needs an upper bound
+    # Same range and default as PaginationSchema.limit, but None must be rejected: it would reach
+    # .limit(None) and return every match. offset also needs an upper bound.
+    limit = fields.Integer(
+        load_default=10,
+        dump_default=10,
+        validate=validate.Range(min=1, max=50, error="Limit must be greater than 0 and less than 51"),
+        allow_none=False,
+    )
     offset = fields.Integer(
         load_default=0,
         dump_default=0,

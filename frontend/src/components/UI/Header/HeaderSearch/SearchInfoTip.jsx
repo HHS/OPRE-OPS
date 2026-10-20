@@ -12,7 +12,7 @@ import styles from "./HeaderSearch.module.scss";
  */
 export const SearchInfoTip = () => {
     // Hover and focus are tracked separately: the tip stays up while either is active (WCAG 1.4.13
-    // persistence) unless Esc dismissed it, which holds until both have ended or either starts again.
+    // persistence) unless Esc dismissed it; that holds until hover or focus starts again.
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
@@ -39,22 +39,12 @@ export const SearchInfoTip = () => {
         setIsHovered(true);
         setIsDismissed(false);
     };
-    const endHover = () => {
-        setIsHovered(false);
-        if (!isFocused) {
-            setIsDismissed(false);
-        }
-    };
+    const endHover = () => setIsHovered(false);
     const startFocus = () => {
         setIsFocused(true);
         setIsDismissed(false);
     };
-    const endFocus = () => {
-        setIsFocused(false);
-        if (!isHovered) {
-            setIsDismissed(false);
-        }
-    };
+    const endFocus = () => setIsFocused(false);
 
     return (
         <div
