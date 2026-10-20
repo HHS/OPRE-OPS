@@ -12,12 +12,15 @@ export const getCurrentFiscalYear = (today = new Date()) => {
     return fiscalYear;
 };
 
+/** `?fy=` value meaning "All fiscal years", for pages whose FY selector offers that option. */
+export const ALL_FISCAL_YEARS_PARAM = "all";
+
 /**
  * Parse a fiscal-year URL param (e.g. `?fy=2025`).
  * @param {string | null} value - The raw param value.
- * @returns {number | null} The fiscal year, or null when the value isn't a whole year.
+ * @returns {number | null} The fiscal year, or null when the value isn't a four-digit year (e.g. "0000").
  */
-export const parseFiscalYearParam = (value) => (value && /^\d{4}$/.test(value) ? Number(value) : null);
+export const parseFiscalYearParam = (value) => (value && /^[1-9]\d{3}$/.test(value) ? Number(value) : null);
 
 /**
  * This function calculate a percent based on a numerator and denominator.

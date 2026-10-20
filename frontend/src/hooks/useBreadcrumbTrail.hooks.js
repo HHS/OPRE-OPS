@@ -72,7 +72,7 @@ export const useTrailNavigate = () => {
  * link elsewhere.
  *
  * @param {Object} params
- * @param {{ label: string, to?: string, fiscalYear?: number | null }} params.ownCrumb - The current page's own crumb.
+ * @param {{ label: string, to?: string, fiscalYear?: number | string | null }} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
  * @returns {BreadcrumbAncestor[]}
  */

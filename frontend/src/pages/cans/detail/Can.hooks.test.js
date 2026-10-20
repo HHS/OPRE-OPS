@@ -329,4 +329,11 @@ describe("useCan", () => {
 
         expect(result.current.fiscalYear).toBe(2025);
     });
+
+    it("seeds 'All' fiscal years from ?fy=all", () => {
+        mockSearch = "?fy=all";
+        const { result } = renderHook(() => useCan());
+
+        expect(result.current.fiscalYear).toBeNull();
+    });
 });

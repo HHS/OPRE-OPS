@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import Tabs from "./Tabs";
 
 // Mock the router hooks. useLocation is a vi.fn() (rather than a fixed return value) so tests
@@ -69,21 +70,24 @@ describe("Tabs", () => {
         const secondTab = screen.getByText("Path 2");
         fireEvent.click(secondTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
     });
 
-    it("passes navigationState when switching tabs", () => {
-        const navigationState = { from: "test" };
+    it("keeps the breadcrumb trail when switching between tabs of the same resource", () => {
+        const trailState = buildTrailState("/cans/1", [{ label: "Portfolios", to: "/portfolios" }]);
+        mockUseLocation.mockReturnValue({ pathname: "/cans/1", state: trailState });
         render(
             <Tabs
-                paths={mockPaths}
-                navigationState={navigationState}
+                paths={[
+                    { label: "Details", pathName: "/cans/1" },
+                    { label: "Spending", pathName: "/cans/1/spending" }
+                ]}
             />
         );
 
-        fireEvent.click(screen.getByText("Path 2"));
+        fireEvent.click(screen.getByText("Spending"));
 
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: navigationState });
+        expect(mockNavigate).toHaveBeenCalledWith("/cans/1/spending", { state: trailState });
     });
 
     it("navigates immediately when scrolled, by default (scrollToTopOnChange not set)", () => {
@@ -94,7 +98,7 @@ describe("Tabs", () => {
         fireEvent.click(screen.getByText("Path 2"));
 
         expect(scrollToSpy).not.toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
     });
 
     describe("scrollToTopOnChange", () => {
@@ -122,7 +126,7 @@ describe("Tabs", () => {
             Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
             vi.advanceTimersByTime(20);
 
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
         });
 
         it("falls back to navigating on a timeout if the scroll never settles", () => {
@@ -141,7 +145,7 @@ describe("Tabs", () => {
 
             vi.advanceTimersByTime(2000);
 
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
         });
 
         it("navigates immediately when already scrolled to the top", () => {
@@ -156,7 +160,7 @@ describe("Tabs", () => {
             fireEvent.click(screen.getByText("Path 2"));
 
             expect(scrollToSpy).not.toHaveBeenCalled();
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path2", { state: undefined });
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
         });
 
         it("cancels the pending transition when a different tab is clicked before it settles", () => {
@@ -176,8 +180,8 @@ describe("Tabs", () => {
             Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
             vi.advanceTimersByTime(50);
 
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2", { state: undefined });
-            expect(mockNavigate).toHaveBeenCalledWith("/test/path3", { state: undefined });
+            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
+            expect(mockNavigate).toHaveBeenCalledWith("/test/path3");
         });
 
         it("does not navigate for a pending transition after the component unmounts", () => {
@@ -223,7 +227,7 @@ describe("Tabs", () => {
 
             vi.advanceTimersByTime(2000);
 
-            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2", { state: undefined });
+            expect(mockNavigate).not.toHaveBeenCalledWith("/test/path2");
         });
     });
 

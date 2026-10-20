@@ -64,7 +64,7 @@ describe("CanDetailTabs", () => {
         const spendingTab = screen.getByText("CAN Spending");
         fireEvent.click(spendingTab);
 
-        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`, { state: undefined });
+        expect(mockNavigate).toHaveBeenCalledWith(`/cans/${mockCanId}/spending`);
     });
 
     it("keeps the breadcrumb trail when switching tabs", () => {
