@@ -227,6 +227,23 @@ describe("HeaderSearch", () => {
             expect(screen.getByRole("option")).not.toHaveTextContent("Contract #");
         });
 
+        it("Esc closes the hovered info tip first and leaves the typed search alone", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+
+            await user.hover(screen.getByRole("button", { name: "What can I search for?" }));
+            expect(screen.getByRole("tooltip")).toBeVisible();
+
+            await user.keyboard("{Escape}");
+            expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+            expect(input).toHaveValue("PO-TEST");
+
+            await user.keyboard("{Escape}");
+            expect(input).toHaveValue("");
+        });
+
         it("keeps aria-expanded false and exposes no listbox when the dropdown only holds the empty hint", async () => {
             mockSearch(() => ({ data: [], count: 0 }));
             const { user, input } = renderSearch();

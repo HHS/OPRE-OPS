@@ -35,4 +35,53 @@ describe("SearchInfoTip", () => {
         await user.tab();
         expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     });
+
+    it("stays visible while either hover or focus is active", async () => {
+        const user = userEvent.setup();
+        render(<SearchInfoTip />);
+        const button = screen.getByRole("button", { name: "What can I search for?" });
+
+        // focused, then hovered and un-hovered: still focused, so still shown
+        await user.tab();
+        await user.hover(button);
+        await user.unhover(button);
+        expect(screen.getByRole("tooltip")).toBeVisible();
+
+        // hovered, then blurred: still hovered, so still shown
+        await user.hover(button);
+        await user.tab();
+        expect(screen.getByRole("tooltip")).toBeVisible();
+
+        await user.unhover(button);
+        expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    });
+
+    it("dismisses on Esc even when the icon only has hover and focus is elsewhere", async () => {
+        const user = userEvent.setup();
+        render(
+            <>
+                <input aria-label="other" />
+                <SearchInfoTip />
+            </>
+        );
+        await user.click(screen.getByLabelText("other"));
+        await user.hover(screen.getByRole("button", { name: "What can I search for?" }));
+        expect(screen.getByRole("tooltip")).toBeVisible();
+
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    });
+
+    it("comes back on the next hover after being dismissed", async () => {
+        const user = userEvent.setup();
+        render(<SearchInfoTip />);
+        const button = screen.getByRole("button", { name: "What can I search for?" });
+        await user.hover(button);
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+
+        await user.unhover(button);
+        await user.hover(button);
+        expect(screen.getByRole("tooltip")).toBeVisible();
+    });
 });
