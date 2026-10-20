@@ -1,4 +1,5 @@
-import { useGetAgreementAwardHistoryByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementAwardHistoryByIdQuery, useGetVersionQuery } from "../../../api/opsAPI";
+import ContractModificationEdits from "../../../components/Agreements/ContractModificationEdits";
 import Accordion from "../../../components/UI/Accordion/Accordion";
 import TermTag from "../../../components/UI/Term/TermTag";
 import { getAwardModificationSections } from "../../../helpers/awardModificationHistory.helpers";
@@ -28,7 +29,20 @@ const AgreementAwardModifications = ({ agreement }) => {
         refetchOnMountOrArgChange: true
     });
 
-    const heading = <h2 className="font-sans-lg">Award &amp; Modification History</h2>;
+    // The "Contract Modifications" section only applies once the agreement is awarded, and
+    // follows the backend's ENABLE_MODIFIED_LOE_EDITS capability (OPS-3072).
+    const { data: versionData } = useGetVersionQuery();
+    const showContractModifications = Boolean(agreement?.is_awarded && versionData?.enable_modified_loe_edits);
+    const contractModifications = showContractModifications ? (
+        <ContractModificationEdits agreementId={agreementId} />
+    ) : null;
+
+    const heading = (
+        <>
+            {contractModifications}
+            <h2 className="font-sans-lg">Award &amp; Modification History</h2>
+        </>
+    );
 
     if (isLoading) {
         return (

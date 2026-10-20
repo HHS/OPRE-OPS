@@ -17,6 +17,7 @@ from models.change_requests import (
     ChangeRequestType,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -40,6 +41,10 @@ from ops_api.ops.utils.change_requests_helpers import (
     get_model_class_by_type,
 )
 from ops_api.ops.utils.events import OpsEventHandler
+
+
+def _is_agreement_awarded(budget_line_item: BudgetLineItem) -> bool:
+    return bool(budget_line_item.agreement and budget_line_item.agreement.is_awarded)
 
 
 class ChangeRequestService(OpsService[ChangeRequest]):
@@ -213,6 +218,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         if change_request.status == ChangeRequestStatus.APPROVED:
             if change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+                # On an Awarded agreement, track the approved edit as requiring a contract
+                # modification (OPS-3072). Recorded before the BLI is changed or deleted, while
+                # the change request still exists, so it lands in the same commit.
+                ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
                 if getattr(change_request, "has_delete_change", False):
                     # A deletion request: don't re-add the BLI (model_to_update stays None).
                     # The BLI is deleted last in update(), after the CR is finalized — see the
@@ -366,7 +375,12 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "managing_division_id": managing_division.id,
                     "requested_change_data": requested_change_data,
                     "requested_change_diff": requested_change_diff,
-                    "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                    "requested_change_info": {
+                        "target_display_name": budget_line_item.display_name,
+                        # Snapshot (OPS-3072): only money/time edits count; status changes don't.
+                        "requires_contract_modification": key in BudgetLineItemChangeRequest.budget_field_names
+                        and _is_agreement_awarded(budget_line_item),
+                    },
                     "requestor_notes": requestor_notes,
                     "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 }
@@ -403,7 +417,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 "managing_division_id": (managing_division.id if managing_division else None),
                 "requested_change_data": {"delete": True},
                 "requested_change_diff": {"delete": {"old": old_amount, "new": "Deleted"}},
-                "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                "requested_change_info": {
+                    "target_display_name": budget_line_item.display_name,
+                    "requires_contract_modification": _is_agreement_awarded(budget_line_item),
+                },
                 "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
             }
 

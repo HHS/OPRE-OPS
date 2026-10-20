@@ -147,17 +147,21 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
 
     @hybrid_property
     def requires_contract_modification(self):
-        """True when this change request was submitted while its Agreement was already
-        Awarded (OPS-3072) -- i.e. per the issue's own framing, "anything that changes
+        """True when this budget/delete change request was submitted while its Agreement was
+        already Awarded (OPS-3072) -- i.e. per the issue's own framing, "anything that changes
         money or time on the awarded contract." Deliberately agreement-scoped, not
         BLI-status-scoped (see Decision 1 in .claude/stories/3072-modified-loe-edit-budget-line.md).
 
-        Python-only for now: Agreement.is_awarded is a plain @property, not a
-        hybrid_property, so it has no SQL expression to mirror has_budget_change's
-        `.expression` pattern. A SQL-filterable form is deferred to the Award &
-        Modifications tab work (AC9) that will actually need to query by this field.
+        Snapshotted into ``requested_change_info`` at creation time rather than derived from
+        ``agreement.is_awarded`` on read: a request submitted before the award must keep
+        reading False after the agreement is awarded (Decision 2). Requests created before
+        the snapshot existed have no key and read False.
         """
-        return bool(self.agreement and self.agreement.is_awarded)
+        return bool((self.requested_change_info or {}).get("requires_contract_modification"))
+
+    @requires_contract_modification.expression
+    def requires_contract_modification(cls):
+        return cls.requested_change_info["requires_contract_modification"].as_boolean().is_(True)
 
     def to_dict(self):
         """Override to_dict to include hybrid properties."""

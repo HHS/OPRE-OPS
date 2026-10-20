@@ -15,6 +15,14 @@ branch: OPS-3072/modified-loe-amount-edit
 2. **A new "requires a contract modification" confirmation modal** — shown whenever a user tries to save an amount/CAN/date change, a new BL, a deleted BL, or an added/deleted Services Component on an agreement that `is_awarded`, before the edit is actually submitted. Confirmed via direct research: the exact reusable modal component and an almost-identical existing modal already live in this flow (`EditAgreementAndBudgetLines.jsx`) — this is a close clone, not new infrastructure. See [Current State: Modal Pattern & Save-Flow](#current-state-modal-pattern--save-flow-gap).
 3. **A new seeded test agreement** — Awarded, fully populated, with exactly 3 OBLIGATED BLIs — so all of the above can be manually exercised without first having to walk a fresh agreement through the entire procurement tracker wizard. See [Test Data](#test-data-seeded-awarded-agreement-for-manual-testing).
 
+**Revision (round 3) — AC9 backend pulled into scope:** AC9 ("All approved modified LOE changes are displayed on the Award & Modifications Tab as 'Edits That Require a Contract Modification' and they remain on that list until the user is ready to start the contract modification") is no longer just sketched — its **backend** is now planned in full. **No frontend for AC9 in this slice.** Reference design: `Agreements After Award/Modified LOE - Award & Modifications Tab.pdf` — under a "Contract Modifications" heading, an "Edits That Require a Contract Modification" list shows one card per approved edit (**Requested by** name + date, **Modification Type** "Modified Level of Effort", **BL ID**, **Change To** e.g. "Amount", **From** $600,000.00, **To** $500,000.00), followed by a **Start modification** button. Product framing: once the Division Director approves a modified-LOE edit, OPS must remember it as "pending a contract modification" and keep it there until the user presses Start Modification (#3268); approval does **not** itself start a modification. Two findings from this pass force a change to the round-1 design — see [Decision 2 (revised)](#key-decisions) and [AC9 — Backend Design](#ac9--award--modifications-tab-edits-that-require-a-contract-modification):
+1. The shipped `requires_contract_modification` hybrid (`change_requests.py`, commit `6309018e7`) reads `agreement.is_awarded` **live**, so every pre-award CR on an agreement flips to `True` the moment the agreement is awarded. Harmless as a display hint, but wrong as the AC9 list predicate — it would pull years of pre-award approvals onto the list.
+2. Approving a delete-BL CR deletes the BLI, and `change_request.budget_line_item_id` is `ON DELETE CASCADE` (`change_requests.py:98-100`) — the approved CR row itself disappears. A list derived purely from `ChangeRequest` rows can never show an approved "delete BL" edit (AC5), so AC9 needs its own durable record.
+
+**Revision (round 5):** round 4 had switched Decision 13 to "approval does not change the BLI". The Figma annotation for this screen (quoted in [Decision 13](#key-decisions)) says the opposite: the change is made in OPS on approval, and the card tracks that the actual contract still needs a modification. Decision 13 is back to immediate apply, and the round-4-only pieces (pending-edit lock, `applied_on`, `apply_edits`) are removed.
+
+**Revision (round 6):** a minimal "Start modification" endpoint, `POST /agreements/<id>/contract-modifications/`, moves into this slice as the starting point for #3268. It creates a bare `AgreementMod` and attaches the pending edits to it. See [Decision 18](#key-decisions).
+
 **Precondition (from the issue):** #3267 is complete. A contract exists with 1+ BLs in **Obligated** status; there may also be 1+ BLs still in Draft or Planned status on the same (awarded) agreement.
 
 ## Background
@@ -87,6 +95,10 @@ As an OPRE COR, I want to increase or decrease the amount of an Obligated budget
 - [ ] The "Change Planned Budget Lines to Executing Status" option is disabled on `AgreementActionAccordion.jsx` whenever the agreement is awarded, regardless of how many Planned BLIs exist — closing the gap where this status change bypasses contract-mod framing entirely today.
 - [ ] Saving an amount/CAN/date edit, a new BL, a deleted BL, or an added/deleted Services Component on an Awarded agreement shows a confirmation modal (same message every time) before submission, offering "Send to approval" or "Continue editing."
 - [ ] A new seeded Contract agreement exists — Awarded, fully populated, exactly 3 BLIs all in OBLIGATED status — so every behavior above can be manually exercised without first walking a fresh agreement through the procurement tracker wizard. See [Test Data](#test-data-seeded-awarded-agreement-for-manual-testing).
+- [x] **(AC9, backend only)** `requires_contract_modification` is snapshotted onto the CR at **creation** time (`requested_change_info`), not derived live from `agreement.is_awarded` at read time. A CR created before the award keeps reading `False` after the agreement is awarded.
+- [x] **(AC9, backend only)** When a Division Director **approves** a CR whose snapshot says `requires_contract_modification: true` (flag on), a durable `ContractModificationEdit` row is written in the same transaction. It captures requested-by, requested-on, modification type, BL ID, changed field, and from/to values, and it survives the BLI being deleted. Rejected and in-review CRs produce no row. Approval still applies the change to the BLI immediately, as it does today. The row is a reference that the signed contract still needs a mod (Decision 13, confirmed by the Figma annotation).
+- [x] **(AC9, backend only)** `GET /agreements/<id>/contract-modification-edits/` returns every edit still **pending**, meaning not yet attached to a started modification (`agreement_mod_id IS NULL`), in the shape the PDF's card needs. Contract and AA agreements only, matching `/award-history/`.
+- [x] **(AC9, backend only)** `POST /agreements/<id>/contract-modifications/` ("Start modification") creates a bare `AgreementMod` for the agreement and stamps every pending edit with its id in one transaction. That takes the edits off the list, and the response returns the new mod and its attached edits. This is deliberately minimal: it's the starting point #3268 extends with `ProcurementAction`/tracker creation (see [Decision 18](#key-decisions)).
 
 ## Technical Context
 
@@ -118,7 +130,7 @@ As an OPRE COR, I want to increase or decrease the amount of an Obligated budget
 
 ### Dependencies
 
-None external. No new tables are required for this slice (see [Decision 1](#key-decisions)); a migration is only needed in the AC9 extension (see [Generalizing](#generalizing-to-the-remaining-acceptance-criteria)).
+None external. AC1 needs no new tables. **The AC9 backend (round 3) needs one new table, `contract_modification_edit`, plus its Continuum `_version` table, so it needs one Alembic migration** (use the `db-migrations` skill). The `requires_contract_modification` snapshot needs no migration, because it lives in the existing `requested_change_info` JSONB column. See [AC9 — Backend Design](#ac9--award--modifications-tab-edits-that-require-a-contract-modification).
 
 ### Assumptions
 
@@ -152,6 +164,12 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 
 - `backend/ops_api/tests/ops/services/test_modified_loe_bli_amount_edit.py` — new test file for the OBLIGATED-amount-edit allowance (unit + integration cases).
 - No new frontend/backend production files for the button guard or modal — both reuse existing components (`ConfirmationModal`, `AgreementActionAccordion`, `EDIT_DISABLED_TOOLTIPS`) with new conditions/copy, not new ones.
+- **(AC9)** `backend/models/contract_modification_edits.py`: the `ContractModificationEdit` model and the `ModificationEditType` enum. Export both from `backend/models/__init__.py`.
+- **(AC9)** `backend/alembic/versions/<timestamp>_add_contract_modification_edit.py`: the new table plus its `_version` table (generate with the `db-migrations` skill, don't hand-write it).
+- **(AC9)** `backend/ops_api/ops/services/contract_modification_edits.py`: `ContractModificationEditService` with `create_from_approved_change_request`, `get_pending_for_agreement`, `attach_pending_edits_to_mod`, and `start_modification`.
+- **(AC9)** `backend/ops_api/ops/schemas/contract_modification_edits.py`: the response schema.
+- **(AC9)** `backend/ops_api/ops/resources/contract_modification_edits.py`: `AgreementContractModificationEditsAPI` (GET, mirroring `resources/agreement_award_history.py`) and `AgreementContractModificationsAPI` (POST, Start modification).
+- **(AC9)** `backend/ops_api/tests/ops/services/test_contract_modification_edits.py` and `backend/ops_api/tests/ops/agreements/test_agreement_contract_modification_edits_api.py` (match the existing test-directory layout).
 
 ### Files to Modify
 
@@ -172,6 +190,15 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 - `frontend/src/pages/agreements/review/EditAgreementAndBudgetLines.jsx` (~:332-339) — when `requiresContractModification` is true (vs. the existing `requiresFinancialApproval`), swap the `ConfirmationModal`'s `heading` to the new copy (see [Decision 9](#key-decisions)) while reusing the same modal/mechanism.
 - `frontend/src/pages/agreements/details/AgreementBudgetLines.jsx` (:303-334, the inline `showEditWizard` branch that also hosts `CreateBLIsAndSCs`) — needs the same modal wiring as `EditAgreementAndBudgetLines.jsx`, since this is the second, independent place `CreateBLIsAndSCs` is embedded (and the one the Figma screenshot is actually from). Not just a copy-paste — see [Decision 11](#key-decisions).
 - `backend/data_tools/data/agreements_and_blin_data.json5` — new `contract_agreement`, `procurement_action`, `contract_budget_line_item` ×3, `services_component`, `default_procurement_tracker`, `procurement_tracker_step` rows (see [Test Data](#test-data-seeded-awarded-agreement-for-manual-testing)).
+- **(AC9)** `backend/ops_api/ops/services/change_requests.py`:
+  - `add_bli_change_requests` (:369) and `add_bli_delete_change_request` (:406): add `"requires_contract_modification": bool(budget_line_item.agreement.is_awarded)` to `requested_change_info` ([Decision 2 revised](#key-decisions)).
+  - `_handle_review_action` (:214-224): on `APPROVED` for a `BUDGET_LINE_ITEM_CHANGE_REQUEST` whose `requires_contract_modification` is true **and** `ENABLE_MODIFIED_LOE_EDITS` is on, call `ContractModificationEditService.create_from_approved_change_request(change_request)`. This must run **before** `update()` deletes the BLI (:118-123), while the CR and BLI still exist, so the row is in the same first commit. The row's `change_request_id` FK is `ON DELETE SET NULL`, so the later cascade delete of the CR doesn't take the edit row with it.
+- **(AC9)** `backend/models/change_requests.py`: repoint the `requires_contract_modification` hybrid to the snapshot, and add its `.expression` (the docstring's "deferred to AC9" note gets resolved here).
+- **(AC9)** `backend/ops_api/ops/urls.py` and `views.py`: register `GET /agreements/<int:id>/contract-modification-edits/` and `POST /agreements/<int:id>/contract-modifications/` next to `/award-history/` (`urls.py:304`, `views.py:146`).
+- **(AC9)** `backend/models/events.py`: add `OpsEventType.START_CONTRACT_MODIFICATION`. It's a Postgres enum, so the new value goes into the same AC9 migration.
+- **(AC9)** `backend/models/agreement_history.py` (`agreement_history_trigger_func`, :84): handle `START_CONTRACT_MODIFICATION` → one `AgreementHistory` row ("{user} started a contract modification including N edit(s)"). That covers AC10's who/when/what for this action; the IP is on the `OpsEvent` like every other event.
+- **(AC9)** `backend/openapi.yml`: document the new endpoint and the `ContractModificationEdit` schema.
+- **(AC9, optional)** `backend/data_tools/data/agreements_and_blin_data.json5`: seed one approved modified-LOE CR plus its `contract_modification_edit` row on the 3-OBLIGATED-BLI fixture, so the endpoint returns data straight away.
 
 ### Implementation Steps
 
@@ -184,6 +211,11 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 6. **Frontend diffing + modal** — widen `CreateBLIsAndSCs.helpers.js`'s financial-snapshot diffing to not drop OBLIGATED-status changes when the agreement is awarded; assemble the new `requiresContractModification` condition in `CreateBLIsAndSCs.hooks.js`; wire the new `ConfirmationModal` copy into both `EditAgreementAndBudgetLines.jsx` and the inline wizard in `AgreementBudgetLines.jsx`. Component tests: modal appears with the exact copy for each trigger (amount edit, add BL, delete BL, add SC, delete SC) on an awarded agreement, and does **not** appear for the same edits on a non-awarded agreement.
 7. **Frontend** — after confirming the UI pattern against Figma (see [Open Questions](#open-questions)): wire the `/version` flag into the pencil-icon/edit-affordance gate for OBLIGATED rows, and surface the "requires a contract modification" messaging both pre-submission (on the edit form) and on the Division Director's review screen (`BLIDiffRow`/`BLIReviewRow`).
 8. **Tests + manual verification** in `docker compose up --build` against the new seeded Awarded contract with 3 OBLIGATED BLIs — exercise the amount edit, the button guard, and the modal end-to-end on the same fixture.
+9. **(AC9) Snapshot the marker at CR creation.** Write `requires_contract_modification` into `requested_change_info`, then repoint the hybrid and add its `.expression`. Regression test: create a CR on a non-awarded agreement, award the agreement, and the CR still reads `False`. That test fails against the current live-derived hybrid, which is the point.
+10. **(AC9) Model + migration.** Add `ContractModificationEdit` and generate the migration with the `db-migrations` skill. Check the upgrade/downgrade round trip.
+11. **(AC9) Write the row on approval.** Hook `create_from_approved_change_request` into `_handle_review_action`, before the BLI is mutated or deleted. Test approve-amount (the BLI is updated **and** a row exists), approve-delete (the row survives the BLI and CR deletes, and `change_request_id` becomes NULL), reject (no row), flag off (no row), and non-awarded (no row).
+12. **(AC9) Read + attach.** Add `get_pending_for_agreement`, `attach_pending_edits_to_mod`, the GET endpoint, and the OpenAPI entry. Wire nothing in the frontend.
+13. **(AC9) Start modification.** Add `start_modification`, the POST endpoint, the new event type and its history message, and the OpenAPI entry (Decision 18).
 
 ### Key Decisions
 
@@ -196,7 +228,9 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 **Decision 2: Persist the flag on the CR, or derive it?**
 - Option A: Add a new persisted boolean column on `BudgetLineItemChangeRequest`, written at creation time.
 - Option B: A hybrid property derived from `self.agreement.is_awarded`, computed on read, no migration.
-- **Chosen:** Option B for this slice. `agreement.is_awarded` cannot un-become true once set (an agreement is never un-awarded), so there's no risk of the derived value drifting after CR creation/approval — a snapshot column would be solving a problem that doesn't exist yet. Revisit if AC9's extension needs a *different*, mutable piece of state (e.g., "has this been pulled into a contract mod yet") — that's a different field for a different purpose, not a replacement for this one (see [Generalizing](#generalizing-to-the-remaining-acceptance-criteria)).
+- ~~**Chosen:** Option B for this slice.~~ *(Superseded in round 3. Original reasoning kept for history:* "`agreement.is_awarded` cannot un-become true once set, so there's no risk of the derived value drifting after CR creation/approval.")
+- **Revised (round 3): Option C, a snapshot stored in the existing `requested_change_info` JSONB. No new column and no migration.** The round-1 reasoning was wrong. "Is never un-awarded" only means the value can't flip back from `True` to `False`. It can still flip from `False` to `True`: a CR submitted and approved **before** the award reads `True` once the award lands, because the hybrid derives it live. That wrongly marks pre-award CRs as needing a contract mod, and AC9 can't tolerate it. Fix: `add_bli_change_requests` and `add_bli_delete_change_request` (`change_requests.py:369`, `:406`) already write `requested_change_info={"target_display_name": ...}`. Add `"requires_contract_modification": bool(agreement.is_awarded)` next to it. Repoint the hybrid's Python side to `bool((self.requested_change_info or {}).get("requires_contract_modification"))`, and add the `.expression` that round 1 deferred: `cls.requested_change_info["requires_contract_modification"].as_boolean().is_(True)`. CRs created before this ships have no key and read `False`, which is the correct fail-closed default.
+- **What this does *not* solve, and why AC9 still gets its own table:** the "has this been pulled into a contract mod yet" state is mutable, and approved delete-BL CRs are cascade-deleted. See [Decision 12](#key-decisions).
 
 **Decision 3: Widen `EDITABLE_STATUSES` to include OBLIGATED globally, or add a narrow, field-scoped carve-out?**
 - Option A: Add `OBLIGATED` to `EDITABLE_STATUSES`.
@@ -243,6 +277,43 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 - Option B: Extract the modal-triggering logic into a shared hook/component both pages import, as part of this slice.
 - **Chosen:** Option A for this slice, flagged as tech debt. These two `CreateBLIsAndSCs` host sites are already independent, pre-existing call sites with no shared wrapper today — unifying them is a larger refactor than this slice's scope justifies, and duplicating ~10 lines of modal-state wiring twice is lower-risk than introducing a new shared abstraction under time pressure. Worth revisiting once ACs 2-7 land and this wiring needs to be touched a third/fourth time.
 
+**Decision 12 (AC9): Where does the "Edits That Require a Contract Modification" list come from?**
+- Option A: Query `BudgetLineItemChangeRequest` directly (`status == APPROVED AND requires_contract_modification`), and add a nullable `agreement_mod_id` column to `change_request` for the "already started" state.
+- Option B: A new `ContractModificationEdit` table, one row written when a qualifying CR is **approved**, holding a self-contained snapshot of what the card displays, plus a nullable `agreement_mod_id`.
+- **Chosen:** Option B. Option A has three problems that can't be fixed. (1) An approved delete-BL CR is cascade-deleted along with its BLI (`budget_line_item_id ... ondelete="CASCADE"`), so AC5's edits would vanish from the list right after approval, which is exactly when they should appear. (2) Services Component add/delete (AC6/AC7) has no `ChangeRequest` subtype, so a CR-only list could never show them, and Option B's table can take SC rows later without a schema change. (3) It overloads the CR table, which is a review-workflow record, with contract-mod lifecycle state. Option B also freezes the display values ("From $600,000.00 / To $500,000.00"), so later edits to the same BL don't rewrite history on the card. Cost: one table plus one migration.
+
+**Decision 13 (AC9): Does Division Director approval still apply the change to the BLI immediately?**
+- Option A: Yes. Approval writes the new amount to the BLI as it does today (`_apply_budget_line_item_changes`). The `ContractModificationEdit` row records that OPS now differs from the signed contract, and it waits there until a modification is started.
+- Option B: No. Approval parks the change, and it is only applied to the BLI when "Start modification" runs.
+- **Chosen (round 5, final): Option A, so approval applies the edit in OPS immediately, as it does today.** Round 4 briefly switched to Option B. The design's own Figma annotation (node `15119-128585`) settles it in favor of A:
+
+  > *"After an edit requiring a mod is approved by the DD, card(s) will display to show what changed on the agreement since its been awarded, and what changes will require a contract modification in order to update the actual contract/award/document. The changes/edits requiring a mod are tracked here as a reference for the user because there might be a gap of time between when they make the change/edit in OPS and when they do the actual Contract Modification. In this scenario, the edit requiring a mod is the BL amount change from $600k to $500k which is known as a Modified Level of Effort."*
+
+  Each card is "what changed on the agreement since it's been awarded," which is a change already made **in OPS**. What waits for the user is updating "the actual contract/award/document" through a Contract Modification (#3268), and the card exists because of the "gap of time" between the two. So OPS is the working record and leads the signed contract; it does not hold edits back to match it.
+- **What this means for the approval path:** no fork. `_handle_review_action` applies or deletes the BLI exactly as it does today, and it **also** writes the `ContractModificationEdit` row, before the BLI is mutated and before the first commit (see [Hook point](#ac9--award--modifications-tab-edits-that-require-a-contract-modification)). Decision 4 ("no new approval mechanics") holds unchanged.
+- *Round 4 history (superseded):* deferring the apply would have needed a pending-edit lock on the BLI (old Decision 16), an `applied_on` column, and an `apply_edits()` service for #3268 to call at mod time (old Decision 17). All three are dropped.
+
+**Decision 14 (AC9): How does an edit leave the list?**
+- Option A: Nullable `agreement_mod_id` FK → `agreement_mod.id`. Pending means `IS NULL`. A service method stamps every pending row for the agreement in one `UPDATE` when a mod is started.
+- Option B: A status enum (`PENDING` / `IN_MODIFICATION` / ...).
+- **Chosen:** Option A. `AgreementMod` already exists (`agreements.py:910`) and is what `ProcurementAction.agreement_mod_id` already points at, so #3268's "start" flow will almost certainly create one. The FK both answers "is it pending?" and records which mod absorbed the edit, and it powers the per-mod view in Award & Modification History later. This slice also ships a minimal POST endpoint that calls it ([Decision 18](#key-decisions)).
+
+**Decision 18 (round 6): Ship a minimal "Start modification" endpoint now, or leave it all to #3268?**
+- Option A: No endpoint. #3268 builds the trigger and the attach together.
+- Option B: `POST /agreements/<id>/contract-modifications/` now. It creates a bare `AgreementMod` and attaches the pending edits, and #3268 extends the same endpoint and service.
+- **Chosen:** Option B (user decision). It gives #3268 a working, tested starting point rather than a blank page, and it lets the full lifecycle (approve → card appears → start → card disappears) be exercised end to end now. **Kept minimal on purpose:** no `ProcurementAction`, no tracker, no mod number. Those depend on what the mod workflow looks like, which #3268 still has to design.
+- **Safe to ship bare:** a lone `AgreementMod` has no visible side effects. Award & Modification History is built from `ProcurementAction` rows that have an approved tracker (`agreement_award_history.py:100-145`), and `procurement_tracker_events.py:288` only looks at actions. So an `AgreementMod` that nothing points at appears nowhere until #3268 links a `ProcurementAction` to it.
+- **Fields on the bare mod:** `agreement_id` only. `mod_type`, `number` and `mod_date` stay NULL. None of the existing `ModType` values (`NEW`, `ADMIN`, `AMOUNT_TBD`, `AS_IS`, `REPLACEMENT_AMOUNT_FINAL`) is clearly "Modified LOE", and the mod number and date come from the executed mod, so #3268 fills them in.
+
+**Decision 15 (AC9): One card per approved CR, or one card per (BL, field) netted to the latest value?**
+- Option A: One row per approved CR. Two approved amount edits on the same BL produce two cards ($600k→$550k, then $550k→$500k).
+- Option B: Collapse to one card per (BL, field), showing the first "from" and the latest "to".
+- **Chosen:** Option A, in storage **and** in the API. It is the honest audit trail, it maps 1:1 onto CRs (each CR is already exactly one field, per `add_bli_change_requests`), and the API can stay a plain list. If product wants netting, the frontend or #3268 can do it with no schema change. Flagged in [Open Questions](#open-questions).
+- **How this lines up with current multi-field behavior:** a single save that changes amount + CAN + Obligate By on one BL creates **three** CRs today, one per field (`add_bli_change_requests`, `change_requests.py:305-376`). They share `requestor_notes` but each has its own `requested_change_diff`. The backend reviews each CR on its own, but the Approve page approves or declines them as one batch: `ApproveAgreement.hooks.js:536` loops `reviewCR` over every in-review CR of that kind with `Promise.allSettled`, so partial success is possible in principle. One card per CR is therefore one card per field, which matches the PDF card's single "Change To: Amount" chip. Three fields on one BL produce three cards with the same Requested by, date, and BL ID.
+- **Stacking edits on the same BL/field works:** because approval applies immediately, a second edit diffs against the already-updated value, so consecutive cards chain correctly ($600k→$550k, then $550k→$500k) and no extra lock is needed beyond today's in-review lock.
+
+*Decisions 16 and 17 (round 4: pending-edit lock, and when to apply deferred edits) were withdrawn in round 5, because Decision 13 is back to immediate apply.*
+
 ## Testing Strategy
 
 Per `docs/TESTING.md`: this is a single, bounded backend-validation change plus a derived property — unit-test the decision logic directly, integration-test the PATCH endpoint end-to-end, and a component test for the new frontend messaging. No BDD/Gherkin needed for this slice (not a multi-step business process by itself — AC8's full approve/decline lifecycle already has BDD coverage for the existing CR flow, which this slice doesn't change).
@@ -259,6 +330,21 @@ Per `docs/TESTING.md`: this is a single, bounded backend-validation change plus 
 - [ ] PLANNED or IN_EXECUTION BLI on an **awarded** agreement, amount-only edit → CR created as today, now with `requires_contract_modification: true` (pins [Decision 1](#key-decisions)'s widening).
 - [ ] Same PLANNED/IN_EXECUTION case on a **non-awarded** agreement → CR created with `requires_contract_modification: false` (regression pin for the common, non-mod case).
 - [ ] CR approval (`PATCH /change-requests/<id>` with `action: APPROVE`) on a modified-LOE CR → BLI amount updates, `requires_contract_modification` still reads `True` afterward (needed for the AC9 extension).
+
+### AC9 Backend Tests
+- [ ] **Snapshot regression:** a CR created on a non-awarded agreement, then the agreement is awarded → the CR still reads `requires_contract_modification: false`, both through `to_dict()` and through a SQL filter on the `.expression`.
+- [ ] **Immediate apply (Decision 13):** approving an amount CR on an awarded agreement with the flag on updates the BLI amount **and** writes the edit row with the pre-approval `old_value`.
+- [ ] **Multi-field save:** amount + CAN + Obligate By changed in one PATCH → 3 CRs; approving all 3 → 3 edit rows with the same `requested_by_id`/`requested_on`/`budget_line_item_id` and different `field`s.
+- [ ] Two consecutive approved amount edits on the same BL → two rows whose From/To chain ($600k→$550k, $550k→$500k).
+- [ ] Approving an amount CR on an awarded agreement with the flag on writes exactly one `ContractModificationEdit`: `modification_type=MODIFIED_LOE`, `field="amount"`, `old_value`/`new_value` taken from `requested_change_diff`, `requested_by_id` = the CR's `created_by` (**not** the approving Division Director), `requested_on` = the CR's `created_on`, `agreement_mod_id IS NULL`.
+- [ ] Approving a delete-BL CR: after `update()` returns, the BLI and the CR are both gone, but the edit row still exists with `budget_line_item_id` kept, `field="delete"`, and `change_request_id IS NULL`.
+- [ ] No row for: a rejected CR, an in-review CR, a CR on a non-awarded agreement, flag off, a status-change CR (Planned→Executing is blocked on awarded agreements per Decision 6; Draft→Planned is not a modified LOE), or an agreement-level CR.
+- [ ] `GET /agreements/<id>/contract-modification-edits/` returns 200 with only pending rows, oldest first. It returns 404 for an unknown agreement, 400 for a non-Contract/AA agreement (same as `/award-history/`), and 401/403 for unauthorized users.
+- [ ] `attach_pending_edits_to_mod`: stamps every pending row for *that* agreement only, so the next GET returns `[]`. Rows already attached to an earlier mod are left alone. Calling it again with nothing pending is a no-op.
+- [ ] `POST /agreements/<id>/contract-modifications/`: returns 201 with `{agreement_mod: {...}, edits: [...]}`. Afterwards one `AgreementMod` exists, every previously pending edit has its id, and GET returns `[]`. Award & Modification History is unchanged (no new accordion).
+- [ ] POST → **400 when there are no pending edits**, and no `AgreementMod` is created. Also 400 when the agreement isn't awarded or isn't Contract/AA. 404 for an unknown agreement, 403 for a user not associated with the agreement, and 400 when `ENABLE_MODIFIED_LOE_EDITS` is off.
+- [ ] Double submit: two POSTs back to back → the first is 201, the second is 400 ("no pending edits"), and only one `AgreementMod` exists.
+- [ ] A `START_CONTRACT_MODIFICATION` `OpsEvent` is written (with `request.remote_addr`), and one `AgreementHistory` row names the user and the edit count.
 
 ### Frontend
 - [ ] Component test: OBLIGATED-row pencil icon is enabled only when the `/version` flag is on (mock both states).
@@ -279,7 +365,7 @@ Per `docs/TESTING.md`: this is a single, bounded backend-validation change plus 
 ### Code Quality
 ```bash
 cd backend/ops_api
-pipenv run pytest tests/ops/services/test_modified_loe_bli_amount_edit.py tests/ops/services/test_change_requests.py
+pipenv run pytest tests/ops/services/test_modified_loe_bli_amount_edit.py tests/ops/services/test_change_requests.py tests/ops/services/test_contract_modification_edits.py tests/ops/agreements/test_agreement_contract_modification_edits_api.py
 pipenv run black --config ./pyproject.toml .
 pipenv run nox -s lint
 cd ../../frontend && bun run test --watch=false && bun run lint
@@ -300,6 +386,10 @@ cd ../../frontend && bun run test --watch=false && bun run lint
 | Two independent `CreateBLIsAndSCs` host sites (`EditAgreementAndBudgetLines.jsx` and the inline wizard in `AgreementBudgetLines.jsx`) mean the new modal wiring must be added twice ([Decision 11](#key-decisions)) — easy to update one and forget the other | Med | Med | Explicit test coverage for the modal in *both* host sites, not just one; call out both file paths in the PR description |
 | Widening `CreateBLIsAndSCs.helpers.js`'s diffing to include OBLIGATED-status edits ([Decision 8](#key-decisions)) could also surface previously-dropped diffs for OBLIGATED BLIs in flows this slice doesn't intend to touch (e.g. if some other OBLIGATED-status field becomes editable in the UI later without an equivalent backend gate) | Low | Low | The backend's `_validation`/`is_bli_editable` remains the authoritative gate regardless of what the frontend diff computes — a wider frontend diff can at most show a confirmation modal, it cannot itself cause an unauthorized write |
 | Blocking Planned→Executing outright ([Decision 6](#key-decisions)) removes a transition some awarded agreements may be relying on today in real (non-seeded) data, with no replacement path until #3268 ships | Med | Low | Matches the Figma's explicit design intent; flag in the PR description that this is a deliberate, temporary dead-end pending #3268, not an oversight |
+| (AC9) The edit row is written in the wrong place in `ChangeRequestService.update()`'s delete ordering, so it is lost, or it trips the expunge/cascade sequence (`change_requests.py:105-123`) | High | Med | Write the row inside `_handle_review_action`, before the first commit; `change_request_id` uses `ON DELETE SET NULL`, never `CASCADE`; the explicit approve-delete integration test above |
+| (AC9) Approved modified-LOE CRs created **after** award but **before** this ships have no snapshot key, so they never appear on the list | Low | Low | The flag is off in prod until this ships, so there should be none in prod. If there are, run a one-off backfill (any approved BLI CR whose `created_on` is later than the agreement's award date) rather than complicating the runtime logic |
+| (AC9) The bare Start-modification endpoint gets used in prod before #3268 makes it meaningful: edits are cleared from the list, but no real mod workflow exists | Med | Low | It sits behind `ENABLE_MODIFIED_LOE_EDITS` (off in prod) and has no frontend button in this slice. The `AgreementMod` it creates is the same record #3268 will build on, so no data needs throwing away |
+| (AC9) Concurrent Start clicks create two mods, one of them empty | Low | Low | `start_modification` locks the pending rows (`SELECT ... FOR UPDATE`) before creating the mod, and rejects the request when none are left |
 
 ## Generalizing to the Remaining Acceptance Criteria
 
@@ -314,11 +404,83 @@ Expected to be **structurally identical** to this slice, not a new design:
 
 ### AC9 — Award & Modifications tab: "Edits That Require a Contract Modification"
 
-**What reuses directly:** `requires_contract_modification` from this slice is exactly the filter predicate needed. Once it exists as a hybrid property with both a Python side (`self.agreement.is_awarded`) and a SQL `.expression` side (per `has_budget_change`'s pattern, `change_requests.py:128-130`), a new query — most naturally a new method on `AgreementAwardHistoryService` (`agreement_award_history.py:94`) or a sibling service — can select `BudgetLineItemChangeRequest` rows where `status == APPROVED` and `requires_contract_modification` is true, joined through `budget_line_item.agreement_id == agreement_id`. The existing `BLIDiffRow`/`BLIReviewRow` components already know how to render a CR's diff, so the frontend list is largely reuse, not new rendering code.
+> **Round 3: backend now in scope, frontend still out.** This section was a sketch in rounds 1–2. It is now the plan of record for the AC9 backend. The round-1 sketch assumed the list could be a query over approved `BudgetLineItemChangeRequest` rows. That turned out wrong, for the two reasons in [Decision 12](#key-decisions): delete-BL CRs are cascade-deleted, and SC edits have no CR at all.
 
-**What's genuinely new and not covered by this slice:** AC9 says these items must "remain on that list until the user is ready to start the contract modification (#3268)." That's a piece of mutable state this slice's design doesn't have — `agreement.is_awarded` never becomes `False` again, so it cannot answer "has this specific approved edit already been pulled into a contract mod." That needs either a new nullable FK (e.g. `BudgetLineItemChangeRequest.included_in_agreement_mod_id`, set by #3268's mod-start flow) or an equivalent new field — a real (if small) migration, deliberately deferred to the ticket that implements AC9, since #3268 (not yet built) is likely what actually sets that field.
+**Lifecycle (per the PDF and product framing):**
 
-**Open question carried forward, not resolved here:** should the list include modified-LOE CRs on **any** eligible field (amount/CAN/date/add/delete BL/add/delete SC) from day one of AC9, or only amount (matching however far ACs 1–7 have actually been implemented by then)? That's a sequencing question for whoever picks up AC9, not an AC1-slice decision.
+```
+COR edits BL on awarded agreement
+  → BudgetLineItemChangeRequest created, requested_change_info.requires_contract_modification = true   (snapshot, Decision 2 revised)
+  → Division Director APPROVES
+      → BLI updated in OPS as today                                                                   (Decision 13, confirmed by Figma)
+      → ContractModificationEdit row written, agreement_mod_id = NULL   ← appears under "Edits That Require a Contract Modification"
+  → … more approved edits accumulate (time gap before the real contract mod) …
+  → POST /agreements/<id>/contract-modifications/   ("Start modification"; endpoint in this slice, button in #3268)
+      → start_modification: creates bare AgreementMod, attach_pending_edits_to_mod(agreement_id, mod.id)   ← list empties
+      → #3268 later extends this to also create ProcurementAction/tracker to update the actual contract/award/document
+```
+
+Rejected CRs never produce a row. In-review CRs don't show on this list; the existing "in review" banners and tooltips already cover them.
+
+**Model: `ContractModificationEdit`** (`backend/models/contract_modification_edits.py`, table `contract_modification_edit`, inherits `BaseModel` so it gets `created_by`/`created_on` and Continuum versioning like everything else):
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | PK | `BaseModel.get_pk_column()` |
+| `agreement_id` | FK `agreement.id`, `ON DELETE CASCADE`, indexed, not null | Awarded agreements can't be deleted anyway (`_deletion_blocked_reason`); cascade only keeps test teardown clean |
+| `modification_type` | `ENUM(ModificationEditType)`, not null | `MODIFIED_LOE` only for now. This is the "Modification Type" chip; it leaves room for future types without a migration-heavy redesign |
+| `change_request_id` | FK `change_request.id`, **`ON DELETE SET NULL`**, nullable | Traceability back to the reviewed CR. **Must** be SET NULL, because the CR is cascade-deleted when a delete-BL CR is approved |
+| `budget_line_item_id` | `Integer`, nullable, **no FK** | The "BL ID" chip. A plain int, so it survives the BLI's deletion (AC5). Nullable for the future SC-only rows (AC6/7) |
+| `services_component_id` | `Integer`, nullable, no FK | Reserved for AC6/AC7, unused in this slice. Keep it out of this migration if review prefers not to add a column for future use |
+| `field` | `String`, not null | The "Change To" chip: `"amount"`, `"can_id"`, `"date_needed"`, `"delete"` (later `"create"`, `"services_component"`). Taken from the CR's single `requested_change_data` key |
+| `old_value` / `new_value` | `JSONB`, nullable | The "From"/"To" chips, copied from `requested_change_diff[field]["old"/"new"]`. A frozen snapshot, so later edits to the same BL don't rewrite this card |
+| `requested_by_id` | FK `ops_user.id`, not null | The "Requested by" name = **the CR's `created_by`**. Do not rely on this row's own `BaseModel.created_by`, because that will be the approving Division Director (the row is inserted inside the DD's request) |
+| `requested_on` | `DateTime`, not null | The CR's `created_on` (the date shown under "Requested by" in the PDF) |
+| `approved_by_id` / `approved_on` | FK `ops_user.id` / `DateTime` | The CR's `reviewed_by_id` / `reviewed_on`. Not shown on the card, but cheap and useful for #3268 and audit |
+| `agreement_mod_id` | FK `agreement_mod.id`, `ON DELETE SET NULL`, nullable, indexed | **NULL = pending** (shows on the list). Set by `attach_pending_edits_to_mod` ([Decision 14](#key-decisions)) |
+
+Relationships: `agreement`, `requested_by` (`User`), `agreement_mod`. Add `ModificationEditType` to `models/__init__.py`.
+
+**Service: `ContractModificationEditService`** (`ops_api/ops/services/contract_modification_edits.py`):
+- `create_from_approved_change_request(change_request) -> ContractModificationEdit | None`: guard clauses (BLI CR type, `requires_contract_modification`, `ENABLE_MODIFIED_LOE_EDITS`, not a status change), then build the row from the CR and `db_session.add()` it. **It does not commit.** The caller's commit in `ChangeRequestService.update()` covers it, so the CR approval and the edit row succeed or fail together.
+- `get_pending_for_agreement(agreement_id) -> list[ContractModificationEdit]`: rows with `agreement_mod_id IS NULL`, ordered by `requested_on, id`. Same 404/400 checks as `AgreementAwardHistoryService.get_award_history` (reuse `_SUPPORTED_AGREEMENT_TYPES`; import it rather than redefining it).
+- `attach_pending_edits_to_mod(agreement_id, agreement_mod_id) -> int`: one bulk `UPDATE ... WHERE agreement_id = :a AND agreement_mod_id IS NULL`, returning the row count. Validate that the mod belongs to the agreement.
+- `start_modification(agreement_id) -> tuple[AgreementMod, list[ContractModificationEdit]]`: run the same 404/400 checks as GET, plus `agreement.is_awarded`. Lock the pending rows (`SELECT ... FOR UPDATE`), raise `ValidationError` if there are none, then create `AgreementMod(agreement_id=...)`, `flush()`, `attach_pending_edits_to_mod`, and commit, all inside `OpsEventHandler(START_CONTRACT_MODIFICATION)` with `meta.metadata` = mod id and edit ids. **This is the extension point for #3268**: ProcurementAction and tracker creation go here, in the same transaction.
+
+**Hook point:** `ChangeRequestService._handle_review_action` (`change_requests.py:214-224`), inside the `APPROVED` → `BUDGET_LINE_ITEM_CHANGE_REQUEST` branch. When `requires_contract_modification` and the flag are both set, write the edit row **before** `_apply_budget_line_item_changes` runs or `bli_to_delete` is set, then let the existing apply/delete logic continue unchanged (Decision 13). `old_value`/`new_value` come from the CR's `requested_change_diff`, not from a re-read BLI.
+
+**API:** `GET /agreements/<int:id>/contract-modification-edits/` → `{"data": [ ... ]}`, matching `/award-history/`'s envelope. `@is_authorized(PermissionType.GET, Permission.AGREEMENT)`, the same as `AgreementAwardHistoryItemAPI`. Record shape (camel/snake case to follow the existing award-history schema's convention):
+
+```json
+{
+  "id": 7,
+  "modification_type": "MODIFIED_LOE",
+  "budget_line_item_id": 123458,
+  "field": "amount",
+  "old_value": 600000.0,
+  "new_value": 500000.0,
+  "requested_by": {"id": 21, "full_name": "First Last Name"},
+  "requested_on": "2024-12-01T14:03:00",
+  "change_request_id": 512
+}
+```
+
+**`POST /agreements/<int:id>/contract-modifications/`** ("Start modification", [Decision 18](#key-decisions)). No request body. `@is_authorized(PermissionType.POST, Permission.AGREEMENT)`, plus `associated_with_agreement(id)` (`agreements_helpers.py:60`), so only people on the agreement can start a mod, the same rule as other agreement-scoped writes. Returns `201`:
+
+```json
+{
+  "agreement_mod": {"id": 41, "agreement_id": 15, "mod_type": null, "number": null, "mod_date": null},
+  "edits": [ { "...same record shape as GET, now with agreement_mod_id: 41..." } ]
+}
+```
+
+Errors: 400 for no pending edits, not awarded, not Contract/AA, or flag off; 403 for a user not associated with the agreement; 404 for an unknown agreement.
+
+No frontend: the RTK Query endpoints, the card component, and the "Start modification" button are all deferred.
+
+**Events / history (AC10 overlap):** no new `OpsEventType` is needed. The row is written inside the existing `UPDATE_CHANGE_REQUEST` `OpsEventHandler` scope, so who, when, and remote IP of the approval are already on that `OpsEvent`, and the requestor's who/when are on the row itself. Starting a modification gets its own new `START_CONTRACT_MODIFICATION` event and `AgreementHistory` message (see [Decision 18](#key-decisions)).
+
+**Scope still open and carried forward:** which fields produce rows on day one. Rows come automatically from whatever CRs exist, so the answer is "amount now, plus CAN/date/delete as ACs 2–5 open those edits", with no AC9 code change needed per AC. AC4 (add BL) and AC6/AC7 (SC add/delete) don't go through a BLI CR today, so each of them adds its own `create_from_...` call when built.
 
 ### AC10 — Event/history records with who, when, what, and remote IP
 
@@ -337,11 +499,17 @@ Expected to be **structurally identical** to this slice, not a new design:
 - [ ] **What happens to the agreement's `date_needed`/fiscal-year bookkeeping** when an Obligated BLI's amount changes — `_handle_award_approval` is noted elsewhere (OPS-5379 award-total-snapshot story, Future Improvements) to rewrite `date_needed` on IN_EXECUTION BLIs during award; worth confirming an OBLIGATED-amount-only edit doesn't interact with any similar award-time logic. Not investigated in this pass.
 - [ ] **Exact seed-agreement number/name** for the new 3-OBLIGATED-BLI test fixture — TBD during implementation, following the existing `"CONTRACT #<N>: ..."` naming convention.
 - [ ] **Should the new seed fixture's AWARD step be `award_approval_status: "APPROVED"` from the start** (so it also populates the Award & Modifications tab immediately), or left `null` like agreement 13 and only flipped later when AC9 is implemented? Leaning toward populating it now since it costs nothing extra and makes the fixture useful sooner, but not yet confirmed.
+- [x] **(AC9) Decision 13: does approval apply the edit to the BLI right away?** Resolved (round 5): **yes**, per the Figma annotation on node `15119-128585` (quoted in Decision 13). The card is a reference for the gap between the OPS edit and the actual Contract Modification.
+- [x] **(AC9) Who can see the list?** Resolved: normal agreement read permission (`PermissionType.GET, Permission.AGREEMENT`, same as `/award-history/`). Who may *start* a mod is #3268's call.
+- [x] **(AC9) Netting (Decision 15):** Resolved: keep them **separate**, one card per approved CR, in both storage and the API. No netting anywhere.
+- [x] **(AC9) Ship a Start-modification endpoint now?** Resolved (round 6): **yes**. A minimal `POST /agreements/<id>/contract-modifications/` creates a bare `AgreementMod` and attaches the edits; #3268 extends it ([Decision 18](#key-decisions)).
+- [ ] **(AC9) `ModType` for a modified-LOE mod:** add a new enum value, or reuse an existing one? Left NULL on the bare mod for now; #3268 decides.
 - [ ] **Exact modal copy split between `heading` and `description`** — no existing modal in this codebase splits a message this long across both props (precedent always puts the whole block in `heading`); either approach works mechanically, this is a cosmetic choice for implementation to make.
 
 ### Future Improvements
 
-- A persisted "included in contract mod #N" marker (needed by AC9, deferred to #3268's implementation).
+- ~~A persisted "included in contract mod #N" marker (needed by AC9, deferred to #3268's implementation).~~ Now planned in this slice as `ContractModificationEdit.agreement_mod_id` (round 3). #3268 extends `start_modification` / `POST /agreements/<id>/contract-modifications/` (round 6) with `ProcurementAction` and tracker creation.
+- AC9 frontend: the "Contract Modifications" section and "Edits That Require a Contract Modification" cards on `AgreementAwardModifications.jsx`, the RTK Query endpoint, and the "Start modification" button (wired to #3268).
 - `AgreementHistory.remote_addr` (needed by a strict reading of AC10, deferred — see [AC10](#ac10--eventhistory-records-with-who-when-what-and-remote-ip)).
 - Widening the field allowlist for ACs 2–7 once AC1 ships and is validated.
 - Unify the two independent `CreateBLIsAndSCs` host sites (`EditAgreementAndBudgetLines.jsx` and `AgreementBudgetLines.jsx`'s inline wizard) behind one shared modal-triggering hook, instead of the duplicated wiring accepted in [Decision 11](#key-decisions).
@@ -352,5 +520,6 @@ Expected to be **structurally identical** to this slice, not a new design:
 - Issue: HHS/OPRE-OPS#3072
 - Figma designs (linked in the issue's Additional Context, plus two screenshots reviewed directly in this planning session: the disabled "Request BL Status Change" button with its annotation, and the "already been awarded... requires a contract modification" confirmation modal) — consult the full Figma file before frontend implementation for any remaining visual detail not captured here.
 - Related tab: [OPS-5379 Award & Modification History story](./OPS-5379-award-modification-history.md), [OPS-5379 Award Total Snapshot story](./OPS-5379-award-total-snapshot.md) — background on `agreement.is_awarded`, `ProcurementAction`, and the Award & Modifications tab's current data shape.
+- Design PDF: `Agreements After Award/Modified LOE - Award & Modifications Tab.pdf` — "Contract Modifications" / "Edits That Require a Contract Modification" card + "Start modification" button (AC9 reference, round 3).
 - `docs/TESTING.md` — test-type decision matrix.
 - `backend/data_tools/CLAUDE.md` — seed/test-data load process.

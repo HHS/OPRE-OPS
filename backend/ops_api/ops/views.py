@@ -77,6 +77,10 @@ from ops_api.ops.resources.change_requests import (
     ChangeRequestItemAPI,
     ChangeRequestListAPI,
 )
+from ops_api.ops.resources.contract_modification_edits import (
+    AgreementContractModificationEditsAPI,
+    AgreementContractModificationsAPI,
+)
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
@@ -145,6 +149,12 @@ AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agre
 AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
 AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC = AgreementAwardHistoryItemAPI.as_view(
     "agreements-award-history-item", Agreement
+)
+AGREEMENT_CONTRACT_MODIFICATION_EDITS_API_VIEW_FUNC = AgreementContractModificationEditsAPI.as_view(
+    "agreements-contract-modification-edits", Agreement
+)
+AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC = AgreementContractModificationsAPI.as_view(
+    "agreements-contract-modifications", Agreement
 )
 AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 

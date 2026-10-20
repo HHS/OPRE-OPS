@@ -787,6 +787,99 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found - Agreement does not exist
+  /agreements/{id}/contract-modification-edits/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementContractModificationEdits
+      summary: Get approved edits on an Awarded agreement that require a contract modification
+      description: |
+        Returns the "Edits That Require a Contract Modification" for the Award &
+        Modifications tab: approved budget-line edits made in OPS after the agreement
+        was awarded that still need a contract modification to update the actual
+        contract. One record per approved change request (one field each), oldest first.
+        Edits leave this list once a contract modification is started
+        (POST /agreements/{id}/contract-modifications/).
+
+        Only Contract and AA agreements are supported; any other agreement type
+        returns 400.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "200":
+          description: OK - Successfully retrieved pending contract modification edits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContractModificationEdit"
+        "400":
+          description: Bad Request - Agreement is not a Contract or AA agreement
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
+  /agreements/{id}/contract-modifications/:
+    post:
+      tags:
+        - Agreements
+      operationId: startAgreementContractModification
+      summary: Start a contract modification for an agreement's pending edits
+      description: |
+        "Start modification": creates an agreement modification and attaches every
+        pending contract modification edit to it, removing them from
+        GET /agreements/{id}/contract-modification-edits/. No request body.
+
+        Currently creates a bare modification (no type, number, or date and no
+        procurement action or tracker); the full contract modification workflow
+        extends this endpoint. Requires ENABLE_MODIFIED_LOE_EDITS and a user
+        associated with the agreement.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "201":
+          description: Created - Modification started and pending edits attached
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agreement_mod:
+                    $ref: "#/components/schemas/AgreementMod"
+                  edits:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContractModificationEdit"
+        "400":
+          description: >-
+            Bad Request - No pending edits, agreement is not Awarded, agreement is not
+            a Contract or AA agreement, or contract modifications are not enabled
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden - User is not associated with the agreement
+        "404":
+          description: Not Found - Agreement does not exist
   /agreements/{id}/edit-bundle:
     patch:
       tags:
@@ -7034,6 +7127,64 @@ components:
             "2043": "1234567.00"
             "2044": "890000.00"
             "2045": "151217218.00"
+    ContractModificationEdit:
+      type: object
+      description: >-
+        An approved edit on an Awarded agreement that requires a contract modification
+        (one card under "Edits That Require a Contract Modification").
+      properties:
+        id:
+          type: integer
+          example: 7
+        agreement_id:
+          type: integer
+          example: 15
+        modification_type:
+          type: string
+          enum: [MODIFIED_LOE]
+          example: MODIFIED_LOE
+        budget_line_item_id:
+          type: integer
+          nullable: true
+          description: The "BL ID". Kept after the budget line is deleted.
+          example: 123458
+        field:
+          type: string
+          description: The edited field, i.e. "Change To" (amount, can_id, date_needed, delete).
+          example: amount
+        old_value:
+          nullable: true
+          description: The "From" value, as recorded on the change request diff.
+          example: 600000.0
+        new_value:
+          nullable: true
+          description: The "To" value ("Deleted" for a delete).
+          example: 500000.0
+        requested_by:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              example: 521
+            full_name:
+              type: string
+              example: First Last Name
+        requested_on:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-12-01T14:03:00"
+        change_request_id:
+          type: integer
+          nullable: true
+          description: Null once the change request no longer exists (e.g. an approved delete).
+          example: 512
+        agreement_mod_id:
+          type: integer
+          nullable: true
+          description: Null while pending; set when a contract modification is started.
+          example: null
     AgreementAwardHistoryRecord:
       description: |
         One flat award/modification record for the Award & Modifications tab.
@@ -8036,9 +8187,10 @@ components:
           type: boolean
           example: false
           description: >-
-            True when this change request was submitted while its Agreement was already
-            Awarded -- i.e. anything that changes money or time on the awarded contract
-            (Modified LOE contract mod). Agreement-scoped, not BLI-status-scoped.
+            True when this budget or delete change request was submitted while its Agreement
+            was already Awarded -- i.e. anything that changes money or time on the awarded
+            contract (Modified LOE contract mod). Snapshotted at submission, so a request made
+            before the award stays false. Status-change requests are always false.
 
     AgreementChangeRequest:
       allOf:

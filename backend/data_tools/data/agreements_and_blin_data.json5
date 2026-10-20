@@ -18313,6 +18313,28 @@
       certified: false,
       closed: false,
     },
+    {
+      // One PLANNED BLI on CONTRACT #523 so manual testing of AC1 can also exercise
+      // Decision 1's widening -- a PLANNED-amount edit on an already-awarded agreement
+      // should now carry `requires_contract_modification: true` -- and the awarded-state
+      // guard on AgreementActionAccordion's "Change Planned Budget Lines to Executing
+      // Status" option (disabled whenever `isAgreementAwarded`, even with a Planned BLI
+      // present).
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 4",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 150000.0,
+      status: "PLANNED",
+      date_needed: "2044-07-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 55,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
   ],
   direct_obligation_budget_line_item: [
     {

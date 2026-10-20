@@ -262,8 +262,8 @@ export const buildBudgetChangeMessages = (tempBudgetLines, cans) => {
  * @param {boolean} args.isSuperUser
  * @param {import("../../../types/CANTypes").CAN[]} args.cans - Used to resolve CAN display names
  * @param {import("../../../types/AgreementTypes").Agreement} args.selectedAgreement
- * @param {boolean} args.savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
- * @param {string|undefined} args.blockerLocationPathname - Where the blocker was navigating to, when `savedViaModal` is true
+ * @param {boolean} args.savedViaModal - Whether an outer approval-confirming modal already fired (the unsaved-changes blocker, or the Modified-LOE contract-modification modal), so the inner Division-Director modal was skipped
+ * @param {string|undefined} args.blockerLocationPathname - Where the blocker was navigating to, when `savedViaModal` is true; `undefined` for the contract-modification path (the wizard collapses in place via `setIsEditMode(false)`, so no redirect is needed)
  * @param {boolean} args.isThereAnyBLIsFinancialSnapshotChanged
  * @returns {import("../../../hooks/use-alert.hooks").AlertData} The `setAlert(...)` payload.
  */
