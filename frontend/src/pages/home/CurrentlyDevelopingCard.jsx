@@ -12,9 +12,32 @@ import { ROADMAP_STATUS, ROADMAP_STATUS_LABELS, ROADMAP_STATUS_TAG_CLASSES } fro
     of duplicating the string. Don't hardcode "Up Next" to match `ROADMAP_STATUS_LABELS`
     without checking both Figma frames first.
 */
+
+/*
+    NOTE: This card is a space-constrained summary, so its "Up Next" column shows a capped,
+    curated subset of NOT_STARTED — unlike `RoadmapStatusCard`, which shows every one. Two
+    deliberate divergences from the shared data, both scoped to this card alone:
+
+    - NEXT_UP_MAX_ITEMS caps the column so the card can't outgrow its Figma frame as the
+      roadmap fills up. Items render in `roadmapData.json`'s authored order (NOT alphabetised
+      the way `RoadmapStatusCard` sorts them), so that authored order IS the priority order —
+      reorder the JSON to change which items surface here.
+    - NEXT_UP_EXCLUDED_IDS hides specific rows from this card while leaving them visible on
+      the "OPS at a Glance" board. Keyed on `id`, not `title`, so rewording a label doesn't
+      silently un-hide the row.
+
+    Capping and this explicit exclude list are the only sanctioned ways the two surfaces may
+    disagree — OPS-6331 was about them disagreeing *by accident*, which is still the thing to
+    avoid. For anything else, change `roadmapData.json` so both surfaces move together.
+*/
+const NEXT_UP_MAX_ITEMS = 6;
+const NEXT_UP_EXCLUDED_IDS = [25]; // 25 = "Other Partner Agreements (IAA, IDDA, IPA)"
+
 const CurrentlyDevelopingCard = () => {
     const currentlyDevelopingItems = getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING);
-    const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED);
+    const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED)
+        .filter((item) => !NEXT_UP_EXCLUDED_IDS.includes(item.id))
+        .slice(0, NEXT_UP_MAX_ITEMS);
 
     return (
         <RoundedBox className="flex-fill">

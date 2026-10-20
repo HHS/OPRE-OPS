@@ -3,6 +3,15 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import CurrentlyDevelopingCard from "./CurrentlyDevelopingCard";
 
+/*
+    NOTE: 8 NOT_STARTED rows, deliberately more than the card's 6-item cap, so the cap and
+    the per-card exclude list can both be exercised.
+
+    Row ordering matters: id 25 (the excluded row) sits 4th among the NOT_STARTED rows, i.e.
+    comfortably inside the first 6. That way "hides the per-card excluded item" fails if the
+    `.filter()` is dropped from the component, instead of passing for free because the cap
+    had already truncated that row away.
+*/
 vi.mock("./roadmapData.json", () => ({
     default: [
         { id: 1, title: "Finish Procurement Tracker", status: "Currently Developing" },
@@ -10,6 +19,11 @@ vi.mock("./roadmapData.json", () => ({
         { id: 3, title: "Staffing/People Teams", status: "Not Started Yet" },
         { id: 4, title: "Award Grants", status: "Not Started Yet" },
         { id: 5, title: "Contract Mods", status: "Not Started Yet" },
+        { id: 25, title: "Other Partner Agreements (IAA, IDDA, IPA)", status: "Not Started Yet" },
+        { id: 7, title: "Next Up Five", status: "Not Started Yet" },
+        { id: 8, title: "Next Up Six", status: "Not Started Yet" },
+        { id: 9, title: "Next Up Seven", status: "Not Started Yet" },
+        { id: 10, title: "Next Up Eight", status: "Not Started Yet" },
         { id: 6, title: "Login", status: "Done" }
     ]
 }));
@@ -53,5 +67,28 @@ describe("CurrentlyDevelopingCard", () => {
         const tag = screen.getByText("Finish Procurement Tracker");
         expect(tag).toHaveClass("text-brand-data-viz-bl-by-status-5");
         expect(tag).not.toHaveClass("text-ink");
+    });
+
+    it("caps the Up Next column at 6 items even though more Not Started items exist", () => {
+        renderWithProviders(<CurrentlyDevelopingCard />);
+
+        // 7 render-eligible Not Started rows remain after the excluded one is filtered out,
+        // so the cap must drop the last of them.
+        [
+            "Staffing/People Teams",
+            "Award Grants",
+            "Contract Mods",
+            "Next Up Five",
+            "Next Up Six",
+            "Next Up Seven"
+        ].forEach((title) => expect(screen.getByText(title)).toBeInTheDocument());
+        expect(screen.queryByText("Next Up Eight")).not.toBeInTheDocument();
+    });
+
+    it("hides the per-card excluded item from Up Next", () => {
+        renderWithProviders(<CurrentlyDevelopingCard />);
+        // Sits inside the first 6 Not Started rows, so only the exclude list can remove it —
+        // this fails if the component stops filtering NEXT_UP_EXCLUDED_IDS.
+        expect(screen.queryByText("Other Partner Agreements (IAA, IDDA, IPA)")).not.toBeInTheDocument();
     });
 });
