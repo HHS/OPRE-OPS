@@ -62,10 +62,14 @@ export const AgreementFields = {
     NofoNumber: "NofoNumber",
     AlnNumber: "AlnNumber",
     GrantFundingPeriod: "GrantFundingPeriod",
-    NofoPeriod: "NofoPeriod"
+    NofoPeriod: "NofoPeriod",
+    PeriodOfPerformance: "PeriodOfPerformance"
 };
 
 export const AGREEMENT_NICKNAME_LABEL = "Agreement Nickname or Acronym";
+
+export const PERIOD_OF_PERFORMANCE_TOOLTIP =
+    "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components";
 
 /**
  * Mapping of award type codes to display labels.

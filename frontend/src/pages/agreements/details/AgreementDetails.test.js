@@ -943,12 +943,13 @@ describe("AgreementDetails", () => {
         });
 
         // The disabled variant is also role="button" with the accessible name "Edit", so the same
-        // query covers it; the tooltip must not render either.
+        // query covers it; the Edit-disabled tooltip must not render either. (Other tooltips, like
+        // the Period of Performance info icon, are unrelated to edit permissions and may still render.)
         test("does not show the disabled Edit button or tooltip for a read-only non-team-member", () => {
             renderReadOnly({ _meta: { isEditable: false } });
 
             expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
-            expect(screen.queryByTestId("tooltip-label")).not.toBeInTheDocument();
+            expect(screen.queryByText(EDIT_DISABLED_TOOLTIPS.notTeamMember)).not.toBeInTheDocument();
         });
 
         test("still renders the agreement details for a read-only user", () => {
