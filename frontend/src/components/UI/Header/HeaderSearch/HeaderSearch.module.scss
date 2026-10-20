@@ -234,13 +234,15 @@
 
     // Bridges the gap to the icon so the pointer can travel onto the tip without it closing
     // (WCAG 1.4.13: content shown on hover must stay hoverable).
+    // Offsets include the 1px border: the pseudo-element is positioned from the padding edge, so
+    // without it a 1px gap would remain between the icon and the bridge.
     &::before {
         content: "";
         position: absolute;
-        top: -0.5rem;
-        left: 0;
-        right: 0;
-        height: 0.5rem;
+        top: calc(-0.5rem - 1px);
+        left: -1px;
+        right: -1px;
+        height: calc(0.5rem + 1px);
     }
 
     // Arrow pointing up at the icon's centre: 0.75rem (half the icon) + 0.625rem (the overhang) from the right.

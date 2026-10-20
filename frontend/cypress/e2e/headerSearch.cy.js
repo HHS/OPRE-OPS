@@ -193,4 +193,22 @@ describe("Header agreement search", () => {
         cy.injectAxe();
         cy.checkA11y(null, null, terminalLog);
     });
+
+    it("keeps the info tip reachable by the pointer: its hover bridge touches the icon", () => {
+        cy.visit("/");
+        cy.get('[data-cy="header-search-info"]').trigger("mouseover");
+        cy.get('[data-cy="header-search-info-tip"]').then(($tip) => {
+            const tip = $tip[0];
+            const wrapper = tip.parentElement.getBoundingClientRect();
+            const tipRect = tip.getBoundingClientRect();
+            const bridge = getComputedStyle(tip, "::before");
+            // The pseudo-element is positioned from the tip's padding edge (inside its border).
+            const border = parseFloat(getComputedStyle(tip).borderTopWidth);
+            const bridgeTop = tipRect.top + border + parseFloat(bridge.top);
+            const bridgeBottom = bridgeTop + parseFloat(bridge.height);
+            // Allow sub-pixel rounding, but no real gap on either side of the bridge.
+            expect(bridgeTop).to.be.at.most(wrapper.bottom + 0.1);
+            expect(bridgeBottom).to.be.at.least(tipRect.top - 0.1);
+        });
+    });
 });

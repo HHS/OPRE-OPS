@@ -5,8 +5,12 @@ export default {
     component: SearchInfoTip,
     decorators: [
         (Story) => (
-            <div style={{ position: "relative", padding: "1rem 12rem 8rem 1rem" }}>
-                <Story />
+            // The icon hangs off the right edge of its positioned parent (like the header's search box):
+            // reserve that space and the tip's height outside a bounded positioned container.
+            <div style={{ padding: "1rem 4rem 8rem 1rem" }}>
+                <div style={{ position: "relative", width: "20rem", height: "2.25rem", border: "1px dashed #a9aeb1" }}>
+                    <Story />
+                </div>
             </div>
         )
     ]
