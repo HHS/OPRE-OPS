@@ -34,7 +34,7 @@ const PortfolioList = () => {
     const { setAlert } = useAlert();
 
     // Get current user for "My Portfolios" filtering
-    const activeUser = useSelector((state) => state?.userSlice?.activeUser);
+    const activeUser = useSelector((state) => state?.auth?.activeUser);
     const currentUserId = activeUser?.id;
 
     // Custom hook for managing portfolio list state and data
