@@ -48,6 +48,8 @@ class IdNamePair(Schema):
 class AgreementNameListItem(Schema):
     id: int = fields.Int(required=True)
     name: str = fields.String(required=True)
+    nick_name: Optional[str] = fields.String(allow_none=True, dump_default=None)
+    display_name: Optional[str] = fields.String(allow_none=True, dump_default=None)
 
 
 class ProjectCreationRequestSchema(Schema):

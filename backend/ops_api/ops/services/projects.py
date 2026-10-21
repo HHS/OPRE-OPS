@@ -724,27 +724,29 @@ class ProjectsService(OpsService[Project]):
         )
         project_types = sorted([pt.name for pt in self.db_session.scalars(project_types_query).all()])
 
-        # Step 6: Agreement names and nick_names - Query both and create a sorted list of dicts
+        # Step 6: Agreement names - one nickname-preferred entry per agreement, keyed by id
+        # (not by the rendered name/nick_name string) so a nickname colliding with a different
+        # agreement's full name can't silently drop either one from the list. Same four-key
+        # shape as services/agreements.py's Step 6, for the same reason given there:
+        # display_name comes from Agreement.display_name_expression(), not reimplemented here,
+        # so this stays in sync with Agreement.display_name if the nickname-fallback rule ever
+        # changes.
         agreement_names_query = (
-            select(Agreement.id, Agreement.name, Agreement.nick_name)
+            select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.display_name_expression())
             .join(Project, Agreement.project_id == Project.id)
             .where(Project.id.in_(project_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
-
-        # Collect all names and nick_names into a list of dicts with ids
-        # Use a dict keyed by name to avoid duplicates while preserving id
-        agreement_values_dict = {}  # Key: name, Value: id
-        for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
-            if a_name and a_name not in agreement_values_dict:
-                agreement_values_dict[a_name] = a_id
-            if a_nick_name and a_nick_name not in agreement_values_dict:
-                agreement_values_dict[a_nick_name] = a_id
-
-        # Convert to list of dicts and sort by name
-        agreement_names = sorted(
-            [{"id": a_id, "name": name} for name, a_id in agreement_values_dict.items()], key=lambda x: x["name"]
-        )
+        agreement_names = [
+            {
+                "id": a_id,
+                "name": a_name,
+                "nick_name": a_nick_name,
+                "display_name": a_display_name,
+            }
+            for a_id, a_name, a_nick_name, a_display_name in self.db_session.execute(agreement_names_query).all()
+        ]
+        agreement_names = sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
 
         # Build response
         filters = {

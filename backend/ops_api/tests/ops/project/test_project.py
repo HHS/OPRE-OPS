@@ -1741,7 +1741,7 @@ class TestProjectFilterOptions:
         assert project_types == sorted(project_types)
 
     def test_filter_options_agreement_names_sorted_by_name(self, auth_client, app_ctx):
-        """Agreement names should be sorted alphabetically by name and returned as list of dicts with id and name."""
+        """Agreement names should be sorted alphabetically by display_name (nickname-preferred)."""
         response = auth_client.get(url_for("api.projects-filters"))
         assert response.status_code == 200
 
@@ -1751,9 +1751,41 @@ class TestProjectFilterOptions:
         for agreement in agreement_names:
             assert "id" in agreement
             assert "name" in agreement
-        # Verify sorted by name
-        names = [a["name"] for a in agreement_names]
-        assert names == sorted(names)
+        display_names = [a["display_name"] for a in agreement_names]
+        assert display_names == sorted(display_names, key=lambda s: (s or "").casefold())
+
+    def test_filter_options_agreement_names_include_nick_name_and_display_name(self, auth_client, app_ctx):
+        """Agreement filter options should include nick_name and display_name, with name always the full title."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        assert len(agreement_names) > 0
+        for name_entry in agreement_names:
+            assert "id" in name_entry
+            assert "name" in name_entry
+            assert "nick_name" in name_entry
+            assert "display_name" in name_entry
+            expected_display = (name_entry["nick_name"] or "").strip() or name_entry["name"]
+            assert name_entry["display_name"] == expected_display
+
+    def test_filter_options_agreement_names_one_entry_per_agreement(self, auth_client, app_ctx):
+        """B10/trap-4 regression: a nicknamed agreement must appear exactly once, not once under
+        its full name and once under its nickname (the pre-fix dedupe-by-string behavior)."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        ids = [a["id"] for a in agreement_names]
+        assert len(ids) == len(set(ids))
+
+        nicknamed = [a for a in agreement_names if a["nick_name"]]
+        assert len(nicknamed) > 0
+        for entry in nicknamed:
+            assert entry["name"] != entry["nick_name"]
+            # Only the nickname-preferred display_name appears; the full name is not a
+            # separate, second entry for the same agreement id.
+            assert sum(1 for a in agreement_names if a["id"] == entry["id"]) == 1
 
 
 # Tests for project_metadata property
