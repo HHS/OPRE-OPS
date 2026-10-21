@@ -69,6 +69,6 @@ describe("HomeLanding", () => {
         renderWithProviders(<HomeLanding />);
 
         expect(screen.getByText("OPS Updates")).toBeInTheDocument();
-        expect(screen.getByText("Currently Developing")).toBeInTheDocument();
+        expect(screen.getByText("In Progress")).toBeInTheDocument();
     });
 });
