@@ -189,15 +189,21 @@ describe("useCreateBLIsAndSCs", () => {
     const renderSubject = (overrides = {}) => {
         // BLIs live in context (budget_line_items), not the budgetLines prop. Seed them
         // in the mock so tempBudgetLines is populated from context on mount.
+        // `deletedBudgetLineIds` simulates BLIs deleted in this session: they stay in the
+        // budgetLines prop but are removed from context.
         if (overrides.budgetLines?.length) {
+            const deletedIds = overrides.deletedBudgetLineIds ?? [];
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
-                budget_line_items: overrides.budgetLines.map((bli) => ({
-                    ...bli,
-                    services_component_number: bli.services_component_id ? 1 : 0,
-                    serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
-                })),
-                deleted_budget_line_items_ids: []
+                budget_line_items: overrides.budgetLines
+                    .filter((bli) => !deletedIds.includes(bli.id))
+                    .map((bli) => ({
+                        ...bli,
+                        services_component_number: bli.services_component_id ? 1 : 0,
+                        serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
+                    })),
+                deleted_budget_line_items_ids: deletedIds,
+                services_components: overrides.servicesComponents ?? editAgreementMockData.services_components
             });
         }
         return renderHook(() =>
@@ -523,6 +529,31 @@ describe("useCreateBLIsAndSCs", () => {
         const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
         expect(result.current.requiresContractModification).toBe(true);
+    });
+
+    it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {
+        useEditAgreementMock.mockReturnValue({
+            ...editAgreementMockData,
+            budget_line_items: [{ id: "temp-1", status: "DRAFT", in_review: false }],
+            services_components: []
+        });
+        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+        expect(result.current.requiresContractModification).toBe(false);
+    });
+
+    it.each([
+        ["DRAFT", false],
+        ["PLANNED", true]
+    ])("for a deleted %s BL on an Awarded agreement, requiresContractModification is %s", (status, expected) => {
+        const { result } = renderSubject({
+            budgetLines: [{ id: 603, status, in_review: false, created_on: "2026-01-01" }],
+            deletedBudgetLineIds: [603],
+            servicesComponents: [],
+            selectedAgreement: { is_awarded: true }
+        });
+
+        expect(result.current.requiresContractModification).toBe(expected);
     });
 
     it("does not flag requiresContractModification when there are no pending edits, even on an Awarded agreement", () => {

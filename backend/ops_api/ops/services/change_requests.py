@@ -8,7 +8,7 @@ from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow.experimental.context import Context
 
-from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -45,6 +45,14 @@ from ops_api.ops.utils.events import OpsEventHandler
 
 def _is_agreement_awarded(budget_line_item: BudgetLineItem) -> bool:
     return bool(budget_line_item.agreement and budget_line_item.agreement.is_awarded)
+
+
+def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data: dict) -> bool:
+    return (
+        key == "status"
+        and budget_line_item.status == BudgetLineItemStatus.DRAFT
+        and change_data.get("status") == BudgetLineItemStatus.PLANNED
+    )
 
 
 class ChangeRequestService(OpsService[ChangeRequest]):
@@ -377,8 +385,12 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "requested_change_diff": requested_change_diff,
                     "requested_change_info": {
                         "target_display_name": budget_line_item.display_name,
-                        # Snapshot (OPS-3072): only money/time edits count; status changes don't.
-                        "requires_contract_modification": key in BudgetLineItemChangeRequest.budget_field_names
+                        # Snapshot (OPS-3072): money/time edits and Draft->Planned count; other
+                        # status changes don't (Planned->Executing is blocked on awarded agreements).
+                        "requires_contract_modification": (
+                            key in BudgetLineItemChangeRequest.budget_field_names
+                            or _is_draft_to_planned(key, budget_line_item, change_data)
+                        )
                         and _is_agreement_awarded(budget_line_item),
                     },
                     "requestor_notes": requestor_notes,

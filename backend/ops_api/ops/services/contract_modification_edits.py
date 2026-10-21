@@ -44,7 +44,8 @@ class ContractModificationEditService:
             return None
         if change_request.status != ChangeRequestStatus.APPROVED:
             return None
-        if change_request.has_status_change or not change_request.requires_contract_modification:
+        # The snapshot already excludes status changes other than Draft->Planned.
+        if not change_request.requires_contract_modification:
             return None
 
         # Each budget line change request carries exactly one field (add_bli_change_requests

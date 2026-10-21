@@ -540,6 +540,78 @@ describe("useReviewAgreement", () => {
         expect(alertArg.message).not.toMatch(/Division Director/i);
     });
 
+    // OPS-3072: Draft→Planned on an Awarded agreement requires a contract modification.
+    it("confirms a contract modification before sending Draft→Planned on an Awarded agreement", async () => {
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({ is_awarded: true }),
+            error: null,
+            isLoading: false
+        });
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true, enable_modified_loe_edits: true },
+            isSuccess: true
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+        expect(result.current.submitButtonText).toBe("Send to Approval");
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(true);
+        expect(result.current.modalProps.heading).toContain("will require a contract modification");
+        expect(updateBudgetLineItemMock).not.toHaveBeenCalled();
+
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalledWith({
+                id: 101,
+                data: { status: "PLANNED", requestor_notes: "" }
+            });
+        });
+        await waitFor(() => {
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "success", heading: "Changes Sent to Approval" })
+            );
+        });
+    });
+
+    it("sends Draft→Planned without the contract modification modal when the agreement is not Awarded", async () => {
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(false);
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+        });
+    });
+
     it("opens the cancel modal and navigates on confirm", async () => {
         const { result } = renderHook(() => useReviewAgreement(77));
 

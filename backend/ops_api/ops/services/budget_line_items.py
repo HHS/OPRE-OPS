@@ -824,6 +824,13 @@ class BudgetLineItemService:
         if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
             return False, set()
 
+        # On an Awarded agreement these edits require a contract modification (OPS-3072), so
+        # they must go through Division Director approval instead of applying directly.
+        if current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False) and (
+            budget_line_item.agreement and budget_line_item.agreement.is_awarded
+        ):
+            return False, set()
+
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
         is_draft_to_planned = (
             has_status_change

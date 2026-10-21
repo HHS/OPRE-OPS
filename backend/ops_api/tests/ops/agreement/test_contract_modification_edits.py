@@ -503,7 +503,43 @@ def test_flag_off_records_no_edit(
     assert _edits(loaded_db, agreement.id) == []
 
 
-def test_status_change_records_no_edit(
+@pytest.fixture()
+def skip_cr_for_draft_planned_enabled(app):
+    original = app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False)
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = True
+    yield
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = original
+
+
+def test_draft_to_planned_on_awarded_agreement_records_edit(
+    modified_loe_enabled,
+    skip_cr_for_draft_planned_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """Draft -> Planned on an Awarded agreement requires a contract modification, so it goes to
+    Division Director approval even when SKIP_CR_FOR_DRAFT_PLANNED is on."""
+    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.DRAFT)
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"status": "PLANNED"}
+    )
+    assert response.status_code == 202, response.json
+    (cr,) = _change_requests(loaded_db, bli.id)
+    assert cr.requires_contract_modification is True
+
+    _review(division_director_auth_client, cr.id)
+
+    (edit,) = _edits(loaded_db, agreement.id)
+    assert edit.field == "status"
+    assert edit.old_value == "DRAFT"
+    assert edit.new_value == "PLANNED"
+
+
+def test_draft_to_planned_on_non_awarded_agreement_records_no_edit(
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
@@ -512,8 +548,7 @@ def test_status_change_records_no_edit(
     make_agreement,
     app_ctx,
 ):
-    """Draft -> Planned on an Awarded agreement is not a modified LOE."""
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.DRAFT)
+    agreement, bli = make_agreement(test_can, awarded=False, status=BudgetLineItemStatus.DRAFT)
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"status": "PLANNED"}
     )
@@ -522,6 +557,24 @@ def test_status_change_records_no_edit(
         assert cr.requires_contract_modification is False
         _review(division_director_auth_client, cr.id)
 
+    assert _edits(loaded_db, agreement.id) == []
+
+
+def test_draft_amount_edit_on_awarded_agreement_applies_directly(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """Draft budget lines on an Awarded agreement are edited freely, without approval."""
+    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.DRAFT)
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"amount": 123456.00}
+    )
+    assert response.status_code == 200, response.json
+    assert _change_requests(loaded_db, bli.id) == []
     assert _edits(loaded_db, agreement.id) == []
 
 

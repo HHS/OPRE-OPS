@@ -171,6 +171,8 @@ const useCreateBLIsAndSCs = (
     // prematurely. The backend is the enforcement authority; this only drives display/copy.
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const isAgreementAwarded = Boolean(selectedAgreement?.is_awarded);
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -180,8 +182,11 @@ const useCreateBLIsAndSCs = (
     // scope). If any changed line is IN_EXECUTION it still needs approval, so we keep the
     // approval UX for the whole save (mixed-case copy is a deferred product decision).
     const changedFinancialBLIs = tempBudgetLines.filter((bli) => !bli.in_review && bli.financialSnapshotChanged);
+    // On an Awarded agreement these edits require a contract modification (OPS-3072), so the
+    // backend routes them to approval regardless of the capability.
     const flagAllowsDirectApply =
         skipCrForDraftPlanned &&
+        !(enableModifiedLoeEdits && isAgreementAwarded) &&
         changedFinancialBLIs.length > 0 &&
         changedFinancialBLIs.every((bli) => bli.status === BLI_STATUS.PLANNED);
     const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
@@ -912,14 +917,19 @@ const useCreateBLIsAndSCs = (
         .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
-    // OPS-3072 (Modified LOE): on an Awarded agreement, saving an add/delete BL, add/delete/
-    // edit SC, or an amount/CAN/date edit (any BLI status, via the widened financial-snapshot
-    // diffing in buildEditedBudgetLinePayload) requires a contract modification -- surfaced as
-    // a distinct confirmation before the same underlying Division-Director-approval save that
-    // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
-    const isAgreementAwarded = Boolean(selectedAgreement?.is_awarded);
-    const hasAddedOrDeletedBLIs =
-        deletedBudgetLines.length > 0 || tempBudgetLines.some((bli) => !("created_on" in bli));
+    // OPS-3072 (Modified LOE): on an Awarded agreement, saving a delete of a non-Draft BL, an
+    // add/delete/edit SC, or an amount/CAN/date edit on a non-Draft BL requires a contract
+    // modification -- surfaced as a distinct confirmation before the same underlying
+    // Division-Director-approval save that `requiresFinancialApproval` already gates (Decision 10:
+    // not a second, stacked approval). Draft BLs are added, edited, and deleted freely; they only
+    // require a contract modification once changed to Planned (on the Change BL Status page).
+    const hasDeletedNonDraftBLIs = deletedBudgetLines.some(
+        (id) => budgetLines?.find((bli) => bli.id === id)?.status !== BLI_STATUS.DRAFT
+    );
+    const hasAddedNonDraftBLIs = tempBudgetLines.some(
+        (bli) => !("created_on" in bli) && bli.status !== BLI_STATUS.DRAFT
+    );
+    const hasAddedOrDeletedBLIs = hasDeletedNonDraftBLIs || hasAddedNonDraftBLIs;
     const hasAddedOrDeletedOrChangedSCs =
         deletedServicesComponentsIds.length > 0 ||
         servicesComponents.some((sc) => !("created_on" in sc) || sc.has_changed);

@@ -67,6 +67,7 @@ const useReviewAgreement = (agreementId) => {
     // enforcement authority; this flag only drives display/copy.
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
 
     const {
         isSuccess,
@@ -96,9 +97,14 @@ const useReviewAgreement = (agreementId) => {
     };
     let changeRequestAction = actionOptionsToChangeRequests[action];
     // Draft→Planned applies immediately only when the capability is ON. Planned→Executing
-    // always requires approval, so it is never treated as applied-immediately.
+    // always requires approval, so it is never treated as applied-immediately. On an Awarded
+    // agreement, Draft→Planned requires a contract modification (OPS-3072), so the backend
+    // routes it to approval regardless of the capability.
     const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
-    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction;
+    const isAgreementAwarded = Boolean(agreement?.is_awarded);
+    const appliesImmediately =
+        skipCrForDraftPlanned && isDraftToPlannedAction && !(enableModifiedLoeEdits && isAgreementAwarded);
+    const requiresContractModification = isAgreementAwarded && isDraftToPlannedAction && !appliesImmediately;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -163,8 +169,6 @@ const useReviewAgreement = (agreementId) => {
                       old: BLI_STATUS.PLANNED
                   }
               };
-
-    const isAgreementAwarded = agreement?.is_awarded;
 
     React.useEffect(() => {
         // Add guard clause — grants have no services components, so gate only on the required list per type.
@@ -287,10 +291,10 @@ const useReviewAgreement = (agreementId) => {
     };
     const statusChangeMessages = createStatusChangeMessages(selectedBudgetLines, action);
     /**
-     * Handle the sending of the budget line items to approval
+     * Send the selected budget line items' status changes
      * @returns {void}
      */
-    const handleSendToApproval = () => {
+    const sendStatusChanges = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             let selectedBLIsWithStatusAndNotes = [];
 
@@ -361,6 +365,25 @@ const useReviewAgreement = (agreementId) => {
                 }
             });
         }
+    };
+    /**
+     * Handle the sending of the budget line items to approval. On an Awarded agreement, confirm
+     * first that the change will require a contract modification.
+     * @returns {void}
+     */
+    const handleSendToApproval = () => {
+        if (!requiresContractModification) {
+            sendStatusChanges();
+            return;
+        }
+        setModalProps({
+            heading:
+                "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?",
+            actionButtonText: "Send to Approval",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: sendStatusChanges
+        });
+        setShowModal(true);
     };
     /**
      * Handle the selection of a budget line item
