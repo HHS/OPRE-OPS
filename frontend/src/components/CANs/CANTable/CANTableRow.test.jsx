@@ -1,7 +1,8 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import CANTableRow from "./CANTableRow";
-import { renderWithProviders } from "../../../test-utils";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 
 // Mock the Tooltip component
 vi.mock("../../UI/USWDS/Tooltip", () => ({
@@ -98,5 +99,23 @@ describe("CANTableRow", () => {
             </table>
         );
         expect(screen.getByText("TBD")).toBeInTheDocument();
+    });
+
+    it("passes a CANs-list breadcrumb trail when the CAN link is clicked", async () => {
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow {...mockProps} />
+                </tbody>
+            </table>,
+            { withLocationProbe: true }
+        );
+
+        await userEvent.click(screen.getByRole("link", { name: "Test CAN" }));
+
+        expect(getProbedTrail()).toEqual({
+            targetPath: `/cans/${mockProps.canId}`,
+            ancestors: [{ label: "CANs", to: "/cans" }]
+        });
     });
 });

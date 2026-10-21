@@ -65,6 +65,7 @@ const CANBudgetLineTableRow = ({
     const resolvedAgreementName =
         agreementName?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    const agreementPath = `/agreements/${budgetLine?.agreement?.id}`;
 
     const TableRowData = (
         <>
@@ -74,8 +75,8 @@ const CANBudgetLineTableRow = ({
                     {budgetLine.agreement ? (
                         <Link
                             className="text-ink text-no-underline"
-                            to={`/agreements/${budgetLine.agreement.id}`}
-                            state={buildTrailState(`/agreements/${budgetLine.agreement.id}`, ancestry)}
+                            to={agreementPath}
+                            state={buildTrailState(agreementPath, ancestry)}
                             aria-label={resolvedAgreementName}
                         >
                             <TextClip
