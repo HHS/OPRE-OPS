@@ -695,8 +695,9 @@ class BudgetLineItemService:
         )
 
         # Optional capability (per-environment): when enabled, apply Draft→Planned status
-        # changes and in-Planned budget-detail edits immediately instead of creating a
-        # Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        # changes and in-Planned / in-Executing budget-detail edits immediately instead of
+        # creating a Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        # Planned→Executing still routes through a Change Request.
         flag_allows_direct, flagged_fields_to_apply = self._flagged_direct_edit(
             budget_line_item, parsed_partial, diff_data, has_status_change
         )
@@ -808,10 +809,11 @@ class BudgetLineItemService:
         if is_draft_to_planned:
             return True, {"status"}
 
-        # In-Planned budget-detail edit: ONLY the three budget fields (matching the CR
-        # path's budget_field_names), on a line that is and stays PLANNED. NOT
+        # In-Planned / in-Executing budget-detail edit: ONLY the three budget fields
+        # (matching the CR path's budget_field_names), on a line that is and stays PLANNED
+        # or IN_EXECUTION. Pre-award locks are enforced earlier in _validation. NOT
         # has_non_status_change, which would newly persist comments/fee (Defect B).
-        if not has_status_change and budget_line_item.status == BudgetLineItemStatus.PLANNED:
+        if not has_status_change and budget_line_item.status in self.DIRECT_BUDGET_EDIT_STATUSES:
             changed_budget_keys = {
                 key
                 for key in BudgetLineItemChangeRequest.budget_field_names
@@ -958,6 +960,10 @@ class BudgetLineItemService:
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "comments", "clin_id"}
+
+    # Statuses whose budget-detail edits (amount/can_id/date_needed) apply directly, without a
+    # change request, when the SKIP_CR_FOR_DRAFT_PLANNED capability is enabled.
+    DIRECT_BUDGET_EDIT_STATUSES = (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION)
 
     def _handle_change_requests(
         self,
