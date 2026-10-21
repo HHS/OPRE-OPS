@@ -39,7 +39,7 @@ const PortfolioList = () => {
 
     // Custom hook for managing portfolio list state and data
     const {
-        setSelectedFiscalYear,
+        changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,
@@ -99,7 +99,7 @@ const PortfolioList = () => {
                 FYSelect={
                     <PortfolioFiscalYearSelect
                         fiscalYear={fiscalYear}
-                        setSelectedFiscalYear={setSelectedFiscalYear}
+                        setSelectedFiscalYear={changeFiscalYear}
                     />
                 }
                 TabsSection={

@@ -86,7 +86,7 @@ describe("PortfolioList", () => {
     ];
 
     const mockHookReturn = {
-        setSelectedFiscalYear: vi.fn(),
+        changeFiscalYear: vi.fn(),
         activeTab: "all",
         setActiveTab: vi.fn(),
         filters: {

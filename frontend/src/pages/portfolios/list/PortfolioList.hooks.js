@@ -125,7 +125,7 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
     return {
         // State
         selectedFiscalYear,
-        setSelectedFiscalYear: changeFiscalYear,
+        changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,

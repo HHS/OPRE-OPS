@@ -20,7 +20,7 @@ describe("sessionUISlice — initial state", () => {
         expect(state.listFilters.budgetLines.selectedFiscalYear).toBe("All");
         expect(state.listFilters.agreements.selectedFiscalYear).toBe("All");
         expect(state.listFilters.projects.selectedFiscalYear).toBe("All");
-        expect(state.listFilters.procurementDashboard).not.toHaveProperty("selectedFiscalYear");
+        expect(state.listFilters.procurementDashboard.selectedFiscalYear).toBeUndefined();
     });
 });
 
@@ -34,6 +34,18 @@ describe("sessionUISlice — listFilters", () => {
     it("setListFilters ignores an unknown page", () => {
         const before = freshState();
         const after = sessionUIReducer(before, setListFilters({ page: "nope", filters: { a: 1 } }));
+        expect(after.listFilters).toEqual(before.listFilters);
+    });
+
+    it("setListFiscalYear ignores an unknown page", () => {
+        const before = freshState();
+        const after = sessionUIReducer(before, setListFiscalYear({ page: "nope", selectedFiscalYear: 2030 }));
+        expect(after.listFilters).toEqual(before.listFilters);
+    });
+
+    it("changeListFiscalYear ignores an unknown page", () => {
+        const before = freshState();
+        const after = sessionUIReducer(before, changeListFiscalYear({ page: "nope", selectedFiscalYear: 2030 }));
         expect(after.listFilters).toEqual(before.listFilters);
     });
 

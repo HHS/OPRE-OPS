@@ -2,6 +2,9 @@ import { useCallback } from "react";
 import { useSelector, useDispatch, useStore } from "react-redux";
 import { changeListFiscalYear, setListFilters, setListFiscalYear } from "../sessionUISlice";
 
+/** Resolve a `useState`-style value-or-updater against the current value. */
+const resolveUpdater = (updater, current) => (typeof updater === "function" ? updater(current) : updater);
+
 /**
  * Session-persistent replacement for a list page's local `useState` filter
  * state. Returns a `useState`-compatible API backed by the shared
@@ -33,7 +36,7 @@ export const useListFilters = (page) => {
     const setFilters = useCallback(
         (updater) => {
             const current = store.getState().sessionUI?.listFilters?.[page]?.filters;
-            const next = typeof updater === "function" ? updater(current) : updater;
+            const next = resolveUpdater(updater, current);
             dispatch(setListFilters({ page, filters: next }));
         },
         [dispatch, store, page]
@@ -42,7 +45,7 @@ export const useListFilters = (page) => {
     const setSelectedFiscalYear = useCallback(
         (updater) => {
             const current = store.getState().sessionUI?.listFilters?.[page]?.selectedFiscalYear;
-            const next = typeof updater === "function" ? updater(current) : updater;
+            const next = resolveUpdater(updater, current);
             dispatch(setListFiscalYear({ page, selectedFiscalYear: next }));
         },
         [dispatch, store, page]
@@ -56,7 +59,7 @@ export const useListFilters = (page) => {
     const changeFiscalYear = useCallback(
         (updater) => {
             const current = store.getState().sessionUI?.listFilters?.[page]?.selectedFiscalYear;
-            const next = typeof updater === "function" ? updater(current) : updater;
+            const next = resolveUpdater(updater, current);
             dispatch(changeListFiscalYear({ page, selectedFiscalYear: next }));
         },
         [dispatch, store, page]
