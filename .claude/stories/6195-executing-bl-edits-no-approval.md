@@ -46,7 +46,7 @@ Reuse the `SKIP_CR_FOR_DRAFT_PLANNED` direct-edit pattern from PR #6105 (commit 
 
 ### Test Data (dev, local docker)
 
-All four are contracts on project 1002, with BLIs on CAN 515 (FY2027) and the procurement tracker at Step 5. The DD for division 4 is Dave Director (522).
+All four are contracts on project 1002, with BLIs on CAN 515 (FY2027) and the procurement tracker at Step 5. The DD for division 4 is Dave Director (522). `SKIP_CR_FOR_DRAFT_PLANNED` is on in dev, stg and prod but off by default in local Docker and CI. To see the no-approval behavior locally, set it in the backend service's environment.
 
 | Agreement | Pre-Award state | Expected |
 |---|---|---|
