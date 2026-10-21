@@ -155,21 +155,6 @@ describe("Procurement Dashboard - Authorized User", () => {
                 };
 
                 tryShopAtIndex(0);
-                // Open the filter modal and select PSC. The options sort alphabetically, so the first
-                // option (GCS) has no agreements in the current FY of the seed data.
-                cy.get("button").contains("Filter").click();
-                cy.get(".proc-shop-combobox__control").click();
-                cy.get(".proc-shop-combobox__menu").contains(".proc-shop-combobox__option", "PSC").click();
-
-                // Apply the filter
-                cy.get("button").contains("Apply").click();
-
-                // Retry until the refetch lands instead of reading the count once
-                cy.get("[data-cy='procurement-overview-total-agreements']").should(($el) => {
-                    const filteredCount = parseInt($el.text().match(/(\d+) agreements/)?.[1], 10);
-                    expect(filteredCount).to.be.at.most(allCount);
-                    expect(filteredCount).to.be.at.least(1);
-                });
             });
         });
 
