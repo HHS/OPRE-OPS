@@ -14,16 +14,20 @@ export const ROADMAP_STATUS = {
     NOTE: Also shared by both surfaces above, for the same reason — each status gets exactly
     one Tag color, defined once, so CurrentlyDevelopingCard and RoadmapStatusCard can't render
     the same roadmap items in different colors. WCAG AA contrast (4.5:1) for all three, recomputed
-    after the DONE and CURRENTLY_DEVELOPING color changes: DONE's can-budget-by-fy-graph-3 green
-    against text-ink is ~6.45:1; CURRENTLY_DEVELOPING's data-viz-bl-by-status-3 orange against
-    data-viz-bl-by-status-5 text is ~6.67:1; NOT_STARTED's primary-light blue against text-primary
-    is ~4.58:1 — passes, but with far less margin than the other two (unchanged by this file's
-    recent edits; re-check if this pairing's colors ever change).
+    after the DONE, CURRENTLY_DEVELOPING and NOT_STARTED color changes: DONE's
+    can-budget-by-fy-graph-3 green against text-ink is ~6.45:1; CURRENTLY_DEVELOPING's
+    data-viz-bl-by-status-3 orange against data-viz-bl-by-status-5 text is ~6.67:1;
+    NOT_STARTED's primary-light blue against brand-primary-dark text is ~6.36:1. All three now
+    sit in the same 6.3–6.7 band — re-check if any of these pairings' colors ever change.
+
+    NOT_STARTED previously paired this background with `text-primary`, which is USWDS's own
+    #005ea2 rather than the brand --primary token, for ~4.58:1. OPS-6221 moved it onto the
+    brand palette (#264a64) to match the agreements-page filter tags (FilterTags.jsx).
 */
 export const ROADMAP_STATUS_TAG_CLASSES = {
     [ROADMAP_STATUS.DONE]: "bg-brand-can-budget-by-fy-graph-3 text-ink",
     [ROADMAP_STATUS.CURRENTLY_DEVELOPING]: "bg-brand-data-viz-bl-by-status-3 text-brand-data-viz-bl-by-status-5",
-    [ROADMAP_STATUS.NOT_STARTED]: "bg-brand-primary-light text-primary"
+    [ROADMAP_STATUS.NOT_STARTED]: "bg-brand-primary-light text-brand-primary-dark"
 };
 
 /*
