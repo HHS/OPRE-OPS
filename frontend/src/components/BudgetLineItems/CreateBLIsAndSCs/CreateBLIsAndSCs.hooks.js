@@ -57,6 +57,10 @@ import {
 } from "./CreateBLIsAndSCs.helpers";
 import useCreateBLIsAndSCsSaveBlocker from "./useCreateBLIsAndSCsSaveBlocker";
 
+// Statuses whose budget-detail edits apply immediately (no Change Request) when the
+// SKIP_CR_FOR_DRAFT_PLANNED capability is ON. Mirrors the backend's DIRECT_BUDGET_EDIT_STATUSES.
+const DIRECT_APPLY_STATUSES = [BLI_STATUS.PLANNED, BLI_STATUS.EXECUTING];
+
 /**
  * Create and update services components / grant numbers, returning the newly-created items
  * and the already-persisted items. Takes the RTK mutation trigger functions as parameters since
@@ -165,8 +169,8 @@ const useCreateBLIsAndSCs = (
     const isSuperUser = activeUser?.is_superuser ?? false;
     const isBudgetTeam = useIsUserBudgetTeam();
 
-    // Per-environment capability: when ON, in-Planned budget-detail edits apply immediately
-    // (no Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Default
+    // Per-environment capability: when ON, in-Planned and in-Executing budget-detail edits apply
+    // immediately (no Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Default
     // to false until the version query resolves so the approval UX never gets suppressed
     // prematurely. The backend is the enforcement authority; this only drives display/copy.
     const { data: versionData } = useGetVersionQuery();
@@ -175,15 +179,15 @@ const useCreateBLIsAndSCs = (
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
     const bypassEditDirectly = isSuperUser || isBudgetTeam;
-    // When the capability is ON, in-Planned budget-detail edits also apply immediately for any
-    // user — but ONLY when every financially-changed editable line is PLANNED (the flag's
-    // scope). If any changed line is IN_EXECUTION it still needs approval, so we keep the
-    // approval UX for the whole save (mixed-case copy is a deferred product decision).
+    // When the capability is ON, in-Planned and in-Executing budget-detail edits also apply
+    // immediately for any user — but ONLY when every financially-changed editable line is PLANNED
+    // or IN_EXECUTION (the flag's scope). Pre-award locks are enforced by the backend and the
+    // BLI _meta, so locked lines never reach this point as editable.
     const changedFinancialBLIs = tempBudgetLines.filter((bli) => !bli.in_review && bli.financialSnapshotChanged);
     const flagAllowsDirectApply =
         skipCrForDraftPlanned &&
         changedFinancialBLIs.length > 0 &&
-        changedFinancialBLIs.every((bli) => bli.status === BLI_STATUS.PLANNED);
+        changedFinancialBLIs.every((bli) => DIRECT_APPLY_STATUSES.includes(bli.status));
     const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
