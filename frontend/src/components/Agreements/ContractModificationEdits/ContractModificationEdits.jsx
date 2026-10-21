@@ -5,12 +5,12 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  * "Contract Modifications" section of the Award & Modifications tab. Lists the approved
  * edits made in OPS since the agreement was awarded that still require a contract
  * modification to update the actual contract (OPS-3072). Edits stay listed until the
- * user starts the modification.
+ * user starts the modification. Renders nothing while loading or when there are no edits.
  *
  * @component
  * @param {Object} props
  * @param {number} props.agreementId
- * @returns {React.ReactElement}
+ * @returns {React.ReactElement | null}
  */
 const ContractModificationEdits = ({ agreementId }) => {
     const {
@@ -22,20 +22,13 @@ const ContractModificationEdits = ({ agreementId }) => {
         refetchOnMountOrArgChange: true
     });
 
+    if (isLoading || (!isError && !edits?.length)) {
+        return null;
+    }
+
     let content;
-    if (isLoading) {
-        content = <div>Loading edits that require a contract modification...</div>;
-    } else if (isError) {
+    if (isError) {
         content = <div>Error loading edits that require a contract modification.</div>;
-    } else if (!edits?.length) {
-        content = (
-            <p
-                className="font-sans-sm margin-0"
-                data-cy="contract-modification-edits-empty-state"
-            >
-                There are no edits that require a contract modification.
-            </p>
-        );
     } else {
         content = (
             <ul

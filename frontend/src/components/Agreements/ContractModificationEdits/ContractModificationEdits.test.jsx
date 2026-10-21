@@ -51,7 +51,7 @@ describe("ContractModificationEdits", () => {
     });
 
     it("renders the section heading, intro, and list label", () => {
-        mockQuery({ data: [] });
+        mockQuery({ data: [AMOUNT_EDIT] });
 
         render(<ContractModificationEdits agreementId={42} />);
 
@@ -104,21 +104,20 @@ describe("ContractModificationEdits", () => {
         expect(cardValues(deleteCard).slice(3)).toEqual(["Deleted", "$600,000.00", "Deleted"]);
     });
 
-    it("renders an empty state when there are no edits", () => {
+    it("renders nothing when there are no edits", () => {
         mockQuery({ data: [] });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        const { container } = render(<ContractModificationEdits agreementId={42} />);
 
-        expect(screen.getByText("There are no edits that require a contract modification.")).toBeInTheDocument();
-        expect(getCards()).toHaveLength(0);
+        expect(container).toBeEmptyDOMElement();
     });
 
-    it("renders a loading state", () => {
+    it("renders nothing while loading", () => {
         mockQuery({ isLoading: true });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        const { container } = render(<ContractModificationEdits agreementId={42} />);
 
-        expect(screen.getByText(/loading edits/i)).toBeInTheDocument();
+        expect(container).toBeEmptyDOMElement();
     });
 
     it("renders an error state", () => {
