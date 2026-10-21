@@ -1,5 +1,8 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
+import { RELEASE_NOTES_TYPE_CLASSES, RELEASE_NOTES_TYPES } from "./constants";
+
+const RELEASE_CHANGES_FOOTNOTE_ID = "release-changes-footnote";
 
 /**
  * @typedef ReleaseNotesCardProps
@@ -26,13 +29,13 @@ export function LeftCard({
     totalImprovements
 }) {
     return (
-        <RoundedBox>
+        <RoundedBox style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div className="display-flex flex-justify">
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h3>
                     <Tag
                         text={releaseDate}
-                        className="bg-brand-primary-light text-primary"
+                        tagStyle="primaryDarkTextLightBackground"
                     />
                 </article>
 
@@ -40,27 +43,36 @@ export function LeftCard({
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">OPS Version</h3>
                     <Tag
                         text={`Version ${lastVersion}`}
-                        className="bg-brand-primary-light text-primary"
+                        tagStyle="primaryDarkTextLightBackground"
                     />
                 </article>
 
                 <article>
-                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Release Changes</h3>
+                    <h3
+                        className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal"
+                        aria-describedby={RELEASE_CHANGES_FOOTNOTE_ID}
+                    >
+                        Release Changes *
+                    </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalReleaseChanges}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {totalNewFeatures > 0 && (
-                                <Tag className="bg-brand-primary text-white">
+                                <Tag className={RELEASE_NOTES_TYPE_CLASSES[RELEASE_NOTES_TYPES.NEW_FEATURE]}>
                                     {totalNewFeatures} {totalNewFeatures > 1 ? "New Features" : "New Feature"}
                                 </Tag>
                             )}
                             {totalFixes > 0 && (
-                                <Tag className="bg-brand-release-changes-fixes text-ink margin-top-1">
+                                <Tag
+                                    className={`${RELEASE_NOTES_TYPE_CLASSES[RELEASE_NOTES_TYPES.FIXES]} margin-top-1`}
+                                >
                                     {totalFixes} {totalFixes > 1 ? "Fixes" : "Fix"}
                                 </Tag>
                             )}
                             {totalImprovements > 0 && (
-                                <Tag className="bg-brand-can-budget-by-fy-graph-4 text-ink margin-top-1">
+                                <Tag
+                                    className={`${RELEASE_NOTES_TYPE_CLASSES[RELEASE_NOTES_TYPES.IMPROVEMENTS]} margin-top-1`}
+                                >
                                     {totalImprovements} {totalImprovements > 1 ? "Improvements" : "Improvement"}
                                 </Tag>
                             )}
@@ -68,6 +80,13 @@ export function LeftCard({
                     </div>
                 </article>
             </div>
+            <p
+                id={RELEASE_CHANGES_FOOTNOTE_ID}
+                className="font-12px text-base-dark margin-bottom-0"
+                style={{ marginTop: "auto" }}
+            >
+                * See more detail on the What&apos;s New tab below
+            </p>
         </RoundedBox>
     );
 }

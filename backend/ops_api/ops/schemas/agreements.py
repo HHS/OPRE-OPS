@@ -17,7 +17,7 @@ from ops_api.ops.schemas.budget_line_items import (
 )
 from ops_api.ops.schemas.change_requests import AgreementChangeRequestResponseSchema
 from ops_api.ops.schemas.grant_number import GrantNumberItemResponse, NestedGrantNumberRequestSchema
-from ops_api.ops.schemas.pagination import PaginationListSchema
+from ops_api.ops.schemas.pagination import PaginationListSchema, PaginationSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -162,6 +162,10 @@ class AaAgreementData(ContractAgreementData):
     service_requirement_type = fields.Enum(ServiceRequirementType)
 
 
+# PostgreSQL cannot compare against NUL; the driver raises ValueError (HTTP 500) otherwise
+NO_NUL = validate.Regexp(r"^[^\x00]*$", error="Value must not contain NUL characters")
+
+
 class AgreementRequestSchema(PaginationListSchema):
     """ "
     Schema used in GET /agreements endpoint to filter agreements.
@@ -175,7 +179,7 @@ class AgreementRequestSchema(PaginationListSchema):
     portfolio = fields.List(fields.Integer(), required=False)
     project_id = fields.List(fields.Integer(), required=False)
     agreement_reason = fields.List(fields.String(), required=False)
-    contract_number = fields.List(fields.String(), required=False)
+    contract_number = fields.List(fields.String(validate=NO_NUL), required=False)
     contract_type = fields.List(fields.String(), required=False)
     agreement_type = fields.List(fields.String(), required=False)
     delivered_status = fields.List(fields.String(), required=False)
@@ -183,11 +187,11 @@ class AgreementRequestSchema(PaginationListSchema):
     division = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
-    nick_name = fields.List(fields.String(), required=False)
-    foa = fields.List(fields.String(), required=False)
-    odn = fields.List(fields.String(), required=False)
-    name = fields.List(fields.String(), required=False)
-    search = fields.List(fields.String(), required=False)  # currently an alias for name
+    nick_name = fields.List(fields.String(validate=NO_NUL), required=False)
+    foa = fields.List(fields.String(validate=NO_NUL), required=False)
+    odn = fields.List(fields.String(validate=NO_NUL), required=False)
+    name = fields.List(fields.String(validate=NO_NUL), required=False)
+    search = fields.List(fields.String(validate=NO_NUL), required=False)  # currently an alias for name
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
@@ -382,3 +386,60 @@ class AgreementListFilterOptionResponseSchema(Schema):
     agreement_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     contract_numbers = fields.List(fields.String(), required=True)
     research_types = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+
+
+class AgreementSearchRequestSchema(PaginationSchema):
+    """Query parameters for the header agreement search (GET /agreements-search/)."""
+
+    class Meta:
+        unknown = EXCLUDE
+
+    q = fields.String(
+        required=True,
+        validate=[
+            validate.Length(min=1, max=100, error="q must be 1 to 100 characters"),
+            NO_NUL,
+        ],
+    )
+    # Same range and default as PaginationSchema.limit, but None must be rejected: it would reach
+    # .limit(None) and return every match. offset also needs an upper bound.
+    limit = fields.Integer(
+        load_default=10,
+        dump_default=10,
+        validate=validate.Range(min=1, max=50, error="Limit must be greater than 0 and less than 51"),
+        allow_none=False,
+    )
+    offset = fields.Integer(
+        load_default=0,
+        dump_default=0,
+        # upper bound is PostgreSQL bigint max: a larger OFFSET raises DataError (HTTP 500)
+        validate=validate.Range(min=0, max=2**63 - 1, error="Offset must be between 0 and 9223372036854775807"),
+        allow_none=False,
+    )
+
+    @pre_load
+    def strip_q(self, data, **kwargs):
+        data = dict(data)
+        if isinstance(data.get("q"), str):
+            data["q"] = data["q"].strip()
+        return data
+
+
+class AgreementSearchResultSchema(Schema):
+    """One agreement in the search results. Deliberately minimal: no budget lines, totals or _meta."""
+
+    id = fields.Integer(required=True)
+    name = fields.String(required=True)
+    nick_name = fields.String(allow_none=True)
+    agreement_type = fields.Enum(AgreementType, required=True)
+    odn = fields.String(allow_none=True)
+    # contracts only: the other two numbers a search can match on (the ODN is the PO number)
+    contract_number = fields.String(allow_none=True)
+    task_order_number = fields.String(allow_none=True)
+
+
+class AgreementSearchResponseSchema(Schema):
+    data = fields.List(fields.Nested(AgreementSearchResultSchema), required=True)
+    count = fields.Integer(required=True)
+    limit = fields.Integer(required=True)
+    offset = fields.Integer(required=True)

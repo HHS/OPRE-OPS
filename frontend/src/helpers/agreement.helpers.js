@@ -1,5 +1,6 @@
 import { omit } from "lodash";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
+import { dateToYearMonthDay } from "../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../constants";
 import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
@@ -254,10 +255,27 @@ export const getFundingMethod = (agreementType) => {
     return NO_DATA;
 };
 
+/**
+ * Formats an agreement's period of performance (sc_start_date - sc_end_date) for display.
+ * Both dates must be present since they are expected to always be set together in practice.
+ * @param {string|null|undefined} startDate - ISO 8601 date string (agreement.sc_start_date)
+ * @param {string|null|undefined} endDate - ISO 8601 date string (agreement.sc_end_date)
+ * @returns {string} The formatted "MM/DD/YYYY - MM/DD/YYYY" range, or NO_DATA if either date is missing.
+ */
+export const formatPeriodOfPerformance = (startDate, endDate) => {
+    if (!startDate || !endDate) {
+        return NO_DATA;
+    }
+    const start = dateToYearMonthDay(startDate);
+    const end = dateToYearMonthDay(endDate);
+    return `${start.month}/${start.day}/${start.year} - ${end.month}/${end.day}/${end.year}`;
+};
+
 // Mapping of AgreementType to the set of visible AgreementFields
 const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     [AgreementType.CONTRACT]: new Set([
         AgreementFields.DescriptionAndNotes,
+        AgreementFields.PeriodOfPerformance,
         AgreementFields.ContractType,
         AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,

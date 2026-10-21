@@ -8,7 +8,7 @@ export default {
         docs: {
             description: {
                 component:
-                    "Site header containing the OPRE logo, primary navigation (NavMenu), and auth section. " +
+                    "Site header containing the OPRE logo, agreement search (logged-in users only), primary navigation (NavMenu), and auth section. " +
                     "NavMenu conditionally renders links based on user roles from Redux state."
             }
         }

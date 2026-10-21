@@ -448,7 +448,7 @@ const useReviewAgreement = (agreementId) => {
             actionButtonText: "Cancel Status Change",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                navigate("/agreements");
+                navigate(`/agreements/${agreementId}/budget-lines`);
             }
         });
     };

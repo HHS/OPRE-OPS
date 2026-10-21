@@ -44,6 +44,7 @@ from ops_api.ops.resources.agreements import (
     AgreementListAPI,
     AgreementListFilterOptionAPI,
     AgreementReasonListAPI,
+    AgreementSearchAPI,
     AgreementTypeListAPI,
 )
 from ops_api.ops.resources.azure import SasToken
@@ -163,6 +164,7 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 
 # AGREEMENT FILTER OPTIONS ENDPOINT
 AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
+AGREEMENT_SEARCH_API_VIEW_FUNC = AgreementSearchAPI.as_view("agreements-search", Agreement)
 
 # AGREEMENT AGENCY ENDPOINTS
 AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-agency-item", AgreementAgency)

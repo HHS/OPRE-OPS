@@ -48,6 +48,15 @@ describe("LeftCard", () => {
         expect(screen.getByText("1 Improvement")).toBeInTheDocument();
     });
 
+    it("renders the Improvements tag using the dedicated release-changes-improvements color, not the Done tag's green", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const improvementTag = screen.getByText("1 Improvement");
+        expect(improvementTag).toHaveClass("bg-brand-release-changes-improvements");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-3");
+        expect(improvementTag).not.toHaveClass("bg-brand-can-budget-by-fy-graph-4");
+    });
+
     it("renders singular text for single counts", () => {
         const singleCountProps = {
             ...mockProps,
@@ -93,13 +102,37 @@ describe("LeftCard", () => {
     it("renders the release changes heading", () => {
         render(<LeftCard {...mockProps} />);
 
-        expect(screen.getByText("Release Changes")).toBeInTheDocument();
+        expect(screen.getByText("Release Changes *")).toBeInTheDocument();
     });
 
     it("renders its labels as h3s, nesting under the homepage's 'OPS Updates' h2", () => {
         render(<LeftCard {...mockProps} />);
         expect(screen.getByRole("heading", { level: 3, name: "Last Release" })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 3, name: "OPS Version" })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 3, name: "Release Changes" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "Release Changes *" })).toBeInTheDocument();
+    });
+
+    it("renders a footnote pointing to the What's New tab", () => {
+        render(<LeftCard {...mockProps} />);
+
+        expect(screen.getByText("* See more detail on the What's New tab below")).toBeInTheDocument();
+    });
+
+    it("anchors the footnote to the bottom of the card instead of letting it flow with the content", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const footnote = screen.getByText("* See more detail on the What's New tab below");
+        expect(footnote).toHaveStyle({ marginTop: "auto" });
+    });
+
+    it("links the Release Changes heading to its footnote via aria-describedby", () => {
+        render(<LeftCard {...mockProps} />);
+
+        const footnote = screen.getByText("* See more detail on the What's New tab below");
+        const footnoteId = footnote.getAttribute("id");
+        expect(footnoteId).toBeTruthy();
+
+        const heading = screen.getByRole("heading", { level: 3, name: "Release Changes *" });
+        expect(heading).toHaveAttribute("aria-describedby", footnoteId);
     });
 });

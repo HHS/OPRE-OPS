@@ -554,6 +554,6 @@ describe("useReviewAgreement", () => {
             result.current.modalProps.handleConfirm();
         });
 
-        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/77/budget-lines");
     });
 });
