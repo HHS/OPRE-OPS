@@ -16,7 +16,7 @@ from models import (
 )
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
 def get_division_for_budget_line_item(bli_id: int):
@@ -323,6 +323,22 @@ def is_post_pre_award_locked(agreement) -> bool:
         return False
 
     return True
+
+
+def get_agreement_pre_award_lock_message(agreement, user) -> str | None:
+    """
+    Reason agreement-level edits (agreement fields, services components) are blocked by the
+    pre-award locks, or None if they aren't. Mirrors the BLI locks in
+    ``BudgetLineItemService._validation``: blocked while Pre-Award Approval is in review and once it
+    has been fully approved (until the Award request is approved). Budget Team is exempt.
+    """
+    if is_pre_award_in_review(agreement):
+        message = "Cannot modify the Agreement while Pre-Award Approval is in review."
+    elif is_post_pre_award_locked(agreement):
+        message = "Cannot modify the Agreement after Pre-Award Approval has been completed."
+    else:
+        return None
+    return None if user and is_budget_team(user) else message
 
 
 def bli_associated_with_agreement(id: int) -> bool:
