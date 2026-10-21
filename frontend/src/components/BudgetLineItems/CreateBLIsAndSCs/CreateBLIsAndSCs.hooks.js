@@ -172,7 +172,9 @@ const useCreateBLIsAndSCs = (
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
-    const isAgreementAwarded = Boolean(selectedAgreement?.is_awarded);
+    // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
+    // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
+    const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -186,7 +188,7 @@ const useCreateBLIsAndSCs = (
     // backend routes them to approval regardless of the capability.
     const flagAllowsDirectApply =
         skipCrForDraftPlanned &&
-        !(enableModifiedLoeEdits && isAgreementAwarded) &&
+        !tracksContractModifications &&
         changedFinancialBLIs.length > 0 &&
         changedFinancialBLIs.every((bli) => bli.status === BLI_STATUS.PLANNED);
     const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
@@ -934,7 +936,7 @@ const useCreateBLIsAndSCs = (
         deletedServicesComponentsIds.length > 0 ||
         servicesComponents.some((sc) => !("created_on" in sc) || sc.has_changed);
     const requiresContractModification =
-        isAgreementAwarded &&
+        tracksContractModifications &&
         !canEditDirectly &&
         (hasFinancialSnapshotChanges || hasAddedOrDeletedBLIs || hasAddedOrDeletedOrChangedSCs);
 

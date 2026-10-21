@@ -102,9 +102,10 @@ const useReviewAgreement = (agreementId) => {
     // routes it to approval regardless of the capability.
     const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
     const isAgreementAwarded = Boolean(agreement?.is_awarded);
-    const appliesImmediately =
-        skipCrForDraftPlanned && isDraftToPlannedAction && !(enableModifiedLoeEdits && isAgreementAwarded);
-    const requiresContractModification = isAgreementAwarded && isDraftToPlannedAction && !appliesImmediately;
+    // Contract-modification tracking only applies with the ENABLE_MODIFIED_LOE_EDITS capability on.
+    const tracksContractModifications = enableModifiedLoeEdits && isAgreementAwarded;
+    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction && !tracksContractModifications;
+    const requiresContractModification = tracksContractModifications && isDraftToPlannedAction;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;

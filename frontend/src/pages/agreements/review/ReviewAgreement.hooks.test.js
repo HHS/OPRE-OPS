@@ -590,6 +590,35 @@ describe("useReviewAgreement", () => {
         });
     });
 
+    it("sends Draft→Planned on an Awarded agreement without the modal when the capability is OFF", async () => {
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({ is_awarded: true }),
+            error: null,
+            isLoading: false
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(false);
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+        });
+    });
+
     it("sends Draft→Planned without the contract modification modal when the agreement is not Awarded", async () => {
         const { result } = renderHook(() => useReviewAgreement(77));
 

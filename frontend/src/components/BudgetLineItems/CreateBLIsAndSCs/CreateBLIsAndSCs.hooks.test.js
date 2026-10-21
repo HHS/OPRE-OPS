@@ -476,95 +476,122 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
-    // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change, an
-    // add/delete BL, or an add/delete/edit SC requires a contract modification -- surfaced as a
-    // distinct signal (requiresContractModification) alongside the existing requiresFinancialApproval.
-    it("flags requiresContractModification for a PLANNED financial change when the agreement is Awarded", async () => {
-        const plannedLine = {
-            id: 601,
-            status: "PLANNED",
-            in_review: false,
-            financialSnapshotChanged: true
-        };
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [plannedLine],
-            services_components: []
-        });
-        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
-
-        await waitFor(() => {
-            expect(result.current.tempBudgetLines).toHaveLength(1);
-        });
-        expect(result.current.requiresContractModification).toBe(true);
-    });
-
-    it("does not flag requiresContractModification for the same PLANNED financial change when the agreement is not Awarded", async () => {
-        const plannedLine = {
-            id: 602,
-            status: "PLANNED",
-            in_review: false,
-            financialSnapshotChanged: true
-        };
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [plannedLine],
-            services_components: []
-        });
-        const { result } = renderSubject({ selectedAgreement: { is_awarded: false } });
-
-        await waitFor(() => {
-            expect(result.current.tempBudgetLines).toHaveLength(1);
-        });
-        expect(result.current.requiresContractModification).toBe(false);
-    });
-
-    it("flags requiresContractModification for a deleted BL on an Awarded agreement even with no financial change", () => {
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [],
-            deleted_budget_line_items_ids: [999],
-            services_components: []
-        });
-        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
-
-        expect(result.current.requiresContractModification).toBe(true);
-    });
-
-    it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [{ id: "temp-1", status: "DRAFT", in_review: false }],
-            services_components: []
-        });
-        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
-
-        expect(result.current.requiresContractModification).toBe(false);
-    });
-
-    it.each([
-        ["DRAFT", false],
-        ["PLANNED", true]
-    ])("for a deleted %s BL on an Awarded agreement, requiresContractModification is %s", (status, expected) => {
-        const { result } = renderSubject({
-            budgetLines: [{ id: 603, status, in_review: false, created_on: "2026-01-01" }],
-            deletedBudgetLineIds: [603],
-            servicesComponents: [],
-            selectedAgreement: { is_awarded: true }
+    describe("with the ENABLE_MODIFIED_LOE_EDITS capability ON", () => {
+        beforeEach(() => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: true },
+                isSuccess: true
+            });
         });
 
-        expect(result.current.requiresContractModification).toBe(expected);
-    });
+        // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change, an
+        // add/delete BL, or an add/delete/edit SC requires a contract modification -- surfaced as a
+        // distinct signal (requiresContractModification) alongside the existing requiresFinancialApproval.
+        it("flags requiresContractModification for a PLANNED financial change when the agreement is Awarded", async () => {
+            const plannedLine = {
+                id: 601,
+                status: "PLANNED",
+                in_review: false,
+                financialSnapshotChanged: true
+            };
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [plannedLine],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
-    it("does not flag requiresContractModification when there are no pending edits, even on an Awarded agreement", () => {
-        useEditAgreementMock.mockReturnValue({
-            ...editAgreementMockData,
-            budget_line_items: [],
-            services_components: []
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(true);
         });
-        const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
-        expect(result.current.requiresContractModification).toBe(false);
+        it("does not flag requiresContractModification for the same PLANNED financial change when the agreement is not Awarded", async () => {
+            const plannedLine = {
+                id: 602,
+                status: "PLANNED",
+                in_review: false,
+                financialSnapshotChanged: true
+            };
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [plannedLine],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: false } });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it("flags requiresContractModification for a deleted BL on an Awarded agreement even with no financial change", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_budget_line_items_ids: [999],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(true);
+        });
+
+        it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [{ id: "temp-1", status: "DRAFT", in_review: false }],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it.each([
+            ["DRAFT", false],
+            ["PLANNED", true]
+        ])("for a deleted %s BL on an Awarded agreement, requiresContractModification is %s", (status, expected) => {
+            const { result } = renderSubject({
+                budgetLines: [{ id: 603, status, in_review: false, created_on: "2026-01-01" }],
+                deletedBudgetLineIds: [603],
+                servicesComponents: [],
+                selectedAgreement: { is_awarded: true }
+            });
+
+            expect(result.current.requiresContractModification).toBe(expected);
+        });
+
+        it("does not flag requiresContractModification when there are no pending edits, even on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it("does not flag requiresContractModification on an Awarded agreement when the capability is OFF", async () => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: false },
+                isSuccess: true
+            });
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [{ id: 605, status: "PLANNED", in_review: false, financialSnapshotChanged: true }],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(false);
+        });
     });
 
     it("edits a budget line, matching the original by id rather than a stale array index", () => {
