@@ -3,6 +3,7 @@ import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
+import { ALL_FISCAL_YEARS_PARAM } from "../../../helpers/utils";
 import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
@@ -57,9 +58,9 @@ const Can = () => {
     // record when navigating to an agreement. If the user drilled into this CAN via a
     // known path (e.g. Portfolios > Portfolio A > CAN 1) the carried trail supplies the
     // ancestors; otherwise fall back to the CANs list. The leaf is this CAN, linking
-    // back to the current tab and selected FY.
+    // back to the current tab and selected FY ("All" when `fiscalYear` is null).
     const linkAncestry = useAncestryForChildren({
-        ownCrumb: { label: can?.display_name ?? "CAN", fiscalYear },
+        ownCrumb: { label: can?.display_name ?? "CAN", fiscalYear: fiscalYear ?? ALL_FISCAL_YEARS_PARAM },
         fallbackCrumb: LIST_CRUMBS.cans
     });
 

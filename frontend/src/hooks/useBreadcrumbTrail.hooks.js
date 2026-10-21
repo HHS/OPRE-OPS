@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+    buildTrailState,
     getTrailFromState,
     LIST_CRUMBS,
     toTrailState,
@@ -16,14 +17,16 @@ import {
 
 /**
  * The breadcrumb trail carried on the current location, when it applies to the
- * current path (see `trailMatchesPath`).
+ * current path (see `trailMatchesPath`). A trail with no ancestors counts as no
+ * trail, so the page falls back to the route hierarchy instead of rendering
+ * just "Home > <page>".
  *
  * @returns {BreadcrumbTrail | null}
  */
 export const useBreadcrumbTrail = () => {
     const { pathname, state } = useLocation();
     const trail = getTrailFromState(state);
-    return trailMatchesPath(trail, pathname) ? trail : null;
+    return trail?.ancestors?.length && trailMatchesPath(trail, pathname) ? trail : null;
 };
 
 /**
@@ -51,7 +54,7 @@ export const useTrailNavigate = () => {
     const trail = useBreadcrumbTrail();
     return useCallback(
         (to, options) => {
-            const nextTrail = typeof to === "string" && !options?.state ? trailFor(trail, to) : null;
+            const nextTrail = typeof to === "string" && options?.state === undefined ? trailFor(trail, to) : null;
             if (!nextTrail) return options === undefined ? navigate(to) : navigate(to, options);
             return navigate(to, { ...options, state: toTrailState(nextTrail) });
         },
@@ -69,7 +72,7 @@ export const useTrailNavigate = () => {
  * link elsewhere.
  *
  * @param {Object} params
- * @param {{ label: string, to?: string, fiscalYear?: number | null }} params.ownCrumb - The current page's own crumb.
+ * @param {{ label: string, to?: string, fiscalYear?: number | string | null }} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
  * @returns {BreadcrumbAncestor[]}
  */
@@ -90,4 +93,16 @@ export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
 export const useListCrumb = (listKey) => {
     const location = useLocation();
     return withListQuery(LIST_CRUMBS[listKey], location);
+};
+
+/**
+ * Build location state for links from a list page's rows: each destination's
+ * trail is the list's crumb (see `useListCrumb`).
+ *
+ * @param {keyof typeof LIST_CRUMBS} listKey
+ * @returns {(targetPath: string) => { breadcrumbTrail: BreadcrumbTrail }}
+ */
+export const useListTrailState = (listKey) => {
+    const listCrumb = useListCrumb(listKey);
+    return (targetPath) => buildTrailState(targetPath, [listCrumb]);
 };

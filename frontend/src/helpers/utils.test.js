@@ -475,5 +475,7 @@ describe("parseFiscalYearParam", () => {
         expect(parseFiscalYearParam("abc")).toBeNull();
         expect(parseFiscalYearParam("All")).toBeNull();
         expect(parseFiscalYearParam("20251")).toBeNull();
+        expect(parseFiscalYearParam("0000")).toBeNull();
+        expect(parseFiscalYearParam("0999")).toBeNull();
     });
 });

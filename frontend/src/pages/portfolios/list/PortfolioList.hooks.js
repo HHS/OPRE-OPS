@@ -26,7 +26,17 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
     const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("portfolios");
     // The active tab lives in `?tab=` so links back to this list (e.g. breadcrumbs) restore it.
     const activeTab = searchParams.get("tab") || "all";
-    const setActiveTab = (tabId) => setSearchParams?.(tabId === "all" ? {} : { tab: tabId }, { replace: true });
+    // Merge into the current params so other query params on the list survive a tab switch.
+    const setActiveTab = (tabId) =>
+        setSearchParams?.(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                if (tabId === "all") next.delete("tab");
+                else next.set("tab", tabId);
+                return next;
+            },
+            { replace: true }
+        );
 
     const fiscalYear = Number(selectedFiscalYear);
 

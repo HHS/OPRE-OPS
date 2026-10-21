@@ -56,9 +56,10 @@ export const getTrailFromState = (locationState) => locationState?.[TRAIL_STATE_
 export const resourceBasePath = (path) => "/" + path.split("?")[0].split("/").filter(Boolean).slice(0, 2).join("/");
 
 /**
- * Canonical list-page crumbs, matching the labels used by the route
- * `handle.crumb` fallbacks. Used as the first ancestor for each drill-down and
- * as the `fallbackCrumb` when a detail page has no matching carried trail.
+ * Canonical list-page crumbs, also used to build the route `handle.crumb`
+ * fallbacks (see `listCrumb` in index.jsx). Used as the first ancestor for each
+ * drill-down and as the `fallbackCrumb` when a detail page has no matching
+ * carried trail.
  * @type {Record<string, BreadcrumbAncestor>}
  */
 export const LIST_CRUMBS = {

@@ -312,8 +312,12 @@ describe("usePortfolioList", () => {
         result.current.setActiveTab("my");
         result.current.setActiveTab("all");
 
-        expect(setSearchParams).toHaveBeenNthCalledWith(1, { tab: "my" }, { replace: true });
-        expect(setSearchParams).toHaveBeenNthCalledWith(2, {}, { replace: true });
+        // Each call passes an updater that merges into the existing params.
+        const applyCall = (n, prev) => setSearchParams.mock.calls[n][0](new URLSearchParams(prev)).toString();
+        expect(applyCall(0, "fy=2025")).toBe("fy=2025&tab=my");
+        expect(applyCall(1, "fy=2025&tab=my")).toBe("fy=2025");
+        expect(setSearchParams).toHaveBeenNthCalledWith(1, expect.any(Function), { replace: true });
+        expect(setSearchParams).toHaveBeenNthCalledWith(2, expect.any(Function), { replace: true });
     });
 
     it("should initialize filters as empty", () => {

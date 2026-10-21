@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { buildTrailState, LIST_CRUMBS } from "../../../../helpers/breadcrumb.helpers";
-import { useAncestryForChildren } from "../../../../hooks/useBreadcrumbTrail.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepSix from "./ProcurementTrackerStepSix.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import useNavigateToApproval from "../useNavigateToApproval";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -48,13 +46,10 @@ const ProcurementTrackerStepSix = ({
     onDirtyChange = undefined,
     isReadOnly = false
 }) => {
-    const navigate = useNavigate();
-    // The approval page's trail ends with this agreement, so its breadcrumb reads
-    // "… > <agreement> > <approval page>" and links back here.
-    const approvalPath = `/agreements/${agreementId}/award-approval`;
-    const approvalAncestry = useAncestryForChildren({
-        ownCrumb: { label: agreementName ?? "Agreement", to: `/agreements/${agreementId}/procurement-tracker` },
-        fallbackCrumb: LIST_CRUMBS.agreements
+    const navigateToApproval = useNavigateToApproval({
+        agreementId,
+        agreementName,
+        approvalRoute: "award-approval"
     });
     const {
         isAwardCheckboxChecked,
@@ -195,9 +190,7 @@ const ProcurementTrackerStepSix = ({
                             <button
                                 type="button"
                                 className="usa-button usa-button--outline"
-                                onClick={() =>
-                                    navigate(approvalPath, { state: buildTrailState(approvalPath, approvalAncestry) })
-                                }
+                                onClick={navigateToApproval}
                                 disabled={isRequestBtnDisabled}
                                 title={
                                     isRequestBtnDisabled
