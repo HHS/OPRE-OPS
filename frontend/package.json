@@ -40,7 +40,7 @@
         "vest": "6.3.4"
     },
     "overrides": {
-        "caniuse-lite": "1.0.30001817",
+        "caniuse-lite": "1.0.30001818",
         "lodash": "4.18.1",
         "uuid": "14.0.3",
         "glob": "13.0.6"
@@ -81,7 +81,7 @@
         "sass-loader": "17.0.1",
         "semantic-release": "25.0.9",
         "esbuild": "0.28.2",
-        "vite": "8.3.4",
+        "vite": "8.3.5",
         "vite-plugin-eslint": "1.8.1",
         "vite-plugin-svgr": "5.2.0",
         "vitest": "4.1.12",
