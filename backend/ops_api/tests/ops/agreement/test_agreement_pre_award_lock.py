@@ -169,3 +169,20 @@ def test_services_component_patch_allowed_after_pre_award_declined(
 
     assert response.status_code == 200, response.json
     assert response.json["description"] == "Edited"
+
+
+@pytest.mark.parametrize("state,expected_message", [("in_review", IN_REVIEW_MESSAGE), ("locked", LOCKED_MESSAGE)])
+def test_budget_line_create_blocked_by_pre_award(
+    state, expected_message, auth_client, lock_agreement, make_pre_award, app_ctx
+):
+    """Adding a budget line edits the agreement, so it shares the agreement's pre-award locks."""
+    agreement, _ = lock_agreement
+    make_pre_award(agreement.id, state)
+
+    response = auth_client.post(
+        url_for("api.budget-line-items-group"),
+        json={"agreement_id": agreement.id, "line_description": "Blocked", "status": "DRAFT"},
+    )
+
+    assert response.status_code == 400
+    assert expected_message in str(response.json)

@@ -51,6 +51,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     compute_bli_editable,
     compute_bli_is_deletable,
     create_budget_line_item_instance,
+    get_agreement_pre_award_lock_message,
     get_bli_locked_message,
     is_bli_editable,
     is_post_pre_award_locked,
@@ -136,6 +137,11 @@ class BudgetLineItemService:
         self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
 
         agreement = self.db_session.get(Agreement, agreement_id)
+
+        # Adding a budget line edits the agreement, so it shares the agreement's pre-award locks.
+        lock_message = get_agreement_pre_award_lock_message(agreement, current_user)
+        if lock_message:
+            raise ValidationError({"agreement_id": lock_message})
 
         new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
@@ -800,6 +806,12 @@ class BudgetLineItemService:
         if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
             return False, set()
 
+        # Never apply directly while a pre-award lock is active: _validation rejects other users
+        # then, but lets Budget Team through on the understanding that their edits still route
+        # through a change request for DD review.
+        if is_pre_award_in_review(budget_line_item.agreement) or is_post_pre_award_locked(budget_line_item.agreement):
+            return False, set()
+
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
         is_draft_to_planned = (
             has_status_change
@@ -811,8 +823,8 @@ class BudgetLineItemService:
 
         # In-Planned / in-Executing budget-detail edit: ONLY the three budget fields
         # (matching the CR path's budget_field_names), on a line that is and stays PLANNED
-        # or IN_EXECUTION. Pre-award locks are enforced earlier in _validation. NOT
-        # has_non_status_change, which would newly persist comments/fee (Defect B).
+        # or IN_EXECUTION. NOT has_non_status_change, which would newly persist comments/fee
+        # (Defect B).
         if not has_status_change and budget_line_item.status in self.DIRECT_BUDGET_EDIT_STATUSES:
             changed_budget_keys = {
                 key

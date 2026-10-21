@@ -482,3 +482,35 @@ def test_planned_to_executing_still_routes_to_change_request_when_flag_on(
     assert response.status_code == 202, response.json
     assert response.json["status"] == "PLANNED"
     assert response.json["in_review"] is True
+
+
+@pytest.mark.parametrize("pre_award_state", ["in_review", "locked"])
+def test_budget_team_executing_budget_edit_routes_to_change_request_during_pre_award_lock_when_flag_on(
+    pre_award_state, skip_cr_enabled, budget_team_auth_client, executing_bli, make_pre_award, app_ctx
+):
+    """Budget Team is exempt from the pre-award locks, but only because their financial edits still
+    go to the DD as a change request. The capability must not turn that into a direct write."""
+    make_pre_award(executing_bli.agreement_id, state=pre_award_state)
+
+    data = _full_put_payload(executing_bli, amount=200.50)
+    response = budget_team_auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 202, response.json
+    assert response.json["amount"] == 100.12
+    assert response.json["in_review"] is True
+
+
+def test_budget_team_draft_to_planned_routes_to_change_request_during_pre_award_lock_when_flag_on(
+    skip_cr_enabled, budget_team_auth_client, executing_bli, make_pre_award, loaded_db, app_ctx
+):
+    """The Draft→Planned direct path must not bypass DD review for Budget Team during a lock either."""
+    executing_bli.status = BudgetLineItemStatus.DRAFT
+    loaded_db.commit()
+    make_pre_award(executing_bli.agreement_id, state="in_review")
+
+    data = _full_put_payload(executing_bli, status="PLANNED")
+    response = budget_team_auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 202, response.json
+    assert response.json["status"] == "DRAFT"
+    assert response.json["in_review"] is True
