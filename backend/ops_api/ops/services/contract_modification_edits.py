@@ -69,9 +69,34 @@ class ContractModificationEditService:
         return edit
 
     def get_pending_for_agreement(self, agreement_id: int) -> list[ContractModificationEdit]:
-        """Return the agreement's edits not yet attached to a started modification, oldest first."""
+        """Return the agreement's edits not yet attached to a started modification, oldest first.
+
+        Only the latest edit per (budget line, field) is returned, since the budget line's current
+        value is what goes into the modification; a deleted budget line shows only its delete.
+        Superseded rows are kept and still attach to the modification when it starts.
+        """
         self._get_supported_agreement(agreement_id)
-        return list(self.db_session.scalars(self._pending_query(agreement_id)).all())
+        pending = self.db_session.scalars(self._pending_query(agreement_id)).all()
+        return self._latest_per_budget_line_field(pending)
+
+    @staticmethod
+    def _latest_per_budget_line_field(edits) -> list[ContractModificationEdit]:
+        """Collapse oldest-first edits to the latest per (budget line, field), keeping list order."""
+        latest = {}
+        deleted_bli_ids = set()
+        for edit in edits:
+            if edit.budget_line_item_id is None:
+                latest[("edit", edit.id)] = edit
+                continue
+            if edit.field == "delete":
+                deleted_bli_ids.add(edit.budget_line_item_id)
+            key = (edit.budget_line_item_id, edit.field)
+            # re-insert so the edit sorts by its latest occurrence
+            latest.pop(key, None)
+            latest[key] = edit
+        return [
+            edit for (bli_id, field), edit in latest.items() if not (bli_id in deleted_bli_ids and field != "delete")
+        ]
 
     def attach_pending_edits_to_mod(self, agreement_id: int, agreement_mod_id: int) -> int:
         """Attach every pending edit on the agreement to the given modification.
@@ -131,7 +156,8 @@ class ContractModificationEditService:
 
         for edit in pending:
             self.db_session.refresh(edit)
-        return agreement_mod, pending
+        # every pending row is attached, but report only the edits the list showed
+        return agreement_mod, self._latest_per_budget_line_field(pending)
 
     def _get_supported_agreement(self, agreement_id: int) -> Agreement:
         agreement = self.db_session.get(Agreement, agreement_id)

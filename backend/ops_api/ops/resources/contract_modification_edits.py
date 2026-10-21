@@ -32,7 +32,7 @@ class AgreementContractModificationEditsAPI(BaseItemAPI):
         GET /agreements/<int:id>/contract-modification-edits/
 
         Returns the approved edits not yet attached to a started contract modification,
-        oldest first, shaped as ``{"data": [ {edit}, ... ]}``.
+        latest per (budget line, field), oldest first, shaped as ``{"data": [ {edit}, ... ]}``.
 
         Raises:
             ResourceNotFoundError: The agreement doesn't exist (404).

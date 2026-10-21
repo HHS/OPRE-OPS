@@ -333,7 +333,7 @@ def test_multi_field_save_records_one_edit_per_field(
     assert {edit.requested_by_id for edit in edits} == {BASIC_USER_ID}
 
 
-def test_consecutive_edits_on_same_bl_are_separate_and_chain(
+def test_consecutive_edits_on_same_bl_list_only_the_latest(
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
@@ -342,16 +342,77 @@ def test_consecutive_edits_on_same_bl_are_separate_and_chain(
     make_agreement,
     app_ctx,
 ):
+    """The BL's current value is what goes into the modification, so only its latest edit is listed."""
     agreement, bli = make_agreement(test_can)
-    for amount in (550000.00, 500000.00):
+    for amount in (500000.00, 100000.00):
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id), json={"amount": amount}
         )
         assert response.status_code == 202, response.json
         _review(division_director_auth_client, _change_requests(loaded_db, bli.id)[-1].id)
 
+    # every approved edit is still recorded
     edits = _edits(loaded_db, agreement.id)
-    assert [(e.old_value, e.new_value) for e in edits] == [(600000.0, 550000.0), (550000.0, 500000.0)]
+    assert [(e.old_value, e.new_value) for e in edits] == [(600000.0, 500000.0), (500000.0, 100000.0)]
+
+    response = _get_pending(basic_user_auth_client, agreement.id)
+    assert response.status_code == 200, response.json
+    (record,) = response.json["data"]
+    assert (record["old_value"], record["new_value"]) == (500000.0, 100000.0)
+    assert record["id"] == edits[-1].id
+
+
+def test_latest_edit_is_kept_per_field_on_the_same_bl(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    test_cans,
+    make_agreement,
+    app_ctx,
+):
+    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    for payload in ({"amount": 500000.00}, {"can_id": test_cans[1].id}, {"amount": 100000.00}):
+        response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=payload)
+        assert response.status_code == 202, response.json
+        _review(division_director_auth_client, _change_requests(loaded_db, bli.id)[-1].id)
+
+    response = _get_pending(basic_user_auth_client, agreement.id)
+    assert response.status_code == 200, response.json
+    assert [(r["field"], r["new_value"]) for r in response.json["data"]] == [
+        ("can_id", test_cans[1].id),
+        ("amount", 100000.0),
+    ]
+
+
+def test_delete_supersedes_earlier_edits_on_the_bl(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    bli_id = bli.id
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli_id), json={"amount": 500000.00}
+    )
+    assert response.status_code == 202, response.json
+    _review(division_director_auth_client, _change_requests(loaded_db, bli_id)[-1].id)
+
+    response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+    assert response.status_code == 202, response.json
+    _review(division_director_auth_client, _change_requests(loaded_db, bli_id)[-1].id)
+
+    assert len(_edits(loaded_db, agreement.id)) == 2
+    response = _get_pending(basic_user_auth_client, agreement.id)
+    assert response.status_code == 200, response.json
+    (record,) = response.json["data"]
+    assert record["field"] == "delete"
+    assert record["budget_line_item_id"] == bli_id
 
 
 def test_approved_delete_edit_survives_bli_and_change_request_deletion(
@@ -515,10 +576,12 @@ def test_start_modification_attaches_pending_edits_and_records_history(
         "number": None,
         "mod_date": None,
     }
-    assert len(response.json["edits"]) == 2
-    assert {e["agreement_mod_id"] for e in response.json["edits"]} == {mod_id}
+    # Both edits are on the same BL, so only the latest one is reported (as on the list).
+    (reported,) = response.json["edits"]
+    assert reported["new_value"] == 500000.0
+    assert reported["agreement_mod_id"] == mod_id
 
-    # The list is now empty, and every edit is attached to the new mod.
+    # The list is now empty, and every edit (including the superseded one) is attached to the new mod.
     assert _get_pending(basic_user_auth_client, agreement.id).json["data"] == []
     assert {e.agreement_mod_id for e in _edits(loaded_db, agreement.id)} == {mod_id}
     assert loaded_db.get(AgreementMod, mod_id).agreement_id == agreement.id
@@ -537,7 +600,7 @@ def test_start_modification_attaches_pending_edits_and_records_history(
     assert event.created_by == BASIC_USER_ID
     assert event.created_on is not None
     assert event.event_details["agreement_mod_id"] == mod_id
-    assert len(event.event_details["contract_modification_edit_ids"]) == 2
+    assert event.event_details["contract_modification_edit_ids"] == [reported["id"]]
     assert "request.remote_addr" in event.event_details
 
     history = loaded_db.scalars(
@@ -548,7 +611,7 @@ def test_start_modification_attaches_pending_edits_and_records_history(
     ).all()
     assert len(history) == 1
     basic_user = loaded_db.get(User, BASIC_USER_ID)
-    assert history[0].history_message == f"{basic_user.full_name} started a contract modification including 2 edits."
+    assert history[0].history_message == f"{basic_user.full_name} started a contract modification including 1 edit."
     assert history[0].ops_event_id == event.id
 
 
