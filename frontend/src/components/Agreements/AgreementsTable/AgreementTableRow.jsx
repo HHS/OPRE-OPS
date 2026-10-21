@@ -92,6 +92,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                 >
                     <TextClip
                         text={agreementName}
+                        tooltipText={agreement?.name}
                         maxLines={2}
                     />
                 </Link>

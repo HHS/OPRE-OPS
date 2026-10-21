@@ -47,6 +47,8 @@ const filterOption = createFilter({
  * @param {DataProps[]} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
+ * @param {Function} [props.formatOptionLabel] - Optional react-select `formatOptionLabel` override, for rendering
+ * a custom (e.g. multi-line) option label distinct from the plain-string label used for sorting/filtering (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
@@ -63,6 +65,7 @@ const ComboBox = ({
     selectedData,
     setSelectedData,
     optionText = (data) => data.display_name ?? data.title,
+    formatOptionLabel,
     defaultString = "",
     messages = [],
     overrideStyles = {},
@@ -115,6 +118,7 @@ const ComboBox = ({
                     placeholder={defaultString}
                     styles={customStyles}
                     components={{ LoadingMessage }}
+                    formatOptionLabel={formatOptionLabel}
                     filterOption={filterOption}
                     isSearchable={true}
                     isClearable={true}

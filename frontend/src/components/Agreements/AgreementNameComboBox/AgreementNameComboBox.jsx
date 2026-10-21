@@ -91,6 +91,30 @@ export const AgreementNameComboBox = ({
         return Array.from(uniqueAgreements.values()).sort((a, b) => a.title.localeCompare(b.title));
     }, [agreements, agreementNameOptions]);
 
+    // Shows both the nickname-preferred title and the raw full name in the dropdown list, so a
+    // search match on either field is visible to the user (e.g. typing a word from the full
+    // title still shows a nickname-only agreement, with the matching full title beneath it).
+    // Only the single-line nickname-preferred title is shown for the selected pill (context
+    // "value") and for agreements with no nickname, matching the prior single-line display.
+    // `option.label`/`option.name` come straight from ComboBox.hooks.js's options mapper, which
+    // forwards each option's source `name` field — no need to look the option back up in
+    // `computedAgreementNameOptions`. Ref: UX artifact for issue #6144.
+    /**
+     * @param {{label: string, name?: string}} option
+     * @param {{context: "menu" | "value"}} meta
+     */
+    const formatAgreementOptionLabel = (option, { context }) => {
+        if (context === "value" || !option.name || option.name === option.label) {
+            return option.label;
+        }
+        return (
+            <span>
+                <span className="display-block">{option.label}</span>
+                <span className="display-block text-base-dark font-sans-3xs">{option.name}</span>
+            </span>
+        );
+    };
+
     // Handle navigation on error in useEffect to avoid state updates during render
     useEffect(() => {
         if (error) {
@@ -113,6 +137,7 @@ export const AgreementNameComboBox = ({
                         data={computedAgreementNameOptions}
                         selectedData={selectedAgreementNames}
                         setSelectedData={setSelectedAgreementNames}
+                        formatOptionLabel={formatAgreementOptionLabel}
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}

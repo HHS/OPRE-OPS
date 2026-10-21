@@ -114,6 +114,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 isLoading={isLoadingOptions}
+                filterLabel="Agreement Title or Nickname"
             />
         </fieldset>,
         <fieldset

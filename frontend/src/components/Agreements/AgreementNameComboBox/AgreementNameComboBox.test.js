@@ -486,7 +486,7 @@ describe("AgreementNameComboBox", () => {
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
-    it("shows the nickname as the label when present, and the full name when absent", () => {
+    it("shows the nickname as the primary label with the full title beneath it, and just the full title when there's no nickname", () => {
         const mixedAgreements = [
             { id: 1, name: "Full Title With Nickname", nick_name: "NICK" },
             { id: 2, name: "Full Title Without Nickname", nick_name: null }
@@ -509,9 +509,52 @@ describe("AgreementNameComboBox", () => {
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
+        // The agreement with a nickname shows both fields, so a search match on either the
+        // nickname or the full title is visible to the user (UX artifact for issue #6144).
         expect(screen.getByText("NICK")).toBeInTheDocument();
+        expect(screen.getByText("Full Title With Nickname")).toBeInTheDocument();
+        // The agreement with no nickname shows only its (single) full title.
         expect(screen.getByText("Full Title Without Nickname")).toBeInTheDocument();
-        expect(screen.queryByText("Full Title With Nickname")).not.toBeInTheDocument();
+    });
+
+    it("shows the secondary full-title line only for dropdown options, never for the selected pill", () => {
+        // Two agreements so the already-selected one (id 1) is hidden from the open menu
+        // (react-select's default hideSelectedOptions for isMulti) while agreement 2 still
+        // renders there — giving a positive data point that the secondary-line branch of
+        // formatOptionLabel is live for this render, not simply never invoked. If the "value"
+        // vs "menu" context check were removed, the pill would render a second secondary line
+        // too and the count below would be 2, not 1; if formatOptionLabel were omitted
+        // entirely, the count would be 0. Neither mutation can pass this assertion.
+        const mixedAgreements = [
+            { id: 1, name: "Full Title For Agreement One", nick_name: "NICK-ONE" },
+            { id: 2, name: "Full Title For Agreement Two", nick_name: "NICK-TWO" }
+        ];
+        useGetAllAgreements.mockReturnValue({
+            agreements: mixedAgreements,
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={[{ id: 1 }]}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        // The pill for the already-selected agreement renders immediately, single-line.
+        expect(screen.getByText("NICK-ONE")).toBeInTheDocument();
+        expect(screen.queryByText("Full Title For Agreement One")).not.toBeInTheDocument();
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        const secondaryLines = container.querySelectorAll(".text-base-dark.font-sans-3xs");
+        expect(secondaryLines).toHaveLength(1);
+        expect(secondaryLines[0]).toHaveTextContent("Full Title For Agreement Two");
     });
 
     it("finds the option by typing the full name even though the nickname is the visible label", () => {

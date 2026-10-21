@@ -55,6 +55,12 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             if (item.searchText !== undefined) {
                 option.searchText = item.searchText;
             }
+            // Only include name if explicitly present — lets a `formatOptionLabel` (e.g.
+            // AgreementNameComboBox's) render it as secondary text without having to look the
+            // option back up in the source `data` array. Additive/opt-in, same as above.
+            if (item.name !== undefined) {
+                option.name = item.name;
+            }
             return option;
         });
 
