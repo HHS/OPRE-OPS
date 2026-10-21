@@ -57,12 +57,13 @@ const ContractModificationEdits = ({ agreementId }) => {
             data-cy="contract-modifications-section"
         >
             <h2 className="font-sans-lg">Contract Modifications</h2>
-            <p className="font-sans-sm">
+            <p className="font-sans-sm line-height-body-5">
                 After an agreement has been awarded, it will require a Contract Modification in order to make changes or
                 to execute planned budget lines as-is. If edits have been made in OPS since the agreement was awarded,
-                they will be displayed below as a reference.
+                they will be displayed below as a reference. When you are ready to execute a modification, click Start
+                Modification below.
             </p>
-            <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-1">
+            <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-3">
                 Edits That Require a Contract Modification
             </h3>
             {content}
