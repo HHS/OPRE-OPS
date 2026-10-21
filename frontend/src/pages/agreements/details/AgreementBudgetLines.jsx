@@ -43,6 +43,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { anyBudgetLinesByStatus } from "../review/ReviewAgreement.helpers";
 import { AgreementType } from "../agreements.constants";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -102,10 +103,9 @@ const AgreementBudgetLines = ({
         (isSuperUser || canRegularUserEdit);
     // On an Awarded agreement, Planned→Executing now requires a Contract Modification (OPS-3072),
     // so the only status change left to offer here is Draft→Planned — disable the button outright
-    // when there's no Draft BLI left to transition.
-    const hasDraftBLI = (agreement?.budget_line_items ?? []).some((bli) =>
-        draftBudgetLineStatuses.includes(bli.status)
-    );
+    // when there's no Draft BLI left to transition. Shares the Review Agreement page's helper
+    // (which skips in-review BLIs) so this button can't lead to a page with both actions disabled.
+    const hasDraftBLI = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const canRequestStatusChange = isAgreementEditable && (!isAgreementAwarded || hasDraftBLI);
     // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
     const showEditWizard = isEditMode && isAgreementEditable;

@@ -803,6 +803,22 @@ describe("AgreementBudgetLines", () => {
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
         });
 
+        test("Change BL Status is disabled when Awarded and the only Draft BLI is in review", () => {
+            renderWith({
+                agreement: {
+                    ...mockAgreement,
+                    _meta: { isEditable: true },
+                    budget_line_items: [
+                        { id: 1, status: "DRAFT", in_review: true },
+                        { id: 2, status: "PLANNED", in_review: false }
+                    ]
+                }
+            });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("aria-disabled", "true");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn-disabled");
+        });
+
         test("Change BL Status remains enabled when not Awarded, regardless of Draft BLIs", () => {
             renderWith({
                 isAgreementAwarded: false,
