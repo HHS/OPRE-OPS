@@ -17,11 +17,31 @@ import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreemen
 import agreementSuite, { validateBudgetLineItems } from "./suite";
 
 /**
+ * Whether a budget line can be selected for the given status-change action
+ * @param {Object} bli - the budget line item
+ * @param {string} action - the selected action
+ * @returns {boolean}
+ */
+const isBudgetLineActionable = (bli, action) => {
+    switch (action) {
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+            return bli.status === BLI_STATUS.DRAFT && !bli.in_review;
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+            return bli.status === BLI_STATUS.PLANNED && !bli.in_review;
+        default:
+            return false;
+    }
+};
+
+/**
  * Custom hook for the Review Agreement page
  * @param {number} agreementId - the agreement ID
  */
 const useReviewAgreement = (agreementId) => {
     const [action, setAction] = React.useState(""); // for the action accordion
+    // read by the budget line init effect so a late data load keeps the selected action
+    const actionRef = React.useRef(action);
+    actionRef.current = action;
     const [budgetLines, setBudgetLines] = React.useState([]);
     const [pageErrors, setPageErrors] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
@@ -165,7 +185,7 @@ const useReviewAgreement = (agreementId) => {
                     ...bli,
                     grant_number_number: grantNumberNumber,
                     selected: false, // for use in the BLI table
-                    actionable: false // based on action accordion
+                    actionable: isBudgetLineActionable(bli, actionRef.current) // based on action accordion
                 };
             }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
@@ -181,7 +201,7 @@ const useReviewAgreement = (agreementId) => {
                 sc_period_start: budgetLineServicesComponent?.period_start ?? null,
                 sc_period_end: budgetLineServicesComponent?.period_end ?? null,
                 selected: false, // for use in the BLI table
-                actionable: false // based on action accordion
+                actionable: isBudgetLineActionable(bli, actionRef.current) // based on action accordion
             };
         });
 
@@ -371,23 +391,17 @@ const useReviewAgreement = (agreementId) => {
         setNotes("");
 
         const newBudgetLines = budgetLines.map((bli) => {
-            switch (action) {
-                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === BLI_STATUS.DRAFT && !bli.in_review
-                    };
-
-                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === BLI_STATUS.PLANNED && !bli.in_review
-                    };
-                default:
-                    return bli;
+            if (
+                action !== actionOptions.CHANGE_DRAFT_TO_PLANNED &&
+                action !== actionOptions.CHANGE_PLANNED_TO_EXECUTING
+            ) {
+                return bli;
             }
+            return {
+                ...bli,
+                selected: false,
+                actionable: isBudgetLineActionable(bli, action)
+            };
         });
 
         setBudgetLines(newBudgetLines);

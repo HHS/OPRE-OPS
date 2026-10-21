@@ -161,6 +161,33 @@ describe("useReviewAgreement", () => {
         expect(result.current.changeTo.status).toEqual({ new: "PLANNED", old: "DRAFT" });
     });
 
+    it("keeps the selected action's actionable rows when budget line data re-initializes", async () => {
+        const { result, rerender } = renderHook(() => useReviewAgreement(77));
+
+        await waitFor(() => {
+            expect(result.current.groupedBudgetLinesByServicesComponent).toHaveLength(2);
+        });
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_PLANNED_TO_EXECUTING);
+        });
+
+        // a late-arriving query result (e.g. grant numbers) re-runs the init effect
+        useGetServicesComponentsListQueryMock.mockReturnValue({
+            data: [
+                { id: 1, number: 1 },
+                { id: 2, number: 2, sub_component: "A" }
+            ]
+        });
+        rerender();
+
+        const plannedGroup = result.current.groupedBudgetLinesByServicesComponent.find(
+            (group) => group.servicesComponentNumber === 2
+        );
+        expect(plannedGroup.budgetLines[0]).toMatchObject({ id: 202, actionable: true, selected: false });
+        expect(plannedGroup.budgetLines[1]).toMatchObject({ id: 303, actionable: false, selected: false });
+    });
+
     it("aggregates agreement and budget line validation errors after selecting a row", async () => {
         useGetAgreementByIdQueryMock.mockReturnValue({
             isSuccess: true,
