@@ -685,6 +685,8 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
+        self._validate_no_execution_status_change_on_awarded(budget_line_item, parsed_partial, has_status_change)
+
         # Determine if direct edit or change request is needed.
         # Superusers bypass the change-request workflow for all edits.
         # Non-status changes on DRAFT lines also apply directly without a CR.
@@ -756,6 +758,29 @@ class BudgetLineItemService:
     def _has_status_change(updated_fields: dict, budget_line_item: BudgetLineItem) -> bool:
         """Check if there's a status change in the updated fields"""
         return "status" in updated_fields and updated_fields["status"] != budget_line_item.status
+
+    @staticmethod
+    def _validate_no_execution_status_change_on_awarded(
+        budget_line_item: BudgetLineItem, parsed_partial: dict, has_status_change: bool
+    ) -> None:
+        """On an Awarded agreement, executing a budget line requires a Contract Modification
+        (OPS-3072), so a status change to IN_EXECUTION is rejected here rather than relying on
+        the frontend disabling that action. Superusers bypass this, matching the other awarded
+        locks (e.g. ImmutableAwardedFieldsRule)."""
+        if not has_status_change or parsed_partial.get("status") != BudgetLineItemStatus.IN_EXECUTION:
+            return
+        if not (budget_line_item.agreement and budget_line_item.agreement.is_awarded):
+            return
+        if is_super_user(current_user, current_app):
+            return
+        raise ValidationError(
+            {
+                "status": (
+                    "Budget lines on an awarded agreement can't be changed to Executing; "
+                    "a Contract Modification is required."
+                )
+            }
+        )
 
     @staticmethod
     def _has_non_status_change(diff_data: dict, budget_line_item: BudgetLineItem) -> bool:

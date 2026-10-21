@@ -202,3 +202,65 @@ def test_requires_contract_modification_false_on_non_awarded_agreement(
         assert cr.requires_contract_modification is False
     finally:
         _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+# ---=== Planned -> Executing requires a Contract Modification on Awarded agreements ===---
+
+
+def test_planned_to_executing_on_awarded_agreement_rejected(
+    basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """The frontend disables Planned->Executing on an Awarded agreement; the API must enforce it
+    too, so a direct PATCH can't skip the Contract Modification."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="H")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"status": BudgetLineItemStatus.IN_EXECUTION.name},
+        )
+        assert response.status_code == 400, response.json
+        assert "Contract Modification" in response.json["errors"]["status"]
+
+        assert (
+            loaded_db.query(BudgetLineItemChangeRequest)
+            .filter(BudgetLineItemChangeRequest.budget_line_item_id == bli.id)
+            .count()
+            == 0
+        )
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_planned_to_executing_on_non_awarded_agreement_creates_change_request(
+    basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """Regression pin: before award, Planned->Executing still routes to a change request."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=False, name_suffix="I")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"status": BudgetLineItemStatus.IN_EXECUTION.name},
+        )
+        assert response.status_code == 202, response.json
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_planned_to_executing_on_awarded_agreement_allowed_for_superuser(
+    power_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """Superusers bypass the awarded lock, matching the other awarded-agreement rules."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="J")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = power_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"status": BudgetLineItemStatus.IN_EXECUTION.name},
+        )
+        assert response.status_code == 200, response.json
+        loaded_db.refresh(bli)
+        assert bli.status == BudgetLineItemStatus.IN_EXECUTION
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
