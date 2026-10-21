@@ -14,9 +14,30 @@ from models import (
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
 )
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
+from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.users import is_super_user
+
+
+def validate_no_execution_status_change_on_awarded(budget_line_item: BudgetLineItem, new_status: Any) -> None:
+    """On an Awarded agreement, executing a budget line requires a Contract Modification
+    (OPS-3072), so a status change to IN_EXECUTION is rejected -- both when it is requested and
+    when a change request requested before the award is approved. Superusers bypass this,
+    matching the other awarded locks (e.g. ImmutableAwardedFieldsRule)."""
+    if new_status != BudgetLineItemStatus.IN_EXECUTION:
+        return
+    if not (budget_line_item.agreement and budget_line_item.agreement.is_awarded):
+        return
+    if is_super_user(current_user, current_app):
+        return
+    raise ValidationError(
+        {
+            "status": (
+                "Budget lines on an awarded agreement can't be changed to Executing; "
+                "a Contract Modification is required."
+            )
+        }
+    )
 
 
 def get_division_for_budget_line_item(bli_id: int):

@@ -14,7 +14,7 @@ import datetime
 
 import pytest
 from flask import url_for
-from sqlalchemy import select, text
+from sqlalchemy import inspect, select, text
 
 from models import (
     AgreementHistory,
@@ -25,6 +25,7 @@ from models import (
     AwardType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ChangeRequestStatus,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractModificationEdit,
@@ -38,6 +39,7 @@ from models import (
     ServicesComponent,
     User,
 )
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 
 SYSTEM_OWNER_USER_ID = 503
 BASIC_USER_ID = 521
@@ -814,3 +816,90 @@ def test_planned_amount_edit_request_and_approval_are_recorded(
         event = loaded_db.get(OpsEvent, entry.ops_event_id)
         assert event.created_by == user.id
         assert event.event_details["request.remote_addr"] == ip
+
+
+def test_contract_modifications_endpoint_does_not_expose_get(
+    basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
+):
+    """Only POST is routed; the GET inherited from BaseItemAPI would return the full Agreement
+    without the Permission.AGREEMENT check."""
+    agreement, _ = make_agreement(test_can)
+    response = basic_user_auth_client.get(url_for("api.agreements-contract-modifications", id=agreement.id))
+    assert response.status_code == 405
+
+
+def test_attach_pending_edits_to_mod_only_attaches_the_given_edits(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """An edit approved after start_modification read the pending list (but before its UPDATE)
+    must stay pending rather than be silently swept into the modification."""
+    agreement, bli = make_agreement(test_can)
+    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 550000.00)
+    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
+    read_edit, late_edit = _edits(loaded_db, agreement.id)
+
+    agreement_mod = AgreementMod(agreement_id=agreement.id)
+    loaded_db.add(agreement_mod)
+    loaded_db.flush()
+    attached = ContractModificationEditService(loaded_db).attach_pending_edits_to_mod(
+        agreement.id, agreement_mod.id, [read_edit.id]
+    )
+    loaded_db.commit()
+
+    assert attached == 1
+    edits = {edit.id: edit.agreement_mod_id for edit in _edits(loaded_db, agreement.id)}
+    assert edits == {read_edit.id: agreement_mod.id, late_edit.id: None}
+
+
+def test_get_pending_edits_eager_loads_requested_by(
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    agreement, bli = make_agreement(test_can)
+    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli)
+    loaded_db.expire_all()
+
+    (edit,) = ContractModificationEditService(loaded_db).get_pending_for_agreement(agreement.id)
+
+    assert "requested_by" not in inspect(edit).unloaded
+
+
+def test_pre_award_planned_to_executing_request_cannot_be_approved_after_award(
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,
+    app_ctx,
+):
+    """A Planned->Executing request submitted before the award passes the request-time guard;
+    approving it after the award would execute a BL without a Contract Modification."""
+    agreement, bli = make_agreement(test_can, awarded=False)
+    response = basic_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id), json={"status": BudgetLineItemStatus.IN_EXECUTION.name}
+    )
+    assert response.status_code == 202, response.json
+    (cr,) = _change_requests(loaded_db, bli.id)
+
+    _award(loaded_db, agreement)
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=cr.id), json={"action": "APPROVE"}
+    )
+
+    assert response.status_code == 400, response.json
+    assert "Contract Modification" in response.json["errors"]["status"]
+    loaded_db.expire_all()
+    assert loaded_db.get(BudgetLineItemChangeRequest, cr.id).status == ChangeRequestStatus.IN_REVIEW
+    assert loaded_db.get(ContractBudgetLineItem, bli.id).status == BudgetLineItemStatus.PLANNED
+    assert _edits(loaded_db, agreement.id) == []

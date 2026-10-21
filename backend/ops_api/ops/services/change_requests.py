@@ -33,6 +33,7 @@ from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
     update_data,
+    validate_no_execution_status_change_on_awarded,
 )
 from ops_api.ops.utils.change_requests_helpers import (
     build_approve_url,
@@ -210,6 +211,18 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             ChangeRequestStatus.REJECTED,
         ):
             raise ValidationError({"change_request": "This change request has already been reviewed."})
+
+        # A Planned->Executing request submitted before the agreement was awarded can't be
+        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
+        # Checked before the change request is marked reviewed so a rejected approval leaves it pending.
+        if (
+            action == "APPROVE"
+            and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+            and change_request.has_status_change
+        ):
+            validate_no_execution_status_change_on_awarded(
+                change_request.budget_line_item, change_request.requested_change_data["status"]
+            )
 
         if change_request.status == ChangeRequestStatus.REJECTED:
             return {

@@ -11,6 +11,7 @@ from typing import Optional
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 
 from models import (
     Agreement,
@@ -86,9 +87,6 @@ class ContractModificationEditService:
         latest = {}
         deleted_bli_ids = set()
         for edit in edits:
-            if edit.budget_line_item_id is None:
-                latest[("edit", edit.id)] = edit
-                continue
             if edit.field == "delete":
                 deleted_bli_ids.add(edit.budget_line_item_id)
             key = (edit.budget_line_item_id, edit.field)
@@ -99,10 +97,12 @@ class ContractModificationEditService:
             edit for (bli_id, field), edit in latest.items() if not (bli_id in deleted_bli_ids and field != "delete")
         ]
 
-    def attach_pending_edits_to_mod(self, agreement_id: int, agreement_mod_id: int) -> int:
-        """Attach every pending edit on the agreement to the given modification.
+    def attach_pending_edits_to_mod(self, agreement_id: int, agreement_mod_id: int, edit_ids: list[int]) -> int:
+        """Attach the given pending edits on the agreement to the given modification.
 
-        Does not commit. Returns the number of edits attached.
+        Only ``edit_ids`` are attached, so an edit approved after the caller read the pending
+        list isn't swept into the modification without being reported. Does not commit.
+        Returns the number of edits attached.
         """
         agreement_mod = self.db_session.get(AgreementMod, agreement_mod_id)
         if agreement_mod is None:
@@ -113,6 +113,7 @@ class ContractModificationEditService:
         result = self.db_session.execute(
             update(ContractModificationEdit)
             .where(
+                ContractModificationEdit.id.in_(edit_ids),
                 ContractModificationEdit.agreement_id == agreement_id,
                 ContractModificationEdit.agreement_mod_id.is_(None),
             )
@@ -152,7 +153,7 @@ class ContractModificationEditService:
         self.db_session.add(agreement_mod)
         self.db_session.flush()
 
-        self.attach_pending_edits_to_mod(agreement_id, agreement_mod.id)
+        self.attach_pending_edits_to_mod(agreement_id, agreement_mod.id, [edit.id for edit in pending])
         self.db_session.commit()
 
         for edit in pending:
@@ -174,6 +175,7 @@ class ContractModificationEditService:
     def _pending_query(agreement_id: int):
         return (
             select(ContractModificationEdit)
+            .options(selectinload(ContractModificationEdit.requested_by))
             .where(
                 ContractModificationEdit.agreement_id == agreement_id,
                 ContractModificationEdit.agreement_mod_id.is_(None),

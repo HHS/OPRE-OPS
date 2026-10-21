@@ -46,6 +46,10 @@ class AgreementContractModificationEditsAPI(BaseItemAPI):
 class AgreementContractModificationsAPI(BaseItemAPI):
     """Start a contract modification for an agreement's pending edits."""
 
+    # POST only: don't expose the GET inherited from BaseItemAPI, which returns the full
+    # Agreement without the Permission.AGREEMENT check.
+    methods = ["POST"]
+
     def __init__(self, model: Type[BaseModel] = Agreement):
         super().__init__(model)
 
