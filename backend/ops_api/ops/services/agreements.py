@@ -1362,11 +1362,7 @@ def _get_all_matching_ids(
     if _is_sql_sortable(sort_condition):
         agreement_alias = Agreement.__table__
         if sort_condition == AgreementSortCondition.AGREEMENT:
-            # COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort.
-            # Without it, en_US.utf8 collation treats spaces/hyphens differently from Python.
-            from sqlalchemy import text
-
-            sort_col = func.lower(agreement_alias.c.name).op("COLLATE")(text('"C"')).label("sort_key")
+            sort_col = _name_sort_key(agreement_alias.c.name).label("sort_key")
         inner = (
             select(union_subq.c.id, sort_col)
             .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
@@ -1552,17 +1548,27 @@ def _odn_column(agreement_cls: Type[Agreement]):
 _ODN_AGREEMENT_CLASSES = (ContractAgreement, AaAgreement, GrantAgreement)
 
 
+def _name_sort_key(name_column):
+    """Case-insensitive agreement-name sort key shared by the list and search endpoints.
+
+    COLLATE "C" uses raw codepoint ordering, matching Python's casefold() sort. Without it,
+    en_US.utf8 collation treats spaces/hyphens differently from Python.
+    """
+    return func.lower(name_column).op("COLLATE")(text('"C"'))
+
+
 def search_agreements(session: Session, q: str, limit: int, offset: int) -> tuple[list[dict[str, Any]], int]:
     """Lightweight agreement search for the header type-ahead and the search results page.
 
     Case-insensitive substring match (literal %, _ and \\) on the agreement name, nickname and
-    ODN (see _odn_column). One page query on `agreement` outer-joined by primary key to the three
+    ODN (see _odn_column), plus a contract's contract number and task order number. One page query on `agreement` outer-joined by primary key to the three
     subclass tables that hold an ODN, plus one count query over the same filter (two statements, so
     a concurrent write can skew the count by one): no budget-line or CAN joins, no totals and no
     per-row computed values. Each agreement lives in exactly one subclass table, so there are no duplicates.
 
     Returns:
-        (page of {id, name, nick_name, agreement_type, odn} dicts, total match count)
+        (page of {id, name, nick_name, agreement_type, odn, contract_number, task_order_number} dicts,
+        total match count)
     """
     # Use the subclass *table* columns, not the ORM attributes: an ORM attribute such as
     # ContractAgreement.po_number pulls in an inner JOIN to that subclass, which would collide
@@ -1575,7 +1581,21 @@ def search_agreements(session: Session, q: str, limit: int, offset: int) -> tupl
         else_=null(),
     ).label("odn")
 
-    base = select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.agreement_type, odn_expr)
+    # A contract carries two more searchable numbers besides its ODN (the PO number): its contract
+    # number and its own task order number. They are returned so the UI can say which one matched.
+    contract_table = ContractAgreement.__table__
+    contract_number = contract_table.c.contract_number.label("contract_number")
+    task_order_number = contract_table.c.task_order_number.label("task_order_number")
+
+    base = select(
+        Agreement.id,
+        Agreement.name,
+        Agreement.nick_name,
+        Agreement.agreement_type,
+        odn_expr,
+        contract_number,
+        task_order_number,
+    )
     for cls in _ODN_AGREEMENT_CLASSES:
         base = base.outerjoin(cls.__table__, cls.__table__.c.id == Agreement.id)
     base = base.where(
@@ -1583,15 +1603,17 @@ def search_agreements(session: Session, q: str, limit: int, offset: int) -> tupl
             Agreement.name.icontains(q, autoescape=True),
             Agreement.nick_name.icontains(q, autoescape=True),
             *[column.icontains(q, autoescape=True) for column in odn_columns.values()],
+            contract_table.c.contract_number.icontains(q, autoescape=True),
+            contract_table.c.task_order_number.icontains(q, autoescape=True),
         )
     )
 
     total_count = session.scalar(select(func.count()).select_from(base.subquery()))
 
-    # COLLATE "C" matches the Agreement sort on the list endpoint (see _get_all_matching_ids);
     # id is the tie-break so pagination is stable.
-    sort_key = func.lower(Agreement.name).op("COLLATE")(text('"C"'))
-    rows = session.execute(base.order_by(sort_key, Agreement.id).limit(limit).offset(offset)).all()
+    rows = session.execute(
+        base.order_by(_name_sort_key(Agreement.name), Agreement.id).limit(limit).offset(offset)
+    ).all()
     results = [
         {
             "id": row.id,
@@ -1599,6 +1621,8 @@ def search_agreements(session: Session, q: str, limit: int, offset: int) -> tupl
             "nick_name": row.nick_name,
             "agreement_type": row.agreement_type,
             "odn": row.odn,
+            "contract_number": row.contract_number,
+            "task_order_number": row.task_order_number,
         }
         for row in rows
     ]

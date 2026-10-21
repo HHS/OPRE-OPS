@@ -93,7 +93,7 @@ describe("SearchResults", () => {
 
         expect(screen.getByRole("heading", { name: "Search results" })).toBeInTheDocument();
         expect(screen.getByTestId("breadcrumb")).toHaveTextContent("Search");
-        expect(screen.getByText("Enter an ODN, agreement title, or nickname to search.")).toBeInTheDocument();
+        expect(screen.getByText("Enter a number, agreement title, or nickname to search.")).toBeInTheDocument();
         await new Promise((resolve) => setTimeout(resolve, 100));
         expect(requests).toHaveLength(0);
     });
@@ -102,7 +102,7 @@ describe("SearchResults", () => {
         const requests = mockSearch(() => ({ data: [], count: 0 }));
         renderPage("/search");
 
-        expect(screen.getByText("Enter an ODN, agreement title, or nickname to search.")).toBeInTheDocument();
+        expect(screen.getByText("Enter a number, agreement title, or nickname to search.")).toBeInTheDocument();
         await new Promise((resolve) => setTimeout(resolve, 100));
         expect(requests).toHaveLength(0);
     });
@@ -143,6 +143,22 @@ describe("SearchResults", () => {
         expect(titleRow).toHaveTextContent("Title: Head Start Test");
         expect(nickRow).toHaveTextContent("Partner - AA");
         expect(nickRow).toHaveTextContent("Nickname: my-test-nick");
+    });
+
+    it("labels a match on a contract's contract number or task order number", async () => {
+        mockSearch(() => ({
+            data: [
+                row(1, { name: "A", contract_number: "CN-7788", task_order_number: "TO-1" }),
+                row(2, { name: "B", contract_number: "CN-1", task_order_number: "TO-7788" })
+            ],
+            count: 2
+        }));
+        renderPage("/search?q=7788");
+
+        await screen.findByRole("table");
+        const [first, second] = screen.getAllByRole("row").slice(1);
+        expect(first).toHaveTextContent("Contract #: CN-7788");
+        expect(second).toHaveTextContent("Task order #: TO-7788");
     });
 
     it("uses the singular for one agreement", async () => {
