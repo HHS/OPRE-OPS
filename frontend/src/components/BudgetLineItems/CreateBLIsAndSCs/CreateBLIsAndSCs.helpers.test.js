@@ -168,36 +168,32 @@ describe("buildEditedBudgetLinePayload — Modified LOE amount edit (OPS-3072)",
     };
     const originalBudgetLine = { amount: 500000, date_needed: "2043-01-01", can_id: 500 };
 
-    it("flags financialSnapshotChanged for an OBLIGATED BLI's amount edit when the agreement is Awarded", () => {
-        const payload = buildEditedBudgetLinePayload({
-            ...baseArgs,
-            currentBudgetLine,
-            originalBudgetLine,
-            selectedAgreement: { is_awarded: true }
-        });
-        expect(payload.financialSnapshotChanged).toBe(true);
-        expect(payload.tempChangeRequest).toEqual({ amount: 600000 });
-    });
+    it.each([true, false])(
+        "does NOT flag financialSnapshotChanged for an OBLIGATED BLI's amount edit (is_awarded=%s)",
+        (isAwarded) => {
+            const payload = buildEditedBudgetLinePayload({
+                ...baseArgs,
+                currentBudgetLine,
+                originalBudgetLine,
+                selectedAgreement: { is_awarded: isAwarded }
+            });
+            expect(payload.financialSnapshotChanged).toBeUndefined();
+            expect(payload.tempChangeRequest).toBeUndefined();
+        }
+    );
 
-    it("does NOT flag financialSnapshotChanged for the same OBLIGATED edit when the agreement is not Awarded", () => {
-        const payload = buildEditedBudgetLinePayload({
-            ...baseArgs,
-            currentBudgetLine,
-            originalBudgetLine,
-            selectedAgreement: { is_awarded: false }
-        });
-        expect(payload.financialSnapshotChanged).toBeUndefined();
-        expect(payload.tempChangeRequest).toBeUndefined();
-    });
-
-    it("still flags financialSnapshotChanged for a PLANNED BLI's amount edit regardless of award state (unchanged behavior)", () => {
-        const plannedBudgetLine = { ...currentBudgetLine, status: BLI_STATUS.PLANNED };
-        const payload = buildEditedBudgetLinePayload({
-            ...baseArgs,
-            currentBudgetLine: plannedBudgetLine,
-            originalBudgetLine,
-            selectedAgreement: { is_awarded: false }
-        });
-        expect(payload.financialSnapshotChanged).toBe(true);
-    });
+    it.each([true, false])(
+        "flags financialSnapshotChanged for a PLANNED BLI's amount edit (is_awarded=%s)",
+        (isAwarded) => {
+            const plannedBudgetLine = { ...currentBudgetLine, status: BLI_STATUS.PLANNED };
+            const payload = buildEditedBudgetLinePayload({
+                ...baseArgs,
+                currentBudgetLine: plannedBudgetLine,
+                originalBudgetLine,
+                selectedAgreement: { is_awarded: isAwarded }
+            });
+            expect(payload.financialSnapshotChanged).toBe(true);
+            expect(payload.tempChangeRequest).toEqual({ amount: 600000 });
+        }
+    );
 });

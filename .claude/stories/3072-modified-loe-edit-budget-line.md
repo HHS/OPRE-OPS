@@ -7,6 +7,8 @@ branch: OPS-3072/modified-loe-amount-edit
 
 ## Story Overview
 
+> **Revision (round 7): OBLIGATED BLIs are out of scope.** On the issue, jonnalley clarified the ACs apply to *Planned* BLs: "We wouldn't be modifying an obligated BL for what this story is trying to do." The OBLIGATED amount-edit carve-out (`is_modified_loe_amount_edit`, the OBLIGATED diffing branch, and its tests) has been removed; OBLIGATED BLIs stay non-editable. Everything below that describes editing OBLIGATED BLIs is superseded. Seeded agreement 523 keeps its 3 OBLIGATED BLIs (read-only) and its 1 PLANNED BLI is the one to edit.
+
 **Ticket:** #3072 — "Edit a Budget Line or Services Component on an Awarded Agreement (modified LOE contract mod)"
 **This document's scope:** The parent issue has 10 acceptance criteria. This is a **slice plan**, not a plan for the whole issue. It designs and plans **AC1 only** ("User can increase or decrease the amount of an existing budget line and see that their edit will require a contract modification") in full, then uses that design to sketch — but not fully plan — how **AC9** (Award & Modifications tab list) and **AC10** (event/history + remote IP) would extend it, since the user asked specifically to validate the approach against those two before committing to the other field-level ACs (CAN, Obligate By, add/delete BL, add/delete SC), which are expected to be near-identical repeats of the AC1 pattern (see [Generalizing](#generalizing-to-the-remaining-acceptance-criteria)).
 
@@ -86,7 +88,7 @@ As an OPRE COR, I want to increase or decrease the amount of an Obligated budget
 
 ### Acceptance Criteria (this slice)
 
-- [ ] A COR (non-superuser) can submit an amount change on a BLI whose status is `OBLIGATED`, on an agreement where `agreement.is_awarded` is `True`.
+- [ ] ~~A COR (non-superuser) can submit an amount change on a BLI whose status is `OBLIGATED`, on an agreement where `agreement.is_awarded` is `True`.~~ *(Superseded, round 7: OBLIGATED BLIs stay non-editable; Modified LOE edits apply to Planned BLs.)*
 - [ ] That submission creates a `BudgetLineItemChangeRequest` through the **existing** CR/Division-Director-approval pipeline (no bypass, no new approver).
 - [ ] The CR (and the BLI amount edit UI, pre-submission) is marked as "requires a contract modification" whenever `agreement.is_awarded` is `True` at submission time — regardless of whether the specific BLI being edited is OBLIGATED, PLANNED, or IN_EXECUTION (per the issue's own "anything that changes money... on the awarded contract" framing). This is a deliberate widening from "only OBLIGATED BLIs" — see [Decision 1](#key-decisions).
 - [ ] All other existing editability behavior (DRAFT direct-edit, PLANNED/IN_EXECUTION CR flow, pre-award locks, super-user bypass) is unchanged for every other case.
@@ -235,7 +237,8 @@ Add a **derived** (not persisted) `requires_contract_modification` property to `
 **Decision 3: Widen `EDITABLE_STATUSES` to include OBLIGATED globally, or add a narrow, field-scoped carve-out?**
 - Option A: Add `OBLIGATED` to `EDITABLE_STATUSES`.
 - Option B: A dedicated `is_modified_loe_amount_edit` check, scoped to `{"amount"}`, consulted alongside (not instead of) the existing status allowlist.
-- **Chosen:** Option B. Option A would silently make OBLIGATED BLIs deletable too (`compute_bli_is_deletable` delegates straight to `compute_bli_editable`, `budget_line_items_helpers.py:167-180`) and would open CAN/date_needed/status edits before AC2/AC3 are designed. Mirrors the existing `SKIP_CR_FOR_DRAFT_PLANNED` precedent of a narrow, additive carve-out rather than a blanket status change.
+- *(Superseded, round 7: neither. OBLIGATED BLIs are out of scope, so the Option B carve-out was removed.)*
+- ~~**Chosen:** Option B.~~ Original reasoning: Option A would silently make OBLIGATED BLIs deletable too (`compute_bli_is_deletable` delegates straight to `compute_bli_editable`, `budget_line_items_helpers.py:167-180`) and would open CAN/date_needed/status edits before AC2/AC3 are designed. Mirrors the existing `SKIP_CR_FOR_DRAFT_PLANNED` precedent of a narrow, additive carve-out rather than a blanket status change.
 
 **Decision 4: Should Division Director approval differ for a modified-LOE CR vs. a normal budget CR?**
 - Option A: Same approver, same review screen, same mechanics — just an added visual marker.

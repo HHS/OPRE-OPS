@@ -823,14 +823,14 @@
     },
     {
       // Seeded for manual testing of the Modified LOE / contract modification flows
-      // (OPS-3072): fully populated, Awarded, with exactly 3 OBLIGATED BLIs so the
-      // amount-edit carve-out, the Change-BL-Status button guard, and the new
+      // (OPS-3072): fully populated and Awarded, with 3 OBLIGATED BLIs (not editable) and
+      // 1 PLANNED BLI, so Modified LOE edits, the Change-BL-Status button guard, and the
       // "requires a contract modification" modal can all be exercised without first
       // walking a fresh agreement through the full procurement tracker wizard.
       id: 523,
       name: "CONTRACT #523: Modified LOE Test Contract (OPS-3072)",
       nick_name: "MLOE-CONTRACT",
-      description: "Fully-populated Awarded contract with three OBLIGATED budget lines, seeded for manual testing of the Modified LOE / contract modification flows.",
+      description: "Fully-populated Awarded contract with three OBLIGATED budget lines and one PLANNED budget line, seeded for manual testing of the Modified LOE / contract modification flows.",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
       project_officer_id: 500,

@@ -1,18 +1,8 @@
-"""Integration tests for the Modified LOE amount-edit carve-out (OPS-3072, slice 1).
+"""Integration tests for Modified LOE budget line edits (OPS-3072, slice 1).
 
-Opens a narrow path for a non-superuser to edit the *amount* of an OBLIGATED Budget Line
-Item once its agreement is Awarded, behind the ``ENABLE_MODIFIED_LOE_EDITS`` flag. The edit
-still flows through the existing BudgetLineItemChangeRequest / Division Director approval
-pipeline unchanged -- only the upfront "not in an editable state" rejection is bypassed.
-
-The resulting (and every other) BudgetLineItemChangeRequest also starts reporting
-``requires_contract_modification`` whenever its Agreement.is_awarded is True, independent of
-the specific BLI's own status (Decision 1: a modified LOE is "anything that changes money or
-time on the awarded contract," not just an OBLIGATED-specific flag).
-
-``test_can`` (CAN 500) is managed by division 5; ``division_director_auth_client`` (user 522)
-is that division's director, matching the existing pattern in
-``test_delete_budget_line_change_request.py``.
+On an Awarded agreement, budget line change requests report ``requires_contract_modification``
+(Decision 1: a modified LOE is "anything that changes money or time on the awarded contract").
+OBLIGATED budget lines stay non-editable; Modified LOE edits apply to Planned budget lines.
 """
 
 import datetime
@@ -27,7 +17,6 @@ from models import (
     AwardType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
-    ChangeRequestStatus,
     ContractAgreement,
     ContractBudgetLineItem,
     ContractType,
@@ -46,15 +35,6 @@ def modified_loe_enabled(app):
     """Turn ENABLE_MODIFIED_LOE_EDITS ON for the duration of a test."""
     original = app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
     app.config["ENABLE_MODIFIED_LOE_EDITS"] = True
-    yield
-    app.config["ENABLE_MODIFIED_LOE_EDITS"] = original
-
-
-@pytest.fixture()
-def modified_loe_disabled(app):
-    """Turn ENABLE_MODIFIED_LOE_EDITS OFF for the duration of a test (regression baseline)."""
-    original = app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
-    app.config["ENABLE_MODIFIED_LOE_EDITS"] = False
     yield
     app.config["ENABLE_MODIFIED_LOE_EDITS"] = original
 
@@ -131,104 +111,19 @@ def _cleanup(loaded_db, agreement_id, bli_id, sc):
         loaded_db.commit()
 
 
-# ---=== Flag ON, agreement Awarded, OBLIGATED BLI ===---
+# ---=== OBLIGATED BLIs stay locked ===---
 
 
-def test_obligated_amount_edit_on_awarded_agreement_creates_cr_when_flag_on(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    test_project,
-    app_ctx,
+def test_obligated_amount_edit_on_awarded_agreement_rejected_with_flag_on(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
+    """Modified LOE edits apply to Planned budget lines; an OBLIGATED BLI stays non-editable."""
     agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="A")
     bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
             json={"amount": 600000.00},
-        )
-        assert response.status_code == 202, response.json
-
-        crs = (
-            loaded_db.query(BudgetLineItemChangeRequest)
-            .filter(BudgetLineItemChangeRequest.budget_line_item_id == bli.id)
-            .all()
-        )
-        assert len(crs) == 1
-        cr = crs[0]
-        assert cr.status == ChangeRequestStatus.IN_REVIEW
-        assert cr.has_budget_change is True
-        assert cr.requires_contract_modification is True
-        assert cr.to_dict()["requires_contract_modification"] is True
-
-        # Still-unchanged until approved.
-        loaded_db.refresh(bli)
-        assert float(bli.amount) == 500000.00
-
-        # Approves through the ordinary CR pipeline, unchanged.
-        approve = division_director_auth_client.patch(
-            url_for("api.change-requests-item", id=cr.id),
-            json={"action": "APPROVE"},
-        )
-        assert approve.status_code == 200
-        loaded_db.refresh(bli)
-        assert float(bli.amount) == 600000.00
-
-        updated_cr = loaded_db.get(BudgetLineItemChangeRequest, cr.id)
-        assert updated_cr.status == ChangeRequestStatus.APPROVED
-        assert updated_cr.requires_contract_modification is True
-    finally:
-        _cleanup(loaded_db, agreement.id, bli.id, sc)
-
-
-def test_obligated_amount_edit_rejected_when_flag_off(
-    modified_loe_disabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
-):
-    """Regression pin: identical scenario, flag off -> unchanged rejection."""
-    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="B")
-    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
-    try:
-        response = basic_user_auth_client.patch(
-            url_for("api.budget-line-items-item", id=bli.id),
-            json={"amount": 600000.00},
-        )
-        assert response.status_code == 400
-        assert response.json["errors"]["status"] == "Budget Line Item is not in an editable state."
-    finally:
-        _cleanup(loaded_db, agreement.id, bli.id, sc)
-
-
-def test_obligated_edit_rejected_when_flag_on_but_agreement_not_awarded(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
-):
-    """Flag on alone isn't enough -- the agreement must actually be Awarded."""
-    agreement = _make_agreement(loaded_db, test_project, awarded=False, name_suffix="C")
-    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
-    try:
-        response = basic_user_auth_client.patch(
-            url_for("api.budget-line-items-item", id=bli.id),
-            json={"amount": 600000.00},
-        )
-        assert response.status_code == 400
-        assert response.json["errors"]["status"] == "Budget Line Item is not in an editable state."
-    finally:
-        _cleanup(loaded_db, agreement.id, bli.id, sc)
-
-
-def test_obligated_edit_rejected_when_other_fields_included(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_cans, test_project, app_ctx
-):
-    """Field-scoping holds: amount + can_id together on an OBLIGATED BLI still rejected --
-    CAN/date_needed on OBLIGATED aren't part of this slice."""
-    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="D")
-    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.OBLIGATED)
-    try:
-        response = basic_user_auth_client.patch(
-            url_for("api.budget-line-items-item", id=bli.id),
-            json={"amount": 600000.00, "can_id": test_cans[1].id},
         )
         assert response.status_code == 400
         assert response.json["errors"]["status"] == "Budget Line Item is not in an editable state."
@@ -260,6 +155,28 @@ def test_requires_contract_modification_true_on_awarded_agreement_regardless_of_
             .one()
         )
         assert cr.requires_contract_modification is True
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+@pytest.mark.parametrize("awarded", [True, False])
+def test_in_review_change_requests_on_bli_report_requires_contract_modification(
+    awarded, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """The BLI's change_requests_in_review carry the flag, driving the In Review tooltip copy."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=awarded, name_suffix=f"G{awarded}")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"amount": 600000.00},
+        )
+        assert response.status_code == 202, response.json
+
+        response = basic_user_auth_client.get(url_for("api.budget-line-items-item", id=bli.id))
+        assert response.status_code == 200, response.json
+        (cr,) = response.json["change_requests_in_review"]
+        assert cr["requires_contract_modification"] is awarded
     finally:
         _cleanup(loaded_db, agreement.id, bli.id, sc)
 

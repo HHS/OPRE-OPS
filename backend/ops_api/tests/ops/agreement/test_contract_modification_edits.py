@@ -80,7 +80,7 @@ def make_agreement(loaded_db, test_project):
     """
     created = []
 
-    def _make(test_can, *, awarded=True, status=BudgetLineItemStatus.OBLIGATED):
+    def _make(test_can, *, awarded=True, status=BudgetLineItemStatus.PLANNED):
         suffix = f"{len(created)}{datetime.datetime.now().strftime('%H%M%S%f')}"
         agreement = ContractAgreement(
             name=f"Contract Mod Edit Test Agreement {suffix}",
@@ -185,7 +185,7 @@ def test_requires_contract_modification_is_snapshotted_at_creation(
     basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
 ):
     """A CR submitted before the award keeps reading False after the agreement is awarded."""
-    agreement, bli = make_agreement(test_can, awarded=False, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can, awarded=False)
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00}
@@ -214,7 +214,7 @@ def test_requires_contract_modification_is_snapshotted_at_creation(
 def test_requires_contract_modification_sql_expression_matches_awarded_crs(
     basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
 ):
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00}
@@ -234,7 +234,7 @@ def test_requires_contract_modification_sql_expression_matches_awarded_crs(
 # ---=== Approval writes the edit row (Decisions 12, 13) ===---
 
 
-def test_approved_obligated_amount_edit_is_applied_and_recorded(
+def test_approved_planned_amount_edit_is_applied_and_recorded(
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
@@ -315,7 +315,7 @@ def test_multi_field_save_records_one_edit_per_field(
     app_ctx,
 ):
     """One save changing amount + CAN + Obligate By is three change requests -> three edits."""
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
@@ -372,7 +372,7 @@ def test_latest_edit_is_kept_per_field_on_the_same_bl(
     make_agreement,
     app_ctx,
 ):
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
     for payload in ({"amount": 500000.00}, {"can_id": test_cans[1].id}, {"amount": 100000.00}):
         response = basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=payload)
         assert response.status_code == 202, response.json
@@ -395,7 +395,7 @@ def test_delete_supersedes_earlier_edits_on_the_bl(
     make_agreement,
     app_ctx,
 ):
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
     bli_id = bli.id
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli_id), json={"amount": 500000.00}
@@ -424,7 +424,7 @@ def test_approved_delete_edit_survives_bli_and_change_request_deletion(
     make_agreement,
     app_ctx,
 ):
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
     bli_id = bli.id
 
     response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
@@ -473,7 +473,7 @@ def test_non_awarded_agreement_records_no_edit(
     make_agreement,
     app_ctx,
 ):
-    agreement, bli = make_agreement(test_can, awarded=False, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can, awarded=False)
     basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00})
     (cr,) = _change_requests(loaded_db, bli.id)
 
@@ -494,7 +494,7 @@ def test_flag_off_records_no_edit(
     app_ctx,
 ):
     """PLANNED edits on an Awarded agreement already work with the flag off; no edit is tracked."""
-    agreement, bli = make_agreement(test_can, status=BudgetLineItemStatus.PLANNED)
+    agreement, bli = make_agreement(test_can)
     basic_user_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"amount": 500000.00})
     (cr,) = _change_requests(loaded_db, bli.id)
 
@@ -704,7 +704,7 @@ def test_start_modification_unassociated_user_returns_403(
 # ---=== AC10: who / when / what / remote IP for the modified-LOE amount edit ===---
 
 
-def test_obligated_amount_edit_request_and_approval_are_recorded(
+def test_planned_amount_edit_request_and_approval_are_recorded(
     modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,

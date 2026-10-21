@@ -470,19 +470,19 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
-    // OPS-3072 (Modified LOE): on an Awarded agreement, saving an OBLIGATED financial change, an
+    // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change, an
     // add/delete BL, or an add/delete/edit SC requires a contract modification -- surfaced as a
     // distinct signal (requiresContractModification) alongside the existing requiresFinancialApproval.
-    it("flags requiresContractModification for an OBLIGATED financial change when the agreement is Awarded", async () => {
-        const obligatedLine = {
+    it("flags requiresContractModification for a PLANNED financial change when the agreement is Awarded", async () => {
+        const plannedLine = {
             id: 601,
-            status: "OBLIGATED",
+            status: "PLANNED",
             in_review: false,
             financialSnapshotChanged: true
         };
         useEditAgreementMock.mockReturnValue({
             ...editAgreementMockData,
-            budget_line_items: [obligatedLine],
+            budget_line_items: [plannedLine],
             services_components: []
         });
         const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
@@ -493,16 +493,16 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresContractModification).toBe(true);
     });
 
-    it("does not flag requiresContractModification for the same OBLIGATED financial change when the agreement is not Awarded", async () => {
-        const obligatedLine = {
+    it("does not flag requiresContractModification for the same PLANNED financial change when the agreement is not Awarded", async () => {
+        const plannedLine = {
             id: 602,
-            status: "OBLIGATED",
+            status: "PLANNED",
             in_review: false,
             financialSnapshotChanged: true
         };
         useEditAgreementMock.mockReturnValue({
             ...editAgreementMockData,
-            budget_line_items: [obligatedLine],
+            budget_line_items: [plannedLine],
             services_components: []
         });
         const { result } = renderSubject({ selectedAgreement: { is_awarded: false } });

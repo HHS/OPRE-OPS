@@ -542,11 +542,6 @@ export const buildEditedBudgetLinePayload = ({
     const financialSnapshotChanged = Object.keys(tempChangeRequest).length > 0;
     const BLIStatusIsPlannedOrExecuting =
         currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
-    // OPS-3072 (Modified LOE): once the agreement is Awarded, an OBLIGATED line's amount edit
-    // is a real, submittable change too (via the Modified-LOE carve-out) -- it must not be
-    // silently dropped the way other non-editable statuses correctly are.
-    const isObligatedModifiedLoeEdit =
-        currentBudgetLine.status === BLI_STATUS.OBLIGATED && Boolean(selectedAgreement?.is_awarded);
 
     // The SC dropdown only offers non-sub-component SCs, so an actual change here can only
     // ever land on a bare number. When the number is unchanged, preserve the original
@@ -604,7 +599,7 @@ export const buildEditedBudgetLinePayload = ({
         fees: ((enteredAmount ?? 0) * (selectedProcurementShop?.fee_percentage ?? 0)) / 100
     };
 
-    if (financialSnapshotChanged && (BLIStatusIsPlannedOrExecuting || isObligatedModifiedLoeEdit)) {
+    if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
         payload.financialSnapshotChanged = true;
         payload.tempChangeRequest = tempChangeRequest;
     } else {

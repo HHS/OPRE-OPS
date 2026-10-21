@@ -94,31 +94,6 @@ EDITABLE_STATUSES = [
     BudgetLineItemStatus.IN_EXECUTION,
 ]
 
-# Fields a Modified-LOE edit (OPS-3072) may touch on an OBLIGATED BLI once
-# ENABLE_MODIFIED_LOE_EDITS is on. Deliberately narrow and additive to EDITABLE_STATUSES,
-# not a replacement for it: widening EDITABLE_STATUSES itself would also make OBLIGATED
-# BLIs deletable (compute_bli_is_deletable delegates to compute_bli_editable) and would
-# open CAN/date_needed/status edits before those ACs are designed. See Decision 3 in
-# .claude/stories/3072-modified-loe-edit-budget-line.md.
-MODIFIED_LOE_OBLIGATED_FIELDS = {"amount"}
-
-
-def is_modified_loe_amount_edit(budget_line_item, edit_keys: set) -> bool:
-    """True when this is an amount-only edit on an OBLIGATED BLI whose agreement is
-    already Awarded, and the capability flag is enabled (OPS-3072, slice 1 / AC1).
-
-    Consulted alongside -- never instead of -- the existing status allowlist. Narrow by
-    design: any key outside {"amount"} falls through to the ordinary editable-status
-    rejection, and this never affects deletability (see MODIFIED_LOE_OBLIGATED_FIELDS).
-    """
-    if budget_line_item is None or budget_line_item.status != BudgetLineItemStatus.OBLIGATED:
-        return False
-    if not current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False):
-        return False
-    if not budget_line_item.agreement or not budget_line_item.agreement.is_awarded:
-        return False
-    return bool(edit_keys) and edit_keys <= MODIFIED_LOE_OBLIGATED_FIELDS
-
 
 def compute_bli_editable_status_only(budget_line_item, in_review: bool, is_super: bool) -> bool:
     """Lock-free editability core: status + in-review + OBE only (no DB queries).

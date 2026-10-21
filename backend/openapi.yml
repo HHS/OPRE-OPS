@@ -6025,9 +6025,9 @@ paths:
                   enable_modified_loe_edits:
                     type: boolean
                     description: >-
-                      When true, allows an amount-only edit on an OBLIGATED Budget Line Item
-                      whose agreement is already Awarded, routed through the existing Change
-                      Request / Division Director approval workflow (Modified LOE contract mod).
+                      When true, approved budget line change requests on an Awarded agreement
+                      are recorded and listed as "Edits That Require a Contract Modification"
+                      (Modified LOE contract mod).
                 example:
                   version: "1.0.0"
                   skip_cr_for_draft_planned: false
