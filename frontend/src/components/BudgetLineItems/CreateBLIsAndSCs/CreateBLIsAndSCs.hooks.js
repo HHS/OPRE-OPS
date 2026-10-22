@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useBlocker } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
@@ -131,7 +132,7 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();

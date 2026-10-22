@@ -1,6 +1,7 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styles from "../../../components/Agreements/DetailsTabs/DetailsTabs.module.scss";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 const TABS = [
     { name: "", label: "Project Details" },
@@ -19,7 +20,7 @@ const TABS = [
  */
 const ProjectDetailTabs = ({ projectId }) => {
     const location = useLocation();
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;

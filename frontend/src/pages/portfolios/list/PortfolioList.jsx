@@ -29,7 +29,7 @@ import { tableSortCodes } from "../../../helpers/utils";
  */
 const PortfolioList = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
 
@@ -51,7 +51,7 @@ const PortfolioList = () => {
         fyBudgetRange,
         isLoading,
         isError
-    } = usePortfolioList({ currentUserId, searchParams });
+    } = usePortfolioList({ currentUserId, searchParams, setSearchParams });
 
     // Table sorting state - default to static order matching the legend
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(

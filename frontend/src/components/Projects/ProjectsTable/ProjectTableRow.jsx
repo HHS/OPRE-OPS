@@ -6,6 +6,7 @@ import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandab
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
+import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -42,12 +43,15 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
         project.project_total !== null && project.project_total !== undefined ? Number(project.project_total) : null;
 
     const agreementList = project.agreement_name_list ?? [];
+    const listTrailState = useListTrailState("projects");
+    const projectPath = `/projects/${project.id}`;
 
     const visibleColumns = [
         <td key="title">
             <Link
                 className="text-ink text-no-underline"
-                to={`/projects/${project.id}`}
+                to={projectPath}
+                state={listTrailState(projectPath)}
             >
                 {project.title}
             </Link>
@@ -86,6 +90,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                                 <Link
                                     key={agreement.id}
                                     to={`/agreements/${agreement.id}`}
+                                    state={listTrailState(`/agreements/${agreement.id}`)}
                                     className="bg-primary-lighter text-ink text-no-underline font-sans-3xs padding-x-1 padding-y-05 radius-md margin-right-1 margin-bottom-1"
                                     title={agreement.name}
                                     data-testid="agreement-tag"

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import Tabs from "./Tabs";
 
 // Mock the router hooks. useLocation is a vi.fn() (rather than a fixed return value) so tests
@@ -70,6 +71,23 @@ describe("Tabs", () => {
         fireEvent.click(secondTab);
 
         expect(mockNavigate).toHaveBeenCalledWith("/test/path2");
+    });
+
+    it("keeps the breadcrumb trail when switching between tabs of the same resource", () => {
+        const trailState = buildTrailState("/cans/1", [{ label: "Portfolios", to: "/portfolios" }]);
+        mockUseLocation.mockReturnValue({ pathname: "/cans/1", state: trailState });
+        render(
+            <Tabs
+                paths={[
+                    { label: "Details", pathName: "/cans/1" },
+                    { label: "Spending", pathName: "/cans/1/spending" }
+                ]}
+            />
+        );
+
+        fireEvent.click(screen.getByText("Spending"));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/cans/1/spending", { state: trailState });
     });
 
     it("navigates immediately when scrolled, by default (scrollToTopOnChange not set)", () => {

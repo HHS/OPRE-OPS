@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { formatActivePeriod, getTableHeadings } from "./ProjectFundingCANsTable.constants";
 
@@ -20,9 +21,10 @@ import { formatActivePeriod, getTableHeadings } from "./ProjectFundingCANsTable.
  * @param {Object} props
  * @param {ProjectFundingCAN[]} props.cans
  * @param {number} props.fiscalYear - Selected fiscal year (drives dynamic column header)
+ * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry passed to a CAN.
  * @returns {JSX.Element}
  */
-const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
+const ProjectFundingCANsTable = ({ cans = [], fiscalYear, ancestry = [] }) => {
     const headings = getTableHeadings(fiscalYear);
 
     if (cans.length === 0) {
@@ -60,6 +62,7 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
                         <td>
                             <Link
                                 to={`/cans/${can.id}`}
+                                state={buildTrailState(`/cans/${can.id}`, ancestry)}
                                 className="text-ink text-no-underline"
                             >
                                 {can.number}

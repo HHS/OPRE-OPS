@@ -8,10 +8,11 @@ import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
  * Custom hook for managing portfolio list state and data fetching
  * @param {Object} params
  * @param {number} params.currentUserId - Current user ID for "My Portfolios" filtering
- * @param {URLSearchParams} params.searchParams - URL search parameters (read-only, for tab state)
+ * @param {URLSearchParams} params.searchParams - URL search parameters; `?tab=` is the source of truth for the active tab
+ * @param {Function} [params.setSearchParams] - Setter from `useSearchParams`, used to switch tabs
  * @returns {Object} Portfolio list state and handlers
  */
-export const usePortfolioList = ({ currentUserId, searchParams }) => {
+export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams }) => {
     // Fetch all portfolios first
     const {
         data: allPortfolios,
@@ -21,9 +22,20 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     } = useGetPortfoliosQuery({});
 
     // Simple state initialization with defaults
-    const tabFromUrl = searchParams.get("tab") || "all";
     const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
-    const [activeTab, setActiveTab] = useState(tabFromUrl);
+    // The active tab lives in `?tab=` so links back to this list (e.g. breadcrumbs) restore it.
+    const activeTab = searchParams.get("tab") || "all";
+    // Merge into the current params so other query params on the list survive a tab switch.
+    const setActiveTab = (tabId) =>
+        setSearchParams?.(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                if (tabId === "all") next.delete("tab");
+                else next.set("tab", tabId);
+                return next;
+            },
+            { replace: true }
+        );
     const [filters, setFilters] = useState({
         portfolios: [],
         budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,

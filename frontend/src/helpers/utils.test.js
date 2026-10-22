@@ -1,5 +1,6 @@
 import {
     getCurrentFiscalYear,
+    parseFiscalYearParam,
     calculatePercent,
     convertCodeForDisplay,
     fiscalYearFromDate,
@@ -460,5 +461,21 @@ describe("applyMinimumArcValue", () => {
         // Guard fires: returns adjustedItems with floors but no redistribution
         expect(result[0].value).toBe(2);
         expect(result[1].value).toBe(2);
+    });
+});
+
+describe("parseFiscalYearParam", () => {
+    it("parses a four-digit year", () => {
+        expect(parseFiscalYearParam("2025")).toBe(2025);
+    });
+
+    it("returns null for missing or non-year values", () => {
+        expect(parseFiscalYearParam(null)).toBeNull();
+        expect(parseFiscalYearParam("")).toBeNull();
+        expect(parseFiscalYearParam("abc")).toBeNull();
+        expect(parseFiscalYearParam("All")).toBeNull();
+        expect(parseFiscalYearParam("20251")).toBeNull();
+        expect(parseFiscalYearParam("0000")).toBeNull();
+        expect(parseFiscalYearParam("0999")).toBeNull();
     });
 });

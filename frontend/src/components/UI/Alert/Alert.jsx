@@ -1,8 +1,8 @@
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { clearState, setIsActive } from "./alertSlice";
 
 /**
@@ -13,7 +13,9 @@ import { clearState, setIsActive } from "./alertSlice";
  */
 const Alert = ({ children }) => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+    // Keeps the breadcrumb trail when redirecting back into the same agreement
+    // (e.g. award approval → that agreement's procurement tracker).
+    const navigate = useTrailNavigate();
     /**
      * @type {import('../../../hooks/use-alert.hooks').AlertData}
      */
@@ -21,18 +23,20 @@ const Alert = ({ children }) => {
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     const waitTime = 6000;
+    // Reads the latest navigate (and the trail it carries) without re-running the effect.
+    const redirect = useEffectEvent((url) => navigate(url));
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
         if (redirectUrl) {
             setIsFromRedirect(true);
-            navigate(redirectUrl);
+            redirect(redirectUrl);
         }
 
         return () => {
             setIsFromRedirect(false);
         };
-    }, [navigate, redirectUrl]);
+    }, [redirectUrl]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
     useEffect(() => {
