@@ -14,7 +14,8 @@ import {
     formatDateForApi,
     computeDisplayPercent,
     computeDisplayPercents,
-    applyMinimumArcValue
+    applyMinimumArcValue,
+    escapeHtml
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -477,5 +478,18 @@ describe("parseFiscalYearParam", () => {
         expect(parseFiscalYearParam("20251")).toBeNull();
         expect(parseFiscalYearParam("0000")).toBeNull();
         expect(parseFiscalYearParam("0999")).toBeNull();
+    });
+});
+
+describe("escapeHtml", () => {
+    it("escapes HTML special characters", () => {
+        expect(escapeHtml(`Study <b>pilot</b> & "Tom's" <img src=x onerror=alert(1)>`)).toBe(
+            "Study &lt;b&gt;pilot&lt;/b&gt; &amp; &quot;Tom&#39;s&quot; &lt;img src=x onerror=alert(1)&gt;"
+        );
+    });
+
+    it("returns an empty string for null or undefined", () => {
+        expect(escapeHtml(null)).toBe("");
+        expect(escapeHtml(undefined)).toBe("");
     });
 });

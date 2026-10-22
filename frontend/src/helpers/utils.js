@@ -781,3 +781,17 @@ export const applyMinimumArcValue = (items, total) => {
         return { ...item, value: item.value - reduction };
     });
 };
+
+/**
+ * Escapes HTML special characters so user-entered text renders literally in HTML sinks.
+ * @param {string|null|undefined} value - The text to escape.
+ * @returns {string} The escaped text.
+ * @example escapeHtml("<b>Hi</b>") // returns "&lt;b&gt;Hi&lt;/b&gt;"
+ */
+export const escapeHtml = (value) =>
+    String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");

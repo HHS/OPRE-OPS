@@ -376,10 +376,10 @@ it("calculates procurement fee correctly", () => {
 **After (Unit Test):**
 ```javascript
 // src/helpers/agreement.helpers.test.js
-describe("calculateTotal", () => {
+describe("calculateAgreementTotal", () => {
     it("applies fee percentage correctly", () => {
         const budgetLines = [{ amount: 1000, status: "PLANNED" }];
-        const total = calculateTotal(budgetLines, 5.0); // 5% fee
+        const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee
         expect(total).toBe(1050);
     });
 
@@ -388,7 +388,7 @@ describe("calculateTotal", () => {
             { amount: 1000, status: "PLANNED" },
             { amount: 500, status: "DRAFT" }
         ];
-        const total = calculateTotal(budgetLines, 5.0);
+        const total = calculateAgreementTotal(budgetLines, 5.0);
         expect(total).toBe(1050); // 1000 * 1.05, DRAFT excluded
     });
 });
