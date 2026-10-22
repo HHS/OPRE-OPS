@@ -43,8 +43,8 @@ Every finding gets exactly one severity. Only **S0** and **S1** block a merge.
 | Level | Definition | Examples in OPS | Merge rule |
 | --- | --- | --- | --- |
 | **S0** | Data loss or corruption, a security or authorization bypass, wrong money math, a broken migration | Fee applied as 0.05% instead of 5%; budget line totals wrong; a user editing an agreement they don't own; a new `BaseModel` model with no `*_version` table | Blocks merge |
-| **S1** | A user-visible bug on a realistic path, or the ticket's acceptance criteria not met | Save does nothing; a validation error never clears; a currency amount shown as a raw float | Blocks merge |
-| **S2** | A bug that needs an edge case to appear, a missing test for changed behavior (see [TESTING.md](TESTING.md#when-not-to-write-tests) for when a test isn't needed), an accessibility regression | A crash on a rare filter combination; no test for a new branch in a helper | Doesn't block. The author decides; a reviewer can raise it to S1 by giving an S1 scenario. |
+| **S1** | A user-visible bug on a realistic path, the ticket's acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement) | Save does nothing; a validation error never clears; a currency amount shown as a raw float; a new control that can't be reached by keyboard | Blocks merge |
+| **S2** | A bug that needs an edge case to appear, a missing test for changed behavior (see [TESTING.md](TESTING.md#when-not-to-write-tests) for when a test isn't needed) | A crash on a rare filter combination; no test for a new branch in a helper | Doesn't block. The author decides; a reviewer can raise it to S1 by giving an S1 scenario. |
 | **S3** | Naming, style, refactor ideas, "consider…" | Extract a helper; rename a prop | Never blocks; fix it or drop it |
 
 What the terms mean:
