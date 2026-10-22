@@ -16,9 +16,10 @@ const Header = () => {
             position: "relative"
         },
         // USWDS pins the user/sign-out links to the bottom of the logo band; lift them one row so the
-        // search can sit directly underneath, as in the prototype. Moves with the search layer's `top`.
+        // search can sit directly underneath, as in the prototype. Moves with the search layer's `top`
+        // (HeaderSearch.module.scss): -7.5rem at the old layer top of 3.625rem, shifted by the same amount.
         secondary: {
-            top: "-6.9375rem"
+            top: "calc(55px - 10.375rem)"
         },
         textLogo: {
             color: "#336A90",
