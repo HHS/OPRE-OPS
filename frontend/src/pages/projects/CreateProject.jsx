@@ -9,6 +9,7 @@ import suite from "./suite";
 import classnames from "vest/classnames";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useAlert from "../../hooks/use-alert.hooks";
+import { escapeHtml } from "../../helpers/utils";
 
 const DISPLAY_TO_API_TYPE = {
     Research: "RESEARCH",
@@ -30,7 +31,8 @@ const CreateProject = () => {
         description: ""
     });
 
-    const [addResearchProject, { isSuccess, isError, error, reset, data: rpData }] = useAddResearchProjectsMutation();
+    const [addResearchProject, { isLoading, isSuccess, isError, error, reset, data: rpData, originalArgs }] =
+        useAddResearchProjectsMutation();
     const { setAlert } = useAlert();
 
     let res = suite.get();
@@ -86,7 +88,7 @@ const CreateProject = () => {
             setAlert({
                 type: "success",
                 heading: "New Project Created",
-                message: "The project has been successfully created.",
+                message: `The project ${escapeHtml(originalArgs?.title)} has been successfully created.`,
                 redirectUrl: `/`
             });
         }
@@ -175,7 +177,7 @@ const CreateProject = () => {
                     id="submit"
                     className="usa-button"
                     onClick={() => addResearchProject(editedProject)}
-                    disabled={!res.isValid()}
+                    disabled={!res.isValid() || isLoading}
                 >
                     Create Project
                 </button>
