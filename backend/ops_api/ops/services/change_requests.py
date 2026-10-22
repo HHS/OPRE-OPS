@@ -32,6 +32,7 @@ from ops_api.ops.utils.agreements_helpers import (
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
+    tracks_contract_modifications,
     update_data,
     validate_no_execution_status_change_on_awarded,
 )
@@ -42,10 +43,6 @@ from ops_api.ops.utils.change_requests_helpers import (
     get_model_class_by_type,
 )
 from ops_api.ops.utils.events import OpsEventHandler
-
-
-def _is_agreement_awarded(budget_line_item: BudgetLineItem) -> bool:
-    return bool(budget_line_item.agreement and budget_line_item.agreement.is_awarded)
 
 
 def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data: dict) -> bool:
@@ -404,7 +401,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                             key in BudgetLineItemChangeRequest.budget_field_names
                             or _is_draft_to_planned(key, budget_line_item, change_data)
                         )
-                        and _is_agreement_awarded(budget_line_item),
+                        and tracks_contract_modifications(budget_line_item),
                     },
                     "requestor_notes": requestor_notes,
                     "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
@@ -444,7 +441,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 "requested_change_diff": {"delete": {"old": old_amount, "new": "Deleted"}},
                 "requested_change_info": {
                     "target_display_name": budget_line_item.display_name,
-                    "requires_contract_modification": _is_agreement_awarded(budget_line_item),
+                    "requires_contract_modification": tracks_contract_modifications(budget_line_item),
                 },
                 "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
             }

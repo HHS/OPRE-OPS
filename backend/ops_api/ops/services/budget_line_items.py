@@ -55,6 +55,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     is_bli_editable,
     is_post_pre_award_locked,
     is_pre_award_in_review,
+    tracks_contract_modifications,
     update_data,
     validate_no_execution_status_change_on_awarded,
 )
@@ -805,9 +806,7 @@ class BudgetLineItemService:
 
         # On an Awarded agreement these edits require a contract modification (OPS-3072), so
         # they must go through Division Director approval instead of applying directly.
-        if current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False) and (
-            budget_line_item.agreement and budget_line_item.agreement.is_awarded
-        ):
+        if tracks_contract_modifications(budget_line_item):
             return False, set()
 
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).

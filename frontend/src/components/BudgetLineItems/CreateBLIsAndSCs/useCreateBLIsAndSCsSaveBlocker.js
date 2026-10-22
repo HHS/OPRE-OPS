@@ -9,6 +9,7 @@ import { proceedIfBlocked } from "../../../hooks/proceedIfBlocked";
  * @param {import("react-router-dom").Blocker} args.blocker
  * @param {Function} args.handleSave
  * @param {boolean} args.requiresFinancialApproval - Whether unsaved changes require Division Director approval.
+ * @param {boolean} args.requiresContractModification - Whether unsaved changes on an Awarded agreement require a contract modification (OPS-3072).
  * @param {Function} args.navigate
  * @param {Function} args.setIsEditMode
  * @param {Function} args.setHasUnsavedChanges
@@ -19,6 +20,7 @@ const useCreateBLIsAndSCsSaveBlocker = ({
     blocker,
     handleSave,
     requiresFinancialApproval,
+    requiresContractModification,
     navigate,
     setIsEditMode,
     setHasUnsavedChanges,
@@ -43,20 +45,31 @@ const useCreateBLIsAndSCsSaveBlocker = ({
             // Only surface the "require approval" wording when the changes actually route for
             // review. With the capability ON (and the edits in the flag's scope) they apply
             // immediately, so fall through to the neutral "Save Changes" copy.
-            const modalContent = requiresFinancialApproval
+            // A contract-modification save (e.g. deleting a Planned BL on an Awarded agreement) routes
+            // to approval even without a financial snapshot change, so it gets its own copy.
+            const modalContent = requiresContractModification
                 ? {
                       heading: "Save changes before leaving?",
                       description:
-                          "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
+                          "You have unsaved changes on an awarded agreement. If you save, they will require a contract modification and approval from your Division Director, and will be tracked on the Award & Modifications Tab once approved. If you leave without saving, these changes will be lost.",
                       actionButtonText: "Save & Send to Approval",
                       secondaryButtonText: "Leave without saving"
                   }
-                : {
-                      heading: "Save changes before leaving?",
-                      description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save Changes",
-                      secondaryButtonText: "Leave without saving"
-                  };
+                : requiresFinancialApproval
+                  ? {
+                        heading: "Save changes before leaving?",
+                        description:
+                            "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.",
+                        actionButtonText: "Save & Send to Approval",
+                        secondaryButtonText: "Leave without saving"
+                    }
+                  : {
+                        heading: "Save changes before leaving?",
+                        description:
+                            "You have unsaved changes. If you leave without saving, these changes will be lost.",
+                        actionButtonText: "Save Changes",
+                        secondaryButtonText: "Leave without saving"
+                    };
             setShowSaveChangesModal(true);
             setModalProps({
                 ...modalContent,
@@ -82,6 +95,7 @@ const useCreateBLIsAndSCsSaveBlocker = ({
     }, [
         blocker,
         requiresFinancialApproval,
+        requiresContractModification,
         navigate,
         setIsEditMode,
         setHasUnsavedChanges,

@@ -19,14 +19,25 @@ from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.users import is_super_user
 
 
+def tracks_contract_modifications(budget_line_item: BudgetLineItem) -> bool:
+    """Whether edits to this budget line require a contract modification (OPS-3072): the
+    ENABLE_MODIFIED_LOE_EDITS capability is on and the budget line's agreement is Awarded."""
+    return bool(
+        current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
+        and budget_line_item.agreement
+        and budget_line_item.agreement.is_awarded
+    )
+
+
 def validate_no_execution_status_change_on_awarded(budget_line_item: BudgetLineItem, new_status: Any) -> None:
     """On an Awarded agreement, executing a budget line requires a Contract Modification
     (OPS-3072), so a status change to IN_EXECUTION is rejected -- both when it is requested and
-    when a change request requested before the award is approved. Superusers bypass this,
-    matching the other awarded locks (e.g. ImmutableAwardedFieldsRule)."""
+    when a change request requested before the award is approved. Only applies with the
+    ENABLE_MODIFIED_LOE_EDITS capability on. Superusers bypass this, matching the other awarded
+    locks (e.g. ImmutableAwardedFieldsRule)."""
     if new_status != BudgetLineItemStatus.IN_EXECUTION:
         return
-    if not (budget_line_item.agreement and budget_line_item.agreement.is_awarded):
+    if not tracks_contract_modifications(budget_line_item):
         return
     if is_super_user(current_user, current_app):
         return

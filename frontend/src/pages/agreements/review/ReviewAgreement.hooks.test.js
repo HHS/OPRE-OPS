@@ -12,6 +12,7 @@ const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateBudgetLineItemMutationMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
 const getUserFullNameFromIdMock = vi.fn();
+const useIsUserSuperUserMock = vi.fn();
 // Stable module-level reference so the grantNumbers decoration effect doesn't loop.
 const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 
@@ -40,7 +41,8 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 
 vi.mock("../../../hooks/user.hooks", () => ({
     __esModule: true,
-    default: (...args) => getUserFullNameFromIdMock(...args)
+    default: (...args) => getUserFullNameFromIdMock(...args),
+    useIsUserSuperUser: () => useIsUserSuperUserMock()
 }));
 
 const futureDate = () => {
@@ -98,6 +100,7 @@ const makeAgreement = (overrides = {}) => ({
 describe("useReviewAgreement", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        useIsUserSuperUserMock.mockReturnValue(false);
 
         useGetAgreementByIdQueryMock.mockReturnValue({
             isSuccess: true,
@@ -541,6 +544,34 @@ describe("useReviewAgreement", () => {
     });
 
     // OPS-3072: Draft→Planned on an Awarded agreement requires a contract modification.
+    // OPS-3072: Planned→Executing on an Awarded agreement requires a Contract Modification, so
+    // it's blocked -- only with the capability ON, and never for superusers (matching the backend).
+    it.each([
+        [true, true, false, true],
+        [true, false, false, false],
+        [false, true, false, false],
+        [true, true, true, false]
+    ])(
+        "blocksPlannedToExecuting when awarded=%s, capability=%s, superuser=%s is %s",
+        (isAwarded, capabilityOn, isSuperUser, expected) => {
+            useGetAgreementByIdQueryMock.mockReturnValue({
+                isSuccess: true,
+                data: makeAgreement({ is_awarded: isAwarded }),
+                error: null,
+                isLoading: false
+            });
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: capabilityOn },
+                isSuccess: true
+            });
+            useIsUserSuperUserMock.mockReturnValue(isSuperUser);
+
+            const { result } = renderHook(() => useReviewAgreement(77));
+
+            expect(result.current.blocksPlannedToExecuting).toBe(expected);
+        }
+    );
+
     it("confirms a contract modification before sending Draft→Planned on an Awarded agreement", async () => {
         useGetAgreementByIdQueryMock.mockReturnValue({
             isSuccess: true,

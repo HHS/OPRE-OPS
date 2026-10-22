@@ -113,15 +113,16 @@ describe("agreement change accordion", () => {
             });
         });
     });
-    it("disables PLANNED to EXECUTION on awarded agreement 10", () => {
+    it("keeps PLANNED to EXECUTION available on awarded agreement 10 with modified LOE edits off", () => {
+        // E2E runs with ENABLE_MODIFIED_LOE_EDITS off (the staging/prod default), so the Awarded
+        // contract-modification guard (OPS-3072) must not apply. It's covered by unit tests.
         visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
         cy.get('[type="radio"]').should("have.length", 2);
-        // awarded agreements require a contract modification to execute Planned BLIs
-        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("be.disabled");
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
         cy.get('label[for="Change Planned Budget Lines to Executing Status"]').contains(
-            "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
+            "This will start the procurement process"
         );
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("not.be.disabled");
     });

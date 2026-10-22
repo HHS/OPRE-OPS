@@ -136,10 +136,11 @@ def test_obligated_amount_edit_on_awarded_agreement_rejected_with_flag_on(
 
 @pytest.mark.parametrize("status", [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION])
 def test_requires_contract_modification_true_on_awarded_agreement_regardless_of_bli_status(
-    status, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+    status, modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
     """A PLANNED/IN_EXECUTION amount edit already works today with zero flag involvement --
-    on an Awarded agreement it now additionally reports requires_contract_modification: true."""
+    on an Awarded agreement with the flag on it now additionally reports
+    requires_contract_modification: true."""
     agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix=f"E{status.value}")
     bli, sc = _make_bli(loaded_db, agreement, test_can, status)
     try:
@@ -161,7 +162,7 @@ def test_requires_contract_modification_true_on_awarded_agreement_regardless_of_
 
 @pytest.mark.parametrize("awarded", [True, False])
 def test_in_review_change_requests_on_bli_report_requires_contract_modification(
-    awarded, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+    awarded, modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
     """The BLI's change_requests_in_review carry the flag, driving the In Review tooltip copy."""
     agreement = _make_agreement(loaded_db, test_project, awarded=awarded, name_suffix=f"G{awarded}")
@@ -208,7 +209,7 @@ def test_requires_contract_modification_false_on_non_awarded_agreement(
 
 
 def test_planned_to_executing_on_awarded_agreement_rejected(
-    basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
     """The frontend disables Planned->Executing on an Awarded agreement; the API must enforce it
     too, so a direct PATCH can't skip the Contract Modification."""
@@ -232,6 +233,47 @@ def test_planned_to_executing_on_awarded_agreement_rejected(
         _cleanup(loaded_db, agreement.id, bli.id, sc)
 
 
+def test_planned_to_executing_on_awarded_agreement_creates_change_request_with_flag_off(
+    basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """With ENABLE_MODIFIED_LOE_EDITS off (staging/prod default), nothing changes: Planned->Executing
+    on an Awarded agreement still routes to a change request, not flagged as a contract mod."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="K")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"status": BudgetLineItemStatus.IN_EXECUTION.name},
+        )
+        assert response.status_code == 202, response.json
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
+def test_requires_contract_modification_false_on_awarded_agreement_with_flag_off(
+    basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
+):
+    """With ENABLE_MODIFIED_LOE_EDITS off, an amount edit on an Awarded agreement isn't flagged as
+    requiring a contract modification, so the In Review tooltip keeps its default copy."""
+    agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="L")
+    bli, sc = _make_bli(loaded_db, agreement, test_can, BudgetLineItemStatus.PLANNED)
+    try:
+        response = basic_user_auth_client.patch(
+            url_for("api.budget-line-items-item", id=bli.id),
+            json={"amount": 600000.00},
+        )
+        assert response.status_code == 202, response.json
+
+        cr = (
+            loaded_db.query(BudgetLineItemChangeRequest)
+            .filter(BudgetLineItemChangeRequest.budget_line_item_id == bli.id)
+            .one()
+        )
+        assert cr.requires_contract_modification is False
+    finally:
+        _cleanup(loaded_db, agreement.id, bli.id, sc)
+
+
 def test_planned_to_executing_on_non_awarded_agreement_creates_change_request(
     basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
@@ -249,7 +291,7 @@ def test_planned_to_executing_on_non_awarded_agreement_creates_change_request(
 
 
 def test_planned_to_executing_on_awarded_agreement_allowed_for_superuser(
-    power_user_auth_client, loaded_db, test_can, test_project, app_ctx
+    modified_loe_enabled, power_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
     """Superusers bypass the awarded lock, matching the other awarded-agreement rules."""
     agreement = _make_agreement(loaded_db, test_project, awarded=True, name_suffix="J")

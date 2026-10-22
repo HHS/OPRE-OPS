@@ -10,14 +10,14 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
  * @param {Function} props.setAction - The function to call when an action is selected.
  * @param {boolean} [props.optionOneDisabled=false] - Whether the first radio button tile should be disabled.
  * @param {boolean} [props.optionTwoDisabled=false] - Whether the second radio button tile should be disabled.
- * @param {boolean} [props.isAgreementAwarded=false] - Whether the agreement is Awarded; when true and optionTwoDisabled, swaps in a Contract-Modification explanation (OPS-3072).
+ * @param {boolean} [props.requiresContractModificationToExecute=false] - Whether executing Planned budget lines requires a Contract Modification (Awarded agreement, OPS-3072); swaps in that explanation.
  * @returns {JSX.Element} - The rendered component.
  */
 const AgreementActionAccordion = ({
     setAction,
     optionOneDisabled = false,
     optionTwoDisabled = false,
-    isAgreementAwarded = false
+    requiresContractModificationToExecute = false
 }) => {
     return (
         <Accordion
@@ -42,7 +42,7 @@ const AgreementActionAccordion = ({
                         <RadioButtonTile
                             label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
                             description={
-                                isAgreementAwarded
+                                requiresContractModificationToExecute
                                     ? "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
                                     : "This will start the procurement process"
                             }
@@ -61,7 +61,7 @@ AgreementActionAccordion.propTypes = {
     setAction: PropTypes.func.isRequired,
     optionOneDisabled: PropTypes.bool,
     optionTwoDisabled: PropTypes.bool,
-    isAgreementAwarded: PropTypes.bool
+    requiresContractModificationToExecute: PropTypes.bool
 };
 
 export default AgreementActionAccordion;

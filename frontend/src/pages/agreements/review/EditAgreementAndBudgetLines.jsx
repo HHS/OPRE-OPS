@@ -16,7 +16,10 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
-import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
+import {
+    buildProcurementShopChangeAlert,
+    CONTRACT_MODIFICATION_APPROVAL_HEADING
+} from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
@@ -341,8 +344,8 @@ const EditAgreementAndBudgetLines = () => {
                 {showFinancialApprovalModal && (
                     <ConfirmationModal
                         heading={
-                            isAgreementAwarded
-                                ? "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?"
+                            requiresContractModification
+                                ? CONTRACT_MODIFICATION_APPROVAL_HEADING
                                 : "Budget changes require approval from your Division Director. Do you want to send it to approval?"
                         }
                         actionButtonText="Send to Approval"

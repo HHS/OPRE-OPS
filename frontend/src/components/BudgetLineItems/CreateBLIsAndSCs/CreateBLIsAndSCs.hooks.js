@@ -953,6 +953,7 @@ const useCreateBLIsAndSCs = (
         blocker,
         handleSave,
         requiresFinancialApproval,
+        requiresContractModification,
         navigate,
         setIsEditMode,
         setHasUnsavedChanges,

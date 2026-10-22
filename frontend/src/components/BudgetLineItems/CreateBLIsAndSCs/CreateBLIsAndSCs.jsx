@@ -19,7 +19,7 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
-import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
+import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
@@ -702,8 +702,7 @@ export const CreateBLIsAndSCs = ({
                                 // Not `savedViaModal`: that path redirects to the blocker's target.
                                 if (requiresContractModification) {
                                     setModalProps({
-                                        heading:
-                                            "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?",
+                                        heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
                                         actionButtonText: "Send to Approval",
                                         secondaryButtonText: "Continue Editing",
                                         handleConfirm: () => handleSave(false, false, false, true)

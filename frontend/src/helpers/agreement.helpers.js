@@ -445,6 +445,13 @@ export const EDIT_DISABLED_TOOLTIPS = {
 };
 
 /**
+ * Heading for the confirmation shown before sending edits on an Awarded agreement to approval,
+ * when they will require a contract modification (OPS-3072). Shared by every save path.
+ */
+export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
+    "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
+
+/**
  * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.
  * Consulted only when the button is disabled. Precedence (first match wins): not a team
  * member, then not developed, then the review/lock states, then all-budget-lines-in-review.

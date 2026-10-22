@@ -12,11 +12,13 @@ const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
 const useGetServicesComponentsListQueryMock = vi.fn();
 const useGetGrantNumbersListQueryMock = vi.fn();
+const useGetVersionQueryMock = vi.fn();
 
 // Mock the hooks and API calls
 vi.mock("../../../api/opsAPI", () => ({
     useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
     useGetGrantNumbersListQuery: (...args) => useGetGrantNumbersListQueryMock(...args),
+    useGetVersionQuery: (...args) => useGetVersionQueryMock(...args),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
@@ -54,6 +56,7 @@ beforeEach(() => {
         data: [],
         isLoading: false
     });
+    useGetVersionQueryMock.mockReturnValue({ data: { enable_modified_loe_edits: false } });
 });
 
 describe("AgreementBudgetLines", () => {
@@ -747,6 +750,19 @@ describe("AgreementBudgetLines", () => {
                 })
             }
         });
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
         const defaultProps = {
             agreement: { ...mockAgreement, _meta: { isEditable: true } },
             isEditMode: false,
@@ -757,9 +773,22 @@ describe("AgreementBudgetLines", () => {
             isAwardInReview: false,
             isPostPreAwardLocked: false
         };
-        const renderWith = (props = {}) =>
+        const awardedNoDraftAgreement = {
+            ...mockAgreement,
+            _meta: { isEditable: true },
+            budget_line_items: [
+                { id: 1, status: "OBLIGATED" },
+                { id: 2, status: "PLANNED" }
+            ]
+        };
+
+        beforeEach(() => {
+            useGetVersionQueryMock.mockReturnValue({ data: { enable_modified_loe_edits: true } });
+        });
+
+        const renderWith = (props = {}, store = regularUserStore) =>
             render(
-                <Provider store={regularUserStore}>
+                <Provider store={store}>
                     <Router
                         location={history.location}
                         navigator={history}
@@ -828,6 +857,19 @@ describe("AgreementBudgetLines", () => {
                     budget_line_items: [{ id: 1, status: "OBLIGATED" }]
                 }
             });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+
+        test("Change BL Status remains enabled when Awarded with no Draft BLIs and the capability is OFF", () => {
+            useGetVersionQueryMock.mockReturnValue({ data: { enable_modified_loe_edits: false } });
+            renderWith({ agreement: awardedNoDraftAgreement });
+            const requestButton = screen.getByText("Change BL Status");
+            expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+
+        test("Change BL Status remains enabled for a super user when Awarded with no Draft BLIs", () => {
+            renderWith({ agreement: awardedNoDraftAgreement }, superUserStore);
             const requestButton = screen.getByText("Change BL Status");
             expect(requestButton).toHaveAttribute("data-cy", "bli-continue-btn");
         });

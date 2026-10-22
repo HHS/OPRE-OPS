@@ -8,9 +8,10 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { AgreementType } from "../agreements.constants";
+import { CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
@@ -106,6 +107,10 @@ const useReviewAgreement = (agreementId) => {
     const tracksContractModifications = enableModifiedLoeEdits && isAgreementAwarded;
     const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction && !tracksContractModifications;
     const requiresContractModification = tracksContractModifications && isDraftToPlannedAction;
+    // Planned→Executing on an Awarded agreement requires a Contract Modification, so it isn't
+    // offered. Superusers bypass this, matching the backend.
+    const isSuperUser = useIsUserSuperUser();
+    const blocksPlannedToExecuting = tracksContractModifications && !isSuperUser;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -378,8 +383,7 @@ const useReviewAgreement = (agreementId) => {
             return;
         }
         setModalProps({
-            heading:
-                "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?",
+            heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
             actionButtonText: "Send to Approval",
             secondaryButtonText: "Continue Editing",
             handleConfirm: sendStatusChanges
@@ -530,6 +534,7 @@ const useReviewAgreement = (agreementId) => {
         handleSendToApproval,
         hasBLIError,
         isAgreementAwarded,
+        blocksPlannedToExecuting,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,

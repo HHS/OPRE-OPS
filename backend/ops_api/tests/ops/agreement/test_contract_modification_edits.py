@@ -214,7 +214,7 @@ def test_requires_contract_modification_is_snapshotted_at_creation(
 
 
 def test_requires_contract_modification_sql_expression_matches_awarded_crs(
-    basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
 ):
     agreement, bli = make_agreement(test_can)
 
@@ -876,6 +876,7 @@ def test_get_pending_edits_eager_loads_requested_by(
 
 
 def test_pre_award_planned_to_executing_request_cannot_be_approved_after_award(
+    modified_loe_enabled,
     basic_user_auth_client,
     division_director_auth_client,
     loaded_db,

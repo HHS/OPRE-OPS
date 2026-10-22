@@ -67,11 +67,11 @@ describe("AgreementActionAccordion", () => {
 
     // OPS-3072 (Modified LOE): on an Awarded agreement, Planned→Executing requires a
     // Contract Modification instead of an ordinary status-change request.
-    it("shows the Contract Modification description for the second option when isAgreementAwarded is true", () => {
+    it("shows the Contract Modification description for the second option when requiresContractModificationToExecute is true", () => {
         render(
             <AgreementActionAccordion
                 setAction={mockSetAction}
-                isAgreementAwarded={true}
+                requiresContractModificationToExecute={true}
             />
         );
         expect(
@@ -79,7 +79,7 @@ describe("AgreementActionAccordion", () => {
         ).toBeInTheDocument();
     });
 
-    it("shows the default procurement-process description for the second option when isAgreementAwarded is false", () => {
+    it("shows the default procurement-process description for the second option when requiresContractModificationToExecute is false", () => {
         render(<AgreementActionAccordion setAction={mockSetAction} />);
         expect(screen.getByText("This will start the procurement process")).toBeInTheDocument();
     });
