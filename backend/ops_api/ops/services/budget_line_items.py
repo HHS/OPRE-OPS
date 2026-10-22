@@ -47,15 +47,15 @@ from ops_api.ops.utils.agreements_helpers import (
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
+    PreAwardLock,
     bli_associated_with_agreement,
     compute_bli_editable,
     compute_bli_is_deletable,
     create_budget_line_item_instance,
     get_agreement_pre_award_lock_message,
     get_bli_locked_message,
+    get_pre_award_lock,
     is_bli_editable,
-    is_post_pre_award_locked,
-    is_pre_award_in_review,
     update_data,
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
@@ -809,7 +809,7 @@ class BudgetLineItemService:
         # Never apply directly while a pre-award lock is active: _validation rejects other users
         # then, but lets Budget Team through on the understanding that their edits still route
         # through a change request for DD review.
-        if is_pre_award_in_review(budget_line_item.agreement) or is_post_pre_award_locked(budget_line_item.agreement):
+        if get_pre_award_lock(budget_line_item.agreement):
             return False, set()
 
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
@@ -1057,21 +1057,21 @@ class BudgetLineItemService:
         # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
         # PATCH validation stay in lockstep. Budget Team is exempt from both locks (they write
         # directly through the change-request workflow with no additional gate).
-        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
+        lock = None if is_budget_team(current_user) else get_pre_award_lock(budget_line_item.agreement)
+        if lock == PreAwardLock.IN_REVIEW:
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         # Block edits after pre-award is fully approved (DD approved + requisition submitted).
         # Exception: clin_id-only edits are allowed for any authorized user — CLIN assignment is
         # part of the award workflow (COR assigns CLINs before submitting for award approval).
-        if not is_budget_team(current_user):
+        if lock == PreAwardLock.POST_APPROVAL:
             # Use the raw request JSON to determine what the caller actually sent.
             # updated_fields contains Marshmallow load_default values for all schema fields
             # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
             # so it cannot reliably tell us which fields the caller intended to change.
             request_obj = updated_fields.get("request")
             edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
-            clin_only_edit = edit_keys <= {"clin_id"}
-            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
+            if not edit_keys <= {"clin_id"}:
                 raise ValidationError(
                     {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
                 )

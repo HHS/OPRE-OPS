@@ -1,6 +1,6 @@
 """Integration tests for the agreement-level pre-award locks (OPS-6195).
 
-Agreement fields and services components share the BLI pre-award locks: they cannot be edited
+Agreement fields, services components, grant numbers and new budget lines share the BLI pre-award locks: they cannot be edited
 while a Pre-Award Approval is in review, nor once it has been fully approved (DD approved +
 requisition approved) until the Award request is approved. A DD decline reopens editing, and the
 Budget Team is exempt.
@@ -20,6 +20,8 @@ from models import (
     ContractType,
     DefaultProcurementTracker,
     DefaultProcurementTrackerStep,
+    GrantAgreement,
+    GrantNumber,
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
     ServicesComponent,
@@ -186,3 +188,64 @@ def test_budget_line_create_blocked_by_pre_award(
 
     assert response.status_code == 400
     assert expected_message in str(response.json)
+
+
+@pytest.fixture()
+def lock_grant(loaded_db):
+    grant = GrantAgreement(
+        agreement_type=AgreementType.GRANT,
+        name="Grant Pre-Award Lock Test Agreement",
+        description="Grant for pre-award lock tests",
+        product_service_code_id=1,
+        project_officer_id=SYSTEM_OWNER_USER_ID,
+        awarding_entity_id=1,
+    )
+    loaded_db.add(grant)
+    loaded_db.commit()
+    gn = GrantNumber(agreement_id=grant.id, number=1, description="Original GN")
+    loaded_db.add(gn)
+    loaded_db.commit()
+
+    yield grant, gn
+
+    loaded_db.rollback()
+    loaded_db.execute(text("DELETE FROM grant_number WHERE agreement_id = :id"), {"id": grant.id})
+    loaded_db.commit()
+    loaded_db.delete(grant)
+    loaded_db.commit()
+
+
+@pytest.mark.parametrize("state,expected_message", [("in_review", IN_REVIEW_MESSAGE), ("locked", LOCKED_MESSAGE)])
+def test_grant_number_edits_blocked_by_pre_award(
+    state, expected_message, auth_client, lock_grant, make_pre_award, app_ctx
+):
+    """Grant numbers are part of the agreement, so they share its pre-award locks."""
+    grant, gn = lock_grant
+    make_pre_award(grant.id, state)
+
+    update = auth_client.patch(url_for("api.grant-number-item", id=gn.id), json={"description": "Blocked"})
+    create = auth_client.post(url_for("api.grant-number-group"), json={"agreement_id": grant.id, "number": 2})
+    delete = auth_client.delete(url_for("api.grant-number-item", id=gn.id))
+
+    for response in (update, create, delete):
+        assert response.status_code == 400
+        assert expected_message in str(response.json)
+
+
+def test_budget_team_exempt_from_services_component_and_grant_number_locks(
+    budget_team_auth_client, lock_agreement, lock_grant, make_pre_award, app_ctx
+):
+    agreement, sc = lock_agreement
+    grant, gn = lock_grant
+    make_pre_award(agreement.id, "locked")
+    make_pre_award(grant.id, "locked")
+
+    sc_response = budget_team_auth_client.patch(
+        url_for("api.services-component-item", id=sc.id), json={"description": "Budget Team edit"}
+    )
+    gn_response = budget_team_auth_client.patch(
+        url_for("api.grant-number-item", id=gn.id), json={"description": "Budget Team edit"}
+    )
+
+    assert sc_response.status_code == 200, sc_response.json
+    assert gn_response.status_code == 200, gn_response.json

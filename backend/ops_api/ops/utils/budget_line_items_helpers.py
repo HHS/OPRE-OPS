@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 
 from flask import current_app
@@ -325,20 +326,46 @@ def is_post_pre_award_locked(agreement) -> bool:
     return True
 
 
-def get_agreement_pre_award_lock_message(agreement, user) -> str | None:
+class PreAwardLock(Enum):
+    """The pre-award lock an agreement is under, if any."""
+
+    IN_REVIEW = "in_review"  # Pre-Award Approval requested and not yet decided
+    POST_APPROVAL = "post_approval"  # Pre-Award fully approved, Award request not yet approved
+
+
+def get_pre_award_lock(agreement) -> PreAwardLock | None:
     """
-    Reason agreement-level edits (agreement fields, services components) are blocked by the
-    pre-award locks, or None if they aren't. Mirrors the BLI locks in
-    ``BudgetLineItemService._validation``: blocked while Pre-Award Approval is in review and once it
-    has been fully approved (until the Award request is approved). Budget Team is exempt.
+    The single source of truth for which pre-award lock an agreement is under. Every write path
+    that honors the locks (BLI validation and direct-apply, agreement and services-component /
+    grant-number edits, BLI create) goes through this so they can't drift apart.
     """
     if is_pre_award_in_review(agreement):
-        message = "Cannot modify the Agreement while Pre-Award Approval is in review."
-    elif is_post_pre_award_locked(agreement):
-        message = "Cannot modify the Agreement after Pre-Award Approval has been completed."
-    else:
+        return PreAwardLock.IN_REVIEW
+    if is_post_pre_award_locked(agreement):
+        return PreAwardLock.POST_APPROVAL
+    return None
+
+
+AGREEMENT_PRE_AWARD_LOCK_MESSAGES = {
+    PreAwardLock.IN_REVIEW: "Cannot modify the Agreement while Pre-Award Approval is in review.",
+    PreAwardLock.POST_APPROVAL: "Cannot modify the Agreement after Pre-Award Approval has been completed.",
+}
+
+
+def get_agreement_pre_award_lock_message(agreement, user) -> str | None:
+    """
+    Reason agreement-level edits (agreement fields, services components, grant numbers, new budget
+    lines) are blocked by the pre-award locks, or None if they aren't.
+
+    Budget Team is exempt, mirroring the BLI locks in ``BudgetLineItemService._validation``. Unlike
+    BLI money edits, agreement-level edits have no change-request workflow, so Budget Team edits
+    here apply directly (as they do outside the lock); only BLI financial edits are forced back
+    through a change request during the lock (see ``BudgetLineItemService._flagged_direct_edit``).
+    """
+    lock = get_pre_award_lock(agreement)
+    if not lock or (user and is_budget_team(user)):
         return None
-    return None if user and is_budget_team(user) else message
+    return AGREEMENT_PRE_AWARD_LOCK_MESSAGES[lock]
 
 
 def bli_associated_with_agreement(id: int) -> bool:
