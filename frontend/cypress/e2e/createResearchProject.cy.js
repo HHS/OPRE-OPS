@@ -49,7 +49,7 @@ it("can create a project", () => {
             expect(statusCode).to.equal(201);
         })
         .then(cy.log);
-    cy.get(".usa-alert__body").should("contain", "The project has been successfully created.");
+    cy.get(".usa-alert__body").should("contain", "The project Test Project Name has been successfully created.");
 });
 
 it("can cancel a project", () => {
