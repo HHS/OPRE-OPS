@@ -1,11 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AgreementAwardModifications from "./AgreementAwardModifications";
-import { useGetAgreementAwardHistoryByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementAwardHistoryByIdQuery, useGetVersionQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 
 vi.mock("../../../api/opsAPI", () => ({
-    useGetAgreementAwardHistoryByIdQuery: vi.fn()
+    useGetAgreementAwardHistoryByIdQuery: vi.fn(),
+    useGetVersionQuery: vi.fn()
+}));
+
+// The section has its own tests; here we only check when it is shown.
+vi.mock("../../../components/Agreements/ContractModificationEdits", () => ({
+    default: ({ agreementId }) => <div data-testid="contract-modification-edits">{agreementId}</div>
 }));
 
 // Render the real Accordion's heading + children without USWDS DOM plumbing.
@@ -45,6 +51,7 @@ describe("AgreementAwardModifications", () => {
 
     beforeEach(() => {
         useGetAgreementAwardHistoryByIdQuery.mockReset();
+        useGetVersionQuery.mockReturnValue({ data: { enable_modified_loe_edits: false } });
     });
 
     afterEach(() => {
@@ -133,5 +140,36 @@ describe("AgreementAwardModifications", () => {
 
         render(<AgreementAwardModifications agreement={agreement} />);
         expect(screen.getByText(/error loading award/i)).toBeInTheDocument();
+    });
+
+    describe("Contract Modifications section", () => {
+        beforeEach(() => {
+            useGetAgreementAwardHistoryByIdQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        });
+
+        it("renders above the history for an awarded agreement when enabled", () => {
+            useGetVersionQuery.mockReturnValue({ data: { enable_modified_loe_edits: true } });
+
+            render(<AgreementAwardModifications agreement={{ id: 42, is_awarded: true }} />);
+
+            const section = screen.getByTestId("contract-modification-edits");
+            expect(section).toHaveTextContent("42");
+            const historyHeading = screen.getByRole("heading", { name: /award & modification history/i });
+            expect(section.compareDocumentPosition(historyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        });
+
+        it("is hidden when the agreement is not awarded", () => {
+            useGetVersionQuery.mockReturnValue({ data: { enable_modified_loe_edits: true } });
+
+            render(<AgreementAwardModifications agreement={{ id: 42, is_awarded: false }} />);
+
+            expect(screen.queryByTestId("contract-modification-edits")).not.toBeInTheDocument();
+        });
+
+        it("is hidden when modified LOE edits are disabled", () => {
+            render(<AgreementAwardModifications agreement={{ id: 42, is_awarded: true }} />);
+
+            expect(screen.queryByTestId("contract-modification-edits")).not.toBeInTheDocument();
+        });
     });
 });

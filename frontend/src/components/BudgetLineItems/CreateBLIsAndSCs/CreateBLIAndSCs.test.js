@@ -710,6 +710,70 @@ describe("CreateBLIsAndSCs", () => {
         });
     });
 
+    describe("Modified LOE contract-modification modal (OPS-3072)", () => {
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT, is_awarded: true };
+
+        // Regression for the double-modal bug: when the inline wizard's footer Save button
+        // fires the contract-modification confirmation, confirming it must NOT also open
+        // the inner Division-Director approval modal (Decision 10 in 3072-modified-loe-edit-
+        // budget-line.md -- one modal, not two stacked confirmations). The two modals share
+        // `showModal`/`modalProps`, so the fix threads `approvalConfirmed` into the modal's
+        // handleConfirm so the inner modal is skipped. It must not pass `savedViaModal`, which
+        // would redirect to the (absent) blocker destination.
+        test("the footer Save button's modal confirm passes approvalConfirmed so the inner Division-Director modal is skipped", async () => {
+            const mockStore = createMockStore();
+            const handleSave = vi.fn().mockResolvedValue(undefined);
+            const setModalProps = vi.fn();
+            const setShowModal = vi.fn();
+            const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+            const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+            vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+                ...origImpl(...args),
+                requiresContractModification: true,
+                handleSave,
+                setModalProps,
+                setShowModal
+            }));
+
+            render(
+                <Provider store={mockStore}>
+                    <BrowserRouter>
+                        <CreateBLIsAndSCs
+                            budgetLines={contractAgreement.budget_line_items}
+                            selectedResearchProject={contractAgreement}
+                            selectedAgreement={contractAgreement}
+                            selectedProcurementShop={contractAgreement.procurement_shop}
+                            isEditMode={true}
+                            isAgreementAwarded={true}
+                            continueBtnText="Save Changes"
+                            wizardSteps={wizardSteps}
+                            workflow="none"
+                            currentStep={1}
+                            isReviewMode={false}
+                            canUserEditBudgetLines={true}
+                            setIsEditMode={setIsEditMode}
+                            includeDrafts={true}
+                            setIncludeDrafts={setIncludeDrafts}
+                        />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            screen.getByRole("button", { name: "Save Changes" }).click();
+
+            await waitFor(() => expect(setModalProps).toHaveBeenCalled());
+            const modalProps = setModalProps.mock.calls.at(-1)[0];
+            expect(modalProps.heading).toMatch(/will require a contract modification/);
+            expect(modalProps.actionButtonText).toBe("Send to Approval");
+            expect(setShowModal).toHaveBeenCalledWith(true);
+
+            modalProps.handleConfirm();
+            expect(handleSave).toHaveBeenCalledWith(false, false, false, true);
+
+            vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
+        });
+    });
+
     describe("getSlice bundle export", () => {
         const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
 

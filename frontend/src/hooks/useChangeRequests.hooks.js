@@ -199,7 +199,10 @@ export function getChangeRequestsForTooltip(changeRequests, procurementShops, bu
     let lockedMessage = "";
 
     if (isBLIInReview) {
-        lockedMessage = `${title ? title : "This budget line has pending edits:"}`;
+        const defaultTitle = changeRequests?.some((changeRequest) => changeRequest?.requires_contract_modification)
+            ? "This budget line has pending edits that will require a contract modification:"
+            : "This budget line has pending edits:";
+        lockedMessage = `${title ? title : defaultTitle}`;
         changeRequestsMessages.forEach((message) => {
             lockedMessage += `\n \u2022 ${message}`;
         });

@@ -101,6 +101,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} contractType - Display text for contract types.
  * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
  * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ * @property {Object.<string, string>} modificationEditType - Display text for contract modification edit types.
  * @property {Object.<string, string>} methodOfTransfer - Display text for change to statuses.
  * @property {Object.<string, string>} project - Display text for project types.
  * @property {Object.<string, string>} projectOfficer - Display text for project types.
@@ -225,6 +226,9 @@ export const codesToDisplayText = {
         date_needed: "Obligate By Date",
         status: "Status",
         delete: "Deleted"
+    },
+    modificationEditType: {
+        MODIFIED_LOE: "Modified Level of Effort"
     },
     methodOfTransfer: {
         DIRECT: "Direct",

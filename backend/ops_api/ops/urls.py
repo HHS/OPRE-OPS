@@ -4,6 +4,8 @@ from ops_api.ops.views import (
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
     AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC,
+    AGREEMENT_CONTRACT_MODIFICATION_EDITS_API_VIEW_FUNC,
+    AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC,
     AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
@@ -304,6 +306,14 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/award-history/",
         view_func=AGREEMENT_AWARD_HISTORY_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/contract-modification-edits/",
+        view_func=AGREEMENT_CONTRACT_MODIFICATION_EDITS_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/contract-modifications/",
+        view_func=AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreements/<int:id>/edit-bundle",

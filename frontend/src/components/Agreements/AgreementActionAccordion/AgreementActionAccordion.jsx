@@ -10,9 +10,15 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
  * @param {Function} props.setAction - The function to call when an action is selected.
  * @param {boolean} [props.optionOneDisabled=false] - Whether the first radio button tile should be disabled.
  * @param {boolean} [props.optionTwoDisabled=false] - Whether the second radio button tile should be disabled.
+ * @param {boolean} [props.requiresContractModificationToExecute=false] - Whether executing Planned budget lines requires a Contract Modification (Awarded agreement, OPS-3072); swaps in that explanation.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, optionTwoDisabled = false }) => {
+const AgreementActionAccordion = ({
+    setAction,
+    optionOneDisabled = false,
+    optionTwoDisabled = false,
+    requiresContractModificationToExecute = false
+}) => {
     return (
         <Accordion
             heading="Choose a Status Change"
@@ -35,7 +41,11 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                     <div className="grid-col">
                         <RadioButtonTile
                             label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
-                            description="This will start the procurement process"
+                            description={
+                                requiresContractModificationToExecute
+                                    ? "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
+                                    : "This will start the procurement process"
+                            }
                             setValue={setAction}
                             disabled={optionTwoDisabled}
                             data-cy="change-planned-to-executing"
@@ -50,7 +60,8 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
 AgreementActionAccordion.propTypes = {
     setAction: PropTypes.func.isRequired,
     optionOneDisabled: PropTypes.bool,
-    optionTwoDisabled: PropTypes.bool
+    optionTwoDisabled: PropTypes.bool,
+    requiresContractModificationToExecute: PropTypes.bool
 };
 
 export default AgreementActionAccordion;
