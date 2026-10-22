@@ -508,8 +508,8 @@ const safeData = applyMinimumArcValue(items, total);
 **Example:**
 ```javascript
 // ✅ CORRECT: Pass whole number directly
-const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // ❌ INCORRECT: Do not pre-divide by 100
-const fee = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```

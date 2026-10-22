@@ -160,10 +160,10 @@ scrollToTop();
 
 ```javascript
 // CORRECT
-const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT - do NOT pre-divide
-const fee = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```
 
 ### Currency Display: Always Show Two-Digit Cents

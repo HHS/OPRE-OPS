@@ -35,10 +35,10 @@ All models have automatic audit history tracking via the event system.
 
 ```javascript
 // CORRECT
-const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT — results in 0.05% fee rate
-const fee = calculateAgreementTotal(budgetLines, 5.0 / 100);
+const total = calculateAgreementTotal(budgetLines, 5.0 / 100);
 ```
 
 ## Docker
