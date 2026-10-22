@@ -484,9 +484,9 @@ describe("useCreateBLIsAndSCs", () => {
             });
         });
 
-        // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change, an
-        // add/delete BL, or an add/delete/edit SC requires a contract modification -- surfaced as a
-        // distinct signal (requiresContractModification) alongside the existing requiresFinancialApproval.
+        // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change or
+        // deleting a non-Draft BL requires a contract modification -- surfaced as a distinct
+        // signal (requiresContractModification) alongside the existing requiresFinancialApproval.
         it("flags requiresContractModification for a PLANNED financial change when the agreement is Awarded", async () => {
             const plannedLine = {
                 id: 601,
@@ -527,16 +527,32 @@ describe("useCreateBLIsAndSCs", () => {
             expect(result.current.requiresContractModification).toBe(false);
         });
 
-        it("flags requiresContractModification for a deleted BL on an Awarded agreement even with no financial change", () => {
+        // Regression: deleting a never-saved BL leaves its temp id in the deleted list. It has no
+        // match in the persisted budgetLines, so it must not count as a non-Draft deletion.
+        it("does not flag requiresContractModification for a deleted never-saved BL on an Awarded agreement", () => {
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
-                deleted_budget_line_items_ids: [999],
+                deleted_budget_line_items_ids: ["temp-abc123"],
                 services_components: []
             });
             const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
-            expect(result.current.requiresContractModification).toBe(true);
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        // Regression: SC changes are saved directly, not through approval, so they must not
+        // trigger the "send it for approval" contract-modification modal.
+        it("does not flag requiresContractModification for services component changes on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_services_components_ids: [77],
+                services_components: [{ id: 11, number: 1, created_on: "2026-01-01", has_changed: true }, { number: 2 }]
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
         });
 
         it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {
@@ -1438,6 +1454,53 @@ describe("useCreateBLIsAndSCs", () => {
 
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
+        });
+
+        // Regression: the footer button's contract-modification confirm passes approvalConfirmed.
+        // It must skip the Division-Director modal but still redirect to the budget-lines URL,
+        // not the blocker's (undefined) destination the savedViaModal path uses.
+        it("handleSave with approvalConfirmed sends to approval without the modal and redirects to budget-lines", async () => {
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            await act(async () => {
+                await result.current.handleSave(false, false, false, true);
+            });
+
+            expect(result.current.showModal).toBe(false);
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+            const successCalls = setAlertMock.mock.calls.map((c) => c[0]).filter((a) => a.type === "success");
+            expect(successCalls.length).toBeGreaterThan(0);
+            successCalls.forEach((call) => {
+                expect(call.heading).toBe("Changes Sent to Approval");
+                expect(call.redirectUrl).toBe("/agreements/1/budget-lines");
+            });
         });
 
         it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects via the unsaved-changes modal with suppressErrorAlert=true (regression)", async () => {

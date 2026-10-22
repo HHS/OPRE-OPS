@@ -696,16 +696,17 @@ export const CreateBLIsAndSCs = ({
                                 // external Save button) -- when the pending edits require a
                                 // contract modification, confirm here before saving, reusing the
                                 // same generic modal plumbing this component already uses elsewhere.
-                                // Pass `savedViaModal=true` on confirm so the inner Division-Director
+                                // Pass `approvalConfirmed` on confirm so the inner Division-Director
                                 // approval modal does NOT fire again (Decision 10: one modal, not
                                 // two stacked confirmations for the same underlying approval).
+                                // Not `savedViaModal`: that path redirects to the blocker's target.
                                 if (requiresContractModification) {
                                     setModalProps({
                                         heading:
                                             "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?",
                                         actionButtonText: "Send to Approval",
                                         secondaryButtonText: "Continue Editing",
-                                        handleConfirm: () => handleSave(true)
+                                        handleConfirm: () => handleSave(false, false, false, true)
                                     });
                                     setShowModal(true);
                                     return;

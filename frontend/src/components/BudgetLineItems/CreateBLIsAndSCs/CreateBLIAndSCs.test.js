@@ -717,9 +717,10 @@ describe("CreateBLIsAndSCs", () => {
         // fires the contract-modification confirmation, confirming it must NOT also open
         // the inner Division-Director approval modal (Decision 10 in 3072-modified-loe-edit-
         // budget-line.md -- one modal, not two stacked confirmations). The two modals share
-        // `showModal`/`modalProps`, so the fix threads `handleSave(true)` into the modal's
-        // handleConfirm so the inner modal is skipped.
-        test("the footer Save button's modal confirm passes savedViaModal=true so the inner Division-Director modal is skipped", async () => {
+        // `showModal`/`modalProps`, so the fix threads `approvalConfirmed` into the modal's
+        // handleConfirm so the inner modal is skipped. It must not pass `savedViaModal`, which
+        // would redirect to the (absent) blocker destination.
+        test("the footer Save button's modal confirm passes approvalConfirmed so the inner Division-Director modal is skipped", async () => {
             const mockStore = createMockStore();
             const handleSave = vi.fn().mockResolvedValue(undefined);
             const setModalProps = vi.fn();
@@ -767,7 +768,7 @@ describe("CreateBLIsAndSCs", () => {
             expect(setShowModal).toHaveBeenCalledWith(true);
 
             modalProps.handleConfirm();
-            expect(handleSave).toHaveBeenCalledWith(true);
+            expect(handleSave).toHaveBeenCalledWith(false, false, false, true);
 
             vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
         });
