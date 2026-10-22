@@ -69,7 +69,7 @@ A problem that already existed in code the PR touches is **pre-existing**. Repor
 A review is done when **no S0 or S1 finding is open**. Open S2 and S3 findings don't hold up a merge.
 
 - An AI reviewer will always find *something*. Running more passes to look for more S2 and S3 findings doesn't make the PR safer; it makes it slower.
-- A re-review after new commits covers only **the commits since the last review**, plus findings that are still open. It doesn't start over on the whole diff.
+- A re-review after new commits covers **the commits since the last review, plus any already-reviewed code whose behavior they change** (for example, callers of a helper whose signature or return value changed), and findings that are still open. It doesn't start over on the whole diff.
 - Re-running a review until it stops reporting an S0 or S1 doesn't close that finding. Only a fix, or an agreed won't-fix, closes it.
 
 ## Reporting Findings
