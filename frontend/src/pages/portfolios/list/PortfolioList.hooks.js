@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useMemo } from "react";
 import { useGetPortfoliosQuery, useGetPortfolioFundingSummaryBatchQuery } from "../../../api/opsAPI";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { filterMyPortfolios } from "./PortfolioList.helpers";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 
 /**
  * Custom hook for managing portfolio list state and data fetching
@@ -21,8 +21,9 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
         isError: isErrorPortfolios
     } = useGetPortfoliosQuery({});
 
-    // Simple state initialization with defaults
-    const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice (see useListFilters).
+    const { filters, setFilters, selectedFiscalYear, changeFiscalYear } = useListFilters("portfolios");
     // The active tab lives in `?tab=` so links back to this list (e.g. breadcrumbs) restore it.
     const activeTab = searchParams.get("tab") || "all";
     // Merge into the current params so other query params on the list survive a tab switch.
@@ -36,34 +37,8 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
             },
             { replace: true }
         );
-    const [filters, setFilters] = useState({
-        portfolios: [],
-        budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-        availablePct: []
-    });
 
     const fiscalYear = Number(selectedFiscalYear);
-
-    // Store the initial unfiltered budget range for the filter slider
-    const unfilteredBudgetRangeRef = useRef(null);
-    const prevFiscalYearRef = useRef(selectedFiscalYear);
-
-    // Reset filters and cached budget range when fiscal year changes
-    useEffect(() => {
-        if (prevFiscalYearRef.current !== selectedFiscalYear) {
-            // Reset all filters including budget range
-            setFilters((prev) => ({
-                ...prev,
-                portfolios: [],
-                budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE,
-                availablePct: []
-            }));
-
-            // Reset cached budget range so it recalculates from new fiscal year data
-            unfilteredBudgetRangeRef.current = null;
-            prevFiscalYearRef.current = selectedFiscalYear;
-        }
-    }, [selectedFiscalYear]);
 
     // Prepare filter parameters for API call
     const portfolioIds = Array.isArray(filters.portfolios) ? filters.portfolios.map((p) => p.id) : [];
@@ -93,44 +68,31 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
     const isLoading = isLoadingPortfolios || isFetchingPortfolios || isLoadingFunding || isFetchingFunding;
     const isError = isErrorPortfolios || isErrorFunding;
 
-    // Calculate budget range for filter components
-    // Store initial unfiltered range to prevent slider range from narrowing when filters are applied
+    // Budget slider bounds come from this FY's UNFILTERED funding, so the slider
+    // doesn't narrow as filters apply, including when the page remounts with
+    // persisted filters. With no filters applied this shares the cache entry
+    // (and request) with the query above.
+    const { data: unfilteredFundingData } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
+
     const fyBudgetRange = useMemo(() => {
-        // Only calculate from unfiltered data (when NO filters are applied)
-        const isUnfiltered = !shouldApplyBudgetFilter && portfolioIds.length === 0 && !shouldApplyPctFilter;
+        const budgets = (unfilteredFundingData?.portfolios ?? [])
+            .map((p) => p.total_funding?.amount || 0)
+            .filter((amount) => amount > 0);
 
-        if (!fundingData?.portfolios || fundingData.portfolios.length === 0) {
-            return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
+        if (budgets.length === 0) {
+            return DEFAULT_PORTFOLIO_BUDGET_RANGE;
         }
 
-        // If this is unfiltered data, calculate and store the range from ALL portfolios
-        if (isUnfiltered) {
-            const budgets = fundingData.portfolios
-                .map((p) => p.total_funding?.amount || 0)
-                .filter((amount) => amount > 0);
+        const min = Math.floor(Math.min(...budgets));
+        const max = Math.ceil(Math.max(...budgets));
 
-            if (budgets.length === 0) {
-                return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
-            }
-
-            const min = Math.floor(Math.min(...budgets));
-            const max = Math.ceil(Math.max(...budgets));
-
-            // If min === max (only one budget value), add small buffer (±10%
-            if (min === max) {
-                return [Math.floor(min * 0.9), Math.ceil(max * 1.1)];
-            }
-
-            const range = [min, max];
-
-            // Store for future use
-            unfilteredBudgetRangeRef.current = range;
-            return range;
+        // If min === max (only one budget value), add small buffer (±10%)
+        if (min === max) {
+            return [Math.floor(min * 0.9), Math.ceil(max * 1.1)];
         }
 
-        // If filtered, return the stored unfiltered range
-        return unfilteredBudgetRangeRef.current || DEFAULT_PORTFOLIO_BUDGET_RANGE;
-    }, [fundingData, shouldApplyBudgetFilter, portfolioIds.length, shouldApplyPctFilter]);
+        return [min, max];
+    }, [unfilteredFundingData]);
 
     // Merge portfolios with funding data from filtered results
     const portfoliosWithFunding = useMemo(() => {
@@ -173,7 +135,7 @@ export const usePortfolioList = ({ currentUserId, searchParams, setSearchParams 
     return {
         // State
         selectedFiscalYear,
-        setSelectedFiscalYear,
+        changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,
