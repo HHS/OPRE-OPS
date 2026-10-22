@@ -48,7 +48,7 @@ This rule applies to shared chart components and to feature components that prep
 Canonical guidance: repository root `AGENTS.md` under `Fee Percentage Format Convention`.
 
 - Backend/storage format: `5.0` means `5%`
-- `calculateTotal` in `src/helpers/agreement.helpers.js` expects whole numbers
+- `calculateAgreementTotal` in `src/helpers/agreement.helpers.js` expects whole numbers
 - Do not pre-divide fee percentages by `100` before calling helpers
 - Use whole-number fee percentages in frontend tests too
 
