@@ -1,10 +1,11 @@
 from typing import Any, Sequence
 
+from flask_jwt_extended import get_current_user
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import ServicesComponent
+from models import Agreement, ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -12,6 +13,7 @@ from ops_api.ops.services.ops_service import (
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import get_agreement_pre_award_lock_message
 
 
 class ServicesComponentService:
@@ -85,6 +87,8 @@ class ServicesComponentService:
         if not associated_with_agreement(create_request.get("agreement_id")):
             raise AuthorizationError("User not authorized to create Services Component with this Agreement")
 
+        self._check_pre_award_lock(self.db_session.get(Agreement, create_request.get("agreement_id")))
+
         new_sc = ServicesComponent(**create_request)
 
         try:
@@ -121,6 +125,8 @@ class ServicesComponentService:
         services_component = self.db_session.get(ServicesComponent, obj_id)
         if not services_component:
             raise ResourceNotFoundError("ServicesComponent", obj_id)
+
+        self._check_pre_award_lock(services_component.agreement)
 
         if "id" in updated_fields and obj_id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
@@ -160,10 +166,18 @@ class ServicesComponentService:
             raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
 
         services_component = self.get(obj_id)
+        self._check_pre_award_lock(services_component.agreement)
 
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
+
+    @staticmethod
+    def _check_pre_award_lock(agreement: Agreement | None) -> None:
+        """Services components are part of the agreement, so they share its pre-award locks."""
+        message = get_agreement_pre_award_lock_message(agreement, get_current_user())
+        if message:
+            raise ValidationError({"services_component": [message]})
 
     def _sc_associated_with_agreement(self, obj_id: int) -> bool:
         """

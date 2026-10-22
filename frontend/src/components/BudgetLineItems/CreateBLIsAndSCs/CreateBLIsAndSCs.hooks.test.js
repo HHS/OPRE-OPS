@@ -459,14 +459,14 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresFinancialApproval).toBe(false);
     });
 
-    it("still requires DD approval when a changed line is IN_EXECUTION even with the capability ON", async () => {
+    it("applies an Executing financial change immediately (no DD approval) when the capability is ON", async () => {
         useGetVersionQueryMock.mockReturnValue({
             data: { version: "1.0.0", skip_cr_for_draft_planned: true },
             isSuccess: true
         });
         const executingLine = {
             id: 502,
-            status: "EXECUTING",
+            status: "IN_EXECUTION",
             in_review: false,
             financialSnapshotChanged: true
         };
@@ -476,7 +476,41 @@ describe("useCreateBLIsAndSCs", () => {
         await waitFor(() => {
             expect(result.current.tempBudgetLines).toHaveLength(1);
         });
-        // A non-PLANNED changed line is out of the flag's scope → approval still required.
+        // Capability ON + all changed lines IN_EXECUTION → applies directly, no approval UX (OPS-6195).
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("applies a mixed Planned + Executing financial change immediately when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const changedLines = [
+            { id: 503, status: "PLANNED", in_review: false, financialSnapshotChanged: true },
+            { id: 504, status: "IN_EXECUTION", in_review: false, financialSnapshotChanged: true }
+        ];
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: changedLines });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(2);
+        });
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("still requires DD approval for an Executing financial change when the capability is OFF", async () => {
+        const executingLine = {
+            id: 505,
+            status: "IN_EXECUTION",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [executingLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
         expect(result.current.requiresFinancialApproval).toBe(true);
     });
 
