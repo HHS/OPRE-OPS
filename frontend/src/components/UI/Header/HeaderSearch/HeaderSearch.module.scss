@@ -4,7 +4,8 @@
 // row, so the layer drops back into the flow as its own row instead of floating over the page.
 .layer {
     position: absolute;
-    top: 3.625rem;
+    // The 2rem search box ends level with the bottom of the logo (55px logo ends 99px below the header top).
+    top: 4.1875rem;
     left: 0;
     right: 0;
     width: min(1024px, 100%);
