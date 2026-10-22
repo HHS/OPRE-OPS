@@ -251,4 +251,4 @@ Prerequisites:
 - **Renamed columns**: Alembic generates a drop + add instead of a rename. Use `op.alter_column()` with `new_column_name` manually.
 - **Enum changes**: Alembic can't auto-detect new enum values. Add `op.execute("ALTER TYPE ... ADD VALUE ...")` manually.
 - **Non-nullable columns**: Adding a NOT NULL column to an existing table needs a server default or a two-step migration (add nullable, backfill, alter to non-null).
-- **History triggers**: The app uses `before_commit`/`after_flush` for history tracking. Migrations that add new models should ensure the corresponding `*_history` table is also created if the model inherits from `BaseModel`.
+- **Version tables**: `BaseModel` sets `__versioned__`, so sqlalchemy-continuum keeps a `<table>_version` table for every model that inherits from it. Migrations that add a new model must also create its `<table>_version` table (see `backend/models/base.py`). The `*_history` tables (`agreement_history`, `can_history`, `project_history`) are separate, hand-built domain history and aren't needed for every model.

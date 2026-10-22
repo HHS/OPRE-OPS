@@ -15,6 +15,7 @@ Each major directory has its own `CLAUDE.md` with detailed commands, architectur
 - **`backend/data_tools/CLAUDE.md`**: ETL and data import — load_data CLI, test fixtures, environment configs
 - **`frontend/CLAUDE.md`**: React frontend — commands, testing, RTK Query, component patterns
 - **`docs/TESTING.md`**: Testing philosophy and the test-type decision matrix — consult before adding any new test, at any layer
+- **`docs/REVIEW.md`**: Code review standards — severity levels, what blocks a merge, and when a review is done — follow it when reviewing any PR
 
 ## Data Model
 
