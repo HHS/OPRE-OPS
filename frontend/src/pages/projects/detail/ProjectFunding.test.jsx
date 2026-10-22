@@ -124,10 +124,10 @@ describe("ProjectFunding", () => {
         });
     });
 
-    const renderComponent = (id = "1000") =>
+    const renderComponent = (id = "1000", search = "") =>
         render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={[`/projects/${id}/funding`]}>
+                <MemoryRouter initialEntries={[`/projects/${id}/funding${search}`]}>
                     <Routes>
                         <Route
                             path="/projects/:id/funding"
@@ -246,5 +246,18 @@ describe("ProjectFunding", () => {
         fireEvent.change(select, { target: { value: "2024" } });
 
         expect(select.value).toBe("2024");
+    });
+
+    it("seeds the fiscal year from the ?fy= search param", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({ data: mockProject, isLoading: false, error: undefined });
+        mockUseGetProjectFundingByIdQuery.mockReturnValue({
+            data: mockFundingData,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent("1000", "?fy=2024");
+
+        expect(screen.getByRole("combobox")).toHaveValue("2024");
     });
 });

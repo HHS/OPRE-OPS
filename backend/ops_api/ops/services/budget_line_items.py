@@ -56,7 +56,9 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     get_bli_locked_message,
     get_pre_award_lock,
     is_bli_editable,
+    tracks_contract_modifications,
     update_data,
+    validate_no_execution_status_change_on_awarded,
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
 
@@ -691,6 +693,9 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
+        if has_status_change:
+            validate_no_execution_status_change_on_awarded(budget_line_item, parsed_partial.get("status"))
+
         # Determine if direct edit or change request is needed.
         # Superusers bypass the change-request workflow for all edits.
         # Non-status changes on DRAFT lines also apply directly without a CR.
@@ -810,6 +815,11 @@ class BudgetLineItemService:
         # then, but lets Budget Team through on the understanding that their edits still route
         # through a change request for DD review.
         if get_pre_award_lock(budget_line_item.agreement):
+            return False, set()
+
+        # On an Awarded agreement these edits require a contract modification (OPS-3072), so
+        # they must go through Division Director approval instead of applying directly.
+        if tracks_contract_modifications(budget_line_item):
             return False, set()
 
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).

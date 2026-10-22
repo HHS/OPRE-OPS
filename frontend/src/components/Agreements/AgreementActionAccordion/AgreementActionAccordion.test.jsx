@@ -64,4 +64,23 @@ describe("AgreementActionAccordion", () => {
         await user.click(screen.getByRole("radio", { name: new RegExp(actionOptions.CHANGE_PLANNED_TO_EXECUTING) }));
         expect(mockSetAction).toHaveBeenCalledWith(actionOptions.CHANGE_PLANNED_TO_EXECUTING);
     });
+
+    // OPS-3072 (Modified LOE): on an Awarded agreement, Planned→Executing requires a
+    // Contract Modification instead of an ordinary status-change request.
+    it("shows the Contract Modification description for the second option when requiresContractModificationToExecute is true", () => {
+        render(
+            <AgreementActionAccordion
+                setAction={mockSetAction}
+                requiresContractModificationToExecute={true}
+            />
+        );
+        expect(
+            screen.getByText("Awarded agreements require a Contract Modification to execute Planned Budget Lines")
+        ).toBeInTheDocument();
+    });
+
+    it("shows the default procurement-process description for the second option when requiresContractModificationToExecute is false", () => {
+        render(<AgreementActionAccordion setAction={mockSetAction} />);
+        expect(screen.getByText("This will start the procurement process")).toBeInTheDocument();
+    });
 });

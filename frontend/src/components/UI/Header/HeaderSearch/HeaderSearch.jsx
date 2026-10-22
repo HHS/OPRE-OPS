@@ -95,7 +95,7 @@ export const HeaderSearch = () => {
         >
             <form
                 role="search"
-                className={styles.form}
+                className={`usa-search usa-search--small ${styles.form}`}
                 onSubmit={handleSubmit}
             >
                 <div className={styles.inputWrapper}>
@@ -105,7 +105,7 @@ export const HeaderSearch = () => {
                         name="header-search"
                         type="text"
                         role="combobox"
-                        className={`usa-input ${styles.input}`}
+                        className={`usa-input usa-search__input ${styles.input}`}
                         placeholder="Search agreements"
                         aria-label="Search agreements"
                         aria-autocomplete="list"
@@ -134,12 +134,12 @@ export const HeaderSearch = () => {
                 </div>
                 <button
                     type="submit"
-                    className={`usa-button ${styles.submitButton}`}
+                    className={`usa-button usa-search__submit ${styles.submitButton}`}
                     aria-label="Search"
                     data-cy="header-search-submit"
                 >
                     <svg
-                        className="usa-icon"
+                        className="usa-icon usa-search__submit-icon"
                         aria-hidden="true"
                         focusable="false"
                         role="img"

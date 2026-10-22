@@ -1,6 +1,6 @@
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
-import { useNavigate } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 
 /**
@@ -22,7 +22,7 @@ const AgreementDetailsEdit = ({
     isEditMode,
     setIsEditMode
 }) => {
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const goBack = () => {
         navigate(`/agreements/${agreement.id}`);
     };

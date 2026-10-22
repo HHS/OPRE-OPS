@@ -440,8 +440,16 @@ export const EDIT_DISABLED_TOOLTIPS = {
         "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time",
     awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time",
     postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits",
-    allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes"
+    allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes",
+    awardedNoDraftBLIs: "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
 };
+
+/**
+ * Heading for the confirmation shown before sending edits on an Awarded agreement to approval,
+ * when they will require a contract modification (OPS-3072). Shared by every save path.
+ */
+export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
+    "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
 
 /**
  * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.

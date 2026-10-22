@@ -11,9 +11,22 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
+/**
+ * Visit the review page and wait for the data that seeds the BLI table. A late response
+ * re-initializes the budget lines and drops any action/selection made before it arrived.
+ * @param {number} agreementId - the agreement ID
+ */
+const visitReviewPage = (agreementId) => {
+    cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreement");
+    cy.intercept("GET", `/api/v1/services-components/?agreement_id=${agreementId}`).as("getServicesComponents");
+    cy.intercept("GET", `/api/v1/grant-numbers/?agreement_id=${agreementId}`).as("getGrantNumbers");
+    cy.visit(`/agreements/review/${agreementId}`);
+    cy.wait(["@getAgreement", "@getServicesComponents", "@getGrantNumbers"]);
+};
+
 describe("agreement change accordion", () => {
     it("check agreement meta-data", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
 
         cy.contains(".usa-accordion__button", "Review Agreement Details")
@@ -56,7 +69,7 @@ describe("agreement change accordion", () => {
     });
 
     it("handles interactions on agreement 10 from DRAFT to PLANNED", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -100,8 +113,21 @@ describe("agreement change accordion", () => {
             });
         });
     });
-    it("handles interactions on agreement 10 from PLANNED to EXECUTION", () => {
-        cy.visit("/agreements/review/10");
+    it("keeps PLANNED to EXECUTION available on awarded agreement 10 with modified LOE edits off", () => {
+        // E2E runs with ENABLE_MODIFIED_LOE_EDITS off (the staging/prod default), so the Awarded
+        // contract-modification guard (OPS-3072) must not apply. It's covered by unit tests.
+        visitReviewPage(10);
+        cy.get("h1").contains("Change Budget Line Status");
+        cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
+        cy.get('label[for="Change Planned Budget Lines to Executing Status"]').contains(
+            "This will start the procurement process"
+        );
+        cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("not.be.disabled");
+    });
+    it("handles interactions on agreement 14 from PLANNED to EXECUTION", () => {
+        visitReviewPage(14);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -109,42 +135,45 @@ describe("agreement change accordion", () => {
         // click action radio button
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
+        cy.get('label[for="Change Planned Budget Lines to Executing Status"]').contains(
+            "This will start the procurement process"
+        );
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         // Wait for action change to take effect
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
+        // Planned BLI becomes selectable once the action is applied
+        cy.get('input[id="16094"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        cy.get('input[id="15002"]').should("be.checked");
+        cy.get('input[id="16094"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("G994426-5Y");
         });
-        cy.get('[data-cy="budget-summary-card-504"]')
-            .invoke("text")
-            .then((text) => {
-                const formattedNumbers = text.match(/\d{1,3}(,\d{3})+/g) || [];
-                expect(formattedNumbers.length).to.be.gte(3);
-            });
+        cy.get('[data-cy="budget-summary-card-504"]').should(($card) => {
+            const formattedNumbers = $card.text().match(/\d{1,3}(,\d{3})+/g) || [];
+            expect(formattedNumbers.length).to.be.gte(3);
+        });
         cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
         cy.get("h2").contains("Upload Documents").as("info-accordion").should("exist");
         cy.contains(
             "p",
-            "Please coordinate documents related to contract modifications via email until contract modifications have been developed in OPS."
+            "Please coordinate documents related to pre-solicitation via email until upload documents have been developed in OPS."
         );
         // get content in review-card to see if it exists and contains planned, status and amount
         cy.get("[data-cy='review-card']").each(($card) => {
             cy.wrap($card).within(() => {
-                cy.contains(/15002/);
+                cy.contains(/16094/);
                 cy.contains(/planned/i);
                 cy.contains(/executing/i);
                 cy.contains(/status/i);
                 cy.contains(/total/i);
-                cy.contains(/1,000,000.00/);
+                cy.contains(/351,750.00/);
             });
         });
     });
@@ -152,14 +181,14 @@ describe("agreement change accordion", () => {
 
 describe("agreement BLI accordion", () => {
     it("should contain summary card", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get('[data-cy="blis-by-fy-card"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').should("exist");
     });
 
     it("allow to select individual budget lines", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
@@ -168,7 +197,7 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle check-all and uncheck all", () => {
-        cy.visit("/agreements/review/9");
+        visitReviewPage(9);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -204,7 +233,7 @@ describe("agreement BLI accordion", () => {
     });
 
     it("should handle after approval toggle on Agreement10", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -228,8 +257,8 @@ describe("agreement BLI accordion", () => {
         cy.get('[data-cy="currency-summary-card"]').contains("0");
     });
 
-    it("should handle after approval toggle on Agreement 10", () => {
-        cy.visit("/agreements/review/10");
+    it("should show Planned BLI totals on Agreement 14", () => {
+        visitReviewPage(14);
         cy.get("h1").contains("Change Budget Line Status");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
@@ -240,14 +269,14 @@ describe("agreement BLI accordion", () => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[data-cy="currency-summary-card"]').should("exist");
-        // Based on test data, expect PLANNED BLI amount
-        cy.get('[data-cy="currency-summary-card"]').contains("$ 3,000,000.00");
+        // Based on test data, expect agreement total including fees
+        cy.get('[data-cy="currency-summary-card"]').contains("$ 753,750.00");
     });
 });
 
 describe("agreement review CANS accordion", () => {
     it("should not have any CANS cards unless BLIs are selected", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         // pre-change
         cy.get("h2").contains("Review CANs").should("exist");
@@ -269,7 +298,7 @@ describe("agreement review CANS accordion", () => {
     });
 
     it("should handle after approval toggle", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(10);
         cy.get("h1").contains("Change Budget Line Status");
         // pre-change
         // select all BLIs to show CANS cards
@@ -309,8 +338,11 @@ describe("agreement review CANS accordion", () => {
     });
 
     it("should handle over budget CANs", () => {
-        cy.visit("/agreements/review/10");
+        visitReviewPage(14);
         cy.get("h1").contains("Change Budget Line Status");
+        // wait for the BLI table so a late data load doesn't reset the selection
+        cy.get(".usa-table").should("exist");
+        cy.get('[data-cy="check-all"]').should("exist").should("be.disabled");
         // pre-change
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
@@ -320,18 +352,14 @@ describe("agreement review CANS accordion", () => {
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
+        // Planned BLI becomes selectable once the action is applied
+        cy.get('input[id="16094"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        // Check if budget summary cards exist and show over budget status
-        cy.get("body").then(($body) => {
-            if ($body.find('[data-cy="budget-summary-card-504"]').length > 0) {
-                cy.get('[data-cy="budget-summary-card-504"]').should("exist").contains("Over Budget");
-            } else {
-                cy.log("Budget summary card not found - likely no actionable BLIs selected for this test condition");
-            }
-        });
+        cy.get('input[id="16094"]').should("be.checked");
+        cy.get('[data-cy="budget-summary-card-504"]', { timeout: 10000 }).should("exist").contains("Over Budget");
     });
 });
 

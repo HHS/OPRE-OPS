@@ -640,6 +640,12 @@ export const opsApi = createApi({
             transformResponse: (response) => response?.data ?? [],
             providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ProcurementTrackers"]
         }),
+        getAgreementContractModificationEditsById: builder.query({
+            query: (id) => `/agreements/${id}/contract-modification-edits/`,
+            transformResponse: (response) => response?.data ?? [],
+            // Edits are written when a change request is approved, so refetch on review too.
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ChangeRequests"]
+        }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
             providesTags: ["Projects"]
@@ -1423,6 +1429,7 @@ export const {
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
     useGetAgreementAwardHistoryByIdQuery,
+    useGetAgreementContractModificationEditsByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

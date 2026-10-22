@@ -27,7 +27,7 @@
 
 .container {
     position: relative;
-    // Prototype: ~307px input + 48px button, 36px tall.
+    // Prototype: ~307px input + 48px button. Height comes from USWDS's small search (2rem).
     width: 22.2rem;
     max-width: 100%;
 }
@@ -39,7 +39,9 @@
     display: flex;
     width: 100%;
     max-width: none;
-    border-radius: 0.25rem;
+    margin: 0; // `.usa-header .usa-search` adds margin-top: 0.5rem, which would push the box off the icon and dropdown
+    // Square on the input side, rounded on the button side, like the USWDS small search.
+    border-radius: 0 0.25rem 0.25rem 0;
 
     // One focus ring around the joined input + button, instead of a ring on the input alone that
     // spills over the button. Only where :has() exists (Firefox < 121, Safari < 15.4 lack it): there
@@ -57,14 +59,12 @@
     flex: 1;
 }
 
+// Height, font size, margin and corner radii come from `.usa-search--small` / `.usa-search__input`.
 .container .input {
-    margin-top: 0;
+    float: none; // USWDS floats the search input; here it fills a flex item
     width: 100%;
     max-width: none;
-    height: 2.25rem;
     padding-right: 2rem;
-    font-size: 0.875rem;
-    border-radius: 0.25rem 0 0 0.25rem;
 
     @supports selector(:has(*)) {
         &:focus {
@@ -93,17 +93,12 @@
     }
 }
 
-// `.usa-button` adds margin-right: 0.5rem and a full radius; flush it against the input.
+// Size, padding and corner radii come from the USWDS small search; just center the icon.
 .container .submitButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 3rem;
-    width: 3rem;
-    height: 2.25rem;
-    margin: 0;
-    padding: 0;
-    border-radius: 0 0.25rem 0.25rem 0;
+    flex: 0 0 auto;
 }
 
 .dropdown {
@@ -190,7 +185,7 @@
 // The info icon hangs off the right edge of the search box (inside the layer's extra right padding).
 .infoWrapper {
     position: absolute;
-    top: 0.375rem;
+    top: 0.25rem; // centers the 1.5rem icon on the 2rem search box
     left: calc(100% + 0.5rem);
 }
 
@@ -206,10 +201,6 @@
     color: #005ea2;
     cursor: pointer;
 
-    &:hover {
-        color: #1a4480;
-    }
-
     :global(.usa-icon) {
         width: 1.5rem;
         height: 1.5rem;
@@ -223,13 +214,14 @@
     z-index: 100;
     width: max-content;
     max-width: 19rem;
-    padding: 0.5rem 0.75rem;
+    // Same box and type as the USWDS tooltip (.usa-tooltip__body): .5rem padding, .25rem radius,
+    // .94rem font, inherited font family and line height, #71767a background.
+    padding: 0.5rem;
     border-radius: 0.25rem;
-    // The app's tooltip background; white (not USWDS's #f0f0f0) text, which reaches 4.5:1 contrast on it.
     background: #71767a;
+    // White, not USWDS's #f0f0f0: #f0f0f0 on #71767a is ~3.9:1 and fails the 4.5:1 axe check in CI.
     color: #fff;
-    font-size: 0.875rem;
-    line-height: 1.35;
+    font-size: 0.94rem;
     border: 1px solid transparent; // forced-colors mode recolours it, so the tip keeps an edge
 
     // Bridges the gap to the icon so the pointer can travel onto the tip without it closing

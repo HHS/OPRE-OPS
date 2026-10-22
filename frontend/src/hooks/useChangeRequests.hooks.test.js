@@ -351,4 +351,45 @@ describe("getChangeRequestsForTooltip", () => {
         expect(result).toContain("\n • Line A");
         expect(result).toContain("\n • Line B");
     });
+    describe("default title", () => {
+        const budgetLine = { amount: 600000, status: "PLANNED" };
+        const amountChange = { requested_change_data: { amount: 500000 } };
+
+        it("uses the generic pending-edits title when no change request requires a contract modification", () => {
+            const result = getChangeRequestsForTooltip(
+                [{ ...amountChange, requires_contract_modification: false }],
+                [],
+                budgetLine,
+                mockCans,
+                true
+            );
+            expect(result.startsWith("This budget line has pending edits:")).toBe(true);
+        });
+
+        it("uses the contract-modification title when a change request requires a contract modification", () => {
+            const result = getChangeRequestsForTooltip(
+                [{ ...amountChange, requires_contract_modification: true }],
+                [],
+                budgetLine,
+                mockCans,
+                true
+            );
+            expect(
+                result.startsWith("This budget line has pending edits that will require a contract modification:")
+            ).toBe(true);
+            expect(result).toContain("\n • Amount:");
+        });
+
+        it("keeps an explicit title even when a contract modification is required", () => {
+            const result = getChangeRequestsForTooltip(
+                [{ ...amountChange, requires_contract_modification: true }],
+                [],
+                budgetLine,
+                mockCans,
+                true,
+                "Locked edits"
+            );
+            expect(result.startsWith("Locked edits")).toBe(true);
+        });
+    });
 });

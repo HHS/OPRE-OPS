@@ -821,6 +821,42 @@
       psc_contract_specialist: "PSC Contract Specialist",
       cotr_id: 520,
     },
+    {
+      // Seeded for manual testing of the Modified LOE / contract modification flows
+      // (OPS-3072): fully populated and Awarded, with 3 OBLIGATED BLIs (not editable) and
+      // 1 PLANNED BLI, so Modified LOE edits, the Change-BL-Status button guard, and the
+      // "requires a contract modification" modal can all be exercised without first
+      // walking a fresh agreement through the full procurement tracker wizard.
+      id: 523,
+      name: "CONTRACT #523: Modified LOE Test Contract (OPS-3072)",
+      nick_name: "MLOE-CONTRACT",
+      description: "Fully-populated Awarded contract with three OBLIGATED budget lines and one PLANNED budget line, seeded for manual testing of the Modified LOE / contract modification flows.",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      project_officer_id: 500,
+      alternate_project_officer_id: 522,
+      agreement_type: "CONTRACT",
+      project_id: 1002,
+      awarding_entity_id: 4,
+      created_by: 503,
+      contract_number: "CTMLOE523",
+      vendor_id: 100,
+      delivered_status: false,
+      contract_type: "FIRM_FIXED_PRICE",
+      contract_category: "RESEARCH",
+      service_requirement_type: "SEVERABLE",
+      support_contacts: [],
+      // Dated in FY2044 (not FY2043) so this fixture's BLIs (also FY2044) don't push the
+      // FY2043 agreement count past the default page size of 10 in
+      // test_agreements_get_all_by_fiscal_year -- verified empirically against the seed
+      // dataset: FY2043 was already at exactly 10 agreements; FY2044 has 7.
+      start_date: "2044-06-13T14:00:00",
+      end_date: "2045-06-13T14:00:00",
+      psc_contract_specialist: "PSC Contract Specialist",
+      cotr_id: 520,
+      po_number: "PO-MLOE-0001",
+      task_order_number: "TO-MLOE-0001",
+    },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       id: 25,
@@ -1100,9 +1136,27 @@
       period_end: "2044-06-13T14:00:00",
       agreement_id: 14,
     },
-    // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       id: 54,
+      number: 1,
+      optional: false,
+      description: "Research and Analysis",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 523,
+    },
+    {
+      id: 55,
+      number: 2,
+      optional: false,
+      description: "Report Writing",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 523,
+    },
+    // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
+    {
+      id: 56,
       number: 1,
       optional: false,
       description: "OPS-6195 test services component",
@@ -1111,7 +1165,7 @@
       agreement_id: 25,
     },
     {
-      id: 55,
+      id: 57,
       number: 1,
       optional: false,
       description: "OPS-6195 test services component",
@@ -1120,7 +1174,7 @@
       agreement_id: 26,
     },
     {
-      id: 56,
+      id: 58,
       number: 1,
       optional: false,
       description: "OPS-6195 test services component",
@@ -1129,7 +1183,7 @@
       agreement_id: 27,
     },
     {
-      id: 57,
+      id: 59,
       number: 1,
       optional: false,
       description: "OPS-6195 test services component",
@@ -1324,9 +1378,20 @@
       action_description: "Initial award for Partner-AA #2: Early Childhood Development Research Collaboration",
       created_by: 503,
     },
-    // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       id: 112,
+      agreement_id: 523,
+      award_type: "NEW_AWARD",
+      status: "AWARDED",
+      date_awarded_obligated: "2044-06-20",
+      need_by_date: "2044-06-20",
+      action_description: "Initial award for CONTRACT #523: Modified LOE Test Contract (OPS-3072)",
+      comments: "Seeded for manual testing of the Modified LOE / contract modification flows (OPS-3072).",
+      created_by: 503,
+    },
+    // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
+    {
+      id: 113,
       agreement_id: 25,
       award_type: "NEW_AWARD",
       status: "IN_PROCESS",
@@ -1336,7 +1401,7 @@
       created_by: 503,
     },
     {
-      id: 113,
+      id: 114,
       agreement_id: 26,
       award_type: "NEW_AWARD",
       status: "IN_PROCESS",
@@ -1346,7 +1411,7 @@
       created_by: 503,
     },
     {
-      id: 114,
+      id: 115,
       agreement_id: 27,
       award_type: "NEW_AWARD",
       status: "IN_PROCESS",
@@ -1356,7 +1421,7 @@
       created_by: 503,
     },
     {
-      id: 115,
+      id: 116,
       agreement_id: 28,
       award_type: "NEW_AWARD",
       status: "IN_PROCESS",
@@ -18367,6 +18432,80 @@
       certified: false,
       closed: false,
     },
+    {
+      // 3 OBLIGATED BLIs for CONTRACT #523 (Modified LOE manual-testing fixture, OPS-3072).
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 1",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 500000.0,
+      status: "OBLIGATED",
+      date_needed: "2044-07-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 54,
+      procurement_action_id: 112,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 2",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 300000.0,
+      status: "OBLIGATED",
+      date_needed: "2044-07-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 54,
+      procurement_action_id: 112,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 3",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 200000.0,
+      status: "OBLIGATED",
+      date_needed: "2044-07-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 55,
+      procurement_action_id: 112,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
+    {
+      // One PLANNED BLI on CONTRACT #523 so manual testing of AC1 can also exercise
+      // Decision 1's widening -- a PLANNED-amount edit on an already-awarded agreement
+      // should now carry `requires_contract_modification: true` -- and the awarded-state
+      // guard on AgreementActionAccordion's "Change Planned Budget Lines to Executing
+      // Status" option (disabled whenever `isAgreementAwarded`, even with a Planned BLI
+      // present).
+      budget_line_item_type: "CONTRACT",
+      line_description: "LI 4",
+      comments: "",
+      can_id: 504,
+      created_by: 503,
+      agreement_id: 523,
+      amount: 150000.0,
+      status: "PLANNED",
+      date_needed: "2044-07-01T14:00:00",
+      proc_shop_fee_percentage: 0,
+      services_component_id: 55,
+      on_hold: false,
+      certified: false,
+      closed: false,
+    },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       budget_line_item_type: "CONTRACT",
@@ -18379,8 +18518,8 @@
       status: "IN_EXECUTION",
       date_needed: "2027-03-15T14:00:00",
       proc_shop_fee_percentage: 0,
-      services_component_id: 54,
-      procurement_action_id: 112,
+      services_component_id: 56,
+      procurement_action_id: 113,
       on_hold: false,
       certified: false,
       closed: false,
@@ -18396,8 +18535,8 @@
       status: "PLANNED",
       date_needed: "2027-05-15T14:00:00",
       proc_shop_fee_percentage: 0,
-      services_component_id: 54,
-      procurement_action_id: 112,
+      services_component_id: 56,
+      procurement_action_id: 113,
       on_hold: false,
       certified: false,
       closed: false,
@@ -18413,8 +18552,8 @@
       status: "IN_EXECUTION",
       date_needed: "2027-03-15T14:00:00",
       proc_shop_fee_percentage: 0,
-      services_component_id: 55,
-      procurement_action_id: 113,
+      services_component_id: 57,
+      procurement_action_id: 114,
       on_hold: false,
       certified: false,
       closed: false,
@@ -18430,8 +18569,8 @@
       status: "IN_EXECUTION",
       date_needed: "2027-03-15T14:00:00",
       proc_shop_fee_percentage: 0,
-      services_component_id: 56,
-      procurement_action_id: 114,
+      services_component_id: 58,
+      procurement_action_id: 115,
       on_hold: false,
       certified: false,
       closed: false,
@@ -18447,8 +18586,8 @@
       status: "IN_EXECUTION",
       date_needed: "2027-03-15T14:00:00",
       proc_shop_fee_percentage: 0,
-      services_component_id: 57,
-      procurement_action_id: 115,
+      services_component_id: 59,
+      procurement_action_id: 116,
       on_hold: false,
       certified: false,
       closed: false,
@@ -19063,17 +19202,20 @@
       active_step_number: 1,
       created_by: 503,
     },
+    {
+      // Tracker for CONTRACT #523 (Modified LOE manual-testing fixture, OPS-3072). This is the
+      // 13th row in this array, so its auto-increment id is 13 -- matching
+      // procurement_tracker_step.procurement_tracker_id below.
+      agreement_id: 523,
+      procurement_action: 112,
+      status: "COMPLETED",
+      tracker_type: "DEFAULT",
+      active_step_number: 6,
+      created_by: 503,
+    },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       agreement_id: 25,
-      procurement_action: 112,
-      status: "ACTIVE",
-      tracker_type: "DEFAULT",
-      active_step_number: 5,
-      created_by: 503,
-    },
-    {
-      agreement_id: 26,
       procurement_action: 113,
       status: "ACTIVE",
       tracker_type: "DEFAULT",
@@ -19081,7 +19223,7 @@
       created_by: 503,
     },
     {
-      agreement_id: 27,
+      agreement_id: 26,
       procurement_action: 114,
       status: "ACTIVE",
       tracker_type: "DEFAULT",
@@ -19089,8 +19231,16 @@
       created_by: 503,
     },
     {
-      agreement_id: 28,
+      agreement_id: 27,
       procurement_action: 115,
+      status: "ACTIVE",
+      tracker_type: "DEFAULT",
+      active_step_number: 5,
+      created_by: 503,
+    },
+    {
+      agreement_id: 28,
+      procurement_action: 116,
       status: "ACTIVE",
       tracker_type: "DEFAULT",
       active_step_number: 5,
@@ -19700,14 +19850,14 @@
       step_type: "AWARD",
       status: "PENDING",
     },
-    // Tracker 13 (Agreement 25) - OPS-6195: Executing BLIs editable without approval (Pre-Award not requested)
     {
+      // Steps for tracker 13 (CONTRACT #523, Modified LOE manual-testing fixture, OPS-3072) --
+      // fully completed and Awarded so the Award & Modifications tab is also populated.
       procurement_tracker_id: 13,
       step_number: 1,
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "COMPLETED",
-      acquisition_planning_date_completed: "2026-07-15",
     },
     {
       procurement_tracker_id: 13,
@@ -19715,10 +19865,72 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "COMPLETED",
-      pre_solicitation_target_completion_date: "2026-08-01",
     },
     {
       procurement_tracker_id: 13,
+      step_number: 3,
+      step_class: "default_step",
+      step_type: "SOLICITATION",
+      status: "COMPLETED",
+    },
+    {
+      procurement_tracker_id: 13,
+      step_number: 4,
+      step_class: "default_step",
+      step_type: "EVALUATION",
+      status: "COMPLETED",
+    },
+    {
+      procurement_tracker_id: 13,
+      step_number: 5,
+      step_class: "default_step",
+      step_type: "PRE_AWARD",
+      status: "COMPLETED",
+      pre_award_approval_requested: true,
+      pre_award_approval_requested_date: "2044-05-01",
+      pre_award_approval_requested_by: 503,
+      pre_award_approval_status: "APPROVED",
+      pre_award_requisition_number: "REQ-MLOE-0523",
+      pre_award_requisition_date: "2044-05-15",
+      pre_award_requisition_approved_by: 520,
+      pre_award_requisition_approved_date: "2044-05-20",
+    },
+    {
+      procurement_tracker_id: 13,
+      step_number: 6,
+      step_class: "default_step",
+      step_type: "AWARD",
+      status: "COMPLETED",
+      step_start_date: "2044-06-01",
+      award_approval_requested: true,
+      award_approval_requested_date: "2044-06-10",
+      award_approval_requested_by: 503,
+      award_approval_status: "APPROVED",
+      award_vendor_id: 100,
+      award_contract_number: "GS-10F-0523A",
+      award_amount: 1000000.0,
+      award_date: "2044-06-20",
+      award_requestor_notes: "All documents uploaded. CLINs assigned. Awarded for Modified LOE manual testing (OPS-3072).",
+    },
+    // Tracker 14 (Agreement 25) - OPS-6195: Executing BLIs editable without approval (Pre-Award not requested)
+    {
+      procurement_tracker_id: 14,
+      step_number: 1,
+      step_class: "default_step",
+      step_type: "ACQUISITION_PLANNING",
+      status: "COMPLETED",
+      acquisition_planning_date_completed: "2026-07-15",
+    },
+    {
+      procurement_tracker_id: 14,
+      step_number: 2,
+      step_class: "default_step",
+      step_type: "PRE_SOLICITATION",
+      status: "COMPLETED",
+      pre_solicitation_target_completion_date: "2026-08-01",
+    },
+    {
+      procurement_tracker_id: 14,
       step_number: 3,
       step_class: "default_step",
       step_type: "SOLICITATION",
@@ -19727,7 +19939,7 @@
       solicitation_period_end_date: "2026-09-01",
     },
     {
-      procurement_tracker_id: 13,
+      procurement_tracker_id: 14,
       step_number: 4,
       step_class: "default_step",
       step_type: "EVALUATION",
@@ -19735,7 +19947,7 @@
       evaluation_target_completion_date: "2026-09-30",
     },
     {
-      procurement_tracker_id: 13,
+      procurement_tracker_id: 14,
       step_number: 5,
       step_class: "default_step",
       step_type: "PRE_AWARD",
@@ -19744,15 +19956,15 @@
       pre_award_target_completion_date: "2026-12-01",
     },
     {
-      procurement_tracker_id: 13,
+      procurement_tracker_id: 14,
       step_number: 6,
       step_class: "default_step",
       step_type: "AWARD",
       status: "PENDING",
     },
-    // Tracker 14 (Agreement 26) - OPS-6195: Pre-Award Approval in review (locked)
+    // Tracker 15 (Agreement 26) - OPS-6195: Pre-Award Approval in review (locked)
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 1,
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
@@ -19760,7 +19972,7 @@
       acquisition_planning_date_completed: "2026-07-15",
     },
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 2,
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
@@ -19768,7 +19980,7 @@
       pre_solicitation_target_completion_date: "2026-08-01",
     },
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 3,
       step_class: "default_step",
       step_type: "SOLICITATION",
@@ -19777,7 +19989,7 @@
       solicitation_period_end_date: "2026-09-01",
     },
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 4,
       step_class: "default_step",
       step_type: "EVALUATION",
@@ -19785,7 +19997,7 @@
       evaluation_target_completion_date: "2026-09-30",
     },
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 5,
       step_class: "default_step",
       step_type: "PRE_AWARD",
@@ -19798,15 +20010,15 @@
       pre_award_requestor_notes: "OPS-6195 test: pending Division Director review.",
     },
     {
-      procurement_tracker_id: 14,
+      procurement_tracker_id: 15,
       step_number: 6,
       step_class: "default_step",
       step_type: "AWARD",
       status: "PENDING",
     },
-    // Tracker 15 (Agreement 27) - OPS-6195: Pre-Award Approval approved (locked until award)
+    // Tracker 16 (Agreement 27) - OPS-6195: Pre-Award Approval approved (locked until award)
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 1,
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
@@ -19814,7 +20026,7 @@
       acquisition_planning_date_completed: "2026-07-15",
     },
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 2,
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
@@ -19822,7 +20034,7 @@
       pre_solicitation_target_completion_date: "2026-08-01",
     },
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 3,
       step_class: "default_step",
       step_type: "SOLICITATION",
@@ -19831,7 +20043,7 @@
       solicitation_period_end_date: "2026-09-01",
     },
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 4,
       step_class: "default_step",
       step_type: "EVALUATION",
@@ -19839,7 +20051,7 @@
       evaluation_target_completion_date: "2026-09-30",
     },
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 5,
       step_class: "default_step",
       step_type: "PRE_AWARD",
@@ -19858,15 +20070,15 @@
       pre_award_requisition_approved_date: "2026-10-10",
     },
     {
-      procurement_tracker_id: 15,
+      procurement_tracker_id: 16,
       step_number: 6,
       step_class: "default_step",
       step_type: "AWARD",
       status: "PENDING",
     },
-    // Tracker 16 (Agreement 28) - OPS-6195: Pre-Award Approval declined (editable again)
+    // Tracker 17 (Agreement 28) - OPS-6195: Pre-Award Approval declined (editable again)
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 1,
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
@@ -19874,7 +20086,7 @@
       acquisition_planning_date_completed: "2026-07-15",
     },
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 2,
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
@@ -19882,7 +20094,7 @@
       pre_solicitation_target_completion_date: "2026-08-01",
     },
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 3,
       step_class: "default_step",
       step_type: "SOLICITATION",
@@ -19891,7 +20103,7 @@
       solicitation_period_end_date: "2026-09-01",
     },
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 4,
       step_class: "default_step",
       step_type: "EVALUATION",
@@ -19899,7 +20111,7 @@
       evaluation_target_completion_date: "2026-09-30",
     },
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 5,
       step_class: "default_step",
       step_type: "PRE_AWARD",
@@ -19915,7 +20127,7 @@
       pre_award_approval_reviewer_notes: "OPS-6195 test: declined so budget lines can be edited again.",
     },
     {
-      procurement_tracker_id: 16,
+      procurement_tracker_id: 17,
       step_number: 6,
       step_class: "default_step",
       step_type: "AWARD",

@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithProviders } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import ProjectsTable from "./ProjectsTable";
 import { PROJECT_SORT_CODES } from "../../../pages/projects/list/ProjectsList.helpers";
 
@@ -36,13 +36,11 @@ const defaultProps = {
 };
 
 const renderTable = (props = {}) =>
-    render(
-        <MemoryRouter>
-            <ProjectsTable
-                {...defaultProps}
-                {...props}
-            />
-        </MemoryRouter>
+    renderWithProviders(
+        <ProjectsTable
+            {...defaultProps}
+            {...props}
+        />
     );
 
 describe("ProjectsTable", () => {

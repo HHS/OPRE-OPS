@@ -23,9 +23,14 @@ from flask import url_for
 
 from models import (
     Agreement,
+    AgreementReason,
+    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ContractAgreement,
     ContractBudgetLineItem,
+    ContractType,
+    ServicesComponent,
     User,
 )
 
@@ -272,11 +277,34 @@ def test_in_planned_budget_edit_creates_cr_when_flag_off(
 
 
 def test_planned_to_executing_still_creates_cr_when_flag_on(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    skip_cr_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
     """Only Draft→Planned skips review among status changes. Planned→Executing must still
-    route for review even with the flag ON — proves the scope isn't broader than intended."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can)
+    route for review even with the flag ON — proves the scope isn't broader than intended.
+
+    Uses a fresh non-awarded agreement: seed agreement 1 is Awarded, where Planned→Executing
+    is rejected outright because it requires a Contract Modification (OPS-3072)."""
+    agreement = ContractAgreement(
+        name="Skip-CR Planned to Executing Agreement",
+        contract_number="CTSKIPCRPTE",
+        description="Non-awarded agreement for the Planned to Executing flag-scope test",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        product_service_code_id=2,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=503,
+        awarding_entity_id=1,
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+    agreement.team_members.append(loaded_db.get(User, 521))
+    sc = ServicesComponent(agreement_id=agreement.id, number=1, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+    bli = _make_bli(
+        loaded_db, BudgetLineItemStatus.PLANNED, test_can, agreement_id=agreement.id, services_component_id=sc.id
+    )
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -288,6 +316,9 @@ def test_planned_to_executing_still_creates_cr_when_flag_on(
         assert bli.in_review is True
     finally:
         _delete_bli_and_crs(loaded_db, bli)
+        loaded_db.delete(sc)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
 
 
 def test_in_planned_out_of_scope_field_not_newly_persisted_when_flag_on(

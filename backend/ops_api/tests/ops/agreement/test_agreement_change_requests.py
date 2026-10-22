@@ -143,7 +143,7 @@ def test_update_awarding_entity_creates_agreement_change_request(
         loaded_db.query(GrantBudgetLineItem).filter(GrantBudgetLineItem.agreement_id == test_grant_agreement.id).all()
     )
     assert len(blis) == 1
-    assert blis[0].agreement_id is test_grant_agreement.id
+    assert blis[0].agreement_id == test_grant_agreement.id
     assert blis[0].status is BudgetLineItemStatus.PLANNED
     assert blis[0].in_review is True
 

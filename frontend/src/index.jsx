@@ -50,6 +50,7 @@ import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
 import DataVizDebug from "./pages/dev/DataVizDebug";
+import { LIST_CRUMBS } from "./helpers/breadcrumb.helpers";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -62,6 +63,21 @@ import "./index.css";
 
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
+
+/**
+ * The route `handle.crumb` link for a list page's detail routes, built from the same
+ * `LIST_CRUMBS` entry the context-aware breadcrumb trail uses.
+ *
+ * @param {keyof typeof LIST_CRUMBS} listKey
+ */
+const listCrumb = (listKey) => (
+    <Link
+        to={LIST_CRUMBS[listKey].to}
+        className="text-primary"
+    >
+        {LIST_CRUMBS[listKey].label}
+    </Link>
+);
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -129,14 +145,7 @@ const router = createBrowserRouter(
                         // here we use "crumb" and return some elements,
                         // this is what we'll render in the breadcrumbs
                         // for this route
-                        crumb: () => (
-                            <Link
-                                to="/portfolios"
-                                className="text-primary"
-                            >
-                                Portfolios
-                            </Link>
-                        )
+                        crumb: () => listCrumb("portfolios")
                     }}
                 >
                     {/* Default to Spending tab */}
@@ -206,14 +215,7 @@ const router = createBrowserRouter(
                     path="/agreements/:id/*"
                     element={<Agreement />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
 
@@ -233,42 +235,21 @@ const router = createBrowserRouter(
                     path="/projects/:id"
                     element={<ProjectDetail />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/projects"
-                                className="text-primary"
-                            >
-                                Projects
-                            </Link>
-                        )
+                        crumb: () => listCrumb("projects")
                     }}
                 />
                 <Route
                     path="/projects/:id/spending"
                     element={<ProjectSpending />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/projects"
-                                className="text-primary"
-                            >
-                                Projects
-                            </Link>
-                        )
+                        crumb: () => listCrumb("projects")
                     }}
                 />
                 <Route
                     path="/projects/:id/funding"
                     element={<ProjectFunding />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/projects"
-                                className="text-primary"
-                            >
-                                Projects
-                            </Link>
-                        )
+                        crumb: () => listCrumb("projects")
                     }}
                 />
                 <Route
@@ -279,14 +260,7 @@ const router = createBrowserRouter(
                     path="/agreements/create"
                     element={<CreateAgreement />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
@@ -300,126 +274,63 @@ const router = createBrowserRouter(
                     path="/agreements/review/:id/edit"
                     element={<EditAgreementAndBudgetLines />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/review/:id/*"
                     element={<ReviewAgreement />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/approve/:id/*"
                     element={<ApproveAgreement />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/pre-award-approval"
                     element={<RequestPreAwardApproval />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/review-pre-award"
                     element={<ApprovePreAwardApproval />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/review-budget-requisition"
                     element={<ReviewBudgetTeamRequisition />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/award-approval"
                     element={<RequestAwardApproval />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/review-award"
                     element={<ApproveAwardApproval />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
                     path="/agreements/:id/edit-award"
                     element={<EditAwardApproval />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/agreements"
-                                className="text-primary"
-                            >
-                                Agreements
-                            </Link>
-                        )
+                        crumb: () => listCrumb("agreements")
                     }}
                 />
                 <Route
@@ -440,14 +351,7 @@ const router = createBrowserRouter(
                     path="/cans/:id/*"
                     element={<Can />}
                     handle={{
-                        crumb: () => (
-                            <Link
-                                to="/cans"
-                                className="text-primary"
-                            >
-                                CANs
-                            </Link>
-                        )
+                        crumb: () => listCrumb("cans")
                     }}
                 />
                 <Route

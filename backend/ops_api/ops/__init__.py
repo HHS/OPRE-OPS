@@ -246,6 +246,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.UPDATE_GRANT_NUMBER, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_GRANT_NUMBER, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.START_CONTRACT_MODIFICATION, agreement_history_trigger)
 
     # Subscribe to events that should generate project history events
     MessageBus.subscribe_globally(OpsEventType.CREATE_PROJECT, project_history_trigger)

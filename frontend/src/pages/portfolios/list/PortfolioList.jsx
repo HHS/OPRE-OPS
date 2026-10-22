@@ -29,17 +29,17 @@ import { tableSortCodes } from "../../../helpers/utils";
  */
 const PortfolioList = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isExporting, setIsExporting] = React.useState(false);
     const { setAlert } = useAlert();
 
     // Get current user for "My Portfolios" filtering
-    const activeUser = useSelector((state) => state?.userSlice?.activeUser);
+    const activeUser = useSelector((state) => state?.auth?.activeUser);
     const currentUserId = activeUser?.id;
 
     // Custom hook for managing portfolio list state and data
     const {
-        setSelectedFiscalYear,
+        changeFiscalYear,
         activeTab,
         setActiveTab,
         filters,
@@ -51,7 +51,7 @@ const PortfolioList = () => {
         fyBudgetRange,
         isLoading,
         isError
-    } = usePortfolioList({ currentUserId, searchParams });
+    } = usePortfolioList({ currentUserId, searchParams, setSearchParams });
 
     // Table sorting state - default to static order matching the legend
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
@@ -99,7 +99,7 @@ const PortfolioList = () => {
                 FYSelect={
                     <PortfolioFiscalYearSelect
                         fiscalYear={fiscalYear}
-                        setSelectedFiscalYear={setSelectedFiscalYear}
+                        setSelectedFiscalYear={changeFiscalYear}
                     />
                 }
                 TabsSection={

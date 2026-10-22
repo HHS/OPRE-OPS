@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import styles from "./Tabs.module.scss";
 
 /**
@@ -23,12 +24,16 @@ import styles from "./Tabs.module.scss";
 
 /**
  * @component - Tabs
+ *
+ * Switching tabs keeps the current breadcrumb trail when the tabs are pages of
+ * the same resource (see `useTrailNavigate`).
+ *
  * @param {TabsProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered JSX element.
  */
 const Tabs = ({ paths, rightContent, scrollToTopOnChange = false }) => {
     const location = useLocation();
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
 
     // Tracks at most one in-flight "scroll to top, then navigate" transition, so it can be
     // cancelled instead of firing a stale `navigate()` later — by a second tab click, by this
