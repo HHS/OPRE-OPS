@@ -25,6 +25,29 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
     const triggerRef = React.useRef(/** @type {HTMLElement | null} */ (null));
     const isInitializedRef = React.useRef(false);
 
+    // Shared by the "label became falsy" path and the unmount cleanup below so both fully
+    // undo USWDS's wrapping and reset isInitializedRef in lockstep with tooltip.off(). Without
+    // this, React StrictMode's dev-only mount->cleanup->remount replay strips the USWDS event
+    // listeners (via the unmount effect's cleanup) while isInitializedRef stays true, so the
+    // remount pass takes the "already initialized" branch and never re-attaches them.
+    const teardown = React.useCallback(() => {
+        const triggerElement = triggerRef.current;
+        if (!tooltip || !triggerElement || !isInitializedRef.current) {
+            return;
+        }
+        tooltip.off(triggerElement);
+        const tooltipWrapper = triggerElement.parentElement;
+        if (tooltipWrapper?.classList.contains("usa-tooltip")) {
+            tooltipWrapper.replaceWith(triggerElement);
+        }
+        triggerElement.classList.remove("usa-tooltip__trigger");
+        triggerElement.removeAttribute("title");
+        triggerElement.removeAttribute("data-position");
+        triggerElement.removeAttribute("aria-describedby");
+        triggerElement.removeAttribute("tabindex");
+        isInitializedRef.current = false;
+    }, []);
+
     React.useLayoutEffect(() => {
         if (!triggerRef.current) {
             triggerRef.current = wrapperRef.current?.firstChild ?? null;
@@ -36,21 +59,7 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
         }
 
         if (!label) {
-            if (isInitializedRef.current) {
-                tooltip.off(triggerElement);
-                // Undo USWDS's wrapping so a later re-init (if label becomes truthy again)
-                // starts from a clean trigger instead of nesting another wrapper/body.
-                const tooltipWrapper = triggerElement.parentElement;
-                if (tooltipWrapper?.classList.contains("usa-tooltip")) {
-                    tooltipWrapper.replaceWith(triggerElement);
-                }
-                triggerElement.classList.remove("usa-tooltip__trigger");
-                triggerElement.removeAttribute("title");
-                triggerElement.removeAttribute("data-position");
-                triggerElement.removeAttribute("aria-describedby");
-                triggerElement.removeAttribute("tabindex");
-                isInitializedRef.current = false;
-            }
+            teardown();
             return;
         }
 
@@ -82,18 +91,11 @@ const Tooltip = ({ label, position = "top", children, className, maxWidth }) => 
             // width: 100% + min-width: 50vw for the same reason.
             tooltipBody?.classList.add(`width-${maxWidth}`, "text-wrap");
         }
-    }, [label, position, maxWidth]);
+    }, [label, position, maxWidth, teardown]);
 
     // Only tear down the USWDS listeners on unmount — not on every label/position/maxWidth
     // change, since the main effect above now updates an initialized tooltip in place.
-    React.useEffect(
-        () => () => {
-            if (tooltip && triggerRef.current && isInitializedRef.current) {
-                tooltip.off(triggerRef.current);
-            }
-        },
-        []
-    );
+    React.useEffect(() => teardown, [teardown]);
 
     return (
         <span

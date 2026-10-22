@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import { describe, it, expect } from "vitest";
 import Tooltip from "./Tooltip";
 
@@ -182,5 +183,20 @@ describe("Tooltip", () => {
         const bodies = document.querySelectorAll(".usa-tooltip__body");
         expect(bodies).toHaveLength(1);
         expect(bodies[0]).toHaveTextContent("second");
+    });
+
+    it("still shows the tooltip on hover after React StrictMode's mount/cleanup/remount replay", () => {
+        render(
+            <StrictMode>
+                <Tooltip label="Help text">
+                    <button>trigger</button>
+                </Tooltip>
+            </StrictMode>
+        );
+
+        fireEvent.mouseOver(screen.getByRole("button"));
+
+        const body = document.querySelector(".usa-tooltip__body");
+        expect(body).toHaveClass("is-set");
     });
 });
