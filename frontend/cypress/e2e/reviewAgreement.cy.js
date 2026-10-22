@@ -145,12 +145,12 @@ describe("agreement change accordion", () => {
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
         // Planned BLI becomes selectable once the action is applied
-        cy.get('input[id="16094"]').should("not.be.disabled");
+        cy.get('input[id="16099"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        cy.get('input[id="16094"]').should("be.checked");
+        cy.get('input[id="16099"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("G994426-5Y");
@@ -168,7 +168,7 @@ describe("agreement change accordion", () => {
         // get content in review-card to see if it exists and contains planned, status and amount
         cy.get("[data-cy='review-card']").each(($card) => {
             cy.wrap($card).within(() => {
-                cy.contains(/16094/);
+                cy.contains(/16099/);
                 cy.contains(/planned/i);
                 cy.contains(/executing/i);
                 cy.contains(/status/i);
@@ -353,12 +353,12 @@ describe("agreement review CANS accordion", () => {
         // Wait for checkboxes to appear
         cy.get('[data-cy="check-all"]', { timeout: 10000 }).should("be.visible");
         // Planned BLI becomes selectable once the action is applied
-        cy.get('input[id="16094"]').should("not.be.disabled");
+        cy.get('input[id="16099"]').should("not.be.disabled");
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
         });
         cy.get('[type="checkbox"]').should("have.length", 6);
-        cy.get('input[id="16094"]').should("be.checked");
+        cy.get('input[id="16099"]').should("be.checked");
         cy.get('[data-cy="budget-summary-card-504"]', { timeout: 10000 }).should("exist").contains("Over Budget");
     });
 });
