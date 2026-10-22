@@ -9,6 +9,7 @@ import suite from "./suite";
 import classnames from "vest/classnames";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useAlert from "../../hooks/use-alert.hooks";
+import { escapeHtml } from "../../helpers/utils";
 
 const DISPLAY_TO_API_TYPE = {
     Research: "RESEARCH",
@@ -88,7 +89,7 @@ const CreateProject = () => {
             setAlert({
                 type: "success",
                 heading: "New Project Created",
-                message: `The project ${submittedTitleRef.current} has been successfully created.`,
+                message: `The project ${escapeHtml(submittedTitleRef.current)} has been successfully created.`,
                 redirectUrl: `/`
             });
         }
