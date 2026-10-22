@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import App from "../../App";
 import ProjectTypeSelect from "../../components/Projects/ProjectTypeSelect/ProjectTypeSelect";
@@ -31,9 +31,8 @@ const CreateProject = () => {
         description: ""
     });
 
-    const [addResearchProject, { isLoading, isSuccess, isError, error, reset, data: rpData }] =
+    const [addResearchProject, { isLoading, isSuccess, isError, error, reset, data: rpData, originalArgs }] =
         useAddResearchProjectsMutation();
-    const submittedTitleRef = useRef("");
     const { setAlert } = useAlert();
 
     let res = suite.get();
@@ -89,17 +88,12 @@ const CreateProject = () => {
             setAlert({
                 type: "success",
                 heading: "New Project Created",
-                message: `The project ${escapeHtml(submittedTitleRef.current)} has been successfully created.`,
+                message: `The project ${escapeHtml(originalArgs?.title)} has been successfully created.`,
                 redirectUrl: `/`
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSuccess, rpData]);
-
-    const handleSubmit = () => {
-        submittedTitleRef.current = editedProject.title;
-        addResearchProject(editedProject);
-    };
 
     const handleCancel = () => {
         setShowModal(true);
@@ -182,7 +176,7 @@ const CreateProject = () => {
                     type="button"
                     id="submit"
                     className="usa-button"
-                    onClick={handleSubmit}
+                    onClick={() => addResearchProject(editedProject)}
                     disabled={!res.isValid() || isLoading}
                 >
                     Create Project
