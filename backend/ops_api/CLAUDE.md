@@ -124,7 +124,7 @@ Separate from the MessageBus, all SQLAlchemy models inheriting from `BaseModel` 
 - `portfolios.py`: Portfolio
 - `users.py`: User, UserStatus
 - `events.py`: Domain events for audit tracking
-- `*_history.py`: History tracking for each model
+- `agreement_history.py`, `can_history.py`, `project_history.py`: Domain history for agreements, CANs and projects (row-level versioning for every model is handled by sqlalchemy-continuum `*_version` tables)
 
 ### Key Test Fixtures
 

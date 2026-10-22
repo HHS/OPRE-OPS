@@ -123,6 +123,24 @@ pre-commit install --hook-type commit-msg
 - **Never add `Closes #NNN`, `Fixes #NNN`, or `Resolves #NNN`** to PR descriptions. The team's process requires additional review and QA steps before a story moves out of "in progress" — auto-closing on merge skips those steps.
 - Reference the ticket in the branch name only (e.g. `OPS-5931/feature-name`).
 
+## Code Review
+
+<!-- Summary of docs/REVIEW.md. Change both in the same PR; if they differ, docs/REVIEW.md wins. -->
+
+When reviewing a PR, read [`docs/REVIEW.md`](docs/REVIEW.md) first: it has the full rubric, the finding format and the risk tiers. If this summary and `docs/REVIEW.md` differ, `docs/REVIEW.md` wins. The core rules:
+
+- **Label every finding S0, S1, S2 or S3. Only S0 and S1 block a merge.**
+  - **S0:** data loss or corruption, a security or authorization bypass, wrong money math (computing or saving fees, budget line totals, CAN balances), or a broken migration.
+  - **S1:** a user-visible bug on a realistic path, a display-only money formatting error, the linked issue's acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement).
+  - **S2:** a bug that needs an edge case, or a missing test. **S3:** style, refactor ideas, wrong comments or docstrings. Neither S2 nor S3 blocks.
+  - If a tool uses its own severity scale (e.g. Critical/High/Medium/Low), also label each finding S0–S3; only the S0–S3 label decides blocking.
+- **Tests are required for money math, authorization and migrations.** A PR that changes them must include a test for that change; a missing one is S1.
+- **Scope exceptions:** for Renovate and other bot PRs only S0 blocks; for docs-only PRs only a factually wrong command, path or rule blocks.
+- **Only defects the PR introduces, makes reachable or makes worse can block.** Report older problems as `[Pre-existing S<n>]`; they never block.
+- **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). A finding with no realistic scenario is S3 at most.
+- **Pick a severity by the outcome your scenario actually shows**, not the worst case it might reach.
+- **End an AI review with `Verdict: BLOCKING (n)` or `Verdict: NOT BLOCKING`**, and list at most 5 S2/S3 findings. Don't guess acceptance criteria you can't see.
+
 ## CI/CD
 
 GitHub Actions for CI/CD. Workflows in `.github/workflows/`.

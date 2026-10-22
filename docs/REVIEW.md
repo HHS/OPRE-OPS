@@ -21,29 +21,29 @@
 
 ## Scope
 
-These standards apply to every pull request into `main`, with these adjustments:
+These standards apply to every pull request into `main`. The adjustments below override the rest of this document:
 
 | PR type | What blocks |
 | --- | --- |
 | Feature, fix and refactor PRs | S0 and S1, as defined below |
 | Renovate and other bot PRs | S0 only. Green CI plus a skim of the dependency's breaking changes is enough. |
-| Docs-only PRs | Only a factually wrong command, path or rule |
-| Hotfixes | S0 and S1 as usual. S2 findings become follow-up tickets instead of holding the fix. |
+| Docs-only PRs | Only a factually wrong command, path or rule, which counts as S1 |
+| Hotfixes | S0 and S1 as usual. S2 findings become follow-up tickets. |
 
 **Security scanner alerts** (CodeQL, Semgrep, Snyk) map onto the same levels:
 
 - A new High or Critical alert on code the PR adds or changes, with a reachable path, is **S0**.
-- Any other new alert is **S2**.
+- Any other new alert is **S2**, unless it shows a real S0 outcome (for example, an authorization bypass). Then the S0 definition wins over the alert's rating.
 - Alerts that already existed before the PR don't block it.
 
 ## Severity Levels
 
-Every finding gets exactly one severity. Only **S0** and **S1** block a merge.
+Every finding gets exactly one severity. Only **S0** and **S1** block a merge, unless [Scope](#scope) says otherwise.
 
 | Level | Definition | Examples in OPS | Merge rule |
 | --- | --- | --- | --- |
 | **S0** | Data loss or corruption, a security or authorization bypass, wrong money math, a broken migration | Fee applied as 0.05% instead of 5%; budget line totals wrong; a user editing an agreement they don't own; a new `BaseModel` model with no `*_version` table | Blocks merge |
-| **S1** | A user-visible bug on a realistic path, the ticket's acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement) | Save does nothing; a validation error never clears; a currency amount shown as a raw float; a new control that can't be reached by keyboard | Blocks merge |
+| **S1** | A user-visible bug on a realistic path, the acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement) | Save does nothing; a validation error never clears; a currency amount shown as a raw float; a new control that can't be reached by keyboard | Blocks merge |
 | **S2** | A bug that needs an edge case to appear, a missing test for changed behavior (see [TESTING.md](TESTING.md#when-not-to-write-tests) for when a test isn't needed) | A crash on a rare filter combination; no test for a new branch in a helper | Doesn't block. The author decides; a reviewer can raise it to S1 by giving an S1 scenario. |
 | **S3** | Naming, style, refactor ideas, "consider…" | Extract a helper; rename a prop | Never blocks; fix it or drop it |
 
@@ -52,29 +52,49 @@ What the terms mean:
 - **Realistic path:** a user with a normal role can reach it through the UI or API, using inputs that role is allowed to send, in a flow the PR touches.
 - **Edge case:** it needs unusual data, a race condition, or database state no normal flow produces.
 - **Money math:** computing, aggregating or saving amounts, fees, budget line totals or CAN balances. A display-only formatting error is S1, not S0.
+- **Acceptance criteria:** the ones on the linked issue. A story file or the PR description can narrow them only if it says so explicitly.
+- **Out of scope:** behavior the ticket deliberately leaves out isn't a bug. UI text that tells users the behavior exists is S2.
 
 Choosing a level:
 
 - **Pick a level by the outcome your scenario actually shows.** If it only *might* reach a higher level, pick the lower one and say what evidence would raise it.
-- **A missing test is S1 only** when the untested code is itself the fix for an S0 or S1, or is money math, authorization or a migration. Otherwise it's S2.
+- **A PR that changes money math, authorization or a migration must include a test for that change.** A missing one is S1. Any other missing test is S2.
+- **Wrong comments, docstrings or PR descriptions** in a code PR, and **tests in the wrong file** (see [TESTING.md](TESTING.md)), are S3.
+- **If a tool uses its own severity scale** (for example Critical/High/Medium/Low), also label each finding S0–S3. Only the S0–S3 label decides whether it blocks.
 
 ## What Can Block
 
 Only defects that the PR **introduces, makes reachable, or makes worse** can block it.
 
-A problem that already existed in code the PR touches is **pre-existing**. Report it as `Pre-existing`; it never blocks the PR. If it matters, open a ticket for it.
+A problem that already existed in code the PR touches is **pre-existing**. Report it with the `Pre-existing` prefix and its severity (see [Reporting Findings](#reporting-findings)); it never blocks the PR. If it matters, open a ticket for it.
+
+If a PR fixes part of a pre-existing bug, the parts left unfixed stay pre-existing. The exception is a PR that claims to fix the whole bug: then the unfixed parts are S2.
 
 ## When a Review Is Done
 
-A review is done when **no S0 or S1 finding is open**. Open S2 and S3 findings don't hold up a merge.
+A review is done when **no blocking finding is open**: no S0 or S1, unless [Scope](#scope) says otherwise. Open S2 and S3 findings don't hold up a merge.
 
-- An AI reviewer will always find *something*. Running more passes to look for more S2 and S3 findings doesn't make the PR safer; it makes it slower.
+- An AI reviewer will always find *something*. Running more passes to look for more S2 and S3 findings doesn't make the PR safer; it makes it slower. Verification steps that re-check findings already reported are fine; this is about hunting for new ones.
 - A re-review after new commits covers **the commits since the last review, plus any already-reviewed code whose behavior they change** (for example, callers of a helper whose signature or return value changed), and findings that are still open. It doesn't start over on the whole diff.
 - Re-running a review until it stops reporting an S0 or S1 doesn't close that finding. Only a fix, or an agreed won't-fix, closes it.
 
 ## Reporting Findings
 
-Human and AI reviewers report each finding in this shape, so findings from different people and tools can be compared. The example below is made up:
+Report each finding in this format, so findings from different people and tools can be compared. A tool with its own required format can keep it, as long as each finding also carries its `[S0]`–`[S3]` or `[Pre-existing S<n>]` label and the review ends with the verdict line below:
+
+```text
+[<severity>] <location>
+What breaks: <the defect, in one sentence>
+Scenario:    <concrete inputs or state that produce the wrong result>
+Fix:         <optional; a sentence or two>
+```
+
+- **`<severity>`** is `S0`, `S1`, `S2` or `S3`. For a pre-existing problem, write `Pre-existing` before it, for example `[Pre-existing S1]`.
+- **`<location>`** is `path:line`, or just `path` or `PR` when no single line applies (for example, a missing test or unmet acceptance criteria).
+- **The labels** `What breaks:`, `Scenario:` and `Fix:` are fixed and come in that order. `Fix:` can be left out.
+- **A finding with no realistic scenario** is S3 at most.
+
+This example is made up:
 
 ```text
 [S0] frontend/src/components/Agreements/AgreementFeeSummary.jsx:42
@@ -83,16 +103,11 @@ Scenario:    An agreement with a 5% fee shows a fee of 0.05% of the total on the
 Fix:         Pass fee_percentage straight through; see the fee rule in CLAUDE.md.
 ```
 
-- **Severity and location** come first. Use `file:line`, or just `file` or `PR` when no single line applies (for example, a missing test or unmet acceptance criteria).
-- **What breaks** is the defect in one sentence.
-- **Scenario** gives concrete inputs or state that produce the wrong result. A finding with no realistic scenario is S3 at most.
-- **Fix** is optional, and a sentence or two at most.
-
 AI reviewers also:
 
-- **End with a verdict line:** `Verdict: BLOCKING (n)` with the number of open S0/S1 findings, or `Verdict: NOT BLOCKING`.
-- **List at most 5 S2/S3 findings,** the most important first, and sum up any others in one line.
-- **Don't guess acceptance criteria.** If you can't see the ticket, say so and skip the acceptance-criteria check.
+- **End with exactly one verdict line:** `Verdict: BLOCKING (n)`, where `n` is the number of open blocking findings, or `Verdict: NOT BLOCKING`.
+- **List at most 5 S2/S3 findings** that you report as real, the most important first, and sum up any others in one line. Findings a tool checked and rejected don't count toward the 5.
+- **Don't guess acceptance criteria.** If you can't see the linked issue, say so and skip the acceptance-criteria check.
 
 ## Disputes and Won't-Fix
 
@@ -103,7 +118,7 @@ AI reviewers also:
 
 Every PR needs an approving review from a person before it merges.
 
-If the author uses AI review, running it and resolving its findings is the author's job before asking for human review. **Reviewers don't run their own agents to hunt for more S2 and S3 findings.** That adds review rounds and rarely finds blockers. Using a tool to check one specific concern is fine.
+If the author uses AI review, running it and resolving its findings is the author's job before asking for human review. **Reviewers aren't expected to run their own agents to hunt for more S2 and S3 findings.** That adds review rounds and rarely finds blockers. Using a tool to check one specific concern is fine.
 
 The human reviewer checks what agents are bad at:
 
@@ -113,15 +128,15 @@ The human reviewer checks what agents are bad at:
 
 ## Risk Tiers
 
-A PR's tier is the highest tier of any file it changes. Tiers change only how much **human** review a PR gets. Severity levels are the same at every tier.
+Tiers change only how much **human** review a PR gets. Severity levels are the same at every tier. A PR's tier is the highest tier of any change it makes.
 
 | Tier | Typical changes | Human review |
 | --- | --- | --- |
 | **1** | Copy, styling, isolated UI | One reviewer: intent check |
-| **2** | Feature logic, API endpoints and schemas, `backend/openapi.yml` | One reviewer: intent and risk check, reading the changed logic and its tests |
-| **3** | Migrations, authorization, fee and budget math, change requests, procurement workflow, audit history, data import, document storage | One reviewer's intent and risk check, plus a full read by a second developer |
+| **2** | Feature logic, API endpoints and schemas, `backend/openapi.yml`, read-only or display-only changes in Tier 3 files | One reviewer: intent and risk check, reading the changed logic and its tests |
+| **3** | Changes to money math, authorization, migrations, workflow state (change requests, procurement), audit history, data import, document storage, or other data writes | One reviewer's intent and risk check, plus a full read by a second developer |
 
-A change to fee, migration or authorization logic is Tier 3 even when it's outside the paths below.
+A file on the list below makes a PR Tier 3 only when **the changed lines** touch money math, authorization, migrations, workflow state or data writes. A change to that kind of logic is Tier 3 even when it's outside these paths.
 
 Tier 3 paths:
 
@@ -142,11 +157,6 @@ frontend/src/helpers/utils.js
 frontend/src/components/Auth/**
 frontend/src/api/opsAuthAPI.js
 ```
-
-Notes on these paths:
-
-- `backend/models/**` matches nearly every model file. If it puts too many PRs in Tier 3, narrow it here.
-- `frontend/src/helpers/utils.js` holds money and percent helpers (`totalBudgetLineFeeAmount`, `computeDisplayPercents`) next to display-text helpers. A change only to display text there is Tier 2.
 
 ## Project Rules to Check
 
@@ -169,5 +179,7 @@ These rules already live elsewhere. Reviewers check against them; this document 
 ## Changing This Document
 
 This is a team standard. Change it through a normal PR that the whole team can review.
+
+The **Code Review** section of the root [CLAUDE.md](../CLAUDE.md#code-review) summarizes this document, because some AI review tools read only `CLAUDE.md` files. Change both in the same PR. If they ever differ, this document wins.
 
 When the same kind of S1 or S2 finding keeps showing up across PRs, prefer turning it into a deterministic check (a lint rule, a test, a `CLAUDE.md` convention or a project skill) over relying on reviewers to catch it again. Then add it to [Project Rules to Check](#project-rules-to-check).
