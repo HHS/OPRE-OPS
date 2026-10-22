@@ -17,55 +17,87 @@ import tooltip from "@uswds/uswds/js/usa-tooltip";
  */
 
 const Tooltip = ({ label, position = "top", children, className, maxWidth }) => {
-    const tooltipRef = React.useRef(null);
+    const wrapperRef = React.useRef(null);
+    // USWDS's tooltip.on() wraps the trigger in a new `.usa-tooltip` span and appends a
+    // sibling `.usa-tooltip__body` span, so `wrapperRef.current.firstChild` stops being the
+    // trigger after the first run. Cache the real trigger once so later effect runs (e.g. a
+    // label/position change) update it in place instead of re-wrapping it.
+    const triggerRef = React.useRef(/** @type {HTMLElement | null} */ (null));
+    const isInitializedRef = React.useRef(false);
+
     React.useLayoutEffect(() => {
-        const tooltipElement = tooltipRef.current?.firstChild;
-
-        if (tooltipElement && tooltip && label) {
-            // Always reinitialize tooltip to ensure label updates properly
-            // First, clean up existing tooltip if it exists
-            if (tooltipElement.classList.contains("usa-tooltip")) {
-                tooltip.off(tooltipElement);
-                tooltipElement.classList.remove("usa-tooltip");
-            }
-
-            tooltipElement.classList.add("usa-tooltip");
-            tooltipElement.title = label;
-            tooltipElement.setAttribute("data-position", position);
-            tooltip.on(tooltipElement);
-
-            if (maxWidth) {
-                // USWDS creates the tooltip body as a sibling of tooltipElement during tooltip.on() above,
-                // so it can only be targeted once it exists in the DOM, not via a prop on this component.
-                const tooltipBody = tooltipElement.parentElement?.querySelector(".usa-tooltip__body");
-                // The tooltip body is absolutely positioned with an auto width, shrink-to-fit against a
-                // containing block that's only as wide as the trigger itself — so a maxw-* utility alone
-                // collapses the box down to its longest word instead of filling the available space.
-                // width-* forces the intended size; USWDS's own wrap behavior does the same thing with
-                // width: 100% + min-width: 50vw for the same reason.
-                tooltipBody?.classList.add(`width-${maxWidth}`, "text-wrap");
-            }
-
-            return () => {
-                if (tooltip && tooltipElement.classList.contains("usa-tooltip")) {
-                    tooltip.off(tooltipElement);
-                }
-            };
-        } else if (tooltipElement && !label) {
-            // Clean up tooltip if no label
-            if (tooltipElement.classList.contains("usa-tooltip")) {
-                tooltip.off(tooltipElement);
-                tooltipElement.classList.remove("usa-tooltip");
-                tooltipElement.removeAttribute("title");
-                tooltipElement.removeAttribute("data-position");
-            }
+        if (!triggerRef.current) {
+            triggerRef.current = wrapperRef.current?.firstChild ?? null;
         }
-        return () => {};
+        const triggerElement = triggerRef.current;
+
+        if (!triggerElement || !tooltip) {
+            return;
+        }
+
+        if (!label) {
+            if (isInitializedRef.current) {
+                tooltip.off(triggerElement);
+                // Undo USWDS's wrapping so a later re-init (if label becomes truthy again)
+                // starts from a clean trigger instead of nesting another wrapper/body.
+                const tooltipWrapper = triggerElement.parentElement;
+                if (tooltipWrapper?.classList.contains("usa-tooltip")) {
+                    tooltipWrapper.replaceWith(triggerElement);
+                }
+                triggerElement.classList.remove("usa-tooltip__trigger");
+                triggerElement.removeAttribute("title");
+                triggerElement.removeAttribute("data-position");
+                triggerElement.removeAttribute("aria-describedby");
+                triggerElement.removeAttribute("tabindex");
+                isInitializedRef.current = false;
+            }
+            return;
+        }
+
+        if (!isInitializedRef.current) {
+            triggerElement.classList.add("usa-tooltip");
+            triggerElement.title = label;
+            triggerElement.setAttribute("data-position", position);
+            tooltip.on(triggerElement);
+            isInitializedRef.current = true;
+        } else {
+            // Already wrapped by USWDS — update the existing trigger/body in place.
+            // Re-running tooltip.on() here would nest another `.usa-tooltip` wrapper and
+            // `.usa-tooltip__body` instead of replacing the current one.
+            const tooltipBody = triggerElement.parentElement?.querySelector(".usa-tooltip__body");
+            if (tooltipBody) {
+                tooltipBody.textContent = label;
+            }
+            triggerElement.setAttribute("data-position", position);
+        }
+
+        if (maxWidth) {
+            // USWDS creates the tooltip body as a sibling of triggerElement during tooltip.on() above,
+            // so it can only be targeted once it exists in the DOM, not via a prop on this component.
+            const tooltipBody = triggerElement.parentElement?.querySelector(".usa-tooltip__body");
+            // The tooltip body is absolutely positioned with an auto width, shrink-to-fit against a
+            // containing block that's only as wide as the trigger itself — so a maxw-* utility alone
+            // collapses the box down to its longest word instead of filling the available space.
+            // width-* forces the intended size; USWDS's own wrap behavior does the same thing with
+            // width: 100% + min-width: 50vw for the same reason.
+            tooltipBody?.classList.add(`width-${maxWidth}`, "text-wrap");
+        }
     }, [label, position, maxWidth]);
+
+    // Only tear down the USWDS listeners on unmount — not on every label/position/maxWidth
+    // change, since the main effect above now updates an initialized tooltip in place.
+    React.useEffect(
+        () => () => {
+            if (tooltip && triggerRef.current && isInitializedRef.current) {
+                tooltip.off(triggerRef.current);
+            }
+        },
+        []
+    );
 
     return (
         <span
-            ref={tooltipRef}
+            ref={wrapperRef}
             className={className}
         >
             {children}
