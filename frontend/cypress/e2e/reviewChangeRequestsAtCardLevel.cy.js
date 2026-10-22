@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement;
 let testBli;
@@ -58,7 +58,7 @@ describe("Review Change Requests at Card Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -77,7 +77,7 @@ describe("Review Change Requests at Card Level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -94,7 +94,7 @@ describe("Review Change Requests at Card Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         status: BLI_STATUS.PLANNED,
@@ -163,7 +163,7 @@ describe("Review Change Requests at Card Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -186,7 +186,7 @@ describe("Review Change Requests at Card Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"
@@ -206,7 +206,7 @@ describe("Review Change Requests at Card Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -229,7 +229,7 @@ describe("Review Change Requests at Card Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -246,7 +246,7 @@ describe("Review Change Requests at Card Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         status: BLI_STATUS.EXECUTING,
@@ -295,7 +295,7 @@ describe("Review Change Requests at Card Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -308,7 +308,7 @@ describe("Review Change Requests at Card Level", () => {
                         // .then(() => {
                         //     cy.request({
                         //         method: "DELETE",
-                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        //         url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                         //         headers: {
                         //             Authorization: bearer_token,
                         //             Accept: "application/json"
@@ -327,7 +327,7 @@ describe("Review Change Requests at Card Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -350,7 +350,7 @@ describe("Review Change Requests at Card Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -367,7 +367,7 @@ describe("Review Change Requests at Card Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         amount: 2000000,
@@ -437,7 +437,7 @@ describe("Review Change Requests at Card Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -461,7 +461,7 @@ describe("Review Change Requests at Card Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"
@@ -481,7 +481,7 @@ describe("Review Change Requests at Card Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -504,7 +504,7 @@ describe("Review Change Requests at Card Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -521,7 +521,7 @@ describe("Review Change Requests at Card Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         can_id: 502,
@@ -591,7 +591,7 @@ describe("Review Change Requests at Card Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -615,7 +615,7 @@ describe("Review Change Requests at Card Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"
@@ -635,7 +635,7 @@ describe("Review Change Requests at Card Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -658,7 +658,7 @@ describe("Review Change Requests at Card Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -675,7 +675,7 @@ describe("Review Change Requests at Card Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         date_needed: "2048-11-15",
@@ -748,7 +748,7 @@ describe("Review Change Requests at Card Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -772,7 +772,7 @@ describe("Review Change Requests at Card Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"

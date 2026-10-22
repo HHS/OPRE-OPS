@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 describe("Create an AA agreement", () => {
     beforeEach(() => {
@@ -58,7 +58,7 @@ describe("Create an AA agreement", () => {
             // delete test agreement
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"

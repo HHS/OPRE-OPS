@@ -1,6 +1,9 @@
 /// <reference types="cypress" />
 import { login } from "../../src/components/Auth/authSlice";
 
+// Backend origin for cy.request/cy.intercept URLs; set via BACKEND_DOMAIN (see cypress.config.js)
+export const BACKEND_DOMAIN = Cypress.expose("backendDomain").replace(/\/+$/, "");
+
 // Define at the top of the spec file or just import it
 export const terminalLog = (violations) => {
     cy.task(

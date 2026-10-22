@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 // Edit-an-EXISTING-grant coverage (complements createGrantAgreement.cy.js, which only
 // covers the create wizard). Each test seeds a persisted grant (agreement + grant number
 // + grant BLI) via the API, then drives the edit surfaces in the UI.
 
-const API = "http://localhost:8080/api/v1";
+const API = `${BACKEND_DOMAIN}/api/v1`;
 
 const bearer = () => `Bearer ${window.localStorage.getItem("access_token")}`;
 
