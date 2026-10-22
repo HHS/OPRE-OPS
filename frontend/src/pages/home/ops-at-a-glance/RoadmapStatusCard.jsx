@@ -27,19 +27,23 @@ const RoadmapStatusCard = () => {
             status: ROADMAP_STATUS.DONE,
             items: getRoadmapItemsByStatus(ROADMAP_STATUS.DONE),
             className: "tablet:grid-col-fill",
-            tagsClassName: "flex-wrap"
+            tagsClassName: "flex-wrap",
+            tagWrapperClassName: "padding-right-1 padding-bottom-1"
         },
         {
             status: ROADMAP_STATUS.CURRENTLY_DEVELOPING,
             items: getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING),
             className: `tablet:grid-col-auto ${styles.inProgressColumn}`,
-            tagsClassName: "flex-column flex-align-start"
+            tagsClassName: "flex-column flex-align-start",
+            // No right padding: it would widen this content-sized column past its widest tag
+            tagWrapperClassName: "padding-bottom-1"
         },
         {
             status: ROADMAP_STATUS.NOT_STARTED,
             items: getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED).sort((a, b) => a.title.localeCompare(b.title)),
             className: "tablet:grid-col-fill",
-            tagsClassName: "flex-wrap"
+            tagsClassName: "flex-wrap",
+            tagWrapperClassName: "padding-right-1 padding-bottom-1"
         }
     ];
 
@@ -70,7 +74,7 @@ const RoadmapStatusCard = () => {
                             {column.items.map((item) => (
                                 <span
                                     key={item.id}
-                                    className="padding-right-1 padding-bottom-1"
+                                    className={column.tagWrapperClassName}
                                 >
                                     <Tag
                                         text={item.title}
