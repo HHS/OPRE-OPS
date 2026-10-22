@@ -156,14 +156,14 @@ scrollToTop();
 
 ### Fee Percentage Storage
 
-**CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
+**CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateAgreementTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
 
 ```javascript
 // CORRECT
-const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT - do NOT pre-divide
-const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+const fee = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```
 
 ### Currency Display: Always Show Two-Digit Cents

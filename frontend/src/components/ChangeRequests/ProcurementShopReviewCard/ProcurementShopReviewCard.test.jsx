@@ -95,7 +95,7 @@ describe("ProcurementShopReviewCard", () => {
         );
 
         // Based on test output, the component shows $0 for both old and new totals
-        // This is likely because the calculateTotal function isn't working as expected in the test
+        // This is likely because the calculateAgreementTotal function isn't working as expected in the test
         expect(screen.getAllByText("$0")).toHaveLength(2);
     });
 

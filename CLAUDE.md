@@ -31,14 +31,14 @@ All models have automatic audit history tracking via the event system.
 
 ## Fee Percentage Format Convention
 
-**CRITICAL**: Fee percentages are stored and passed as whole numbers throughout the stack (e.g., `5.0` = 5%, not `0.05`). The frontend `calculateTotal` helper in `frontend/src/helpers/agreement.helpers.js` divides by 100 internally — do NOT pre-divide.
+**CRITICAL**: Fee percentages are stored and passed as whole numbers throughout the stack (e.g., `5.0` = 5%, not `0.05`). The frontend `calculateAgreementTotal` helper in `frontend/src/helpers/agreement.helpers.js` divides by 100 internally — do NOT pre-divide.
 
 ```javascript
 // CORRECT
-const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT — results in 0.05% fee rate
-const fee = calculateTotal(budgetLines, 5.0 / 100);
+const fee = calculateAgreementTotal(budgetLines, 5.0 / 100);
 ```
 
 ## Docker

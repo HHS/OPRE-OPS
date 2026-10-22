@@ -500,16 +500,16 @@ const safeData = applyMinimumArcValue(items, total);
 **CRITICAL**: Fee percentages must be consistently formatted throughout the application:
 
 - **Backend Storage**: Fee percentages are stored as whole numbers (e.g., `5.0` = 5%, `4.8` = 4.8%)
-- **Frontend Calculation**: The `calculateTotal` helper function in `frontend/src/helpers/agreement.helpers.js` expects whole numbers and divides by 100 internally
+- **Frontend Calculation**: The `calculateAgreementTotal` helper function in `frontend/src/helpers/agreement.helpers.js` expects whole numbers and divides by 100 internally
 - **Test Data**: Always use whole number format in test files (e.g., `fee_percentage: 5.0`, not `fee_percentage: 0.05`)
 
-**Common Bug Pattern**: Components should NOT pre-divide fee percentages by 100 before passing to `calculateTotal`, as this causes fees to be calculated as 1/100th of the correct value.
+**Common Bug Pattern**: Components should NOT pre-divide fee percentages by 100 before passing to `calculateAgreementTotal`, as this causes fees to be calculated as 1/100th of the correct value.
 
 **Example:**
 ```javascript
 // ✅ CORRECT: Pass whole number directly
-const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+const fee = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // ❌ INCORRECT: Do not pre-divide by 100
-const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+const fee = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```
