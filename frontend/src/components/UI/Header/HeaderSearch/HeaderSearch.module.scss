@@ -1,4 +1,4 @@
-// A zero-height layer as wide as the page column (1024px), centered like the content below it; the
+// A zero-height layer as wide as the nav column (64rem, like `.usa-nav__inner`), centered like it; the
 // search floats at its right edge, directly under the user/sign-out links. Below the USWDS desktop
 // breakpoint (64em) the primary nav and user links are hidden and the header collapses to the logo
 // row, so the layer drops back into the flow as its own row instead of floating over the page.
@@ -10,7 +10,9 @@
     top: calc(0.75rem + 55px);
     left: 0;
     right: 0;
-    width: min(1024px, 100%);
+    // rem, not px: the user/sign-out links above scale with the root font size, so the search and its
+    // info icon must too or the icon drifts out from under the notifications bell at larger text sizes.
+    width: min(64rem, 100%);
     height: 0;
     margin: 0 auto;
     box-sizing: border-box;
