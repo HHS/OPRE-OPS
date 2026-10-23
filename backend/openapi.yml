@@ -6028,10 +6028,17 @@ paths:
                       When true, approved budget line change requests on an Awarded agreement
                       are recorded and listed as "Edits That Require a Contract Modification"
                       (Modified LOE contract mod).
+                  allow_past_obligate_by_dates:
+                    type: boolean
+                    description: >-
+                      When true, a non-Draft budget line's Obligate By date (date_needed) may be
+                      today or in the past for every user. The required-date and
+                      within-Period-of-Performance rules still apply.
                 example:
                   version: "1.0.0"
                   skip_cr_for_draft_planned: false
                   enable_modified_loe_edits: false
+                  allow_past_obligate_by_dates: false
   /azure/sas-token/:
     get:
       tags:

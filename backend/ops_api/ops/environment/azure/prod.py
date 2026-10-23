@@ -44,3 +44,6 @@ SQLALCHEMY_MAX_OVERFLOW = 20
 # Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
 # Disabled in production (Change Request review remains required).
 SKIP_CR_FOR_DRAFT_PLANNED = True
+
+# Allow today/past Obligate By dates on non-Draft budget lines (issue 6443); see default_settings.py to turn it off.
+ALLOW_PAST_OBLIGATE_BY_DATES = True
