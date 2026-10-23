@@ -209,6 +209,28 @@ describe("Budget Line Suite", () => {
         expect(result.isValid).toBe(true);
     });
 
+    describe("with ALLOW_PAST_OBLIGATE_BY_DATES on", () => {
+        it("passes with a past date", () => {
+            const result = validateBudgetLineItem({ ...validBudgetLine, date_needed: "2020-06-21" }, undefined, true);
+            expect(result.isValid).toBe(true);
+        });
+
+        it("still fails when date_needed is outside the PoP", () => {
+            const result = validateBudgetLineItem(
+                {
+                    ...validBudgetLine,
+                    date_needed: "2019-06-01",
+                    sc_period_start: "2020-01-01",
+                    sc_period_end: "2020-12-31"
+                },
+                undefined,
+                true
+            );
+            expect(result.errors).toHaveProperty(POP_RANGE_ERROR_KEY);
+            expect(result.errors).not.toHaveProperty("date_needed");
+        });
+    });
+
     it("validates only a single field when fieldName is provided", () => {
         const result = validateBudgetLineItem({}, "Budget Line Amount");
         expect(result.isValid).toBe(false);
