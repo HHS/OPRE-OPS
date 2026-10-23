@@ -18490,8 +18490,7 @@
       // should now carry `requires_contract_modification: true` -- and the awarded-state
       // guard on AgreementActionAccordion's "Change Planned Budget Lines to Executing
       // Status" option (disabled whenever `isAgreementAwarded`, even with a Planned BLI
-      // present). In the current fiscal year so it can also be selected to execute on the
-      // Start Modification page (#3268); move the date forward when FY2027 ends.
+      // present).
       budget_line_item_type: "CONTRACT",
       line_description: "LI 4",
       comments: "",
@@ -18500,7 +18499,7 @@
       agreement_id: 523,
       amount: 150000.0,
       status: "PLANNED",
-      date_needed: "2027-07-01T14:00:00",
+      date_needed: "2044-07-01T14:00:00",
       proc_shop_fee_percentage: 0,
       services_component_id: 55,
       on_hold: false,
