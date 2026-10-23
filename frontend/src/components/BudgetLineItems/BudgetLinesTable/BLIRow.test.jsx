@@ -9,7 +9,8 @@ import {
     useGetAgreementByIdQuery,
     useGetCansQuery,
     useLazyGetCansQuery,
-    useGetProcurementShopsQuery
+    useGetProcurementShopsQuery,
+    useGetVersionQuery
 } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import authSlice from "../../../components/Auth/authSlice";
@@ -88,9 +89,14 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: vi.fn(),
     useGetCansQuery: vi.fn(),
     useLazyGetCansQuery: vi.fn(),
-    useGetProcurementShopsQuery: vi.fn()
+    useGetProcurementShopsQuery: vi.fn(),
+    useGetVersionQuery: vi.fn(() => ({ data: undefined }))
 }));
 describe("BLIRow", () => {
+    beforeEach(() => {
+        useGetVersionQuery.mockReturnValue({ data: undefined });
+    });
+
     it("should render the BLIRow component", () => {
         renderComponent();
 
@@ -424,6 +430,20 @@ describe("BLIRow", () => {
         const dateCell = screen.getByRole("cell", { name: "6/13/2043" });
         expect(dateCell).not.toHaveClass("table-item-error");
         expect(screen.queryByText(/outside the agreement.s Period of Performance/i)).not.toBeInTheDocument();
+    });
+
+    it("should flag a past Obligate By date in review mode when ALLOW_PAST_OBLIGATE_BY_DATES is off", () => {
+        useGetVersionQuery.mockReturnValue({ data: { allow_past_obligate_by_dates: false } });
+        renderInReview({ date_needed: "2020-06-13" });
+
+        expect(screen.getByRole("cell", { name: "6/13/2020" })).toHaveClass("table-item-error");
+    });
+
+    it("should not flag a past Obligate By date in review mode when ALLOW_PAST_OBLIGATE_BY_DATES is on", () => {
+        useGetVersionQuery.mockReturnValue({ data: { allow_past_obligate_by_dates: true } });
+        renderInReview({ date_needed: "2020-06-13" });
+
+        expect(screen.getByRole("cell", { name: "6/13/2020" })).not.toHaveClass("table-item-error");
     });
 
     it("should display all BIL amount with correct rounded decimal", async () => {
