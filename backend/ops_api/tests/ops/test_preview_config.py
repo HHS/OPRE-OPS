@@ -42,7 +42,7 @@ def test_preview_csrf_accepts_own_backend_and_frontend(preview_app):
 
 
 def test_preview_csrf_rejects_another_prs_backend(preview_app):
-    """The PR 12 prefix must not match PR 123's backend (startswith collision)."""
+    """PR 12's backend config rejects PR 123's backend Host. The undelimited-prefix guard is tested below."""
     with pytest.raises(NoAuthorizationError, match="HOST_HEADER_PREFIX"):
         run_check_csrf(
             preview_app,

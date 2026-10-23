@@ -2,7 +2,7 @@ import os
 
 from ops_api.ops.environment.azure.dev import *  # noqa: F403, F401
 
-# Per-PR preview environments (see docs/developers/preview-environments.md).
+# Per-PR preview environments.
 # Behaves like dev, except: FakeAuth only, and the frontend URL and Host prefix
 # come from the container app's env because each PR has its own hostname.
 
