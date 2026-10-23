@@ -15,8 +15,8 @@ class TestAwardedAgreementValidator:
         """Test that AwardedAgreementValidator includes both base and awarded-specific validators."""
         validator = AwardedAgreementValidator()
 
-        # Should have base validators (6) + awarded validators (1) = 7
-        assert len(validator.validators) == 7
+        # Should have base validators (7) + awarded validators (1) = 8
+        assert len(validator.validators) == 8
 
         # Check that ImmutableAwardedFieldsRule is included
         awarded_rule_present = any(isinstance(v, ImmutableAwardedFieldsRule) for v in validator.validators)
