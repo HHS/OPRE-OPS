@@ -177,6 +177,7 @@ const useCreateBLIsAndSCs = (
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
     // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
     // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
@@ -287,14 +288,17 @@ const useCreateBLIsAndSCs = (
     // Non-review mode reads the state-backed snapshot so a mount-time reset() repaints
     // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
-        ? suite.run({
-              // Exclude in-review BLIs from validation — they are locked (not editable) and
-              // won't be included in the save payload, so their TBD fields should not block saving.
-              // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
-              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
-              // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
-              agreement_type: selectedAgreement?.agreement_type
-          })
+        ? suite.run(
+              {
+                  // Exclude in-review BLIs from validation — they are locked (not editable) and
+                  // won't be included in the save payload, so their TBD fields should not block saving.
+                  // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
+                  budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
+                  // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
+                  agreement_type: selectedAgreement?.agreement_type
+              },
+              allowPastObligateByDates
+          )
         : pageSuiteResult;
     // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
     // already renders its own "This is required information" message and red border above its accordion
@@ -967,6 +971,7 @@ const useCreateBLIsAndSCs = (
     });
 
     return {
+        allowPastObligateByDates,
         blocker,
         budgetFormSuite,
         budgetLineBeingEdited,

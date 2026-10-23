@@ -213,7 +213,7 @@ describe("useCreateBLIsAndSCs", () => {
         return renderHook(() =>
             useCreateBLIsAndSCs(
                 true,
-                false,
+                overrides.isReviewMode ?? false,
                 overrides.budgetLines ?? [],
                 vi.fn(),
                 goBackMock,
@@ -939,7 +939,7 @@ describe("useCreateBLIsAndSCs", () => {
             )
         );
 
-        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [], agreement_type: "GRANT" });
+        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [], agreement_type: "GRANT" }, false);
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
     });
 
@@ -1072,16 +1072,19 @@ describe("useCreateBLIsAndSCs", () => {
 
         // The suite must receive the BLI enriched with its SC's PoP window, derived live from
         // the current services components (not baked into editor state) so SC edits stay in sync.
-        expect(suiteModule.default.run).toHaveBeenCalledWith({
-            budgetLines: [
-                expect.objectContaining({
-                    id: "bli-1",
-                    sc_period_start: "2044-01-01",
-                    sc_period_end: "2044-12-31"
-                })
-            ],
-            agreement_type: "CONTRACT"
-        });
+        expect(suiteModule.default.run).toHaveBeenCalledWith(
+            {
+                budgetLines: [
+                    expect.objectContaining({
+                        id: "bli-1",
+                        sc_period_start: "2044-01-01",
+                        sc_period_end: "2044-12-31"
+                    })
+                ],
+                agreement_type: "CONTRACT"
+            },
+            false
+        );
     });
 
     it("resolves the PoP window by services_component_number when it disagrees with a stale services_component_id", async () => {
@@ -1134,16 +1137,19 @@ describe("useCreateBLIsAndSCs", () => {
             )
         );
 
-        expect(suiteModule.default.run).toHaveBeenCalledWith({
-            budgetLines: [
-                expect.objectContaining({
-                    id: "bli-1",
-                    sc_period_start: "2044-07-01",
-                    sc_period_end: "2044-12-31"
-                })
-            ],
-            agreement_type: "CONTRACT"
-        });
+        expect(suiteModule.default.run).toHaveBeenCalledWith(
+            {
+                budgetLines: [
+                    expect.objectContaining({
+                        id: "bli-1",
+                        sc_period_start: "2044-07-01",
+                        sc_period_end: "2044-12-31"
+                    })
+                ],
+                agreement_type: "CONTRACT"
+            },
+            false
+        );
     });
 
     it("does not send UI-only fields in services_components when creating a new agreement", async () => {
@@ -1844,6 +1850,21 @@ describe("useCreateBLIsAndSCs", () => {
         // BLI is saved with grant_number_id: null — disassociated, not errored.
         expect(addBudgetLineItemMock).toHaveBeenCalledWith(expect.objectContaining({ grant_number_id: null }));
         expect(setAlertMock).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+    });
+
+    describe("ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+        it("reads the flag from version data and passes it to the page suite", async () => {
+            const suiteModule = await import("./suite");
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", allow_past_obligate_by_dates: true },
+                isSuccess: true
+            });
+
+            const { result } = renderSubject({ isReviewMode: true });
+
+            expect(result.current.allowPastObligateByDates).toBe(true);
+            expect(suiteModule.default.run).toHaveBeenLastCalledWith(expect.any(Object), true);
+        });
     });
 });
 
