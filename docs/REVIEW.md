@@ -28,6 +28,7 @@ These standards apply to every pull request into `main`. The adjustments below o
 | Feature, fix and refactor PRs | S0 and S1, as defined below |
 | Renovate and other bot PRs | S0 only. Green CI plus a skim of the dependency's breaking changes is enough. |
 | Docs-only PRs | Only a factually wrong command, path or rule, which counts as S1 |
+| Tooling PRs (`.claude/` skills and agents, `.mcp.json`, `.github/workflows/`) | S0 (for example, an exposed secret or overly broad workflow permissions), or a broken command, path or rule, which counts as S1 |
 | Hotfixes | S0 and S1 as usual. S2 findings become follow-up tickets. |
 
 **Security scanner alerts** (CodeQL, Semgrep, Snyk) map onto the same levels:
@@ -42,15 +43,17 @@ Every finding gets exactly one severity. Only **S0** and **S1** block a merge, u
 
 | Level | Definition | Examples in OPS | Merge rule |
 | --- | --- | --- | --- |
-| **S0** | Data loss or corruption, a security or authorization bypass, wrong money math, a broken migration | Fee applied as 0.05% instead of 5%; budget line totals wrong; a user editing an agreement they don't own; a new `BaseModel` model with no `*_version` table | Blocks merge |
-| **S1** | A user-visible bug on a realistic path, the acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement) | Save does nothing; a validation error never clears; a currency amount shown as a raw float; a new control that can't be reached by keyboard | Blocks merge |
+| **S0** | Data loss or corruption, a security or authorization bypass, exposed secrets or personal data, a workflow or approval rule the API doesn't enforce, wrong money math, a broken migration | Fee applied as 0.05% instead of 5%; totals computed per page instead of overall; a user editing an agreement they don't own; a create that skips an ownership check; a status change blocked only in the browser, so the API allows it; a partial update or re-import that nulls or overwrites existing values; history saved with the wrong `updated_by`; a new `BaseModel` model with no `*_version` table | Blocks merge |
+| **S1** | A user-visible bug on a realistic path, the acceptance criteria not met, an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement), or a failing production build | Save does nothing; a save error is swallowed and the edit is lost; a validation error never clears; a currency amount shown as a raw float; a new control that can't be reached by keyboard | Blocks merge |
 | **S2** | A bug that needs an edge case to appear, a missing test for changed behavior (see [TESTING.md](TESTING.md#when-not-to-write-tests) for when a test isn't needed) | A crash on a rare filter combination; no test for a new branch in a helper | Doesn't block. The author decides; a reviewer can raise it to S1 by giving an S1 scenario. |
 | **S3** | Naming, style, refactor ideas, "consider…" | Extract a helper; rename a prop | Never blocks; fix it or drop it |
 
 What the terms mean:
 
 - **Realistic path:** a user with a normal role can reach it through the UI or API, using inputs that role is allowed to send, in a flow the PR touches.
-- **Edge case:** it needs unusual data, a race condition, or database state no normal flow produces.
+- **Edge case:** it needs unusual data, a race condition, or database state no normal flow produces. A race that reproduces on a slow network or with a double click is a realistic path, not an edge case.
+- **Performance:** slow but correct (for example, an N+1 query or a duplicate request) is S2. It's S1 when users hit timeouts or visibly slow pages on a realistic path.
+- **Copy and styling:** wrong text or a visual regression is S1 only when it leads users to a wrong action or blocks a task. Otherwise it's S3.
 - **Money math:** computing, aggregating or saving amounts, fees, budget line totals or CAN balances. A display-only formatting error is S1, not S0.
 - **Acceptance criteria:** the ones on the linked issue. A story file or the PR description can narrow them only if it says so explicitly.
 - **Out of scope:** behavior the ticket deliberately leaves out isn't a bug. UI text that tells users the behavior exists is S2.
@@ -58,7 +61,7 @@ What the terms mean:
 Choosing a level:
 
 - **Pick a level by the outcome your scenario actually shows.** If it only *might* reach a higher level, pick the lower one and say what evidence would raise it.
-- **A PR that changes money math, authorization or a migration must include a test for that change.** A missing one is S1. Any other missing test is S2.
+- **A PR that changes money math, authorization, a migration, workflow state or a data write must include a test for that change.** A missing one, or a test that doesn't actually exercise the change, is S1. Any other missing or ineffective test is S2.
 - **Wrong comments, docstrings or PR descriptions** in a code PR, and **tests in the wrong file** (see [TESTING.md](TESTING.md)), are S3.
 - **If a tool uses its own severity scale** (for example Critical/High/Medium/Low), also label each finding S0–S3. Only the S0–S3 label decides whether it blocks.
 
@@ -93,6 +96,7 @@ Fix:         <optional; a sentence or two>
 - **`<location>`** is `path:line`, or just `path` or `PR` when no single line applies (for example, a missing test or unmet acceptance criteria).
 - **The labels** `What breaks:`, `Scenario:` and `Fix:` are fixed and come in that order. `Fix:` can be left out.
 - **A finding with no realistic scenario** is S3 at most.
+- **Overview comments** (a tool's summary of the whole PR) aren't findings. Rate only the concrete issues in them.
 
 This example is made up:
 
@@ -133,8 +137,8 @@ Tiers change only how much **human** review a PR gets. Severity levels are the s
 | Tier | Typical changes | Human review |
 | --- | --- | --- |
 | **1** | Copy, styling, isolated UI | One reviewer: intent check |
-| **2** | Feature logic, API endpoints and schemas, `backend/openapi.yml`, read-only or display-only changes in Tier 3 files | One reviewer: intent and risk check, reading the changed logic and its tests |
-| **3** | Changes to money math, authorization, migrations, workflow state (change requests, procurement), audit history, data import, document storage, or other data writes | One reviewer's intent and risk check, plus a full read by a second developer |
+| **2** | Feature logic, API endpoints and schemas, `backend/openapi.yml`, seed and test data, read-only or display-only changes in Tier 3 files | One reviewer: intent and risk check, reading the changed logic and its tests |
+| **3** | Changes to money math, authorization, migrations, workflow state (change requests, procurement, approvals), audit history, data import, document storage, or other data writes, including frontend hooks that save data or move approvals | One reviewer's intent and risk check, plus a full read by a second developer |
 
 A file on the list below makes a PR Tier 3 only when **the changed lines** touch money math, authorization, migrations, workflow state or data writes. A change to that kind of logic is Tier 3 even when it's outside these paths.
 
@@ -144,18 +148,21 @@ Tier 3 paths:
 backend/alembic/**
 backend/alembic.ini
 backend/models/**
-backend/data_tools/**
+backend/data_tools/{src,scripts,ops_db_sql_init}/**
 backend/ops_api/ops/__init__.py
 backend/ops_api/ops/auth/**
+backend/ops_api/ops/resources/**
 backend/ops_api/ops/document/**
 backend/ops_api/ops/validation/**
 backend/ops_api/ops/events/**
-backend/ops_api/ops/services/{budget_line_items,agreements,agreement_edit_bundle,change_requests,procurement_*,can_funding_*,cans,message_bus,users}.py
+backend/ops_api/ops/services/{budget_line_items,agreements,agreement_edit_bundle,change_requests,procurement_*,can_funding_*,cans,grant_number,message_bus,users}.py
 backend/ops_api/ops/utils/{cans,reporting_summary,budget_line_items_helpers,agreements_helpers,change_requests_helpers,users}.py
 frontend/src/helpers/{agreement,budgetLines,procurementShop,currencyFormat,changeRequests,safeRedirect}.helpers.js
 frontend/src/helpers/utils.js
 frontend/src/components/Auth/**
 frontend/src/api/opsAuthAPI.js
+frontend/src/components/{Agreements,BudgetLineItems}/**/*.hooks.js
+frontend/src/pages/agreements/**/*.hooks.js
 ```
 
 ## Project Rules to Check

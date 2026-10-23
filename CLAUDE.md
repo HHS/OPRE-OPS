@@ -130,12 +130,12 @@ pre-commit install --hook-type commit-msg
 When reviewing a PR, read [`docs/REVIEW.md`](docs/REVIEW.md) first: it has the full rubric, the finding format and the risk tiers. If this summary and `docs/REVIEW.md` differ, `docs/REVIEW.md` wins. The core rules:
 
 - **Label every finding S0, S1, S2 or S3. Only S0 and S1 block a merge.**
-  - **S0:** data loss or corruption, a security or authorization bypass, wrong money math (computing or saving fees, budget line totals, CAN balances), or a broken migration.
-  - **S1:** a user-visible bug on a realistic path, a display-only money formatting error, the linked issue's acceptance criteria not met, or an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement).
-  - **S2:** a bug that needs an edge case, or a missing test. **S3:** style, refactor ideas, wrong comments or docstrings. Neither S2 nor S3 blocks.
-  - If a tool uses its own severity scale (e.g. Critical/High/Medium/Low), also label each finding S0–S3; only the S0–S3 label decides blocking.
-- **Tests are required for money math, authorization and migrations.** A PR that changes them must include a test for that change; a missing one is S1.
-- **Scope exceptions:** for Renovate and other bot PRs only S0 blocks; for docs-only PRs only a factually wrong command, path or rule blocks.
+  - **S0:** data loss or corruption (including partial updates or imports that null or overwrite existing values, and wrong audit history), a security or authorization bypass (including missing ownership checks and workflow or approval rules enforced only in the browser), exposed secrets or personal data, wrong money math (computing or saving fees, budget line totals, CAN balances), or a broken migration.
+  - **S1:** a user-visible bug on a realistic path (a race on a slow network or a double click counts), a display-only money formatting error, the linked issue's acceptance criteria not met, an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement), or a failing production build.
+  - **S2:** a bug that needs an edge case, a missing test, or slow-but-correct code (S1 if users hit timeouts on a realistic path). **S3:** style, refactor ideas, wrong comments or docstrings, copy or styling that doesn't mislead users. Neither S2 nor S3 blocks.
+  - If a tool uses its own severity scale (e.g. Critical/High/Medium/Low), also label each finding S0–S3; only the S0–S3 label decides blocking. Overview comments aren't findings; rate only their concrete issues.
+- **Tests are required for money math, authorization, migrations, workflow state and data writes.** A PR that changes them must include a test that actually exercises the change; a missing or ineffective one is S1.
+- **Scope exceptions:** for Renovate and other bot PRs only S0 blocks; for docs-only and tooling PRs (`.claude/`, `.mcp.json`, workflows) only S0 or a broken command, path or rule blocks.
 - **Only defects the PR introduces, makes reachable or makes worse can block.** Report older problems as `[Pre-existing S<n>]`; they never block.
 - **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). A finding with no realistic scenario is S3 at most.
 - **Pick a severity by the outcome your scenario actually shows**, not the worst case it might reach.
