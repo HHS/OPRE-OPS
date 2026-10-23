@@ -798,8 +798,9 @@ paths:
         Modifications tab: approved budget-line edits made in OPS after the agreement
         was awarded that still need a contract modification to update the actual
         contract. One record per approved change request (one field each), oldest first.
-        Edits leave this list once a contract modification is started
-        (POST /agreements/{id}/contract-modifications/).
+        Edits included in the contract modification that is in review have `in_review`
+        true; they leave this list once that contract modification is approved
+        (PATCH /contract-modification-requests/{id}/).
 
         Only Contract and AA agreements are supported; any other agreement type
         returns 400.
@@ -832,20 +833,12 @@ paths:
         "404":
           description: Not Found - Agreement does not exist
   /agreements/{id}/contract-modifications/:
-    post:
+    get:
       tags:
         - Agreements
-      operationId: startAgreementContractModification
-      summary: Start a contract modification for an agreement's pending edits
-      description: |
-        "Start modification": creates an agreement modification and attaches every
-        pending contract modification edit to it, removing them from
-        GET /agreements/{id}/contract-modification-edits/. No request body.
-
-        Currently creates a bare modification (no type, number, or date and no
-        procurement action or tracker); the full contract modification workflow
-        extends this endpoint. Requires ENABLE_MODIFIED_LOE_EDITS and a user
-        associated with the agreement.
+      operationId: getAgreementContractModifications
+      summary: List an agreement's contract modification requests
+      description: Returns the agreement's contract modification requests, newest first.
       parameters:
         - in: path
           name: id
@@ -857,29 +850,137 @@ paths:
             minimum: 1
             example: 1
       responses:
-        "201":
-          description: Created - Modification started and pending edits attached
+        "200":
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  agreement_mod:
-                    $ref: "#/components/schemas/AgreementMod"
-                  edits:
+                  data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/ContractModificationEdit"
+                      $ref: "#/components/schemas/ContractModificationRequest"
+        "400":
+          description: Bad Request - Agreement is not a Contract or AA agreement
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
+    post:
+      tags:
+        - Agreements
+      operationId: submitAgreementContractModification
+      summary: Send a contract modification to the Division Director for approval
+      description: |
+        "Send to approval" on the Start Modification page. Includes every pending
+        contract modification edit, plus the selected budget lines to execute, and
+        notifies the agreement's Division Directors. The edits stay on
+        GET /agreements/{id}/contract-modification-edits/ (with `in_review` true) until
+        the request is reviewed.
+
+        Budget lines must be on the agreement, Planned, in the current fiscal year, and
+        not already in review. Only one contract modification per agreement can be in
+        review. Requires ENABLE_MODIFIED_LOE_EDITS and a user associated with the agreement.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                budget_line_item_ids:
+                  type: array
+                  items:
+                    type: integer
+                  description: Planned budget lines to change to Executing on approval.
+                  example: [15001]
+                requestor_notes:
+                  type: string
+                  nullable: true
+                  maxLength: 150
+                  example: Please review
+      responses:
+        "201":
+          description: Created - Contract modification sent to approval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractModificationRequest"
         "400":
           description: >-
-            Bad Request - No pending edits, agreement is not Awarded, agreement is not
-            a Contract or AA agreement, or contract modifications are not enabled
+            Bad Request - A contract modification is already in review, nothing to modify,
+            an ineligible budget line, agreement is not Awarded, agreement is
+            not a Contract or AA agreement, or contract modifications are not enabled
         "401":
           description: Unauthorized
         "403":
           description: Forbidden - User is not associated with the agreement
         "404":
           description: Not Found - Agreement does not exist
+  /contract-modification-requests/{id}/:
+    patch:
+      tags:
+        - Agreements
+      operationId: reviewContractModificationRequest
+      summary: Approve or decline a contract modification
+      description: |
+        Division Director review. Approval creates an agreement modification (type
+        MODIFIED_LOE), attaches the request's edits to it, and changes the selected
+        budget lines to Executing. A decline leaves the edits pending. The submitter is
+        notified either way.
+      parameters:
+        - in: path
+          name: id
+          description: Contract modification request ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [APPROVE, DECLINE]
+                reviewer_notes:
+                  type: string
+                  nullable: true
+                  example: Let's review together in our meeting on Tuesday
+      responses:
+        "200":
+          description: OK - Contract modification reviewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractModificationRequest"
+        "400":
+          description: >-
+            Bad Request - Already reviewed, invalid action, a budget line is no longer
+            Planned, or contract modifications are not enabled
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden - User is not a Division Director for the agreement
+        "404":
+          description: Not Found - Contract modification request does not exist
   /agreements/{id}/edit-bundle:
     patch:
       tags:
@@ -7295,8 +7396,58 @@ components:
         agreement_mod_id:
           type: integer
           nullable: true
-          description: Null while pending; set when a contract modification is started.
+          description: Null while pending; set when the contract modification is approved.
           example: null
+        in_review:
+          type: boolean
+          description: True when the edit is part of the contract modification that is in review.
+          example: false
+    ContractModificationRequest:
+      type: object
+      description: A contract modification sent to the Division Director for approval.
+      properties:
+        id:
+          type: integer
+          example: 3
+        agreement_id:
+          type: integer
+          example: 15
+        status:
+          type: string
+          enum: [IN_REVIEW, APPROVED, DECLINED]
+          example: IN_REVIEW
+        requestor_notes:
+          type: string
+          nullable: true
+        reviewer_notes:
+          type: string
+          nullable: true
+        reviewed_by_id:
+          type: integer
+          nullable: true
+        reviewed_on:
+          type: string
+          format: date-time
+          nullable: true
+        agreement_mod_id:
+          type: integer
+          nullable: true
+          description: Set on approval.
+        created_by:
+          type: integer
+          nullable: true
+        created_on:
+          type: string
+          format: date-time
+          nullable: true
+        edits:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractModificationEdit"
+        budget_line_item_ids:
+          type: array
+          items:
+            type: integer
     AgreementAwardHistoryRecord:
       description: |
         One flat award/modification record for the Award & Modifications tab.

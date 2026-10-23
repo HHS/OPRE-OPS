@@ -14,6 +14,9 @@ from sqlalchemy.orm import InstrumentedAttribute, contains_eager, selectinload
 from models import (
     AgreementChangeRequest,
     ChangeRequestNotification,
+    ContractModificationRequest,
+    ContractModificationRequestNotification,
+    ContractModificationRequestStatus,
     Notification,
     NotificationType,
     OpsEventType,
@@ -53,6 +56,13 @@ class RecipientSchema(Schema):
     email = fields.Str(allow_none=True)
 
 
+class ContractModificationRequestNotificationSchema(Schema):
+    id = fields.Int(required=True)
+    agreement_id = fields.Int(required=True)
+    status = fields.Enum(ContractModificationRequestStatus, required=True)
+    reviewer_notes = fields.Str(allow_none=True)
+
+
 class NotificationResponseSchema(Schema):
     id = fields.Int(required=True)
     notification_type = fields.Enum(NotificationType, required=True)
@@ -67,6 +77,7 @@ class NotificationResponseSchema(Schema):
     expires = fields.Date(allow_none=True)
     change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
     procurement_tracker_step = fields.Nested(ProcurementTrackerStepNotificationSchema(), allow_none=True)
+    contract_modification_request = fields.Nested(ContractModificationRequestNotificationSchema(), allow_none=True)
 
 
 class ListAPIRequest(Schema):
@@ -213,16 +224,26 @@ class NotificationListAPI(BaseListAPI):
                     ProcurementTracker,
                     ProcurementTrackerStep.procurement_tracker_id == ProcurementTracker.id,
                 )
+                .outerjoin(
+                    ContractModificationRequest,
+                    and_(
+                        Notification.id == ContractModificationRequestNotification.id,
+                        ContractModificationRequestNotification.contract_modification_request_id
+                        == ContractModificationRequest.id,
+                    ),
+                )
                 .where(
                     or_(
                         AgreementChangeRequest.agreement_id == agreement_id,
                         ProcurementTracker.agreement_id == agreement_id,
+                        ContractModificationRequest.agreement_id == agreement_id,
                     )
                 )
                 .options(
                     contains_eager(Notification.recipient),
                     selectinload(ChangeRequestNotification.change_request),
                     selectinload(PreAwardApprovalNotification.procurement_tracker_step),
+                    selectinload(ContractModificationRequestNotification.contract_modification_request),
                 )
                 .order_by(Notification.created_on.desc())
             )
@@ -234,6 +255,7 @@ class NotificationListAPI(BaseListAPI):
                     contains_eager(Notification.recipient),
                     selectinload(ChangeRequestNotification.change_request),
                     selectinload(PreAwardApprovalNotification.procurement_tracker_step),
+                    selectinload(ContractModificationRequestNotification.contract_modification_request),
                 )
                 .order_by(Notification.created_on.desc())
             )

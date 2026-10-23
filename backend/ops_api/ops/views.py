@@ -9,6 +9,7 @@ from models import (
     CANFundingReceived,
     CANHistory,
     ChangeRequest,
+    ContractModificationRequest,
     Division,
     Document,
     GrantNumber,
@@ -81,6 +82,7 @@ from ops_api.ops.resources.change_requests import (
 from ops_api.ops.resources.contract_modification_edits import (
     AgreementContractModificationEditsAPI,
     AgreementContractModificationsAPI,
+    ContractModificationRequestItemAPI,
 )
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.grant_number import GrantNumberItemAPI, GrantNumberListAPI
@@ -156,6 +158,9 @@ AGREEMENT_CONTRACT_MODIFICATION_EDITS_API_VIEW_FUNC = AgreementContractModificat
 )
 AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC = AgreementContractModificationsAPI.as_view(
     "agreements-contract-modifications", Agreement
+)
+CONTRACT_MODIFICATION_REQUEST_ITEM_API_VIEW_FUNC = ContractModificationRequestItemAPI.as_view(
+    "contract-modification-requests-item", ContractModificationRequest
 )
 AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 
