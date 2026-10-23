@@ -3,7 +3,7 @@
 When a Division Director approves a money/time change request on an Awarded agreement, the
 edit is applied in OPS as usual and also recorded as a ``ContractModificationEdit``. It stays
 on the Award & Modifications tab list (GET /agreements/<id>/contract-modification-edits/) until
-the user starts the modification (POST /agreements/<id>/contract-modifications/).
+the user's contract modification is approved (see test_contract_modification_requests.py).
 
 ``basic_user_auth_client`` (user 521) is a team member on the test agreements and submits the
 edits; ``division_director_auth_client`` (user 522) directs division 5, which manages
@@ -33,7 +33,6 @@ from models import (
     GrantAgreement,
     ModificationEditType,
     OpsEvent,
-    OpsEventType,
     ProcurementAction,
     ProcurementActionStatus,
     ServicesComponent,
@@ -128,6 +127,7 @@ def make_agreement(loaded_db, test_project):
     loaded_db.rollback()
     for agreement_id, sc_id in created:
         params = {"id": agreement_id}
+        loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM agreement_mod WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM change_request WHERE agreement_id = :id"), params)
@@ -174,10 +174,6 @@ def _edits(loaded_db, agreement_id):
 
 def _get_pending(client, agreement_id):
     return client.get(url_for("api.agreements-contract-modification-edits", id=agreement_id))
-
-
-def _start(client, agreement_id):
-    return client.post(url_for("api.agreements-contract-modifications", id=agreement_id))
 
 
 # ---=== requires_contract_modification snapshot (Decision 2, revised) ===---
@@ -605,157 +601,6 @@ def _approved_amount_edit(basic_client, director_client, loaded_db, bli, amount=
     _review(director_client, _change_requests(loaded_db, bli.id)[-1].id)
 
 
-def test_start_modification_attaches_pending_edits_and_records_history(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    make_agreement,
-    app_ctx,
-):
-    agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 550000.00)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
-
-    award_history_before = basic_user_auth_client.get(url_for("api.agreements-award-history-item", id=agreement.id))
-
-    response = _start(basic_user_auth_client, agreement.id)
-    assert response.status_code == 201, response.json
-
-    mod_id = response.json["agreement_mod"]["id"]
-    assert response.json["agreement_mod"] == {
-        "id": mod_id,
-        "agreement_id": agreement.id,
-        "mod_type": None,
-        "number": None,
-        "mod_date": None,
-    }
-    # Both edits are on the same BL, so only the latest one is reported (as on the list).
-    (reported,) = response.json["edits"]
-    assert reported["new_value"] == 500000.0
-    assert reported["agreement_mod_id"] == mod_id
-
-    # The list is now empty, and every edit (including the superseded one) is attached to the new mod.
-    assert _get_pending(basic_user_auth_client, agreement.id).json["data"] == []
-    assert {e.agreement_mod_id for e in _edits(loaded_db, agreement.id)} == {mod_id}
-    assert loaded_db.get(AgreementMod, mod_id).agreement_id == agreement.id
-
-    # A bare mod has no visible effect on Award & Modification History.
-    award_history_after = basic_user_auth_client.get(url_for("api.agreements-award-history-item", id=agreement.id))
-    assert award_history_after.json == award_history_before.json
-
-    # AC10: who / when / what / remote IP.
-    event = loaded_db.scalars(
-        select(OpsEvent)
-        .where(OpsEvent.event_type == OpsEventType.START_CONTRACT_MODIFICATION)
-        .order_by(OpsEvent.id.desc())
-        .limit(1)
-    ).one()
-    assert event.created_by == BASIC_USER_ID
-    assert event.created_on is not None
-    assert event.event_details["agreement_mod_id"] == mod_id
-    assert event.event_details["contract_modification_edit_ids"] == [reported["id"]]
-    assert "request.remote_addr" in event.event_details
-
-    history = loaded_db.scalars(
-        select(AgreementHistory).where(
-            AgreementHistory.agreement_id == agreement.id,
-            AgreementHistory.history_type == AgreementHistoryType.CONTRACT_MODIFICATION_STARTED,
-        )
-    ).all()
-    assert len(history) == 1
-    basic_user = loaded_db.get(User, BASIC_USER_ID)
-    assert history[0].history_message == f"{basic_user.full_name} started a contract modification including 1 edit."
-    assert history[0].ops_event_id == event.id
-
-
-def test_start_modification_twice_second_call_returns_400(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    make_agreement,
-    app_ctx,
-):
-    agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli)
-
-    assert _start(basic_user_auth_client, agreement.id).status_code == 201
-    assert _start(basic_user_auth_client, agreement.id).status_code == 400
-
-    mods = loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all()
-    assert len(mods) == 1
-
-
-def test_later_edits_go_on_a_new_list_after_start(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    loaded_db,
-    test_can,
-    make_agreement,
-    app_ctx,
-):
-    agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 550000.00)
-    first_mod_id = _start(basic_user_auth_client, agreement.id).json["agreement_mod"]["id"]
-
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
-
-    (pending,) = _get_pending(basic_user_auth_client, agreement.id).json["data"]
-    assert pending["new_value"] == 500000.0
-
-    second_mod_id = _start(basic_user_auth_client, agreement.id).json["agreement_mod"]["id"]
-    edits = _edits(loaded_db, agreement.id)
-    assert [e.agreement_mod_id for e in edits] == [first_mod_id, second_mod_id]
-
-
-def test_start_modification_with_no_pending_edits_returns_400(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
-):
-    agreement, _ = make_agreement(test_can)
-
-    assert _start(basic_user_auth_client, agreement.id).status_code == 400
-    assert loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all() == []
-
-
-def test_start_modification_not_awarded_returns_400(
-    modified_loe_enabled, basic_user_auth_client, test_can, make_agreement, app_ctx
-):
-    agreement, _ = make_agreement(test_can, awarded=False)
-    assert _start(basic_user_auth_client, agreement.id).status_code == 400
-
-
-def test_start_modification_flag_off_returns_400(
-    modified_loe_disabled, basic_user_auth_client, test_can, make_agreement, app_ctx
-):
-    agreement, _ = make_agreement(test_can)
-    assert _start(basic_user_auth_client, agreement.id).status_code == 400
-
-
-def test_start_modification_unknown_agreement_returns_404(modified_loe_enabled, basic_user_auth_client, app_ctx):
-    assert _start(basic_user_auth_client, 9999999).status_code == 404
-
-
-def test_start_modification_unassociated_user_returns_403(
-    modified_loe_enabled,
-    basic_user_auth_client,
-    division_director_auth_client,
-    division_6_director_auth_client,
-    loaded_db,
-    test_can,
-    make_agreement,
-    app_ctx,
-):
-    agreement, bli = make_agreement(test_can)
-    _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli)
-
-    assert _start(division_6_director_auth_client, agreement.id).status_code == 403
-    assert len(_get_pending(basic_user_auth_client, agreement.id).json["data"]) == 1
-
-
 # ---=== AC10: who / when / what / remote IP for the modified-LOE amount edit ===---
 
 
@@ -818,16 +663,6 @@ def test_planned_amount_edit_request_and_approval_are_recorded(
         assert event.event_details["request.remote_addr"] == ip
 
 
-def test_contract_modifications_endpoint_does_not_expose_get(
-    basic_user_auth_client, loaded_db, test_can, make_agreement, app_ctx
-):
-    """Only POST is routed; the GET inherited from BaseItemAPI would return the full Agreement
-    without the Permission.AGREEMENT check."""
-    agreement, _ = make_agreement(test_can)
-    response = basic_user_auth_client.get(url_for("api.agreements-contract-modifications", id=agreement.id))
-    assert response.status_code == 405
-
-
 def test_attach_pending_edits_to_mod_only_attaches_the_given_edits(
     modified_loe_enabled,
     basic_user_auth_client,
@@ -837,8 +672,8 @@ def test_attach_pending_edits_to_mod_only_attaches_the_given_edits(
     make_agreement,
     app_ctx,
 ):
-    """An edit approved after start_modification read the pending list (but before its UPDATE)
-    must stay pending rather than be silently swept into the modification."""
+    """An edit approved after the modification request was submitted must stay pending rather
+    than be silently swept into the modification when the request is approved."""
     agreement, bli = make_agreement(test_can)
     _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 550000.00)
     _approved_amount_edit(basic_user_auth_client, division_director_auth_client, loaded_db, bli, 500000.00)
