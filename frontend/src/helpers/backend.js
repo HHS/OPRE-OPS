@@ -5,7 +5,8 @@ import { getAccessToken, getRefreshToken } from "../components/Auth/auth";
 // Adding optional runtime config.
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
-    import.meta.env.VITE_BACKEND_DOMAIN;
+    import.meta.env.VITE_BACKEND_DOMAIN ||
+    "https://localhost:8000";
 
 export const callBackend = async (urlPath, action, requestBody, queryParams, useRefresh = false) => {
     console.debug(
