@@ -10,13 +10,10 @@ const { tooltip } = USWDS;
  * @component
  * @param {object} props - The component props.
  * @param {string} [props.text] - The text
- * @param {string} [props.tooltipText] - optional, tooltip text to show on hover when it differs
- * from `text` (e.g. the full title behind a nickname) — shown even when `text` isn't clipped.
- * Defaults to `text`, which reproduces the original overflow-only tooltip behavior.
  * @param {number} [props.maxLines] - optional (default 2), the number of lines to display
  * @returns {React.ReactElement} - The rendered component.
  **/
-const TextClip = ({ text, tooltipText = text, maxLines = 2 }) => {
+const TextClip = ({ text, maxLines = 2 }) => {
     const spanRef = React.useRef(null);
     const [isOverflowing, setIsOverflowing] = React.useState(false);
 
@@ -42,13 +39,11 @@ const TextClip = ({ text, tooltipText = text, maxLines = 2 }) => {
     // (wraps the element, strips the title, swaps class to usa-tooltip__trigger).
     // If React kept re-asserting them on every render it would re-trigger
     // setUpAttributes on hover and stack duplicate wrappers / empty bodies.
-    const hasDistinctTooltip = Boolean(tooltipText) && tooltipText !== text;
-
     React.useEffect(() => {
         const el = spanRef.current;
-        if (!el || !text || !(isOverflowing || hasDistinctTooltip)) return;
+        if (!el || !text || !isOverflowing) return;
 
-        el.setAttribute("title", tooltipText ?? text);
+        el.setAttribute("title", text);
         el.setAttribute("data-position", "right");
         el.classList.add("usa-tooltip");
         tooltip.on(el);
@@ -62,7 +57,7 @@ const TextClip = ({ text, tooltipText = text, maxLines = 2 }) => {
             el.removeAttribute("aria-describedby");
             el.removeAttribute("tabindex");
         };
-    }, [isOverflowing, hasDistinctTooltip, text, tooltipText]);
+    }, [isOverflowing, text]);
 
     return (
         <span
