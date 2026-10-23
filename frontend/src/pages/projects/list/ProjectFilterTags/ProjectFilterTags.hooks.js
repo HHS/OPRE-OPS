@@ -30,7 +30,11 @@ export const useTagsList = (filters) => {
         const tags = Object.entries(propertyMap).flatMap(([filterKey, propertyName]) =>
             (filters[filterKey] ?? []).map((item) => ({
                 tagText: item[propertyName],
-                filter: filterKey
+                filter: filterKey,
+                // Nickname-preferred display text (item.title) isn't unique — agreement A's
+                // nick_name can equal agreement B's full name — so carry id for removeFilter to
+                // key on instead of the (possibly duplicate) tagText.
+                ...(filterKey === "agreementSearch" && { id: item.id })
             }))
         );
 
@@ -68,9 +72,13 @@ export const removeFilter = (tag, setFilters) => {
             }));
             break;
         case "agreementSearch":
+            // Key on id, not tagText — nickname-preferred display text isn't unique (agreement
+            // A's nick_name can equal agreement B's full name), so two distinct selections can
+            // render identical chips. Matching by tagText would remove both when only one "x" is
+            // clicked.
             setFilters((prevState) => ({
                 ...prevState,
-                agreementSearch: prevState.agreementSearch.filter((agreement) => agreement.title !== tag.tagText)
+                agreementSearch: prevState.agreementSearch.filter((agreement) => agreement.id !== tag.id)
             }));
             break;
         case "projectType":
