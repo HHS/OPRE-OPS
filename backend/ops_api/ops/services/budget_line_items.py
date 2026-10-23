@@ -48,15 +48,18 @@ from ops_api.ops.utils.agreements_helpers import (
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
+    PreAwardLock,
     bli_associated_with_agreement,
     compute_bli_editable,
     compute_bli_is_deletable,
     create_budget_line_item_instance,
+    get_agreement_pre_award_lock_message,
     get_bli_locked_message,
+    get_pre_award_lock,
     is_bli_editable,
-    is_post_pre_award_locked,
-    is_pre_award_in_review,
+    tracks_contract_modifications,
     update_data,
+    validate_no_execution_status_change_on_awarded,
 )
 from ops_api.ops.utils.users import is_budget_team, is_super_user
 
@@ -137,6 +140,11 @@ class BudgetLineItemService:
         self._validate_grant_number_ownership(create_request.get("grant_number_id"), agreement_id)
 
         agreement = self.db_session.get(Agreement, agreement_id)
+
+        # Adding a budget line edits the agreement, so it shares the agreement's pre-award locks.
+        lock_message = get_agreement_pre_award_lock_message(agreement, current_user)
+        if lock_message:
+            raise ValidationError({"agreement_id": lock_message})
 
         new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
@@ -694,6 +702,9 @@ class BudgetLineItemService:
         if has_status_change and has_non_status_change:
             raise ValidationError({"status": "When the status is changing other edits are not allowed"})
 
+        if has_status_change:
+            validate_no_execution_status_change_on_awarded(budget_line_item, parsed_partial.get("status"))
+
         # Determine if direct edit or change request is needed.
         # Superusers bypass the change-request workflow for all edits.
         # Non-status changes on DRAFT lines also apply directly without a CR.
@@ -704,8 +715,9 @@ class BudgetLineItemService:
         )
 
         # Optional capability (per-environment): when enabled, apply Draft→Planned status
-        # changes and in-Planned budget-detail edits immediately instead of creating a
-        # Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        # changes and in-Planned / in-Executing budget-detail edits immediately instead of
+        # creating a Change Request. Runs AFTER _validation so pre-award locks still block edits.
+        # Planned→Executing still routes through a Change Request.
         flag_allows_direct, flagged_fields_to_apply = self._flagged_direct_edit(
             budget_line_item, parsed_partial, diff_data, has_status_change
         )
@@ -808,6 +820,17 @@ class BudgetLineItemService:
         if not current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False):
             return False, set()
 
+        # Never apply directly while a pre-award lock is active: _validation rejects other users
+        # then, but lets Budget Team through on the understanding that their edits still route
+        # through a change request for DD review.
+        if get_pre_award_lock(budget_line_item.agreement):
+            return False, set()
+
+        # On an Awarded agreement these edits require a contract modification (OPS-3072), so
+        # they must go through Division Director approval instead of applying directly.
+        if tracks_contract_modifications(budget_line_item):
+            return False, set()
+
         # Exactly Draft → Planned (status is a BudgetLineItemStatus(str, Enum)).
         is_draft_to_planned = (
             has_status_change
@@ -817,10 +840,11 @@ class BudgetLineItemService:
         if is_draft_to_planned:
             return True, {"status"}
 
-        # In-Planned budget-detail edit: ONLY the three budget fields (matching the CR
-        # path's budget_field_names), on a line that is and stays PLANNED. NOT
-        # has_non_status_change, which would newly persist comments/fee (Defect B).
-        if not has_status_change and budget_line_item.status == BudgetLineItemStatus.PLANNED:
+        # In-Planned / in-Executing budget-detail edit: ONLY the three budget fields
+        # (matching the CR path's budget_field_names), on a line that is and stays PLANNED
+        # or IN_EXECUTION. NOT has_non_status_change, which would newly persist comments/fee
+        # (Defect B).
+        if not has_status_change and budget_line_item.status in self.DIRECT_BUDGET_EDIT_STATUSES:
             changed_budget_keys = {
                 key
                 for key in BudgetLineItemChangeRequest.budget_field_names
@@ -968,6 +992,10 @@ class BudgetLineItemService:
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "grant_number_id", "line_description", "comments", "clin_id"}
 
+    # Statuses whose budget-detail edits (amount/can_id/date_needed) apply directly, without a
+    # change request, when the SKIP_CR_FOR_DRAFT_PLANNED capability is enabled.
+    DIRECT_BUDGET_EDIT_STATUSES = (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION)
+
     def _handle_change_requests(
         self,
         budget_line_item: BudgetLineItem,
@@ -1048,21 +1076,21 @@ class BudgetLineItemService:
         # locks also feed compute_bli_editable (the editability meta), so the pen-icon state and the
         # PATCH validation stay in lockstep. Budget Team is exempt from both locks (they write
         # directly through the change-request workflow with no additional gate).
-        if not is_budget_team(current_user) and is_pre_award_in_review(budget_line_item.agreement):
+        lock = None if is_budget_team(current_user) else get_pre_award_lock(budget_line_item.agreement)
+        if lock == PreAwardLock.IN_REVIEW:
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         # Block edits after pre-award is fully approved (DD approved + requisition submitted).
         # Exception: clin_id-only edits are allowed for any authorized user — CLIN assignment is
         # part of the award workflow (COR assigns CLINs before submitting for award approval).
-        if not is_budget_team(current_user):
+        if lock == PreAwardLock.POST_APPROVAL:
             # Use the raw request JSON to determine what the caller actually sent.
             # updated_fields contains Marshmallow load_default values for all schema fields
             # (None for unset fields) plus injected internal keys ("request", "schema", "method"),
             # so it cannot reliably tell us which fields the caller intended to change.
             request_obj = updated_fields.get("request")
             edit_keys = set(request_obj.json.keys()) if request_obj and request_obj.json else set()
-            clin_only_edit = edit_keys <= {"clin_id"}
-            if not clin_only_edit and is_post_pre_award_locked(budget_line_item.agreement):
+            if not edit_keys <= {"clin_id"}:
                 raise ValidationError(
                     {"status": "Cannot modify Budget Line Items after Pre-Award Approval has been completed."}
                 )

@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { isDeletionRoutedToApproval } from "./CreateBLIsAndSCs.helpers";
 
@@ -36,11 +37,13 @@ vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
 }));
 
+let mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: null };
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
         useNavigate: () => navigateMock,
+        useLocation: () => mockLocation,
         useBlocker: () => ({
             state: "unblocked",
             proceed: vi.fn(),
@@ -162,6 +165,7 @@ vi.mock("./suite", () => {
 
 describe("useCreateBLIsAndSCs", () => {
     beforeEach(() => {
+        mockLocation = { pathname: "/agreements/1/budget-lines", search: "", state: null };
         vi.clearAllMocks();
         // vi.clearAllMocks() clears call history but not a mockReturnValue set by a prior test —
         // restore the module default here so tests that don't override useEditAgreementMock
@@ -189,15 +193,21 @@ describe("useCreateBLIsAndSCs", () => {
     const renderSubject = (overrides = {}) => {
         // BLIs live in context (budget_line_items), not the budgetLines prop. Seed them
         // in the mock so tempBudgetLines is populated from context on mount.
+        // `deletedBudgetLineIds` simulates BLIs deleted in this session: they stay in the
+        // budgetLines prop but are removed from context.
         if (overrides.budgetLines?.length) {
+            const deletedIds = overrides.deletedBudgetLineIds ?? [];
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
-                budget_line_items: overrides.budgetLines.map((bli) => ({
-                    ...bli,
-                    services_component_number: bli.services_component_id ? 1 : 0,
-                    serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
-                })),
-                deleted_budget_line_items_ids: []
+                budget_line_items: overrides.budgetLines
+                    .filter((bli) => !deletedIds.includes(bli.id))
+                    .map((bli) => ({
+                        ...bli,
+                        services_component_number: bli.services_component_id ? 1 : 0,
+                        serviceComponentGroupingLabel: bli.services_component_id ? "1" : "0"
+                    })),
+                deleted_budget_line_items_ids: deletedIds,
+                services_components: overrides.servicesComponents ?? editAgreementMockData.services_components
             });
         }
         return renderHook(() =>
@@ -449,14 +459,14 @@ describe("useCreateBLIsAndSCs", () => {
         expect(result.current.requiresFinancialApproval).toBe(false);
     });
 
-    it("still requires DD approval when a changed line is IN_EXECUTION even with the capability ON", async () => {
+    it("applies an Executing financial change immediately (no DD approval) when the capability is ON", async () => {
         useGetVersionQueryMock.mockReturnValue({
             data: { version: "1.0.0", skip_cr_for_draft_planned: true },
             isSuccess: true
         });
         const executingLine = {
             id: 502,
-            status: "EXECUTING",
+            status: "IN_EXECUTION",
             in_review: false,
             financialSnapshotChanged: true
         };
@@ -466,8 +476,176 @@ describe("useCreateBLIsAndSCs", () => {
         await waitFor(() => {
             expect(result.current.tempBudgetLines).toHaveLength(1);
         });
-        // A non-PLANNED changed line is out of the flag's scope → approval still required.
+        // Capability ON + all changed lines IN_EXECUTION → applies directly, no approval UX (OPS-6195).
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("applies a mixed Planned + Executing financial change immediately when the capability is ON", async () => {
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true },
+            isSuccess: true
+        });
+        const changedLines = [
+            { id: 503, status: "PLANNED", in_review: false, financialSnapshotChanged: true },
+            { id: 504, status: "IN_EXECUTION", in_review: false, financialSnapshotChanged: true }
+        ];
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: changedLines });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(2);
+        });
+        expect(result.current.requiresFinancialApproval).toBe(false);
+    });
+
+    it("still requires DD approval for an Executing financial change when the capability is OFF", async () => {
+        const executingLine = {
+            id: 505,
+            status: "IN_EXECUTION",
+            in_review: false,
+            financialSnapshotChanged: true
+        };
+        useEditAgreementMock.mockReturnValue({ ...editAgreementMockData, budget_line_items: [executingLine] });
+        const { result } = renderSubject();
+
+        await waitFor(() => {
+            expect(result.current.tempBudgetLines).toHaveLength(1);
+        });
         expect(result.current.requiresFinancialApproval).toBe(true);
+    });
+
+    describe("with the ENABLE_MODIFIED_LOE_EDITS capability ON", () => {
+        beforeEach(() => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: true },
+                isSuccess: true
+            });
+        });
+
+        // OPS-3072 (Modified LOE): on an Awarded agreement, saving a PLANNED financial change or
+        // deleting a non-Draft BL requires a contract modification -- surfaced as a distinct
+        // signal (requiresContractModification) alongside the existing requiresFinancialApproval.
+        it("flags requiresContractModification for a PLANNED financial change when the agreement is Awarded", async () => {
+            const plannedLine = {
+                id: 601,
+                status: "PLANNED",
+                in_review: false,
+                financialSnapshotChanged: true
+            };
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [plannedLine],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(true);
+        });
+
+        it("does not flag requiresContractModification for the same PLANNED financial change when the agreement is not Awarded", async () => {
+            const plannedLine = {
+                id: 602,
+                status: "PLANNED",
+                in_review: false,
+                financialSnapshotChanged: true
+            };
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [plannedLine],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: false } });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        // Regression: deleting a never-saved BL leaves its temp id in the deleted list. It has no
+        // match in the persisted budgetLines, so it must not count as a non-Draft deletion.
+        it("does not flag requiresContractModification for a deleted never-saved BL on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_budget_line_items_ids: ["temp-abc123"],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        // Regression: SC changes are saved directly, not through approval, so they must not
+        // trigger the "send it for approval" contract-modification modal.
+        it("does not flag requiresContractModification for services component changes on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                deleted_services_components_ids: [77],
+                services_components: [{ id: 11, number: 1, created_on: "2026-01-01", has_changed: true }, { number: 2 }]
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [{ id: "temp-1", status: "DRAFT", in_review: false }],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it.each([
+            ["DRAFT", false],
+            ["PLANNED", true]
+        ])("for a deleted %s BL on an Awarded agreement, requiresContractModification is %s", (status, expected) => {
+            const { result } = renderSubject({
+                budgetLines: [{ id: 603, status, in_review: false, created_on: "2026-01-01" }],
+                deletedBudgetLineIds: [603],
+                servicesComponents: [],
+                selectedAgreement: { is_awarded: true }
+            });
+
+            expect(result.current.requiresContractModification).toBe(expected);
+        });
+
+        it("does not flag requiresContractModification when there are no pending edits, even on an Awarded agreement", () => {
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        it("does not flag requiresContractModification on an Awarded agreement when the capability is OFF", async () => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: false },
+                isSuccess: true
+            });
+            useEditAgreementMock.mockReturnValue({
+                ...editAgreementMockData,
+                budget_line_items: [{ id: 605, status: "PLANNED", in_review: false, financialSnapshotChanged: true }],
+                services_components: []
+            });
+            const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+            expect(result.current.requiresContractModification).toBe(false);
+        });
     });
 
     it("edits a budget line, matching the original by id rather than a stale array index", () => {
@@ -615,6 +793,27 @@ describe("useCreateBLIsAndSCs", () => {
 
         expect(setIsEditModeMock).toHaveBeenCalledWith(false);
         expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines");
+    });
+
+    it("keeps the breadcrumb trail when cancelling back to the budget lines", () => {
+        const trail = { targetPath: "/agreements/1", ancestors: [{ label: "Portfolios", to: "/portfolios" }] };
+        mockLocation = {
+            pathname: "/agreements/1/budget-lines",
+            search: "",
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        };
+        const { result } = renderSubject();
+
+        act(() => {
+            result.current.handleCancel();
+        });
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines", {
+            state: buildTrailState(trail.targetPath, trail.ancestors)
+        });
     });
 
     it("treats step 3 of the create-agreement wizard as a new agreement, not an edit, on cancel (OPS-6076)", () => {
@@ -1314,6 +1513,53 @@ describe("useCreateBLIsAndSCs", () => {
 
             const successCall = setAlertMock.mock.calls.map((c) => c[0]).find((a) => a.type === "success");
             expect(successCall?.redirectUrl).toBe("/agreements/1/budget-lines");
+        });
+
+        // Regression: the footer button's contract-modification confirm passes approvalConfirmed.
+        // It must skip the Division-Director modal but still redirect to the budget-lines URL,
+        // not the blocker's (undefined) destination the savedViaModal path uses.
+        it("handleSave with approvalConfirmed sends to approval without the modal and redirects to budget-lines", async () => {
+            updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+
+            useEditAgreementMock.mockReturnValue({
+                agreement: { id: 1, team_members: [] },
+                services_components: [],
+                deleted_services_components_ids: [],
+                grant_numbers: [],
+                deleted_grant_numbers_ids: [],
+                budget_line_items: [
+                    {
+                        id: 501,
+                        status: "PLANNED",
+                        created_on: "2026-01-01",
+                        in_review: false,
+                        financialSnapshotChanged: true,
+                        grant_number_id: null
+                    }
+                ],
+                deleted_budget_line_items_ids: []
+            });
+
+            const { result } = renderSubject({ continueOverRide: undefined });
+
+            await waitFor(() => {
+                expect(result.current.tempBudgetLines).toHaveLength(1);
+            });
+
+            setAlertMock.mockClear();
+
+            await act(async () => {
+                await result.current.handleSave(false, false, false, true);
+            });
+
+            expect(result.current.showModal).toBe(false);
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+            const successCalls = setAlertMock.mock.calls.map((c) => c[0]).filter((a) => a.type === "success");
+            expect(successCalls.length).toBeGreaterThan(0);
+            successCalls.forEach((call) => {
+                expect(call.heading).toBe("Changes Sent to Approval");
+                expect(call.redirectUrl).toBe("/agreements/1/budget-lines");
+            });
         });
 
         it("shows the specific partial-failure alert, not a generic one, when an approval-routed update rejects via the unsaved-changes modal with suppressErrorAlert=true (regression)", async () => {

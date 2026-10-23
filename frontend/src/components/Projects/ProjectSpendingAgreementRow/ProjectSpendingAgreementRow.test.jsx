@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { getProbedTrail, renderWithProviders } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BrowserRouter } from "react-router-dom";
 import ProjectSpendingAgreementRow from "./ProjectSpendingAgreementRow";
 
 vi.mock("../../../api/opsAPI", () => ({
@@ -28,19 +28,19 @@ const mockAgreement = {
     budget_line_items: []
 };
 
-const renderRow = ({ fyTotal = null, fiscalYear = 2043 } = {}) =>
-    render(
-        <BrowserRouter>
-            <table>
-                <tbody>
-                    <ProjectSpendingAgreementRow
-                        agreement={mockAgreement}
-                        fiscalYear={fiscalYear}
-                        fyTotal={fyTotal}
-                    />
-                </tbody>
-            </table>
-        </BrowserRouter>
+const renderRow = ({ fyTotal = null, fiscalYear = 2043, ancestry } = {}) =>
+    renderWithProviders(
+        <table>
+            <tbody>
+                <ProjectSpendingAgreementRow
+                    agreement={mockAgreement}
+                    fiscalYear={fiscalYear}
+                    fyTotal={fyTotal}
+                    ancestry={ancestry}
+                />
+            </tbody>
+        </table>,
+        { withLocationProbe: true }
     );
 
 describe("ProjectSpendingAgreementRow", () => {
@@ -151,5 +151,20 @@ describe("ProjectSpendingAgreementRow", () => {
 
         await user.click(screen.getByTestId("expand-row"));
         expect(screen.queryByText("Test description")).not.toBeInTheDocument();
+    });
+
+    it("passes the provided ancestry as the breadcrumb trail when the agreement link is clicked", async () => {
+        const ancestry = [
+            { label: "Projects", to: "/projects" },
+            { label: "Project X", to: "/projects/7" }
+        ];
+        renderRow({ ancestry });
+
+        await userEvent.click(screen.getByRole("link", { name: /African American Child/i }));
+
+        expect(getProbedTrail()).toEqual({
+            targetPath: "/agreements/1",
+            ancestors: ancestry
+        });
     });
 });

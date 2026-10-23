@@ -11,6 +11,7 @@ from ops_api.ops.utils.agreements_helpers import (
     check_user_association,
     get_procurement_shop_locked_reason,
 )
+from ops_api.ops.utils.budget_line_items_helpers import get_agreement_pre_award_lock_message
 from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
@@ -46,6 +47,23 @@ class AuthorizationRule(ValidationRule):
                 f"User {context.user.id} is not authorized to update agreement {agreement.id}.",
                 "Agreement",
             )
+
+
+class PreAwardLockRule(ValidationRule):
+    """
+    Blocks agreement updates while Pre-Award Approval is in review and once it has been fully
+    approved, until the Award request is approved (OPS-6195). Budget Team is exempt. Shares
+    ``get_agreement_pre_award_lock_message`` with the services-component lock so both stay in sync.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Pre-Award Lock"
+
+    def validate(self, agreement: Agreement, context: ValidationContext) -> None:
+        message = get_agreement_pre_award_lock_message(agreement, context.user)
+        if message:
+            raise ValidationError({"agreement": message})
 
 
 class AgreementTypeImmutableRule(ValidationRule):

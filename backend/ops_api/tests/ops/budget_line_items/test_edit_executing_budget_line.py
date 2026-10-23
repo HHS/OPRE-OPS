@@ -1,7 +1,8 @@
 """Integration tests for editing IN_EXECUTION Budget Line Items (issue #5819).
 
 Executing BLIs are now editable like PLANNED ones:
-  - budget-field edits (amount/can_id/date_needed) route through a change request (202),
+  - budget-field edits (amount/can_id/date_needed) route through a change request (202) when the
+    SKIP_CR_FOR_DRAFT_PLANNED capability is OFF, and apply directly (200) when it is ON (OPS-6195),
   - non-budget edits (line_description/services_component_id/comments) apply directly (200),
   - an already in-review BLI stays non-editable.
 
@@ -118,7 +119,9 @@ def make_pre_award(loaded_db):
     """Factory that attaches an ACTIVE procurement tracker with a PRE_AWARD step to an agreement.
 
     ``state`` selects the pre-award approval situation the lock model cares about:
+      - "present": a PRE_AWARD step with no approval requested (neither in review nor locked),
       - "in_review": approval requested and pending (``is_pre_award_in_review`` is True),
+      - "declined": approval requested and declined by the DD (neither in review nor locked),
       - "locked": fully approved — DD approved + requisition approved (``is_post_pre_award_locked``),
       - "award_approved": fully-approved pre-award PLUS an AWARD step whose award_approval_status is
         APPROVED — the Budget Team has approved the Award request, so the post-pre-award lock is
@@ -165,6 +168,17 @@ def make_pre_award(loaded_db):
                     pre_award_approval_status="PENDING",
                 )
             )
+        elif state == "declined":
+            # DD declined the Pre-Award request: the lock is released and editing reopens.
+            steps.append(
+                DefaultProcurementTrackerStep(
+                    procurement_tracker_id=tracker.id,
+                    step_number=5,
+                    step_type=ProcurementTrackerStepType.PRE_AWARD,
+                    pre_award_approval_requested=True,
+                    pre_award_approval_status="DECLINED",
+                )
+            )
         elif state in ("locked", "award_approved"):
             steps.append(
                 DefaultProcurementTrackerStep(
@@ -207,9 +221,29 @@ def make_pre_award(loaded_db):
     loaded_db.commit()
 
 
-def test_edit_executing_bli_budget_field_routes_to_change_request(auth_client, executing_bli, app_ctx):
-    """Changing amount on an executing BLI (no procurement tracker → no pre-award lock) creates a
-    CR, returns 202."""
+@pytest.fixture()
+def skip_cr_enabled(app):
+    """Turn the SKIP_CR_FOR_DRAFT_PLANNED capability ON for the duration of a test."""
+    original = app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False)
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = True
+    yield
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = original
+
+
+@pytest.fixture()
+def skip_cr_disabled(app):
+    """Turn the SKIP_CR_FOR_DRAFT_PLANNED capability OFF for the duration of a test."""
+    original = app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False)
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = False
+    yield
+    app.config["SKIP_CR_FOR_DRAFT_PLANNED"] = original
+
+
+def test_edit_executing_bli_budget_field_routes_to_change_request(
+    skip_cr_disabled, auth_client, executing_bli, app_ctx
+):
+    """With the capability OFF, changing amount on an executing BLI (no procurement tracker → no
+    pre-award lock) creates a CR, returns 202."""
     data = _full_put_payload(executing_bli, amount=200.50, requestor_notes="bump amount")
     response = auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
 
@@ -390,3 +424,93 @@ def test_edit_executing_bli_unauthorized_user(basic_user_auth_client, executing_
     response = basic_user_auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
 
     assert response.status_code == 403
+
+
+# ---=== OPS-6195: capability ON — executing budget edits apply directly until Pre-Award ===---
+
+
+@pytest.mark.parametrize("pre_award_state", [None, "present", "declined"])
+def test_edit_executing_bli_budget_field_applies_directly_when_flag_on(
+    pre_award_state, skip_cr_enabled, auth_client, executing_bli, make_pre_award, app_ctx
+):
+    """With the capability ON, a budget-field edit on an executing BLI applies directly (200, no CR)
+    when there is no Pre-Award request, when the PRE_AWARD step has not been requested, and after the
+    DD declines the Pre-Award request."""
+    if pre_award_state:
+        make_pre_award(executing_bli.agreement_id, state=pre_award_state)
+
+    data = _full_put_payload(executing_bli, amount=200.50)
+    response = auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 200, response.json
+    assert response.json["amount"] == 200.50
+    assert response.json["in_review"] is False
+    assert response.json["change_requests_in_review"] is None
+
+
+@pytest.mark.parametrize(
+    "pre_award_state,expected_message",
+    [
+        ("in_review", "Pre-Award Approval is in review"),
+        ("locked", "after Pre-Award Approval has been completed"),
+    ],
+)
+def test_edit_executing_bli_budget_field_blocked_by_pre_award_when_flag_on(
+    pre_award_state, expected_message, skip_cr_enabled, auth_client, executing_bli, make_pre_award, app_ctx
+):
+    """The direct-edit path must not bypass the pre-award locks: while Pre-Award is in review, and
+    once the DD has approved it, a budget-field edit on an executing BLI is rejected (400)."""
+    make_pre_award(executing_bli.agreement_id, state=pre_award_state)
+
+    data = _full_put_payload(executing_bli, amount=200.50)
+    response = auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 400
+    assert expected_message in str(response.json)
+
+
+def test_planned_to_executing_still_routes_to_change_request_when_flag_on(
+    skip_cr_enabled, auth_client, executing_bli, app_ctx, loaded_db
+):
+    """Starting procurement (Planned → Executing) still requires approval with the capability ON."""
+    executing_bli.status = BudgetLineItemStatus.PLANNED
+    loaded_db.commit()
+
+    data = _full_put_payload(executing_bli, status="IN_EXECUTION")
+    response = auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 202, response.json
+    assert response.json["status"] == "PLANNED"
+    assert response.json["in_review"] is True
+
+
+@pytest.mark.parametrize("pre_award_state", ["in_review", "locked"])
+def test_budget_team_executing_budget_edit_routes_to_change_request_during_pre_award_lock_when_flag_on(
+    pre_award_state, skip_cr_enabled, budget_team_auth_client, executing_bli, make_pre_award, app_ctx
+):
+    """Budget Team is exempt from the pre-award locks, but only because their financial edits still
+    go to the DD as a change request. The capability must not turn that into a direct write."""
+    make_pre_award(executing_bli.agreement_id, state=pre_award_state)
+
+    data = _full_put_payload(executing_bli, amount=200.50)
+    response = budget_team_auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 202, response.json
+    assert response.json["amount"] == 100.12
+    assert response.json["in_review"] is True
+
+
+def test_budget_team_draft_to_planned_routes_to_change_request_during_pre_award_lock_when_flag_on(
+    skip_cr_enabled, budget_team_auth_client, executing_bli, make_pre_award, loaded_db, app_ctx
+):
+    """The Draft→Planned direct path must not bypass DD review for Budget Team during a lock either."""
+    executing_bli.status = BudgetLineItemStatus.DRAFT
+    loaded_db.commit()
+    make_pre_award(executing_bli.agreement_id, state="in_review")
+
+    data = _full_put_payload(executing_bli, status="PLANNED")
+    response = budget_team_auth_client.put(url_for("api.budget-line-items-item", id=executing_bli.id), json=data)
+
+    assert response.status_code == 202, response.json
+    assert response.json["status"] == "DRAFT"
+    assert response.json["in_review"] is True

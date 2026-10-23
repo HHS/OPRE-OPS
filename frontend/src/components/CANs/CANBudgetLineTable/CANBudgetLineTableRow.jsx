@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -32,6 +33,7 @@ import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
  * @property {number} creatorId
  * @property {string} creationDate
  * @property {string} description
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to the agreement (composed by the embedding page: CAN detail vs. Portfolio spending).
  */
 
 /**
@@ -51,7 +53,8 @@ const CANBudgetLineTableRow = ({
     inReview,
     creatorId,
     creationDate,
-    description
+    description,
+    ancestry = []
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
@@ -62,6 +65,7 @@ const CANBudgetLineTableRow = ({
     const resolvedAgreementName =
         agreementName?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    const agreementPath = `/agreements/${budgetLine?.agreement?.id}`;
 
     const TableRowData = (
         <>
@@ -71,7 +75,8 @@ const CANBudgetLineTableRow = ({
                     {budgetLine.agreement ? (
                         <Link
                             className="text-ink text-no-underline"
-                            to={`/agreements/${budgetLine.agreement.id}`}
+                            to={agreementPath}
+                            state={buildTrailState(agreementPath, ancestry)}
                             aria-label={resolvedAgreementName}
                         >
                             <TextClip

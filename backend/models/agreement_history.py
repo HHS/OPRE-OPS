@@ -40,6 +40,7 @@ class AgreementHistoryType(Enum):
     GRANT_NUMBER_CREATED = auto()
     GRANT_NUMBER_UPDATED = auto()
     GRANT_NUMBER_DELETED = auto()
+    CONTRACT_MODIFICATION_STARTED = auto()
 
 
 class AgreementHistory(BaseModel):
@@ -381,6 +382,22 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             history_event = create_procurement_tracker_step_update_history_event(event, event_user, session)
             if history_event:
                 history_events.append(history_event)
+        case OpsEventType.START_CONTRACT_MODIFICATION:
+            edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["agreement_id"],
+                    agreement_id_record=event.event_details["agreement_id"],
+                    ops_event_id=event.id,
+                    history_title="Contract Modification Started",
+                    history_message=(
+                        f"{event_user.full_name} started a contract modification including "
+                        f"{edit_count} edit{'' if edit_count == 1 else 's'}."
+                    ),
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=AgreementHistoryType.CONTRACT_MODIFICATION_STARTED,
+                )
+            )
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
     history_events = [
         event for event in history_events if event.agreement_id is not None and event.agreement_id_record is not None

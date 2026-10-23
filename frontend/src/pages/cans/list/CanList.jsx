@@ -8,7 +8,8 @@ import CANTableLoading from "../../../components/CANs/CANTable/CANTableLoading";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
-import { getCurrentFiscalYear, codesToDisplayText } from "../../../helpers/utils";
+import { codesToDisplayText } from "../../../helpers/utils";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
@@ -25,16 +26,11 @@ import { ITEMS_PER_PAGE } from "../../../constants";
 const CanList = () => {
     const navigate = useNavigate();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    // Filters + selected fiscal year persist across client-side navigation via
+    // the session slice (see useListFilters).
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("cans");
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
-    const [filters, setFilters] = React.useState({
-        activePeriod: [],
-        transfer: [],
-        portfolio: [],
-        can: [],
-        budget: []
-    });
 
     // Determine fiscal year filter - send empty array when "All" is selected
     const getFiscalYearFilter = () => {

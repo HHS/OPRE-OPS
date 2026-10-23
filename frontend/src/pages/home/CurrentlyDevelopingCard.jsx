@@ -11,10 +11,13 @@ import { ROADMAP_STATUS, ROADMAP_STATUS_LABELS, ROADMAP_STATUS_TAG_CLASSES } fro
     Progress") IS identical in both frames, so it reads from the shared constant instead
     of duplicating the string. Don't hardcode "Up Next" to match `ROADMAP_STATUS_LABELS`
     without checking both Figma frames first.
+
+    "Up Next" shows only the NOT_STARTED items flagged `upNext: true` in roadmapData.json,
+    a short subset of the full "Up Next / Later" list on the OPS at a Glance tab.
 */
 const CurrentlyDevelopingCard = () => {
     const currentlyDevelopingItems = getRoadmapItemsByStatus(ROADMAP_STATUS.CURRENTLY_DEVELOPING);
-    const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED);
+    const nextUpItems = getRoadmapItemsByStatus(ROADMAP_STATUS.NOT_STARTED).filter((item) => item.upNext);
 
     return (
         <RoundedBox className="flex-fill">

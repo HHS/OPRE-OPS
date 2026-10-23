@@ -3,6 +3,7 @@ import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
+import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * CanTableRow component of CANTable
@@ -22,6 +23,8 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
+    const listTrailState = useListTrailState("cans");
+    const canPath = `/cans/${canId}`;
 
     return (
         <tr>
@@ -31,7 +34,8 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                     position="right"
                 >
                     <Link
-                        to={`/cans/${canId}`}
+                        to={canPath}
+                        state={listTrailState(canPath)}
                         className="text-ink text-no-underline"
                     >
                         {name}

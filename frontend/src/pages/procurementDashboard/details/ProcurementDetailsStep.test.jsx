@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithProviders } from "../../../test-utils";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import ProcurementDetailsStep from "./ProcurementDetailsStep";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 
@@ -43,13 +43,11 @@ describe("ProcurementDetailsStep", () => {
     };
 
     const renderComponent = (props = {}) =>
-        render(
-            <MemoryRouter>
-                <ProcurementDetailsStep
-                    {...defaultProps}
-                    {...props}
-                />
-            </MemoryRouter>
+        renderWithProviders(
+            <ProcurementDetailsStep
+                {...defaultProps}
+                {...props}
+            />
         );
 
     it("renders agreement and BLI summary tags", () => {

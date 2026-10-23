@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 
 from flask import current_app
@@ -14,9 +15,41 @@ from models import (
     ProcurementTrackerStatus,
     ProcurementTrackerStepType,
 )
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
+from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
-from ops_api.ops.utils.users import is_super_user
+from ops_api.ops.utils.users import is_budget_team, is_super_user
+
+
+def tracks_contract_modifications(budget_line_item: BudgetLineItem) -> bool:
+    """Whether edits to this budget line require a contract modification (OPS-3072): the
+    ENABLE_MODIFIED_LOE_EDITS capability is on and the budget line's agreement is Awarded."""
+    return bool(
+        current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
+        and budget_line_item.agreement
+        and budget_line_item.agreement.is_awarded
+    )
+
+
+def validate_no_execution_status_change_on_awarded(budget_line_item: BudgetLineItem, new_status: Any) -> None:
+    """On an Awarded agreement, executing a budget line requires a Contract Modification
+    (OPS-3072), so a status change to IN_EXECUTION is rejected -- both when it is requested and
+    when a change request requested before the award is approved. Only applies with the
+    ENABLE_MODIFIED_LOE_EDITS capability on. Superusers bypass this, matching the other awarded
+    locks (e.g. ImmutableAwardedFieldsRule)."""
+    if new_status != BudgetLineItemStatus.IN_EXECUTION:
+        return
+    if not tracks_contract_modifications(budget_line_item):
+        return
+    if is_super_user(current_user, current_app):
+        return
+    raise ValidationError(
+        {
+            "status": (
+                "Budget lines on an awarded agreement can't be changed to Executing; "
+                "a Contract Modification is required."
+            )
+        }
+    )
 
 
 def get_division_for_budget_line_item(bli_id: int):
@@ -323,6 +356,48 @@ def is_post_pre_award_locked(agreement) -> bool:
         return False
 
     return True
+
+
+class PreAwardLock(Enum):
+    """The pre-award lock an agreement is under, if any."""
+
+    IN_REVIEW = "in_review"  # Pre-Award Approval requested and not yet decided
+    POST_APPROVAL = "post_approval"  # Pre-Award fully approved, Award request not yet approved
+
+
+def get_pre_award_lock(agreement) -> PreAwardLock | None:
+    """
+    The single source of truth for which pre-award lock an agreement is under. Every write path
+    that honors the locks (BLI validation and direct-apply, agreement and services-component /
+    grant-number edits, BLI create) goes through this so they can't drift apart.
+    """
+    if is_pre_award_in_review(agreement):
+        return PreAwardLock.IN_REVIEW
+    if is_post_pre_award_locked(agreement):
+        return PreAwardLock.POST_APPROVAL
+    return None
+
+
+AGREEMENT_PRE_AWARD_LOCK_MESSAGES = {
+    PreAwardLock.IN_REVIEW: "Cannot modify the Agreement while Pre-Award Approval is in review.",
+    PreAwardLock.POST_APPROVAL: "Cannot modify the Agreement after Pre-Award Approval has been completed.",
+}
+
+
+def get_agreement_pre_award_lock_message(agreement, user) -> str | None:
+    """
+    Reason agreement-level edits (agreement fields, services components, grant numbers, new budget
+    lines) are blocked by the pre-award locks, or None if they aren't.
+
+    Budget Team is exempt, mirroring the BLI locks in ``BudgetLineItemService._validation``. Unlike
+    BLI money edits, agreement-level edits have no change-request workflow, so Budget Team edits
+    here apply directly (as they do outside the lock); only BLI financial edits are forced back
+    through a change request during the lock (see ``BudgetLineItemService._flagged_direct_edit``).
+    """
+    lock = get_pre_award_lock(agreement)
+    if not lock or (user and is_budget_team(user)):
+        return None
+    return AGREEMENT_PRE_AWARD_LOCK_MESSAGES[lock]
 
 
 def bli_associated_with_agreement(id: int) -> bool:

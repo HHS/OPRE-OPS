@@ -98,6 +98,13 @@ RUNNING_IN_AZURE = "environment/azure" in (os.getenv("OPS_CONFIG") or "")
 # Default OFF everywhere so behavior is unchanged unless explicitly enabled.
 SKIP_CR_FOR_DRAFT_PLANNED = os.getenv("SKIP_CR_FOR_DRAFT_PLANNED", "false").lower() == "true"
 
+# When True, approved budget line change requests on an Awarded agreement are recorded as
+# "Edits That Require a Contract Modification" and listed on the Award & Modifications tab
+# (OPS-3072, Modified LOE contract mod, slice 1). Set per-environment via the
+# ENABLE_MODIFIED_LOE_EDITS env var. Default OFF everywhere so behavior is unchanged unless
+# explicitly enabled.
+ENABLE_MODIFIED_LOE_EDITS = os.getenv("ENABLE_MODIFIED_LOE_EDITS", "false").lower() == "true"
+
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"

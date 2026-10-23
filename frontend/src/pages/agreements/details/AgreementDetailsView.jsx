@@ -112,7 +112,10 @@ const AgreementDetailsView = ({
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreement Period of Performance</dt>
                             <dd className="margin-0 margin-top-1">
-                                <Tooltip label={PERIOD_OF_PERFORMANCE_TOOLTIP}>
+                                <Tooltip
+                                    label={PERIOD_OF_PERFORMANCE_TOOLTIP}
+                                    maxWidth="mobile"
+                                >
                                     <Tag
                                         dataCy="period-of-performance-tag"
                                         tagStyle="primaryDarkTextLightBackground"

@@ -20,6 +20,7 @@ import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
  * @property {number} totalFunding
  * @property {number} fiscalYear
  * @property {'portfolio' | 'can'} [tableType]
+ * @property {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [ancestry] - Breadcrumb ancestry passed to each row's agreement link (composed by the embedding page).
  */
 
 /**
@@ -27,7 +28,7 @@ import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
  * @param {CANBudgetLineTableProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
+const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can", ancestry = [] }) => {
     const { sortCondition, sortDescending, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = budgetLines.filter((budgetLine) => !budgetLine.is_obe);
@@ -70,6 +71,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
                         description={budgetLine?.line_description ?? ""}
+                        ancestry={ancestry}
                     />
                 ))}
             </Table>

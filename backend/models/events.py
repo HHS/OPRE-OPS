@@ -118,6 +118,9 @@ class OpsEventType(Enum):
     UPDATE_PROCUREMENT_ACTION = auto()
     DELETE_PROCUREMENT_ACTION = auto()
 
+    # Contract Modification Related Events
+    START_CONTRACT_MODIFICATION = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1

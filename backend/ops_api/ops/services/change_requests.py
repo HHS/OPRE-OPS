@@ -8,7 +8,7 @@ from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow.experimental.context import Context
 
-from models import Agreement, BudgetLineItem, Division, NotificationType, OpsEventType
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
@@ -17,6 +17,7 @@ from models.change_requests import (
     ChangeRequestType,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.notifications import NotificationService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -31,7 +32,9 @@ from ops_api.ops.utils.agreements_helpers import (
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
     get_division_for_budget_line_item,
+    tracks_contract_modifications,
     update_data,
+    validate_no_execution_status_change_on_awarded,
 )
 from ops_api.ops.utils.change_requests_helpers import (
     build_approve_url,
@@ -40,6 +43,14 @@ from ops_api.ops.utils.change_requests_helpers import (
     get_model_class_by_type,
 )
 from ops_api.ops.utils.events import OpsEventHandler
+
+
+def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data: dict) -> bool:
+    return (
+        key == "status"
+        and budget_line_item.status == BudgetLineItemStatus.DRAFT
+        and change_data.get("status") == BudgetLineItemStatus.PLANNED
+    )
 
 
 class ChangeRequestService(OpsService[ChangeRequest]):
@@ -198,6 +209,18 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         ):
             raise ValidationError({"change_request": "This change request has already been reviewed."})
 
+        # A Planned->Executing request submitted before the agreement was awarded can't be
+        # approved once it is: executing on an Awarded agreement requires a Contract Modification.
+        # Checked before the change request is marked reviewed so a rejected approval leaves it pending.
+        if (
+            action == "APPROVE"
+            and change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
+            and change_request.has_status_change
+        ):
+            validate_no_execution_status_change_on_awarded(
+                change_request.budget_line_item, change_request.requested_change_data["status"]
+            )
+
         if change_request.status == ChangeRequestStatus.REJECTED:
             return {
                 "model_to_update": None,
@@ -213,6 +236,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         if change_request.status == ChangeRequestStatus.APPROVED:
             if change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+                # On an Awarded agreement, track the approved edit as requiring a contract
+                # modification (OPS-3072). Recorded before the BLI is changed or deleted, while
+                # the change request still exists, so it lands in the same commit.
+                ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
                 if getattr(change_request, "has_delete_change", False):
                     # A deletion request: don't re-add the BLI (model_to_update stays None).
                     # The BLI is deleted last in update(), after the CR is finalized — see the
@@ -366,7 +393,16 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                     "managing_division_id": managing_division.id,
                     "requested_change_data": requested_change_data,
                     "requested_change_diff": requested_change_diff,
-                    "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                    "requested_change_info": {
+                        "target_display_name": budget_line_item.display_name,
+                        # Snapshot (OPS-3072): money/time edits and Draft->Planned count; other
+                        # status changes don't (Planned->Executing is blocked on awarded agreements).
+                        "requires_contract_modification": (
+                            key in BudgetLineItemChangeRequest.budget_field_names
+                            or _is_draft_to_planned(key, budget_line_item, change_data)
+                        )
+                        and tracks_contract_modifications(budget_line_item),
+                    },
                     "requestor_notes": requestor_notes,
                     "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
                 }
@@ -403,7 +439,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 "managing_division_id": (managing_division.id if managing_division else None),
                 "requested_change_data": {"delete": True},
                 "requested_change_diff": {"delete": {"old": old_amount, "new": "Deleted"}},
-                "requested_change_info": {"target_display_name": budget_line_item.display_name},
+                "requested_change_info": {
+                    "target_display_name": budget_line_item.display_name,
+                    "requires_contract_modification": tracks_contract_modifications(budget_line_item),
+                },
                 "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
             }
 

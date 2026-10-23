@@ -3,8 +3,10 @@
 When the flag is ON, two specific budget-line changes apply immediately instead of
 creating a Change Request:
   1. Draft → Planned status change.
-  2. In-Planned budget-detail edits (amount / can_id / date_needed) on a line that
-     is and stays PLANNED.
+  2. In-Planned / in-Executing budget-detail edits (amount / can_id / date_needed) on a
+     line that is and stays PLANNED or IN_EXECUTION.
+
+Planned → Executing still creates a Change Request.
 
 When OFF, both route through the change-request workflow exactly as today.
 
@@ -21,9 +23,14 @@ from flask import url_for
 
 from models import (
     Agreement,
+    AgreementReason,
+    AgreementType,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ContractAgreement,
     ContractBudgetLineItem,
+    ContractType,
+    ServicesComponent,
     User,
 )
 
@@ -71,6 +78,10 @@ def basic_user_on_agreement(loaded_db):
     if basic_user in agreement.team_members:
         agreement.team_members.remove(basic_user)
     loaded_db.commit()
+
+
+# In-status budget-detail edits apply directly on both PLANNED and IN_EXECUTION lines.
+DIRECT_EDIT_STATUSES = [BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION]
 
 
 def _make_bli(loaded_db, status, test_can, **overrides):
@@ -137,12 +148,13 @@ def test_draft_to_planned_does_not_null_financials(
         loaded_db.commit()
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 @pytest.mark.parametrize("field,value", [("amount", 999.99), ("date_needed", "2043-10-15")])
 def test_in_planned_budget_edit_applies_immediately_when_flag_on(
-    field, value, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    status, field, value, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
     """An in-Planned budget-detail edit applies directly, no CR, 200."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can)
+    bli = _make_bli(loaded_db, status, test_can)
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -157,11 +169,12 @@ def test_in_planned_budget_edit_applies_immediately_when_flag_on(
         loaded_db.commit()
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 def test_in_planned_can_edit_applies_immediately_when_flag_on(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_cans, app_ctx
+    status, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_cans, app_ctx
 ):
     """Changing can_id on a Planned line applies directly under the flag."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_cans[0])
+    bli = _make_bli(loaded_db, status, test_cans[0])
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -176,13 +189,14 @@ def test_in_planned_can_edit_applies_immediately_when_flag_on(
         loaded_db.commit()
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 def test_in_planned_amount_edit_leaves_other_budget_fields_untouched(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    status, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
     """Editing only `amount` on a Planned line must not null the other budget fields
     (can_id / date_needed) — the write set is restricted to what was actually sent."""
     original_date = datetime.date(2043, 9, 1)
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can, amount=100.00, date_needed=original_date)
+    bli = _make_bli(loaded_db, status, test_can, amount=100.00, date_needed=original_date)
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -199,13 +213,14 @@ def test_in_planned_amount_edit_leaves_other_budget_fields_untouched(
         loaded_db.commit()
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 def test_in_planned_combined_budget_and_line_description_both_apply_when_flag_on(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    status, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
     """A save combining a budget field (amount) with an always-direct field
     (line_description) must apply BOTH directly — not silently drop line_description.
     Mirrors the flag-OFF behavior where line_description applies directly alongside the CR."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can, amount=100.00, line_description="Original")
+    bli = _make_bli(loaded_db, status, test_can, amount=100.00, line_description="Original")
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -241,10 +256,11 @@ def test_draft_to_planned_creates_cr_when_flag_off(
         _delete_bli_and_crs(loaded_db, bli)
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 def test_in_planned_budget_edit_creates_cr_when_flag_off(
-    skip_cr_disabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    status, skip_cr_disabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can)
+    bli = _make_bli(loaded_db, status, test_can)
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -261,11 +277,34 @@ def test_in_planned_budget_edit_creates_cr_when_flag_off(
 
 
 def test_planned_to_executing_still_creates_cr_when_flag_on(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    skip_cr_enabled, basic_user_auth_client, loaded_db, test_can, test_project, app_ctx
 ):
-    """Only Draft→Planned is affected. Planned→Executing must still route for review
-    even with the flag ON — proves the scope isn't broader than intended."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can)
+    """Only Draft→Planned skips review among status changes. Planned→Executing must still
+    route for review even with the flag ON — proves the scope isn't broader than intended.
+
+    Uses a fresh non-awarded agreement: seed agreement 1 is Awarded, where Planned→Executing
+    is rejected outright because it requires a Contract Modification (OPS-3072)."""
+    agreement = ContractAgreement(
+        name="Skip-CR Planned to Executing Agreement",
+        contract_number="CTSKIPCRPTE",
+        description="Non-awarded agreement for the Planned to Executing flag-scope test",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        product_service_code_id=2,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=503,
+        awarding_entity_id=1,
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+    agreement.team_members.append(loaded_db.get(User, 521))
+    sc = ServicesComponent(agreement_id=agreement.id, number=1, optional=False)
+    loaded_db.add(sc)
+    loaded_db.commit()
+    bli = _make_bli(
+        loaded_db, BudgetLineItemStatus.PLANNED, test_can, agreement_id=agreement.id, services_component_id=sc.id
+    )
     try:
         response = basic_user_auth_client.patch(
             url_for("api.budget-line-items-item", id=bli.id),
@@ -277,6 +316,9 @@ def test_planned_to_executing_still_creates_cr_when_flag_on(
         assert bli.in_review is True
     finally:
         _delete_bli_and_crs(loaded_db, bli)
+        loaded_db.delete(sc)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
 
 
 def test_in_planned_out_of_scope_field_not_newly_persisted_when_flag_on(
@@ -346,13 +388,14 @@ def test_status_and_budget_edit_combined_still_rejected_when_flag_on(
 # ---=== Defect C: edit-bundle shares the same routing seam ===---
 
 
+@pytest.mark.parametrize("status", DIRECT_EDIT_STATUSES)
 def test_edit_bundle_in_planned_edit_applies_immediately_when_flag_on(
-    skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
+    status, skip_cr_enabled, basic_user_auth_client, basic_user_on_agreement, loaded_db, test_can, app_ctx
 ):
     """An in-Planned budget edit submitted through the atomic edit-bundle endpoint routes
     through the SAME update_with_change_request_ids seam (commit=False). With the flag ON it
     must apply directly inside the bundle transaction — no CR, no financial-field wipe."""
-    bli = _make_bli(loaded_db, BudgetLineItemStatus.PLANNED, test_can, amount=100.00)
+    bli = _make_bli(loaded_db, status, test_can, amount=100.00)
     original_date = bli.date_needed
     try:
         response = basic_user_auth_client.patch(

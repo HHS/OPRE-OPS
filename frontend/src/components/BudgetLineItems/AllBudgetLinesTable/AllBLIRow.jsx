@@ -17,6 +17,7 @@ import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
+import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -49,6 +50,8 @@ const AllBLIRow = ({ budgetLine }) => {
     const agreementLinkLabel =
         getAgreementDisplayName(budgetLine?.agreement).trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    const listTrailState = useListTrailState("budgetLines");
+    const agreementPath = budgetLine?.agreement?.id ? `/agreements/${budgetLine.agreement.id}` : "";
 
     const TableRowData = (
         <>
@@ -57,7 +60,8 @@ const AllBLIRow = ({ budgetLine }) => {
                 <div className={tableStyles.textClipContainer}>
                     {budgetLine?.agreement?.id ? (
                         <Link
-                            to={`/agreements/${budgetLine.agreement.id}`}
+                            to={agreementPath}
+                            state={listTrailState(agreementPath)}
                             className="text-ink text-no-underline"
                             aria-label={agreementLinkLabel}
                         >

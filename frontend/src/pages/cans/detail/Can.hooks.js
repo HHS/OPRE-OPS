@@ -1,10 +1,10 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { ALL_FISCAL_YEARS_PARAM, getCurrentFiscalYear, parseFiscalYearParam } from "../../../helpers/utils";
 import { getTypesCounts } from "./Can.helpers";
 import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
@@ -21,7 +21,14 @@ export default function useCan() {
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
 
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    // A `?fy=` param (set by breadcrumb links back to this CAN) seeds the selected FY,
+    // including "All" (`?fy=all`).
+    const [searchParams] = useSearchParams();
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(() => {
+        const fyParam = searchParams.get("fy");
+        if (fyParam === ALL_FISCAL_YEARS_PARAM) return "All";
+        return parseFiscalYearParam(fyParam) ?? getCurrentFiscalYear();
+    });
     const fiscalYear = selectedFiscalYear === "All" ? null : Number(selectedFiscalYear);
     const canId = parseInt(urlPathParams.id ?? "-1");
     const initialModalProps = {

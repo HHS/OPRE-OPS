@@ -12,6 +12,16 @@ export const getCurrentFiscalYear = (today = new Date()) => {
     return fiscalYear;
 };
 
+/** `?fy=` value meaning "All fiscal years", for pages whose FY selector offers that option. */
+export const ALL_FISCAL_YEARS_PARAM = "all";
+
+/**
+ * Parse a fiscal-year URL param (e.g. `?fy=2025`).
+ * @param {string | null} value - The raw param value.
+ * @returns {number | null} The fiscal year, or null when the value isn't a four-digit year (e.g. "0000").
+ */
+export const parseFiscalYearParam = (value) => (value && /^[1-9]\d{3}$/.test(value) ? Number(value) : null);
+
 /**
  * This function calculate a percent based on a numerator and denominator.
  * @param {number} numerator - The numerator. This parameter is required.
@@ -91,6 +101,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} contractType - Display text for contract types.
  * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
  * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ * @property {Object.<string, string>} modificationEditType - Display text for contract modification edit types.
  * @property {Object.<string, string>} methodOfTransfer - Display text for change to statuses.
  * @property {Object.<string, string>} project - Display text for project types.
  * @property {Object.<string, string>} projectOfficer - Display text for project types.
@@ -215,6 +226,9 @@ export const codesToDisplayText = {
         date_needed: "Obligate By Date",
         status: "Status",
         delete: "Deleted"
+    },
+    modificationEditType: {
+        MODIFIED_LOE: "Modified Level of Effort"
     },
     methodOfTransfer: {
         DIRECT: "Direct",
@@ -771,3 +785,17 @@ export const applyMinimumArcValue = (items, total) => {
         return { ...item, value: item.value - reduction };
     });
 };
+
+/**
+ * Escapes HTML special characters so user-entered text renders literally in HTML sinks.
+ * @param {string|null|undefined} value - The text to escape.
+ * @returns {string} The escaped text.
+ * @example escapeHtml("<b>Hi</b>") // returns "&lt;b&gt;Hi&lt;/b&gt;"
+ */
+export const escapeHtml = (value) =>
+    String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");

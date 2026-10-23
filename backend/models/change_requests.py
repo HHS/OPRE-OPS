@@ -145,12 +145,31 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     def has_delete_change(cls):
         return cls.requested_change_data.has_key("delete")
 
+    @hybrid_property
+    def requires_contract_modification(self):
+        """True when this budget/delete change request was submitted while its Agreement was
+        already Awarded (OPS-3072) -- i.e. per the issue's own framing, "anything that changes
+        money or time on the awarded contract." Deliberately agreement-scoped, not
+        BLI-status-scoped (see Decision 1 in .claude/stories/3072-modified-loe-edit-budget-line.md).
+
+        Snapshotted into ``requested_change_info`` at creation time rather than derived from
+        ``agreement.is_awarded`` on read: a request submitted before the award must keep
+        reading False after the agreement is awarded (Decision 2). Requests created before
+        the snapshot existed have no key and read False.
+        """
+        return bool((self.requested_change_info or {}).get("requires_contract_modification"))
+
+    @requires_contract_modification.expression
+    def requires_contract_modification(cls):
+        return cls.requested_change_info["requires_contract_modification"].as_boolean().is_(True)
+
     def to_dict(self):
         """Override to_dict to include hybrid properties."""
         data = super().to_dict()
         data["has_budget_change"] = bool(self.has_budget_change)
         data["has_status_change"] = bool(self.has_status_change)
         data["has_delete_change"] = bool(self.has_delete_change)
+        data["requires_contract_modification"] = bool(self.requires_contract_modification)
         return data
 
 

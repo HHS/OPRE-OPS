@@ -132,6 +132,9 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
 // the corresponding callbacks from the CreateBLIsAndSCs mock.
 let simulateFinancialChange = false;
 let simulateUnsavedChanges = false;
+// OPS-3072 (Modified LOE): simulates CreateBLIsAndSCs reporting that pending edits
+// require a contract modification (Awarded agreement).
+let simulateContractModification = false;
 
 vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
     const { useEffect } = await vi.importActual("react");
@@ -142,6 +145,7 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
         isAgreementAwarded,
         bundleSliceRef,
         onFinancialChangeStateChange,
+        onContractModificationStateChange,
         onHasUnsavedChangesChange
     }) {
         useEffect(() => {
@@ -155,6 +159,11 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
                 onFinancialChangeStateChange(simulateFinancialChange);
             }
         }, [onFinancialChangeStateChange]);
+        useEffect(() => {
+            if (onContractModificationStateChange) {
+                onContractModificationStateChange(simulateContractModification);
+            }
+        }, [onContractModificationStateChange]);
         useEffect(() => {
             if (onHasUnsavedChangesChange) {
                 onHasUnsavedChangesChange(simulateUnsavedChanges);
@@ -210,6 +219,7 @@ describe("EditAgreementAndBudgetLines", () => {
         simulateFinancialChange = false;
         simulateProcurementShopChange = false;
         simulateUnsavedChanges = false;
+        simulateContractModification = false;
         agreementSlice = { name: "Edited Agreement" };
         blisSlice = {
             services_components: { create: [], update: [], delete: [] },
@@ -412,6 +422,59 @@ describe("EditAgreementAndBudgetLines", () => {
                 )
             ).toBeInTheDocument();
             expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("contract-modification modal (OPS-3072, Awarded agreements)", () => {
+        const awardedContractModCopy =
+            "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
+
+        it("shows the contract-modification copy instead of the DD-approval copy when the agreement is Awarded", async () => {
+            mockAgreementResult = { data: { ...mockAgreement, is_awarded: true }, error: null, isLoading: false };
+            simulateContractModification = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            expect(await screen.findByText(awardedContractModCopy)).toBeInTheDocument();
+            expect(
+                screen.queryByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).not.toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+
+        it("saves after the user confirms the contract-modification modal", async () => {
+            mockAgreementResult = { data: { ...mockAgreement, is_awarded: true }, error: null, isLoading: false };
+            simulateContractModification = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            const sendBtn = await screen.findByRole("button", { name: "Send to Approval" });
+            fireEvent.click(sendBtn);
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        });
+
+        // Regression: the copy keys off requiresContractModification (which accounts for the
+        // ENABLE_MODIFIED_LOE_EDITS capability), not is_awarded alone. With the capability OFF, a
+        // financial change on an Awarded agreement gets the plain DD-approval copy.
+        it("shows the DD-approval copy for a financial change on an Awarded agreement that doesn't require a contract modification", async () => {
+            mockAgreementResult = { data: { ...mockAgreement, is_awarded: true }, error: null, isLoading: false };
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(screen.queryByText(awardedContractModCopy)).not.toBeInTheDocument();
+        });
+
+        it("does not show any modal when the agreement is Awarded but there are no pending edits", async () => {
+            mockAgreementResult = { data: { ...mockAgreement, is_awarded: true }, error: null, isLoading: false };
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+            expect(screen.queryByText(awardedContractModCopy)).not.toBeInTheDocument();
         });
     });
 

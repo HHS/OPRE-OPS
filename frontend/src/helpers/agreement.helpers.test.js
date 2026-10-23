@@ -304,7 +304,7 @@ describe("isFieldVisible", () => {
     });
 });
 
-describe("calculateTotal", () => {
+describe("calculateAgreementTotal", () => {
     /** @type {import("../types/BudgetLineTypes").BudgetLine[]} */
     let budgetLines;
 
