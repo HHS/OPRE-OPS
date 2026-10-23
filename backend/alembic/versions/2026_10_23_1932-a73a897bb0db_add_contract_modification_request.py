@@ -397,19 +397,22 @@ def downgrade() -> None:
     op.execute(
         "DELETE FROM ops.notification_version WHERE notification_type = 'CONTRACT_MODIFICATION_REQUEST_NOTIFICATION'"
     )
-    for table in ("agreement_history", "agreement_history_version"):
-        op.execute(
-            f"DELETE FROM ops.{table} WHERE history_type IN ('CONTRACT_MODIFICATION_APPROVED', 'CONTRACT_MODIFICATION_DECLINED')"
-        )
-    for table in ("ops_event", "ops_event_version"):
-        op.execute(f"DELETE FROM ops.{table} WHERE event_type = 'REVIEW_CONTRACT_MODIFICATION'")
+    op.execute(
+        "DELETE FROM ops.agreement_history WHERE history_type IN ('CONTRACT_MODIFICATION_APPROVED', 'CONTRACT_MODIFICATION_DECLINED')"
+    )
+    op.execute(
+        "DELETE FROM ops.agreement_history_version WHERE history_type IN ('CONTRACT_MODIFICATION_APPROVED', 'CONTRACT_MODIFICATION_DECLINED')"
+    )
+    op.execute("DELETE FROM ops.ops_event WHERE event_type = 'REVIEW_CONTRACT_MODIFICATION'")
+    op.execute("DELETE FROM ops.ops_event_version WHERE event_type = 'REVIEW_CONTRACT_MODIFICATION'")
     op.execute("UPDATE ops.agreement_mod SET mod_type = NULL WHERE mod_type = 'MODIFIED_LOE'")
     op.execute("UPDATE ops.agreement_mod_version SET mod_type = NULL WHERE mod_type = 'MODIFIED_LOE'")
-    for table in ("document", "document_version"):
-        op.execute(
-            f"DELETE FROM ops.{table} WHERE document_type IN ('CONTRACT_MODIFICATION_MEMO', "
-            "'REVISED_INDEPENDENT_GOVERNMENT_COST_ESTIMATE', 'REVISED_STATEMENT_OF_REQUIREMENTS')"
-        )
+    op.execute(
+        "DELETE FROM ops.document WHERE document_type IN ('CONTRACT_MODIFICATION_MEMO', 'REVISED_INDEPENDENT_GOVERNMENT_COST_ESTIMATE', 'REVISED_STATEMENT_OF_REQUIREMENTS')"
+    )
+    op.execute(
+        "DELETE FROM ops.document_version WHERE document_type IN ('CONTRACT_MODIFICATION_MEMO', 'REVISED_INDEPENDENT_GOVERNMENT_COST_ESTIMATE', 'REVISED_STATEMENT_OF_REQUIREMENTS')"
+    )
     op.sync_enum_values(
         enum_schema="ops",
         enum_name="notificationtype",
