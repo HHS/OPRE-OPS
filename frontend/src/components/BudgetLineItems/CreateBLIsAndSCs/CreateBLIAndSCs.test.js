@@ -30,7 +30,7 @@ vi.mock("../../GrantNumbers", () => ({
 // EditAgreement context (via AllGrantNumberSelect) that these unit tests don't provide.
 vi.mock("../BudgetLinesForm", () => ({
     __esModule: true,
-    default: () => <div data-testid="budget-lines-form" />
+    default: (props) => <div data-testid="budget-lines-form">allow-past:{String(!!props.allowPastObligateByDates)}</div>
 }));
 
 // Stub the budget-lines table: its rows use RTK-Query hooks that need the API
@@ -538,6 +538,41 @@ describe("CreateBLIsAndSCs", () => {
         expect(handleSave).toHaveBeenCalledWith(false, true, true);
 
         // Restore the default mock so other tests aren't affected.
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
+    });
+
+    test("passes the hook's allowPastObligateByDates to BudgetLinesForm", async () => {
+        const mockStore = createMockStore();
+        const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+        const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+            ...origImpl(...args),
+            allowPastObligateByDates: true
+        }));
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={agreement.budget_line_items}
+                        selectedAgreement={agreement}
+                        selectedProcurementShop={agreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="agreement"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={true}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.getByTestId("budget-lines-form")).toHaveTextContent("allow-past:true");
         vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
     });
 
