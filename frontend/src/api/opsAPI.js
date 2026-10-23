@@ -63,6 +63,7 @@ export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
         "Agreements",
+        "ContractModifications",
         "Projects",
         "User",
         "Users",
@@ -644,7 +645,25 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}/contract-modification-edits/`,
             transformResponse: (response) => response?.data ?? [],
             // Edits are written when a change request is approved, so refetch on review too.
-            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ChangeRequests"]
+            providesTags: (_result, _error, id) => [
+                { type: "Agreements", id },
+                "ChangeRequests",
+                "ContractModifications"
+            ]
+        }),
+        getAgreementContractModificationsById: builder.query({
+            query: (id) => `/agreements/${id}/contract-modifications/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ContractModifications"]
+        }),
+        submitContractModification: builder.mutation({
+            query: ({ agreementId, budgetLineItemIds, requestorNotes }) => ({
+                url: `/agreements/${agreementId}/contract-modifications/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: { budget_line_item_ids: budgetLineItemIds, requestor_notes: requestorNotes || null }
+            }),
+            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
@@ -1008,14 +1027,10 @@ export const opsApi = createApi({
             skip: (arg) => !arg?.id
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
-            query: ({ user_oidc_id, agreement_id }) => {
-                if (!user_oidc_id || !agreement_id) {
-                    return { skip: true };
-                }
-                return {
-                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`
-                };
-            },
+            // Callers must pass `skip` until both ids are known; returning `{ skip: true }` from
+            // here doesn't skip, it requests the API root.
+            query: ({ user_oidc_id, agreement_id }) =>
+                `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
             providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
@@ -1430,6 +1445,8 @@ export const {
     useGetSpecialTopicsQuery,
     useGetAgreementAwardHistoryByIdQuery,
     useGetAgreementContractModificationEditsByIdQuery,
+    useGetAgreementContractModificationsByIdQuery,
+    useSubmitContractModificationMutation,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

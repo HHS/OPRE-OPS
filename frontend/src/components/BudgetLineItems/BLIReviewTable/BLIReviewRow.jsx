@@ -93,6 +93,8 @@ const BLIReviewRow = ({
 
     const toolTipMsg = React.useMemo(() => {
         if (budgetLine?.actionable) return "";
+        // A page with its own selection rules (e.g. Start Modification) supplies the reason.
+        if (budgetLine?.disabledReason) return budgetLine.disabledReason;
 
         // If no action is selected yet, return empty string to avoid showing misleading tooltip
         if (!action) {
