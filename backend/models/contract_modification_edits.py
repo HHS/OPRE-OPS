@@ -26,7 +26,8 @@ class ContractModificationEdit(BaseModel):
 
     Display values are snapshotted from the change request so the row survives the change
     request and the budget line being deleted (an approved delete-BL request removes both):
-    ``change_request_id`` is ``SET NULL`` and ``budget_line_item_id`` deliberately has no FK.
+    ``change_request_id`` is ``SET NULL``, and ``budget_line_item_id`` and
+    ``services_component_id`` deliberately have no FK.
     """
 
     __tablename__ = "contract_modification_edit"
@@ -43,6 +44,8 @@ class ContractModificationEdit(BaseModel):
         ForeignKey("change_request.id", ondelete="SET NULL"), nullable=True
     )
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    # Set for Services Component add/delete rows (OPS-6440). No FK, so the row survives the SC's deletion.
+    services_component_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     field: Mapped[str] = mapped_column(String, nullable=False)
     old_value: Mapped[Optional[Any]] = mapped_column(JSONB, nullable=True)

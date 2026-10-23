@@ -1154,6 +1154,17 @@
       period_end: "2045-06-13T14:00:00",
       agreement_id: 523,
     },
+    {
+      // SC3 on CONTRACT #523 has no budget lines, for manual testing of OPS-6440: deleting it
+      // applies directly, while deleting SC1/SC2 (which have non-Draft BLs) goes to approval.
+      id: 60,
+      number: 3,
+      optional: false,
+      description: "Dissemination",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 523,
+    },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
       id: 56,

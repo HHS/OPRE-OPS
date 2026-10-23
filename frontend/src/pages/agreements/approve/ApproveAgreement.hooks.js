@@ -29,6 +29,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { CheckAuth } from "../../../components/Auth/auth";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+import { getServicesComponentChangeLines } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 
 /**
  * @typedef {import('../../../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
@@ -172,7 +173,11 @@ const useApproveAgreement = () => {
     }
     // NOTE: 3 types of change requests: budget change, status change to planned, status change to executing
     const budgetChangeRequests = changeRequestsInReview.filter(
-        (changeRequest) => changeRequest.has_budget_change || changeRequest.has_proc_shop_change
+        (changeRequest) =>
+            changeRequest.has_budget_change ||
+            changeRequest.has_proc_shop_change ||
+            // Services Component additions/deletions are reviewed on the budget-change page (OPS-6440).
+            changeRequest.has_services_component_change
     );
     const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
         (changeRequest) =>
@@ -190,6 +195,12 @@ const useApproveAgreement = () => {
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
+    // Services Component additions/deletions, in the same bullet format as the budget messages (OPS-6440).
+    const servicesComponentChangeMessages = changeRequestsInReview
+        .filter((changeRequest) => changeRequest.has_services_component_change)
+        .flatMap(getServicesComponentChangeLines)
+        .map((line) => ` \u2022 ${line}`)
+        .join("\n");
     const procurementShopChangeMessages = useChangeRequestsForProcurementShop(
         agreement,
         oldAwardingEntity,
@@ -205,7 +216,7 @@ const useApproveAgreement = () => {
             return procurementShopChangeMessages;
         }
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
-            return budgetChangeMessages;
+            return [budgetChangeMessages, servicesComponentChangeMessages].filter(Boolean).join("\n");
         }
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
             if (statusChangeTo === BLI_STATUS.PLANNED) {
@@ -220,6 +231,7 @@ const useApproveAgreement = () => {
         changeRequestType,
         statusChangeTo,
         budgetChangeMessages,
+        servicesComponentChangeMessages,
         budgetLinesToPlannedMessages,
         budgetLinesToExecutingMessages,
         procurementShopChangeMessages

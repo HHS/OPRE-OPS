@@ -38,3 +38,46 @@ export const dateToYearMonthDay = (date) => {
         return { year: "", month: "", day: "" };
     }
 };
+
+const SERVICES_COMPONENT_PENDING_TITLE =
+    "This services component has pending edits that will require a contract modification:";
+
+/**
+ * Describe a Services Component add/delete change request (OPS-6440) as display lines, without
+ * bullets: "Adding: SC3 BL 15012, BL 15013", or "Deleting: SC2" followed by "Removing: BL 15010 from
+ * SC2" for each linked budget line. A deleted SC's budget lines are only removed from it, not deleted,
+ * so they never appear next to "Deleting". Read from the request's frozen diff, so it works after the
+ * SC itself is gone.
+ *
+ * @param {import("../../types/ChangeRequestsTypes").ChangeRequest} changeRequest
+ * @returns {string[]}
+ */
+export function getServicesComponentChangeLines(changeRequest) {
+    const diff = changeRequest?.requested_change_diff ?? {};
+    const budgetLines = (changeRequest?.requested_change_info?.linked_budget_line_item_ids ?? []).map(
+        (id) => `BL ${id}`
+    );
+    if (diff.services_component_create) {
+        const name = diff.services_component_create.new;
+        return [[`Adding: ${name}`, budgetLines.join(", ")].filter(Boolean).join(" ")];
+    }
+    if (diff.services_component_delete) {
+        const name = diff.services_component_delete.old;
+        return [`Deleting: ${name}`, ...budgetLines.map((budgetLine) => `Removing: ${budgetLine} from ${name}`)];
+    }
+    return [];
+}
+
+/**
+ * Tooltip for a services component whose addition or deletion is in review (OPS-6440), in the same
+ * format as a budget line's pending-edits tooltip.
+ *
+ * @param {object} servicesComponent - A services component as returned by the API.
+ * @returns {string} The locked-icon tooltip, or "" when nothing is in review.
+ */
+export function getServicesComponentLockedMessage(servicesComponent) {
+    if (!servicesComponent?.in_review) return "";
+    return (servicesComponent.change_requests_in_review ?? [])
+        .flatMap(getServicesComponentChangeLines)
+        .reduce((message, line) => `${message}\n \u2022 ${line}`, SERVICES_COMPONENT_PENDING_TITLE);
+}

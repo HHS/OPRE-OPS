@@ -7,14 +7,24 @@ from flask import current_app
 from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow.experimental.context import Context
+from sqlalchemy import select
 
-from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division, NotificationType, OpsEventType
+from models import (
+    Agreement,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    Division,
+    NotificationType,
+    OpsEventType,
+    ServicesComponent,
+)
 from models.change_requests import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
     ChangeRequest,
     ChangeRequestStatus,
     ChangeRequestType,
+    ServicesComponentChangeRequest,
 )
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
@@ -31,7 +41,9 @@ from ops_api.ops.utils.agreements_helpers import (
 )
 from ops_api.ops.utils.api_helpers import validate_and_prepare_change_data
 from ops_api.ops.utils.budget_line_items_helpers import (
+    agreement_tracks_contract_modifications,
     get_division_for_budget_line_item,
+    sc_requires_approval_gate,
     tracks_contract_modifications,
     update_data,
     validate_no_execution_status_change_on_awarded,
@@ -51,6 +63,13 @@ def _is_draft_to_planned(key: str, budget_line_item: BudgetLineItem, change_data
         and budget_line_item.status == BudgetLineItemStatus.DRAFT
         and change_data.get("status") == BudgetLineItemStatus.PLANNED
     )
+
+
+# Change request types whose reviewers are resolved through the agreement (not a managing division).
+_AGREEMENT_REVIEWED_TYPES = (
+    ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+    ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+)
 
 
 class ChangeRequestService(OpsService[ChangeRequest]):
@@ -101,12 +120,18 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         model_to_update = None
         bli_to_delete = None
+        services_component_to_delete = None
 
         # Handle review action if present
         if action:
             result = self._handle_review_action(change_request, action, reviewer_notes)
             model_to_update = result.get("model_to_update")
             bli_to_delete = result.get("bli_to_delete")
+            services_component_to_delete = result.get("services_component_to_delete")
+
+        # A budget line leaving a pending Services Component's approval (approved delete, or a
+        # declined Draft->Planned) can leave the SC with nothing needing approval (OPS-6440).
+        withdraw_check_sc_id = self._services_component_to_recheck(change_request)
 
         # Apply any direct field updates to the change request
         for key, value in updated_fields.items():
@@ -139,6 +164,14 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             self.db_session.delete(bli_to_delete)
             self.db_session.commit()
             change_request.to_dict = lambda: snapshot
+
+        # Removing the SC (approved delete, declined add) also happens after the CR is finalized.
+        # change_request.services_component_id is SET NULL, so the CR keeps its history.
+        if services_component_to_delete is not None:
+            self._delete_reviewed_services_component(services_component_to_delete)
+
+        if withdraw_check_sc_id is not None:
+            self.withdraw_services_component_add_if_unneeded(withdraw_check_sc_id)
 
         return change_request, 200
 
@@ -174,8 +207,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
     def _is_division_director_of_change_request(self, change_request) -> bool:
         current_user_id = current_user.id
 
-        # AgreementChangeRequest: check via agreement's divisions
-        if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
+        # AgreementChangeRequest / ServicesComponentChangeRequest: check via agreement's divisions
+        if change_request.change_request_type in _AGREEMENT_REVIEWED_TYPES:
             if not change_request.agreement:
                 return False
             directors, deputies = get_division_directors_for_agreement(change_request.agreement)
@@ -233,8 +266,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         model_to_update = None
         bli_to_delete = None
+        services_component_to_delete = None
 
-        if change_request.status == ChangeRequestStatus.APPROVED:
+        if change_request.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST:
+            services_component_to_delete = self._apply_services_component_review(change_request)
+        elif change_request.status == ChangeRequestStatus.APPROVED:
             if change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
                 # On an Awarded agreement, track the approved edit as requiring a contract
                 # modification (OPS-3072). Recorded before the BLI is changed or deleted, while
@@ -253,16 +289,18 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return {
             "model_to_update": model_to_update,
             "bli_to_delete": bli_to_delete,
+            "services_component_to_delete": services_component_to_delete,
         }
 
     # --- Notification Handling ---
 
     def notify_division_reviewers(
-        self, change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest]
+        self,
+        change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest, ServicesComponentChangeRequest],
     ) -> None:
         division_director_ids: set[int] = set()
 
-        if change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST:
+        if change_request.change_request_type in _AGREEMENT_REVIEWED_TYPES:
             # Dynamically determine the managing division for the change request
             division_directors, deputy_division_directors = get_division_directors_for_agreement(
                 change_request.agreement
@@ -411,6 +449,15 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 change_request_ids.append(change_request.id)
                 cr_meta.metadata.update({"bli_id": bli_id, "change_request": change_request.to_dict()})
 
+            # A Draft budget line on a pending Services Component going to Planned makes the SC
+            # need approval too, so its add request goes in alongside (OPS-6440).
+            if _is_draft_to_planned(key, budget_line_item, change_data):
+                sc_change_request_id = self.ensure_services_component_add_change_request(
+                    budget_line_item.services_component, commit=commit, pending_planned=True
+                )
+                if sc_change_request_id is not None:
+                    change_request_ids.append(sc_change_request_id)
+
         return change_request_ids
 
     def add_bli_delete_change_request(self, budget_line_item: BudgetLineItem, commit: bool = True) -> int:
@@ -481,3 +528,195 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         update_agreement(agreement, data)
         return agreement
+
+    # --- ServicesComponent-specific Operations (OPS-6440) ---
+
+    def add_services_component_create_change_request(
+        self, services_component: ServicesComponent, commit: bool = True
+    ) -> int:
+        """Request approval to add a Services Component on an Awarded agreement.
+
+        The SC row already exists (so budget lines can point at it); approval clears its
+        ``awaiting_add_approval`` flag, and a decline removes it. ``commit=False`` follows
+        ``add_bli_change_requests``: no commit and no notification.
+        """
+        return self._add_services_component_change_request(
+            services_component,
+            ServicesComponentChangeRequest.create_field_name,
+            {"old": None, "new": services_component.display_name},
+            commit,
+        )
+
+    def add_services_component_delete_change_request(
+        self, services_component: ServicesComponent, commit: bool = True
+    ) -> int:
+        """Request approval to delete a Services Component on an Awarded agreement.
+
+        The SC and its budget line links stay until approval; an approved delete removes the
+        SC and its budget lines lose their SC (``SET NULL``).
+        """
+        return self._add_services_component_change_request(
+            services_component,
+            ServicesComponentChangeRequest.delete_field_name,
+            {"old": services_component.display_name, "new": "Deleted"},
+            commit,
+        )
+
+    def _add_services_component_change_request(
+        self, services_component: ServicesComponent, field: str, diff: dict, commit: bool
+    ) -> int:
+        with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
+            change_request_data = {
+                "services_component_id": services_component.id,
+                "agreement_id": services_component.agreement_id,
+                "requested_change_data": {field: True},
+                # Display names are frozen here so history survives the SC being removed.
+                "requested_change_diff": {field: diff},
+                "requested_change_info": {
+                    "target_display_name": services_component.display_name,
+                    "requires_contract_modification": agreement_tracks_contract_modifications(
+                        services_component.agreement
+                    ),
+                    "linked_budget_line_item_ids": self._linked_budget_line_item_ids(services_component.id),
+                },
+                "change_request_type": ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+            }
+
+            change_request = self.create(change_request_data, commit=commit)
+            cr_meta.metadata.update(
+                {"services_component_id": services_component.id, "change_request": change_request.to_dict()}
+            )
+            return change_request.id
+
+    def ensure_services_component_add_change_request(
+        self, services_component: ServicesComponent, commit: bool = True, pending_planned: bool = False
+    ) -> int | None:
+        """Create the add change request for a pending SC once it needs approval.
+
+        A pending SC (``awaiting_add_approval``) needs approval once it has a non-Draft budget
+        line, or when ``pending_planned`` says a Draft->Planned request was just made for one of
+        its budget lines. Idempotent: if an add request is already in review, only its linked
+        budget line ids are refreshed. Returns the new change request id, or None.
+        """
+        if services_component is None or not services_component.awaiting_add_approval:
+            return None
+        if not sc_requires_approval_gate(services_component.agreement):
+            return None
+
+        existing = self._in_review_services_component_create_change_request(services_component.id)
+        if existing is not None:
+            info = dict(existing.requested_change_info or {})
+            info["linked_budget_line_item_ids"] = self._linked_budget_line_item_ids(services_component.id)
+            existing.requested_change_info = info
+            if commit:
+                self.db_session.commit()
+            return None
+
+        if not (pending_planned or services_component.has_non_draft_budget_lines):
+            return None
+        return self.add_services_component_create_change_request(services_component, commit=commit)
+
+    def withdraw_services_component_add_if_unneeded(self, services_component_id: int, commit: bool = True) -> bool:
+        """Withdraw a pending SC's add change request once nothing on it needs approval.
+
+        That's when the SC has no non-Draft budget lines and none of its budget lines has a
+        Draft->Planned request in review. The change request is deleted (its notifications
+        cascade) and the SC goes back to its pre-approval state: ``awaiting_add_approval`` with
+        no change request. Returns True if a request was withdrawn.
+        """
+        services_component = self.db_session.get(ServicesComponent, services_component_id)
+        if services_component is None:
+            return False
+        change_request = self._in_review_services_component_create_change_request(services_component_id)
+        if change_request is None:
+            return False
+        if services_component.has_non_draft_budget_lines:
+            return False
+        pending_status_change = self.db_session.scalar(
+            select(BudgetLineItemChangeRequest.id)
+            .join(BudgetLineItem, BudgetLineItem.id == BudgetLineItemChangeRequest.budget_line_item_id)
+            .where(
+                BudgetLineItemChangeRequest.in_review_filter(),
+                BudgetLineItemChangeRequest.has_status_change,
+                BudgetLineItem.services_component_id == services_component_id,
+            )
+            .limit(1)
+        )
+        if pending_status_change is not None:
+            return False
+
+        with OpsEventHandler(OpsEventType.DELETE_CHANGE_REQUEST) as meta:
+            meta.metadata.update({"change_request": change_request.to_dict(), "withdrawn": True})
+            self.db_session.delete(change_request)
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
+        return True
+
+    def _in_review_services_component_create_change_request(
+        self, services_component_id: int
+    ) -> ServicesComponentChangeRequest | None:
+        return self.db_session.scalar(
+            select(ServicesComponentChangeRequest).where(
+                ServicesComponentChangeRequest.in_review_filter(),
+                ServicesComponentChangeRequest.is_services_component_create,
+                ServicesComponentChangeRequest.services_component_id == services_component_id,
+            )
+        )
+
+    def _linked_budget_line_item_ids(self, services_component_id: int) -> list[int]:
+        return list(
+            self.db_session.scalars(
+                select(BudgetLineItem.id)
+                .where(BudgetLineItem.services_component_id == services_component_id)
+                .order_by(BudgetLineItem.id)
+            )
+        )
+
+    def _apply_services_component_review(
+        self, change_request: ServicesComponentChangeRequest
+    ) -> ServicesComponent | None:
+        """Apply a reviewed SC change request. Returns the SC to delete last, if any.
+
+        Approved add: the SC becomes a normal SC. Declined add: the SC is removed.
+        Approved delete: the SC is removed. Declined delete: nothing changes.
+        """
+        services_component = self.db_session.get(ServicesComponent, change_request.services_component_id)
+        if services_component is None:
+            return None
+
+        approved = change_request.status == ChangeRequestStatus.APPROVED
+        if approved:
+            # Recorded before the SC is removed, while the change request still points at it.
+            ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
+
+        if change_request.is_services_component_create:
+            if approved:
+                services_component.awaiting_add_approval = False
+                return None
+            return services_component
+        return services_component if approved else None
+
+    def _delete_reviewed_services_component(self, services_component: ServicesComponent) -> None:
+        """Delete an SC removed by review, recording the usual "Services Component Deleted" history."""
+        with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
+            meta.metadata.update({"service_component": services_component.to_dict()})
+            self.db_session.delete(services_component)
+            self.db_session.commit()
+
+    @staticmethod
+    def _services_component_to_recheck(change_request: ChangeRequest) -> int | None:
+        """The SC whose pending add may no longer need approval after this budget line review."""
+        if change_request.change_request_type != ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+            return None
+        budget_line_item = change_request.budget_line_item
+        if budget_line_item is None or budget_line_item.services_component_id is None:
+            return None
+        approved_delete = change_request.status == ChangeRequestStatus.APPROVED and change_request.has_delete_change
+        declined_status_change = (
+            change_request.status == ChangeRequestStatus.REJECTED and change_request.has_status_change
+        )
+        if approved_delete or declined_status_change:
+            return budget_line_item.services_component_id
+        return None

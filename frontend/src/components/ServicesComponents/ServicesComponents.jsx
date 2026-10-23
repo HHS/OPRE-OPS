@@ -16,6 +16,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
  * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
+ * @param {function(number): boolean} [props.deleteRequiresApproval] - Whether deleting the saved services component with this id goes to Division Director approval on save (OPS-6440).
  * @returns {React.ReactElement}
  *
  * @example
@@ -31,7 +32,8 @@ const ServicesComponents = ({
     setHasUnsavedChanges,
     hasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    deleteRequiresApproval
 }) => {
     const {
         formData,
@@ -52,7 +54,8 @@ const ServicesComponents = ({
         continueBtnText,
         setHasUnsavedChanges,
         scFormSuite,
-        nonDraftBudgetLines
+        nonDraftBudgetLines,
+        deleteRequiresApproval
     );
 
     return (

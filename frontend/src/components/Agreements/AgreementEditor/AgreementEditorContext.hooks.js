@@ -41,6 +41,8 @@ export const defaultState = {
     wizardSteps: ["Project", "Agreement", "Budget Lines"],
     services_components: [],
     deleted_services_components_ids: [],
+    // Display names of deleted services components by id, for the "Pending Changes" alert (OPS-6440).
+    deleted_services_components_names: {},
     grant_numbers: [],
     deleted_grant_numbers_ids: [],
     budget_line_items: [],
@@ -93,23 +95,38 @@ const makeDeleteCase =
                 ? [...state[deletedIdsKey], action.payload.id]
                 : [...state[deletedIdsKey]],
             // Reconcile BLIs: clear the link to the deleted item by id so entries sharing a
-            // number (e.g. SC sub-components) don't incorrectly retain a stale link.
-            budget_line_items: reconcileBudgetLines(
-                state.budget_line_items,
-                (bli) => bli[linkField] != null && !remainingIds.has(bli[linkField]),
-                clearLink
-            )
+            // number (e.g. SC sub-components) don't incorrectly retain a stale link. A deletion that
+            // goes to approval keeps the links: the backend unlinks them once approved (OPS-6440).
+            budget_line_items: action.keepBudgetLineLinks
+                ? state.budget_line_items
+                : reconcileBudgetLines(
+                      state.budget_line_items,
+                      (bli) => bli[linkField] != null && !remainingIds.has(bli[linkField]),
+                      clearLink
+                  )
         };
     };
 
 const addServicesComponent = makeAddCase("services_components");
 const updateServicesComponent = makeUpdateCase("services_components");
-const deleteServiceComponent = makeDeleteCase({
+const deleteServiceComponentCase = makeDeleteCase({
     stateKey: "services_components",
     deletedIdsKey: "deleted_services_components_ids",
     linkField: "services_component_id",
     clearLink: clearBliServiceComponentLink
 });
+const deleteServiceComponent = (state, action) => {
+    const { id, display_name, display_title } = action.payload;
+    const next = deleteServiceComponentCase(state, action);
+    if (!id) return next;
+    return {
+        ...next,
+        deleted_services_components_names: {
+            ...(state.deleted_services_components_names ?? {}),
+            [id]: display_name ?? display_title
+        }
+    };
+};
 
 const addGrantNumber = makeAddCase("grant_numbers");
 const updateGrantNumber = makeUpdateCase("grant_numbers");
@@ -217,7 +234,8 @@ export function editAgreementReducer(state, action) {
             return {
                 ...state,
                 services_components: action.payload ?? [],
-                deleted_services_components_ids: []
+                deleted_services_components_ids: [],
+                deleted_services_components_names: {}
             };
         }
         case "ADD_GRANT_NUMBER": {

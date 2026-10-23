@@ -41,7 +41,10 @@ class ContractModificationEditService:
         """
         if not current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False):
             return None
-        if change_request.change_request_type != ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
+        if change_request.change_request_type not in (
+            ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+            ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+        ):
             return None
         if change_request.status != ChangeRequestStatus.APPROVED:
             return None
@@ -50,7 +53,8 @@ class ContractModificationEditService:
             return None
 
         # Each budget line change request carries exactly one field (add_bli_change_requests
-        # creates one per field; a delete request carries the "delete" sentinel).
+        # creates one per field; a delete request carries the "delete" sentinel). A Services
+        # Component request carries "services_component_create" or "services_component_delete".
         field = next(iter(change_request.requested_change_data))
         diff = (change_request.requested_change_diff or {}).get(field, {})
 
@@ -58,7 +62,8 @@ class ContractModificationEditService:
             agreement_id=change_request.agreement_id,
             modification_type=ModificationEditType.MODIFIED_LOE,
             change_request_id=change_request.id,
-            budget_line_item_id=change_request.budget_line_item_id,
+            budget_line_item_id=getattr(change_request, "budget_line_item_id", None),
+            services_component_id=getattr(change_request, "services_component_id", None),
             field=field,
             old_value=diff.get("old"),
             new_value=diff.get("new"),
@@ -85,16 +90,26 @@ class ContractModificationEditService:
     def _latest_per_budget_line_field(edits) -> list[ContractModificationEdit]:
         """Collapse oldest-first edits to the latest per (budget line, field), keeping list order."""
         latest = {}
-        deleted_bli_ids = set()
+        deleted = set()
         for edit in edits:
-            if edit.field == "delete":
-                deleted_bli_ids.add(edit.budget_line_item_id)
-            key = (edit.budget_line_item_id, edit.field)
+            # Services Component rows have no budget line, so they're keyed by SC instead;
+            # otherwise two SC adds would collapse into one (OPS-6440).
+            if edit.services_component_id is not None:
+                target = ("sc", edit.services_component_id)
+                is_delete = edit.field == "services_component_delete"
+            else:
+                target = ("bli", edit.budget_line_item_id)
+                is_delete = edit.field == "delete"
+            if is_delete:
+                deleted.add(target)
+            key = (target, edit.field)
             # re-insert so the edit sorts by its latest occurrence
             latest.pop(key, None)
             latest[key] = edit
         return [
-            edit for (bli_id, field), edit in latest.items() if not (bli_id in deleted_bli_ids and field != "delete")
+            edit
+            for (target, field), edit in latest.items()
+            if not (target in deleted and field not in ("delete", "services_component_delete"))
         ]
 
     def attach_pending_edits_to_mod(self, agreement_id: int, agreement_mod_id: int, edit_ids: list[int]) -> int:

@@ -126,6 +126,56 @@ describe("editAgreementReducer - CLEAR_SERVICES_COMPONENTS", () => {
     });
 });
 
+describe("editAgreementReducer - DELETE_SERVICE_COMPONENT", () => {
+    const sc = { id: 21, number: 2, display_name: "SC2", display_title: "Services Component 2" };
+    const state = {
+        ...defaultState,
+        services_components: [sc, { id: 22, number: 3 }],
+        budget_line_items: [
+            { id: 1, services_component_id: 21, services_component_number: 2 },
+            { id: 2, services_component_id: 22, services_component_number: 3 }
+        ]
+    };
+
+    it("records the id and display name and clears links to the deleted services component", () => {
+        const next = editAgreementReducer(state, { type: "DELETE_SERVICE_COMPONENT", payload: sc });
+
+        expect(next.services_components).toEqual([{ id: 22, number: 3 }]);
+        expect(next.deleted_services_components_ids).toEqual([21]);
+        expect(next.deleted_services_components_names).toEqual({ 21: "SC2" });
+        expect(next.budget_line_items[0].services_component_id).toBeNull();
+        expect(next.budget_line_items[1].services_component_id).toBe(22);
+    });
+
+    it("keeps the budget line links when the deletion goes to approval (OPS-6440)", () => {
+        const next = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: sc,
+            keepBudgetLineLinks: true
+        });
+
+        expect(next.deleted_services_components_ids).toEqual([21]);
+        expect(next.budget_line_items).toBe(state.budget_line_items);
+    });
+
+    it("records no name for an unsaved services component", () => {
+        const next = editAgreementReducer(
+            { ...defaultState, services_components: [{ number: 4, display_title: "Services Component 4" }] },
+            { type: "DELETE_SERVICE_COMPONENT", payload: { number: 4, display_title: "Services Component 4" } }
+        );
+
+        expect(next.deleted_services_components_names).toEqual({});
+    });
+
+    it("RESEED_SERVICES_COMPONENTS clears the recorded names", () => {
+        const deleted = editAgreementReducer(state, { type: "DELETE_SERVICE_COMPONENT", payload: sc });
+
+        const next = editAgreementReducer(deleted, { type: "RESEED_SERVICES_COMPONENTS", payload: [] });
+
+        expect(next.deleted_services_components_names).toEqual({});
+    });
+});
+
 describe("editAgreementReducer - CLEAR_GRANT_NUMBERS", () => {
     it("empties grant_numbers and appends their ids to deleted_grant_numbers_ids", () => {
         const state = {

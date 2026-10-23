@@ -579,9 +579,9 @@ describe("useCreateBLIsAndSCs", () => {
             expect(result.current.requiresContractModification).toBe(false);
         });
 
-        // Regression: SC changes are saved directly, not through approval, so they must not
-        // trigger the "send it for approval" contract-modification modal.
-        it("does not flag requiresContractModification for services component changes on an Awarded agreement", () => {
+        // SC changes without non-Draft budget lines are saved directly, not through approval, so
+        // they must not trigger the "send it for approval" contract-modification modal (OPS-6440).
+        it("does not flag requiresContractModification for services component changes without budget lines on an Awarded agreement", () => {
             useEditAgreementMock.mockReturnValue({
                 ...editAgreementMockData,
                 budget_line_items: [],
@@ -591,6 +591,151 @@ describe("useCreateBLIsAndSCs", () => {
             const { result } = renderSubject({ selectedAgreement: { is_awarded: true } });
 
             expect(result.current.requiresContractModification).toBe(false);
+        });
+
+        describe("services component additions and deletions (OPS-6440)", () => {
+            const awardedContract = { is_awarded: true, agreement_type: "CONTRACT" };
+            const savedSc = (overrides = {}) => ({
+                id: 21,
+                number: 2,
+                display_name: "SC2",
+                display_title: "Services Component 2",
+                created_on: "2026-01-01",
+                ...overrides
+            });
+            const lineOn = (scNumber, status, overrides = {}) => ({
+                id: 700 + scNumber,
+                status,
+                in_review: false,
+                services_component_number: scNumber,
+                created_on: "2026-01-01",
+                ...overrides
+            });
+
+            it("flags a new SC that has a Planned budget line", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ number: 3, display_title: "Services Component 3" }],
+                    budget_line_items: [lineOn(3, "PLANNED")]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(true);
+            });
+
+            it("flags a saved SC still awaiting approval of its addition once it has a Planned budget line", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [savedSc({ awaiting_add_approval: true })],
+                    budget_line_items: [lineOn(2, "PLANNED")]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(true);
+            });
+
+            it.each([
+                ["only Draft budget lines", { awaiting_add_approval: true }, "DRAFT"],
+                ["an addition already in review", { awaiting_add_approval: true, in_review: true }, "PLANNED"],
+                ["an approved addition", { awaiting_add_approval: false }, "PLANNED"]
+            ])("does not flag an SC with %s", (_label, scOverrides, status) => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [savedSc(scOverrides)],
+                    budget_line_items: [lineOn(2, status)]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(false);
+            });
+
+            it("flags deleting a saved SC whose Planned budget line is still linked", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [],
+                    deleted_services_components_ids: [21],
+                    budget_line_items: [
+                        { id: 710, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }
+                    ]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(true);
+                expect(result.current.servicesComponentDeleteRequiresApproval(21)).toBe(true);
+            });
+
+            it("flags deleting a saved SC whose Planned budget line's own deletion is going to approval", () => {
+                // The deleted line is gone from context but still linked in the saved budget lines.
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [],
+                    deleted_services_components_ids: [21],
+                    deleted_budget_line_items_ids: [711],
+                    budget_line_items: []
+                });
+                const { result } = renderHook(() =>
+                    useCreateBLIsAndSCs(
+                        true,
+                        false,
+                        [{ id: 711, status: "PLANNED", services_component_id: 21, created_on: "2026-01-01" }],
+                        vi.fn(),
+                        goBackMock,
+                        vi.fn(),
+                        { id: 1, display_name: "AGR-1", ...awardedContract },
+                        { fee_percentage: 5, abbr: "PSC" },
+                        setIsEditModeMock,
+                        "none",
+                        true,
+                        false,
+                        "Save & Exit",
+                        1
+                    )
+                );
+
+                expect(result.current.requiresContractModification).toBe(true);
+            });
+
+            it("does not flag deleting a saved SC whose budget lines are all Draft", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [],
+                    deleted_services_components_ids: [21],
+                    budget_line_items: [
+                        { id: 712, status: "DRAFT", services_component_id: 21, created_on: "2026-01-01" }
+                    ]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(false);
+                expect(result.current.servicesComponentDeleteRequiresApproval(21)).toBe(false);
+            });
+
+            it("does not flag SC changes for a superuser", () => {
+                useSelectorMock.mockImplementation((selector) =>
+                    selector({ auth: { activeUser: { id: 1, is_superuser: true, roles: [{ name: "SYSTEM_OWNER" }] } } })
+                );
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ number: 3 }],
+                    budget_line_items: [lineOn(3, "PLANNED")]
+                });
+                const { result } = renderSubject({ selectedAgreement: awardedContract });
+
+                expect(result.current.requiresContractModification).toBe(false);
+            });
+
+            it("does not flag SC changes on an agreement that isn't Awarded", () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ number: 3 }],
+                    budget_line_items: [lineOn(3, "PLANNED")]
+                });
+                const { result } = renderSubject({
+                    selectedAgreement: { is_awarded: false, agreement_type: "CONTRACT" }
+                });
+
+                expect(result.current.requiresContractModification).toBe(false);
+            });
         });
 
         it("does not flag requiresContractModification for a new Draft BL on an Awarded agreement", () => {

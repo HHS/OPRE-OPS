@@ -23,6 +23,7 @@ class ChangeRequestType(Enum):
     CHANGE_REQUEST = auto()
     AGREEMENT_CHANGE_REQUEST = auto()
     BUDGET_LINE_ITEM_CHANGE_REQUEST = auto()
+    SERVICES_COMPONENT_CHANGE_REQUEST = auto()
 
 
 class ChangeRequest(BaseModel):
@@ -173,12 +174,90 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
         return data
 
 
+class ServicesComponentChangeRequest(AgreementChangeRequest):
+    """A request to add or delete a Services Component on an Awarded agreement (OPS-6440).
+
+    Only SCs with non-Draft budget lines need approval. ``services_component_id`` is
+    ``SET NULL`` so the request keeps its history after an approved delete or a declined
+    add removes the SC; the display names are frozen in ``requested_change_diff``.
+    """
+
+    services_component_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("services_component.id", ondelete="SET NULL"), index=True
+    )
+    services_component = relationship(
+        "ServicesComponent",
+        passive_deletes=True,
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+    }
+
+    @classmethod
+    def in_review_filter(cls):
+        """Base filter matching ServicesComponentChangeRequest rows currently in review."""
+        return and_(
+            cls.status == ChangeRequestStatus.IN_REVIEW,
+            cls.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+        )
+
+    # Deliberately not "delete": a bare "delete" key is read as a budget line delete elsewhere.
+    create_field_name = "services_component_create"
+    delete_field_name = "services_component_delete"
+    services_component_field_names = [create_field_name, delete_field_name]
+
+    @hybrid_property
+    def has_services_component_change(self):
+        return any(key in self.requested_change_data for key in self.services_component_field_names)
+
+    @has_services_component_change.expression
+    def has_services_component_change(cls):
+        return cls.requested_change_data.has_any(cls.services_component_field_names)
+
+    @hybrid_property
+    def is_services_component_create(self):
+        return self.create_field_name in self.requested_change_data
+
+    @is_services_component_create.expression
+    def is_services_component_create(cls):
+        return cls.requested_change_data.has_key(cls.create_field_name)
+
+    @hybrid_property
+    def is_services_component_delete(self):
+        return self.delete_field_name in self.requested_change_data
+
+    @is_services_component_delete.expression
+    def is_services_component_delete(cls):
+        return cls.requested_change_data.has_key(cls.delete_field_name)
+
+    @hybrid_property
+    def requires_contract_modification(self):
+        """Snapshotted at creation, same as BudgetLineItemChangeRequest.requires_contract_modification."""
+        return bool((self.requested_change_info or {}).get("requires_contract_modification"))
+
+    @requires_contract_modification.expression
+    def requires_contract_modification(cls):
+        return cls.requested_change_info["requires_contract_modification"].as_boolean().is_(True)
+
+    def to_dict(self):
+        """Override to_dict to include hybrid properties."""
+        data = super().to_dict()
+        data["has_services_component_change"] = bool(self.has_services_component_change)
+        data["is_services_component_create"] = bool(self.is_services_component_create)
+        data["is_services_component_delete"] = bool(self.is_services_component_delete)
+        data["requires_contract_modification"] = bool(self.requires_contract_modification)
+        return data
+
+
 # require agreement_id for Agreement changes.
 # (It has to be Optional in the model to keep the column nullable for other types)
 @event.listens_for(AgreementChangeRequest, "before_insert")
 @event.listens_for(AgreementChangeRequest, "before_update")
 @event.listens_for(BudgetLineItemChangeRequest, "before_insert")
 @event.listens_for(BudgetLineItemChangeRequest, "before_update")
+@event.listens_for(ServicesComponentChangeRequest, "before_insert")
+@event.listens_for(ServicesComponentChangeRequest, "before_update")
 def check_agreement_id(mapper, connection, target):
     if target.agreement_id is None:
         raise ValueError("agreement_id is required for AgreementChangeRequest")
@@ -191,3 +270,11 @@ def check_agreement_id(mapper, connection, target):
 def check_budget_line_id(mapper, connection, target):
     if target.budget_line_item_id is None:
         raise ValueError("budget_line_item_id is required for BudgetLineItemChangeRequest")
+
+
+# require services_component_id when an SC change request is created.
+# (It's SET NULL afterwards, when an approved delete or a declined add removes the SC.)
+@event.listens_for(ServicesComponentChangeRequest, "before_insert")
+def check_services_component_id(mapper, connection, target):
+    if target.services_component_id is None:
+        raise ValueError("services_component_id is required for ServicesComponentChangeRequest")

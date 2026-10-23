@@ -1,11 +1,16 @@
+import { ChangeRequest } from "./ChangeRequestsTypes";
+
 export type ServicesComponents = {
     agreement_id: number;
+    awaiting_add_approval?: boolean;
+    change_requests_in_review?: ChangeRequest[] | null;
     created_by: number;
     created_on: Date;
     description: string;
     display_name: string;
     display_title: string;
     id: number;
+    in_review?: boolean;
     number: number;
     optional: boolean;
     period_end: string;

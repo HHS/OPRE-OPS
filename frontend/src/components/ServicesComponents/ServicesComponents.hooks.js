@@ -19,6 +19,7 @@ const POP_DELETE_CONFIRMATION_MESSAGE =
  * @param {Function} setHasUnsavedChanges - Function to mark the parent form dirty.
  * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
+ * @param {function(number): boolean} [deleteRequiresApproval] - Whether deleting the saved services component with this id goes to Division Director approval on save (OPS-6440).
  */
 const useServicesComponents = (
     agreementId,
@@ -26,7 +27,8 @@ const useServicesComponents = (
     continueBtnText,
     setHasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = []
+    nonDraftBudgetLines = [],
+    deleteRequiresApproval = () => false
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -165,9 +167,14 @@ const useServicesComponents = (
      * @param {object} selectedServicesComponent
      */
     const performDelete = (selectedServicesComponent) => {
+        // On an Awarded agreement, deleting an SC with non-Draft budget lines goes to approval. Keep
+        // the lines linked: unlinking them here would leave the SC empty on save, and the backend
+        // would delete it without approval. They're unlinked when the deletion is approved.
+        const requiresApproval = deleteRequiresApproval(selectedServicesComponent.id);
         dispatch({
             type: "DELETE_SERVICE_COMPONENT",
-            payload: selectedServicesComponent
+            payload: selectedServicesComponent,
+            keepBudgetLineLinks: requiresApproval
         });
         setHasUnsavedChanges(true);
         setShowModal(false);
@@ -176,7 +183,9 @@ const useServicesComponents = (
         setFormData(initialFormData);
         setAlert({
             type: "success",
-            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            message: requiresApproval
+                ? `The deletion of ${selectedServicesComponent.display_title} has been queued and will be sent to your Division Director for approval when you click ${continueBtnText} below.`
+                : `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
             isCloseable: false,
             isToastMessage: true
         });

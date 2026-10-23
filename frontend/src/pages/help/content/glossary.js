@@ -35,8 +35,8 @@ export const data = [
         content: `The status of a budget line. These are the current statuses in OPS:
 
 - Draft - BL is just a placeholder or idea, not subtracted from the budget, and can be edited freely without approval
-- Planned - BL is subtracted from the budget, planned to move forward, but still can change, edits require a Division Director's approval
-- Executing - BL is in the procurement process, in progress to be formally committed
+- Planned - BL is subtracted from the budget, planned to move forward, but still can change. Edits to the amount, CAN and Obligate By Date don't need approval. Changing it to Executing requires a Division Director's approval
+- Executing - BL is in the procurement process, in progress to be formally committed. Edits to the amount, CAN and Obligate By Date don't need approval until Pre-Award Approval is requested
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
       `
