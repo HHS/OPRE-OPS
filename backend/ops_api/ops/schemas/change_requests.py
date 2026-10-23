@@ -11,6 +11,7 @@ class ChangeRequestResponseSchema(Schema):
     status = fields.Enum(ChangeRequestStatus, required=True)
     requested_change_data = fields.Dict(required=True)
     requested_change_diff = fields.Dict(required=True)
+    requested_change_info = fields.Dict(allow_none=True)
     requestor_notes = fields.String(load_default=None, dump_default=None, allow_none=True)
     managing_division_id = fields.Int(required=True, dump_default=None, allow_none=True)
     created_by = fields.Int(required=True)
@@ -31,6 +32,10 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
     has_delete_change = fields.Bool(load_default=False)
     has_proc_shop_change = fields.Bool(load_default=False)
     requires_contract_modification = fields.Bool(load_default=False)
+    services_component_id = fields.Int(required=False, allow_none=True)
+    has_services_component_change = fields.Bool(load_default=False)
+    is_services_component_create = fields.Bool(load_default=False)
+    is_services_component_delete = fields.Bool(load_default=False)
 
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -38,6 +43,12 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
 
 class AgreementChangeRequestResponseSchema(ChangeRequestResponseSchema):
     has_proc_shop_change = fields.Bool(required=True)
+    # Services Component add/delete requests (OPS-6440), for the "Changes In Review" banner. Budget
+    # line requests in the same list don't have these attributes, so they serialize as before.
+    services_component_id = fields.Int(allow_none=True)
+    has_services_component_change = fields.Bool()
+    is_services_component_create = fields.Bool()
+    is_services_component_delete = fields.Bool()
 
 
 class BudgetLineItemChangeRequestResponseSchema(ChangeRequestResponseSchema):

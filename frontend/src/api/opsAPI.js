@@ -468,7 +468,8 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            // Linking a budget line to a pending services component can send it to approval (OPS-6440).
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         updateBudgetLineItem: builder.mutation({
             query: ({ id, data }) => {
@@ -479,7 +480,13 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests",
+                "ServicesComponents"
+            ]
         }),
         deleteBudgetLineItem: builder.mutation({
             query: (id) => ({
@@ -489,7 +496,13 @@ export const opsApi = createApi({
             // Surface the HTTP status so callers can distinguish an immediate delete (200) from a
             // deletion routed to an approval change request (202, PLANNED/IN_EXECUTION).
             transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests",
+                "ServicesComponents"
+            ]
         }),
         // NOTE: will fetch 50 agreements due to limit on backend
         getAgreementsByResearchProjectFilter: builder.query({
@@ -1171,7 +1184,14 @@ export const opsApi = createApi({
                 url: `/services-components/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+            // On an Awarded agreement the delete may create a change request instead (OPS-6440).
+            invalidatesTags: [
+                "ServicesComponents",
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests"
+            ]
         }),
         addGrantNumber: builder.mutation({
             query: (data) => {
@@ -1230,7 +1250,15 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ChangeRequests"]
+            // Approving or declining applies the change (e.g. removes a Services Component, OPS-6440), so
+            // refresh what it touches, not just the change request lists.
+            invalidatesTags: [
+                "ChangeRequests",
+                "Agreements",
+                "BudgetLineItems",
+                "ServicesComponents",
+                "AgreementHistory"
+            ]
         }),
         getDivisions: builder.query({
             query: () => `/divisions/`,

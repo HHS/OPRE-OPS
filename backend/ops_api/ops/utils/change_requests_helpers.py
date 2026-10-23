@@ -16,6 +16,7 @@ from models import (
     ChangeRequestType,
     Division,
     Portfolio,
+    ServicesComponentChangeRequest,
 )
 from ops_api.ops.utils.budget_line_items_helpers import (
     convert_BLI_status_name_to_pretty_string,
@@ -25,6 +26,7 @@ CHANGE_REQUEST_MODEL_MAP = {
     ChangeRequestType.CHANGE_REQUEST: ChangeRequest,
     ChangeRequestType.AGREEMENT_CHANGE_REQUEST: AgreementChangeRequest,
     ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST: BudgetLineItemChangeRequest,
+    ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST: ServicesComponentChangeRequest,
 }
 
 
@@ -42,6 +44,9 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
         change_type = "budget-change"
     elif getattr(change_request, "has_delete_change", False):
         # A deletion request reviews on the budget-change surface (BudgetChangeReviewCard).
+        change_type = "budget-change"
+    elif getattr(change_request, "has_services_component_change", False):
+        # Services Component add/delete requests review on the budget-change surface too (OPS-6440).
         change_type = "budget-change"
     elif getattr(change_request, "has_proc_shop_change", False):
         change_type = "procurement-shop-change"
@@ -95,7 +100,9 @@ def _get_reviewable_agreement_ids_subquery(user_id: int):
 
 
 def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int = 0):
-    cr_poly = with_polymorphic(ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest])
+    cr_poly = with_polymorphic(
+        ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest, ServicesComponentChangeRequest]
+    )
 
     reviewable_division_ids = get_division_ids_user_can_review_for(user_id)
     reviewable_agreement_ids_subq = _get_reviewable_agreement_ids_subquery(user_id)
@@ -105,7 +112,9 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
         BudgetLineItemChangeRequest.managing_division_id.in_(reviewable_division_ids),
     )
     agr_filter = and_(
-        ChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        ChangeRequest.change_request_type.in_(
+            [ChangeRequestType.AGREEMENT_CHANGE_REQUEST, ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST]
+        ),
         AgreementChangeRequest.agreement_id.in_(reviewable_agreement_ids_subq),
     )
 
@@ -120,6 +129,15 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
     total_count = current_app.db_session.execute(count_stmt).scalar()
     results = current_app.db_session.execute(stmt.limit(limit).offset(offset)).scalars().all()
     return results, total_count
+
+
+def _services_component_review_outcome(change_request: ChangeRequest) -> tuple[str, str]:
+    """Title and message for a reviewed Services Component add/delete request (OPS-6440)."""
+    name = (change_request.requested_change_info or {}).get("target_display_name", "the services component")
+    action = "add" if change_request.is_services_component_create else "delete"
+    if change_request.status == ChangeRequestStatus.APPROVED:
+        return "Services Component Change Approved", f"Your request to {action} {name} has been approved."
+    return "Services Component Change Declined", f"Your request to {action} {name} has been declined."
 
 
 def build_review_outcome_title_and_message(
@@ -146,6 +164,9 @@ def build_review_outcome_title_and_message(
             )
         else:
             return None, None  # Unknown status
+
+    elif change_request.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST:
+        return _services_component_review_outcome(change_request)
 
     elif change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST:
         if getattr(change_request, "has_status_change", False):

@@ -1,6 +1,9 @@
 ---
 issue: 3072
 branch: OPS-3072/modified-loe-amount-edit
+subtasks:
+  - issue: 6440
+    branch: OPS-6440/sc-modified-loe
 ---
 
 # Feature Story: Modified LOE Contract Mod — Slice 1 (Edit Budget Line Amount on an Awarded Agreement)
@@ -14,6 +17,14 @@ branch: OPS-3072/modified-loe-amount-edit
 > - **Draft→Planned requires a contract modification.** On an Awarded agreement, Draft→Planned always goes to Division Director approval (even with `SKIP_CR_FOR_DRAFT_PLANNED` on), and once approved it is recorded as a `ContractModificationEdit` (field `status`, new value `PLANNED`) that shows on the Award & Modifications list. Everything below that calls Draft→Planned "not a modified LOE" or a "non-mod action" is superseded.
 > - **Services Components are out of scope for this slice (AC6/AC7).** SC saves are applied directly, with no change request and no approval, so there's nothing to track yet, and SC changes do not trigger the contract-modification modal. They need an approval path first, plus a design for what happens to a deleted SC's BLs (still open per the issue). The `ContractModificationEdit` table can take SC rows later without a schema change.
 > - **Status against the issue's ACs:** AC1–AC5 and AC8 done. AC9 done except the Start Modification button (backend endpoint only; UI is #3268). AC10 done for who/when/what/IP on `OpsEvent`; adding the IP to `AgreementHistory` rows is deferred (see [AC10](#ac10--eventhistory-records-with-who-when-what-and-remote-ip)). AC6/AC7 not started.
+
+> **Revision (round 9): Services Component add/delete (AC6/AC7, subtask #6440), glossary, and closing out AC9/AC10.** Decided with the user on 2026-10-22:
+> - **SC add/delete need Division Director approval only when the SC has BLs (round 9b).** On an Awarded agreement (with `ENABLE_MODIFIED_LOE_EDITS` on, non-superuser), an SC with no BLs is still added or deleted directly, as today. An SC with BLs goes to approval through a new `ServicesComponentChangeRequest`. A new SC that needs approval is saved as a **pending SC**: a real row that BLs can point at, listed in the "Changes In Review" banner (round 9d: no "In Review" tag on SCs; only BLs get the tag). On approval a `ContractModificationEdit` row is written. Round 8's "SC saves are applied directly" and "no schema change" notes are superseded. Full design in [Round 9: Services Component Add/Delete](#round-9-services-component-adddelete-ac6ac7-6440).
+> - **Deleting an SC keeps today's behavior for its BLs.** On an approved delete, linked BLs stay and lose their SC (`ondelete="SET NULL"`). No block and no cascade. This answers the issue's open "what happens to Budget Lines when a user deletes a Services Component".
+> - **AC10 counts as done.** The remote IP on `OpsEvent` (reachable from each `AgreementHistory` row via `ops_event_id`) is enough. `AgreementHistory.remote_addr` is dropped, not deferred.
+> - **AC9 counts as done.** The list, cards, and Start-modification endpoint are on main. The Start button is #3268, as the AC itself says. This slice adds SC rows to the list.
+> - **Glossary and how-to copy** get fixed in the same PR (from jonnalley's [comment on #6406](https://github.com/HHS/OPRE-OPS/pull/6406#issuecomment-6350150058)). See [Glossary and How-To Copy](#glossary-and-how-to-copy-round-9).
+> - **One PR** on `OPS-6440/sc-modified-loe` for all of the above.
 
 **Ticket:** #3072 — "Edit a Budget Line or Services Component on an Awarded Agreement (modified LOE contract mod)"
 **This document's scope:** The parent issue has 10 acceptance criteria. This is a **slice plan**, not a plan for the whole issue. It designs and plans **AC1 only** ("User can increase or decrease the amount of an existing budget line and see that their edit will require a contract modification") in full, then uses that design to sketch — but not fully plan — how **AC9** (Award & Modifications tab list) and **AC10** (event/history + remote IP) would extend it, since the user asked specifically to validate the approach against those two before committing to the other field-level ACs (CAN, Obligate By, add/delete BL, add/delete SC), which are expected to be near-identical repeats of the AC1 pattern (see [Generalizing](#generalizing-to-the-remaining-acceptance-criteria)).
@@ -408,7 +419,7 @@ cd ../../frontend && bun run test --watch=false && bun run lint
 Expected to be **structurally identical** to this slice, not a new design:
 - AC2 (CAN) / AC3 (Obligate By): same `is_modified_loe_amount_edit`-style helper, just widening its field allowlist from `{"amount"}` to also accept `{"can_id"}` / `{"date_needed"}` (the CR plumbing already treats all three identically via `budget_field_names` — nothing in `add_bli_change_requests` is amount-specific).
 - AC4/AC5 (add/delete BLI): add/delete already have their own existing gates (`compute_bli_is_deletable`, the BLI-creation flow) and their own existing CR path for delete (`add_bli_delete_change_request`, `change_requests.py:380`) — same `requires_contract_modification` hybrid property applies unchanged, since it's agreement-scoped, not edit-type-scoped.
-- AC6/AC7 (add/delete Services Component): `ServicesComponent` (`backend/models/services_components.py:25-100`) is a separate model with no `ChangeRequest` subtype today — `ServicesComponentService.create`/`delete` (`backend/ops_api/ops/services/services_component.py:69`, `:148`) have **no awarded-state or linked-BLI-status guard at all** currently (confirmed by direct review: `create()` only checks `associated_with_agreement`; `delete()` only checks `_sc_associated_with_agreement`). Deleting an SC today **orphans** linked BLIs via `ondelete="SET NULL"` (`backend/models/budget_line_items.py:89`) rather than cascading or blocking — so AC7 needs an explicit new decision (block the delete outright on an awarded agreement with linked Obligated BLIs? allow it but flag it as a modified LOE?) rather than inheriting one from existing behavior. There's no existing `ServicesComponentChangeRequest`, so this would likely need its own new `ChangeRequest` subtype (mirroring `BudgetLineItemChangeRequest`'s shape) rather than reusing `BudgetLineItemChangeRequest`. The closest existing precedent for an awarded-state guard is `AgreementsService._deletion_blocked_reason` (`backend/ops_api/ops/services/agreements.py:884-902`), which already special-cases `agreement.is_awarded` when deciding whether an *agreement* can be deleted — the same centralized-reason pattern (return a blocking reason string, or `None`) is a reasonable template for a new `ServicesComponentService._modification_blocked_reason`-style check, rather than inventing a new shape. This is enough to scope AC6/AC7 directionally, but — unlike ACs 2–5 — it is **not** a drop-in reuse of this slice's CR plumbing, and should get its own short design pass (new ChangeRequest subtype vs. simpler flag-and-allow) before implementation, not be assumed identical to AC1.
+- AC6/AC7 (add/delete Services Component): *(Round 9: this sketch is superseded by [Round 9: Services Component Add/Delete](#round-9-services-component-adddelete-ac6ac7-6440). It went with a new ChangeRequest subtype and kept the SET NULL behavior.)* `ServicesComponent` (`backend/models/services_components.py:25-100`) is a separate model with no `ChangeRequest` subtype today — `ServicesComponentService.create`/`delete` (`backend/ops_api/ops/services/services_component.py:69`, `:148`) have **no awarded-state or linked-BLI-status guard at all** currently (confirmed by direct review: `create()` only checks `associated_with_agreement`; `delete()` only checks `_sc_associated_with_agreement`). Deleting an SC today **orphans** linked BLIs via `ondelete="SET NULL"` (`backend/models/budget_line_items.py:89`) rather than cascading or blocking — so AC7 needs an explicit new decision (block the delete outright on an awarded agreement with linked Obligated BLIs? allow it but flag it as a modified LOE?) rather than inheriting one from existing behavior. There's no existing `ServicesComponentChangeRequest`, so this would likely need its own new `ChangeRequest` subtype (mirroring `BudgetLineItemChangeRequest`'s shape) rather than reusing `BudgetLineItemChangeRequest`. The closest existing precedent for an awarded-state guard is `AgreementsService._deletion_blocked_reason` (`backend/ops_api/ops/services/agreements.py:884-902`), which already special-cases `agreement.is_awarded` when deciding whether an *agreement* can be deleted — the same centralized-reason pattern (return a blocking reason string, or `None`) is a reasonable template for a new `ServicesComponentService._modification_blocked_reason`-style check, rather than inventing a new shape. This is enough to scope AC6/AC7 directionally, but — unlike ACs 2–5 — it is **not** a drop-in reuse of this slice's CR plumbing, and should get its own short design pass (new ChangeRequest subtype vs. simpler flag-and-allow) before implementation, not be assumed identical to AC1.
 
 **Recommendation:** validate this slice (AC1) end-to-end first — including the Decision 1 widening — before writing a combined plan for ACs 2–7, since confirming Decision 1 and Decision 3's design against real review feedback will directly determine how much of ACs 2–7 is "just widen the allowlist" vs. "needs its own carve-out."
 
@@ -494,13 +505,301 @@ No frontend: the RTK Query endpoints, the card component, and the "Start modific
 
 ### AC10 — Event/history records with who, when, what, and remote IP
 
+> **Round 9: AC10 is done as is.** The user decided the IP on `OpsEvent` is enough, so the `AgreementHistory.remote_addr` column below won't be built. The only AC10 work left is making sure the new SC change requests produce `AgreementHistory` rows. They do this through the existing `CREATE_CHANGE_REQUEST` / `UPDATE_CHANGE_REQUEST` events, with new SC branches in `create_change_request_history_event`.
+
 **What's already true, and needs zero new code for the modified-LOE case specifically:** because this slice's amount edit flows through the *existing* `add_bli_change_requests` → `OpsEventHandler(CREATE_CHANGE_REQUEST)` → `agreement_history_trigger_func` pipeline unchanged, **who** (`OpsEvent.created_by` / `AgreementHistory` message text, which already names the acting user), **when** (`OpsEvent.created_on` / `AgreementHistory.timestamp`), and **what** (the existing `create_change_request_history_event` message text, `agreement_history.py:393`, already describes the field/old-value/new-value) are captured automatically, the same way they are for every other CR today. No new work.
 
 **Remote IP is also already captured today** — `OpsEventHandler` writes `request.remote_addr`/`X-Forwarded-For` into `OpsEvent.event_details` for every event, including the ones this slice reuses (`events.py:19-27`, `auth/utils.py:224-226`). The only real gap: that IP lives on the **raw `OpsEvent` row** (`event_details` JSONB), reachable from an `AgreementHistory` row only by joining through `AgreementHistory.ops_event_id` — it is not denoted directly on the user-facing history record itself. If AC10 is read strictly ("history records... denoting... remote IP," not "the event records, which a history record happens to link to"), the fix is small and **uniform across every event type**, not specific to modified-LOE: add an `AgreementHistory.remote_addr` column, populated in `agreement_history_trigger_func` (`agreement_history.py:84`) from `event.event_details.get("request.remote_addr")` when each `AgreementHistory` row is built. Because every `AgreementHistory`-producing code path already goes through this one trigger function, this is a single, mechanical, one-place change — not something that needs to be re-solved per edit type (amount, CAN, add/delete BL, etc.) — but it is a schema change (new column + migration) and a decision about whether to backfill, both deliberately out of this slice's scope.
 
+## Round 9: Services Component Add/Delete (AC6/AC7, #6440)
+
+**Branch:** `OPS-6440/sc-modified-loe` (one PR, which also carries the glossary fix).
+
+> **Revision (round 9b, 2026-10-22):** The user refined the rule. **An SC needs approval only when it's associated with a budget line.** An SC with no BLs is still added or deleted directly on an Awarded agreement, as today. An SC with BLs goes to Division Director approval. Because BLs must be assignable to a new SC before it's approved, SCs get a **pending state**. A pending SC is a real SC row that BLs can point at, marked "In Review" until the Director decides. Pending SCs are listed in the agreement's **"Changes In Review" banner** with the other entries that need review. The dropdown hint is dropped. This replaces round 9a's "the add CR carries the SC payload, and the SC is created only on approval" and "BLIs can't be attached to an SC until approved".
+
+> **Revision (round 9c, 2026-10-23):** Decided with the user:
+> - **Draft BLs don't count.** Only non-Draft linked BLs (Planned and later) make an SC need approval. Draft BLs are only drafts and come into play when they become Planned. An SC whose BLs are all Draft is added or deleted directly.
+> - **Draft→Planned on a pending SC's BL creates the SC add CR at request time**, in the same save as the BL's own Draft→Planned CR, so the Division Director reviews both together.
+> - **Withdraw on losing the last non-Draft BL.** If a pending SC's add CR is in review and the SC loses its last non-Draft BL (the BL is unlinked or moved, its delete is approved, or its Draft→Planned is declined), the add CR is withdrawn. The CR row is deleted and a "Withdrawn" history line is recorded. The SC goes back to its pre-approval state (`awaiting_add_approval=True`, no CR), and a later non-Draft link opens a fresh CR.
+> - **Later BL assignment** and **declined add** keep the plan's defaults.
+> - **#6430 merged on 2026-10-22**, so `_check_pre_award_lock` is already on main, and the Executing glossary line goes in this PR.
+
+> **Revision (round 9d, 2026-10-23):** **SCs don't get an "In Review" tag.** It isn't in the Figma design. Only BLs get the tag; the "Changes In Review" banner is what shows a pending SC addition or deletion. The backend `in_review` flag and its edit/delete rejection stay.
+
+### The Rule
+
+Applies only when `ENABLE_MODIFIED_LOE_EDITS` is on, the agreement `is_awarded`, and the user isn't a superuser (the "awarded gate", the same one BLIs use). In every other case SCs save exactly as they do today.
+
+| Action on an Awarded agreement | SC has no non-Draft BLs | SC has 1+ non-Draft BLs |
+|---|---|---|
+| Add an SC | Saved directly, no approval (today's behavior) | Saved as a **pending** SC and sent to Division Director approval |
+| Delete an SC | Deleted directly, no approval (today's behavior). Any Draft BLs lose their SC | **Pending deletion**, sent to Division Director approval. On approval the SC is deleted and its BLs stay, with no SC (`SET NULL`) |
+
+"Non-Draft BLs" means linked BLs whose status isn't `DRAFT` (round 9c). It's checked against the saved state, at the moment the change is applied:
+- **Add:** the SC needs approval as soon as a non-Draft BL is linked to it, or a Draft→Planned CR is requested for a BL linked to it. If a new SC and its non-Draft BLs are saved together, it goes to approval at that save. If an SC is saved with no non-Draft BLs and gets one in a later save, it goes to approval at that later save. This also covers the per-resource save path, which creates the SC first and its BLs in a second request.
+- **Delete:** the SC's linked non-Draft BLs at delete time, after any BL deletes in the same save. An SC whose remaining BLs are all Draft is deleted directly.
+- **Withdraw:** if an add CR is in review and the SC loses its last non-Draft BL, the CR is withdrawn (see Lifecycle).
+
+Only approved SC changes are recorded as "Edits That Require a Contract Modification". An SC added or deleted directly (no BLs) is not, since it doesn't change money on the contract.
+
+### Lifecycle
+
+**Pending add**
+1. A COR adds SC3 on an Awarded agreement and links one or more non-Draft BLs to it (or requests Draft→Planned for a Draft BL linked to it). They click Save and see the contract-modification modal (Send to Approval / Continue Editing).
+2. The SC3 row is created, and the BLs are linked to it. A `ServicesComponentChangeRequest` (add) is created, so SC3 is now **In Review**.
+3. While it's in review:
+   - SC3 shows in the SC list as usual, with no "In Review" tag (round 9d).
+   - SC3 is listed in the "Changes In Review" banner ("SC3 Addition").
+   - BLs can be linked to it and unlinked from it.
+   - **Withdraw (round 9c):** if SC3 loses its last non-Draft BL, because that BL is unlinked or moved, its delete is approved, or its Draft→Planned is declined, the add CR is deleted and a "Services Component Addition Withdrawn" history line is recorded. SC3 goes back to its pre-approval state (`awaiting_add_approval=True`, no CR, no banner entry). A later non-Draft link opens a fresh CR.
+4. The Division Director approves or declines.
+   - **Approved:** SC3 becomes a normal SC. A `ContractModificationEdit` row is written, and the COR gets the approved notification and alert.
+   - **Declined:** SC3 is removed, and its BLs stay, with no SC (see Open Questions). The COR gets the declined notification and alert.
+
+**Pending delete**
+1. A COR deletes SC2, which has BLs, and clicks Save. They see the same modal.
+2. A `ServicesComponentChangeRequest` (delete) is created. SC2 stays, and its BLs **stay linked**.
+3. While it's in review:
+   - SC2 shows in the SC list as usual, with no "In Review" tag (round 9d).
+   - It's listed in the banner ("SC2 Deletion").
+4. The Division Director approves or declines.
+   - **Approved:** SC2 is deleted, and its BLs lose their SC. A `ContractModificationEdit` row is written.
+   - **Declined:** nothing changes.
+
+**In-review lock:** an in-review SC can't be edited or deleted again until it's decided. This matches BLs in review. A pending SC change does not lock the agreement's BLs (see Decisions).
+
+### Backend
+
+**Pending state.**
+- Add one column, `ServicesComponent.awaiting_add_approval` (`Boolean`, not null, default `False`).
+  - It's `True` from the moment an SC added on an Awarded agreement is still waiting for its add to be approved, including before it has any BLs.
+  - It's set back to `False` on approval.
+- "In Review" is derived, not stored. Add a `ServicesComponent.change_requests_in_review` property that queries in-review `ServicesComponentChangeRequest` rows by `services_component_id` (the same pattern as `BudgetLineItem.change_requests_in_review`), plus `in_review = bool(change_requests_in_review)`.
+- Serialize both on the SC response schema, and add `awaiting_add_approval`.
+- Why a flag and not only a CR: the per-resource save path creates the SC (POST) before its BLs (second request). At SC-create time the backend can't yet know BLs will be linked. The flag records "this SC was added after award and isn't approved," so the CR can be created when the first BL is linked.
+- A new SC with no BLs keeps `awaiting_add_approval=True` but has no CR. It behaves like a normal SC (no banner entry) until a BL is linked.
+
+**Model: `ServicesComponentChangeRequest(AgreementChangeRequest)`** in `backend/models/change_requests.py`
+- New `ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST`.
+- It inherits `agreement_id`, so reviewers are found with `get_division_directors_for_agreement`, the same as procurement-shop CRs.
+- New nullable `services_component_id`: FK `services_component.id`, **`ON DELETE SET NULL`**. It must not cascade, because an approved delete or a declined add removes the SC, and the CR has to keep its history.
+- The SC row exists for both add and delete CRs, so the id is always set at creation.
+- `requested_change_data`:
+  - Add: `{"services_component_create": true}`
+  - Delete: `{"services_component_delete": true}`
+  - The key names are deliberate. A bare `"delete"` key is treated as a BLI delete in `create_change_request_history_event` and on the frontend, so SC CRs must not use it.
+- `requested_change_diff`:
+  - Add: `{"services_component_create": {"old": null, "new": "SC3"}}`
+  - Delete: `{"services_component_delete": {"old": "SC2", "new": "Deleted"}}`
+  - These are display names frozen at request time, so history survives the SC row being removed.
+- `requested_change_info`: `{"target_display_name": "SC3", "requires_contract_modification": true, "linked_budget_line_item_ids": [...]}`. The BL ids are for the review card and history.
+- Hybrid properties: `has_services_component_change`, `is_services_component_create`, `is_services_component_delete`, and `requires_contract_modification` (copied from the BLI CR). `to_dict()` includes them.
+- `before_insert`/`before_update` listeners require `agreement_id` and `services_component_id`.
+- **Unchanged by design:** `AgreementChangeRequest.in_review_filter()` and the BLI `change_requests_in_review` queries filter on `change_request_type == AGREEMENT_CHANGE_REQUEST`, so a pending SC CR doesn't lock the agreement's BLIs.
+- `Agreement.change_requests_in_review` selects every `AgreementChangeRequest` subtype, so SC CRs appear there and make `agreement.in_review` true. That feeds the "Changes In Review" banner and the approve page.
+
+**`ContractModificationEdit`:**
+- Add a nullable `services_component_id` column (`Integer`, **no FK**, like `budget_line_item_id`), so the row survives the SC being deleted.
+- `field` is `"services_component_create"` or `"services_component_delete"`.
+- `old_value`/`new_value` come from the CR diff.
+
+**Migration** (use the `/db-migrations` skill):
+- Add the enum value to `changerequesttype`.
+- Add `services_component.awaiting_add_approval` (server default `false`).
+- Add `change_request.services_component_id` (FK, `SET NULL`).
+- Add `contract_modification_edit.services_component_id`.
+- Add all three columns to their `*_version` tables too.
+- No backfill: existing SCs are all `False`.
+
+**Helper:**
+- `agreement_tracks_contract_modifications(agreement)` in `budget_line_items_helpers.py` (flag + `is_awarded`). `tracks_contract_modifications(bli)` delegates to it.
+- New `sc_requires_approval_gate(agreement)` = that check and not superuser.
+
+**`ServicesComponentService`** (`services_component.py`). Both save paths go through it.
+- `create(...)`: unchanged write. When the awarded gate applies, also set `awaiting_add_approval=True`. No CR yet: a brand-new SC has no BLs at this point.
+- `delete(...)`: when the awarded gate applies and the SC has linked non-Draft BLs, create a delete CR, leave the SC in place, and return the CR id. With no linked non-Draft BLs, delete directly, as today (Draft BLs lose their SC).
+- An SC with `awaiting_add_approval=True` and no CR (never had non-Draft BLs) is deleted directly, with no CR.
+- `update` and `delete` reject the change if the SC is `in_review`.
+- New `ensure_add_change_request(sc, commit, pending_planned=False)`: if `sc.awaiting_add_approval`, there's no in-review add CR, and the SC has 1+ linked non-Draft BLs (or `pending_planned` is true, meaning a Draft→Planned CR was just requested for one of its BLs), create the add CR and return its id. Otherwise return `None`. It's idempotent, so it's safe to call after every BL link.
+- New `withdraw_add_change_request_if_empty(sc)`: if the SC has an in-review add CR and no linked non-Draft BLs, and no in-review Draft→Planned CR on any linked BL, delete the CR and publish the "Withdrawn" history event. Otherwise do nothing. Idempotent.
+- **Pre-award lock:** #6430 (merged 2026-10-22) put `_check_pre_award_lock` in `create`, `update`, and `delete`. The lock check runs first, then the in-review check.
+- **Existing helpers:** check `budget_line_items_helpers.py` (`tracks_contract_modifications` and the superuser-aware helper next to it) before adding `agreement_tracks_contract_modifications` / `sc_requires_approval_gate`, and reuse them if they fit.
+
+**Where the add CR gets created:** whenever a non-Draft BL is linked to an SC, after the link is flushed, call `ensure_add_change_request` for the SC it now points at.
+- `BudgetLineItemService.create` (when `services_component_id` is set; new BLs are Draft, so this only fires for superuser-created or non-Draft cases, and is kept for safety).
+- `BudgetLineItemService` update paths, when `services_component_id` changes. This covers both direct edits and the always-direct fields.
+- **Draft→Planned requests (round 9c):** when a Draft→Planned CR is created for a BL linked to a pending SC, call `ensure_add_change_request(sc, pending_planned=True)` in the same transaction.
+- `AgreementEditBundleService._create_budget_line_items` / `_update_budget_line_items` (and `_delete_services_components`, for delete CR ids), which call the above with `commit=False` and collect the returned CR ids into `change_request_ids` and `deferred_notifications`.
+- One CR per SC per save, even when several BLs are linked in the same save. Idempotency handles this.
+
+**Where a withdraw is checked:** call `withdraw_add_change_request_if_empty` for the old SC after a BL is unlinked or moved away, after a BL delete CR is approved, and after a Draft→Planned CR is declined.
+
+**`ChangeRequestService`** (`change_requests.py`):
+- New `add_services_component_create_change_request(sc, commit)` and `add_services_component_delete_change_request(sc, commit)`.
+  - Both run inside `OpsEventHandler(CREATE_CHANGE_REQUEST)`.
+  - `commit=False` means no commit and no notification (bundle).
+- `_is_division_director_of_change_request` and `notify_division_reviewers`: SC type uses the agreement path.
+- `_handle_review_action` for SC type:
+  - **Approved add:** write the `ContractModificationEdit` row, then set `sc.awaiting_add_approval=False`.
+  - **Declined add:** delete the SC after the CR is finalized (the same "delete last" ordering as `bli_to_delete`). Its BLs get `services_component_id` NULL. The CR survives through SET NULL.
+  - **Approved delete:** write the `ContractModificationEdit` row, then delete the SC last. Its BLs get `services_component_id` NULL.
+  - **Declined delete:** nothing changes.
+  - When the SC is deleted (approved delete or declined add), also publish `DELETE_SERVICES_COMPONENT`, so the SC's own history line is recorded next to the CR line.
+
+**`ContractModificationEditService`:**
+- `create_from_approved_change_request` accepts the SC CR type.
+- `_latest_per_budget_line_field` keys SC rows by `("sc", services_component_id, field)`, so two SC adds don't collapse into one row (`budget_line_item_id` is NULL for both).
+- A deleted SC shows only its delete row.
+- Schema and OpenAPI: add `services_component_id`.
+
+**Resources:**
+- `DELETE /services-components/<id>` returns `202 {"change_request_id": N}` when routed to approval. Skip the "Services Component Deleted" history metadata on that path, since nothing was deleted yet.
+- `POST` is unchanged (201).
+- The BLI POST/PATCH responses don't change shape. The SC's new in-review state shows up through the agreement and SC queries (cache invalidation).
+- Sync OpenAPI (`/sync-openapi`).
+
+**Lists, notifications, and history:**
+- `change_requests_helpers.py`:
+  - Add SC to `CHANGE_REQUEST_MODEL_MAP`, to the `find_in_review_requests_by_user` polymorphic list, and to the agreement filter (`change_request_type.in_([AGREEMENT, SERVICES_COMPONENT])`).
+  - `build_approve_url`: SC → `type=budget-change`.
+  - `build_review_outcome_title_and_message`: "Services Component Change Approved/Declined", "Your request to add SC3 has been approved."
+- `models/agreement_history.py` `create_change_request_history_event`: new branches for `services_component_create` / `services_component_delete`.
+  - Requested: "Services Component Addition Requested" / "Services Component Deletion Requested".
+  - Reviewed: "{reviewer} approved/declined adding/deleting SC3 as requested by {requestor}."
+  - Resolve the requestor via `created_by`.
+- An SC added directly keeps recording today's `CREATE_SERVICES_COMPONENT` line ("X added a new services component SC3"). A pending SC records that line too, when it's created.
+
+### Frontend
+
+**Modal trigger** (`CreateBLIsAndSCs.hooks.js` ~:933-951):
+- When the awarded gate applies, a save needs the contract-modification modal if any of these is true:
+  - a new or `awaiting_add_approval` SC (not already in review) has 1+ non-Draft BLs in `tempBudgetLines` pointing at it;
+  - a deleted SC still has 1+ linked non-Draft BLs that aren't being deleted in the same save.
+- Draft BLs never count (round 9c). The Draft→Planned path goes through the review page, which already sends to approval, so it doesn't need this modal.
+- Fold these into `requiresContractModification`, and remove the "SC changes are saved directly" comment.
+- Fix the `onContractModificationStateChange` JSDoc (`CreateBLIsAndSCs.jsx:54`).
+- The nav-away blocker reads the same flag.
+
+**Don't unlink BLs locally on a pending delete.**
+- `DELETE_SERVICE_COMPONENT` (`AgreementEditorContext.hooks.js:107-112, :170`) clears `services_component_id` on the SC's BLs in local state. The save would then send those unlinks as BL updates, and the backend would see an SC with no BLs and delete it directly.
+- So when the awarded gate applies and the SC has linked non-Draft BLs, keep the links. The backend unlinks them on approval. If its BLs are all Draft, clear the links locally, as today.
+- The SC delete confirmation stays the usual "Are you sure you want to delete SC2?", the same as a non-Draft BL delete. Only the toast changes, to the BL delete's wording ("…has been queued and will be sent to your Division Director for approval when you click Save…"). The contract-modification catch-all modal ("This agreement has already been awarded…") is the only modal about approval, shown once on save (round 9d).
+
+**Save paths:**
+- Bundle (`EditAgreementAndBudgetLines.jsx`): no payload change. The "Changes Sent to Approval" alert already keys off `change_request_ids.length`, and SC CR ids are now included.
+- Per-resource (`handleSaveExistingAgreementBudget`, `handleDeletions`):
+  - Handle a 202 `{change_request_id}` from SC DELETE.
+  - Treat "an SC that needs approval got BLs" as sent to approval. Detect it client-side with the same condition as the modal, because the BLI POST response doesn't carry the SC CR id.
+  - `buildSaveSuccessAlert` gets pending lines: "• SC3 Addition" / "• SC2 Deletion".
+
+**SC list, pending state** (`ServicesComponentListItem.jsx`):
+- No "In Review" tag on SCs (round 9d). Only BLs get the tag.
+- Lock edit/delete while the SC is in review, the same as BL rows (`ChangeIcons` with a `lockedMessage`). The tooltip lists the pending change the way BL tooltips do (round 9d):
+  - "This services component has pending edits that will require a contract modification:" then the bullets below.
+  - Addition: one bullet, "• Adding: SC3 BL 15012, BL 15013".
+  - Deletion: "• Deleting: SC2", then one "• Removing: BL 15010 from SC2" line per linked BL. The SC is deleted, but its BLs are only removed from it, not deleted, so a BL never appears next to "Deleting".
+  - The BL ids come from the request's `linked_budget_line_item_ids`. With none, the addition bullet is just "• Adding: SC3" and the deletion has no "Removing" lines.
+  - Elsewhere (banner, save alert, history, notifications, review card) an SC delete stays "Deletion"/"delete".
+- Backend: add `change_requests_in_review` to the SC response (nested generic change request schema, like BLs) so the tooltip can read the request.
+- No dropdown hint. Pending SCs stay in the BL form's SC dropdown, since BLs can be linked to them.
+
+**"Changes In Review" banner** (`Agreement.jsx` :140-157, `AgreementsChangesAlert.jsx`):
+- Add SC entries from `agreement.change_requests_in_review` (filter `has_services_component_change`) to the banner's list: "SC3 Addition", "SC2 Deletion".
+- Today `allChangeRequests` is only filled in for procurement-shop changes (`Agreement.jsx:145-157`). Extend it so BL entries and SC entries both show, which also fixes BL entries computed at :140-143 never reaching the banner.
+
+**Division Director review:**
+- `ChangeRequestsList.jsx`: `has_services_component_change` → new `crServicesComponent` card that renders a new `ServicesComponentChangeReviewCard`.
+  - The card is modeled on `BudgetChangeReviewCard`: "SC", "Change To" (Add/Delete), "Budget Lines" (the linked BL ids), "From", and "To".
+  - It uses `type=CHANGE_REQUEST_TYPES.BUDGET`, so the inline Approve/Decline modal and alert copy work unchanged.
+- `ApproveAgreement.hooks.js` `budgetChangeRequests`: include `has_services_component_change`.
+- `ReviewChangeRequestAccordion.jsx`: render the SC card.
+- Requester response alert (`AgreementChangesResponseAlert.hooks.jsx`): add an SC branch.
+- `renderChangeValues` / `changeToTypes`: `services_component_create: "Add Services Component"`, `services_component_delete: "Delete Services Component"`.
+- `types/ChangeRequestsTypes.d.ts`: the new flag and keys, plus the missing `requires_contract_modification`. `types/ServicesComponents.d.ts`: `in_review`, `change_requests_in_review`, `awaiting_add_approval`.
+
+**Award & Modifications card** (`ContractModificationEditCard.jsx`):
+- SC rows follow the design ("Alternative Scenarios for Modified LOE"): Requested by, Modification Type, "SC" (the SC's display name, e.g. "OSC2"), and Change To "Add SC" / "Delete SC". No From/To.
+- Update the typedef.
+
+### Glossary and How-To Copy (round 9)
+
+From jonnalley's comment on #6406:
+- `frontend/src/pages/help/content/glossary.js:38` (Budget Line Status → Planned) currently reads "edits require a Division Director's approval". Change it to say that amount, CAN, and Obligate By edits don't need approval. On an Awarded agreement, edits require a contract modification and Division Director approval. Changing from Planned to Executing still requires Division Director approval.
+- `frontend/src/pages/help/content/howToGuides.js:186` currently reads "will require approval to change from Draft to Planned Status". Change it to say the Draft→Planned change doesn't need approval, except on an Awarded agreement.
+- `howToGuides.js:144` ("Changes to services components will require approval ... [not yet developed, coming soon]"): change it to say SC adds/deletes on an Awarded agreement require a contract modification and Division Director approval.
+- Scan the rest of `howToGuides.js` for other "requires approval" lines that no longer match.
+- **Executing:** jonnalley's wording also says Executing edits don't need approval until Pre-Award Approval is requested. #6430 built that and merged on 2026-10-22, so write the Executing part in this PR.
+- Update `Glossary.test.jsx` if it asserts the old copy.
+- **Done (2026-10-23):** the Planned, Executing and Draft→Planned fixes, matching every environment. **Deferred (user decision):** the Awarded-agreement lines (glossary, how-to line 186, and line 144's SC rule), because `ENABLE_MODIFIED_LOE_EDITS` is only on in dev. Add them when the flag is turned on in prod. Line 144 stays "coming soon" until then.
+
+
+### Implementation Order
+
+1. Migration + models (`ServicesComponent.awaiting_add_approval` and the in-review properties, `ServicesComponentChangeRequest`, `ContractModificationEdit.services_component_id`) + helpers.
+2. `ChangeRequestService` create/approve/decline for SC CRs, plus helpers, notifications, and history.
+3. `ServicesComponentService` (flag on create, delete routing, in-review guard, `ensure_add_change_request`), the BLI link hooks, the edit-bundle CR collection, and the resource 202 on DELETE.
+4. `ContractModificationEditService` SC rows and keying, schema, OpenAPI.
+5. Frontend: modal trigger, keeping links on a pending delete, save paths, toast/alert copy.
+6. Frontend: SC list In Review state, "Changes In Review" banner entries.
+7. Frontend: review card, approve-page bucket, accordion, response alert.
+8. Frontend: Award & Modifications card SC variant.
+9. Glossary/how-to copy.
+10. Seed data: make sure agreement 523 (Awarded) has an SC with BLs and an SC with none, for manual testing of both rows of the rule table.
+
+### Tests (per `docs/TESTING.md`)
+
+**Backend integration:**
+- Add an SC with no BLs on an Awarded agreement: saved directly, `awaiting_add_approval=True`, no CR, no edit row.
+- Add an SC with only Draft BLs: no CR. Delete an SC with only Draft BLs: deleted directly, its BLs lose their SC.
+- Request Draft→Planned on a Draft BL linked to a pending SC: the BL's CR and the SC add CR are both created in the same request.
+- Withdraw: with an add CR in review, unlinking the last non-Draft BL, approving its delete, or declining its Draft→Planned deletes the add CR, records the "Withdrawn" history line, and leaves `awaiting_add_approval=True`. Linking a non-Draft BL again opens a new CR. Unlinking one of two non-Draft BLs doesn't withdraw.
+- Add an SC and link BLs in one bundle: one add CR (not one per BL), the SC is `in_review`, and the CR id is in `change_request_ids`.
+- Per-resource path: SC POST then BLI POST linking it creates the add CR at the BLI POST.
+- Linking a second BL to an SC already in review doesn't create a second CR.
+- Delete an SC with no BLs: deleted directly. Delete an SC with BLs: 202 and a CR, and the SC and links stay.
+- A bundle that hard-deletes all of an SC's Draft BLs and the SC deletes it directly.
+- Approve add: flag cleared, edit row written. Decline add: SC removed, BLs keep existing with `services_component_id` NULL, and the CR survives.
+- Approve delete: SC removed, BLs unlinked, edit row has `services_component_id`. Decline delete: no change.
+- Editing or deleting an `in_review` SC is rejected.
+- A pending SC CR doesn't make the agreement's BLIs `in_review`.
+- On a non-Awarded agreement, with the flag off, and for a superuser, everything applies directly with no flag.
+- Pending list: two SC adds give two rows. A deleted SC shows only its delete row.
+- `find_in_review_requests_by_user` returns SC CRs to the agreement's Division Director.
+
+**Backend unit:**
+- `build_review_outcome_title_and_message` and `build_approve_url` for SC CRs.
+- `create_change_request_history_event` SC branches.
+
+**Frontend (Vitest):**
+- The modal fires for a new SC with BLs and for a deleted SC with BLs on an Awarded agreement, in both host sites. It doesn't fire for an SC with no BLs, or on a non-Awarded agreement.
+- Deleting an SC with BLs on an Awarded agreement keeps the BL links in editor state.
+- The per-resource save path handles the SC DELETE 202.
+- `ServicesComponentListItem` shows no "In Review" tag for an in-review SC.
+- The banner lists SC entries.
+- `ServicesComponentChangeReviewCard` renders Add and Delete. `ChangeRequestsList` routes to it.
+- `ContractModificationEditCard` SC variant.
+- Glossary copy.
+
+### Round 9 Decisions
+
+- **New CR subtype vs. reusing `AgreementChangeRequest` with a new key.** We chose a subtype. Reusing the parent type would send SC CRs through `_apply_agreement_changes` → `update_agreement`, and the procurement-shop notification and review-card branches all key off `AGREEMENT_CHANGE_REQUEST`.
+- **Pending SC = a real row + flag + derived In Review (round 9b).** This was the user's call: BLs must be linkable to a new SC before approval. One boolean column (`awaiting_add_approval`) holds the "added after award, not yet approved" fact. "In Review" is derived from the CR, so no second state can drift.
+- **The add CR is created when the first BL is linked, not when the SC is created.** This is the only trigger that works for both save paths (the per-resource path creates the SC before its BLs). It also stops an SC from skipping approval by being saved empty and getting BLs later.
+- **The SC CR doesn't lock BLIs.** The type-scoped `in_review_filter()` already makes sure of this. BLs on a pending SC stay editable, and their own money/time edits follow the BLI rules.
+- **On a pending delete, BLs stay linked until approval.** The frontend stops clearing the links locally. Otherwise the save would unlink them first, and the backend would see an empty SC and delete it without approval.
+- **Only approved SC changes go to the contract-modification list.** SCs added or deleted directly don't change money on the contract.
+
 ## Notes
 
 ### Open Questions
+
+- [x] ~~**(Round 9) BLs on a pending SC.**~~ Resolved (round 9b): pending SCs are real rows, BLs can be linked to them, and there's no dropdown hint.
+- [x] ~~**(Round 9) Showing pending SC adds.**~~ Resolved (round 9d): an entry in the "Changes In Review" banner only. No "In Review" tag on SCs; only BLs get it.
+- [x] ~~**(Round 9b) Do Draft BLs count as "associated"?**~~ Resolved (round 9c): no. Only non-Draft BLs count.
+- [x] ~~**(Round 9b) Later BL assignment.**~~ Resolved (round 9c): the default holds. It goes to approval at the later save.
+- [x] ~~**(Round 9b) Declined add.**~~ Resolved (round 9c): the default holds. The pending SC is removed and its BLs stay, with no SC.
+- [x] ~~**(Round 9) Executing glossary copy.**~~ Resolved: #6430 merged on 2026-10-22, so the Executing line is changed in this PR.
+- [x] ~~**(Round 9c) Pending SC loses all its non-Draft BLs during review.**~~ Resolved: the add CR is withdrawn (row deleted, "Withdrawn" history line), and the SC goes back to its pre-approval state.
 
 - [ ] **Decision 1's widening** — confirm with the team/product that a PLANNED/IN_EXECUTION amount CR on an already-awarded agreement *should* start reading as "requires a contract modification" today, not just newly-opened OBLIGATED edits. This has the biggest blast-radius-vs-design-cleanliness tradeoff in this plan.
 - [ ] **UI pattern for the OBLIGATED-amount edit affordance** — reuse `BudgetLinesForm.jsx` with non-amount fields disabled, or a dedicated narrow "Edit Amount" control? The issue states Figma designs are already "Ready for Dev with necessary annotations" (linked in Additional Context) — check those before designing this in code.
@@ -520,7 +819,9 @@ No frontend: the RTK Query endpoints, the card component, and the "Start modific
 
 - ~~A persisted "included in contract mod #N" marker (needed by AC9, deferred to #3268's implementation).~~ Now planned in this slice as `ContractModificationEdit.agreement_mod_id` (round 3). #3268 extends `start_modification` / `POST /agreements/<id>/contract-modifications/` (round 6) with `ProcurementAction` and tracker creation.
 - AC9 frontend: the "Contract Modifications" section and "Edits That Require a Contract Modification" cards on `AgreementAwardModifications.jsx`, the RTK Query endpoint, and the "Start modification" button (wired to #3268).
-- `AgreementHistory.remote_addr` (needed by a strict reading of AC10, deferred — see [AC10](#ac10--eventhistory-records-with-who-when-what-and-remote-ip)).
+- ~~`AgreementHistory.remote_addr` (needed by a strict reading of AC10, deferred — see [AC10](#ac10--eventhistory-records-with-who-when-what-and-remote-ip)).~~ Dropped in round 9: the IP on `OpsEvent` is enough.
+- SC **edits** (e.g. changing an SC's period of performance) on an Awarded agreement still apply directly. They change time on the contract, but the ACs only cover add/delete. Route them through `ServicesComponentChangeRequest` later if product wants that.
+- The approve page's bulk Approve/Decline skips BLI delete change requests (`has_delete_change` isn't in `budgetChangeRequests`, `ApproveAgreement.hooks.js:174-184`). This was there before round 9, and round 9 doesn't fix it. SC change requests are added to that bucket, but BLI deletes stay out of scope.
 - Widening the field allowlist for ACs 2–7 once AC1 ships and is validated.
 - Unify the two independent `CreateBLIsAndSCs` host sites (`EditAgreementAndBudgetLines.jsx` and `AgreementBudgetLines.jsx`'s inline wizard) behind one shared modal-triggering hook, instead of the duplicated wiring accepted in [Decision 11](#key-decisions).
 - Revisit [Decision 6](#key-decisions) (blocking Planned→Executing outright) once #3268 ships, in case product wants it offered-but-flagged instead of blocked.

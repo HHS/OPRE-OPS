@@ -16,6 +16,7 @@ import ServicesComponentMetadata from "../ServicesComponentMetadata";
  * @param {Function} props.setFormDataById - Function to set form data by ID.
  * @param {Function} props.handleDelete - Function to handle delete operation.
  * @param {boolean} [props.isSubComponent] - Indicates if the item is a sub-component.
+ * @param {string} [props.lockedMessage] - When set, the item has a change in review: edit and delete are disabled and this is their tooltip (OPS-6440).
  * @returns {JSX.Element}
  *
  * @example
@@ -30,19 +31,26 @@ function ServicesComponentListItem({
     setFormDataById,
     description,
     handleDelete,
-    isSubComponent
+    isSubComponent,
+    lockedMessage = ""
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
 
     const isFirstServiceComponent = number === 1;
-    const isEditDisabled = isSubComponent;
-    const isDeleteDisabled = isSubComponent || isFirstServiceComponent;
+    const isLocked = Boolean(lockedMessage);
+    const isEditDisabled = isLocked || isSubComponent;
+    const isDeleteDisabled = isLocked || isSubComponent || isFirstServiceComponent;
 
     const SUB_COMPONENT_DISABLED_MSG = "Sub-Services Components are from legacy contracts and cannot be edited";
     const FIRST_SERVICE_COMPONENT_DISABLED_MSG = "All agreements must start with an SC1 or Base Period";
 
-    const disabledEditMsg = SUB_COMPONENT_DISABLED_MSG;
-    const disabledDeleteMsg = isSubComponent ? SUB_COMPONENT_DISABLED_MSG : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
+    // A change in review takes precedence: it's the reason the user can act on.
+    const disabledEditMsg = isLocked ? lockedMessage : SUB_COMPONENT_DISABLED_MSG;
+    const disabledDeleteMsg = isLocked
+        ? lockedMessage
+        : isSubComponent
+          ? SUB_COMPONENT_DISABLED_MSG
+          : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
 
     return (
         <div
@@ -64,6 +72,7 @@ function ServicesComponentListItem({
                         <Tooltip
                             label={isEditDisabled ? disabledEditMsg : "Edit"}
                             position="top"
+                            className="line-height-body-1"
                         >
                             <button
                                 type="button"
@@ -90,6 +99,7 @@ function ServicesComponentListItem({
                         <Tooltip
                             label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
                             position="top"
+                            className="line-height-body-1"
                         >
                             <button
                                 type="button"

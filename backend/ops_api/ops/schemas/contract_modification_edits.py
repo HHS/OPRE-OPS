@@ -18,6 +18,7 @@ class ContractModificationEditSchema(Schema):
     agreement_id = fields.Integer(required=True)
     modification_type = fields.Enum(ModificationEditType, required=True)
     budget_line_item_id = fields.Integer(allow_none=True)
+    services_component_id = fields.Integer(allow_none=True)
     # The edited field ("amount", "can_id", "date_needed", "delete") -- the card's "Change To".
     field = fields.String(required=True)
     old_value = fields.Raw(allow_none=True)

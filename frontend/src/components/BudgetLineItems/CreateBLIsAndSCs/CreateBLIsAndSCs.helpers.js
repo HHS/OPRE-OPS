@@ -72,6 +72,96 @@ export const attachScPeriodToBudgetLines = (tempBudgetLines, servicesComponents)
     });
 
 /**
+ * Resolve the services component a budget line is grouped under. Prefers services_component_number
+ * over services_component_id, the same precedence as attachScPeriodToBudgetLines.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} bli
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
+ * @returns {import("../../../types/ServicesComponents").ServicesComponents | undefined}
+ */
+export const findServicesComponentForBudgetLine = (bli, servicesComponents) =>
+    bli.services_component_number != null
+        ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
+        : servicesComponents.find((sc) => sc.id === bli.services_component_id);
+
+const isNonDraftBudgetLine = (bli) => Boolean(bli?.status) && bli.status !== BLI_STATUS.DRAFT;
+
+/**
+ * Whether deleting a saved services component goes to Division Director approval (OPS-6440). On an
+ * Awarded agreement it does when the SC still has non-Draft budget lines -- including ones whose own
+ * deletion is going to approval in the same save, since those stay linked until approved. Mirrors
+ * the backend's check. The caller applies the awarded / non-superuser gate.
+ * @param {Object} args
+ * @param {number | undefined} args.servicesComponentId
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents - The current (editor) services components
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} [args.budgetLines] - The saved budget lines
+ * @param {Array<number>} [args.deletedBudgetLines] - Ids of budget lines deleted in this save
+ * @returns {boolean}
+ */
+export const isServicesComponentDeleteRoutedToApproval = ({
+    servicesComponentId,
+    servicesComponents,
+    tempBudgetLines,
+    budgetLines = [],
+    deletedBudgetLines = []
+}) => {
+    if (!servicesComponentId) return false;
+    const stillLinked = tempBudgetLines.some((bli) => {
+        if (!isNonDraftBudgetLine(bli) || bli.services_component_id !== servicesComponentId) return false;
+        // A line regrouped under another services component in this save no longer counts.
+        const resolved = findServicesComponentForBudgetLine(bli, servicesComponents);
+        return !resolved || resolved.id === servicesComponentId;
+    });
+    const deletedButLinked = budgetLines.some(
+        (bl) =>
+            deletedBudgetLines.includes(bl.id) &&
+            isNonDraftBudgetLine(bl) &&
+            bl.services_component_id === servicesComponentId
+    );
+    return stillLinked || deletedButLinked;
+};
+
+/**
+ * The services component additions and deletions in this save that go to Division Director
+ * approval (OPS-6440): on an Awarded agreement, an SC with non-Draft budget lines. A new SC, or one
+ * still awaiting approval of its addition, needs approval once a non-Draft line points at it. The
+ * caller applies the awarded / non-superuser gate.
+ * @param {Object} args
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents
+ * @param {Array<number>} args.deletedServicesComponentsIds
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} [args.budgetLines]
+ * @param {Array<number>} [args.deletedBudgetLines]
+ * @returns {{additions: Array<import("../../../types/ServicesComponents").ServicesComponents>, deletionIds: Array<number>}}
+ */
+export const getServicesComponentApprovalChanges = ({
+    servicesComponents,
+    deletedServicesComponentsIds,
+    tempBudgetLines,
+    budgetLines = [],
+    deletedBudgetLines = []
+}) => {
+    const additions = servicesComponents.filter(
+        (sc) =>
+            (!("created_on" in sc) || sc.awaiting_add_approval) &&
+            !sc.in_review &&
+            tempBudgetLines.some(
+                (bli) => isNonDraftBudgetLine(bli) && findServicesComponentForBudgetLine(bli, servicesComponents) === sc
+            )
+    );
+    const deletionIds = deletedServicesComponentsIds.filter((servicesComponentId) =>
+        isServicesComponentDeleteRoutedToApproval({
+            servicesComponentId,
+            servicesComponents,
+            tempBudgetLines,
+            budgetLines,
+            deletedBudgetLines
+        })
+    );
+    return { additions, deletionIds };
+};
+
+/**
  * Derive the effective SC window across all services components (saved and unsaved).
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
  * @returns {{start: string|null, end: string|null}}
@@ -150,8 +240,9 @@ export const getBudgetLinesUrl = (agreementId) => `/agreements/${agreementId}/bu
  *
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLineItem
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} createdServiceComponents
+ * @param {Array<number>} [keptServicesComponentIds] - Services components whose deletion is going to approval; their lines keep the link
  */
-export const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents) => {
+export const addServiceComponentIdToBLI = (budgetLineItem, createdServiceComponents, keptServicesComponentIds = []) => {
     let matchServiceComponent;
     // for new BLIs without a grouping label, match only on number
     if (!budgetLineItem.serviceComponentGroupingLabel) {
@@ -166,9 +257,15 @@ export const addServiceComponentIdToBLI = (budgetLineItem, createdServiceCompone
         });
     }
 
+    // A services component whose deletion is going to approval stays linked until it's approved
+    // (OPS-6440), so its lines keep their link even though it's no longer in the list.
+    const keptId = keptServicesComponentIds.includes(budgetLineItem.services_component_id)
+        ? budgetLineItem.services_component_id
+        : null;
+
     return {
         ...budgetLineItem,
-        services_component_id: matchServiceComponent?.id ?? null,
+        services_component_id: matchServiceComponent?.id ?? keptId,
         services_component_number: undefined, // Remove this property immutably
         serviceComponentGroupingLabel: undefined // Remove this property immutably
     };
@@ -265,6 +362,7 @@ export const buildBudgetChangeMessages = (tempBudgetLines, cans) => {
  * @param {boolean} args.savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
  * @param {string|undefined} args.blockerLocationPathname - Where the blocker was navigating to, when `savedViaModal` is true
  * @param {boolean} args.isThereAnyBLIsFinancialSnapshotChanged
+ * @param {Array<string>} [args.servicesComponentChangeMessages] - Pending services component additions/deletions sent to approval, e.g. "• SC3 Addition"
  * @returns {import("../../../hooks/use-alert.hooks").AlertData} The `setAlert(...)` payload.
  */
 export const buildSaveSuccessAlert = ({
@@ -277,7 +375,8 @@ export const buildSaveSuccessAlert = ({
     selectedAgreement,
     savedViaModal,
     blockerLocationPathname,
-    isThereAnyBLIsFinancialSnapshotChanged
+    isThereAnyBLIsFinancialSnapshotChanged,
+    servicesComponentChangeMessages = []
 }) => {
     const budgetChangeMessages = buildBudgetChangeMessages(tempBudgetLines, cans);
     // Deletions of PLANNED/IN_EXECUTION lines route to an approval change request rather than
@@ -298,8 +397,12 @@ export const buildSaveSuccessAlert = ({
         .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
         .join("\n");
     const anyChangeSentToApproval =
-        (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
-    const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
+        (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) ||
+        deletionsRoutedToApproval.length > 0 ||
+        servicesComponentChangeMessages.length > 0;
+    const pendingChanges = [budgetChangeMessages, deletionChangeMessages, ...servicesComponentChangeMessages]
+        .filter(Boolean)
+        .join("\n");
     const redirectUrl = savedViaModal ? blockerLocationPathname : getBudgetLinesUrl(selectedAgreement?.id);
 
     if (anyChangeSentToApproval) {
@@ -406,6 +509,7 @@ export const buildNewAgreementBudgetPayload = ({
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.existingServicesComponents
  * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} args.createdGrantNumbers
  * @param {Array<import("../../../types/GrantNumbers").GrantNumber>} args.existingGrantNumbers
+ * @param {Array<number>} [args.keptServicesComponentIds] - Services components whose deletion is going to approval; their lines keep the link
  * @returns {{newBudgetLineItemsWithIds: import("../../../types/BudgetLineTypes").BudgetLine[], existingBudgetLineItemsWithIds: import("../../../types/BudgetLineTypes").BudgetLine[]}}
  */
 export const linkBudgetLinesToApi = ({
@@ -414,7 +518,8 @@ export const linkBudgetLinesToApi = ({
     createdServiceComponents,
     existingServicesComponents,
     createdGrantNumbers,
-    existingGrantNumbers
+    existingGrantNumbers,
+    keptServicesComponentIds = []
 }) => {
     const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
     const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
@@ -423,7 +528,9 @@ export const linkBudgetLinesToApi = ({
 
     // Grant BLIs link via grant_number_id; contract/other BLIs via services_component_id.
     const addLinkToBLI = (bli) =>
-        isGrant ? addGrantNumberIdToBLI(bli, allGrantNumbers) : addServiceComponentIdToBLI(bli, allServicesComponents);
+        isGrant
+            ? addGrantNumberIdToBLI(bli, allGrantNumbers)
+            : addServiceComponentIdToBLI(bli, allServicesComponents, keptServicesComponentIds);
 
     const newBudgetLineItemsWithIds = newBudgetLineItems.map((newBLI) => addLinkToBLI(newBLI));
     const existingBudgetLineItemsWithIds = existingBudgetLineItems.map((existingBLI) => addLinkToBLI(existingBLI));

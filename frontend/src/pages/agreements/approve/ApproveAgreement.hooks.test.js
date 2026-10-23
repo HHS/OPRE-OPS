@@ -247,6 +247,45 @@ describe("useApproveAgreement", () => {
             })
         );
     });
+
+    it("reviews Services Component requests on the budget-change page and lists them (OPS-6440)", async () => {
+        useSearchParamsMock.mockReturnValue([new URLSearchParams("type=budget-change")]);
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            data: {
+                ...baseAgreement,
+                change_requests_in_review: [
+                    {
+                        id: 9100,
+                        has_services_component_change: true,
+                        has_proc_shop_change: false,
+                        requested_change_data: { services_component_delete: true },
+                        requested_change_diff: { services_component_delete: { old: "SC2", new: "Deleted" } },
+                        requested_change_info: { target_display_name: "SC2", linked_budget_line_item_ids: [15010] }
+                    }
+                ]
+            },
+            error: null,
+            isLoading: false,
+            isSuccess: true
+        });
+        const { result } = renderHook(() => useApproveAgreement());
+
+        act(() => {
+            result.current.handleApproveChangeRequests(CHANGE_REQUEST_ACTION.APPROVE);
+        });
+        await act(async () => {
+            result.current.modalProps.handleConfirm();
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(reviewCRMock).toHaveBeenCalledWith({ id: 9100, data: { action: "APPROVE", reviewer_notes: "" } });
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                message: expect.stringContaining("Deleting: SC2\n \u2022 Removing: BL 15010 from SC2")
+            })
+        );
+    });
 });
 
 describe("useApproveAgreement — navigation blocker", () => {

@@ -1,3 +1,4 @@
+import { getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
 import ServicesComponentListItem from "../ServicesComponentListItem";
 
 /**
@@ -49,6 +50,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         setFormDataById={setFormDataById}
                         handleDelete={handleDelete}
                         isSubComponent={!!item.sub_component}
+                        lockedMessage={getServicesComponentLockedMessage(item)}
                     />
                 ))
             ) : (

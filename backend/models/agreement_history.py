@@ -310,6 +310,26 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             )
             if history_event:
                 history_events.append(history_event)
+        case OpsEventType.DELETE_CHANGE_REQUEST:
+            # Only a withdrawn Services Component add request records history today (OPS-6440).
+            change_request = event.event_details.get("change_request")
+            if event.event_details.get("withdrawn") and change_request:
+                agreement_id = change_request["agreement_id"]
+                name = (change_request.get("requested_change_info") or {}).get("target_display_name")
+                history_events.append(
+                    AgreementHistory(
+                        agreement_id=agreement_id if session.get(Agreement, agreement_id) else None,
+                        agreement_id_record=agreement_id,
+                        ops_event_id=event.id,
+                        history_title="Services Component Addition Withdrawn",
+                        history_message=(
+                            f"The request to add {name} was withdrawn because it no longer has "
+                            "budget lines that need approval."
+                        ),
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.CHANGE_REQUEST_DELETED,
+                    )
+                )
         case OpsEventType.CREATE_SERVICES_COMPONENT:
             history_events.append(
                 AgreementHistory(
@@ -420,6 +440,10 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        if property_changed in ("services_component_create", "services_component_delete"):
+            return create_services_component_change_request_history_event(
+                change_request, event, session, new_change_request, reviewer_user
+            )
         if property_changed == "delete":
             # Deletion request: distinct history_type + BLI id handling, so it cannot fall through
             # to the shared tail return (which would crash on the unset title/message and use the
@@ -563,6 +587,48 @@ def create_change_request_history_event(
                         else ""
                     )
                 )
+    agreement_id = change_request["agreement_id"]
+    agreement = session.get(Agreement, agreement_id)
+    return AgreementHistory(
+        agreement_id=agreement_id if agreement else None,
+        agreement_id_record=agreement_id,
+        ops_event_id=event.id,
+        history_title=title,
+        history_message=message,
+        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        history_type=(
+            AgreementHistoryType.CHANGE_REQUEST_CREATED
+            if new_change_request
+            else AgreementHistoryType.CHANGE_REQUEST_UPDATED
+        ),
+    )
+
+
+def create_services_component_change_request_history_event(
+    change_request: dict, event: OpsEvent, session: Session, new_change_request: bool, reviewer_user
+) -> AgreementHistory:
+    """History for a Services Component add/delete request (OPS-6440), requested or reviewed.
+
+    The requestor is resolved via created_by, and the SC name from the frozen diff, because a
+    declined add or an approved delete removes the SC (the request's SC id is then NULL).
+    """
+    is_create = "services_component_create" in change_request["requested_change_data"]
+    field = "services_component_create" if is_create else "services_component_delete"
+    diff = (change_request.get("requested_change_diff") or {}).get(field, {})
+    name = diff.get("new") if is_create else diff.get("old")
+    requestor_user = session.get(User, change_request["created_by"])
+    requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
+    noun = "Addition" if is_create else "Deletion"
+    verb, gerund = ("add", "adding") if is_create else ("delete", "deleting")
+
+    if new_change_request:
+        title = f"Services Component {noun} Requested"
+        message = f"{requestor_name} requested to {verb} {name} and it's currently In Review for approval."
+    else:
+        change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        title = f"Services Component {noun} {change_request_status.capitalize()}"
+        message = f"{reviewer_user.full_name} {change_request_status} {gerund} {name} as requested by {requestor_name}."
+
     agreement_id = change_request["agreement_id"]
     agreement = session.get(Agreement, agreement_id)
     return AgreementHistory(

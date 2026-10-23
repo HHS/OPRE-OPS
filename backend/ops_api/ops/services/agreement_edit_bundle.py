@@ -126,9 +126,12 @@ class AgreementEditBundleService:
             result.grant_numbers_updated = self._update_grant_numbers(agreement_id, gn_payload.get("update", []) or [])
 
             # 4. BLI creates (resolves services_component_ref / grant_number_ref)
-            result.budget_line_items_created = self._create_budget_line_items(
+            created_count, create_change_request_ids = self._create_budget_line_items(
                 agreement, bli_payload.get("create", []) or [], sc_ref_map, gn_ref_map
             )
+            result.budget_line_items_created = created_count
+            result.change_request_ids.extend(create_change_request_ids)
+            deferred_notifications.extend(create_change_request_ids)
 
             # 5. BLI updates — may produce change requests; collected for post-commit notify.
             #    Pass the same sc_ref_map / gn_ref_map so an existing BLI reassigned to a
@@ -151,7 +154,14 @@ class AgreementEditBundleService:
             deferred_notifications.extend(delete_change_request_ids)
 
             # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
-            result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
+            # On an Awarded agreement, deleting an SC with non-Draft budget lines produces a
+            #    deletion change request instead (OPS-6440).
+            sc_deleted_count, sc_delete_change_request_ids = self._delete_services_components(
+                sc_payload.get("delete", []) or []
+            )
+            result.services_components_deleted = sc_deleted_count
+            result.change_request_ids.extend(sc_delete_change_request_ids)
+            deferred_notifications.extend(sc_delete_change_request_ids)
             result.grant_numbers_deleted = self._delete_grant_numbers(agreement_id, gn_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
@@ -259,10 +269,14 @@ class AgreementEditBundleService:
             self._scs.update(sc_id, loaded, commit=False)
         return len(items)
 
-    def _delete_services_components(self, ids: list[int]) -> int:
+    def _delete_services_components(self, ids: list[int]) -> tuple[int, list[int]]:
+        """Returns ``(deleted_count, change_request_ids)``; SCs routed to approval aren't counted."""
+        change_request_ids: list[int] = []
         for sc_id in ids:
-            self._scs.delete(sc_id, commit=False)
-        return len(ids)
+            change_request_id = self._scs.delete(sc_id, commit=False)
+            if change_request_id is not None:
+                change_request_ids.append(change_request_id)
+        return len(ids) - len(change_request_ids), change_request_ids
 
     # ------------------------------------------------------------------
     # Grant Numbers
@@ -321,10 +335,11 @@ class AgreementEditBundleService:
         items: list[dict[str, Any]],
         sc_ref_map: dict[str, int],
         gn_ref_map: dict[str, int] | None = None,
-    ) -> int:
+    ) -> tuple[int, list[int]]:
         # NestedBudgetLineItemRequestSchema converts string enums (status) to enum
         # values and supports services_component_ref / grant_number_ref. agreement_id is set by us.
         gn_ref_map = gn_ref_map or {}
+        change_request_ids: list[int] = []
         bli_create_schema = NestedBudgetLineItemRequestSchema()
         for bli_data in items:
             loaded = bli_create_schema.load(bli_data, unknown=EXCLUDE)
@@ -355,8 +370,9 @@ class AgreementEditBundleService:
                     )
                 loaded["grant_number_id"] = gn_ref_map[grant_number_ref]
             loaded["agreement_id"] = agreement.id
-            self._blis.create(loaded, commit=False)
-        return len(items)
+            _, ids = self._blis.create_with_change_request_ids(loaded, commit=False)
+            change_request_ids.extend(ids)
+        return len(items), change_request_ids
 
     def _update_budget_line_items(
         self, items: list[dict[str, Any]], sc_ref_map: dict[str, int], gn_ref_map: dict[str, int] | None = None

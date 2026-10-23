@@ -11,6 +11,7 @@ edits; ``division_director_auth_client`` (user 522) directs division 5, which ma
 """
 
 import datetime
+from types import SimpleNamespace
 
 import pytest
 from flask import url_for
@@ -904,3 +905,31 @@ def test_pre_award_planned_to_executing_request_cannot_be_approved_after_award(
     assert loaded_db.get(BudgetLineItemChangeRequest, cr.id).status == ChangeRequestStatus.IN_REVIEW
     assert loaded_db.get(ContractBudgetLineItem, bli.id).status == BudgetLineItemStatus.PLANNED
     assert _edits(loaded_db, agreement.id) == []
+
+
+# ---=== Services Component rows (OPS-6440) ===---
+
+
+def _edit(field, *, bli_id=None, sc_id=None):
+    return SimpleNamespace(field=field, budget_line_item_id=bli_id, services_component_id=sc_id)
+
+
+def test_latest_per_budget_line_field_keys_services_components_separately():
+    """SC rows have no budget line, so two SC adds must not collapse into one row."""
+    sc2_add = _edit("services_component_create", sc_id=2)
+    sc3_add = _edit("services_component_create", sc_id=3)
+    amount = _edit("amount", bli_id=10)
+
+    latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, amount])
+
+    assert latest == [sc2_add, sc3_add, amount]
+
+
+def test_latest_per_budget_line_field_deleted_services_component_shows_only_its_delete():
+    sc2_add = _edit("services_component_create", sc_id=2)
+    sc2_delete = _edit("services_component_delete", sc_id=2)
+    sc3_add = _edit("services_component_create", sc_id=3)
+
+    latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, sc2_delete])
+
+    assert latest == [sc3_add, sc2_delete]

@@ -45,6 +45,8 @@ import {
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
+    getServicesComponentApprovalChanges,
+    isServicesComponentDeleteRoutedToApproval,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -159,6 +161,7 @@ const useCreateBLIsAndSCs = (
         agreement,
         services_components: servicesComponents,
         deleted_services_components_ids: deletedServicesComponentsIds,
+        deleted_services_components_names: deletedServicesComponentsNames,
         grant_numbers: grantNumbers,
         deleted_grant_numbers_ids: deletedGrantNumbersIds,
         budget_line_items: tempBudgetLines,
@@ -180,6 +183,57 @@ const useCreateBLIsAndSCs = (
     // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
     // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
+    // Services component additions/deletions with non-Draft budget lines go to Division Director
+    // approval on an Awarded agreement (OPS-6440). Only superusers bypass this, matching the backend.
+    const scChangesRequireApproval = tracksContractModifications && !isSuperUser;
+    const { additions: pendingServicesComponentAdditions, deletionIds: pendingServicesComponentDeletionIds } =
+        React.useMemo(
+            () =>
+                scChangesRequireApproval
+                    ? getServicesComponentApprovalChanges({
+                          servicesComponents,
+                          deletedServicesComponentsIds,
+                          tempBudgetLines,
+                          budgetLines,
+                          deletedBudgetLines
+                      })
+                    : { additions: [], deletionIds: [] },
+            [
+                scChangesRequireApproval,
+                servicesComponents,
+                deletedServicesComponentsIds,
+                tempBudgetLines,
+                budgetLines,
+                deletedBudgetLines
+            ]
+        );
+    const hasServicesComponentChangesForApproval =
+        pendingServicesComponentAdditions.length > 0 || pendingServicesComponentDeletionIds.length > 0;
+    const servicesComponentChangeMessages = React.useMemo(
+        () => [
+            ...pendingServicesComponentAdditions.map((sc) => `• ${sc.display_name ?? sc.display_title} Addition`),
+            ...pendingServicesComponentDeletionIds.map(
+                (id) => `• ${deletedServicesComponentsNames?.[id] ?? "Services Component"} Deletion`
+            )
+        ],
+        [pendingServicesComponentAdditions, pendingServicesComponentDeletionIds, deletedServicesComponentsNames]
+    );
+    /**
+     * Whether deleting this saved services component will go to approval rather than apply on save.
+     * Read by the services component list before the delete is dispatched, so its budget line links
+     * can be kept (the backend unlinks them on approval) and the toast says what will happen.
+     * @param {number | undefined} servicesComponentId
+     * @returns {boolean}
+     */
+    const servicesComponentDeleteRequiresApproval = (servicesComponentId) =>
+        scChangesRequireApproval &&
+        isServicesComponentDeleteRoutedToApproval({
+            servicesComponentId,
+            servicesComponents,
+            tempBudgetLines,
+            budgetLines,
+            deletedBudgetLines
+        });
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -542,11 +596,13 @@ const useCreateBLIsAndSCs = (
                     selectedAgreement,
                     savedViaModal,
                     blockerLocationPathname: blocker.location?.pathname,
-                    isThereAnyBLIsFinancialSnapshotChanged
+                    isThereAnyBLIsFinancialSnapshotChanged,
+                    servicesComponentChangeMessages
                 })
             );
         },
         [
+            servicesComponentChangeMessages,
             tempBudgetLines,
             deletedBudgetLines,
             budgetLines,
@@ -829,7 +885,8 @@ const useCreateBLIsAndSCs = (
                 createdServiceComponents,
                 existingServicesComponents,
                 createdGrantNumbers,
-                existingGrantNumbers
+                existingGrantNumbers,
+                keptServicesComponentIds: pendingServicesComponentDeletionIds
             });
             // Create new budget line items
             const creationPromises = newBudgetLineItemsWithIds.map((newBudgetLineItem) => {
@@ -876,7 +933,8 @@ const useCreateBLIsAndSCs = (
             sendExistingBLIsToApproval,
             selectedAgreement?.id,
             handleRegularUpdates,
-            handleDeletions
+            handleDeletions,
+            pendingServicesComponentDeletionIds
         ]
     );
 
@@ -945,14 +1003,17 @@ const useCreateBLIsAndSCs = (
     // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
     // Draft BLs are added, edited, and deleted freely; they only require a contract modification
     // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
-    // and SC changes are saved directly (not through approval), so neither is counted here.
+    // so adding one isn't counted here. Adding or deleting a services component counts when it has
+    // non-Draft budget lines (OPS-6440); only superusers bypass that, so it isn't gated on
+    // canEditDirectly.
     // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
     const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
         const bli = budgetLines?.find((b) => b.id === id);
         return bli && bli.status !== BLI_STATUS.DRAFT;
     });
     const requiresContractModification =
-        tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs);
+        (tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs)) ||
+        hasServicesComponentChangesForApproval;
 
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
@@ -976,6 +1037,7 @@ const useCreateBLIsAndSCs = (
         datePickerSuite,
         scFormSuite,
         nonDraftBudgetLines,
+        servicesComponentDeleteRequiresApproval,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,
