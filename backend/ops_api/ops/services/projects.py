@@ -310,9 +310,11 @@ class ProjectsService(OpsService[Project]):
 
         # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
         # string: the frontend sends the nickname-preferred display value (which may be either
-        # column), and since nick_name has no uniqueness constraint, matching name/nick_name as
-        # strings could let one agreement's nickname collide with a different agreement's full
-        # name (or another agreement's nickname) and surface the wrong project. Ref: #6144.
+        # column). nick_name is globally unique, so two nicknames can't collide, but name is
+        # only unique per agreement_type (AGREEMENT_NAME_UNIQUE_INDEX), so matching by string
+        # could still let one agreement's nickname collide with a different agreement's full
+        # name, or two same-named agreements of different types collide, and surface the
+        # wrong project. Ref: #6144.
         if filters.agreement_ids:
             agreement_subquery = (
                 select(1)
@@ -398,9 +400,11 @@ class ProjectsService(OpsService[Project]):
 
         # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
         # string: the frontend sends the nickname-preferred display value (which may be either
-        # column), and since nick_name has no uniqueness constraint, matching name/nick_name as
-        # strings could let one agreement's nickname collide with a different agreement's full
-        # name (or another agreement's nickname) and surface the wrong project. Ref: #6144.
+        # column). nick_name is globally unique, so two nicknames can't collide, but name is
+        # only unique per agreement_type (AGREEMENT_NAME_UNIQUE_INDEX), so matching by string
+        # could still let one agreement's nickname collide with a different agreement's full
+        # name, or two same-named agreements of different types collide, and surface the
+        # wrong project. Ref: #6144.
         if filters.agreement_ids:
             agreement_subquery = (
                 select(1)

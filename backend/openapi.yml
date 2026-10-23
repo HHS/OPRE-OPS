@@ -4223,14 +4223,23 @@ paths:
                           type: integer
                         name:
                           type: string
-                    description: List of agreement names and nicknames associated with projects (sorted alphabetically by name, no duplicates)
+                          description: The agreement's full title, never the nickname
+                        nick_name:
+                          type: string
+                          nullable: true
+                        display_name:
+                          type: string
+                          description: Nickname if set, otherwise the full name
+                    description: List of agreements (sorted by display_name, nickname-preferred)
                     example:
                       - id: 1
                         name: "Agreement 001"
+                        nick_name: "AG1"
+                        display_name: "AG1"
                       - id: 2
-                        name: "Contract Alpha"
-                      - id: 3
-                        name: "Grant Beta"
+                        name: "Agreement 002"
+                        nick_name: null
+                        display_name: "Agreement 002"
         "401":
           description: Unauthorized
         "500":
