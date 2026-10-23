@@ -48,6 +48,7 @@ from ops_api.ops.services.ops_service import (
 )
 from ops_api.ops.utils.agreements_helpers import (
     ProcurementShopLockReason,
+    build_agreement_name_filter_options,
     check_user_association,
     get_procurement_shop_locked_reason,
     has_proc_shop_blocking_bli,
@@ -762,16 +763,7 @@ class AgreementsService(OpsService[Agreement]):
             .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
-        agreement_names = [
-            {
-                "id": a_id,
-                "name": a_name,
-                "nick_name": a_nick_name,
-                "display_name": a_display_name,
-            }
-            for a_id, a_name, a_nick_name, a_display_name in self.db_session.execute(agreement_names_query).all()
-        ]
-        agreement_names = sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
+        agreement_names = build_agreement_name_filter_options(self.db_session.execute(agreement_names_query).all())
 
         # Step 7: Contract numbers - UNION query on contract_agreement and aa_agreement
         # These are stored in subclass tables, not the base agreement table

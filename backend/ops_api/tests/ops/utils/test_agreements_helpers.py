@@ -13,6 +13,7 @@ from models.budget_line_items import BudgetLineItemStatus
 from ops_api.ops.utils.agreements_helpers import (
     AGREEMENT_NAME_UNIQUE_INDEX,
     CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
+    build_agreement_name_filter_options,
     get_division_directors_for_agreement,
     get_pre_award_notification_directors_for_agreement,
     is_agreement_name_unique_violation,
@@ -249,3 +250,34 @@ class TestUpdateAgreement:
         update_agreement(agreement, {"name": "Updated Name", "awarded_grant_number": "ODN-SPOOFED"})
         assert agreement.name == "Updated Name"
         assert agreement.awarded_grant_number is None
+
+
+class TestBuildAgreementNameFilterOptions:
+    """Tests for build_agreement_name_filter_options(rows) — the shared agreement-name
+    filter-option builder used by AgreementsService, ProjectsService, and
+    BudgetLineItemService, to keep their dict shape and sort rule from drifting apart."""
+
+    def test_builds_dict_with_expected_keys(self):
+        rows = [(1, "Full Title", "ABC", "ABC")]
+        result = build_agreement_name_filter_options(rows)
+        assert result == [{"id": 1, "name": "Full Title", "nick_name": "ABC", "display_name": "ABC"}]
+
+    def test_sorts_by_casefolded_display_name(self):
+        rows = [
+            (1, "B Agreement", None, "b agreement"),
+            (2, "A Agreement", None, "A Agreement"),
+        ]
+        result = build_agreement_name_filter_options(rows)
+        assert [r["id"] for r in result] == [2, 1]
+
+    def test_treats_none_display_name_as_empty_string_for_sorting(self):
+        # A None display_name casefolds to "", which sorts before any non-empty string
+        rows = [
+            (1, "Agreement", None, None),
+            (2, "Other Agreement", None, "A"),
+        ]
+        result = build_agreement_name_filter_options(rows)
+        assert [r["id"] for r in result] == [1, 2]
+
+    def test_empty_rows_returns_empty_list(self):
+        assert build_agreement_name_filter_options([]) == []

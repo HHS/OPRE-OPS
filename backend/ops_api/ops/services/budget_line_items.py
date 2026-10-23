@@ -42,6 +42,7 @@ from ops_api.ops.services.ops_service import (
 from ops_api.ops.utils.agreements_helpers import (
     CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
     associated_with_agreement,
+    build_agreement_name_filter_options,
     check_user_association,
     is_unique_violation,
 )
@@ -1264,18 +1265,19 @@ class BudgetLineItemService:
             if result.agreement and result.agreement.agreement_type
         }
 
-        # Collect agreement names (id, full name, nick_name, display_name)
-        agreement_name_dict = {
-            result.agreement.id: {
-                "id": result.agreement.id,
-                "name": result.agreement.name,
-                "nick_name": result.agreement.nick_name,
-                "display_name": result.agreement.display_name,
-            }
+        # Collect agreement names (id, full name, nick_name, display_name), one row per
+        # distinct agreement id
+        agreement_name_rows = {
+            result.agreement.id: (
+                result.agreement.id,
+                result.agreement.name,
+                result.agreement.nick_name,
+                result.agreement.display_name,
+            )
             for result in results
             if result.agreement and result.agreement.display_name
         }
-        agreement_names = list(agreement_name_dict.values())
+        agreement_names = build_agreement_name_filter_options(agreement_name_rows.values())
 
         # Collect CAN active periods
         can_active_periods = {result.can.active_period for result in results if result.can and result.can.active_period}
@@ -1324,7 +1326,7 @@ class BudgetLineItemService:
             "portfolios": sorted(portfolios, key=lambda x: x["name"]),
             "budget_line_total_range": {"min": budget_line_total_min, "max": budget_line_total_max},
             "agreement_types": sorted([at.name for at in agreement_types]),
-            "agreement_names": sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold()),
+            "agreement_names": agreement_names,
             "can_active_periods": sorted(can_active_periods),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()

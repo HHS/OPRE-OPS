@@ -837,6 +837,28 @@ def test_agreement_name_list_uses_title_when_no_nick_name(auth_client, loaded_db
     assert agreement_entry["name"] == agreement.name
 
 
+def test_agreement_name_list_uses_title_when_nick_name_is_whitespace_only(auth_client, loaded_db, test_project):
+    """
+    Test that agreement_name_list falls back to title when nick_name is whitespace-only,
+    matching Agreement.display_name's trim-then-fallback behavior.
+    """
+    agreement = test_project.agreements[0]
+    agreement.nick_name = "   "
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    assert project_data is not None
+
+    agreement_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement.id), None)
+    assert agreement_entry is not None
+
+    # Whitespace-only nick_name must fall back to the full title, not render blank
+    assert agreement_entry["name"] == agreement.name
+
+
 def test_agreement_name_list_always_includes_id(auth_client, loaded_db, test_project):
     """
     Test that every entry in agreement_name_list always has an agreement id.

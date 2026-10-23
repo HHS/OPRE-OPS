@@ -265,13 +265,8 @@ class Agreement(BaseModel):
     def display_name(self):
         """Nickname-preferred label for READ-ONLY references (tables, dropdowns,
         filters, notifications). Do NOT use for the agreement's own page heading
-        or breadcrumb — use `name` / `full_name` there. Ref: issue #6144."""
+        or breadcrumb — use `name` there. Ref: issue #6144."""
         return (self.nick_name or "").strip() or self.name
-
-    @property
-    def full_name(self):
-        """The agreement's full title, never the nickname."""
-        return self.name
 
     @classmethod
     def display_name_expression(cls):

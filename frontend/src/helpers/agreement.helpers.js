@@ -27,6 +27,17 @@ const handleAgreementProp = (agreement) => {
 };
 
 /**
+ * Returns the first argument that isn't null/undefined. Centralizes the
+ * precedence-selection mechanism shared by the agreement-name helpers below, so each one
+ * only has to state its own field order (documented beside its export) instead of
+ * reimplementing the `??`/`?.` chain ad hoc — the three orders differ intentionally, but
+ * should all live here where they're easy to compare. Ref: issue #6144.
+ * @param {...(string | undefined | null)} values
+ * @returns {string | undefined}
+ */
+const firstDefined = (...values) => values.find((value) => value !== null && value !== undefined);
+
+/**
  * Nickname-preferred display label for an agreement. Prefers the server-computed
  * `display_name` (which itself prefers `nick_name`); falls back to a local
  * `nick_name`/`name` computation when `display_name` is absent (e.g. ~30 fixtures in
@@ -39,7 +50,7 @@ const handleAgreementProp = (agreement) => {
  * @returns {string} - The nickname-preferred display label, or "" when agreement is absent.
  */
 export const getAgreementDisplayName = (agreement) =>
-    agreement?.display_name ?? (agreement?.nick_name?.trim() || agreement?.name) ?? "";
+    firstDefined(agreement?.display_name, agreement?.nick_name?.trim() || agreement?.name) ?? "";
 
 /**
  * Resolves the raw full name from an agreement-title filter option (e.g. an
@@ -51,7 +62,7 @@ export const getAgreementDisplayName = (agreement) =>
  * @param {{name?: string, display_name?: string, title?: string} | null | undefined} option
  * @returns {string | undefined}
  */
-export const getAgreementFilterFullName = (option) => option?.name ?? option?.display_name ?? option?.title;
+export const getAgreementFilterFullName = (option) => firstDefined(option?.name, option?.display_name, option?.title);
 
 /**
  * Resolves the nickname-preferred tag text for an agreement-title filter option, used to
@@ -61,7 +72,7 @@ export const getAgreementFilterFullName = (option) => option?.name ?? option?.di
  * @param {{title?: string, display_name?: string, name?: string} | null | undefined} option
  * @returns {string | undefined}
  */
-export const getAgreementFilterTagText = (option) => option?.title ?? option?.display_name ?? option?.name;
+export const getAgreementFilterTagText = (option) => firstDefined(option?.title, option?.display_name, option?.name);
 
 /**
  * Calculates the agreement subtotal based on the agreement and non-DRAFT budget lines.

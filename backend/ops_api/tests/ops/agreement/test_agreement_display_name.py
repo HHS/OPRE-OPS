@@ -1,7 +1,7 @@
-"""Unit tests for Agreement.display_name / full_name / display_name_expression (issue #6144).
+"""Unit tests for Agreement.display_name / display_name_expression (issue #6144).
 
 `display_name` is the nickname-preferred label used everywhere except the agreement's
-own details page (which must keep using `name` / `full_name`). See
+own details page (which must keep using `name`). See
 `models/agreements.py::Agreement.display_name` and `Agreement.display_name_expression`.
 """
 
@@ -35,11 +35,6 @@ class TestAgreementDisplayNameProperty:
         """
         agreement = ContractAgreement(name="Full Title", nick_name=nick_name, agreement_type=AgreementType.CONTRACT)
         assert agreement.display_name == "Full Title"
-
-    def test_full_name_is_always_the_full_title(self):
-        agreement = ContractAgreement(name="Full Title", nick_name="ABC", agreement_type=AgreementType.CONTRACT)
-        assert agreement.full_name == "Full Title"
-        assert agreement.full_name != agreement.display_name
 
 
 class TestAgreementDisplayNameExpression:

@@ -21,6 +21,7 @@ from models import (
     User,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.agreements_helpers import build_agreement_name_filter_options
 from ops_api.ops.utils.projects_helpers import check_project_user_association
 
 
@@ -737,16 +738,7 @@ class ProjectsService(OpsService[Project]):
             .where(Project.id.in_(project_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
-        agreement_names = [
-            {
-                "id": a_id,
-                "name": a_name,
-                "nick_name": a_nick_name,
-                "display_name": a_display_name,
-            }
-            for a_id, a_name, a_nick_name, a_display_name in self.db_session.execute(agreement_names_query).all()
-        ]
-        agreement_names = sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
+        agreement_names = build_agreement_name_filter_options(self.db_session.execute(agreement_names_query).all())
 
         # Build response
         filters = {
