@@ -2,6 +2,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { useGetVersionQuery } from "../../../api/opsAPI";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
@@ -87,6 +88,8 @@ const BLIReviewRow = ({
     const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
+    const { data: versionData } = useGetVersionQuery();
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
@@ -190,7 +193,7 @@ const BLIReviewRow = ({
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
-        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)} ${isOutsidePopRange && rowInReviewMode ? "table-item-error" : ""}`;
+        const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, rowInReviewMode, allowPastObligateByDates)} ${addErrorClassIfNotFound(dateNeededErrorValue, rowInReviewMode)} ${isOutsidePopRange && rowInReviewMode ? "table-item-error" : ""}`;
         const dateNeededClasses = showCellErrors ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;

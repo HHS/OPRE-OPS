@@ -112,6 +112,7 @@ Feature: Validate "Draft" Budget Lines
 
   Scenario: Valid Need By Date: Future Date
     Given I am logged in as an OPS user
+    And past Obligate By dates are not allowed
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with a Need By Date in the past or today

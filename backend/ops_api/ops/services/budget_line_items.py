@@ -1171,7 +1171,12 @@ class BudgetLineItemService:
         if final_date_needed is None:
             raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
 
-        if not is_super_user(current_user, current_app) and final_date_needed <= today:
+        # ALLOW_PAST_OBLIGATE_BY_DATES (issue 6443) lifts the strictly-future rule for everyone.
+        if (
+            not current_app.config.get("ALLOW_PAST_OBLIGATE_BY_DATES", False)
+            and not is_super_user(current_user, current_app)
+            and final_date_needed <= today
+        ):
             raise ValidationError(
                 {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
             )

@@ -2,7 +2,7 @@ import { create, test, enforce } from "vest";
 
 const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
-const suite = create((data = {}, isSuperUser) => {
+const suite = create((data = {}, isSuperUser, allowPastObligateByDates = false) => {
     // Only validate the needbyDate field if it has a value since it is not required
     if (data.needByDate === null || data.needByDate === "") {
         return;
@@ -15,11 +15,13 @@ const suite = create((data = {}, isSuperUser) => {
     // Business-rule checks below are bypassed for super users.
     if (isSuperUser) return;
 
-    test("needByDate", "Date must be in the future", () => {
-        const today = new Date();
-        const enteredDate = new Date(data.needByDate);
-        enforce(enteredDate.getTime()).greaterThan(today.getTime());
-    });
+    if (!allowPastObligateByDates) {
+        test("needByDate", "Date must be in the future", () => {
+            const today = new Date();
+            const enteredDate = new Date(data.needByDate);
+            enforce(enteredDate.getTime()).greaterThan(today.getTime());
+        });
+    }
     // The SC PoP window rule only applies once the budget line is out of DRAFT status —
     // a DRAFT budget line's date is free to fall outside the agreement's SC window.
     if (

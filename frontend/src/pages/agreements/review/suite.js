@@ -47,7 +47,7 @@ const suite = create((data = {}, fieldName = undefined) => {
     });
 });
 
-const budgetLineSuite = create((budgetLine = {}, fieldName) => {
+const budgetLineSuite = create((budgetLine = {}, fieldName, allowPastObligateByDates = false) => {
     if (fieldName) {
         only(fieldName);
     }
@@ -83,16 +83,18 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
         enforce(budgetLine.date_needed).isNotBlank();
     });
 
-    test("Budget Line Obligate By Date must be in the future", () => {
-        // Parse the ISO date string directly via split to avoid the UTC-midnight pitfall:
-        // new Date("YYYY-MM-DD") is UTC, and getDate() in a negative-offset timezone returns
-        // the prior local day. Splitting gives the calendar date the user intended.
-        const today = new Date();
-        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const [y, mo, d] = (budgetLine.date_needed ?? "").split("-").map(Number);
-        const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
-        enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
-    });
+    if (!allowPastObligateByDates) {
+        test("Budget Line Obligate By Date must be in the future", () => {
+            // Parse the ISO date string directly via split to avoid the UTC-midnight pitfall:
+            // new Date("YYYY-MM-DD") is UTC, and getDate() in a negative-offset timezone returns
+            // the prior local day. Splitting gives the calendar date the user intended.
+            const today = new Date();
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const [y, mo, d] = (budgetLine.date_needed ?? "").split("-").map(Number);
+            const dateOnly = isNaN(y) || isNaN(mo) || isNaN(d) ? new Date(0) : new Date(y, mo - 1, d);
+            enforce(dateOnly.getTime()).greaterThan(todayOnly.getTime());
+        });
+    }
 
     // Grant BLIs have no services component / PoP window, so this rule only applies to
     // Contract/IAA BLIs. Skip (rather than fail) when date_needed or the SC period is
@@ -154,11 +156,12 @@ const normalizeErrors = (rawErrors = {}) => {
  * Validate a single budget line item.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine
  * @param {string} [fieldName]
+ * @param {boolean} [allowPastObligateByDates] - ALLOW_PAST_OBLIGATE_BY_DATES from /version/; skips the future-date rule.
  * @returns {{ isValid: boolean, errors: Record<string, string[]> }} - Result summary for the provided budget line
  */
-export const validateBudgetLineItem = (budgetLine, fieldName) => {
+export const validateBudgetLineItem = (budgetLine, fieldName, allowPastObligateByDates = false) => {
     budgetLineSuite.reset();
-    budgetLineSuite.run(budgetLine, fieldName);
+    budgetLineSuite.run(budgetLine, fieldName, allowPastObligateByDates);
     const result = budgetLineSuite.get();
     return {
         isValid: result.isValid(),
@@ -169,14 +172,15 @@ export const validateBudgetLineItem = (budgetLine, fieldName) => {
 /**
  * Validate one or more budget line items independently from the agreement.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine | import("../../../types/BudgetLineTypes").BudgetLine[]} budgetLines
+ * @param {boolean} [allowPastObligateByDates] - ALLOW_PAST_OBLIGATE_BY_DATES from /version/; skips the future-date rule.
  * @returns {{ id: number | null, isValid: boolean, errors: Record<string, string[]> }[]} - Collection of budget line validation results
  */
-export const validateBudgetLineItems = (budgetLines = []) => {
+export const validateBudgetLineItems = (budgetLines = [], allowPastObligateByDates = false) => {
     const items = Array.isArray(budgetLines) ? budgetLines : [budgetLines];
 
     return items.map((budgetLine) => ({
         id: budgetLine?.id ?? null,
-        ...validateBudgetLineItem(budgetLine)
+        ...validateBudgetLineItem(budgetLine, undefined, allowPastObligateByDates)
     }));
 };
 

@@ -64,3 +64,41 @@ describe("CreateBLIsAndSCs suite — PoP range rule", () => {
         );
     });
 });
+
+describe("CreateBLIsAndSCs suite — future-date rule", () => {
+    beforeEach(() => {
+        suite.reset();
+    });
+
+    it("rejects a past date when ALLOW_PAST_OBLIGATE_BY_DATES is off", () => {
+        const result = suite.run({ budgetLines: [{ ...validBase, date_needed: "2020-06-21" }] });
+
+        expect(result.getErrors("Budget line item (1)")).toContain("Need by date must be in the future");
+    });
+
+    it("accepts a past date when ALLOW_PAST_OBLIGATE_BY_DATES is on", () => {
+        const result = suite.run({ budgetLines: [{ ...validBase, date_needed: "2020-06-21" }] }, true);
+
+        expect(result.isValid()).toBe(true);
+    });
+
+    it("still applies the Period of Performance rule when ALLOW_PAST_OBLIGATE_BY_DATES is on", () => {
+        const result = suite.run(
+            {
+                budgetLines: [
+                    {
+                        ...validBase,
+                        date_needed: "2019-06-01",
+                        sc_period_start: "2020-01-01",
+                        sc_period_end: "2020-12-31"
+                    }
+                ]
+            },
+            true
+        );
+
+        expect(result.getErrors("Budget line item (1)")).toContain(
+            "Obligate By date is outside the agreement's Period of Performance"
+        );
+    });
+});

@@ -9,6 +9,7 @@ import {
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
+import { useGetVersionQuery } from "../../../api/opsAPI";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -65,6 +66,8 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
     const isOutsidePopRange = isDateOutsidePopRange(budgetLine);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+    const { data: versionData } = useGetVersionQuery();
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const changeIcons = (
         <ChangeIcons
@@ -100,7 +103,8 @@ const BLIRow = ({
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
-                    isReviewMode
+                    isReviewMode,
+                    allowPastObligateByDates
                 )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)} ${
                     isReviewMode && isOutsidePopRange ? "table-item-error" : ""
                 }`}

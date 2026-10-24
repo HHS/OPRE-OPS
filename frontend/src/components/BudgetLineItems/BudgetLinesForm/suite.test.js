@@ -138,6 +138,15 @@ describe("BudgetLinesForm Validation Suite", () => {
         });
     });
 
+    describe("with ALLOW_PAST_OBLIGATE_BY_DATES on", () => {
+        it("accepts a past date", () => {
+            const result = suite.run({ ...getValidData(), needByDate: "01/01/2020" }, false, false, true);
+
+            expect(result.hasErrors()).toBe(false);
+            expect(result.getErrors("needByDate")).toHaveLength(0);
+        });
+    });
+
     describe("Mixed User Roles", () => {
         it("should skip validations when SUPER_USER is present with other roles", () => {
             const isSuperUser = true;

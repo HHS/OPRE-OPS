@@ -4,7 +4,8 @@ import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
-    useUpdateDocumentStatusMutation
+    useUpdateDocumentStatusMutation,
+    useGetVersionQuery
 } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
@@ -43,6 +44,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [addDocument] = useAddDocumentMutation();
     const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
+
+    const { data: versionData } = useGetVersionQuery();
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     // Use shared data fetching and processing hook
     const {
@@ -95,8 +99,8 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const bliValidationResults = useMemo(() => {
         if (validatableBudgetLines.length === 0) return [];
-        return validateBudgetLineItems(validatableBudgetLines);
-    }, [validatableBudgetLines]);
+        return validateBudgetLineItems(validatableBudgetLines, allowPastObligateByDates);
+    }, [validatableBudgetLines, allowPastObligateByDates]);
 
     const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
 
