@@ -20,6 +20,7 @@ i.e.
 ----------------------------------------
 */
 
+@use "sass:list";
 @use "uswds-core" as *;
 
 // OPS-6327: app shell background (DefaultLayout + Login outer wrapper only),
@@ -81,4 +82,52 @@ i.e.
 // header's direct next sibling, but worth knowing if one ever does.)
 .usa-header.usa-header--extended + main {
     border-top: 1px solid transparent;
+}
+
+// OPS-6026: Figma paragraph leading — 16px body text on a 24px line (USWDS
+// line-height token 4 = 1.5). Plain <p> otherwise inherits normalize's 1.15
+// because $theme-style-body-element is off.
+//
+// Applies only to default-size paragraphs inside <main>. Excluded (on the <p>
+// or any ancestor):
+// - any non-16px font-size utility — generated below from every USWDS family/
+//   scale, plus the custom .font-Npx classes in styles.scss (keep in sync) and
+//   responsive variants (tablet:font-*)
+// - any line-height-* utility on an ancestor
+// - cards: mark a card root with `ops-card` (marker only, no styles) to opt its
+//   copy out; also .usa-card, .usa-alert, .usa-summary-box, .usa-modal, table
+// - header, site banner, footer (outside <main>)
+//
+// Wrapped in :where() so specificity is (0,0,0): any class on the <p> itself
+// (line-height-* utilities, .usa-intro, .usa-prose > p, CSS modules) still wins,
+// while bare <p> beats the inherited 1.15.
+//
+// Because it sets line-height on the <p> itself, it also beats leading a <p>
+// would otherwise inherit from a USWDS container (e.g. .usa-accordion 1.6,
+// .usa-form 1.4) — intended: one leading for default-size paragraph text.
+//
+// Not done via $theme-global-paragraph-styles: that also adds max-width: 68ex
+// and margin resets to every <p>, and changes USWDS component rules' own
+// leading (.usa-table, .usa-card__container, … 1.6 → 1.5) for all their text.
+// Compiled into src/uswds/css/styles.css — run `bun run uswds:update`.
+//
+// Families and scales come from USWDS's own maps, so any family a theme setting
+// enables later (cond, icon, lang, …) is picked up; disabled ones (cap height
+// or scale false) are skipped, matching the utilities USWDS actually emits.
+$ops-p-resized: (".font-12px", ".font-20px", ".font-24px", ".font-32px", "[class*=':font-']");
+@each $family, $cap-height in $project-cap-heights {
+    @each $scale, $scale-value in $project-type-scale {
+        @if $family != "base" and $cap-height and $scale-value and size($family, $scale) != 1rem {
+            $ops-p-resized: list.append($ops-p-resized, ".font-#{$family}-#{$scale}", $separator: comma);
+        }
+    }
+}
+$ops-p-excluded-ancestors: list.join(
+    $ops-p-resized,
+    ("[class*='line-height-']", ".ops-card", ".usa-card", ".usa-alert", ".usa-summary-box", ".usa-modal", "table"),
+    $separator: comma
+);
+
+:where(main p:not(#{$ops-p-resized}):not(:is(#{$ops-p-excluded-ancestors}) p)) {
+    line-height: line-height("body", 4);
 }
