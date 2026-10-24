@@ -177,7 +177,9 @@ describe("ApprovePreAwardApproval", () => {
 
         expect(screen.getByTestId("page-header")).toBeInTheDocument();
         expect(screen.getByText("Approval for Pre-Award")).toBeInTheDocument();
-        expect(screen.getByText("Test Agreement")).toBeInTheDocument();
+        // The subTitle is nickname-preferred per issue #6144 F6b — the fixture's display_name
+        // ("Agreement 001") renders here, not the raw name ("Test Agreement").
+        expect(screen.getByText("Agreement 001")).toBeInTheDocument();
         expect(screen.getByTestId("agreement-meta-accordion")).toBeInTheDocument();
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();
         expect(screen.getByTestId("agreement-can-review-accordion")).toBeInTheDocument();

@@ -163,14 +163,29 @@ describe("removeFilter - non-FY filters", () => {
         expect(result.projectSearch).toEqual([]);
     });
 
-    it("removes an agreementSearch tag by title", () => {
+    it("removes an agreementSearch tag by id", () => {
         const setFilters = vi.fn();
-        removeFilter({ filter: "agreementSearch", tagText: "Agreement 1" }, setFilters);
+        removeFilter({ filter: "agreementSearch", tagText: "Agreement 1", id: 1 }, setFilters);
         const result = setFilters.mock.calls[0][0]({
             ...emptyFilters,
             agreementSearch: [{ id: 1, title: "Agreement 1" }]
         });
         expect(result.agreementSearch).toEqual([]);
+    });
+
+    it("removes only the matching agreementSearch tag when tagText collides across ids", () => {
+        // Agreement A's nick_name can equal Agreement B's full title, producing identical
+        // chip text. Removal must key on id so only the clicked chip's agreement is removed.
+        const setFilters = vi.fn();
+        removeFilter({ filter: "agreementSearch", tagText: "Shared Name", id: 2 }, setFilters);
+        const result = setFilters.mock.calls[0][0]({
+            ...emptyFilters,
+            agreementSearch: [
+                { id: 1, title: "Shared Name" },
+                { id: 2, title: "Shared Name" }
+            ]
+        });
+        expect(result.agreementSearch).toEqual([{ id: 1, title: "Shared Name" }]);
     });
 
     it("removes a projectType tag by title", () => {

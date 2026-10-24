@@ -405,32 +405,32 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         "have.text",
                         `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Budget Team.`
                     )
-                    // TODO: add more tests
+                    // Deleting an EXECUTING BLI directly submits a delete change request instead
+                    // of deleting it (202, still IN_REVIEW) — that request would otherwise linger
+                    // forever as a stray review-card for every later division-director review flow.
+                    // The agreement still has a non-DRAFT BLI, so only a super user can delete it
+                    // directly, bypassing that guard (see #5658).
                     .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(202);
-                        });
+                        cy.contains("Sign-Out")
+                            .click()
+                            .then(() => {
+                                localStorage.clear();
+                                testLogin("power-user");
+                            })
+                            .then(() => {
+                                const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+                                cy.request({
+                                    method: "DELETE",
+                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    headers: {
+                                        Authorization: powerUserBearerToken,
+                                        Accept: "application/json"
+                                    }
+                                }).then((response) => {
+                                    expect(response.status).to.eq(200);
+                                });
+                            });
                     });
-                // TODO: unable to delete agreement?
-                // .then(() => {
-                //     cy.request({
-                //         method: "DELETE",
-                //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                //         headers: {
-                //             Authorization: bearer_token,
-                //             Accept: "application/json"
-                //         }
-                //     }).then((response) => {
-                //         expect(response.status).to.eq(200);
-                //     });
-                // });
             });
     });
     it("review Budget Change change", () => {

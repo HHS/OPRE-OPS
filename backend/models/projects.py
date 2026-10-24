@@ -232,10 +232,7 @@ class Project(BaseModel):
         for agreement in self.agreements:
             # Add agreement total to overall total
             total += agreement.agreement_total
-            if agreement.nick_name:
-                agreement_name_list.append({"id": agreement.id, "name": agreement.nick_name})
-            else:
-                agreement_name_list.append({"id": agreement.id, "name": agreement.name})
+            agreement_name_list.append({"id": agreement.id, "name": agreement.display_name})
 
             for bli in agreement.budget_line_items:
                 # No date_needed means no fiscal year, so this BLI can't be bucketed by FY.

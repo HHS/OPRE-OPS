@@ -130,6 +130,26 @@ describe("AgreementEditForm.helpers", () => {
             });
         });
 
+        describe("Nickname is never an immutable awarded field (issue #6144 AC 6)", () => {
+            it("returns false for NickName on an awarded agreement even when Name is immutable", () => {
+                expect(isFieldDisabled(AgreementFields.NickName, ["name"], false, true)).toBe(false);
+            });
+
+            it("returns false for NickName on an awarded agreement with the full immutable-fields list", () => {
+                const immutableFields = [
+                    "name",
+                    "contract_type",
+                    "service_requirement_type",
+                    "product_service_code_id",
+                    "awarding_entity_id",
+                    "agreement_reason",
+                    "requesting_agency_id",
+                    "servicing_agency_id"
+                ];
+                expect(isFieldDisabled(AgreementFields.NickName, immutableFields, false, true)).toBe(false);
+            });
+        });
+
         describe("Unknown or unmapped field scenarios", () => {
             it("should return false for fields not in AWARDED_DISABLED_FIELDS", () => {
                 const immutableFields = ["some_random_field"];

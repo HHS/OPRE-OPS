@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Iterable, Optional
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
@@ -55,6 +55,23 @@ def is_agreement_name_unique_violation(error: IntegrityError) -> bool:
     in unit tests, or wrapped errors).
     """
     return is_unique_violation(error, AGREEMENT_NAME_UNIQUE_INDEX)
+
+
+def build_agreement_name_filter_options(
+    rows: Iterable[tuple[int, str, Optional[str], str]],
+) -> list[dict[str, Any]]:
+    """Build the agreement-name filter-option list: {id, name, nick_name, display_name} dicts
+    sorted by casefolded display_name.
+
+    ``rows`` is an iterable of (id, name, nick_name, display_name) tuples. Centralizes this
+    shape so AgreementsService, ProjectsService, and BudgetLineItemsService can't drift from
+    each other on the dict keys or the sort rule.
+    """
+    agreement_names = [
+        {"id": a_id, "name": a_name, "nick_name": a_nick_name, "display_name": a_display_name}
+        for a_id, a_name, a_nick_name, a_display_name in rows
+    ]
+    return sorted(agreement_names, key=lambda x: (x["display_name"] or "").casefold())
 
 
 def associated_with_agreement(id: int) -> bool:

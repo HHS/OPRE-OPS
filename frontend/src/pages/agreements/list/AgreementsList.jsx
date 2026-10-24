@@ -14,7 +14,6 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementsTableLoading from "../../../components/Agreements/AgreementsTable/AgreementsTableLoading";
 import {
     getAgreementContractNumber,
-    getAgreementName,
     getProcurementShopDisplay,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
@@ -234,7 +233,10 @@ const AgreementsList = () => {
             // column with identical data. Deriving headers/values/currencyColumns from one list
             // of column definitions keeps them from drifting out of sync with each other.
             const columnDefs = [
-                { header: "Agreement", getValue: (agreement) => getAgreementName(agreement) },
+                // Raw full name — deliberately NOT getAgreementName, which is nickname-preferred.
+                // The export shows the full title and the nickname as two separate columns (AC 4).
+                { header: "Agreement", getValue: (agreement) => agreement.name ?? "" },
+                { header: "Agreement Nickname", getValue: (agreement) => agreement.nick_name ?? "" },
                 {
                     header: "Type",
                     getValue: (agreement) => convertCodeForDisplay("agreementType", agreement?.agreement_type)

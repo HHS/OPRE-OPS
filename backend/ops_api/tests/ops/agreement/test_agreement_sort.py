@@ -321,3 +321,42 @@ def test_sort_agreements_fy_obligated_specific_fy_uses_fy_obligated():
 
     result = _sort_agreements([a1, a2, a3], AgreementSortCondition.FY_OBLIGATED, False, fiscal_years=["2025"])
     assert result == [a1, a3, a2]
+
+
+# --- _sort_agreements AGREEMENT (display_name) sort tests ---
+
+
+def test_sort_agreements_by_agreement_uses_display_name():
+    """B4: sorting by AGREEMENT should use display_name (nickname-preferred), not raw name."""
+    agreement_apple = MagicMock()
+    agreement_apple.name = "Apple Agreement"
+    agreement_apple.nick_name = "Zulu"
+    agreement_apple.display_name = "Zulu"
+
+    agreement_zebra = MagicMock()
+    agreement_zebra.name = "Zebra Agreement"
+    agreement_zebra.nick_name = "Alpha"
+    agreement_zebra.display_name = "Alpha"
+
+    results = [agreement_apple, agreement_zebra]
+
+    sorted_results = _sort_agreements(results, AgreementSortCondition.AGREEMENT, False)
+
+    # Sorting by raw `name` would keep this order (Apple before Zebra); sorting by
+    # `display_name` (nickname-preferred) inverts it, since "Alpha" < "Zulu".
+    assert sorted_results == [agreement_zebra, agreement_apple]
+
+
+def test_sort_agreements_by_agreement_handles_none_display_name():
+    """Guards the `or ""` fallback in B4, which fixes a latent AttributeError on a null name."""
+    agreement_with_none = MagicMock()
+    agreement_with_none.display_name = None
+
+    agreement_with_value = MagicMock()
+    agreement_with_value.display_name = "Alpha"
+
+    results = [agreement_with_value, agreement_with_none]
+
+    sorted_results = _sort_agreements(results, AgreementSortCondition.AGREEMENT, False)
+
+    assert sorted_results == [agreement_with_none, agreement_with_value]

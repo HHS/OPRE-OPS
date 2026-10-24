@@ -75,6 +75,36 @@ describe("AgreementMetaAccordion", () => {
         expect(allTBDs.length).toBeGreaterThan(0);
     });
 
+    describe("Negative AC — side-by-side Name/Nickname fields unchanged (issue #6144)", () => {
+        it("renders the Agreement term as the raw full name and the nickname term as the raw nick_name — never a nickname-preferred value in either slot", () => {
+            const nicknamedAgreement = {
+                ...agreement,
+                name: "Full Legal Title For Testing",
+                nick_name: "FLT",
+                display_name: "FLT"
+            };
+
+            const { container } = render(
+                <AgreementMetaAccordion
+                    agreement={nicknamedAgreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+            const agreementTerm = container.querySelector('[data-cy="agreement-meta-name"]');
+            // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+            const nicknameTerm = container.querySelector('[data-cy="agreement-meta-nickname"]');
+
+            expect(agreementTerm).toHaveTextContent("Full Legal Title For Testing");
+            expect(nicknameTerm).toHaveTextContent("FLT");
+            // The full title must never be swapped out for the nickname-preferred display_name.
+            expect(agreementTerm).not.toHaveTextContent("FLT");
+        });
+    });
+
     describe("Division Directors and Team Leaders", () => {
         it("should display division director names when present", () => {
             render(

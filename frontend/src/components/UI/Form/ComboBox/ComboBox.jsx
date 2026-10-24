@@ -1,4 +1,4 @@
-import Select, { components } from "react-select";
+import Select, { components, createFilter } from "react-select";
 import useComboBox from "./ComboBox.hooks";
 import Tooltip from "../../USWDS/Tooltip";
 import styles from "./ComboBox.module.css";
@@ -22,6 +22,16 @@ const LoadingMessage = (props) => (
     </components.LoadingMessage>
 );
 
+// Widens react-select's default filter to also match against a hidden `searchText` field
+// (e.g. an agreement's full name/nickname pair) so typing either resolves to the same option.
+// Must keep `option.value` in the stringify — react-select's own defaultStringify is
+// `${label} ${value}` (Select-ef7c0426.esm.js), and several ComboBoxes (e.g.
+// ProjectTypeComboBox) use a human-typeable code as the id/value with no `searchText`, so
+// dropping `value` here breaks matching on it for every ComboBox in the app. Ref: issue #6144 AC 3.
+const filterOption = createFilter({
+    stringify: (option) => `${option.label} ${option.value} ${option.data?.searchText ?? ""}`
+});
+
 /**
  * @typedef {Object} DataProps
  * @property {number} id - The identifier of the data item
@@ -37,6 +47,8 @@ const LoadingMessage = (props) => (
  * @param {DataProps[]} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.
+ * @param {Function} [props.formatOptionLabel] - Optional react-select `formatOptionLabel` override, for rendering
+ * a custom (e.g. multi-line) option label distinct from the plain-string label used for sorting/filtering (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
@@ -53,6 +65,7 @@ const ComboBox = ({
     selectedData,
     setSelectedData,
     optionText = (data) => data.display_name ?? data.title,
+    formatOptionLabel,
     defaultString = "",
     messages = [],
     overrideStyles = {},
@@ -105,6 +118,8 @@ const ComboBox = ({
                     placeholder={defaultString}
                     styles={customStyles}
                     components={{ LoadingMessage }}
+                    formatOptionLabel={formatOptionLabel}
+                    filterOption={filterOption}
                     isSearchable={true}
                     isClearable={true}
                     isMulti={isMulti}

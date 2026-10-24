@@ -42,6 +42,7 @@ from ops_api.ops.services.ops_service import (
 from ops_api.ops.utils.agreements_helpers import (
     CLIN_NUMBER_AGREEMENT_UNIQUE_CONSTRAINT,
     associated_with_agreement,
+    build_agreement_name_filter_options,
     check_user_association,
     is_unique_violation,
 )
@@ -314,7 +315,7 @@ class BudgetLineItemService:
         else:
             # The default behavior when no sort condition is specified is to sort by agreement name
             query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                Agreement.name, BudgetLineItem.service_component_name_for_sort
+                Agreement.display_name_expression(), BudgetLineItem.service_component_name_for_sort
             )
             agreement_already_joined = True
 
@@ -578,7 +579,13 @@ class BudgetLineItemService:
         return query
 
     def _apply_agreement_name_filter(self, query, agreement_names):
-        """Apply agreement name filter if provided."""
+        """Apply agreement name filter if provided.
+
+        Matches against the full name only. The frontend always sends the full name
+        (opsAPI.js), never the nick_name — matching nick_name here would let one
+        agreement's nickname collide with a different agreement's full name and pull
+        in that other agreement's budget lines. Ref: #6144.
+        """
         if agreement_names:
             query = query.where(Agreement.name.in_(agreement_names))
         return query
@@ -598,7 +605,9 @@ class BudgetLineItemService:
                 )
             case BudgetLineSortCondition.AGREEMENT_NAME:
                 query = query.join(Agreement, Agreement.id == BudgetLineItem.agreement_id, isouter=True).order_by(
-                    Agreement.name.desc() if sort_descending else Agreement.name
+                    Agreement.display_name_expression().desc()
+                    if sort_descending
+                    else Agreement.display_name_expression()
                 )
                 agreement_joined = True
             case BudgetLineSortCondition.AGREEMENT_TYPE:
@@ -1284,16 +1293,19 @@ class BudgetLineItemService:
             if result.agreement and result.agreement.agreement_type
         }
 
-        # Collect agreement names (display_name)
-        agreement_name_dict = {
-            result.agreement.id: {
-                "id": result.agreement.id,
-                "name": result.agreement.display_name,
-            }
+        # Collect agreement names (id, full name, nick_name, display_name), one row per
+        # distinct agreement id
+        agreement_name_rows = {
+            result.agreement.id: (
+                result.agreement.id,
+                result.agreement.name,
+                result.agreement.nick_name,
+                result.agreement.display_name,
+            )
             for result in results
             if result.agreement and result.agreement.display_name
         }
-        agreement_names = list(agreement_name_dict.values())
+        agreement_names = build_agreement_name_filter_options(agreement_name_rows.values())
 
         # Collect CAN active periods
         can_active_periods = {result.can.active_period for result in results if result.can and result.can.active_period}
@@ -1342,7 +1354,7 @@ class BudgetLineItemService:
             "portfolios": sorted(portfolios, key=lambda x: x["name"]),
             "budget_line_total_range": {"min": budget_line_total_min, "max": budget_line_total_max},
             "agreement_types": sorted([at.name for at in agreement_types]),
-            "agreement_names": sorted(agreement_names, key=lambda x: x["name"]),
+            "agreement_names": agreement_names,
             "can_active_periods": sorted(can_active_periods),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()

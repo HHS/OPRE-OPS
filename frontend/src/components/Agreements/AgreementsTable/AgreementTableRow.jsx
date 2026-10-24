@@ -38,6 +38,15 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
+    // When the nickname-preferred agreementName differs from the full title, the full title
+    // must reach keyboard/screen-reader users through the link's own accessible name — not a
+    // second tooltip-triggering tab stop nested inside the link, which USWDS's tooltip script
+    // would make focusable but not activatable (OPS-6144).
+    const fullAgreementName = agreement?.name;
+    const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== agreementName;
+    const agreementLinkLabel = hasDistinctFullName
+        ? `View agreement details for ${agreementName}, full title ${fullAgreementName}`
+        : `View agreement details for ${agreementName || "agreement"}`;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementTotal = agreement?.agreement_total ?? 0;
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
@@ -92,7 +101,8 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                     className="text-ink text-no-underline"
                     to={agreementPath}
                     state={listTrailState(agreementPath)}
-                    aria-label={`View agreement details for ${agreementName || "agreement"}`}
+                    aria-label={agreementLinkLabel}
+                    title={hasDistinctFullName ? fullAgreementName : undefined}
                 >
                     <TextClip
                         text={agreementName}

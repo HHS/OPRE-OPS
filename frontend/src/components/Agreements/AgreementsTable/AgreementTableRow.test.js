@@ -170,6 +170,38 @@ describe("AgreementTableRow", () => {
         expect(screen.getAllByText("$315.00")).toHaveLength(1);
     });
 
+    describe("nickname vs. full title accessibility", () => {
+        // OPS-6144 regression: a nickname-preferred display name must not add a second,
+        // tooltip-triggering tab stop (USWDS's tooltip script makes the span focusable but
+        // it doesn't activate the link) — the full title must be reachable from the single
+        // link tab stop instead.
+        const agreementWithNickname = {
+            ...baseAgreement,
+            name: "Full Contract Title",
+            display_name: "ABC Nickname"
+        };
+
+        test("exposes the full title via the link's accessible name and title attribute, not a nested tab stop", () => {
+            renderComponent(undefined, agreementWithNickname);
+
+            const link = screen.getByRole("link", {
+                name: "View agreement details for ABC Nickname, full title Full Contract Title"
+            });
+            expect(link).toHaveAttribute("title", "Full Contract Title");
+
+            // The TextClip span inside the link must not be an independent tab stop
+            const clippedText = screen.getByText("ABC Nickname");
+            expect(clippedText).not.toHaveAttribute("tabindex");
+        });
+
+        test("does not add the nickname suffix when there is no distinct full title", () => {
+            renderComponent();
+
+            const link = screen.getByRole("link", { name: "View agreement details for Test Agreement" });
+            expect(link).not.toHaveAttribute("title");
+        });
+    });
+
     describe("Super User Edit Permissions", () => {
         test("super user can edit agreements regardless of team membership", async () => {
             // API returns isEditable: true for super users

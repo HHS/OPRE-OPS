@@ -21,6 +21,7 @@ from models import (
     User,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.agreements_helpers import build_agreement_name_filter_options
 from ops_api.ops.utils.projects_helpers import check_project_user_association
 
 
@@ -31,7 +32,7 @@ class ProjectFilters:
     fiscal_year: Optional[list[int]] = None
     portfolio_id: Optional[list[int]] = None
     project_search: Optional[list[str]] = None
-    agreement_search: Optional[list[str]] = None
+    agreement_ids: Optional[list[int]] = None
     project_type: Optional[list[ProjectType]] = None
     limit: Optional[list[int]] = None
     offset: Optional[list[int]] = None
@@ -43,7 +44,7 @@ class ProjectFilters:
             fiscal_year=data.get("fiscal_year", []) if data else [],
             portfolio_id=data.get("portfolio_id", []) if data else [],
             project_search=data.get("project_search", []) if data else [],
-            agreement_search=data.get("agreement_search", []) if data else [],
+            agreement_ids=data.get("agreement_id", []) if data else [],
             project_type=data.get("project_type", []) if data else [],
             limit=data.get("limit", [10]) if data else [10],
             offset=data.get("offset", [0]) if data else [0],
@@ -307,15 +308,19 @@ class ProjectsService(OpsService[Project]):
                 )
             )
 
-        # Apply agreement search filter using EXISTS subquery
-        if filters.agreement_search:
+        # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
+        # string: the frontend sends the nickname-preferred display value (which may be either
+        # column). nick_name is globally unique, so two nicknames can't collide, but name is
+        # only unique per agreement_type (AGREEMENT_NAME_UNIQUE_INDEX), so matching by string
+        # could still let one agreement's nickname collide with a different agreement's full
+        # name, or two same-named agreements of different types collide, and surface the
+        # wrong project. Ref: #6144.
+        if filters.agreement_ids:
             agreement_subquery = (
                 select(1)
                 .select_from(Agreement)
                 .where(Agreement.project_id == ResearchProject.id)
-                .where(
-                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
-                )
+                .where(Agreement.id.in_(filters.agreement_ids))
                 .exists()
             )
             where_clauses.append(agreement_subquery)
@@ -393,15 +398,19 @@ class ProjectsService(OpsService[Project]):
                 )
             )
 
-        # Apply agreement search filter using EXISTS subquery
-        if filters.agreement_search:
+        # Apply agreement filter using EXISTS subquery. Matches by id, not by name/nick_name
+        # string: the frontend sends the nickname-preferred display value (which may be either
+        # column). nick_name is globally unique, so two nicknames can't collide, but name is
+        # only unique per agreement_type (AGREEMENT_NAME_UNIQUE_INDEX), so matching by string
+        # could still let one agreement's nickname collide with a different agreement's full
+        # name, or two same-named agreements of different types collide, and surface the
+        # wrong project. Ref: #6144.
+        if filters.agreement_ids:
             agreement_subquery = (
                 select(1)
                 .select_from(Agreement)
                 .where(Agreement.project_id == AdministrativeAndSupportProject.id)
-                .where(
-                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
-                )
+                .where(Agreement.id.in_(filters.agreement_ids))
                 .exists()
             )
             where_clauses.append(agreement_subquery)
@@ -720,27 +729,20 @@ class ProjectsService(OpsService[Project]):
         )
         project_types = sorted([pt.name for pt in self.db_session.scalars(project_types_query).all()])
 
-        # Step 6: Agreement names and nick_names - Query both and create a sorted list of dicts
+        # Step 6: Agreement names - one nickname-preferred entry per agreement, keyed by id
+        # (not by the rendered name/nick_name string) so a nickname colliding with a different
+        # agreement's full name can't silently drop either one from the list. Same four-key
+        # shape as services/agreements.py's Step 6, for the same reason given there:
+        # display_name comes from Agreement.display_name_expression(), not reimplemented here,
+        # so this stays in sync with Agreement.display_name if the nickname-fallback rule ever
+        # changes.
         agreement_names_query = (
-            select(Agreement.id, Agreement.name, Agreement.nick_name)
+            select(Agreement.id, Agreement.name, Agreement.nick_name, Agreement.display_name_expression())
             .join(Project, Agreement.project_id == Project.id)
             .where(Project.id.in_(project_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
-
-        # Collect all names and nick_names into a list of dicts with ids
-        # Use a dict keyed by name to avoid duplicates while preserving id
-        agreement_values_dict = {}  # Key: name, Value: id
-        for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
-            if a_name and a_name not in agreement_values_dict:
-                agreement_values_dict[a_name] = a_id
-            if a_nick_name and a_nick_name not in agreement_values_dict:
-                agreement_values_dict[a_nick_name] = a_id
-
-        # Convert to list of dicts and sort by name
-        agreement_names = sorted(
-            [{"id": a_id, "name": name} for name, a_id in agreement_values_dict.items()], key=lambda x: x["name"]
-        )
+        agreement_names = build_agreement_name_filter_options(self.db_session.execute(agreement_names_query).all())
 
         # Build response
         filters = {

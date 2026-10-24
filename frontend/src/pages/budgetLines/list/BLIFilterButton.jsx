@@ -198,7 +198,7 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 agreementNameOptions={filterOptions?.agreement_names ?? null}
-                filterLabel="Agreement Title"
+                filterLabel="Agreement Title or Nickname"
             />
         </fieldset>,
         <fieldset
