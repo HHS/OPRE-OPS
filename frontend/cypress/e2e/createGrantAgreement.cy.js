@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -157,7 +157,7 @@ it("can create a Grant agreement", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"
@@ -195,7 +195,7 @@ it("can save a Grant agreement draft without a NOFO Number or adding grant numbe
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"

@@ -1,13 +1,13 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 const HISTORY_POLL_INTERVAL_MS = 1000;
 const HISTORY_TIMEOUT_MS = 20000;
 
 const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
-    const historyUrl = `http://localhost:8080/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
+    const historyUrl = `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
             method: "GET",
@@ -89,7 +89,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -108,7 +108,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -125,7 +125,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         status: BLI_STATUS.PLANNED,
@@ -188,7 +188,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -200,7 +200,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -219,7 +219,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -242,7 +242,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -259,7 +259,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         status: BLI_STATUS.EXECUTING,
@@ -321,7 +321,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -334,7 +334,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         // .then(() => {
                         //     cy.request({
                         //         method: "DELETE",
-                        //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        //         url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                         //         headers: {
                         //             Authorization: bearer_token,
                         //             Accept: "application/json"
@@ -353,7 +353,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -376,7 +376,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -393,7 +393,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         amount: 2_000_000,
@@ -453,7 +453,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                             .then(() => {
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -476,7 +476,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"
@@ -496,7 +496,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -519,7 +519,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -536,7 +536,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         amount: 2_000_000,
@@ -601,7 +601,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"

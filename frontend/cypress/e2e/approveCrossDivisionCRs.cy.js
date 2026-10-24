@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement = {
     agreement_type: "CONTRACT",
@@ -70,7 +70,7 @@ describe("Approve Cross Division Change Requests", () => {
         return cy
             .request({
                 method: "GET",
-                url: `http://localhost:8080/api/v1/users/?oidc_id=${DIVISION_DIRECTOR_OIDC_ID}`,
+                url: `${BACKEND_DOMAIN}/api/v1/users/?oidc_id=${DIVISION_DIRECTOR_OIDC_ID}`,
                 headers: {
                     Authorization: divisionDirectorToken,
                     Accept: "application/json"
@@ -85,7 +85,7 @@ describe("Approve Cross Division Change Requests", () => {
                 return cy
                     .request({
                         method: "GET",
-                        url: `http://localhost:8080/api/v1/change-requests/?userId=${divisionDirectorUserId}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/change-requests/?userId=${divisionDirectorUserId}`,
                         headers: {
                             Authorization: divisionDirectorToken,
                             Accept: "application/json"
@@ -104,7 +104,7 @@ describe("Approve Cross Division Change Requests", () => {
                         return cy.wrap(pendingChangeRequestIds).each((changeRequestId) =>
                             cy.request({
                                 method: "PATCH",
-                                url: `http://localhost:8080/api/v1/change-requests/${changeRequestId}`,
+                                url: `${BACKEND_DOMAIN}/api/v1/change-requests/${changeRequestId}`,
                                 body: {
                                     action: "REJECT",
                                     reviewer_notes: "E2E cleanup"
@@ -126,7 +126,7 @@ describe("Approve Cross Division Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -146,7 +146,7 @@ describe("Approve Cross Division Change Requests", () => {
                 return cy
                     .request({
                         method: "POST",
-                        url: "http://localhost:8080/api/v1/budget-line-items/",
+                        url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                         body: bliData,
                         headers: {
                             Authorization: bearer_token,
@@ -163,7 +163,7 @@ describe("Approve Cross Division Change Requests", () => {
                         return cy
                             .request({
                                 method: "POST",
-                                url: "http://localhost:8080/api/v1/budget-line-items/",
+                                url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                                 body: bliData2,
                                 headers: {
                                     Authorization: bearer_token,
@@ -185,7 +185,7 @@ describe("Approve Cross Division Change Requests", () => {
                 return cy
                     .request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId1}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId1}`,
                         body: {
                             id: bliId1,
                             status: BLI_STATUS.PLANNED,
@@ -205,7 +205,7 @@ describe("Approve Cross Division Change Requests", () => {
                         // Submit PATCH for second BLI
                         return cy.request({
                             method: "PATCH",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId2}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId2}`,
                             body: {
                                 id: bliId2,
                                 status: BLI_STATUS.PLANNED,
@@ -241,7 +241,7 @@ describe("Approve Cross Division Change Requests", () => {
                         const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                         return cy.request({
                             method: "PATCH",
-                            url: `http://localhost:8080/api/v1/change-requests/${crId1}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/change-requests/${crId1}`,
                             body: {
                                 action: "APPROVE",
                                 reviewer_notes: "approved looks good"
@@ -273,7 +273,7 @@ describe("Approve Cross Division Change Requests", () => {
                                 // Delete first BLI
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId1}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId1}`,
                                     headers: {
                                         Authorization: bearer_token,
                                         Accept: "application/json"
@@ -289,7 +289,7 @@ describe("Approve Cross Division Change Requests", () => {
                                     // approved, so it is still DRAFT and hard-deletes immediately (200).
                                     cy.request({
                                         method: "DELETE",
-                                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId2}`,
+                                        url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId2}`,
                                         headers: {
                                             Authorization: bearer_token,
                                             Accept: "application/json"
@@ -313,7 +313,7 @@ describe("Approve Cross Division Change Requests", () => {
                                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                         cy.request({
                                             method: "DELETE",
-                                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                             headers: {
                                                 Authorization: powerUserBearerToken,
                                                 Accept: "application/json"

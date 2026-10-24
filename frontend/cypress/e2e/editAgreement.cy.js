@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement = {
     agreement_type: "CONTRACT",
@@ -45,7 +45,7 @@ describe("Not awarded Agreement", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -96,7 +96,7 @@ describe("Not awarded Agreement", () => {
 
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"
