@@ -291,6 +291,7 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
+        AgreementFields.PeriodOfPerformance,
         AgreementFields.ContractType,
         AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,
