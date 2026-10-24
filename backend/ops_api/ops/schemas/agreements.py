@@ -133,7 +133,7 @@ class GrantAgreementData(AgreementData):
     # API) so an ordinary user can't spoof/duplicate an ODN. It's still exposed for
     # reading on GrantAgreementResponse/GrantListAgreementResponse.
     aln_numbers = fields.List(fields.String(), allow_none=True, load_default=[])
-    funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18]))
+    funding_period_months = fields.Integer(allow_none=True, validate=validate.OneOf([12, 18, 36, 60]))
     # Grant-only nested entity for atomic creation. Lives here (not on the shared AgreementData)
     # because grant_numbers are only meaningful for GRANT agreements.
     grant_numbers = fields.List(
