@@ -3,13 +3,12 @@
 Once an Agreement is Awarded, an approved money/time edit made in OPS (a "Modified Level of
 Effort") still has to be carried into the actual contract via a Contract Modification. Each
 such approved edit is recorded as a ``ContractModificationEdit`` and stays pending until the
-user starts the modification (OPS-3072, AC9; the modification workflow itself is #3268).
+user's contract modification request is approved (OPS-3072, AC9; see contract_modification_requests.py, #3268).
 """
 
 from typing import Optional
 
 from flask import current_app
-from flask_jwt_extended import get_current_user
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
@@ -22,8 +21,7 @@ from models import (
     ModificationEditType,
 )
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
-from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
-from ops_api.ops.utils.agreements_helpers import check_user_association
+from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 
 
 class ContractModificationEditService:
@@ -121,45 +119,6 @@ class ContractModificationEditService:
             .execution_options(synchronize_session="fetch")
         )
         return result.rowcount
-
-    def start_modification(self, agreement_id: int) -> tuple[AgreementMod, list[ContractModificationEdit]]:
-        """Start a contract modification for the agreement's pending edits.
-
-        Creates a bare ``AgreementMod`` and attaches every pending edit to it, removing them
-        from the "Edits That Require a Contract Modification" list. Deliberately minimal:
-        #3268 extends this with the ProcurementAction / procurement tracker for the mod.
-        """
-        if not current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False):
-            raise ValidationError({"agreement_id": "Contract modifications are not enabled."})
-
-        agreement = self._get_supported_agreement(agreement_id)
-
-        user = get_current_user()
-        if not (user.is_superuser or check_user_association(agreement, user)):
-            raise AuthorizationError(
-                f"User is not associated with the agreement {agreement_id}",
-                "ContractModification",
-            )
-
-        if not agreement.is_awarded:
-            raise ValidationError({"agreement_id": "Only an Awarded agreement can start a contract modification."})
-
-        # Lock the pending rows so two concurrent starts can't both create a modification.
-        pending = list(self.db_session.scalars(self._pending_query(agreement_id).with_for_update()).all())
-        if not pending:
-            raise ValidationError({"agreement_id": "There are no edits that require a contract modification."})
-
-        agreement_mod = AgreementMod(agreement_id=agreement_id)
-        self.db_session.add(agreement_mod)
-        self.db_session.flush()
-
-        self.attach_pending_edits_to_mod(agreement_id, agreement_mod.id, [edit.id for edit in pending])
-        self.db_session.commit()
-
-        for edit in pending:
-            self.db_session.refresh(edit)
-        # every pending row is attached, but report only the edits the list showed
-        return agreement_mod, self._latest_per_budget_line_field(pending)
 
     def _get_supported_agreement(self, agreement_id: int) -> Agreement:
         agreement = self.db_session.get(Agreement, agreement_id)

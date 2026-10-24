@@ -1,10 +1,29 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useGetAgreementContractModificationEditsByIdQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementContractModificationEditsByIdQuery,
+    useGetAgreementContractModificationsByIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery
+} from "../../../api/opsAPI";
 import ContractModificationEdits from "./ContractModificationEdits";
 
+const mockNavigate = vi.fn();
+const mockDismissNotification = vi.fn();
+
 vi.mock("../../../api/opsAPI", () => ({
-    useGetAgreementContractModificationEditsByIdQuery: vi.fn()
+    useGetAgreementContractModificationEditsByIdQuery: vi.fn(),
+    useGetAgreementContractModificationsByIdQuery: vi.fn(),
+    useGetNotificationsByUserIdAndAgreementIdQuery: vi.fn(),
+    useDismissNotificationMutation: () => [mockDismissNotification]
+}));
+
+vi.mock("react-redux", () => ({
+    useSelector: (selector) => selector({ auth: { activeUser: { oidc_id: "oidc-521" } } })
+}));
+
+vi.mock("react-router-dom", () => ({
+    useNavigate: () => mockNavigate
 }));
 
 vi.mock("../../../hooks/lookup.hooks", () => ({
@@ -41,9 +60,24 @@ const cardValues = (card) =>
         .getAllByRole("definition")
         .map((dd) => dd.textContent);
 
+const mockRequests = (requests, isSuccess = true) =>
+    useGetAgreementContractModificationsByIdQuery.mockReturnValue({ data: requests, isSuccess });
+const mockNotifications = (notifications) =>
+    useGetNotificationsByUserIdAndAgreementIdQuery.mockReturnValue({ data: notifications });
+
+const reviewOutcome = (id, status, reviewer_notes = null, requestId = 9) => ({
+    id,
+    notification_type: "CONTRACT_MODIFICATION_REQUEST_NOTIFICATION",
+    title: `Contract Modification ${status === "APPROVED" ? "Approved" : "Declined"}`,
+    message: "Outcome message",
+    contract_modification_request: { id: requestId, agreement_id: 42, status, reviewer_notes }
+});
+
 describe("ContractModificationEdits", () => {
     beforeEach(() => {
         useGetAgreementContractModificationEditsByIdQuery.mockReset();
+        mockRequests([]);
+        mockNotifications([]);
     });
 
     afterEach(() => {
@@ -61,12 +95,91 @@ describe("ContractModificationEdits", () => {
         expect(useGetAgreementContractModificationEditsByIdQuery).toHaveBeenCalledWith(42, expect.anything());
     });
 
-    it("does not render a Start modification button", () => {
+    it("starts a modification from the Start modification button", async () => {
         mockQuery({ data: [AMOUNT_EDIT] });
 
         render(<ContractModificationEdits agreementId={42} />);
+        await userEvent.click(screen.getByRole("button", { name: "Start modification" }));
 
-        expect(screen.queryByRole("button", { name: /start modification/i })).not.toBeInTheDocument();
+        expect(mockNavigate).toHaveBeenCalledWith("/agreements/42/start-modification");
+    });
+
+    it("disables Start modification and marks edits In Review while a modification is in review", () => {
+        mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
+        mockRequests([{ id: 9, status: "IN_REVIEW" }]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(screen.getByRole("button", { name: "Start modification" })).toBeDisabled();
+        expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
+        expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
+    });
+
+    it("shows the submitter a declined modification with the Director's notes, and dismisses it", async () => {
+        mockQuery({ data: [AMOUNT_EDIT] });
+        mockRequests([{ id: 9, status: "DECLINED" }]);
+        mockNotifications([reviewOutcome(77, "DECLINED", "Let's talk Tuesday")]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(screen.getByRole("heading", { name: "Contract Modification Declined" })).toBeInTheDocument();
+        expect(screen.getByText("Let's talk Tuesday")).toBeInTheDocument();
+        await userEvent.click(screen.getByLabelText("close"));
+        expect(mockDismissNotification).toHaveBeenCalledWith(77);
+    });
+
+    it("shows the submitter an approved modification", () => {
+        mockQuery({ data: [] });
+        mockRequests([{ id: 9, status: "APPROVED" }]);
+        mockNotifications([reviewOutcome(78, "APPROVED")]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(screen.getByRole("heading", { name: "Contract Modification Approved" })).toBeInTheDocument();
+    });
+
+    it("shows only the latest modification's outcome and marks earlier outcomes read", () => {
+        mockQuery({ data: [AMOUNT_EDIT] });
+        // Newest first: request 11 was declined after request 9 was.
+        mockRequests([
+            { id: 11, status: "DECLINED" },
+            { id: 9, status: "DECLINED" }
+        ]);
+        mockNotifications([
+            reviewOutcome(80, "DECLINED", "Second try", 11),
+            reviewOutcome(77, "DECLINED", "First try", 9)
+        ]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(screen.getAllByRole("heading", { name: "Contract Modification Declined" })).toHaveLength(1);
+        expect(screen.getByText("Second try")).toBeInTheDocument();
+        expect(mockDismissNotification).toHaveBeenCalledWith(77);
+        expect(mockDismissNotification).not.toHaveBeenCalledWith(80);
+    });
+
+    it("hides earlier outcomes once a newer modification is in review", () => {
+        mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
+        mockRequests([
+            { id: 11, status: "IN_REVIEW" },
+            { id: 9, status: "DECLINED" }
+        ]);
+        mockNotifications([reviewOutcome(77, "DECLINED", "First try", 9)]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(screen.queryByRole("heading", { name: "Contract Modification Declined" })).toBeNull();
+        expect(mockDismissNotification).toHaveBeenCalledWith(77);
+    });
+
+    it("doesn't mark anything read before the modifications have loaded", () => {
+        mockQuery({ data: [AMOUNT_EDIT] });
+        mockRequests([], false);
+        mockNotifications([reviewOutcome(77, "DECLINED", "First try", 9)]);
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(mockDismissNotification).not.toHaveBeenCalled();
     });
 
     it("renders a card for an amount edit", () => {
@@ -104,12 +217,13 @@ describe("ContractModificationEdits", () => {
         expect(cardValues(deleteCard).slice(3)).toEqual(["Deleted", "$600,000.00", "Deleted"]);
     });
 
-    it("renders nothing when there are no edits", () => {
+    it("still offers Start modification when there are no edits, to execute Planned budget lines as-is", () => {
         mockQuery({ data: [] });
 
-        const { container } = render(<ContractModificationEdits agreementId={42} />);
+        render(<ContractModificationEdits agreementId={42} />);
 
-        expect(container).toBeEmptyDOMElement();
+        expect(screen.queryByRole("heading", { name: "Edits That Require a Contract Modification" })).toBeNull();
+        expect(screen.getByRole("button", { name: "Start modification" })).toBeEnabled();
     });
 
     it("renders nothing while loading", () => {
