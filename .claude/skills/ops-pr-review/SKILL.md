@@ -13,7 +13,7 @@ Don't restate REVIEW.md from memory: read it at the start of every run, because 
 
 ## 1. Set up
 
-1. **Read `docs/REVIEW.md` in full.** You will pass its Severity Levels, What Can Block, Reporting Findings and Project Rules to Check sections to every reviewer agent.
+1. **Read `docs/REVIEW.md` in full.** Every reviewer and skeptic gets the whole file by path, not a summary or a hand-picked list of sections, so this skill keeps working when REVIEW.md changes.
 2. **Find the PR.** Use `$ARGUMENTS` if given; otherwise `gh pr view --json number`. With no PR, review `git diff origin/main...HEAD` and skip the steps that need one (Turn 0, posting).
 3. **Gather context:**
    ```bash
@@ -104,12 +104,12 @@ When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-
 
 Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
 
-1. **Include the REVIEW.md sections** from step 1, the PR's scope and tier, and the acceptance criteria (or "not available").
+1. **Include the path to `docs/REVIEW.md`** with an instruction to read all of it, plus the PR's scope and tier, and the acceptance criteria (or "not available").
 2. **Label every finding S0–S3 by REVIEW.md's definitions,** alongside the orchestrator's Likelihood × Impact score. The S label decides blocking; the Critical/High/Medium/Low label doesn't.
 3. **Never drop a finding that meets the S0 or S1 definition** because its score falls below the orchestrator's reporting floor or because its Impact is Minor. For example, an accessibility defect in changed UI or an unmet acceptance criterion is S1 even if it scores Low.
 4. **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). Without one it is S3 at most. Pick the level by the outcome the scenario actually shows, not the worst case it might reach.
 5. **Check whether the PR caused it.** Only defects the PR introduces, makes reachable or makes worse can block. Anything else is reported as `[Pre-existing S<n>]`. Compare against the `base/` copies, which come from the merge-base with the PR's base branch (`baseRefName`, which isn't always `main`: stacked PRs target another feature branch).
-6. **Check the Project Rules to Check table** (fee percentages, `@is_authorized` and ownership checks, `*_version` tables, `ALLOWED_TABLES`, OpenAPI sync, numeric display, Vest, `useBlocker`, and the required tests for money math, authorization, migrations, workflow state and data writes).
+6. **Check every rule in REVIEW.md → Project Rules to Check**, and REVIEW.md's rule on tests required for money math, authorization, migrations, workflow state and data writes.
 7. **Skeptics re-derive the S label independently**, citing code. If a skeptic's S label differs from Turn 1's, the skeptic's label wins, the same as the orchestrator's rule for scores.
 8. **A resolved or outdated thread doesn't close an S0/S1.** This overrides the orchestrator's Turn 0 suppression rule for blockers: suppress an S0/S1 on a resolved thread only if the code at that location changed to fix it, or a PR comment records a second developer agreeing to won't-fix (REVIEW.md → Disputes and Won't-Fix). Otherwise report it as `REOPENED` and cite the unchanged code. Suppression still applies to S2/S3.
 
@@ -120,13 +120,7 @@ If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them 
 Keep the orchestrator's disposition table, with a **Final S** column added. Then:
 
 - **Header:** PR number, head SHA reviewed, scope, tier, mode (full or delta from `<sha>`), N.
-- **Blocking findings:** every **open** S0 and S1 that blocks under the PR's Scope, in REVIEW.md's format. Open means a surviving finding from this run, plus any S0/S1 the orchestrator listed as **Already tracked** (tag it `[tracked]` and link the thread), plus any prior finding the delta's resolution table marks `UNRESOLVED` or `PARTIALLY-RESOLVED` (tag it `[unresolved]`). Give tracked and unresolved items an S label too if they don't have one.
-  ```text
-  [<severity>] <location>
-  What breaks: <the defect, in one sentence>
-  Scenario:    <concrete inputs or state that produce the wrong result>
-  Fix:         <optional; a sentence or two>
-  ```
+- **Blocking findings:** every **open** S0 and S1 that blocks under the PR's Scope, in the finding format from REVIEW.md → Reporting Findings. Open means a surviving finding from this run, plus any S0/S1 the orchestrator listed as **Already tracked** (tag it `[tracked]` and link the thread), plus any prior finding the delta's resolution table marks `UNRESOLVED` or `PARTIALLY-RESOLVED` (tag it `[unresolved]`). Give tracked and unresolved items an S label too if they don't have one.
 - **Non-blocking:** at most 5 S2/S3 findings, most important first; sum up any others in one line. Rejected findings don't count toward the 5.
 - **Pre-existing:** listed separately with their `[Pre-existing S<n>]` labels.
 - **Reviewer mode only, compared with the author's result:** for each surviving S0/S1, say whether the author's most recent shared-review result reported it. Tag the ones it didn't with `[missed]` right after the severity, for example `[S1][missed] path:line`. If the author's result was on an older commit, a finding counts as missed only if its code was already in that commit. If the author posted no result, say so and tag nothing.
@@ -136,7 +130,9 @@ A clean run is one whose verdict is `NOT BLOCKING` on the PR's current head comm
 
 ## 6. Post (only when the user says so)
 
-Show the report to the user first, in markdown in the conversation. Post it on the PR only when they ask, and never on a draft PR: if the PR is a draft, stop and ask. You can offer the draft you'd post, but don't post it until they say so.
+Show the report to the user first, in markdown in the conversation, and post it only when they ask. You can show the comment or review you'd post, but don't post it until they say so.
+
+**Draft PRs:** don't post on a draft PR. If the user asks you to, tell them it's a draft and ask whether they want to wait until it's marked ready for review.
 
 **Author mode:**
 
@@ -149,7 +145,7 @@ Show the report to the user first, in markdown in the conversation. Post it on t
 
 **Reviewer mode:**
 
-- Draft it as a GitHub review, not a comment. Show the user the draft (event, body and each inline comment) before submitting it.
+- Prepare it as a GitHub review, not a comment. Show the user the proposed review (event, body and each inline comment) before submitting it.
   - **Inline comments:** one per surviving S0/S1 whose line is in the diff, in REVIEW.md's finding format with its `[missed]` tag if it has one.
   - **Body:** the header, any S0/S1 that has no diff line, the non-blocking and pre-existing lists, and the verdict line.
   - **Event:** `REQUEST_CHANGES` if the verdict is `BLOCKING`, otherwise `COMMENT`. Never `APPROVE`: approving is the human reviewer's decision, made after the intent and risk checks in REVIEW.md.

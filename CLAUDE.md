@@ -140,6 +140,7 @@ When reviewing a PR, read [`docs/REVIEW.md`](docs/REVIEW.md) first: it has the f
 - **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). A finding with no realistic scenario is S3 at most.
 - **Pick a severity by the outcome your scenario actually shows**, not the worst case it might reach.
 - **End an AI review with `Verdict: BLOCKING (n)` or `Verdict: NOT BLOCKING`**, and list at most 5 S2/S3 findings. Don't guess acceptance criteria you can't see.
+- **To run the shared AI review, use `/ops-pr-review <pr-number>`** ([`.claude/skills/ops-pr-review/`](.claude/skills/ops-pr-review/SKILL.md)). It runs Flexion's `code-review-orchestrator` held to `docs/REVIEW.md`.
 
 ## CI/CD
 
