@@ -207,7 +207,7 @@ export const StartModification = () => {
                 level={2}
             >
                 <p>Please upload the documents needed to execute your contract modification.</p>
-                <ModificationDocumentUploads agreementId={agreementId} />
+                <ModificationDocumentUploads />
             </Accordion>
             <Accordion
                 heading="Notes"
