@@ -68,6 +68,7 @@ ALLOWED_TABLES = [
     "can_funding_received",
     "can_funding_budget",
     "contract_budget_line_item",
+    "contract_modification_edit",
     "direct_obligation_budget_line_item",
     "aa_budget_line_item",
     "grant_number",

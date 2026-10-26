@@ -463,3 +463,13 @@ def test_modification_document_types_can_be_uploaded(
     assert document.document_type == DocumentType[document_type]
     loaded_db.delete(document)
     loaded_db.commit()
+
+
+def test_seeded_contract_modification_edit_points_at_agreement_523s_planned_budget_line(loaded_db, app_ctx):
+    """The seed hard-codes the edit's budget_line_item_id (it has no FK); keep it pointing at 523's
+    Planned BLI if seed rows ahead of it change the ids the loader assigns."""
+    (edit,) = _edits(loaded_db, 523)
+    bli = loaded_db.get(ContractBudgetLineItem, edit.budget_line_item_id)
+    assert bli is not None and bli.agreement_id == 523
+    assert bli.status == BudgetLineItemStatus.PLANNED
+    assert float(bli.amount) == edit.new_value
