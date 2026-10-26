@@ -4,13 +4,14 @@ import { NO_DATA } from "../../../constants";
  * Returns a CSS class name indicating whether the given budget line item's date is in the future or not.
  * @param {string | null} item - The budget line item's date.
  * @param {boolean} isReviewMode - Whether the table is in review mode or not.
+ * @param {boolean} [allowPastObligateByDates] - ALLOW_PAST_OBLIGATE_BY_DATES from /version/; never flags past dates.
  * @returns {string} - The CSS class name to apply to the table item.
  */
-export const futureDateErrorClass = (item, isReviewMode) => {
+export const futureDateErrorClass = (item, isReviewMode, allowPastObligateByDates = false) => {
     const today = new Date().valueOf();
     const dateNeeded = new Date(item).valueOf();
 
-    if (isReviewMode && dateNeeded < today) {
+    if (isReviewMode && !allowPastObligateByDates && dateNeeded < today) {
         return "table-item-error";
     } else {
         return "";

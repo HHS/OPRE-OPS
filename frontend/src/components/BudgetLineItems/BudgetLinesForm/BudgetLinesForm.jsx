@@ -39,6 +39,7 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {string | null} [props.scStartDate] - The earliest SC start date (YYYY-MM-DD) from the agreement.
  * @param {string | null} [props.scEndDate] - The latest SC end date (YYYY-MM-DD) from the agreement.
+ * @param {boolean} [props.allowPastObligateByDates] - ALLOW_PAST_OBLIGATE_BY_DATES from /version/; skips the future-date rule.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -66,7 +67,8 @@ export const BudgetLinesForm = ({
     isBudgetLineNotDraft = false,
     workflow,
     scStartDate = null,
-    scEndDate = null
+    scEndDate = null,
+    allowPastObligateByDates = false
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
@@ -74,9 +76,21 @@ export const BudgetLinesForm = ({
     // reflects unsaved service components without waiting for a user interaction.
     const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
     React.useEffect(() => {
-        datePickerSuite.run({ needByDate, scStartDate, scEndDate, isDraft: !isBudgetLineNotDraft }, isSuperUser);
+        datePickerSuite.run(
+            { needByDate, scStartDate, scEndDate, isDraft: !isBudgetLineNotDraft },
+            isSuperUser,
+            allowPastObligateByDates
+        );
         forceUpdate();
-    }, [scStartDate, scEndDate, needByDate, isSuperUser, isBudgetLineNotDraft, datePickerSuite]);
+    }, [
+        scStartDate,
+        scEndDate,
+        needByDate,
+        isSuperUser,
+        isBudgetLineNotDraft,
+        datePickerSuite,
+        allowPastObligateByDates
+    ]);
 
     let dateRes = datePickerSuite.get();
 
@@ -97,7 +111,8 @@ export const BudgetLinesForm = ({
                     needByDate
                 },
                 isSuperUser,
-                isGrant
+                isGrant,
+                allowPastObligateByDates
             );
 
             const budgetCn = classnames(validationResult, {
@@ -119,7 +134,8 @@ export const BudgetLinesForm = ({
                     scEndDate,
                     isDraft: true
                 },
-                isSuperUser
+                isSuperUser,
+                allowPastObligateByDates
             );
         }
     }
@@ -135,7 +151,8 @@ export const BudgetLinesForm = ({
                 ...{ [name]: value }
             },
             isSuperUser,
-            isGrant
+            isGrant,
+            allowPastObligateByDates
         );
     };
 
@@ -148,7 +165,8 @@ export const BudgetLinesForm = ({
                 isDraft: !isBudgetLineNotDraft,
                 ...{ [name]: value }
             },
-            isSuperUser
+            isSuperUser,
+            allowPastObligateByDates
         );
     };
     const isFormNotValid = dateRes.hasErrors() || budgetFormSuite.hasErrors();

@@ -69,6 +69,7 @@ const useReviewAgreement = (agreementId) => {
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const {
         isSuccess,
@@ -151,8 +152,8 @@ const useReviewAgreement = (agreementId) => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
         }
-        return validateBudgetLineItems(selectedBudgetLines);
-    }, [isGrant, selectedBudgetLines]);
+        return validateBudgetLineItems(selectedBudgetLines, allowPastObligateByDates);
+    }, [isGrant, selectedBudgetLines, allowPastObligateByDates]);
 
     const hasBLIError = React.useMemo(() => {
         if (!bliValidationResults || bliValidationResults.length === 0) {

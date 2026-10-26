@@ -231,6 +231,56 @@ describe("useReviewAgreement", () => {
         expect(result.current.isSubmissionReady).toBe(true);
     });
 
+    describe("ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+        const selectPastDraft = async (allowPastObligateByDates) => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", allow_past_obligate_by_dates: allowPastObligateByDates },
+                isSuccess: true
+            });
+            useGetAgreementByIdQueryMock.mockReturnValue({
+                isSuccess: true,
+                data: makeAgreement({
+                    budget_line_items: [
+                        {
+                            id: 101,
+                            amount: 1500,
+                            can_id: 5,
+                            services_component_id: 1,
+                            date_needed: "2020-06-21",
+                            status: "DRAFT",
+                            in_review: false
+                        }
+                    ]
+                }),
+                error: null,
+                isLoading: false
+            });
+            const view = renderHook(() => useReviewAgreement(77));
+            await waitFor(() =>
+                expect(view.result.current.groupedBudgetLinesByServicesComponent.length).toBeGreaterThan(0)
+            );
+            act(() => {
+                view.result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+                view.result.current.handleSelectBLI(101);
+            });
+            return view;
+        };
+
+        it("flags a past Obligate By date when the flag is off", async () => {
+            const { result } = await selectPastDraft(false);
+
+            await waitFor(() => expect(result.current.hasBLIError).toBe(true));
+            expect(result.current.pageErrors).toHaveProperty("date_needed");
+        });
+
+        it("does not flag a past Obligate By date when the flag is on", async () => {
+            const { result } = await selectPastDraft(true);
+
+            await waitFor(() => expect(result.current.isSubmissionReady).toBe(true));
+            expect(result.current.hasBLIError).toBe(false);
+        });
+    });
+
     it("shows a single POP-range message no matter how many BLs violate it", async () => {
         const isoDaysFromNow = (days) => {
             const d = new Date();

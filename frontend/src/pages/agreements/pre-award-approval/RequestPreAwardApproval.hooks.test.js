@@ -14,7 +14,8 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetProcurementTrackersByAgreementIdQuery: vi.fn(),
     useUpdateProcurementTrackerStepMutation: vi.fn(),
     useAddDocumentMutation: vi.fn(),
-    useUpdateDocumentStatusMutation: vi.fn()
+    useUpdateDocumentStatusMutation: vi.fn(),
+    useGetVersionQuery: vi.fn(() => ({ data: undefined }))
 }));
 
 vi.mock("../../../hooks/user.hooks", () => ({
@@ -50,6 +51,7 @@ import {
     useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetServicesComponentsListQuery,
+    useGetVersionQuery,
     useUpdateDocumentStatusMutation,
     useUpdateProcurementTrackerStepMutation
 } from "../../../api/opsAPI";
@@ -107,7 +109,8 @@ const wrapperFor = (store) => {
     return Wrapper;
 };
 
-const setup = (agreement, trackerData = buildTrackerData()) => {
+const setup = (agreement, trackerData = buildTrackerData(), versionData = undefined) => {
+    useGetVersionQuery.mockReturnValue({ data: versionData });
     useGetAgreementByIdQuery.mockReturnValue({ data: agreement, isLoading: false });
     useGetServicesComponentsListQuery.mockReturnValue({ data: [] });
     useGetDocumentsByAgreementIdQuery.mockReturnValue({ data: { documents: [] } });
@@ -404,5 +407,43 @@ describe("useRequestPreAwardApproval — validation wiring", () => {
         await waitFor(() => expect(result.current).toBeDefined());
         const ids = result.current.validatableBudgetLines.map((b) => b.id).sort();
         expect(ids).toEqual([2, 3]);
+    });
+});
+
+describe("useRequestPreAwardApproval — ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    const agreementWithPastPlanned = () =>
+        buildAgreement({
+            budget_line_items: [
+                {
+                    id: 100,
+                    status: "PLANNED",
+                    amount: 5000,
+                    can_id: 7,
+                    services_component_id: 3,
+                    date_needed: "2020-06-21"
+                }
+            ]
+        });
+
+    it("flags a PLANNED BLI with a past date when the flag is off", () => {
+        const { result } = setup(agreementWithPastPlanned(), buildTrackerData(), {
+            allow_past_obligate_by_dates: false
+        });
+        expect(result.current.validatableBudgetLines).toHaveLength(1);
+        expect(result.current.hasBLIError).toBe(true);
+        expect(result.current.pageErrors).toHaveProperty("date_needed");
+    });
+
+    it("does not flag a PLANNED BLI with a past date when the flag is on", () => {
+        const { result } = setup(agreementWithPastPlanned(), buildTrackerData(), {
+            allow_past_obligate_by_dates: true
+        });
+        expect(result.current.validatableBudgetLines).toHaveLength(1);
+        expect(result.current.hasBLIError).toBe(false);
+        expect(result.current.pageErrors).toEqual({});
     });
 });
