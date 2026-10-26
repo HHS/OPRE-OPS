@@ -83,19 +83,22 @@ git worktree remove --force /tmp/ops-pr-review-<n>/head 2>/dev/null; rm -rf /tmp
 mkdir -p /tmp/ops-pr-review-<n>/base
 git worktree add --detach /tmp/ops-pr-review-<n>/head <headRefOid>      # the full PR tree, for reading consuming code
 gh pr diff <n> > /tmp/ops-pr-review-<n>/pr.diff
-git diff --name-status -M "origin/<base>...<headRefOid>" | while IFS=$'\t' read -r kind old new; do
+MB=$(git merge-base "origin/<base>" <headRefOid>)                       # where the PR branched off; the PR diff is measured from here
+git diff --name-status -M "$MB" <headRefOid> | while IFS=$'\t' read -r kind old new; do
   case "$kind" in
     A) echo "added in PR: $old" ;;
     R*|C*) mkdir -p "/tmp/ops-pr-review-<n>/base/$(dirname "$new")"
-           git show "origin/<base>:$old" > "/tmp/ops-pr-review-<n>/base/$new"
+           git show "$MB:$old" > "/tmp/ops-pr-review-<n>/base/$new"
            echo "renamed in PR: $old -> $new" ;;
     *) mkdir -p "/tmp/ops-pr-review-<n>/base/$(dirname "$old")"
-       git show "origin/<base>:$old" > "/tmp/ops-pr-review-<n>/base/$old" ;;
+       git show "$MB:$old" > "/tmp/ops-pr-review-<n>/base/$old" ;;
   esac
 done
 ```
 
-Also write the PR body and the linked issue there. Base copies are stored under each file's **new** path, so `base/<path>` and `head/<path>` line up even for renamed files. Tell the reviewers which files were added (no base copy) and which were renamed, from the loop's output.
+Run the block in one Bash call, since `$MB` only lives inside it. Also write the PR body and the linked issue there.
+
+Base copies come from the **merge-base**, the commit the PR branched from, not the base branch tip: that is what the PR diff is measured against, so a later change on the base branch doesn't look like something the PR did, and a file deleted on the base since then still gets its copy. Base copies are stored under each file's **new** path, so `base/<path>` and `head/<path>` line up even for renamed files. Tell the reviewers which files were added (no base copy) and which were renamed, from the loop's output.
 
 When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-review-<n>/head && rm -rf /tmp/ops-pr-review-<n>`. If a run was interrupted and the directory is already gone, `git worktree prune` clears the stale entry.
 
@@ -105,7 +108,7 @@ Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode ab
 2. **Label every finding S0–S3 by REVIEW.md's definitions,** alongside the orchestrator's Likelihood × Impact score. The S label decides blocking; the Critical/High/Medium/Low label doesn't.
 3. **Never drop a finding that meets the S0 or S1 definition** because its score falls below the orchestrator's reporting floor or because its Impact is Minor. For example, an accessibility defect in changed UI or an unmet acceptance criterion is S1 even if it scores Low.
 4. **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). Without one it is S3 at most. Pick the level by the outcome the scenario actually shows, not the worst case it might reach.
-5. **Check whether the PR caused it.** Only defects the PR introduces, makes reachable or makes worse can block. Anything else is reported as `[Pre-existing S<n>]`. Compare against the PR's base branch (`baseRefName`), which isn't always `main`: stacked PRs target another feature branch.
+5. **Check whether the PR caused it.** Only defects the PR introduces, makes reachable or makes worse can block. Anything else is reported as `[Pre-existing S<n>]`. Compare against the `base/` copies, which come from the merge-base with the PR's base branch (`baseRefName`, which isn't always `main`: stacked PRs target another feature branch).
 6. **Check the Project Rules to Check table** (fee percentages, `@is_authorized` and ownership checks, `*_version` tables, `ALLOWED_TABLES`, OpenAPI sync, numeric display, Vest, `useBlocker`, and the required tests for money math, authorization, migrations, workflow state and data writes).
 7. **Skeptics re-derive the S label independently**, citing code. If a skeptic's S label differs from Turn 1's, the skeptic's label wins, the same as the orchestrator's rule for scores.
 8. **A resolved or outdated thread doesn't close an S0/S1.** This overrides the orchestrator's Turn 0 suppression rule for blockers: suppress an S0/S1 on a resolved thread only if the code at that location changed to fix it, or a PR comment records a second developer agreeing to won't-fix (REVIEW.md → Disputes and Won't-Fix). Otherwise report it as `REOPENED` and cite the unchanged code. Suppression still applies to S2/S3.
