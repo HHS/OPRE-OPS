@@ -1,7 +1,7 @@
 """Tests for the ALLOW_PAST_OBLIGATE_BY_DATES capability (issue 6443).
 
-When ON, a non-Draft budget line's Obligate By date (date_needed) may be in the past; the
-within-Period-of-Performance rule still applies.
+When ON, a non-Draft budget line's Obligate By date (date_needed) may be today or in the
+past; the within-Period-of-Performance rule still applies.
 
 Exercised as basic_user_auth_client (id 521, VIEWER_EDITOR) — no super-user bypass — whose
 accepted non-Draft edits become Change Requests, hence 202.
@@ -78,13 +78,15 @@ def _bli_url(bli):
     return url_for("api.budget-line-items-item", id=bli.id)
 
 
-def test_patch_planned_bli_to_past_date_is_accepted(
-    past_dates_allowed, basic_user_auth_client, loaded_db, test_project, test_can
+@pytest.mark.parametrize("new_date", [PAST_DATE, "today"])
+def test_patch_planned_bli_to_past_or_today_is_accepted(
+    new_date, past_dates_allowed, basic_user_auth_client, loaded_db, test_project, test_can
 ):
     agreement, sc = _make_agreement(loaded_db, test_project)
     bli = _make_planned_bli(loaded_db, agreement, sc, test_can, datetime.date(2043, 1, 1))
+    date_value = datetime.date.today().isoformat() if new_date == "today" else new_date
 
-    response = basic_user_auth_client.patch(_bli_url(bli), json={"date_needed": PAST_DATE})
+    response = basic_user_auth_client.patch(_bli_url(bli), json={"date_needed": date_value})
 
     assert response.status_code == 202, response.json
 
