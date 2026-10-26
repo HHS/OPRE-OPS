@@ -26,14 +26,26 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 vi.mock("../../../hooks/user.hooks", () => ({ __esModule: true, default: () => "Name" }));
 
 const today = new Date().toISOString().slice(0, 10);
-const EXECUTABLE = { id: 1, status: "PLANNED", date_needed: today, services_component_number: 1, in_review: false };
-const DRAFT = { id: 2, status: "DRAFT", date_needed: today, services_component_number: 1, in_review: false };
-const AGREEMENT = { id: 42, is_awarded: true, _meta: { isEditable: true }, budget_line_items: [EXECUTABLE, DRAFT] };
+// API shape: budget lines carry services_component_id, not the number the page groups by.
+const EXECUTABLE = { id: 1, status: "PLANNED", date_needed: today, services_component_id: 9, in_review: false };
+const DRAFT = { id: 2, status: "DRAFT", date_needed: today, services_component_id: 9, in_review: false };
+const OTHER_SC = { id: 3, status: "PLANNED", date_needed: today, services_component_id: 10, in_review: false };
+const AGREEMENT = {
+    id: 42,
+    is_awarded: true,
+    _meta: { isEditable: true },
+    budget_line_items: [EXECUTABLE, DRAFT, OTHER_SC]
+};
 
 const setQueries = ({ edits = [], requests = [] } = {}) => {
     queries.version = { data: { enable_modified_loe_edits: true }, isLoading: false };
     queries.agreement = { data: AGREEMENT, isLoading: false };
-    queries.servicesComponents = { data: [{ id: 9, number: 1 }] };
+    queries.servicesComponents = {
+        data: [
+            { id: 9, number: 1 },
+            { id: 10, number: 2 }
+        ]
+    };
     queries.edits = { data: edits };
     queries.requests = { data: requests, isLoading: false };
 };
@@ -47,7 +59,7 @@ describe("useStartModification", () => {
     it("marks only Planned current-FY budget lines selectable, with a reason for the rest", async () => {
         const { result } = renderHook(() => useStartModification(42));
 
-        await waitFor(() => expect(result.current.budgetLines).toHaveLength(2));
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
         const [executable, draft] = result.current.budgetLines;
         expect(executable).toMatchObject({ actionable: true, disabledReason: null });
         expect(draft.actionable).toBe(false);
@@ -56,14 +68,14 @@ describe("useStartModification", () => {
 
     it("can't be submitted with nothing to modify", async () => {
         const { result } = renderHook(() => useStartModification(42));
-        await waitFor(() => expect(result.current.budgetLines).toHaveLength(2));
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
 
         expect(result.current.isSubmissionReady).toBe(false);
     });
 
-    it("selecting all in a services component selects only the selectable budget lines", async () => {
+    it("selecting all in a services component selects only that group's selectable budget lines", async () => {
         const { result } = renderHook(() => useStartModification(42));
-        await waitFor(() => expect(result.current.budgetLines).toHaveLength(2));
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
 
         act(() => result.current.toggleSelectActionableBLIs(1));
 
@@ -74,7 +86,7 @@ describe("useStartModification", () => {
     it("sends the selected budget lines and notes, then returns to the Award & Modifications tab", async () => {
         submitMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 9 }) });
         const { result } = renderHook(() => useStartModification(42));
-        await waitFor(() => expect(result.current.budgetLines).toHaveLength(2));
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
 
         act(() => {
             result.current.handleSelectBLI(1);

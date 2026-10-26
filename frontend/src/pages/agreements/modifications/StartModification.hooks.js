@@ -78,11 +78,15 @@ const useStartModification = (agreementId) => {
 
     const toggleSelectActionableBLIs = (servicesComponentNumber) => {
         const selected = !toggleStates[servicesComponentNumber];
+        // Select by the rendered group's members: the API's budget lines carry services_component_id,
+        // not the number the groups are keyed by.
+        const group = groupedBudgetLinesByServicesComponent.find(
+            (candidate) => candidate.servicesComponentNumber === servicesComponentNumber
+        );
+        const groupIds = new Set((group?.budgetLines ?? []).map((bli) => bli.id));
         setToggleStates((prev) => ({ ...prev, [servicesComponentNumber]: selected }));
         setBudgetLines((prev) =>
-            prev.map((bli) =>
-                bli.actionable && bli.services_component_number === servicesComponentNumber ? { ...bli, selected } : bli
-            )
+            prev.map((bli) => (bli.actionable && groupIds.has(bli.id) ? { ...bli, selected } : bli))
         );
     };
 
