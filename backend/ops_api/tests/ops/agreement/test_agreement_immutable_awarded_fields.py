@@ -476,6 +476,43 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
+    def test_nick_name_change_on_awarded_agreement_succeeds(self, loaded_db, auth_client, app_ctx):
+        """AC 6: a nick_name-only PATCH on an awarded agreement must succeed and leave `name`
+        unchanged, since nick_name is not one of the immutable awarded fields. This is the
+        accept-path counterpart to test_attempting_to_modify_immutable_fields_marks_ops_event_failed
+        above, which only covers the name-rejection half. Ref: issue #6144.
+        """
+        agreement = ContractAgreement(
+            name="Test Contract Agreement - Nick Name on Awarded",
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        procurement_action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=AwardType.NEW_AWARD,
+            status=ProcurementActionStatus.AWARDED,
+        )
+        loaded_db.add(procurement_action)
+        loaded_db.commit()
+
+        response = auth_client.patch(
+            url_for("api.agreements-item", id=agreement.id),
+            json={"nick_name": "Awarded Nickname"},
+        )
+
+        assert response.status_code == 200
+
+        updated_agreement = loaded_db.get(Agreement, agreement.id)
+        assert updated_agreement.nick_name == "Awarded Nickname"
+        assert updated_agreement.name == "Test Contract Agreement - Nick Name on Awarded"
+
+        # Cleanup
+        loaded_db.delete(procurement_action)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
     @pytest.mark.parametrize(
         "agreement_factory",
         [
