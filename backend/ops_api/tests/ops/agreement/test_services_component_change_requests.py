@@ -15,6 +15,7 @@ import datetime
 import pytest
 from flask import url_for
 from sqlalchemy import select, text
+from sqlalchemy.exc import IntegrityError
 
 from models import (
     AgreementHistory,
@@ -242,6 +243,20 @@ def test_requires_contract_modification_is_false_when_flag_off(app, loaded_db, t
     assert cr.requires_contract_modification is False
 
 
+def test_second_in_review_request_for_the_same_sc_is_rejected_by_the_database(
+    app, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    _request(app, loaded_db, sc2)
+
+    with pytest.raises(IntegrityError):
+        _request(app, loaded_db, sc2)
+    loaded_db.rollback()
+
+    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
+
+
 # ---=== Reviewing the requests ===---
 
 
@@ -311,6 +326,50 @@ def test_declined_add_removes_sc_and_keeps_its_budget_lines(
     titles = _history_titles(loaded_db, awarded_agreement.id)
     assert "Services Component Addition Declined" in titles
     assert "Services Component Deleted" in titles
+
+
+def test_declined_add_keeps_an_sc_whose_addition_was_already_approved(
+    app, modified_loe_enabled, division_director_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    cr = _request(app, loaded_db, sc2)
+    sc2_id, bli_id, cr_id = sc2.id, bli.id, cr.id
+    # The addition was applied some other way (e.g. an earlier approval) while this request was in review.
+    sc2.awaiting_add_approval = False
+    loaded_db.commit()
+
+    _review(division_director_auth_client, cr_id, action="REJECT")
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id == sc2_id
+    assert loaded_db.get(ServicesComponentChangeRequest, cr_id).status == ChangeRequestStatus.REJECTED
+    assert "Services Component Deleted" not in _history_titles(loaded_db, awarded_agreement.id)
+
+
+def test_requester_and_other_division_director_cannot_review_sc_request(
+    app,
+    modified_loe_enabled,
+    basic_user_auth_client,
+    division_6_director_auth_client,
+    loaded_db,
+    test_can,
+    awarded_agreement,
+    app_ctx,
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    cr = _request(app, loaded_db, sc2, delete=True)
+    sc2_id, cr_id = sc2.id, cr.id
+
+    for client in (basic_user_auth_client, division_6_director_auth_client):
+        response = client.patch(url_for("api.change-requests-item", id=cr_id), json={"action": "APPROVE"})
+        assert response.status_code == 403, response.json
+
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponentChangeRequest, cr_id).status == ChangeRequestStatus.IN_REVIEW
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
 
 
 def test_approved_delete_removes_sc_and_unlinks_budget_lines(
@@ -669,6 +728,22 @@ def test_deleting_sc_with_only_draft_budget_lines_applies_directly(
     sc2_id, bli_id = sc2.id, bli.id
 
     response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is None
+    assert loaded_db.get(ContractBudgetLineItem, bli_id).services_component_id is None
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+
+
+def test_superuser_deleting_sc_with_planned_budget_lines_applies_directly(
+    modified_loe_enabled, power_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    sc2_id, bli_id = sc2.id, bli.id
+
+    response = power_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
 
     assert response.status_code == 200, response.json
     loaded_db.expire_all()

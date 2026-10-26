@@ -664,6 +664,75 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(result.current.servicesComponentDeleteRequiresApproval(21)).toBe(true);
             });
 
+            const renderAwarded = (budgetLines = []) =>
+                renderHook(() =>
+                    useCreateBLIsAndSCs(
+                        true,
+                        false,
+                        budgetLines,
+                        vi.fn(),
+                        goBackMock,
+                        null,
+                        { id: 1, display_name: "AGR-1", ...awardedContract },
+                        { fee_percentage: 5, abbr: "PSC" },
+                        setIsEditModeMock,
+                        "none",
+                        true,
+                        false,
+                        "Save & Exit",
+                        1
+                    )
+                );
+
+            it("keeps a budget line linked to an SC whose deletion goes to approval when saving", async () => {
+                // If the link were dropped, the BL PATCH would unlink it before the DELETE, the
+                // backend would see an empty SC and delete it without approval.
+                const savedLine = {
+                    id: 710,
+                    status: "PLANNED",
+                    services_component_id: 21,
+                    line_description: "before",
+                    created_on: "2026-01-01"
+                };
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [],
+                    deleted_services_components_ids: [21],
+                    budget_line_items: [{ ...savedLine, line_description: "after" }]
+                });
+                updateBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                deleteServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                const { result } = renderAwarded([savedLine]);
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(updateBudgetLineItemMock).toHaveBeenCalledTimes(1);
+                expect(updateBudgetLineItemMock.mock.calls[0][0].data.services_component_id).toBe(21);
+                expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
+            });
+
+            it("names a new SC by its short name in the save alert", async () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    agreement: { id: 1, team_members: [], service_requirement_type: "NON_SEVERABLE" },
+                    services_components: [{ number: 3, optional: false, display_title: "Services Component 3" }],
+                    budget_line_items: [{ id: "temp-1", status: "PLANNED", services_component_number: 3 }]
+                });
+                addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 31, number: 3 }) });
+                addBudgetLineItemMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                const { result } = renderAwarded();
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                const message = setAlertMock.mock.calls.at(-1)[0].message;
+                expect(message).toContain("• SC3 Addition");
+                expect(message).not.toContain("Services Component 3 Addition");
+            });
+
             it("flags deleting a saved SC whose Planned budget line's own deletion is going to approval", () => {
                 // The deleted line is gone from context but still linked in the saved budget lines.
                 useEditAgreementMock.mockReturnValue({

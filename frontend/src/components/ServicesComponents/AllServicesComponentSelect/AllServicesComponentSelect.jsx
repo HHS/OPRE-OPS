@@ -1,6 +1,6 @@
 import Select from "../../UI/Form/Select";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
-import { formatServiceComponent } from "../ServicesComponents.helpers";
+import { formatServiceComponent, isServicesComponentDeleteInReview } from "../ServicesComponents.helpers";
 /**
  * A select component for all services.
  *
@@ -18,6 +18,11 @@ function AllServicesComponentSelect({ messages, className, value, onChange }) {
     const selectOptions = [...servicesComponents]
         // filter out services components that have no sub_components
         .filter((serviceComponent) => !serviceComponent.sub_component)
+        // an SC being deleted can't take new budget lines (a budget line already on it keeps its option)
+        .filter(
+            (serviceComponent) =>
+                !isServicesComponentDeleteInReview(serviceComponent) || serviceComponent.number === Number(value)
+        )
         ?.sort((a, b) => a.number - b.number)
         .map((serviceComponent) => {
             return {

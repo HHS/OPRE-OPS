@@ -600,6 +600,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         """
         if services_component is None or not services_component.awaiting_add_approval:
             return None
+        # Budget line PATCHes for the same SC run in parallel; serialize them so only one creates the request.
+        self.lock_services_component(services_component.id)
         if not sc_requires_approval_gate(services_component.agreement):
             # A superuser (or a flag/award change) applies the addition directly once it has a
             # non-Draft budget line, so the SC isn't left pending with no request.
@@ -664,6 +666,12 @@ class ChangeRequestService(OpsService[ChangeRequest]):
                 self.db_session.flush()
         return True
 
+    def lock_services_component(self, services_component_id: int) -> None:
+        """Lock the SC row until commit, so concurrent requests don't both see "no request in review"."""
+        self.db_session.execute(
+            select(ServicesComponent.id).where(ServicesComponent.id == services_component_id).with_for_update()
+        )
+
     def _in_review_services_component_create_change_request(
         self, services_component_id: int
     ) -> ServicesComponentChangeRequest | None:
@@ -692,7 +700,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         Approved add: the SC becomes a normal SC. Declined add: the SC is removed.
         Approved delete: the SC is removed. Declined delete: nothing changes.
         """
-        services_component = self.db_session.get(ServicesComponent, change_request.services_component_id)
+        services_component = self.db_session.get(
+            ServicesComponent, change_request.services_component_id, with_for_update=True, populate_existing=True
+        )
         if services_component is None:
             return None
 
@@ -705,7 +715,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             if approved:
                 services_component.awaiting_add_approval = False
                 return None
-            return services_component
+            # Never remove an SC whose addition was already approved.
+            return services_component if services_component.awaiting_add_approval else None
         return services_component if approved else None
 
     def _delete_reviewed_services_component(self, services_component: ServicesComponent) -> None:

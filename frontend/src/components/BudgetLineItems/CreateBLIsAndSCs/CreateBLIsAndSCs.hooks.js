@@ -25,6 +25,7 @@ import {
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { formatServiceComponent } from "../../ServicesComponents/ServicesComponents.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForScreen } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -211,12 +212,20 @@ const useCreateBLIsAndSCs = (
         pendingServicesComponentAdditions.length > 0 || pendingServicesComponentDeletionIds.length > 0;
     const servicesComponentChangeMessages = React.useMemo(
         () => [
-            ...pendingServicesComponentAdditions.map((sc) => `• ${sc.display_name ?? sc.display_title} Addition`),
+            ...pendingServicesComponentAdditions.map(
+                (sc) =>
+                    `• ${sc.display_name ?? formatServiceComponent(sc.number, sc.optional, agreement?.service_requirement_type, true)} Addition`
+            ),
             ...pendingServicesComponentDeletionIds.map(
                 (id) => `• ${deletedServicesComponentsNames?.[id] ?? "Services Component"} Deletion`
             )
         ],
-        [pendingServicesComponentAdditions, pendingServicesComponentDeletionIds, deletedServicesComponentsNames]
+        [
+            pendingServicesComponentAdditions,
+            pendingServicesComponentDeletionIds,
+            deletedServicesComponentsNames,
+            agreement?.service_requirement_type
+        ]
     );
     /**
      * Whether deleting this saved services component will go to approval rather than apply on save.

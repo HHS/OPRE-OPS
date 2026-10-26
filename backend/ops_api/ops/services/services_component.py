@@ -187,6 +187,7 @@ class ServicesComponentService:
 
         services_component = self.get(obj_id)
         self._check_pre_award_lock(services_component.agreement)
+        ChangeRequestService(self.db_session).lock_services_component(obj_id)
         self._check_not_in_review(services_component)
 
         if self.delete_requires_approval(services_component):

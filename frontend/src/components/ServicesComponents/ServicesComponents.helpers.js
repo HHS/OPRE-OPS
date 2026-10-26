@@ -96,3 +96,15 @@ export function getServicesComponentLockedMessage(servicesComponent) {
         .flatMap(getServicesComponentChangeLines)
         .reduce((message, line) => `${message}\n \u2022 ${line}`, SERVICES_COMPONENT_PENDING_TITLE);
 }
+
+/**
+ * Whether a services component's deletion is in review (OPS-6440). Budget lines shouldn't be moved
+ * onto it: the delete request's linked budget lines are frozen when it's made.
+ *
+ * @param {object} servicesComponent - A services component as returned by the API.
+ * @returns {boolean}
+ */
+export const isServicesComponentDeleteInReview = (servicesComponent) =>
+    (servicesComponent?.change_requests_in_review ?? []).some(
+        (changeRequest) => changeRequest?.is_services_component_delete
+    );

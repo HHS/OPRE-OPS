@@ -1,7 +1,8 @@
 """add services component change request
 
 OPS-6440 (AC6/AC7): Services Component add/delete change requests on Awarded agreements.
-Adds the SERVICES_COMPONENT_CHANGE_REQUEST change request type, change_request.services_component_id,
+Adds the SERVICES_COMPONENT_CHANGE_REQUEST change request type, change_request.services_component_id
+(with a partial unique index allowing one in-review SC change request per SC),
 services_component.awaiting_add_approval, and contract_modification_edit.services_component_id.
 Autogenerate also reported unrelated pre-existing drift (vendor_version, notification and
 project_history indexes, procurement_tracker_step FKs, opseventtype ordering); that was removed.
@@ -60,6 +61,13 @@ def upgrade() -> None:
         ["id"],
         ondelete="SET NULL",
     )
+    op.create_index(
+        "ix_change_request_one_in_review_per_services_component",
+        "change_request",
+        ["services_component_id"],
+        unique=True,
+        postgresql_where=sa.text("status = 'IN_REVIEW' AND change_request_type = 'SERVICES_COMPONENT_CHANGE_REQUEST'"),
+    )
     op.add_column(
         "change_request_version",
         sa.Column("services_component_id", sa.Integer(), autoincrement=False, nullable=True),
@@ -96,6 +104,7 @@ def downgrade() -> None:
 
     op.drop_index(op.f("ix_change_request_version_services_component_id"), table_name="change_request_version")
     op.drop_column("change_request_version", "services_component_id")
+    op.drop_index("ix_change_request_one_in_review_per_services_component", table_name="change_request")
     op.drop_constraint("fk_change_request_services_component_id", "change_request", type_="foreignkey")
     op.drop_index(op.f("ix_change_request_services_component_id"), table_name="change_request")
     op.drop_column("change_request", "services_component_id")

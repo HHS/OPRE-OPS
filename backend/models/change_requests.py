@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -248,6 +248,16 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
         data["is_services_component_delete"] = bool(self.is_services_component_delete)
         data["requires_contract_modification"] = bool(self.requires_contract_modification)
         return data
+
+
+# At most one SC change request in review per SC, so parallel requests can't create a duplicate
+# (an in-review SC can't be edited or deleted, so an add and a delete never overlap either).
+Index(
+    "ix_change_request_one_in_review_per_services_component",
+    ServicesComponentChangeRequest.__table__.c.services_component_id,
+    unique=True,
+    postgresql_where=text("status = 'IN_REVIEW' AND change_request_type = 'SERVICES_COMPONENT_CHANGE_REQUEST'"),
+)
 
 
 # require agreement_id for Agreement changes.
