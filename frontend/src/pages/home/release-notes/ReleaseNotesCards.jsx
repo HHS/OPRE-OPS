@@ -56,7 +56,7 @@ export function LeftCard({
                     </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalReleaseChanges}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {totalNewFeatures > 0 && (
                                 <Tag className={RELEASE_NOTES_TYPE_CLASSES[RELEASE_NOTES_TYPES.NEW_FEATURE]}>
                                     {totalNewFeatures} {totalNewFeatures > 1 ? "New Features" : "New Feature"}

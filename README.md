@@ -165,6 +165,17 @@ BACKEND_DOMAIN=http://localhost:58080 \
 docker compose up --build
 ```
 
+To run the Cypress E2E tests against that stack, pass the same `FRONTEND_PORT` and `BACKEND_DOMAIN`
+values. The Cypress configs use them for `baseUrl` and for the backend URL in `cy.request` calls
+(defaults `3000` and `http://localhost:8080`):
+
+```shell
+cd ./frontend/
+FRONTEND_PORT=53000 \
+BACKEND_DOMAIN=http://localhost:58080 \
+bun run test:e2e
+```
+
 ### Running Storybook
 
 [Storybook](https://storybook.js.org/) provides an interactive component library for browsing and developing UI components in isolation. It is available in development and staging environments only — not in production.

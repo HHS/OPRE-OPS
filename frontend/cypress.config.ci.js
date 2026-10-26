@@ -2,11 +2,15 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
     allowCypressEnv: false,
+    // Ports/domains match docker-compose.yml so a non-default (e.g. worktree) stack can be targeted
+    expose: {
+        backendDomain: process.env.BACKEND_DOMAIN || "http://localhost:8080"
+    },
     env: {
         A11Y_REGRESSION_GATE: process.env.A11Y_REGRESSION_GATE === "true"
     },
     e2e: {
-        baseUrl: "http://localhost:3000",
+        baseUrl: `http://localhost:${process.env.FRONTEND_PORT || 3000}`,
         specPattern: [
             "cypress/e2e/reviewAgreement.cy.js", // <-- there is another test that must affect the BLI calculations here
             "cypress/e2e/budgetLineItemsList.cy.js", // <-- there is another test that must affect the BLI calculations here

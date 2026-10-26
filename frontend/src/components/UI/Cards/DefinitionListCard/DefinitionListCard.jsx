@@ -9,7 +9,7 @@ import React from "react";
 const DefinitionListCard = ({ definitionList, className = "" }) => {
     return (
         <div
-            className={`bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-md margin-top-4 ${className}`}
+            className={`ops-card bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-md margin-top-4 ${className}`}
         >
             {definitionList.length === 0 && <p className="margin-0 text-italic">No items to display.</p>}
 
