@@ -7,6 +7,7 @@ import {
     useGetAgreementContractModificationsByIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery
 } from "../../../api/opsAPI";
+import { useCanEditByRole } from "../../../hooks/user.hooks";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ContractModificationEditCard from "./ContractModificationEditCard";
@@ -49,9 +50,10 @@ const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
  * @component
  * @param {Object} props
  * @param {number} props.agreementId
+ * @param {boolean} [props.isAgreementEditable] - The agreement's `_meta.isEditable` (team membership)
  * @returns {React.ReactElement | null}
  */
-const ContractModificationEdits = ({ agreementId }) => {
+const ContractModificationEdits = ({ agreementId, isAgreementEditable = false }) => {
     const navigate = useNavigate();
     const activeUser = useSelector((state) => state.auth.activeUser);
     const {
@@ -72,6 +74,7 @@ const ContractModificationEdits = ({ agreementId }) => {
         { skip: !activeUser?.oidc_id || !agreementId }
     );
     const [dismissNotification] = useDismissNotificationMutation();
+    const canEditByRole = useCanEditByRole();
 
     // Only the most recent modification's outcome is shown (requests come newest first). Outcomes
     // of earlier modifications are stale, so they're marked read instead of piling up.
@@ -119,12 +122,20 @@ const ContractModificationEdits = ({ agreementId }) => {
         );
     }
 
+    // Only team members with an editing role can start one (the page itself requires it).
+    let disabledReason = null;
+    if (!isAgreementEditable || !canEditByRole) {
+        disabledReason = "Only team members on this agreement can start a Contract Modification";
+    } else if (isInReview) {
+        disabledReason = "A Contract Modification is already in review for this agreement";
+    }
+
     const startButton = (
         <button
             type="button"
             className="usa-button"
             data-cy="start-modification-btn"
-            disabled={isInReview}
+            disabled={Boolean(disabledReason)}
             onClick={() => navigate(`/agreements/${agreementId}/start-modification`)}
         >
             Start modification
@@ -146,7 +157,7 @@ const ContractModificationEdits = ({ agreementId }) => {
                 <SimpleAlert
                     type="warning"
                     heading="Contract Modification In Review"
-                    message="There is a Contract Modification pending approval from the Division Director. After it is approved, the procurement process will start and progress can be followed on the Procurement Tracker Tab."
+                    message="There is a Contract Modification pending approval from the Division Director."
                     headingLevel={2}
                 />
             )}
@@ -166,9 +177,9 @@ const ContractModificationEdits = ({ agreementId }) => {
                 </>
             )}
             <div className="display-flex flex-justify-end margin-top-4">
-                {isInReview ? (
+                {disabledReason ? (
                     <Tooltip
-                        label="A Contract Modification is already in review for this agreement"
+                        label={disabledReason}
                         position="top"
                     >
                         {startButton}

@@ -26,6 +26,11 @@ vi.mock("react-router-dom", () => ({
     useNavigate: () => mockNavigate
 }));
 
+let mockCanEditByRole = true;
+vi.mock("../../../hooks/user.hooks", () => ({
+    useCanEditByRole: () => mockCanEditByRole
+}));
+
 vi.mock("../../../hooks/lookup.hooks", () => ({
     useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown")
 }));
@@ -78,6 +83,7 @@ describe("ContractModificationEdits", () => {
         useGetAgreementContractModificationEditsByIdQuery.mockReset();
         mockRequests([]);
         mockNotifications([]);
+        mockCanEditByRole = true;
     });
 
     afterEach(() => {
@@ -87,7 +93,12 @@ describe("ContractModificationEdits", () => {
     it("renders the section heading, intro, and list label", () => {
         mockQuery({ data: [AMOUNT_EDIT] });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getByRole("heading", { name: "Contract Modifications" })).toBeInTheDocument();
         expect(screen.getByText(/displayed below as a reference/i)).toBeInTheDocument();
@@ -98,17 +109,44 @@ describe("ContractModificationEdits", () => {
     it("starts a modification from the Start modification button", async () => {
         mockQuery({ data: [AMOUNT_EDIT] });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
         await userEvent.click(screen.getByRole("button", { name: "Start modification" }));
 
         expect(mockNavigate).toHaveBeenCalledWith("/agreements/42/start-modification");
+    });
+
+    it.each([
+        ["isn't on the agreement's team", { isAgreementEditable: false }],
+        ["has a read-only role", { isAgreementEditable: true, readOnly: true }]
+    ])("disables Start modification when the user %s", (_label, { isAgreementEditable, readOnly }) => {
+        mockQuery({ data: [AMOUNT_EDIT] });
+        mockCanEditByRole = !readOnly;
+
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={isAgreementEditable}
+            />
+        );
+
+        expect(screen.getByRole("button", { name: "Start modification" })).toBeDisabled();
     });
 
     it("disables Start modification and marks edits In Review while a modification is in review", () => {
         mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
         mockRequests([{ id: 9, status: "IN_REVIEW" }]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getByRole("button", { name: "Start modification" })).toBeDisabled();
         expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
@@ -120,7 +158,12 @@ describe("ContractModificationEdits", () => {
         mockRequests([{ id: 9, status: "DECLINED" }]);
         mockNotifications([reviewOutcome(77, "DECLINED", "Let's talk Tuesday")]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getByRole("heading", { name: "Contract Modification Declined" })).toBeInTheDocument();
         expect(screen.getByText("Let's talk Tuesday")).toBeInTheDocument();
@@ -133,7 +176,12 @@ describe("ContractModificationEdits", () => {
         mockRequests([{ id: 9, status: "APPROVED" }]);
         mockNotifications([reviewOutcome(78, "APPROVED")]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getByRole("heading", { name: "Contract Modification Approved" })).toBeInTheDocument();
     });
@@ -150,7 +198,12 @@ describe("ContractModificationEdits", () => {
             reviewOutcome(77, "DECLINED", "First try", 9)
         ]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getAllByRole("heading", { name: "Contract Modification Declined" })).toHaveLength(1);
         expect(screen.getByText("Second try")).toBeInTheDocument();
@@ -166,7 +219,12 @@ describe("ContractModificationEdits", () => {
         ]);
         mockNotifications([reviewOutcome(77, "DECLINED", "First try", 9)]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.queryByRole("heading", { name: "Contract Modification Declined" })).toBeNull();
         expect(mockDismissNotification).toHaveBeenCalledWith(77);
@@ -177,7 +235,12 @@ describe("ContractModificationEdits", () => {
         mockRequests([], false);
         mockNotifications([reviewOutcome(77, "DECLINED", "First try", 9)]);
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(mockDismissNotification).not.toHaveBeenCalled();
     });
@@ -185,7 +248,12 @@ describe("ContractModificationEdits", () => {
     it("renders a card for an amount edit", () => {
         mockQuery({ data: [AMOUNT_EDIT] });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         const [card] = getCards();
         expect(within(card).getByText("December 1, 2024")).toBeInTheDocument();
@@ -208,7 +276,12 @@ describe("ContractModificationEdits", () => {
             ]
         });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         const cards = getCards();
         expect(cards).toHaveLength(3);
@@ -220,7 +293,12 @@ describe("ContractModificationEdits", () => {
     it("still offers Start modification when there are no edits, to execute Planned budget lines as-is", () => {
         mockQuery({ data: [] });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.queryByRole("heading", { name: "Edits That Require a Contract Modification" })).toBeNull();
         expect(screen.getByRole("button", { name: "Start modification" })).toBeEnabled();
@@ -229,7 +307,12 @@ describe("ContractModificationEdits", () => {
     it("renders nothing while loading", () => {
         mockQuery({ isLoading: true });
 
-        const { container } = render(<ContractModificationEdits agreementId={42} />);
+        const { container } = render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(container).toBeEmptyDOMElement();
     });
@@ -237,7 +320,12 @@ describe("ContractModificationEdits", () => {
     it("renders an error state", () => {
         mockQuery({ isError: true });
 
-        render(<ContractModificationEdits agreementId={42} />);
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
 
         expect(screen.getByText(/error loading edits/i)).toBeInTheDocument();
     });
