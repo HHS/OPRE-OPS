@@ -60,11 +60,32 @@ gh pr view <n> --json author,comments --jq '.author.login as $a | .comments[] | 
 - **You have → Delta Re-Review**, using the orchestrator's own baseline lookup: your most recent GitHub review on the PR.
 - Either way, keep the author's most recent shared-review result (if any) for the comparison in step 5. Its findings aren't new to the author, so don't spend skeptic turns on ones you agree with.
 
+**Delta scope (both modes).** Don't diff the baseline straight to HEAD: if the author merged the base branch in since then, that diff includes other people's merged code. Instead, review the hunks of the current PR diff (`gh pr diff <n>`) in files that changed since the baseline:
+
+```bash
+git merge-base --is-ancestor <baseline> <headRefOid> && git diff --name-only <baseline> <headRefOid>
+```
+
+Intersect that file list with `gh pr diff <n> --name-only`, then add already-reviewed code whose behavior those hunks change. If the baseline commit is missing or isn't an ancestor of the head (after a rebase or force-push), the command fails: tell the user and do a full review instead.
+
 **Skeptic turns:** N = 3 for Tier 3 PRs, N = 2 otherwise.
 
 ## 4. Run the orchestrator
 
-The reviewer agents can only read files; they can't run `git` or `gh`. Before launching them, write what they need to a scratch directory outside the repo: the diff, the PR body, the linked issue, and the base-branch version of every changed file (`git show <base>:<path>`), and point their brief at those paths.
+The reviewer agents can only read files; they can't run `git` or `gh`. Whatever branch the user has checked out isn't necessarily the PR (in reviewer mode it rarely is), so before launching them, put the PR's own code and the base versions in a scratch directory outside the repo and point every brief at those paths, never at the working tree:
+
+```bash
+SCRATCH=$(mktemp -d)
+git fetch origin <base> "pull/<n>/head"                      # makes <headRefOid> and origin/<base> current
+git worktree add --detach "$SCRATCH/head" <headRefOid>       # the full PR tree, for reading consuming code
+gh pr diff <n> > "$SCRATCH/pr.diff"
+for f in $(gh pr diff <n> --name-only); do                   # base copy of each changed file
+  mkdir -p "$SCRATCH/base/$(dirname "$f")"
+  git show "origin/<base>:$f" > "$SCRATCH/base/$f" 2>/dev/null || { rm -f "$SCRATCH/base/$f"; echo "added in PR: $f"; }
+done
+```
+
+Also write the PR body and the linked issue there. Files missing under `base/` are new in the PR. When the review is done, remove the worktree with `git worktree remove --force "$SCRATCH/head"`.
 
 Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
 
@@ -75,6 +96,7 @@ Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode ab
 5. **Check whether the PR caused it.** Only defects the PR introduces, makes reachable or makes worse can block. Anything else is reported as `[Pre-existing S<n>]`. Compare against the PR's base branch (`baseRefName`), which isn't always `main`: stacked PRs target another feature branch.
 6. **Check the Project Rules to Check table** (fee percentages, `@is_authorized` and ownership checks, `*_version` tables, `ALLOWED_TABLES`, OpenAPI sync, numeric display, Vest, `useBlocker`, and the required tests for money math, authorization, migrations, workflow state and data writes).
 7. **Skeptics re-derive the S label independently**, citing code. If a skeptic's S label differs from Turn 1's, the skeptic's label wins, the same as the orchestrator's rule for scores.
+8. **A resolved or outdated thread doesn't close an S0/S1.** This overrides the orchestrator's Turn 0 suppression rule for blockers: suppress an S0/S1 on a resolved thread only if the code at that location changed to fix it, or a PR comment records a second developer agreeing to won't-fix (REVIEW.md → Disputes and Won't-Fix). Otherwise report it as `REOPENED` and cite the unchanged code. Suppression still applies to S2/S3.
 
 If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them with REVIEW.md's scanner rules and include them as findings.
 
@@ -83,7 +105,7 @@ If the PR has open CodeQL, Semgrep or Snyk alerts on lines it changed, map them 
 Keep the orchestrator's disposition table, with a **Final S** column added. Then:
 
 - **Header:** PR number, head SHA reviewed, scope, tier, mode (full or delta from `<sha>`), N.
-- **Blocking findings:** every surviving S0 and S1, in REVIEW.md's format:
+- **Blocking findings:** every **open** S0 and S1 that blocks under the PR's Scope, in REVIEW.md's format. Open means a surviving finding from this run, plus any S0/S1 the orchestrator listed as **Already tracked** (tag it `[tracked]` and link the thread), plus any prior finding the delta's resolution table marks `UNRESOLVED` or `PARTIALLY-RESOLVED` (tag it `[unresolved]`). Give tracked and unresolved items an S label too if they don't have one.
   ```text
   [<severity>] <location>
   What breaks: <the defect, in one sentence>
@@ -93,7 +115,7 @@ Keep the orchestrator's disposition table, with a **Final S** column added. Then
 - **Non-blocking:** at most 5 S2/S3 findings, most important first; sum up any others in one line. Rejected findings don't count toward the 5.
 - **Pre-existing:** listed separately with their `[Pre-existing S<n>]` labels.
 - **Reviewer mode only, compared with the author's result:** for each surviving S0/S1, say whether the author's most recent shared-review result reported it. Tag the ones it didn't with `[missed]` right after the severity, for example `[S1][missed] path:line`. If the author's result was on an older commit, a finding counts as missed only if its code was already in that commit. If the author posted no result, say so and tag nothing.
-- **Last line, exactly one of:** `Verdict: BLOCKING (n)` or `Verdict: NOT BLOCKING`, where `n` counts open S0/S1 findings.
+- **Last line, exactly one of:** `Verdict: BLOCKING (n)` or `Verdict: NOT BLOCKING`, where `n` is the number of findings in the Blocking list. A finding that doesn't block under the PR's Scope (any S1 on a bot PR; an S1 on a docs-only or tooling PR that isn't a broken command, path or rule) goes in Non-blocking instead and isn't counted.
 
 A clean run is one whose verdict is `NOT BLOCKING` on the PR's current head commit. Re-running until a finding disappears doesn't close it; only a fix, or a won't-fix agreed by a second developer in a PR comment, does.
 
@@ -104,7 +126,10 @@ Show the report to the user first, in markdown in the conversation. Post it on t
 **Author mode:**
 
 - Post it as one PR comment with `gh pr comment <n> --body-file <file>`, and put `<!-- shared-review sha=<head sha reviewed> -->` on its first line so the next run can find its baseline.
-- If the verdict is `NOT BLOCKING` and the repo has a `ready-for-human-review` label (`gh label list --search ready-for-human-review`), offer to add it. Don't create labels.
+- If the verdict is `NOT BLOCKING` and the repo has a `ready-for-human-review` label, offer to add it. Don't create labels. Check with an exact match, since `gh label list --search` is fuzzy and returns other labels when this one doesn't exist:
+  ```bash
+  gh label list --limit 500 --json name --jq '.[].name' | grep -qx ready-for-human-review
+  ```
 - If commits land after posting, the result applies only up to its SHA; a delta run on the new head is needed before the PR counts as clean again.
 
 **Reviewer mode:**
@@ -117,5 +142,5 @@ Show the report to the user first, in markdown in the conversation. Post it on t
   ```bash
   gh api repos/{owner}/{repo}/pulls/<n>/reviews --input review.json
   ```
-  where `review.json` has `commit_id` (the head SHA reviewed), `event`, `body` and `comments` (each with `path`, `line` and `side: "RIGHT"`, plus `body`).
-- If any finding is tagged `[missed]` and the repo has a `missed` label, offer to add it to the PR. Don't create labels.
+  where `review.json` has `commit_id` (the head SHA reviewed), `event`, `body` and `comments`. Each comment has `path`, `line`, `side` and `body`: use `side: "RIGHT"` with the new file's line number, or `side: "LEFT"` with the old file's line number for a finding on a deleted line (for example a removed `@is_authorized`). If you can't place a finding on a line that's in the diff, put it in the body instead; one bad line makes GitHub reject the whole review.
+- If any finding is tagged `[missed]` and the repo has a `missed` label (`gh label list --limit 500 --json name --jq '.[].name' | grep -qx missed`), offer to add it to the PR. Don't create labels.
