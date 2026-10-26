@@ -103,10 +103,12 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-const navigateToAgreementPage = (name) => {
-    // Check if the agreement is on the current page
+// Pages to the row matching `isOnCurrentPage($tbody)`, rather than a fixed row index —
+// the agreements list is sorted by nickname-preferred display_name (OPS-6144), so an
+// agreement's row position shifts whenever seed data or nicknames change.
+const navigateToMatchingRow = (isOnCurrentPage) => {
     cy.get("tbody", { timeout: 30000 }).then(($tbody) => {
-        if ($tbody.text().includes(name)) {
+        if (isOnCurrentPage($tbody)) {
             return;
         }
         // Get the current page number before clicking next
@@ -123,12 +125,14 @@ const navigateToAgreementPage = (name) => {
                             "have.text",
                             String(currentPageNum + 1)
                         );
-                        navigateToAgreementPage(name);
+                        navigateToMatchingRow(isOnCurrentPage);
                     }
                 });
             });
     });
 };
+
+const navigateToAgreementPage = (name) => navigateToMatchingRow(($tbody) => $tbody.text().includes(name));
 
 const deleteAgreementByName = (name) => {
     navigateToAgreementPage(name);
@@ -143,15 +147,17 @@ const deleteAgreementByName = (name) => {
     cy.contains("tbody tr", name).should("not.exist");
 };
 
-const deleteAgreementByRowAndFail = (row) => {
-    cy.get("tbody tr", { timeout: 30000 }).as("table-rows");
-    // get the created agreement
-    cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
+// Targets a row by agreement id (via its stable `agreement-table-row-<id>` testid) instead
+// of a row index, which breaks whenever the list's sort order or seed data changes.
+const deleteAgreementByIdAndFail = (agreementId) => {
+    const rowSelector = `[data-testid="agreement-table-row-${agreementId}"]`;
+    navigateToMatchingRow(($tbody) => $tbody.find(rowSelector).length > 0);
+    cy.get(rowSelector).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
     cy.get('[data-cy="change-icons-expanded"]').find('[data-cy="delete-row"]').should("be.disabled");
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("not.exist");
-    cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
+    cy.get(rowSelector).find('[data-cy="expand-row"]').click();
 };
 
 const addAgreement = (agreement) => {
@@ -227,7 +233,9 @@ describe("Budget-team tests", () => {
         cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
         cy.get("#fiscal-year-select").select("All");
 
-        deleteAgreementByRowAndFail(3);
+        // Seeded "Contract Workflow Test" agreement (id 10) is awarded, so it's locked for
+        // delete regardless of team membership.
+        deleteAgreementByIdAndFail(10);
     });
 
     it("should not allow to delete an agreement if its BLIs are not DRAFT", () => {
@@ -237,6 +245,9 @@ describe("Budget-team tests", () => {
         cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
         cy.get("#fiscal-year-select").select("All");
 
-        deleteAgreementByRowAndFail(9); // almost all agreements have non-draft BLIs
+        // Seeded "CONTRACT #2: Fathers and Continuous Learning (FCL)" agreement (id 6) has
+        // non-DRAFT BLIs and isn't awarded, so it's locked for delete specifically for that
+        // reason (unlike a row-index pick, not affected by sort order or seed data changes).
+        deleteAgreementByIdAndFail(6);
     });
 });
