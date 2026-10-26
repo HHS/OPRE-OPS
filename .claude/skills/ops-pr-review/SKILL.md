@@ -1,5 +1,5 @@
 ---
-name: review-pr
+name: ops-pr-review
 description: Run the shared AI review of an OPRE-OPS pull request — Flexion's code-review-orchestrator, held to the team rubric in docs/REVIEW.md (S0–S3 severities, risk tiers, pre-existing findings, the verdict line). Use whenever someone asks to review an OPS PR or branch ("review PR 6436", "review my PR", "run the shared review", "is this ready for human review", "re-review after my changes"). Prefer this over calling code-review-orchestrator directly in this repo, so every review uses the same bar for "done".
 argument-hint: "[pr-number]"
 allowed-tools: Read, Grep, Glob, Bash, Agent, Skill
