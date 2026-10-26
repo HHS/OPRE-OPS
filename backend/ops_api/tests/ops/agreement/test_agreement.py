@@ -3366,8 +3366,8 @@ class TestAgreementsPaginationAPI:
         assert response.status_code == 200
         assert len(response.json["data"]) > 0
 
-        # Verify results are in sorted order (by name, case-insensitive)
-        names = [agr.get("name") for agr in response.json["data"] if agr.get("name")]
+        # Verify results are in sorted order (by display_name, i.e. nickname-preferred, case-insensitive)
+        names = [agr.get("display_name") for agr in response.json["data"] if agr.get("display_name")]
         if len(names) > 1:
             assert names == sorted(names, key=str.casefold)
 
@@ -3387,9 +3387,45 @@ class TestAgreementsPaginationAPI:
         assert len(response.json["data"]) > 0
 
         # Verify results are in descending order
-        names = [agr.get("name") for agr in response.json["data"] if agr.get("name")]
+        names = [agr.get("display_name") for agr in response.json["data"] if agr.get("display_name")]
         if len(names) > 1:
             assert names == sorted(names, reverse=True)
+
+    def test_pagination_with_sort_by_agreement_uses_display_name(self, auth_client, loaded_db, app_ctx):
+        """AGREEMENT sort is SQL-sortable (_SQL_SORTABLE), so it must order by
+        display_name_expression() (nickname-preferred) in the actual query, not by raw name.
+        Regression test: a prior fix updated _sort_agreements' AGREEMENT branch, but that
+        function is never called for SQL-sortable conditions in the real list_agreements path."""
+        agreement_zebra = ContractAgreement(
+            name="Zebra Study",
+            nick_name="Alpha",
+            contract_number="CT-SORT-DISPLAY-1",
+            contract_type=ContractType.FIRM_FIXED_PRICE,
+            agreement_type=AgreementType.CONTRACT,
+        )
+        agreement_apple = ContractAgreement(
+            name="Apple Study",
+            contract_number="CT-SORT-DISPLAY-2",
+            contract_type=ContractType.FIRM_FIXED_PRICE,
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add_all([agreement_zebra, agreement_apple])
+        loaded_db.commit()
+
+        response = auth_client.get(
+            url_for("api.agreements-group"),
+            query_string={"sort_conditions": "AGREEMENT", "limit": 50, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        display_names = [agr["display_name"] for agr in response.json["data"]]
+        zebra_index = display_names.index("Alpha")
+        apple_index = display_names.index("Apple Study")
+
+        # Sorting by raw name would put "Apple Study" before "Zebra Study" (unaffected by
+        # nickname). Sorting by display_name must put "Alpha" (Zebra's nickname) before
+        # "Apple Study" instead.
+        assert zebra_index < apple_index
 
     def test_pagination_maintains_sort_across_pages(self, auth_client, loaded_db, app_ctx):
         """Consistent sort order across pages"""

@@ -1363,7 +1363,7 @@ def _get_all_matching_ids(
     if _is_sql_sortable(sort_condition):
         agreement_alias = Agreement.__table__
         if sort_condition == AgreementSortCondition.AGREEMENT:
-            sort_col = _name_sort_key(agreement_alias.c.name).label("sort_key")
+            sort_col = _name_sort_key(Agreement.display_name_expression()).label("sort_key")
         inner = (
             select(union_subq.c.id, sort_col)
             .join(agreement_alias, union_subq.c.id == agreement_alias.c.id)
