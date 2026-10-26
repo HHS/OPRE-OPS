@@ -122,38 +122,67 @@ class ContractModificationRequestService:
         return request
 
     def review(self, request_id: int, action: str, reviewer_notes: Optional[str]) -> ContractModificationRequest:
-        """Approve or decline a contract modification request that is in review."""
+        """Approve or decline a contract modification request that is in review.
+
+        All-or-nothing: on any error the session is rolled back, so a failed approval leaves no
+        modification, no attached edits and no executed budget lines behind.
+        """
         self._check_enabled()
-        request = self.db_session.get(ContractModificationRequest, request_id)
-        if request is None:
-            raise ResourceNotFoundError("ContractModificationRequest", request_id)
-
-        user = get_current_user()
-        directors, deputies = get_division_directors_for_agreement(request.agreement)
-        if not (user.is_superuser or user.id in directors or user.id in deputies):
-            raise AuthorizationError(
-                "User is not authorized to review this contract modification.",
-                "ContractModificationRequest",
-            )
-
-        if request.status != ContractModificationRequestStatus.IN_REVIEW:
-            raise ValidationError({"status": "This contract modification has already been reviewed."})
-
-        if action == APPROVE:
-            self._approve(request)
-        elif action == DECLINE:
-            request.status = ContractModificationRequestStatus.DECLINED
-        else:
+        if action not in (APPROVE, DECLINE):
             raise ValidationError({"action": "Must be APPROVE or DECLINE."})
+        try:
+            # Lock the request so two concurrent reviews can't both pass the IN_REVIEW check.
+            request = self.db_session.scalars(
+                select(ContractModificationRequest)
+                .where(ContractModificationRequest.id == request_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            ).first()
+            if request is None:
+                raise ResourceNotFoundError("ContractModificationRequest", request_id)
 
-        request.reviewed_by_id = user.id
-        request.reviewed_on = datetime.now(timezone.utc).replace(tzinfo=None)
-        request.reviewer_notes = reviewer_notes
-        self._notify_submitter(request)
-        self.db_session.commit()
+            user = get_current_user()
+            directors, deputies = get_division_directors_for_agreement(request.agreement)
+            if not (user.is_superuser or user.id in directors or user.id in deputies):
+                raise AuthorizationError(
+                    "User is not authorized to review this contract modification.",
+                    "ContractModificationRequest",
+                )
+
+            if request.status != ContractModificationRequestStatus.IN_REVIEW:
+                raise ValidationError({"status": "This contract modification has already been reviewed."})
+
+            if action == APPROVE:
+                self._approve(request)
+            else:
+                request.status = ContractModificationRequestStatus.DECLINED
+
+            request.reviewed_by_id = user.id
+            request.reviewed_on = datetime.now(timezone.utc).replace(tzinfo=None)
+            request.reviewer_notes = reviewer_notes
+            self._notify_submitter(request)
+            self.db_session.commit()
+        except Exception:
+            self.db_session.rollback()
+            raise
         return request
 
     def _approve(self, request: ContractModificationRequest) -> None:
+        # Re-run the submit-time checks before writing anything: a budget line may have been
+        # executed, edited into review, or moved out of the current FY since the request was sent.
+        self._get_executable_budget_lines(
+            request.agreement_id, [budget_line_item.id for budget_line_item in request.budget_line_items]
+        )
+        # The Director reviewed the lines as they were sent; don't execute one that changed since
+        # (e.g. an amount change request approved in the meantime).
+        changed = [
+            f"Budget line {bli.id} changed after this contract modification was sent; decline it and send a new one."
+            for bli in request.budget_line_items
+            if bli.updated_on and request.created_on and bli.updated_on > request.created_on
+        ]
+        if changed:
+            raise ValidationError({"budget_line_item_ids": changed})
+
         agreement_mod = AgreementMod(agreement_id=request.agreement_id, mod_type=ModType.MODIFIED_LOE)
         self.db_session.add(agreement_mod)
         self.db_session.flush()
@@ -165,10 +194,6 @@ class ContractModificationRequestService:
         # agreement (validate_no_execution_status_change_on_awarded), because this approval is
         # the only way to get there.
         for budget_line_item in request.budget_line_items:
-            if budget_line_item.status != BudgetLineItemStatus.PLANNED:
-                raise ValidationError(
-                    {"budget_line_item_ids": f"Budget line {budget_line_item.id} is no longer Planned."}
-                )
             budget_line_item.status = BudgetLineItemStatus.IN_EXECUTION
 
         request.status = ContractModificationRequestStatus.APPROVED
@@ -224,8 +249,7 @@ class ContractModificationRequestService:
                 "contract_modification_request_id": request.id,
                 "title": f"Contract Modification {'Approved' if approved else 'Declined'}",
                 "message": (
-                    "Your Contract Modification has been successfully approved by your Division Director, "
-                    "and the procurement process has started."
+                    "Your Contract Modification has been successfully approved by your Division Director."
                     if approved
                     else "Your Contract Modification has been declined by your Division Director."
                 ),

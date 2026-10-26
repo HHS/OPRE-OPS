@@ -22,6 +22,8 @@ from models import (
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
+    Document,
+    DocumentType,
     ModType,
     OpsEvent,
     OpsEventType,
@@ -290,6 +292,7 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
         )
     ).one()
     assert history.ops_event_id == event.id
+    assert f"BL {executable.id} changed from Planned to Executing" in history.history_message
 
     # A new modification can be started for later edits.
     assert _submit(basic_user_auth_client, agreement.id).status_code == 400  # nothing pending
@@ -389,3 +392,74 @@ def test_agreement_notifications_include_contract_modification_requests(
     ]
     assert notification["contract_modification_request"]["status"] == "DECLINED"
     assert notification["contract_modification_request"]["reviewer_notes"] == "No"
+
+
+# ---=== Review findings: failed approval is all-or-nothing; uploads for the new types ===---
+
+
+@pytest.mark.parametrize(
+    "budget_line_change",
+    [
+        pytest.param({"status": BudgetLineItemStatus.IN_EXECUTION}, id="executed after submit"),
+        pytest.param({"amount": 90000.00}, id="amount changed after submit"),
+    ],
+)
+def test_failed_approval_leaves_nothing_behind(
+    awarded_with_edit,
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    budget_line_change,
+    app_ctx,
+):
+    """Approving must not leave a partial modification when a selected budget line changed after
+    the request was sent: no new mod, edits still pending, the other budget line not executed."""
+    agreement, _, executable = awarded_with_edit
+    untouched = _add_bli(loaded_db, agreement, test_can)
+    request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[untouched.id, executable.id]).json[
+        "id"
+    ]
+
+    bli = loaded_db.get(ContractBudgetLineItem, executable.id)
+    for field, value in budget_line_change.items():
+        setattr(bli, field, value)
+    loaded_db.commit()
+
+    response = _review_mod(division_director_auth_client, request_id)
+
+    assert response.status_code == 400, response.json
+    loaded_db.expire_all()
+    assert loaded_db.scalars(select(AgreementMod).where(AgreementMod.agreement_id == agreement.id)).all() == []
+    assert {e.agreement_mod_id for e in _edits(loaded_db, agreement.id)} == {None}
+    assert loaded_db.get(ContractBudgetLineItem, untouched.id).status == BudgetLineItemStatus.PLANNED
+    assert loaded_db.get(ContractModificationRequest, request_id).status == ContractModificationRequestStatus.IN_REVIEW
+    # A decline still works, and leaves the edits pending for a new modification.
+    assert _review_mod(division_director_auth_client, request_id, "DECLINE").status_code == 200
+    assert _submit(basic_user_auth_client, agreement.id).status_code == 201
+
+
+@pytest.mark.parametrize(
+    "document_type",
+    ["CONTRACT_MODIFICATION_MEMO", "REVISED_INDEPENDENT_GOVERNMENT_COST_ESTIMATE", "REVISED_STATEMENT_OF_REQUIREMENTS"],
+)
+def test_modification_document_types_can_be_uploaded(
+    auth_client, loaded_db, test_can, make_agreement, document_type, app_ctx  # noqa: F811
+):
+    agreement, _ = make_agreement(test_can)
+
+    response = auth_client.post(
+        url_for("api.documents-list"),
+        json={
+            "agreement_id": agreement.id,
+            "document_type": document_type,
+            "document_name": "mod.pdf",
+            "document_size": 1.0,
+        },
+    )
+
+    assert response.status_code == 201, response.json
+    document = loaded_db.scalars(select(Document).where(Document.agreement_id == agreement.id)).one()
+    assert document.document_type == DocumentType[document_type]
+    loaded_db.delete(document)
+    loaded_db.commit()

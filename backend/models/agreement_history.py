@@ -405,6 +405,12 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
         case OpsEventType.REVIEW_CONTRACT_MODIFICATION:
             approved = event.event_details.get("status") == "APPROVED"
             reviewer_notes = event.event_details.get("reviewer_notes")
+            executed_ids = event.event_details.get("budget_line_item_ids", []) if approved else []
+            executed = (
+                f" {', '.join(f'BL {bli_id}' for bli_id in executed_ids)} changed from Planned to Executing."
+                if executed_ids
+                else ""
+            )
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -413,6 +419,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
                     history_message=(
                         f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
+                        + executed
                         + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
