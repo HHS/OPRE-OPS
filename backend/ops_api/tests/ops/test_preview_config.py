@@ -42,7 +42,7 @@ def test_preview_csrf_accepts_own_backend_and_frontend(preview_app):
 
 
 def test_preview_csrf_rejects_another_prs_backend(preview_app):
-    """PR 12's backend config rejects PR 123's backend Host. The undelimited-prefix guard is tested below."""
+    """PR 12's backend config rejects PR 123's backend Host (prefix delimiter: see test_api_helpers.py)."""
     with pytest.raises(NoAuthorizationError, match="HOST_HEADER_PREFIX"):
         run_check_csrf(
             preview_app,
@@ -60,13 +60,17 @@ def test_preview_csrf_rejects_another_prs_frontend(preview_app):
         )
 
 
-def test_preview_config_requires_delimited_host_prefix(monkeypatch):
-    with pytest.raises(ValueError, match="must end with"):
-        load_preview_config(monkeypatch, host_prefix="opre-ops-pr12")
-
-
 def test_preview_config_is_fakeauth_only_and_redirects_to_its_own_frontend(monkeypatch):
     config = load_preview_config(monkeypatch)
 
     assert list(config["AUTHLIB_OAUTH_CLIENTS"]) == ["fakeauth"]
     assert config["AUTHLIB_OAUTH_CLIENTS"]["fakeauth"]["redirect_uri"] == f"{FRONTEND_URL}/login"
+
+
+def test_preview_config_reuses_dev_fakeauth_client(monkeypatch):
+    preview = load_preview_config(monkeypatch)["AUTHLIB_OAUTH_CLIENTS"]["fakeauth"]
+    dev = runpy.run_path(str(PREVIEW_CONFIG.with_name("dev.py")))["AUTHLIB_OAUTH_CLIENTS"]["fakeauth"]
+
+    assert {k: v for k, v in preview.items() if k != "redirect_uri"} == {
+        k: v for k, v in dev.items() if k != "redirect_uri"
+    }

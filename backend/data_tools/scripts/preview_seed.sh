@@ -31,6 +31,10 @@ case "${PGDATABASE#ops_pr_}" in
   *[!0-9]*) fail "PGDATABASE '$PGDATABASE' is not a preview database (expected ops_pr_<N>)" ;;
 esac
 
+# import_test_data.sh grants the ops schema to the role named "ops", so the app's
+# role must be that one or it would get no privileges on the seeded schema.
+[ "$PGUSER" = "ops" ] || fail "PGUSER must be 'ops' (got '$PGUSER')"
+
 admin_psql() {
   psql postgresql://"$ADMIN_PGUSER":"$ADMIN_PGPASSWORD"@"$PGHOST":"$PGPORT"/postgres -v ON_ERROR_STOP=1 "$@"
 }
