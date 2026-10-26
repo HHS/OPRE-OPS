@@ -69,6 +69,21 @@ export function getServicesComponentChangeLines(changeRequest) {
 }
 
 /**
+ * "Changes In Review" banner entries for an agreement's Services Component additions/deletions in
+ * review (OPS-6440), e.g. "SC3 Addition" or "SC2 Deletion".
+ *
+ * @param {Array<any>} changeRequests - The agreement's change_requests_in_review.
+ * @returns {string[]}
+ */
+export const getServicesComponentChangeMessages = (changeRequests) =>
+    (changeRequests ?? [])
+        .filter((changeRequest) => changeRequest?.has_services_component_change)
+        .map((changeRequest) => {
+            const name = changeRequest.requested_change_info?.target_display_name ?? "Services Component";
+            return `${name} ${changeRequest.is_services_component_create ? "Addition" : "Deletion"}`;
+        });
+
+/**
  * Tooltip for a services component whose addition or deletion is in review (OPS-6440), in the same
  * format as a budget line's pending-edits tooltip.
  *

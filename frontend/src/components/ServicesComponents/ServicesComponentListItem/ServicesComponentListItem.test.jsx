@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
+import { getServicesComponentChangeMessages, getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
 import ServicesComponentListItem from "./ServicesComponentListItem";
 
 const TITLE = "This services component has pending edits that will require a contract modification:";
@@ -78,5 +78,29 @@ describe("ServicesComponentListItem", () => {
         const [editButton, deleteButton] = screen.getAllByRole("button");
         expect(editButton).toBeEnabled();
         expect(deleteButton).toBeEnabled();
+    });
+});
+
+describe("getServicesComponentChangeMessages (OPS-6440)", () => {
+    it("lists Services Component additions and deletions for the Changes In Review banner", () => {
+        const changeRequests = [
+            {
+                has_services_component_change: true,
+                is_services_component_create: true,
+                requested_change_info: { target_display_name: "SC3" }
+            },
+            {
+                has_services_component_change: true,
+                is_services_component_create: false,
+                requested_change_info: { target_display_name: "SC2" }
+            },
+            { has_proc_shop_change: true }
+        ];
+
+        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition", "SC2 Deletion"]);
+    });
+
+    it("returns nothing without change requests", () => {
+        expect(getServicesComponentChangeMessages(undefined)).toEqual([]);
     });
 });

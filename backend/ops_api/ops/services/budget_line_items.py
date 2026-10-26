@@ -200,11 +200,16 @@ class BudgetLineItemService:
 
         is_super = is_super_user(current_user, current_app)
         if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+            services_component_id = bli.services_component_id
             self.db_session.delete(bli)
             if commit:
                 self.db_session.commit()
             else:
                 self.db_session.flush()
+            # The line (and any Draft->Planned request on it) is gone, so a pending SC may no
+            # longer need approval (OPS-6440).
+            if services_component_id is not None:
+                self._sync_services_component_approval(services_component_id, None, commit)
             return bli, 200, None
 
         # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the

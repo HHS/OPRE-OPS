@@ -601,6 +601,16 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if services_component is None or not services_component.awaiting_add_approval:
             return None
         if not sc_requires_approval_gate(services_component.agreement):
+            # A superuser (or a flag/award change) applies the addition directly once it has a
+            # non-Draft budget line, so the SC isn't left pending with no request.
+            if services_component.has_non_draft_budget_lines and (
+                self._in_review_services_component_create_change_request(services_component.id) is None
+            ):
+                services_component.awaiting_add_approval = False
+                if commit:
+                    self.db_session.commit()
+                else:
+                    self.db_session.flush()
             return None
 
         existing = self._in_review_services_component_create_change_request(services_component.id)

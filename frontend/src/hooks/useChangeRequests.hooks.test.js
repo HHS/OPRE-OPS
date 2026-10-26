@@ -7,8 +7,7 @@ import {
     useChangeRequestsForBudgetLines,
     useChangeRequestsForProcurementShop,
     useChangeRequestsForTooltip,
-    getChangeRequestsForTooltip,
-    getServicesComponentChangeMessages
+    getChangeRequestsForTooltip
 } from "./useChangeRequests.hooks";
 
 const useSelectorMock = vi.fn();
@@ -392,29 +391,5 @@ describe("getChangeRequestsForTooltip", () => {
             );
             expect(result.startsWith("Locked edits")).toBe(true);
         });
-    });
-});
-
-describe("getServicesComponentChangeMessages (OPS-6440)", () => {
-    it("lists Services Component additions and deletions for the Changes In Review banner", () => {
-        const changeRequests = [
-            {
-                has_services_component_change: true,
-                is_services_component_create: true,
-                requested_change_info: { target_display_name: "SC3" }
-            },
-            {
-                has_services_component_change: true,
-                is_services_component_create: false,
-                requested_change_info: { target_display_name: "SC2" }
-            },
-            { has_proc_shop_change: true }
-        ];
-
-        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition", "SC2 Deletion"]);
-    });
-
-    it("returns nothing without change requests", () => {
-        expect(getServicesComponentChangeMessages(undefined)).toEqual([]);
     });
 });

@@ -598,6 +598,51 @@ def test_moving_the_last_planned_budget_line_off_a_pending_sc_withdraws_its_requ
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
+def test_deleting_the_draft_budget_line_behind_a_pending_sc_withdraws_its_request(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.DRAFT)
+    sc2_id, bli_id = sc2.id, bli.id
+    _request_planned(basic_user_auth_client, bli_id)
+    assert len(_sc_change_requests(loaded_db, awarded_agreement.id)) == 1
+
+    response = basic_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+    assert response.status_code == 200, response.json
+
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is True
+    assert "Services Component Addition Withdrawn" in _history_titles(loaded_db, awarded_agreement.id)
+
+
+def test_superuser_deleting_the_last_planned_budget_line_withdraws_the_sc_request(
+    app, modified_loe_enabled, power_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    _request(app, loaded_db, sc2)
+    bli_id = bli.id
+
+    response = power_user_auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+    assert response.status_code == 200, response.json
+
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+
+
+def test_superuser_linking_a_planned_budget_line_applies_the_sc_addition(
+    modified_loe_enabled, power_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    bli = _add_bli(loaded_db, awarded_agreement, None, test_can, BudgetLineItemStatus.PLANNED)
+    sc2_id = sc2.id
+
+    response = _patch_bli(power_user_auth_client, bli.id, {"services_component_id": sc2_id})
+    assert response.status_code == 200, response.json
+
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
+
+
 def test_deleting_sc_with_planned_budget_lines_goes_to_approval(
     modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
 ):

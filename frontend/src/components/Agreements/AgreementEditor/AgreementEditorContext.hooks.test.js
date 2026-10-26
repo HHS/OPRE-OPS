@@ -158,6 +158,22 @@ describe("editAgreementReducer - DELETE_SERVICE_COMPONENT", () => {
         expect(next.budget_line_items).toBe(state.budget_line_items);
     });
 
+    it("reserves the number of a services component whose deletion goes to approval (OPS-6440)", () => {
+        const pending = editAgreementReducer(state, {
+            type: "DELETE_SERVICE_COMPONENT",
+            payload: sc,
+            keepBudgetLineLinks: true
+        });
+        const direct = editAgreementReducer(state, { type: "DELETE_SERVICE_COMPONENT", payload: sc });
+
+        expect(pending.pending_deletion_services_components_numbers).toEqual([sc.number]);
+        expect(direct.pending_deletion_services_components_numbers).toEqual([]);
+        expect(
+            editAgreementReducer(pending, { type: "RESEED_SERVICES_COMPONENTS", payload: [] })
+                .pending_deletion_services_components_numbers
+        ).toEqual([]);
+    });
+
     it("records no name for an unsaved services component", () => {
         const next = editAgreementReducer(
             { ...defaultState, services_components: [{ number: 4, display_title: "Services Component 4" }] },

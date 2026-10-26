@@ -41,20 +41,6 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  * Custom hook that returns the total number of change requests, pre-award approvals, and budget requisitions.
  * @returns {number} The total number of items needing review.
  */
-/**
- * "Changes In Review" banner entries for an agreement's Services Component additions/deletions in
- * review (OPS-6440), e.g. "SC3 Addition" or "SC2 Deletion".
- * @param {Array<any>} changeRequests - The agreement's change_requests_in_review.
- * @returns {string[]}
- */
-export const getServicesComponentChangeMessages = (changeRequests) =>
-    (changeRequests ?? [])
-        .filter((changeRequest) => changeRequest?.has_services_component_change)
-        .map((changeRequest) => {
-            const name = changeRequest.requested_change_info?.target_display_name ?? "Services Component";
-            return `${name} ${changeRequest.is_services_component_create ? "Addition" : "Deletion"}`;
-        });
-
 export const useChangeRequestTotal = () => {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const { data: changeRequestsResponse } = useGetChangeRequestsListQuery(

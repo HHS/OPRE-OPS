@@ -43,7 +43,10 @@ const useServicesComponents = (
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
-    const { services_components: servicesComponents } = useEditAgreement() || {};
+    const {
+        services_components: servicesComponents,
+        pending_deletion_services_components_numbers: pendingDeletionNumbers = []
+    } = useEditAgreement() || {};
 
     // Reset the PoP validation suite on mount and unmount so a stale result from a
     // previous agreement or SC never carries over into this session. (mirrors issue #5894)
@@ -248,7 +251,11 @@ const useServicesComponents = (
         setFormData(newFormData);
     };
 
-    const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
+    // An SC whose deletion is going to approval keeps its number until it's approved (OPS-6440).
+    const servicesComponentsNumbers = [
+        ...servicesComponents.map((component) => component.number),
+        ...pendingDeletionNumbers
+    ];
 
     return {
         serviceTypeReq,

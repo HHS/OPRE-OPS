@@ -22,10 +22,8 @@ import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from ".
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
-import {
-    getServicesComponentChangeMessages,
-    useChangeRequestsForAgreement
-} from "../../../hooks/useChangeRequests.hooks";
+import { getServicesComponentChangeMessages } from "../../../components/ServicesComponents/ServicesComponents.helpers";
+import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";

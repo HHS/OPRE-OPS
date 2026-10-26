@@ -43,6 +43,9 @@ export const defaultState = {
     deleted_services_components_ids: [],
     // Display names of deleted services components by id, for the "Pending Changes" alert (OPS-6440).
     deleted_services_components_names: {},
+    // Numbers of services components whose deletion goes to approval on save (OPS-6440). The SC row
+    // stays until the deletion is approved, so its number can't be reused yet.
+    pending_deletion_services_components_numbers: [],
     grant_numbers: [],
     deleted_grant_numbers_ids: [],
     budget_line_items: [],
@@ -124,7 +127,10 @@ const deleteServiceComponent = (state, action) => {
         deleted_services_components_names: {
             ...(state.deleted_services_components_names ?? {}),
             [id]: display_name ?? display_title
-        }
+        },
+        pending_deletion_services_components_numbers: action.keepBudgetLineLinks
+            ? [...(state.pending_deletion_services_components_numbers ?? []), action.payload.number]
+            : (state.pending_deletion_services_components_numbers ?? [])
     };
 };
 
@@ -235,7 +241,8 @@ export function editAgreementReducer(state, action) {
                 ...state,
                 services_components: action.payload ?? [],
                 deleted_services_components_ids: [],
-                deleted_services_components_names: {}
+                deleted_services_components_names: {},
+                pending_deletion_services_components_numbers: []
             };
         }
         case "ADD_GRANT_NUMBER": {
