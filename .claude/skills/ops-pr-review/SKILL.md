@@ -60,13 +60,15 @@ gh pr view <n> --json author,comments --jq '.author.login as $a | .comments[] | 
 - **You have → Delta Re-Review**, using the orchestrator's own baseline lookup: your most recent GitHub review on the PR.
 - Either way, keep the author's most recent shared-review result (if any) for the comparison in step 5. Its findings aren't new to the author, so don't spend skeptic turns on ones you agree with.
 
-**Delta scope (both modes).** Don't diff the baseline straight to HEAD: if the author merged the base branch in since then, that diff includes other people's merged code. Instead, review the hunks of the current PR diff (`gh pr diff <n>`) in files that changed since the baseline:
+**Delta scope (both modes).** Don't diff the baseline straight to HEAD: if the author merged the base branch in since then, that diff includes other people's merged code. Instead, review the hunks of the current PR diff (`gh pr diff <n>`) in files that changed since the baseline. Fetch first: in reviewer mode the new head usually isn't local yet.
 
 ```bash
+git fetch origin <base> "pull/<n>/head"                      # makes <headRefOid> and origin/<base> current; step 4 needs this too
+git cat-file -e "<baseline>^{commit}" || echo "baseline commit missing"
 git merge-base --is-ancestor <baseline> <headRefOid> && git diff --name-only <baseline> <headRefOid>
 ```
 
-Intersect that file list with `gh pr diff <n> --name-only`, then add already-reviewed code whose behavior those hunks change. If the baseline commit is missing or isn't an ancestor of the head (after a rebase or force-push), the command fails: tell the user and do a full review instead.
+Intersect that file list with `gh pr diff <n> --name-only`, then add already-reviewed code whose behavior those hunks change. If the baseline commit is missing, or the ancestry check exits non-zero (the branch was rebased or force-pushed), tell the user which one it was and do a full review instead.
 
 **Skeptic turns:** N = 3 for Tier 3 PRs, N = 2 otherwise.
 
@@ -74,18 +76,28 @@ Intersect that file list with `gh pr diff <n> --name-only`, then add already-rev
 
 The reviewer agents can only read files; they can't run `git` or `gh`. Whatever branch the user has checked out isn't necessarily the PR (in reviewer mode it rarely is), so before launching them, put the PR's own code and the base versions in a scratch directory outside the repo and point every brief at those paths, never at the working tree:
 
+The scratch directory is a fixed path, `/tmp/ops-pr-review-<n>`, because shell variables don't survive from one Bash call to the next. Write the literal path in every command, brief and cleanup step below. If you haven't fetched yet in step 3, run that `git fetch` line first.
+
 ```bash
-SCRATCH=$(mktemp -d)
-git fetch origin <base> "pull/<n>/head"                      # makes <headRefOid> and origin/<base> current
-git worktree add --detach "$SCRATCH/head" <headRefOid>       # the full PR tree, for reading consuming code
-gh pr diff <n> > "$SCRATCH/pr.diff"
-for f in $(gh pr diff <n> --name-only); do                   # base copy of each changed file
-  mkdir -p "$SCRATCH/base/$(dirname "$f")"
-  git show "origin/<base>:$f" > "$SCRATCH/base/$f" 2>/dev/null || { rm -f "$SCRATCH/base/$f"; echo "added in PR: $f"; }
+git worktree remove --force /tmp/ops-pr-review-<n>/head 2>/dev/null; rm -rf /tmp/ops-pr-review-<n>   # clear a leftover run
+mkdir -p /tmp/ops-pr-review-<n>/base
+git worktree add --detach /tmp/ops-pr-review-<n>/head <headRefOid>      # the full PR tree, for reading consuming code
+gh pr diff <n> > /tmp/ops-pr-review-<n>/pr.diff
+git diff --name-status -M "origin/<base>...<headRefOid>" | while IFS=$'\t' read -r kind old new; do
+  case "$kind" in
+    A) echo "added in PR: $old" ;;
+    R*|C*) mkdir -p "/tmp/ops-pr-review-<n>/base/$(dirname "$new")"
+           git show "origin/<base>:$old" > "/tmp/ops-pr-review-<n>/base/$new"
+           echo "renamed in PR: $old -> $new" ;;
+    *) mkdir -p "/tmp/ops-pr-review-<n>/base/$(dirname "$old")"
+       git show "origin/<base>:$old" > "/tmp/ops-pr-review-<n>/base/$old" ;;
+  esac
 done
 ```
 
-Also write the PR body and the linked issue there. Files missing under `base/` are new in the PR. When the review is done, remove the worktree with `git worktree remove --force "$SCRATCH/head"`.
+Also write the PR body and the linked issue there. Base copies are stored under each file's **new** path, so `base/<path>` and `head/<path>` line up even for renamed files. Tell the reviewers which files were added (no base copy) and which were renamed, from the loop's output.
+
+When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-review-<n>/head && rm -rf /tmp/ops-pr-review-<n>`. If a run was interrupted and the directory is already gone, `git worktree prune` clears the stale entry.
 
 Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
 
