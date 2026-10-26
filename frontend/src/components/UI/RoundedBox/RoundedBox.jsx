@@ -2,6 +2,9 @@ import cssClasses from "./styles.module.css";
 
 /**
  * @component RoundedBox
+ * The root carries `ops-card`, a marker class (no styles of its own) that opts card copy out of the
+ * global 24px paragraph leading — see OPS-6026 in sass/uswds/_uswds-theme-custom-styles.scss.
+ * Add `ops-card` to the root of any new card that doesn't use RoundedBox.
  * @param {Object} props - Component props.
  * @param {React.ReactNode} props.children - Child elements.
  * @param {string} [props.className] - Additional CSS classes.
@@ -12,7 +15,7 @@ import cssClasses from "./styles.module.css";
  * @returns {JSX.Element} Rendered component.
  */
 const RoundedBox = ({ children, className, dataCy, ...rest }) => {
-    const cardContainer = `bg-brand-base-light-variant border-base-light font-family-sans ${cssClasses.container} ${className ? className : ""}`;
+    const cardContainer = `ops-card bg-brand-base-light-variant border-base-light font-family-sans ${cssClasses.container} ${className ? className : ""}`;
 
     return (
         <div

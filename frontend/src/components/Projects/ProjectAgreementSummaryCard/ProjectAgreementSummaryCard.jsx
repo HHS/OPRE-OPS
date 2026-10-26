@@ -24,7 +24,7 @@ export const ProjectAgreementSummaryCard = ({
 }) => {
     return (
         <div
-            className="bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7"
+            className="ops-card bg-base-lightest font-family-sans border-1px border-base-light radius-sm margin-y-7"
             data-cy="project-agreement-summary-box"
         >
             <dl className="margin-0 padding-y-2 padding-x-3">
