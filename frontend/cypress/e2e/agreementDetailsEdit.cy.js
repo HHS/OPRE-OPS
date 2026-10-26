@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 const HISTORY_POLL_INTERVAL_MS = 1000;
 const HISTORY_TIMEOUT_MS = 20000;
 
 const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
-    const historyUrl = `http://localhost:8080/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
+    const historyUrl = `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
             method: "GET",
@@ -75,7 +75,7 @@ describe("Agreement Details Edit", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -169,7 +169,7 @@ describe("Agreement Details Edit", () => {
 
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"
@@ -188,7 +188,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -259,7 +259,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"
@@ -276,7 +276,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -385,7 +385,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
 
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"

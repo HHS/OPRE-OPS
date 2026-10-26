@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 // When I try to add the first BLI to a new Agreement on the Create Budget Lines page, the application crashes.
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let minAgreement = {
     agreement_type: "CONTRACT",
@@ -31,7 +31,7 @@ it("should not crash when adding a BLI to a new Agreement", () => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
         method: "POST",
-        url: "http://localhost:8080/api/v1/agreements/",
+        url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
         body: minAgreement,
         headers: {
             Authorization: bearer_token,
@@ -46,7 +46,7 @@ it("should not crash when adding a BLI to a new Agreement", () => {
             return agreementId;
         })
         .then((agreementId) => {
-            cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+            cy.visit(`/agreements/${agreementId}/budget-lines`);
             // click on edit button with id #edit
             cy.get("#edit").click();
             // expect heading Test Contract No Crashing to exist
@@ -55,7 +55,7 @@ it("should not crash when adding a BLI to a new Agreement", () => {
                 .then(() => {
                     cy.request({
                         method: "DELETE",
-                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                         headers: {
                             Authorization: bearer_token,
                             Accept: "application/json"
