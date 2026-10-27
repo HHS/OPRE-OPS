@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -23,6 +23,8 @@ import {
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
@@ -54,7 +56,7 @@ const sanitizeReturnTo = (raw, agreementId) => {
 };
 
 const EditAgreementAndBudgetLines = () => {
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const urlPathParams = useParams();
     const agreementId = Number(urlPathParams.id);
     const isValidId = Number.isFinite(agreementId);
@@ -293,7 +295,10 @@ const EditAgreementAndBudgetLines = () => {
 
     if (isLoadingAgreement || isLoadingServicesComponents || isLoadingGrantNumbers) {
         return (
-            <App breadCrumbName="Edit Agreement and Budget Lines">
+            <App
+                breadCrumbName="Edit Agreement and Budget Lines"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <h1>Loading...</h1>
             </App>
         );
@@ -306,7 +311,10 @@ const EditAgreementAndBudgetLines = () => {
     const canUserEditAgreement = agreement?._meta?.isEditable;
     if (!canUserEditAgreement) {
         return (
-            <App breadCrumbName="Edit Agreement and Budget Lines">
+            <App
+                breadCrumbName="Edit Agreement and Budget Lines"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <h1 className="font-sans-2xl margin-bottom-2">Access Denied</h1>
                 <SimpleAlert
                     type="error"
@@ -328,7 +336,10 @@ const EditAgreementAndBudgetLines = () => {
     const areAnyBudgetLinesPlanned = hasAnyBliInSelectedStatus(agreement?.budget_line_items ?? [], BLI_STATUS.PLANNED);
 
     return (
-        <App breadCrumbName="Edit Agreement and Budget Lines">
+        <App
+            breadCrumbName="Edit Agreement and Budget Lines"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             <EditAgreementProvider
                 agreement={agreement}
                 projectOfficer={projectOfficer}

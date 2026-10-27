@@ -10,10 +10,11 @@ import Breadcrumb from "../../UI/Header/Breadcrumb";
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string} [props.breadCrumbName] - The name of the current page to be displayed in the breadcrumb
+ * @param {{ label: string, to: string }} [props.breadCrumbParent] - The resource the current page belongs to, shown before it in the breadcrumb
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
  * @returns {React.ReactElement} - The rendered component
  */
-const DefaultLayout = ({ children, breadCrumbName }) => {
+const DefaultLayout = ({ children, breadCrumbName, breadCrumbParent }) => {
     const { isAlertActive } = useAlert();
 
     return (
@@ -30,7 +31,12 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
                 id="main-content"
                 className="grid-container bg-white padding-bottom-6"
             >
-                {breadCrumbName ? <Breadcrumb currentName={breadCrumbName} /> : null}
+                {breadCrumbName ? (
+                    <Breadcrumb
+                        currentName={breadCrumbName}
+                        parentCrumb={breadCrumbParent}
+                    />
+                ) : null}
                 {isAlertActive && <Alert />}
                 {children}
             </main>

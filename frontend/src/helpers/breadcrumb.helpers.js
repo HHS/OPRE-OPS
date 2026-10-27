@@ -47,13 +47,24 @@ export const buildTrailState = (targetPath, ancestors = []) => toTrailState({ ta
 export const getTrailFromState = (locationState) => locationState?.[TRAIL_STATE_KEY] ?? null;
 
 /**
+ * Agreement pages whose route puts an action before the id
+ * ("/agreements/review/:id", "/agreements/approve/:id").
+ */
+const AGREEMENT_ACTION_PREFIXES = ["review", "approve"];
+
+/**
  * The resource a path belongs to: its first two segments, without query
- * (e.g. "/cans/1/spending?fy=2025" → "/cans/1").
+ * (e.g. "/cans/1/spending?fy=2025" → "/cans/1"). Agreement action routes
+ * belong to their agreement ("/agreements/review/1/edit" → "/agreements/1").
  *
  * @param {string} path
  * @returns {string}
  */
-export const resourceBasePath = (path) => "/" + path.split("?")[0].split("/").filter(Boolean).slice(0, 2).join("/");
+export const resourceBasePath = (path) => {
+    const segments = path.split("?")[0].split("/").filter(Boolean);
+    if (segments[0] === "agreements" && AGREEMENT_ACTION_PREFIXES.includes(segments[1])) segments.splice(1, 1);
+    return "/" + segments.slice(0, 2).join("/");
+};
 
 /**
  * Canonical list-page crumbs, also used to build the route `handle.crumb`
@@ -70,6 +81,31 @@ export const LIST_CRUMBS = {
     projects: { label: "Projects", to: "/projects" },
     procurementDashboard: { label: "Procurement Dashboard", to: "/procurement-dashboard" }
 };
+
+/** Longest visible label for a crumb before the leaf; longer labels are cut and end in an ellipsis. */
+export const MAX_CRUMB_LABEL_LENGTH = 25;
+
+/**
+ * Shorten a crumb label to its first `maxLength` characters followed by "…",
+ * so a trail of long names fits on one line. Shorter labels are returned as is.
+ *
+ * @param {string} label
+ * @param {number} [maxLength]
+ * @returns {string}
+ */
+export const truncateCrumbLabel = (label, maxLength = MAX_CRUMB_LABEL_LENGTH) =>
+    label.length > maxLength ? `${label.slice(0, maxLength).trimEnd()}…` : label;
+
+/**
+ * The crumb for an agreement, used as the `parentCrumb` of the agreement's
+ * change-request pages (Change BL Status, approvals, …). Labelled like the
+ * agreement page's own leaf crumb so the two match.
+ *
+ * @param {{ id: number, name?: string } | null | undefined} agreement
+ * @returns {BreadcrumbAncestor | undefined} Undefined until the agreement has loaded.
+ */
+export const agreementCrumb = (agreement) =>
+    agreement?.id ? { label: agreement.name ?? "Agreement", to: `/agreements/${agreement.id}` } : undefined;
 
 /**
  * Return a list crumb that links back to the list's current tab when the user

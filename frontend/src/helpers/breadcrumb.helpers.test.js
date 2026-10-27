@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+    agreementCrumb,
     buildTrailState,
     getTrailFromState,
     LIST_CRUMBS,
     resourceBasePath,
     trailFor,
     trailMatchesPath,
+    truncateCrumbLabel,
     withListQuery
 } from "./breadcrumb.helpers";
 
@@ -81,6 +83,38 @@ describe("resourceBasePath", () => {
         expect(resourceBasePath("/cans/1/spending?fy=2025")).toBe("/cans/1");
         expect(resourceBasePath("/agreements")).toBe("/agreements");
     });
+
+    it("maps agreement action routes to their agreement", () => {
+        expect(resourceBasePath("/agreements/review/5")).toBe("/agreements/5");
+        expect(resourceBasePath("/agreements/review/5/edit?returnTo=x")).toBe("/agreements/5");
+        expect(resourceBasePath("/agreements/approve/5?type=status-change")).toBe("/agreements/5");
+        expect(resourceBasePath("/agreements/create")).toBe("/agreements/create");
+    });
+});
+
+describe("truncateCrumbLabel", () => {
+    it("keeps a label of up to 25 characters as is", () => {
+        expect(truncateCrumbLabel("Portfolios")).toBe("Portfolios");
+        expect(truncateCrumbLabel("x".repeat(25))).toBe("x".repeat(25));
+    });
+
+    it("cuts a longer label to its first 25 characters and adds an ellipsis", () => {
+        expect(truncateCrumbLabel("Contract #1: African American Child and Family")).toBe("Contract #1: African Amer…");
+    });
+
+    it("drops trailing spaces before the ellipsis", () => {
+        expect(truncateCrumbLabel("Annual Performance Plans and Reports")).toBe("Annual Performance Plans…");
+    });
+});
+
+describe("agreementCrumb", () => {
+    it("links to the agreement, labelled with its name", () => {
+        expect(agreementCrumb({ id: 5, name: "Agreement X" })).toEqual({ label: "Agreement X", to: "/agreements/5" });
+    });
+
+    it("is undefined until the agreement has loaded", () => {
+        expect(agreementCrumb(undefined)).toBeUndefined();
+    });
 });
 
 describe("trailFor", () => {
@@ -97,6 +131,17 @@ describe("trailFor", () => {
     it("keeps the trail for another page of the same resource", () => {
         const trail = { targetPath: "/agreements/5", ancestors: [portfolios] };
         expect(trailFor(trail, "/agreements/5/budget-lines")).toBe(trail);
+    });
+
+    it("ends the trail before the agreement when going from Change BL Status to its edit page", () => {
+        const reviewTrail = {
+            targetPath: "/agreements/review/5",
+            ancestors: [portfolios, { label: "Agreement X", to: "/agreements/5/budget-lines" }]
+        };
+        expect(trailFor(reviewTrail, "/agreements/review/5/edit")).toEqual({
+            targetPath: "/agreements/review/5/edit",
+            ancestors: [portfolios]
+        });
     });
 
     it("drops the trail for an unrelated page", () => {

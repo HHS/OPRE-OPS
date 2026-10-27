@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useBlocker } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
@@ -27,7 +28,7 @@ import { VALIDATABLE_BLI_STATUSES } from "./constants";
  * @returns {Object} - Hook state and handlers
  */
 export default function useRequestPreAwardApproval(agreementId) {
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));

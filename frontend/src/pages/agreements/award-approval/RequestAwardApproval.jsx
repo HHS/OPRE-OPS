@@ -9,6 +9,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import AwardRequestForm from "../../../components/Agreements/AwardRequestForm";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * @component - Renders a page for requesting award approval from the Budget Team.
@@ -102,7 +103,10 @@ export const RequestAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Request Award Approval">
+        <App
+            breadCrumbName="Request Award Approval"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}

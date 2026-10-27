@@ -30,6 +30,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 import { Navigate } from "react-router-dom";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 const ApproveAgreement = () => {
     const {
@@ -88,7 +89,10 @@ const ApproveAgreement = () => {
     }
 
     return (
-        <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
+        <App
+            breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
