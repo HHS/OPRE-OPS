@@ -2,6 +2,21 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import ReactMarkdown from "react-markdown";
+
+// The description sits inside Hero's `ops-card` section, which opts its copy out of the
+// global 24px paragraph leading (see frontend/CLAUDE.md "Paragraph Leading"). Setting the
+// line-height on the <p> itself still wins per that rule's `:where()` design.
+const markdownComponents = {
+    p: ({ node, ...props }) => {
+        void node;
+        return (
+            <p
+                className="line-height-body-4"
+                {...props}
+            />
+        );
+    }
+};
 /**
  * @component
  * @param {Object} props
@@ -40,7 +55,9 @@ const HeroDescription = ({ label, description, url }) => {
                 style={buttonStyle}
                 className="margin-top-neg-105"
             >
-                <ReactMarkdown>{description?.trimStart().substring(0, 255) + "..."}</ReactMarkdown>
+                <ReactMarkdown components={markdownComponents}>
+                    {description?.trimStart().substring(0, 255) + "..."}
+                </ReactMarkdown>
                 <button
                     className="usa-button usa-button--unstyled"
                     onClick={expandCollapse}
@@ -53,7 +70,7 @@ const HeroDescription = ({ label, description, url }) => {
                 style={textStyle}
                 className="margin-top-neg-105"
             >
-                <ReactMarkdown>{description?.trimStart() + "..."}</ReactMarkdown>
+                <ReactMarkdown components={markdownComponents}>{description?.trimStart() + "..."}</ReactMarkdown>
                 {url && (
                     <a
                         href={url}
