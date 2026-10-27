@@ -8,13 +8,31 @@ import {
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { AgreementType } from "../agreements.constants";
+import { CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS, groupByGrantNumber, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import agreementSuite, { validateBudgetLineItems } from "./suite";
+
+/**
+ * Whether a budget line can be selected for the given status-change action
+ * @param {Object} bli - the budget line item
+ * @param {string} action - the selected action
+ * @returns {boolean}
+ */
+const isBudgetLineActionable = (bli, action) => {
+    switch (action) {
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+            return bli.status === BLI_STATUS.DRAFT && !bli.in_review;
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+            return bli.status === BLI_STATUS.PLANNED && !bli.in_review;
+        default:
+            return false;
+    }
+};
 
 /**
  * Custom hook for the Review Agreement page
@@ -22,6 +40,9 @@ import agreementSuite, { validateBudgetLineItems } from "./suite";
  */
 const useReviewAgreement = (agreementId) => {
     const [action, setAction] = React.useState(""); // for the action accordion
+    // read by the budget line init effect so a late data load keeps the selected action
+    const actionRef = React.useRef(action);
+    actionRef.current = action;
     const [budgetLines, setBudgetLines] = React.useState([]);
     const [pageErrors, setPageErrors] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
@@ -47,6 +68,8 @@ const useReviewAgreement = (agreementId) => {
     // enforcement authority; this flag only drives display/copy.
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const {
         isSuccess,
@@ -76,9 +99,19 @@ const useReviewAgreement = (agreementId) => {
     };
     let changeRequestAction = actionOptionsToChangeRequests[action];
     // Draft→Planned applies immediately only when the capability is ON. Planned→Executing
-    // always requires approval, so it is never treated as applied-immediately.
+    // always requires approval, so it is never treated as applied-immediately. On an Awarded
+    // agreement, Draft→Planned requires a contract modification (OPS-3072), so the backend
+    // routes it to approval regardless of the capability.
     const isDraftToPlannedAction = action === actionOptions.CHANGE_DRAFT_TO_PLANNED;
-    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction;
+    const isAgreementAwarded = Boolean(agreement?.is_awarded);
+    // Contract-modification tracking only applies with the ENABLE_MODIFIED_LOE_EDITS capability on.
+    const tracksContractModifications = enableModifiedLoeEdits && isAgreementAwarded;
+    const appliesImmediately = skipCrForDraftPlanned && isDraftToPlannedAction && !tracksContractModifications;
+    const requiresContractModification = tracksContractModifications && isDraftToPlannedAction;
+    // Planned→Executing on an Awarded agreement requires a Contract Modification, so it isn't
+    // offered. Superusers bypass this, matching the backend.
+    const isSuperUser = useIsUserSuperUser();
+    const blocksPlannedToExecuting = tracksContractModifications && !isSuperUser;
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -119,8 +152,8 @@ const useReviewAgreement = (agreementId) => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
         }
-        return validateBudgetLineItems(selectedBudgetLines);
-    }, [isGrant, selectedBudgetLines]);
+        return validateBudgetLineItems(selectedBudgetLines, allowPastObligateByDates);
+    }, [isGrant, selectedBudgetLines, allowPastObligateByDates]);
 
     const hasBLIError = React.useMemo(() => {
         if (!bliValidationResults || bliValidationResults.length === 0) {
@@ -144,8 +177,6 @@ const useReviewAgreement = (agreementId) => {
                   }
               };
 
-    const isAgreementAwarded = agreement?.is_awarded;
-
     React.useEffect(() => {
         // Add guard clause — grants have no services components, so gate only on the required list per type.
         if (!agreement?.budget_line_items || (isGrant ? !grantNumbers : !servicesComponents)) {
@@ -165,7 +196,7 @@ const useReviewAgreement = (agreementId) => {
                     ...bli,
                     grant_number_number: grantNumberNumber,
                     selected: false, // for use in the BLI table
-                    actionable: false // based on action accordion
+                    actionable: isBudgetLineActionable(bli, actionRef.current) // based on action accordion
                 };
             }
             const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
@@ -181,7 +212,7 @@ const useReviewAgreement = (agreementId) => {
                 sc_period_start: budgetLineServicesComponent?.period_start ?? null,
                 sc_period_end: budgetLineServicesComponent?.period_end ?? null,
                 selected: false, // for use in the BLI table
-                actionable: false // based on action accordion
+                actionable: isBudgetLineActionable(bli, actionRef.current) // based on action accordion
             };
         });
 
@@ -267,10 +298,10 @@ const useReviewAgreement = (agreementId) => {
     };
     const statusChangeMessages = createStatusChangeMessages(selectedBudgetLines, action);
     /**
-     * Handle the sending of the budget line items to approval
+     * Send the selected budget line items' status changes
      * @returns {void}
      */
-    const handleSendToApproval = () => {
+    const sendStatusChanges = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             let selectedBLIsWithStatusAndNotes = [];
 
@@ -343,6 +374,24 @@ const useReviewAgreement = (agreementId) => {
         }
     };
     /**
+     * Handle the sending of the budget line items to approval. On an Awarded agreement, confirm
+     * first that the change will require a contract modification.
+     * @returns {void}
+     */
+    const handleSendToApproval = () => {
+        if (!requiresContractModification) {
+            sendStatusChanges();
+            return;
+        }
+        setModalProps({
+            heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
+            actionButtonText: "Send to Approval",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: sendStatusChanges
+        });
+        setShowModal(true);
+    };
+    /**
      * Handle the selection of a budget line item
      * @param {number} bliId - the budget line item ID
      * @returns {void}
@@ -371,23 +420,17 @@ const useReviewAgreement = (agreementId) => {
         setNotes("");
 
         const newBudgetLines = budgetLines.map((bli) => {
-            switch (action) {
-                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === BLI_STATUS.DRAFT && !bli.in_review
-                    };
-
-                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    return {
-                        ...bli,
-                        selected: false,
-                        actionable: bli.status === BLI_STATUS.PLANNED && !bli.in_review
-                    };
-                default:
-                    return bli;
+            if (
+                action !== actionOptions.CHANGE_DRAFT_TO_PLANNED &&
+                action !== actionOptions.CHANGE_PLANNED_TO_EXECUTING
+            ) {
+                return bli;
             }
+            return {
+                ...bli,
+                selected: false,
+                actionable: isBudgetLineActionable(bli, action)
+            };
         });
 
         setBudgetLines(newBudgetLines);
@@ -492,6 +535,7 @@ const useReviewAgreement = (agreementId) => {
         handleSendToApproval,
         hasBLIError,
         isAgreementAwarded,
+        blocksPlannedToExecuting,
         isSubmissionReady,
         changeRequestAction,
         anyBudgetLinesDraft,

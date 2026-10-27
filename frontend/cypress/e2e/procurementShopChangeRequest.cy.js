@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement = {
     agreement_type: "CONTRACT",
@@ -59,7 +59,7 @@ describe("Procurement Shop Change Request", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -78,7 +78,7 @@ describe("Procurement Shop Change Request", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -92,7 +92,7 @@ describe("Procurement Shop Change Request", () => {
                 });
             })
             .then(({ agreementId }) => {
-                cy.visit(`http://localhost:3000/agreements/${agreementId}/?mode=edit`);
+                cy.visit(`/agreements/${agreementId}/?mode=edit`);
                 cy.get("#procurement-shop-select").select("4");
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get("#ops-modal-heading").should(
@@ -114,7 +114,7 @@ describe("Procurement Shop Change Request", () => {
                     expect($alert).to.contain("Fee Total: $0 to $48,000.00");
                 });
                 // NOTE: This alert is for any other users
-                cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                cy.visit(`/agreements/${agreementId}`);
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain("Changes In Review");
                 });
@@ -135,7 +135,7 @@ describe("Procurement Shop Change Request", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -155,7 +155,7 @@ describe("Procurement Shop Change Request", () => {
                 const bliData = { ...draftBLI, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -169,18 +169,18 @@ describe("Procurement Shop Change Request", () => {
                 });
             })
             .then(({ agreementId, bliId }) => {
-                cy.visit(`http://localhost:3000/agreements/${agreementId}/?mode=edit`);
+                cy.visit(`/agreements/${agreementId}/?mode=edit`);
                 cy.get("#procurement-shop-select").select("4"); // IBC
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get("#ops-modal-heading").should("not.exist");
                 cy.get('[data-cy="alert"]').should("exist");
-                cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                cy.visit(`/agreements/${agreementId}`);
                 cy.get('[data-cy="procurement-shop-tag"]')
                     .contains("IBC")
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -192,7 +192,7 @@ describe("Procurement Shop Change Request", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -226,7 +226,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -245,7 +245,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -262,7 +262,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     body: {
                         awarding_entity_id: 4
                     },
@@ -310,7 +310,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -321,7 +321,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     })
                     .then(() => {
                         // check procurement shop related agremeent history messages
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
@@ -347,7 +347,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -364,7 +364,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -383,7 +383,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -400,7 +400,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     body: {
                         awarding_entity_id: 4
                     },
@@ -447,7 +447,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .click()
                     .then(() => {
                         // check procurement shop related agremeent history messages
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -462,7 +462,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -485,7 +485,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -505,7 +505,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -524,7 +524,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -541,7 +541,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     body: {
                         awarding_entity_id: 4
                     },
@@ -615,7 +615,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                     .contains(/changes approved/i)
                     .then(() => {
                         // check procurement shop related agremeent history messages
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -630,7 +630,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -653,7 +653,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -670,7 +670,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -689,7 +689,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -706,7 +706,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     body: {
                         awarding_entity_id: 4
                     },
@@ -779,7 +779,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                     .contains(/changes declined/i)
                     .then(() => {
                         // check procurement shop related agremeent history messages
-                        cy.visit(`http://localhost:3000/agreements/${agreementId}`);
+                        cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
                             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -794,7 +794,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -817,7 +817,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"

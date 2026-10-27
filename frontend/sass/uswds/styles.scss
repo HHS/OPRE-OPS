@@ -231,6 +231,8 @@ $themeColors: (
 }
 
 //FONTS
+// OPS-6026: adding a .font-Npx class? Also add it to $ops-p-resized in
+// _uswds-theme-custom-styles.scss so default-size paragraph leading skips it.
 .font-12px {
     font-size: 0.75rem;
 }

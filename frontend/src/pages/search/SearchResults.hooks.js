@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { createSearchParams, useSearchParams } from "react-router-dom";
 import { useSearchAgreementsQuery } from "../../api/opsAPI";
-import { sanitizeSearchQuery } from "../../components/UI/Header/HeaderSearch/HeaderSearch.helpers";
+import {
+    normalizeSearchResponse,
+    sanitizeSearchQuery
+} from "../../components/UI/Header/HeaderSearch/HeaderSearch.helpers";
 import { ITEMS_PER_PAGE } from "../../constants";
 
 // The API rejects (HTTP 400) a q over MAX_SEARCH_LENGTH or containing NUL, and an offset past PostgreSQL's
@@ -31,8 +34,7 @@ const useSearchResults = () => {
     );
 
     // currentData (not data) so rows from a previous query/page never show under the new heading.
-    const results = data?.data ?? [];
-    const count = data?.count ?? 0;
+    const { results, count } = normalizeSearchResponse(data);
     const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
 
     const setCurrentPage = (page) => {

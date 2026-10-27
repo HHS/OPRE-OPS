@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement = {
     agreement_type: "CONTRACT",
@@ -54,7 +54,7 @@ afterEach(() => {
 });
 
 const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
-    const historyUrl = `http://localhost:8080/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
+    const historyUrl = `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
             method: "GET",
@@ -91,7 +91,7 @@ it("BLI Status Change", () => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
         method: "POST",
-        url: "http://localhost:8080/api/v1/agreements/",
+        url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
         body: testAgreement,
         headers: {
             Authorization: bearer_token,
@@ -110,7 +110,7 @@ it("BLI Status Change", () => {
             const bliData = { ...testBli, agreement_id: agreementId };
             cy.request({
                 method: "POST",
-                url: "http://localhost:8080/api/v1/budget-line-items/",
+                url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                 body: bliData,
                 headers: {
                     Authorization: bearer_token,
@@ -125,7 +125,7 @@ it("BLI Status Change", () => {
         })
         // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
-            cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+            cy.visit(`/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-continue-btn"]').click();
             // Wait for the change request form to appear
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]', { timeout: 10000 })
@@ -186,7 +186,7 @@ it("BLI Status Change", () => {
                 .then(() => {
                     cy.request({
                         method: "DELETE",
-                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                         headers: {
                             Authorization: bearer_token,
                             Accept: "application/json"
@@ -198,7 +198,7 @@ it("BLI Status Change", () => {
                 .then(() => {
                     cy.request({
                         method: "DELETE",
-                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                         headers: {
                             Authorization: bearer_token,
                             Accept: "application/json"

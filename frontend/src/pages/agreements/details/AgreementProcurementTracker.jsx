@@ -287,6 +287,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isDisabled={isStepDisabled}
                                 isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
+                                agreementName={agreement?.name}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
@@ -313,6 +314,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isDisabled={isStepDisabled}
                                 isActiveStep={isActiveStep}
                                 agreementId={agreement?.id}
+                                agreementName={agreement?.name}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}

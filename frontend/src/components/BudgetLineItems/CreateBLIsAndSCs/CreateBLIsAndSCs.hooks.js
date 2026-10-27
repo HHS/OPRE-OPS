@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useBlocker } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useAddAgreementMutation,
     useAddBudgetLineItemMutation,
@@ -56,6 +57,10 @@ import {
     totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
 import useCreateBLIsAndSCsSaveBlocker from "./useCreateBLIsAndSCsSaveBlocker";
+
+// Statuses whose budget-detail edits apply immediately (no Change Request) when the
+// SKIP_CR_FOR_DRAFT_PLANNED capability is ON. Mirrors the backend's DIRECT_BUDGET_EDIT_STATUSES.
+const DIRECT_APPLY_STATUSES = [BLI_STATUS.PLANNED, BLI_STATUS.EXECUTING];
 
 /**
  * Create and update services components / grant numbers, returning the newly-created items
@@ -131,7 +136,7 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [groupedBudgetLinesByGrantNumber, setGroupedBudgetLinesByGrantNumber] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -165,25 +170,33 @@ const useCreateBLIsAndSCs = (
     const isSuperUser = activeUser?.is_superuser ?? false;
     const isBudgetTeam = useIsUserBudgetTeam();
 
-    // Per-environment capability: when ON, in-Planned budget-detail edits apply immediately
-    // (no Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Default
+    // Per-environment capability: when ON, in-Planned and in-Executing budget-detail edits apply
+    // immediately (no Change Request), matching the backend's SKIP_CR_FOR_DRAFT_PLANNED behavior. Default
     // to false until the version query resolves so the approval UX never gets suppressed
     // prematurely. The backend is the enforcement authority; this only drives display/copy.
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
+    const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
+    // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
+    // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
+    const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
     const bypassEditDirectly = isSuperUser || isBudgetTeam;
-    // When the capability is ON, in-Planned budget-detail edits also apply immediately for any
-    // user — but ONLY when every financially-changed editable line is PLANNED (the flag's
-    // scope). If any changed line is IN_EXECUTION it still needs approval, so we keep the
-    // approval UX for the whole save (mixed-case copy is a deferred product decision).
+    // When the capability is ON, in-Planned and in-Executing budget-detail edits also apply
+    // immediately for any user — but ONLY when every financially-changed editable line is PLANNED
+    // or IN_EXECUTION (the flag's scope). Pre-award locks are enforced by the backend and the
+    // BLI _meta, so locked lines never reach this point as editable.
     const changedFinancialBLIs = tempBudgetLines.filter((bli) => !bli.in_review && bli.financialSnapshotChanged);
+    // On an Awarded agreement these edits require a contract modification (OPS-3072), so the
+    // backend routes them to approval regardless of the capability.
     const flagAllowsDirectApply =
         skipCrForDraftPlanned &&
+        !tracksContractModifications &&
         changedFinancialBLIs.length > 0 &&
-        changedFinancialBLIs.every((bli) => bli.status === BLI_STATUS.PLANNED);
+        changedFinancialBLIs.every((bli) => DIRECT_APPLY_STATUSES.includes(bli.status));
     const canEditDirectly = bypassEditDirectly || flagAllowsDirectApply;
 
     // Snapshot the page-suite result in state. The suites are module-level singletons
@@ -275,14 +288,17 @@ const useCreateBLIsAndSCs = (
     // Non-review mode reads the state-backed snapshot so a mount-time reset() repaints
     // clean instead of surfacing a stale singleton result. (issue #5894)
     const res = isReviewMode
-        ? suite.run({
-              // Exclude in-review BLIs from validation — they are locked (not editable) and
-              // won't be included in the save payload, so their TBD fields should not block saving.
-              // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
-              budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
-              // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
-              agreement_type: selectedAgreement?.agreement_type
-          })
+        ? suite.run(
+              {
+                  // Exclude in-review BLIs from validation — they are locked (not editable) and
+                  // won't be included in the save payload, so their TBD fields should not block saving.
+                  // Use the SC-period-enriched lines so the Obligate-By-within-PoP rule can evaluate.
+                  budgetLines: budgetLinesWithScPeriod.filter((bli) => !bli.in_review),
+                  // Grant agreements have no SC/PoP window; the suite skips the PoP-range rule for them.
+                  agreement_type: selectedAgreement?.agreement_type
+              },
+              allowPastObligateByDates
+          )
         : pageSuiteResult;
     // BLIs with no services component / grant number fall into the "unassociated" (0) bucket, which
     // already renders its own "This is required information" message and red border above its accordion
@@ -794,11 +810,15 @@ const useCreateBLIsAndSCs = (
      * Persist an existing agreement's services components / grant numbers / budget line items,
      * routing financially-changed lines to approval when required.
      * @param {boolean} savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
+     * @param {boolean} approvalConfirmed - Whether the user already confirmed sending to approval (the Modified-LOE contract-modification modal), so the Division-Director modal is skipped
      * @returns {Promise<boolean>} - Whether any BLI had a financial snapshot change
      */
     const handleSaveExistingAgreementBudget = React.useCallback(
-        /** @param {boolean} savedViaModal */
-        async (savedViaModal) => {
+        /**
+         * @param {boolean} savedViaModal
+         * @param {boolean} approvalConfirmed
+         */
+        async (savedViaModal, approvalConfirmed) => {
             const { createdItems: createdServiceComponents, existingItems: existingServicesComponents } =
                 await persistPartitionedEntities(servicesComponents, addServicesComponent, updateServicesComponent);
 
@@ -828,10 +848,15 @@ const useCreateBLIsAndSCs = (
                 (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
             );
 
-            if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && !savedViaModal) {
-                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
-            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
+            if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && savedViaModal) {
                 await handleFinancialSnapshotChangesViaBlocker(existingBudgetLineItemsWithIds);
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly && approvalConfirmed) {
+                await sendExistingBLIsToApproval(
+                    existingBudgetLineItemsWithIds,
+                    getBudgetLinesUrl(selectedAgreement?.id)
+                );
+            } else if (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) {
+                await handleFinancialSnapshotChanges(existingBudgetLineItemsWithIds);
             } else {
                 await handleRegularUpdates(existingBudgetLineItemsWithIds);
             }
@@ -852,6 +877,8 @@ const useCreateBLIsAndSCs = (
             canEditDirectly,
             handleFinancialSnapshotChanges,
             handleFinancialSnapshotChangesViaBlocker,
+            sendExistingBLIsToApproval,
+            selectedAgreement?.id,
             handleRegularUpdates,
             handleDeletions
         ]
@@ -862,14 +889,18 @@ const useCreateBLIsAndSCs = (
          * @param {boolean} savedViaModal
          * @param {boolean} [suppressErrorAlert]
          * @param {boolean} [suppressSuccessAlert]
+         * @param {boolean} [approvalConfirmed] - The user already confirmed sending to approval, so skip the Division-Director modal
          */
-        async (savedViaModal, suppressErrorAlert = false, suppressSuccessAlert = false) => {
+        async (savedViaModal, suppressErrorAlert = false, suppressSuccessAlert = false, approvalConfirmed = false) => {
             try {
                 let isThereAnyBLIsFinancialSnapshotChanged = false;
                 if (!agreement.id) {
                     await handleSaveNewAgreement();
                 } else {
-                    isThereAnyBLIsFinancialSnapshotChanged = await handleSaveExistingAgreementBudget(savedViaModal);
+                    isThereAnyBLIsFinancialSnapshotChanged = await handleSaveExistingAgreementBudget(
+                        savedViaModal,
+                        approvalConfirmed
+                    );
                 }
                 suite.reset();
                 budgetFormSuite.reset();
@@ -912,10 +943,26 @@ const useCreateBLIsAndSCs = (
         .some((b) => b.financialSnapshotChanged);
     const requiresFinancialApproval = !canEditDirectly && hasFinancialSnapshotChanges;
 
+    // OPS-3072 (Modified LOE): on an Awarded agreement, saving a delete of a non-Draft BL or an
+    // amount/CAN/date edit on a non-Draft BL requires a contract modification -- surfaced as a
+    // distinct confirmation before the same underlying Division-Director-approval save that
+    // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
+    // Draft BLs are added, edited, and deleted freely; they only require a contract modification
+    // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
+    // and SC changes are saved directly (not through approval), so neither is counted here.
+    // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
+    const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
+        const bli = budgetLines?.find((b) => b.id === id);
+        return bli && bli.status !== BLI_STATUS.DRAFT;
+    });
+    const requiresContractModification =
+        tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs);
+
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
         handleSave,
         requiresFinancialApproval,
+        requiresContractModification,
         navigate,
         setIsEditMode,
         setHasUnsavedChanges,
@@ -924,6 +971,7 @@ const useCreateBLIsAndSCs = (
     });
 
     return {
+        allowPastObligateByDates,
         blocker,
         budgetFormSuite,
         budgetLineBeingEdited,
@@ -977,6 +1025,7 @@ const useCreateBLIsAndSCs = (
         totalsForCards,
         isAgreementNotYetDeveloped,
         requiresFinancialApproval,
+        requiresContractModification,
         effectiveScStartDate,
         effectiveScEndDate
     };

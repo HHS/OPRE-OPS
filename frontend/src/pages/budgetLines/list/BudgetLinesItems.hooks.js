@@ -1,21 +1,14 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
+import { useListFilters } from "../../../hooks/useListFilters.hooks";
 
 export const useBudgetLinesList = () => {
     const [searchParams] = useSearchParams();
 
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState("All");
     const [showModal, setShowModal] = React.useState(false);
 
-    const [filters, setFilters] = React.useState(() => ({
-        fiscalYears: [],
-        portfolios: [],
-        bliStatus: [],
-        budgetRange: null,
-        agreementTypes: [],
-        agreementTitles: [],
-        canActivePeriods: []
-    }));
+    // Filters + selected fiscal year persist across client-side navigation via the session slice.
+    const { filters, setFilters, selectedFiscalYear, setSelectedFiscalYear } = useListFilters("budgetLines");
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",

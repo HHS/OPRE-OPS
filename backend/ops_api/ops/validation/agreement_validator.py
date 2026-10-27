@@ -36,6 +36,7 @@ class AgreementValidator:
         from ops_api.ops.validation.rules.agreement import (
             AgreementTypeImmutableRule,
             AuthorizationRule,
+            PreAwardLockRule,
             ProcurementShopChangeRule,
             ResearchMetadataRule,
             ResourceExistsRule,
@@ -45,6 +46,7 @@ class AgreementValidator:
         return [
             ResourceExistsRule(),
             AuthorizationRule(),
+            PreAwardLockRule(),
             AgreementTypeImmutableRule(),
             ProcurementShopChangeRule(),
             ResearchMetadataRule(),

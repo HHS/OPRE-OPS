@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 const TOTAL_CR_BLIS = 11;
 const PAGE_SIZE = 10;
@@ -48,7 +48,7 @@ const baseBli = {
 const setupPreAwardStep = (agreementId, token, onReady) => {
     cy.request({
         method: "GET",
-        url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${agreementId}`,
+        url: `${BACKEND_DOMAIN}/api/v1/procurement-trackers/?agreement_id=${agreementId}`,
         headers: { Authorization: token }
     }).then((res) => {
         expect(res.status).to.eq(200);
@@ -67,7 +67,7 @@ const setupPreAwardStep = (agreementId, token, onReady) => {
             const [step, ...rest] = steps;
             cy.request({
                 method: "PATCH",
-                url: `http://localhost:8080/api/v1/procurement-tracker-steps/${step.id}`,
+                url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${step.id}`,
                 body: { status: "COMPLETED", task_completed_by: 500, date_completed: "2026-01-10" },
                 headers: { Authorization: token, "Content-Type": "application/json" }
             }).then((patchRes) => {
@@ -96,7 +96,7 @@ describe("Change Requests List - Pagination", () => {
                 if (!preAwardStep.approval_requested) {
                     cy.request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
                         body: { approval_requested: true, approval_requested_date: "2026-01-15" },
                         headers: { Authorization: systemOwnerToken, "Content-Type": "application/json" }
                     }).then((res) => {
@@ -110,7 +110,7 @@ describe("Change Requests List - Pagination", () => {
                 if (!preAwardStep.approval_requested) {
                     cy.request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
                         body: { approval_requested: true, approval_requested_date: "2026-01-12" },
                         headers: { Authorization: systemOwnerToken, "Content-Type": "application/json" }
                     }).then((res) => {
@@ -127,7 +127,7 @@ describe("Change Requests List - Pagination", () => {
 
             cy.request({
                 method: "GET",
-                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
+                url: `${BACKEND_DOMAIN}/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
                 headers: { Authorization: divisionDirectorToken }
             }).then((res) => {
                 expect(res.status).to.eq(200);
@@ -136,7 +136,7 @@ describe("Change Requests List - Pagination", () => {
                 if (preAwardStep.approval_status !== "APPROVED") {
                     cy.request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
                         body: { approval_status: "APPROVED" },
                         headers: { Authorization: divisionDirectorToken, "Content-Type": "application/json" }
                     }).then((patchRes) => {
@@ -153,7 +153,7 @@ describe("Change Requests List - Pagination", () => {
 
             cy.request({
                 method: "POST",
-                url: "http://localhost:8080/api/v1/agreements/",
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
                 body: { ...testAgreement, name: `E2E CR Pagination ${Date.now()}` },
                 headers: { Authorization: budgetTeamToken, "Content-Type": "application/json" }
             }).then((res) => {
@@ -165,7 +165,7 @@ describe("Change Requests List - Pagination", () => {
                     return cy
                         .request({
                             method: "POST",
-                            url: "http://localhost:8080/api/v1/budget-line-items/",
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                             body: { ...baseBli, agreement_id: agreementId },
                             headers: { Authorization: budgetTeamToken }
                         })
@@ -175,7 +175,7 @@ describe("Change Requests List - Pagination", () => {
                             return cy
                                 .request({
                                     method: "PATCH",
-                                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                                     body: { id: bliId, status: BLI_STATUS.PLANNED },
                                     headers: { Authorization: budgetTeamToken }
                                 })
@@ -200,7 +200,7 @@ describe("Change Requests List - Pagination", () => {
             const ddToken = `Bearer ${window.localStorage.getItem("access_token")}`;
             cy.request({
                 method: "GET",
-                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_PENDING_AGREEMENT_ID}`,
+                url: `${BACKEND_DOMAIN}/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_PENDING_AGREEMENT_ID}`,
                 headers: { Authorization: ddToken },
                 failOnStatusCode: false
             }).then((res) => {
@@ -209,7 +209,7 @@ describe("Change Requests List - Pagination", () => {
                 if (preAwardStep?.approval_status === null || preAwardStep?.approval_status === undefined) {
                     cy.request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
                         body: { approval_status: "DECLINED" },
                         headers: { Authorization: ddToken, "Content-Type": "application/json" },
                         failOnStatusCode: false
@@ -224,7 +224,7 @@ describe("Change Requests List - Pagination", () => {
             const btToken = `Bearer ${window.localStorage.getItem("access_token")}`;
             cy.request({
                 method: "GET",
-                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
+                url: `${BACKEND_DOMAIN}/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
                 headers: { Authorization: btToken },
                 failOnStatusCode: false
             }).then((res) => {
@@ -233,7 +233,7 @@ describe("Change Requests List - Pagination", () => {
                 if (preAwardStep && !preAwardStep.requisition_approved_by) {
                     cy.request({
                         method: "PATCH",
-                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        url: `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
                         body: { requisition_number: "CLEANUP-REQ-001", requisition_date: "2026-01-20" },
                         headers: { Authorization: btToken, "Content-Type": "application/json" },
                         failOnStatusCode: false
@@ -249,7 +249,7 @@ describe("Change Requests List - Pagination", () => {
             bliIds.forEach((id) => {
                 cy.request({
                     method: "DELETE",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${id}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${id}`,
                     headers: { Authorization: token },
                     failOnStatusCode: false
                 });
@@ -257,7 +257,7 @@ describe("Change Requests List - Pagination", () => {
             if (agreementId) {
                 cy.request({
                     method: "DELETE",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     headers: { Authorization: token }
                 }).then((res) => {
                     expect(res.status).to.eq(200);
@@ -370,7 +370,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
 
             cy.request({
                 method: "POST",
-                url: "http://localhost:8080/api/v1/agreements/",
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
                 body: { ...tiebreakAgreement, name: tiebreakAgreementName },
                 headers: { Authorization: budgetTeamToken, "Content-Type": "application/json" }
             }).then((agreementRes) => {
@@ -382,7 +382,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
                 // Both live on the same agreement, which is what the sort tiebreaker needs.
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: { ...baseBli, agreement_id: agreementId, status: BLI_STATUS.PLANNED },
                     headers: { Authorization: budgetTeamToken }
                 }).then((bliARes) => {
@@ -391,7 +391,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
 
                     cy.request({
                         method: "POST",
-                        url: "http://localhost:8080/api/v1/budget-line-items/",
+                        url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                         body: { ...baseBli, agreement_id: agreementId, status: BLI_STATUS.PLANNED },
                         headers: { Authorization: budgetTeamToken }
                     }).then((bliBRes) => {
@@ -405,7 +405,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
                         // _type tiebreaker ("crBudget" < "crStatus") also puts budget first.
                         cy.request({
                             method: "PATCH",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliAId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliAId}`,
                             body: { id: bliAId, status: BLI_STATUS.EXECUTING },
                             headers: { Authorization: budgetTeamToken }
                         }).then((statusCrRes) => {
@@ -414,7 +414,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
 
                         cy.request({
                             method: "PATCH",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliBId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliBId}`,
                             body: { id: bliBId, amount: 999_999 },
                             headers: { Authorization: budgetTeamToken }
                         }).then((budgetCrRes) => {
@@ -438,7 +438,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
             bliIds.forEach((id) => {
                 cy.request({
                     method: "DELETE",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${id}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${id}`,
                     headers: { Authorization: token },
                     failOnStatusCode: false
                 });
@@ -446,7 +446,7 @@ describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
             if (agreementId) {
                 cy.request({
                     method: "DELETE",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                     headers: { Authorization: token }
                 }).then((res) => {
                     expect(res.status).to.eq(200);

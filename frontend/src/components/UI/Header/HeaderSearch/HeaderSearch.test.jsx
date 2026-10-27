@@ -95,7 +95,7 @@ describe("HeaderSearch", () => {
             expect(input).toHaveAttribute("aria-autocomplete", "list");
             expect(input).toHaveAttribute("aria-expanded", "false");
             expect(input).not.toHaveAttribute("aria-activedescendant");
-            expect(input).toHaveAttribute("placeholder", "ODN, agreement title, or nickname");
+            expect(input).toHaveAttribute("placeholder", "Search agreements");
             // The listbox exists (hidden) so aria-controls never dangles.
             const listbox = screen.getByRole("listbox", { hidden: true });
             expect(input).toHaveAttribute("aria-controls", listbox.id);
@@ -202,6 +202,57 @@ describe("HeaderSearch", () => {
             await user.type(input, "x");
 
             expect(screen.getByRole("option").querySelector("mark")).toHaveTextContent("Child");
+        });
+
+        it("shows a contract's contract number or task order number only when that is what matched", async () => {
+            const CONTRACT = {
+                ...PO_1,
+                id: 21,
+                name: "Numbers Study",
+                nick_name: null,
+                contract_number: "CN-7788",
+                task_order_number: "TO-9911"
+            };
+            mockSearch(() => ({ data: [CONTRACT], count: 1 }));
+            const { user, input } = renderSearch();
+
+            await user.type(input, "CN-77");
+            const option = await screen.findByRole("option");
+            expect(option).toHaveTextContent("Contract #: CN-7788");
+            expect(option).not.toHaveTextContent("Task order #");
+
+            await user.clear(input);
+            await user.type(input, "TO-99");
+            await waitFor(() => expect(screen.getByRole("option")).toHaveTextContent("Task order #: TO-9911"));
+            expect(screen.getByRole("option")).not.toHaveTextContent("Contract #");
+        });
+
+        it("Esc closes the hovered info tip first and leaves the typed search alone", async () => {
+            mockSearch();
+            const { user, input } = renderSearch();
+            await user.type(input, "PO-TEST");
+            await screen.findAllByRole("option");
+
+            await user.hover(screen.getByRole("button", { name: "What can I search for?" }));
+            expect(screen.getByRole("tooltip")).toBeVisible();
+
+            await user.keyboard("{Escape}");
+            expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+            expect(input).toHaveValue("PO-TEST");
+
+            await user.keyboard("{Escape}");
+            expect(input).toHaveValue("");
+        });
+
+        it("separates ODN, a matched contract number and the nickname with one middot each", async () => {
+            const FULL = { ...PO_1, id: 22, contract_number: "PO-TEST-CN", task_order_number: null };
+            mockSearch(() => ({ data: [FULL], count: 1 }));
+            const { user, input } = renderSearch();
+
+            await user.type(input, "PO-TEST-CN");
+
+            const option = await screen.findByRole("option");
+            expect(option).toHaveTextContent("ODN: PO-TEST-0001 · Contract #: PO-TEST-CN · Nickname: CCS");
         });
 
         it("keeps aria-expanded false and exposes no listbox when the dropdown only holds the empty hint", async () => {
@@ -1003,7 +1054,7 @@ describe("HeaderSearch", () => {
             await user.type(input, "zzz");
 
             expect(await screen.findByText(/No agreements match "zzz"\./)).toBeInTheDocument();
-            expect(screen.getByText(/Try an ODN, agreement title, or nickname\./)).toBeInTheDocument();
+            expect(screen.getByText(/Try a number, agreement title, or nickname\./)).toBeInTheDocument();
             expect(screen.queryByRole("option")).not.toBeInTheDocument();
             expect(screen.getByRole("status")).toHaveTextContent("No results");
         });

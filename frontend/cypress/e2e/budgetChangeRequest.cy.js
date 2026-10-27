@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 let testAgreement = {
     agreement_type: "CONTRACT",
@@ -59,7 +59,7 @@ describe("Budget Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -78,7 +78,7 @@ describe("Budget Change Requests", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -92,7 +92,7 @@ describe("Budget Change Requests", () => {
                 });
             })
             .then(({ agreementId, bliId }) => {
-                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines?mode=edit`);
+                cy.visit(`/agreements/${agreementId}/budget-lines?mode=edit`);
                 cy.get("#servicesComponentSelect").select("1");
                 cy.get("#pop-start-date").type("01/01/2044");
                 cy.get("#pop-end-date").type("01/01/2045");
@@ -155,7 +155,7 @@ describe("Budget Change Requests", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -175,7 +175,7 @@ describe("Budget Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -194,7 +194,7 @@ describe("Budget Change Requests", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -212,12 +212,12 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="sign-out"]').click();
                 cy.visit("/").wait(1000);
                 testLogin("budget-team");
-                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                cy.visit(`/agreements/${agreementId}/budget-lines`);
                 cy.get("#edit").should("exist");
 
                 cy.request({
                     method: "DELETE",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     headers: {
                         Authorization: bearer_token,
                         Accept: "application/json"
@@ -238,7 +238,7 @@ describe("Budget Change Requests", () => {
                         const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                             headers: {
                                 Authorization: powerUserBearerToken,
                                 Accept: "application/json"
@@ -257,7 +257,7 @@ describe("Budget Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -276,7 +276,7 @@ describe("Budget Change Requests", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -290,7 +290,7 @@ describe("Budget Change Requests", () => {
                 });
             })
             .then(({ agreementId, bliId }) => {
-                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines?mode=edit`);
+                cy.visit(`/agreements/${agreementId}/budget-lines?mode=edit`);
                 cy.get("#servicesComponentSelect").select("1");
                 cy.get("#pop-start-date").type("01/01/2044");
                 cy.get("#pop-end-date").type("01/01/2045");
@@ -339,7 +339,7 @@ describe("Budget Change Requests", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -359,7 +359,7 @@ describe("Budget Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -378,7 +378,7 @@ describe("Budget Change Requests", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -439,7 +439,7 @@ describe("Budget Change Requests", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"
@@ -459,7 +459,7 @@ describe("Budget Change Requests", () => {
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -478,7 +478,7 @@ describe("Budget Change Requests", () => {
                 const bliData = { ...testBli, agreement_id: agreementId };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: bliData,
                     headers: {
                         Authorization: bearer_token,
@@ -496,7 +496,7 @@ describe("Budget Change Requests", () => {
             .then(({ agreementId, bliId }) => {
                 cy.request({
                     method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
                         status: BLI_STATUS.PLANNED,
@@ -523,7 +523,7 @@ describe("Budget Change Requests", () => {
                 };
                 cy.request({
                     method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
                     body: draftBliData,
                     headers: {
                         Authorization: bearer_token,
@@ -549,7 +549,7 @@ describe("Budget Change Requests", () => {
                     .then(() => {
                         cy.request({
                             method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${draftBliId}`,
+                            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${draftBliId}`,
                             headers: {
                                 Authorization: bearer_token,
                                 Accept: "application/json"
@@ -572,7 +572,7 @@ describe("Budget Change Requests", () => {
                                 const powerUserBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                                 cy.request({
                                     method: "DELETE",
-                                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                                    url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                                     headers: {
                                         Authorization: powerUserBearerToken,
                                         Accept: "application/json"

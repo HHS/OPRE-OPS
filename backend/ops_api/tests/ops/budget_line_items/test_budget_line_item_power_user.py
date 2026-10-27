@@ -849,7 +849,11 @@ def test_power_user_update_obligate_by_date(
     loaded_db.commit()
 
 
+@pytest.mark.parametrize("allow_past_dates", [False, True], ids=["flag_off", "flag_on"])
 def test_power_user_create_bli_with_past_obligate_by_date(
+    allow_past_dates,
+    app,
+    monkeypatch,
     power_user_auth_client,
     budget_team_auth_client,
     loaded_db,
@@ -857,9 +861,11 @@ def test_power_user_create_bli_with_past_obligate_by_date(
     test_contract,
 ):
     """Administrative Power Users can POST a new BLI and transition it past DRAFT with a past
-    `date_needed`. Budget Team users hit the same endpoint successfully on POST (status is DRAFT)
-    but are blocked when they attempt to transition past DRAFT with a past date.
+    `date_needed` regardless of ALLOW_PAST_OBLIGATE_BY_DATES. Budget Team users can POST it (status is
+    DRAFT); their transition past DRAFT with a past date is rejected when the flag is OFF and accepted
+    (routed to a change request) when it is ON.
     """
+    monkeypatch.setitem(app.config, "ALLOW_PAST_OBLIGATE_BY_DATES", allow_past_dates)
     agreement = test_contract
     past_date = "2020-06-21"
     target_status = BudgetLineItemStatus.PLANNED
@@ -895,11 +901,14 @@ def test_power_user_create_bli_with_past_obligate_by_date(
         url_for("api.budget-line-items-item", id=budget_team_bli_id),
         json={"status": target_status.name},
     )
-    assert budget_team_transition_response.status_code == 400
-    assert (
-        "BLI must have a Need By Date in the future when status is not DRAFT"
-        in budget_team_transition_response.json["errors"]["date_needed"]
-    )
+    if allow_past_dates:
+        assert budget_team_transition_response.status_code == 202, budget_team_transition_response.json
+    else:
+        assert budget_team_transition_response.status_code == 400, budget_team_transition_response.json
+        assert (
+            "BLI must have a Need By Date in the future when status is not DRAFT"
+            in budget_team_transition_response.json["errors"]["date_needed"]
+        )
 
 
 @pytest.mark.parametrize(

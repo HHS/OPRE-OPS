@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
@@ -153,7 +153,7 @@ it("can create an SEVERABLE agreement", () => {
         // delete test agreement
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"
@@ -320,7 +320,7 @@ it("can create an NON-SEVERABLE agreement", () => {
         // delete test agreement
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"
@@ -433,7 +433,7 @@ it("can save a draft agreement from step 2", () => {
         // Cleanup: delete the test agreement
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"

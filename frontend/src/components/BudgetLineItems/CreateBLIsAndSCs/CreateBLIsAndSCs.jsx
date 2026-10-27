@@ -19,7 +19,7 @@ import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findDescription, findIfOptional } from "../../../helpers/servicesComponent.helpers";
 import { findGrantDescription, findGrantPeriodEnd, findGrantPeriodStart } from "../../../helpers/budgetLines.helpers";
-import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
+import { cleanBudgetLineItemForApi, CONTRACT_MODIFICATION_APPROVAL_HEADING } from "../../../helpers/agreement.helpers";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
@@ -51,6 +51,7 @@ import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEdit
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @param {React.MutableRefObject<{getSlice: () => object}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns `{ services_components: { create, update, delete }, budget_line_items: { create, update, delete } }` reflecting the user's current edits, suitable for the agreement edit-bundle endpoint. Used by the review-flow edit page so it can fire one atomic mutation instead of fanning out per-resource calls. - optional
  * @param {function(boolean): void} [props.onFinancialChangeStateChange] - Called with `true` when the current edits contain financial-snapshot changes to PLANNED/IN_EXECUTION BLIs that require Division Director approval, `false` otherwise. Non-superusers only — super users always receive `false`. Used by the review-flow edit page to gate the save behind a confirmation modal. - optional
+ * @param {function(boolean): void} [props.onContractModificationStateChange] - Called with `true` when the agreement is Awarded and the current edits (amount/CAN/date edit on any BLI status, or an add/delete BL or add/delete/edit SC) will require a contract modification once approved (OPS-3072), `false` otherwise. Used by the hosting page to swap the pre-save confirmation modal's copy. - optional
  * @param {function(boolean): void} [props.onHasUnsavedChangesChange] - Called whenever the internal `hasUnsavedChanges` flag changes. Used by the review-flow edit page to track page-level dirty state for the nav-away modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
@@ -80,6 +81,7 @@ export const CreateBLIsAndSCs = ({
     onValidityChange,
     bundleSliceRef,
     onFinancialChangeStateChange,
+    onContractModificationStateChange,
     onHasUnsavedChangesChange
 }) => {
     const {
@@ -92,6 +94,7 @@ export const CreateBLIsAndSCs = ({
         handleAddBLI,
         isEditing,
         modalProps,
+        setModalProps,
         pageErrors,
         setEnteredAmount,
         setEnteredDescription,
@@ -130,8 +133,10 @@ export const CreateBLIsAndSCs = ({
         effectiveScStartDate,
         effectiveScEndDate,
         requiresFinancialApproval,
+        requiresContractModification,
         grantNumberNumber,
-        setGrantNumberNumber
+        setGrantNumberNumber,
+        allowPastObligateByDates
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -190,6 +195,12 @@ export const CreateBLIsAndSCs = ({
             onFinancialChangeStateChange(requiresFinancialApproval);
         }
     }, [onFinancialChangeStateChange, requiresFinancialApproval]);
+
+    useEffect(() => {
+        if (onContractModificationStateChange) {
+            onContractModificationStateChange(requiresContractModification);
+        }
+    }, [onContractModificationStateChange, requiresContractModification]);
 
     useEffect(() => {
         if (onHasUnsavedChangesChange) {
@@ -551,6 +562,7 @@ export const CreateBLIsAndSCs = ({
                     workflow={workflow}
                     scStartDate={effectiveScStartDate}
                     scEndDate={effectiveScEndDate}
+                    allowPastObligateByDates={allowPastObligateByDates}
                 />
             )}
 
@@ -681,6 +693,25 @@ export const CreateBLIsAndSCs = ({
                             className="usa-button"
                             data-cy="continue-btn"
                             onClick={() => {
+                                // OPS-3072 (Modified LOE): this standalone footer button has no
+                                // hosting page to intercept it (unlike EditAgreementAndBudgetLines'
+                                // external Save button) -- when the pending edits require a
+                                // contract modification, confirm here before saving, reusing the
+                                // same generic modal plumbing this component already uses elsewhere.
+                                // Pass `approvalConfirmed` on confirm so the inner Division-Director
+                                // approval modal does NOT fire again (Decision 10: one modal, not
+                                // two stacked confirmations for the same underlying approval).
+                                // Not `savedViaModal`: that path redirects to the blocker's target.
+                                if (requiresContractModification) {
+                                    setModalProps({
+                                        heading: CONTRACT_MODIFICATION_APPROVAL_HEADING,
+                                        actionButtonText: "Send to Approval",
+                                        secondaryButtonText: "Continue Editing",
+                                        handleConfirm: () => handleSave(false, false, false, true)
+                                    });
+                                    setShowModal(true);
+                                    return;
+                                }
                                 handleSave(false);
                             }}
                             disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}

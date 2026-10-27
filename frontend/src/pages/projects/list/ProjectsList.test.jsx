@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ProjectsList from "./ProjectsList";
 import { opsApi } from "../../../api/opsAPI";
+import sessionUIReducer from "../../../sessionUISlice";
 
 const mockNavigate = vi.fn();
 const mockUseGetProjectsQuery = vi.fn();
@@ -149,6 +150,7 @@ describe("ProjectsList", () => {
         mockStore = configureStore({
             reducer: {
                 [opsApi.reducerPath]: opsApi.reducer,
+                sessionUI: sessionUIReducer,
                 auth: () => ({
                     isLoggedIn: true,
                     activeUser: { id: 1, roles: [] }
@@ -526,7 +528,8 @@ describe("ProjectsList - Model B FY behavior (OPS-6257)", () => {
                     reducer: {
                         [opsApi.reducerPath]: opsApi.reducer,
                         auth: () => ({ isLoggedIn: true, activeUser: { id: 1, roles: [] } }),
-                        alert: () => ({ isActive: false, type: "", heading: "", message: "", redirectUrl: "" })
+                        alert: () => ({ isActive: false, type: "", heading: "", message: "", redirectUrl: "" }),
+                        sessionUI: sessionUIReducer
                     },
                     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
                 })}

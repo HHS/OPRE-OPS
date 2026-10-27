@@ -182,17 +182,20 @@ describe("AgreementDetailsView", () => {
     });
 
     describe("Agreement Period of Performance tag", () => {
-        it("renders the formatted PoP range for a contract with both sc dates", () => {
-            const contractAgreement = {
+        const popTooltipText =
+            "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components";
+
+        it.each(["CONTRACT", "AA"])("renders the formatted PoP range for a %s with both sc dates", (agreementType) => {
+            const agreementWithDates = {
                 ...agreement,
-                agreement_type: "CONTRACT",
+                agreement_type: agreementType,
                 sc_start_date: "2026-10-01",
                 sc_end_date: "2028-09-30"
             };
 
             render(
                 <AgreementDetailsView
-                    agreement={contractAgreement}
+                    agreement={agreementWithDates}
                     projectOfficer={mockProjectOfficer}
                     alternateProjectOfficer={null}
                     isAgreementAwarded={false}
@@ -203,28 +206,36 @@ describe("AgreementDetailsView", () => {
             expect(screen.getByText("10/1/2026 - 9/30/2028")).toBeInTheDocument();
         });
 
-        it("renders a TBD tag for a contract missing sc_start_date or sc_end_date", () => {
-            const contractAgreement = {
-                ...agreement,
-                agreement_type: "CONTRACT",
-                sc_start_date: null,
-                sc_end_date: null
-            };
+        it.each(["CONTRACT", "AA"])(
+            "renders a TBD tag for a %s missing sc_start_date or sc_end_date",
+            (agreementType) => {
+                const agreementWithoutDates = {
+                    ...agreement,
+                    agreement_type: agreementType,
+                    sc_start_date: null,
+                    sc_end_date: null
+                };
 
-            render(
-                <AgreementDetailsView
-                    agreement={contractAgreement}
-                    projectOfficer={mockProjectOfficer}
-                    alternateProjectOfficer={null}
-                    isAgreementAwarded={false}
-                />
-            );
+                render(
+                    <AgreementDetailsView
+                        agreement={agreementWithoutDates}
+                        projectOfficer={mockProjectOfficer}
+                        alternateProjectOfficer={null}
+                        isAgreementAwarded={false}
+                    />
+                );
 
-            expect(screen.getByText("Agreement Period of Performance")).toBeInTheDocument();
-            expect(screen.getAllByText("TBD").length).toBeGreaterThan(0);
-        });
+                expect(screen.getByText("Agreement Period of Performance")).toBeInTheDocument();
+                // Other fields also render TBD, so target the tag the PoP tooltip describes
+                const tooltipText = screen.getByText(popTooltipText);
+                const popTag = screen
+                    .getAllByText("TBD")
+                    .find((tag) => tag.getAttribute("aria-describedby") === tooltipText.id);
+                expect(popTag).toBeInTheDocument();
+            }
+        );
 
-        it("does not render the PoP tag for non-contract agreement types", () => {
+        it("does not render the PoP tag for GRANT agreements", () => {
             const grantAgreement = {
                 ...agreement,
                 agreement_type: "GRANT",
@@ -244,31 +255,32 @@ describe("AgreementDetailsView", () => {
             expect(screen.queryByText("Agreement Period of Performance")).not.toBeInTheDocument();
         });
 
-        it("attaches a tooltip explaining the PoP calculation to the date tag itself", () => {
-            const contractAgreement = {
-                ...agreement,
-                agreement_type: "CONTRACT",
-                sc_start_date: "2026-10-01",
-                sc_end_date: "2028-09-30"
-            };
+        it.each(["CONTRACT", "AA"])(
+            "attaches a tooltip explaining the PoP calculation to the date tag itself for a %s",
+            (agreementType) => {
+                const agreementWithDates = {
+                    ...agreement,
+                    agreement_type: agreementType,
+                    sc_start_date: "2026-10-01",
+                    sc_end_date: "2028-09-30"
+                };
 
-            render(
-                <AgreementDetailsView
-                    agreement={contractAgreement}
-                    projectOfficer={mockProjectOfficer}
-                    alternateProjectOfficer={null}
-                    isAgreementAwarded={false}
-                />
-            );
+                render(
+                    <AgreementDetailsView
+                        agreement={agreementWithDates}
+                        projectOfficer={mockProjectOfficer}
+                        alternateProjectOfficer={null}
+                        isAgreementAwarded={false}
+                    />
+                );
 
-            const tooltipText = screen.getByText(
-                "Agreement Period of Performance (PoP) is calculated from the earliest PoP start date and the latest PoP end date from the agreement's services components"
-            );
-            const tag = screen.getByText("10/1/2026 - 9/30/2028");
-            expect(tooltipText).toBeInTheDocument();
-            // The tag itself (not a separate icon) is the tooltip trigger
-            expect(tag).toHaveAttribute("aria-describedby", tooltipText.id);
-        });
+                const tooltipText = screen.getByText(popTooltipText);
+                const tag = screen.getByText("10/1/2026 - 9/30/2028");
+                expect(tooltipText).toBeInTheDocument();
+                // The tag itself (not a separate icon) is the tooltip trigger
+                expect(tag).toHaveAttribute("aria-describedby", tooltipText.id);
+            }
+        );
     });
 
     describe("GRANT details fields", () => {

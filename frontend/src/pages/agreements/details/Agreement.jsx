@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -33,6 +34,8 @@ import AgreementProcurementTracker from "./AgreementProcurementTracker";
 const Agreement = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    // Keep the breadcrumb trail when returning to this agreement's pages.
+    const trailState = useForwardedTrailState();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
@@ -359,6 +362,7 @@ const Agreement = () => {
                             ) : (
                                 <Navigate
                                     to={`/agreements/${agreement?.id}`}
+                                    state={trailState}
                                     replace
                                 />
                             )
@@ -370,6 +374,7 @@ const Agreement = () => {
                             isGrant ? (
                                 <Navigate
                                     to={`/agreements/${agreement?.id}`}
+                                    state={trailState}
                                     replace
                                 />
                             ) : (

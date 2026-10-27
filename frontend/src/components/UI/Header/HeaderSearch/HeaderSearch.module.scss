@@ -1,17 +1,23 @@
-// A zero-height layer as wide as the page column (1024px), centered like the content below it; the
+// A zero-height layer as wide as the nav column (64rem, like `.usa-nav__inner`), centered like it; the
 // search floats at its right edge, directly under the user/sign-out links. Below the USWDS desktop
 // breakpoint (64em) the primary nav and user links are hidden and the header collapses to the logo
 // row, so the layer drops back into the flow as its own row instead of floating over the page.
 .layer {
     position: absolute;
-    top: 3.625rem;
+    // The 2rem search box ends level with the bottom of the logo: the logo image is a fixed 55px tall and
+    // starts 0.75rem (navbar padding) + 2rem (logo margin) below the header top, so this stays level
+    // when the root font size changes.
+    top: calc(0.75rem + 55px);
     left: 0;
     right: 0;
-    width: min(1024px, 100%);
+    // rem, not px: the user/sign-out links above scale with the root font size, so the search and its
+    // info icon must too or the icon drifts out from under the notifications bell at larger text sizes.
+    width: min(64rem, 100%);
     height: 0;
     margin: 0 auto;
     box-sizing: border-box;
-    padding-right: 2rem;
+    // 2rem page gutter + room for the info icon that sits to the right of the search box
+    padding-right: 4rem;
     display: flex;
     align-items: flex-start;
     justify-content: flex-end;
@@ -19,14 +25,14 @@
     @media (max-width: 63.99em) {
         position: static;
         height: auto;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 3rem 0.5rem 1rem;
         justify-content: flex-start;
     }
 }
 
 .container {
     position: relative;
-    // Prototype: ~307px input + 48px button, 36px tall.
+    // Prototype: ~307px input + 48px button. Height comes from USWDS's small search (2rem).
     width: 22.2rem;
     max-width: 100%;
 }
@@ -38,7 +44,9 @@
     display: flex;
     width: 100%;
     max-width: none;
-    border-radius: 0.25rem;
+    margin: 0; // `.usa-header .usa-search` adds margin-top: 0.5rem, which would push the box off the icon and dropdown
+    // Square on the input side, rounded on the button side, like the USWDS small search.
+    border-radius: 0 0.25rem 0.25rem 0;
 
     // One focus ring around the joined input + button, instead of a ring on the input alone that
     // spills over the button. Only where :has() exists (Firefox < 121, Safari < 15.4 lack it): there
@@ -56,14 +64,12 @@
     flex: 1;
 }
 
+// Height, font size, margin and corner radii come from `.usa-search--small` / `.usa-search__input`.
 .container .input {
-    margin-top: 0;
+    float: none; // USWDS floats the search input; here it fills a flex item
     width: 100%;
     max-width: none;
-    height: 2.25rem;
     padding-right: 2rem;
-    font-size: 0.875rem;
-    border-radius: 0.25rem 0 0 0.25rem;
 
     @supports selector(:has(*)) {
         &:focus {
@@ -92,17 +98,12 @@
     }
 }
 
-// `.usa-button` adds margin-right: 0.5rem and a full radius; flush it against the input.
+// Size, padding and corner radii come from the USWDS small search; just center the icon.
 .container .submitButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 3rem;
-    width: 3rem;
-    height: 2.25rem;
-    margin: 0;
-    padding: 0;
-    border-radius: 0 0.25rem 0.25rem 0;
+    flex: 0 0 auto;
 }
 
 .dropdown {
@@ -184,4 +185,76 @@
     background-color: #ffe396;
     color: inherit;
     padding: 0;
+}
+
+// The info icon hangs off the right edge of the search box (inside the layer's extra right padding).
+.infoWrapper {
+    position: absolute;
+    top: 0.25rem; // centers the 1.5rem icon on the 2rem search box
+    left: calc(100% + 0.5rem);
+}
+
+.infoButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #005ea2;
+    cursor: pointer;
+
+    :global(.usa-icon) {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+.infoTip {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: -0.625rem; // juts out past the icon, as in the prototype
+    z-index: 100;
+    width: max-content;
+    max-width: 19rem;
+    // Same box and type as the USWDS tooltip (.usa-tooltip__body): .5rem padding, .25rem radius,
+    // .94rem font, inherited font family and line height, #71767a background.
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    background: #71767a;
+    // White, not USWDS's #f0f0f0: #f0f0f0 on #71767a is ~3.9:1 and fails the 4.5:1 axe check in CI.
+    color: #fff;
+    font-size: 0.94rem;
+    border: 1px solid transparent; // forced-colors mode recolours it, so the tip keeps an edge
+
+    // Bridges the gap to the icon so the pointer can travel onto the tip without it closing
+    // (WCAG 1.4.13: content shown on hover must stay hoverable).
+    // Offsets include the 1px border: the pseudo-element is positioned from the padding edge, so
+    // without it a 1px gap would remain between the icon and the bridge.
+    &::before {
+        content: "";
+        position: absolute;
+        top: calc(-0.5rem - 1px);
+        left: -1px;
+        right: -1px;
+        height: calc(0.5rem + 1px);
+    }
+
+    // Arrow pointing up at the icon's centre: 0.75rem (half the icon) + 0.625rem (the overhang) from the right.
+    &::after {
+        content: "";
+        position: absolute;
+        top: -0.4375rem;
+        right: 0.875rem;
+        border-left: 0.5rem solid transparent;
+        border-right: 0.5rem solid transparent;
+        border-bottom: 0.5rem solid #71767a;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
 }

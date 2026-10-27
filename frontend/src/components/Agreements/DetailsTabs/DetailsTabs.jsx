@@ -1,7 +1,8 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import { IS_DOCUMENTS_TAB_READY } from "../../../constants";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -25,7 +26,7 @@ const DetailsTabs = ({
     isContractOrAa = false
 }) => {
     const location = useLocation();
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
 
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;

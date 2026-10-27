@@ -49,5 +49,7 @@ class VersionAPI(MethodView):
             {
                 "version": self.get_api_version(),
                 "skip_cr_for_draft_planned": current_app.config.get("SKIP_CR_FOR_DRAFT_PLANNED", False),
+                "enable_modified_loe_edits": current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False),
+                "allow_past_obligate_by_dates": current_app.config.get("ALLOW_PAST_OBLIGATE_BY_DATES", False),
             }
         )

@@ -15,6 +15,7 @@ Each major directory has its own `CLAUDE.md` with detailed commands, architectur
 - **`backend/data_tools/CLAUDE.md`**: ETL and data import — load_data CLI, test fixtures, environment configs
 - **`frontend/CLAUDE.md`**: React frontend — commands, testing, RTK Query, component patterns
 - **`docs/TESTING.md`**: Testing philosophy and the test-type decision matrix — consult before adding any new test, at any layer
+- **`docs/REVIEW.md`**: Code review standards — severity levels, what blocks a merge, and when a review is done — follow it when reviewing any PR
 
 ## Data Model
 
@@ -31,14 +32,14 @@ All models have automatic audit history tracking via the event system.
 
 ## Fee Percentage Format Convention
 
-**CRITICAL**: Fee percentages are stored and passed as whole numbers throughout the stack (e.g., `5.0` = 5%, not `0.05`). The frontend `calculateTotal` helper in `frontend/src/helpers/agreement.helpers.js` divides by 100 internally — do NOT pre-divide.
+**CRITICAL**: Fee percentages are stored and passed as whole numbers throughout the stack (e.g., `5.0` = 5%, not `0.05`). The frontend `calculateAgreementTotal` helper in `frontend/src/helpers/agreement.helpers.js` divides by 100 internally — do NOT pre-divide.
 
 ```javascript
 // CORRECT
-const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT — results in 0.05% fee rate
-const fee = calculateTotal(budgetLines, 5.0 / 100);
+const total = calculateAgreementTotal(budgetLines, 5.0 / 100);
 ```
 
 ## Docker
@@ -121,6 +122,24 @@ pre-commit install --hook-type commit-msg
 
 - **Never add `Closes #NNN`, `Fixes #NNN`, or `Resolves #NNN`** to PR descriptions. The team's process requires additional review and QA steps before a story moves out of "in progress" — auto-closing on merge skips those steps.
 - Reference the ticket in the branch name only (e.g. `OPS-5931/feature-name`).
+
+## Code Review
+
+<!-- Summary of docs/REVIEW.md. Change both in the same PR; if they differ, docs/REVIEW.md wins. -->
+
+When reviewing a PR, read [`docs/REVIEW.md`](docs/REVIEW.md) first: it has the full rubric, the finding format and the risk tiers. If this summary and `docs/REVIEW.md` differ, `docs/REVIEW.md` wins. The core rules:
+
+- **Label every finding S0, S1, S2 or S3. Only S0 and S1 block a merge.**
+  - **S0:** data loss or corruption (including partial updates or imports that null or overwrite existing values, and wrong audit history), a security or authorization bypass (including missing ownership checks and workflow or approval rules enforced only in the browser), exposed secrets or personal data, wrong money math (computing or saving fees, budget line totals, CAN balances), or a broken migration.
+  - **S1:** a user-visible bug on a realistic path (a race on a slow network or a double click counts), a display-only money formatting error, the linked issue's acceptance criteria not met, an accessibility defect in new or changed UI (WCAG 2.1 AA is a contractual and ATO requirement), or a failing production build.
+  - **S2:** a bug that needs an edge case, a missing test, or slow-but-correct code (S1 if users hit timeouts on a realistic path). **S3:** style, refactor ideas, wrong comments or docstrings, copy or styling that doesn't mislead users. Neither S2 nor S3 blocks.
+  - If a tool uses its own severity scale (e.g. Critical/High/Medium/Low), also label each finding S0–S3; only the S0–S3 label decides blocking. Overview comments aren't findings; rate only their concrete issues.
+- **Tests are required for money math, authorization, migrations, workflow state and data writes.** A PR that changes them must include a test that actually exercises the change; a missing or ineffective one is S1.
+- **Scope exceptions:** for Renovate and other bot PRs only S0 blocks; for docs-only and tooling PRs (`.claude/`, `.mcp.json`, workflows) only S0 or a broken command, path or rule blocks.
+- **Only defects the PR introduces, makes reachable or makes worse can block.** Report older problems as `[Pre-existing S<n>]`; they never block.
+- **Every finding needs a concrete scenario** (inputs or state that produce the wrong result). A finding with no realistic scenario is S3 at most.
+- **Pick a severity by the outcome your scenario actually shows**, not the worst case it might reach.
+- **End an AI review with `Verdict: BLOCKING (n)` or `Verdict: NOT BLOCKING`**, and list at most 5 S2/S3 findings. Don't guess acceptance criteria you can't see.
 
 ## CI/CD
 

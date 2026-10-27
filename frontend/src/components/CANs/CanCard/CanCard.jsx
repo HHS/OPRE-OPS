@@ -7,6 +7,7 @@ import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 import { Link } from "react-router-dom";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { NO_DATA } from "../../../constants";
 
 /**
@@ -15,9 +16,10 @@ import { NO_DATA } from "../../../constants";
  * @param {Object} props - The props
  * @param {number} props.canId - The CAN id
  * @param {number} props.fiscalYear - The fiscal year
+ * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor[]} [props.ancestry] - Breadcrumb ancestry passed to the CAN (composed by the embedding page).
  * @returns {JSX.Element} - The CAN card
  */
-const CanCard = ({ canId, fiscalYear }) => {
+const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
     const [receivedExpectedActiveId, setReceivedExpectedActiveId] = React.useState(0);
     const [spendingAvailableActiveId, setSpendingAvailableActiveId] = React.useState(0);
 
@@ -80,10 +82,11 @@ const CanCard = ({ canId, fiscalYear }) => {
     return (
         <div
             data-cy={`can-card-${can.display_name}`}
-            className={style.container}
+            className={`ops-card ${style.container}`}
         >
             <Link
                 to={`/cans/${can.id}`}
+                state={buildTrailState(`/cans/${can.id}`, ancestry)}
                 className="text-no-underline text-ink"
             >
                 <dl className={`margin-0 ${style.leftMarginContainer}`}>

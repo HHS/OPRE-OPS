@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 // eslint-disable-next-line no-unused-vars
 const testAgreements = [
@@ -161,7 +161,7 @@ const addAgreement = (agreement) => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
         method: "POST",
-        url: "http://localhost:8080/api/v1/agreements/",
+        url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
         body: agreement,
         headers: {
             Authorization: bearer_token,

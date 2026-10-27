@@ -46,3 +46,11 @@ HOST_HEADER_PREFIX = "opre-ops-dev-app-backend."
 # Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
 # Enabled in dev for testing (overrides the default-OFF in default_settings.py).
 SKIP_CR_FOR_DRAFT_PLANNED = True
+
+# Record and list "Edits That Require a Contract Modification" on Awarded agreements (OPS-3072,
+# Modified LOE contract mod, slice 1). Enabled in dev for testing; left OFF in staging/prod
+# until the full modified-LOE flow ships.
+ENABLE_MODIFIED_LOE_EDITS = True
+
+# Allow today/past Obligate By dates on non-Draft budget lines (issue 6443); see default_settings.py to turn it off.
+ALLOW_PAST_OBLIGATE_BY_DATES = True

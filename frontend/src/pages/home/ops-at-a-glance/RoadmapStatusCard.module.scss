@@ -1,0 +1,8 @@
+// Caps the content-sized "In Progress" column at 1/3 so long items wrap instead of
+// squeezing the outer columns. !important beats `tablet:grid-col-auto`'s max-width: 100%,
+// which has equal specificity and loads after this module.
+@media (min-width: 40em) {
+    .inProgressColumn {
+        max-width: 33.333% !important;
+    }
+}

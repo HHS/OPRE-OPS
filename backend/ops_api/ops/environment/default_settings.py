@@ -98,6 +98,22 @@ RUNNING_IN_AZURE = "environment/azure" in (os.getenv("OPS_CONFIG") or "")
 # Default OFF everywhere so behavior is unchanged unless explicitly enabled.
 SKIP_CR_FOR_DRAFT_PLANNED = os.getenv("SKIP_CR_FOR_DRAFT_PLANNED", "false").lower() == "true"
 
+# When True, approved budget line change requests on an Awarded agreement are recorded as
+# "Edits That Require a Contract Modification" and listed on the Award & Modifications tab
+# (OPS-3072, Modified LOE contract mod, slice 1). Set per-environment via the
+# ENABLE_MODIFIED_LOE_EDITS env var. Default OFF everywhere so behavior is unchanged unless
+# explicitly enabled.
+ENABLE_MODIFIED_LOE_EDITS = os.getenv("ENABLE_MODIFIED_LOE_EDITS", "false").lower() == "true"
+
+# When True, a non-Draft budget line's Obligate By date (date_needed) may be today or in the
+# past for every user (issue 6443). The missing-date and within-Period-of-Performance rules still
+# apply. Default OFF. The ALLOW_PAST_OBLIGATE_BY_DATES env var sets it for local runs. Deployed
+# environments hard-code True in environment/azure/*.py; to turn it off there without a code change,
+# set FLASK_ALLOW_PAST_OBLIGATE_BY_DATES=false (lowercase false, or 0) on the backend container app
+# and restart it. from_prefixed_env parses the value as JSON, so "False" or "no" stays a truthy
+# string and leaves the feature on.
+ALLOW_PAST_OBLIGATE_BY_DATES = os.getenv("ALLOW_PAST_OBLIGATE_BY_DATES", "false").lower() == "true"
+
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"

@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+import { setupStore } from "../../../store";
 import PortfolioList from "./PortfolioList";
 import * as portfolioListHooks from "./PortfolioList.hooks";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../constants";
@@ -86,7 +86,7 @@ describe("PortfolioList", () => {
     ];
 
     const mockHookReturn = {
-        setSelectedFiscalYear: vi.fn(),
+        changeFiscalYear: vi.fn(),
         activeTab: "all",
         setActiveTab: vi.fn(),
         filters: {
@@ -108,18 +108,12 @@ describe("PortfolioList", () => {
         vi.clearAllMocks();
         mockNavigate.mockClear();
 
-        mockStore = configureStore({
-            reducer: {
-                userSlice: () => ({
-                    activeUser: { id: 1, email: "test@example.com" }
-                }),
-                alert: () => ({
-                    isActive: false,
-                    type: "",
-                    heading: "",
-                    message: "",
-                    redirectUrl: ""
-                })
+        // Use the real store shape so selectors reading the wrong slice fail here
+        mockStore = setupStore({
+            auth: {
+                isLoggedIn: true,
+                loginError: { hasError: false, loginErrorType: null },
+                activeUser: { id: 1, email: "test@example.com" }
             }
         });
 
@@ -153,6 +147,12 @@ describe("PortfolioList", () => {
         expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
         expect(screen.getByTestId("portfolio-tabs")).toBeInTheDocument();
         expect(screen.getByTestId("portfolio-table")).toBeInTheDocument();
+    });
+
+    it("passes the logged-in user's id to usePortfolioList for 'My Portfolios' filtering", () => {
+        renderWithProviders(<PortfolioList />);
+
+        expect(portfolioListHooks.usePortfolioList).toHaveBeenCalledWith(expect.objectContaining({ currentUserId: 1 }));
     });
 
     it("displays correct subtitle for 'all' tab", () => {

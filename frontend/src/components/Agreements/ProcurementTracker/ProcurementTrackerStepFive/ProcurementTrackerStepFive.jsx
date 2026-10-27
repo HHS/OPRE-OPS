@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
@@ -6,6 +5,7 @@ import Tooltip from "../../../UI/USWDS/Tooltip/Tooltip";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import StepNotesEditor from "../StepNotesEditor/StepNotesEditor";
+import useNavigateToApproval from "../useNavigateToApproval";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } from "../ProcurementTracker.constants";
@@ -23,6 +23,7 @@ import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } fro
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {number} agreementId - The agreement ID
+ * @property {string} [agreementName] - The agreement name, shown in the approval page's breadcrumb
  * @property {import("../../../../types/BudgetLineTypes").BudgetLine[] | undefined} [budgetLineItems] - Array of budget line items
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
@@ -40,12 +41,17 @@ const ProcurementTrackerStepFive = ({
     isActiveStep,
     authorizedUsers,
     agreementId,
+    agreementName,
     budgetLineItems,
     handleSetCompletedStepNumber,
     onDirtyChange = undefined,
     isReadOnly = false
 }) => {
-    const navigate = useNavigate();
+    const navigateToApproval = useNavigateToApproval({
+        agreementId,
+        agreementName,
+        approvalRoute: "pre-award-approval"
+    });
     const {
         isPreAwardComplete,
         setIsPreAwardComplete,
@@ -257,7 +263,7 @@ const ProcurementTrackerStepFive = ({
                                     <button
                                         type="button"
                                         className="usa-button usa-button--outline"
-                                        onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                        onClick={navigateToApproval}
                                         disabled={isRequestBtnDisabled}
                                         data-cy="request-pre-award-approval-btn"
                                     >

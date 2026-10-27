@@ -124,6 +124,15 @@ bun run format       # Format code (Prettier)
 - Tests are co-located with their components (`.test.jsx` files)
 - E2E tests use **Cypress** in `cypress/e2e/*.cy.js`
 
+## Paragraph Leading (USWDS Sass)
+
+USWDS styles are precompiled: edit `sass/uswds/*.scss`, then run `bun run uswds:update` and commit the regenerated `src/uswds/css/styles.css` (CI does not compile it).
+
+Default-size (16px) `<p>` inside `<main>` get a 24px line (`line-height: 1.5`) from a zero-specificity `:where()` rule at the bottom of `sass/uswds/_uswds-theme-custom-styles.scss`. It skips paragraphs that have a non-16px font-size utility or a `line-height-*` utility on themselves or an ancestor, and paragraphs inside cards, alerts, summary boxes, modals and tables. Any class set on the `<p>` itself still wins.
+
+- **New card component?** Add the `ops-card` marker class to its root, unless it renders through `RoundedBox`, which already carries it. Without it, card copy gets 24px leading.
+- **New `.font-Npx` class in `sass/uswds/styles.scss`?** Also add it to `$ops-p-resized`. USWDS `font-*` size utilities are picked up automatically.
+
 ## scrollToTop After Success Alerts
 
 Always call `scrollToTop()` after `setAlert({ type: "success", ... })` in action handlers that navigate away from the current page. This ensures the user sees the success alert banner at the top before the page transitions.
@@ -156,14 +165,14 @@ scrollToTop();
 
 ### Fee Percentage Storage
 
-**CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
+**CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateAgreementTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
 
 ```javascript
 // CORRECT
-const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0); // 5% fee rate
 
 // INCORRECT - do NOT pre-divide
-const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
+const total = calculateAgreementTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```
 
 ### Currency Display: Always Show Two-Digit Cents

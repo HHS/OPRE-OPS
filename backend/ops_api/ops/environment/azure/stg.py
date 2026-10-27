@@ -49,3 +49,6 @@ SUPER_USER = "SUPER_USER"
 # Skip Change Request for Draft->Planned status changes and in-Planned budget edits.
 # Enabled in staging for testing (overrides the default-OFF in default_settings.py).
 SKIP_CR_FOR_DRAFT_PLANNED = True
+
+# Allow today/past Obligate By dates on non-Draft budget lines (issue 6443); see default_settings.py to turn it off.
+ALLOW_PAST_OBLIGATE_BY_DATES = True

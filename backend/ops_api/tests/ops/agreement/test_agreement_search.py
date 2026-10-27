@@ -13,24 +13,24 @@ from models import (
     OpsEvent,
 )
 
-SEARCH_RESULT_KEYS = {"id", "name", "nick_name", "agreement_type", "odn"}
+SEARCH_RESULT_KEYS = {"id", "name", "nick_name", "agreement_type", "odn", "contract_number", "task_order_number"}
 
 
 @pytest.fixture
 def search_agreements(loaded_db):
     """One agreement of each type, with ZQX-prefixed values no seed data contains.
 
-    Values are deliberately cross-wired to prove only the ODN column for each type is searched:
-    the contract's task_order_number and contract_number, and the AA's po_number, carry tokens
-    that must never match.
+    Searched numbers: each type's ODN (contract po_number, AA task_order_number, grant
+    awarded_grant_number) plus a contract's contract_number and task_order_number. The AA's
+    po_number is deliberately not searched, so it carries a token that must never match.
     """
     contract = ContractAgreement(
         name="Zqx Contract Alpha",
         nick_name="ZQX-NICK-CONTRACT",
         agreement_type=AgreementType.CONTRACT,
         po_number="ZQX-PO-1001",
-        task_order_number="ZQX-WRONG-TO",
-        contract_number="ZQX-WRONG-CONTRACT-NO",
+        task_order_number="ZQX-CTO-1002",
+        contract_number="ZQX-CN-1003",
     )
     aa = AaAgreement(
         name="Zqx Assisted Beta",
@@ -112,8 +112,25 @@ class TestAgreementSearchMatching:
         assert response.json["data"][0]["odn"] is None
         assert response.json["data"][0]["agreement_type"] == "IAA"
 
-    @pytest.mark.parametrize("q", ["ZQX-WRONG-TO", "ZQX-WRONG-PO", "ZQX-WRONG-CONTRACT-NO"])
-    def test_other_identifier_columns_are_not_searched(self, auth_client, search_agreements, app_ctx, q):
+    def test_matches_contract_number_and_contract_task_order_number(self, auth_client, search_agreements, app_ctx):
+        for q, key in (("ZQX-CN-1003", "contract_number"), ("zqx-cto-1002", "task_order_number")):
+            response = _search(auth_client, q)
+            assert response.status_code == 200
+            assert response.json["count"] == 1
+            row = response.json["data"][0]
+            assert row["agreement_type"] == "CONTRACT"
+            assert row[key].lower() == q.lower()
+            # the ODN of a contract stays its PO number
+            assert row["odn"] == "ZQX-PO-1001"
+
+    def test_aa_and_grant_rows_have_no_contract_numbers(self, auth_client, search_agreements, app_ctx):
+        for q in ("ZQX-TO-2002", "ZQX-GRANT-3003"):
+            row = _search(auth_client, q).json["data"][0]
+            assert row["contract_number"] is None
+            assert row["task_order_number"] is None
+
+    @pytest.mark.parametrize("q", ["ZQX-WRONG-PO"])
+    def test_unsearched_identifier_columns_are_not_searched(self, auth_client, search_agreements, app_ctx, q):
         response = _search(auth_client, q)
         assert response.status_code == 200
         assert response.json["count"] == 0
@@ -267,6 +284,16 @@ class TestAgreementSearchValidation:
     def test_q_with_nul_character_is_400(self, auth_client, app_ctx):
         assert _search(auth_client, "ab\x00cd").status_code == 400
 
+    @pytest.mark.parametrize("param", ["odn", "name", "search", "nick_name", "contract_number", "foa"])
+    def test_nul_character_in_a_list_endpoint_text_filter_is_400(self, auth_client, app_ctx, param):
+        response = auth_client.get(url_for("api.agreements-group"), query_string={param: "ab\x00cd"})
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize("params", [{"limit": 0}, {"limit": 51}, {"offset": -1}])
+    def test_out_of_range_limit_or_offset_is_400(self, auth_client, app_ctx, params):
+        response = auth_client.get(url_for("api.agreements-search"), query_string={"q": "x", **params})
+        assert response.status_code == 400
+
     def test_offset_of_bigint_max_is_ok(self, auth_client, app_ctx):
         response = _search(auth_client, "x", offset=2**63 - 1)
         assert response.status_code == 200
@@ -326,3 +353,12 @@ class TestExactOdnFilterRegression:
     def test_exact_odn_never_matches_iaa_or_direct(self, auth_client, search_agreements, app_ctx):
         response = auth_client.get(url_for("api.agreements-group"), query_string={"odn": "Banana Direct"})
         assert response.json["count"] == 0
+
+
+def test_search_schema_rejects_null_limit_and_offset():
+    from ops_api.ops.schemas.agreements import AgreementSearchRequestSchema
+
+    schema = AgreementSearchRequestSchema()
+    assert "limit" in schema.validate({"q": "x", "limit": None})
+    assert "offset" in schema.validate({"q": "x", "offset": None})
+    assert schema.validate({"q": "x"}) == {}

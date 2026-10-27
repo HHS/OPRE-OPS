@@ -1,8 +1,10 @@
 import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
+    useGetVersionQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
     useLazyGetServicesComponentByIdQuery
@@ -43,6 +45,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { anyBudgetLinesByStatus } from "../review/ReviewAgreement.helpers";
 import { AgreementType } from "../agreements.constants";
 import { useIsUserSuperUser, useCanEditByRole } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -75,7 +78,7 @@ const AgreementBudgetLines = ({
     isPostPreAwardLocked = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
@@ -100,7 +103,16 @@ const AgreementBudgetLines = ({
         !isAwardInReview &&
         !isPostPreAwardLocked &&
         (isSuperUser || canRegularUserEdit);
-    const canRequestStatusChange = isAgreementEditable;
+    // On an Awarded agreement, Planned→Executing now requires a Contract Modification (OPS-3072),
+    // so the only status change left to offer here is Draft→Planned — disable the button outright
+    // when there's no Draft BLI left to transition. Only with the ENABLE_MODIFIED_LOE_EDITS
+    // capability on, and superusers bypass it, matching the backend. Shares the Review Agreement page's helper
+    // (which skips in-review BLIs) so this button can't lead to a page with both actions disabled.
+    const hasDraftBLI = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
+    const { data: versionData } = useGetVersionQuery();
+    const blocksPlannedToExecuting =
+        (versionData?.enable_modified_loe_edits ?? false) && isAgreementAwarded && !isSuperUser;
+    const canRequestStatusChange = isAgreementEditable && (!blocksPlannedToExecuting || hasDraftBLI);
     // Guards against reaching the edit wizard via URL param (?mode=edit) when the agreement isn't editable.
     const showEditWizard = isEditMode && isAgreementEditable;
     const filters = { agreementIds: [agreement?.id] };
@@ -123,6 +135,8 @@ const AgreementBudgetLines = ({
                 return EDIT_DISABLED_TOOLTIPS.postPreAwardLocked;
             case allBudgetLinesInReview:
                 return EDIT_DISABLED_TOOLTIPS.allBudgetLinesInReview;
+            case blocksPlannedToExecuting && !hasDraftBLI:
+                return EDIT_DISABLED_TOOLTIPS.awardedNoDraftBLIs;
             default:
                 return EDIT_DISABLED_TOOLTIPS.notTeamMemberBLStatus;
         }

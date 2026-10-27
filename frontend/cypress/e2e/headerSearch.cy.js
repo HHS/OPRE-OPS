@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 const addAgreement = (agreement) => {
     expect(localStorage.getItem("access_token")).to.exist;
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     return cy.request({
         method: "POST",
-        url: "http://localhost:8080/api/v1/agreements/",
+        url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
         body: agreement,
         headers: {
             Authorization: bearer_token,
@@ -20,7 +20,7 @@ const deleteAgreement = (agreementId) => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     cy.request({
         method: "DELETE",
-        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+        url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
         headers: {
             Authorization: bearer_token,
             Accept: "application/json"
@@ -103,6 +103,112 @@ describe("Header agreement search", () => {
 
             cy.contains("a", testAgreement.name).click();
             cy.url({ timeout: 10000 }).should("include", `/agreements/${agreementId}`);
+        });
+    });
+
+    it("finds a contract by its contract number and by its task order number", () => {
+        const uniqueId = Date.now();
+        addAgreement({
+            ...testAgreement,
+            contract_number: `E2E-CN-${uniqueId}`,
+            task_order_number: `E2E-TO-${uniqueId}`
+        }).then((response) => {
+            createdAgreementIds.push(response.body.id);
+            expect(response.status).to.eq(201);
+
+            cy.visit("/");
+            cy.get('[data-cy="header-search-input"]').type(`E2E-CN-${uniqueId}`);
+            cy.get('[data-cy="header-search-option"]', { timeout: 10000 })
+                .should("have.length", 1)
+                .and("contain.text", `Contract #: E2E-CN-${uniqueId}`);
+
+            cy.get('[data-cy="header-search-input"]').clear().type(`E2E-TO-${uniqueId}`);
+            cy.get('[data-cy="header-search-option"]', { timeout: 10000 })
+                .should("have.length", 1)
+                .and("contain.text", `Task order #: E2E-TO-${uniqueId}`);
+        });
+    });
+
+    it("shows a no-match message in the dropdown and on the results page", () => {
+        const noMatch = `E2E-NO-MATCH-${Date.now()}`;
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type(noMatch);
+
+        cy.get('[data-cy="header-search-no-results"]', { timeout: 10000 }).should("contain.text", noMatch);
+        cy.get('[data-cy="header-search-option"]').should("not.exist");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+
+        cy.get('[data-cy="header-search-input"]').type("{enter}");
+        cy.url({ timeout: 10000 }).should("include", "/search?q=");
+        cy.get('[data-cy="search-results-empty"]', { timeout: 10000 }).should("contain.text", noMatch);
+        cy.checkA11y(null, null, terminalLog);
+    });
+
+    it("lists several matches and opens the highlighted one with the keyboard", () => {
+        const prefix = `E2E Header Search Multi ${Date.now()}`;
+        cy.wrap(["A", "B"]).each((suffix) => {
+            addAgreement({
+                ...testAgreement,
+                name: `${prefix} ${suffix}`,
+                po_number: `E2E-HS-${suffix}-${Date.now()}`
+            }).then((response) => {
+                createdAgreementIds.push(response.body.id);
+                expect(response.status).to.eq(201);
+            });
+        });
+
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type(prefix);
+        cy.get('[data-cy="header-search-option"]', { timeout: 10000 }).should("have.length", 2);
+        cy.get('[data-cy="header-search-footer"]').should("contain.text", "2 results");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+
+        // Options are ordered by name, so the first row is "... A".
+        cy.get('[data-cy="header-search-input"]').type("{downArrow}{enter}");
+        cy.url({ timeout: 10000 }).should("match", /\/agreements\/\d+/);
+        cy.get('[data-cy="header-search-input"]').should("have.value", "");
+    });
+
+    it("shows an error message in the dropdown when the search request fails", () => {
+        cy.intercept("GET", "**/api/v1/agreements-search/**", { statusCode: 500, body: { error: "boom" } });
+        cy.visit("/");
+        cy.get('[data-cy="header-search-input"]').type("anything");
+
+        cy.get('[data-cy="header-search-error"]', { timeout: 10000 }).should("contain.text", "Search is unavailable");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+    });
+
+    it("explains what can be searched from the info icon", () => {
+        cy.visit("/");
+        cy.get('[data-cy="header-search-info-tip"]').should("not.exist");
+        cy.get('[data-cy="header-search-info"]').focus();
+        cy.get('[data-cy="header-search-info-tip"]')
+            .should("be.visible")
+            .and("contain.text", "You can search agreements by:")
+            .and("contain.text", "Purchase order (PO) #")
+            .and("contain.text", "Agreement title or nickname");
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+    });
+
+    it("keeps the info tip reachable by the pointer: its hover bridge touches the icon", () => {
+        cy.visit("/");
+        cy.get('[data-cy="header-search-info"]').trigger("mouseover");
+        cy.get('[data-cy="header-search-info-tip"]').then(($tip) => {
+            const tip = $tip[0];
+            const wrapper = tip.parentElement.getBoundingClientRect();
+            const tipRect = tip.getBoundingClientRect();
+            const bridge = getComputedStyle(tip, "::before");
+            // The pseudo-element is positioned from the tip's padding edge (inside its border).
+            const border = parseFloat(getComputedStyle(tip).borderTopWidth);
+            const bridgeTop = tipRect.top + border + parseFloat(bridge.top);
+            const bridgeBottom = bridgeTop + parseFloat(bridge.height);
+            // Allow sub-pixel rounding, but no real gap on either side of the bridge.
+            expect(bridgeTop).to.be.at.most(wrapper.bottom + 0.1);
+            expect(bridgeBottom).to.be.at.least(tipRect.top - 0.1);
         });
     });
 });

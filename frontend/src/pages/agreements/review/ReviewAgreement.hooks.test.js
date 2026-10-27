@@ -12,6 +12,7 @@ const useGetServicesComponentsListQueryMock = vi.fn();
 const useUpdateBudgetLineItemMutationMock = vi.fn();
 const useGetVersionQueryMock = vi.fn();
 const getUserFullNameFromIdMock = vi.fn();
+const useIsUserSuperUserMock = vi.fn();
 // Stable module-level reference so the grantNumbers decoration effect doesn't loop.
 const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 
@@ -40,7 +41,8 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 
 vi.mock("../../../hooks/user.hooks", () => ({
     __esModule: true,
-    default: (...args) => getUserFullNameFromIdMock(...args)
+    default: (...args) => getUserFullNameFromIdMock(...args),
+    useIsUserSuperUser: () => useIsUserSuperUserMock()
 }));
 
 const futureDate = () => {
@@ -98,6 +100,7 @@ const makeAgreement = (overrides = {}) => ({
 describe("useReviewAgreement", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        useIsUserSuperUserMock.mockReturnValue(false);
 
         useGetAgreementByIdQueryMock.mockReturnValue({
             isSuccess: true,
@@ -161,6 +164,33 @@ describe("useReviewAgreement", () => {
         expect(result.current.changeTo.status).toEqual({ new: "PLANNED", old: "DRAFT" });
     });
 
+    it("keeps the selected action's actionable rows when budget line data re-initializes", async () => {
+        const { result, rerender } = renderHook(() => useReviewAgreement(77));
+
+        await waitFor(() => {
+            expect(result.current.groupedBudgetLinesByServicesComponent).toHaveLength(2);
+        });
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_PLANNED_TO_EXECUTING);
+        });
+
+        // a late-arriving query result (e.g. grant numbers) re-runs the init effect
+        useGetServicesComponentsListQueryMock.mockReturnValue({
+            data: [
+                { id: 1, number: 1 },
+                { id: 2, number: 2, sub_component: "A" }
+            ]
+        });
+        rerender();
+
+        const plannedGroup = result.current.groupedBudgetLinesByServicesComponent.find(
+            (group) => group.servicesComponentNumber === 2
+        );
+        expect(plannedGroup.budgetLines[0]).toMatchObject({ id: 202, actionable: true, selected: false });
+        expect(plannedGroup.budgetLines[1]).toMatchObject({ id: 303, actionable: false, selected: false });
+    });
+
     it("aggregates agreement and budget line validation errors after selecting a row", async () => {
         useGetAgreementByIdQueryMock.mockReturnValue({
             isSuccess: true,
@@ -199,6 +229,56 @@ describe("useReviewAgreement", () => {
         expect(result.current.pageErrors).toHaveProperty("can");
         expect(result.current.hasBLIError).toBe(true);
         expect(result.current.isSubmissionReady).toBe(true);
+    });
+
+    describe("ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+        const selectPastDraft = async (allowPastObligateByDates) => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", allow_past_obligate_by_dates: allowPastObligateByDates },
+                isSuccess: true
+            });
+            useGetAgreementByIdQueryMock.mockReturnValue({
+                isSuccess: true,
+                data: makeAgreement({
+                    budget_line_items: [
+                        {
+                            id: 101,
+                            amount: 1500,
+                            can_id: 5,
+                            services_component_id: 1,
+                            date_needed: "2020-06-21",
+                            status: "DRAFT",
+                            in_review: false
+                        }
+                    ]
+                }),
+                error: null,
+                isLoading: false
+            });
+            const view = renderHook(() => useReviewAgreement(77));
+            await waitFor(() =>
+                expect(view.result.current.groupedBudgetLinesByServicesComponent.length).toBeGreaterThan(0)
+            );
+            act(() => {
+                view.result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+                view.result.current.handleSelectBLI(101);
+            });
+            return view;
+        };
+
+        it("flags a past Obligate By date when the flag is off", async () => {
+            const { result } = await selectPastDraft(false);
+
+            await waitFor(() => expect(result.current.hasBLIError).toBe(true));
+            expect(result.current.pageErrors).toHaveProperty("date_needed");
+        });
+
+        it("does not flag a past Obligate By date when the flag is on", async () => {
+            const { result } = await selectPastDraft(true);
+
+            await waitFor(() => expect(result.current.isSubmissionReady).toBe(true));
+            expect(result.current.hasBLIError).toBe(false);
+        });
     });
 
     it("shows a single POP-range message no matter how many BLs violate it", async () => {
@@ -511,6 +591,135 @@ describe("useReviewAgreement", () => {
         // Must NOT tell the user the change went to review.
         const alertArg = setAlertMock.mock.calls.at(-1)[0];
         expect(alertArg.message).not.toMatch(/Division Director/i);
+    });
+
+    // OPS-3072: Draft→Planned on an Awarded agreement requires a contract modification.
+    // OPS-3072: Planned→Executing on an Awarded agreement requires a Contract Modification, so
+    // it's blocked -- only with the capability ON, and never for superusers (matching the backend).
+    it.each([
+        [true, true, false, true],
+        [true, false, false, false],
+        [false, true, false, false],
+        [true, true, true, false]
+    ])(
+        "blocksPlannedToExecuting when awarded=%s, capability=%s, superuser=%s is %s",
+        (isAwarded, capabilityOn, isSuperUser, expected) => {
+            useGetAgreementByIdQueryMock.mockReturnValue({
+                isSuccess: true,
+                data: makeAgreement({ is_awarded: isAwarded }),
+                error: null,
+                isLoading: false
+            });
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", skip_cr_for_draft_planned: false, enable_modified_loe_edits: capabilityOn },
+                isSuccess: true
+            });
+            useIsUserSuperUserMock.mockReturnValue(isSuperUser);
+
+            const { result } = renderHook(() => useReviewAgreement(77));
+
+            expect(result.current.blocksPlannedToExecuting).toBe(expected);
+        }
+    );
+
+    it("confirms a contract modification before sending Draft→Planned on an Awarded agreement", async () => {
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({ is_awarded: true }),
+            error: null,
+            isLoading: false
+        });
+        useGetVersionQueryMock.mockReturnValue({
+            data: { version: "1.0.0", skip_cr_for_draft_planned: true, enable_modified_loe_edits: true },
+            isSuccess: true
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+        expect(result.current.submitButtonText).toBe("Send to Approval");
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(true);
+        expect(result.current.modalProps.heading).toContain("will require a contract modification");
+        expect(updateBudgetLineItemMock).not.toHaveBeenCalled();
+
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalledWith({
+                id: 101,
+                data: { status: "PLANNED", requestor_notes: "" }
+            });
+        });
+        await waitFor(() => {
+            expect(setAlertMock).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "success", heading: "Changes Sent to Approval" })
+            );
+        });
+    });
+
+    it("sends Draft→Planned on an Awarded agreement without the modal when the capability is OFF", async () => {
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            isSuccess: true,
+            data: makeAgreement({ is_awarded: true }),
+            error: null,
+            isLoading: false
+        });
+
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(false);
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+        });
+    });
+
+    it("sends Draft→Planned without the contract modification modal when the agreement is not Awarded", async () => {
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+            result.current.handleSelectBLI(101);
+        });
+
+        await waitFor(() => {
+            expect(result.current.selectedBudgetLines.map((item) => item.id)).toEqual([101]);
+        });
+
+        act(() => {
+            result.current.handleSendToApproval();
+        });
+
+        expect(result.current.showModal).toBe(false);
+        await waitFor(() => {
+            expect(updateBudgetLineItemMock).toHaveBeenCalled();
+        });
     });
 
     it("opens the cancel modal and navigates on confirm", async () => {

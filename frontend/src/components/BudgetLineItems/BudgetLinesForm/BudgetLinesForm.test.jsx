@@ -234,6 +234,39 @@ describe("BudgetLinesForm Validation Integration", () => {
         });
     });
 
+    describe("ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+        const createRegularUserStore = () =>
+            createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }], false);
+        const getMessages = () => JSON.parse(screen.getByTestId("date-picker").getAttribute("data-messages"));
+
+        it("shows the future-date error for a past date when the flag is off", () => {
+            render(
+                <Provider store={createRegularUserStore()}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        needByDate="01/01/2020"
+                    />
+                </Provider>
+            );
+
+            expect(getMessages()).toContain("Date must be in the future");
+        });
+
+        it("does not show the future-date error for a past date when the flag is on", () => {
+            render(
+                <Provider store={createRegularUserStore()}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        needByDate="01/01/2020"
+                        allowPastObligateByDates={true}
+                    />
+                </Provider>
+            );
+
+            expect(getMessages()).not.toContain("Date must be in the future");
+        });
+    });
+
     describe("SUPER_USER Validation Bypass", () => {
         it("should bypass validation for SUPER_USER with invalid data", () => {
             const superUserStore = createMockStore([{ id: 7, name: USER_ROLES.SUPER_USER, is_superuser: true }], true);

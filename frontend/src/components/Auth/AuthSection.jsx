@@ -173,7 +173,8 @@ const AuthSection = () => {
                         >
                             <span style={{ fontSize: "14px" }}>Sign-Out</span>
                         </button>
-                        <div className="padding-right-205">
+                        {/* Half the width gap between the 1.25rem bell and the 1.5rem search info icon below, so the two stay centered on each other at any text size */}
+                        <div style={{ paddingRight: "0.125rem" }}>
                             <NotificationCenter user={activeUser} />
                         </div>
                     </div>

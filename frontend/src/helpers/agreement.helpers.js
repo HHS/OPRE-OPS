@@ -1,10 +1,9 @@
 import { omit } from "lodash";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
-import { dateToYearMonthDay } from "../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../constants";
 import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
-import { convertCodeForDisplay } from "./utils";
+import { convertCodeForDisplay, formatDate } from "./utils";
 
 export const PARTNER_AGREEMENT_TYPES = [AGREEMENT_TYPES.AA, AGREEMENT_TYPES.IAA];
 export const AGREEMENT_TYPE_ORDER = [
@@ -266,9 +265,9 @@ export const formatPeriodOfPerformance = (startDate, endDate) => {
     if (!startDate || !endDate) {
         return NO_DATA;
     }
-    const start = dateToYearMonthDay(startDate);
-    const end = dateToYearMonthDay(endDate);
-    return `${start.month}/${start.day}/${start.year} - ${end.month}/${end.day}/${end.year}`;
+    const start = formatDate(new Date(startDate + "T00:00:00Z"));
+    const end = formatDate(new Date(endDate + "T00:00:00Z"));
+    return `${start} - ${end}`;
 };
 
 // Mapping of AgreementType to the set of visible AgreementFields
@@ -292,6 +291,7 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
+        AgreementFields.PeriodOfPerformance,
         AgreementFields.ContractType,
         AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,
@@ -440,8 +440,16 @@ export const EDIT_DISABLED_TOOLTIPS = {
         "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time",
     awardInReview: "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time",
     postPreAwardLocked: "This agreement has completed Pre-Award Approval and is locked from further edits",
-    allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes"
+    allBudgetLinesInReview: "Budget lines In Review Status cannot be sent for status changes",
+    awardedNoDraftBLIs: "Awarded agreements require a Contract Modification to execute Planned Budget Lines"
 };
+
+/**
+ * Heading for the confirmation shown before sending edits on an Awarded agreement to approval,
+ * when they will require a contract modification (OPS-3072). Shared by every save path.
+ */
+export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
+    "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
 
 /**
  * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.
