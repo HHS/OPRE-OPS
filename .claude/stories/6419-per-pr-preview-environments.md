@@ -1,6 +1,6 @@
 ---
 issue: 6419
-branch: OPS-6419/pr-preview-environments
+branch: OPS-6419/preview-router
 ---
 
 # DevEx: Per-PR ephemeral preview environments
@@ -25,61 +25,86 @@ Let any same-repo PR labeled `preview` get its own temporary full-stack deployme
 - [ ] A nightly reaper removes previews for closed PRs, unlabeled PRs, and PRs inactive past the TTL (3–5 days), and leaves healthy live previews alone
 - [ ] dev and staging ingress (which share the same App Gateway) are never changed by any preview workflow
 
+### ACs narrowed for option (a)
+
+The team chose a wildcard listener plus a preview router ([ADR 032](../../docs/adr/032-pr-preview-environments.md)) instead of per-PR gateway objects. The AC checkboxes above stay verbatim from the issue. Until the issue is updated, these four are **narrowed** as follows:
+
+- **AC3 (request path):** App Gateway (WAF) → the wildcard listener → the preview router → that PR's internal Container Apps. `/api`, `/auth` and `/documents` go to the PR's backend; everything else goes to its frontend.
+- **AC8 (teardown):** removing the label or closing the PR deletes the PR's container apps and database, and its URL stops serving the preview (a 404 page). There are no per-PR gateway objects or DNS records to delete.
+- **AC11 (cap):** at most 8 previews run at once. A PR over the cap gets a comment explaining why, and nothing is deployed for it. Its hostname still resolves (wildcard DNS) but returns a 404.
+- **AC13 (dev/staging untouched):** apart from the one-time wildcard listener and DNS change made in Terraform, no preview workflow changes the shared App Gateway or DNS. If the router fails, only previews go down.
+
 ## Technical Details
 
 ### Approach
 
-Follow the issue's increment plan (0–7). Each PR gets Azure Container Apps in `opre-ops-dev-app-rg` behind the shared dev/staging App Gateway. The gateway and DNS are changed only through one declarative reconcile script (`appgw_reconcile.py`): a single read-modify-write PUT that touches only `pr<N>-*` objects, has `--dry-run`, and fails closed on any other diff.
+Option (a) from [ADR 032](../../docs/adr/032-pr-preview-environments.md):
 
-Decisions from planning:
-- **Reseed (AC6):** a `workflow_dispatch` trigger on `preview_create.yml`, with `pr_number` and `reseed` inputs and a same-repo check
-- **TTL (AC12):** 3 days since the PR head commit's last push
-- **First label vs. later push (AC5):** detect by whether `ops_pr_<N>` exists, which stays idempotent after a partial failure
-- **Cap and AC13 safety:** a single global `concurrency:` group shared by create, destroy and reap, since gateway PUTs have no ETag guard
-- **Fork safety (AC10):** use `pull_request`, not `pull_request_target`, plus an explicit job-level `if:` that the head repo is this repo
-- **Backend config:** the ACA backend sets `OPS_CONFIG` to `preview.py`. `preview.py` reads these from env vars: `OPS_FRONTEND_URL` (also drives CORS), `HOST_HEADER_PREFIX`, and the FakeAuth `redirect_uri`.
+- DevOps adds one Terraform-managed wildcard listener for `*.ops.opre.acf.gov`, plus a wildcard DNS record. It points at the preview router container app, which DevOps also defines in Terraform.
+- The router (`preview/router/`) reads `x-original-host` and proxies to `opre-ops-pr<N>-app-{frontend,backend}.<ACA domain>`. It sends `Host: <target>:443` so `check_csrf` passes.
+- Each PR's apps and database are managed by the workflows.
+
+Delivery:
+
+| Part | Status | Contents |
+|---|---|---|
+| Part 1 | Merged (PR 6448) | `preview.py`, `preview_seed.sh`, startup prefix check, frontend backend-domain fallback |
+| Part 2, PR A (`OPS-6419/preview-backend-fixes`) | In progress | Pool 2 + 1 with a 10s timeout, a `HEALTH_CHECK_AUTH_SERVICES` flag (off on previews), and a startup wiring test |
+| Part 2, PR B (this branch) | In progress | The router image and its build/smoke-test workflow, ADR 032, this story update |
+| Part 3 | Blocked on DevOps | The create, destroy and reap workflows, plus the docs |
+
+Decisions so far:
+
+- **Reseed (AC6):** a `workflow_dispatch` trigger on `preview_create.yml`, with `pr_number` and `reseed` inputs and a same-repo check.
+- **First label vs. later push (AC5):** `preview_seed.sh ensure` checks a "seed finished" marker on the database.
+- **Fork safety (AC10):** `pull_request`, not `pull_request_target`, plus a job-level check that the PR's head repo is this repo.
+- **Database:** one B1ms preview server (35 usable connections). Each preview's pool is 2 + 1, so 8 previews plus jobs fit.
 
 ### Key Files
 
-- `frontend/src/helpers/backend.js` (+ new `frontend/src/helpers/backend.test.js`)
-- `frontend/Dockerfile.azure` (each PR gets its own frontend build with `VITE_BACKEND_DOMAIN=https://pr-<N>.ops.opre.acf.gov`, reusing `MODE=dev`)
-- `backend/ops_api/ops/environment/azure/preview.py`
-- `backend/ops_api/tests/ops/test_preview_config.py` (DB-free `check_csrf` + preview config tests)
-- `backend/data_tools/scripts/preview_seed.sh` (wraps `initial_data.sh` / `upgrade_schema.sh` / `load_data.sh`)
-- `backend/data_tools/environment/` (verify whether a preview config is needed)
-- `.github/scripts/preview_bootstrap.sh`, `.github/scripts/appgw_reconcile.py`, `.github/scripts/tests/`, `.github/scripts/README.md`
-- `.github/workflows/preview_create.yml`, `preview_destroy.yml`, `preview_reap.yml`
-- `.github/workflows/unit_test_reusable.yml` (add a pytest step for `.github/scripts/tests/`)
-- `docs/adr/032-pr-preview-environments.md`, `docs/developers/preview-environments.md`, `CLAUDE.md`, `README.md`
+- **Router:**
+  - `preview/router/` (`nginx.conf.template`, `docker-entrypoint.sh`, `Dockerfile`, `README.md`)
+  - `.github/workflows/preview_router_build.yml`
+- **Backend:**
+  - `backend/ops_api/ops/environment/azure/preview.py`
+  - `backend/ops_api/ops/utils/health_check.py`
+  - `backend/data_tools/scripts/preview_seed.sh`
+- **Part 3 workflows:** `.github/workflows/preview_create.yml`, `preview_destroy.yml`, `preview_reap.yml`
+- **Docs:**
+  - `docs/adr/032-pr-preview-environments.md`
+  - `docs/developers/preview-environments.md` (part 3)
+  - the `CLAUDE.md` CI/CD section and the `README.md` Deployment section
 
 ### Testing Strategy
 
 Per `docs/TESTING.md`: test at the lowest level, and skip config, glue and generated artifacts.
 
-- **Unit (Vitest), `backend.test.js`:** the precedence chain `__RUNTIME_CONFIG__` → `VITE_BACKEND_DOMAIN` → `https://localhost:8000`. `BACKEND_DOMAIN` is a module-level const, so each case uses `vi.resetModules()` plus `vi.stubEnv` and a dynamic import.
-- **Backend unit (pytest), `test_preview_config.py`:**
-  - The preview Host/Referer pair passes `check_csrf`, and a FakeAuth write succeeds.
-  - A Referer from another PR is rejected.
-  - pr12 vs pr123: `check_csrf` uses `startswith`, so the prefix must keep its trailing delimiter, and the test asserts a pr123 host is rejected for pr12.
-- **Unit (pytest), `.github/scripts/tests/`:** cover `appgw_reconcile.py` with fixture gateway and DNS JSON, plus a new CI step.
-  - Adding PR N creates exactly the `pr<N>-*` objects, and removing it deletes only those.
-  - Re-running is idempotent and issues no PUT.
-  - Removing pr12 leaves `pr123-*` alone.
-  - Fail closed on any non-`pr<N>-` change, a priority collision, going over the cap, or malformed state.
-  - `--dry-run` never calls PUT.
-- **Shell:** no bats. The repo has no shell test framework. The `preview_seed.sh` guard is one anchored regex, `^ops_pr_[1-9][0-9]*$`, checked before any drop.
-- **Not tested:** the `preview.py` constants, the workflow YAML, `preview_bootstrap.sh`, and docs.
-- **Manual verification on a live preview:** every workflow-level AC (deploy and comment, own images, WAF path, DB isolation, seed then migrate, reseed, teardown, other labels do nothing, forks, cap, reaper, dev/staging unchanged). For dev/staging, also check the reconcile dry-run diff in the CI logs.
+- **Backend unit (pytest, no DB):**
+  - `test_preview_config.py`: the preview Host and Referer pair passes `check_csrf`; another PR's Host or Referer is rejected; the fakeauth client is reused from dev.
+  - `test_api_helpers.py`: the prefix must end in `.`.
+  - PR A adds the health-check flag tests and the `create_app` wiring test.
+- **Router:**
+  - The image build runs `nginx -t`, and hadolint runs in pre-commit.
+  - The CI smoke test checks `/healthz`, the 404 guard for invalid hosts, and the backend/frontend split, using the access log's `target=` field against an unresolvable domain.
+  - TLS, the resolver and CSRF through the router are verified on the first real preview, using the checklist in `preview/router/README.md`.
+- **Workflow-level ACs:** verified by hand on a live preview once part 3 lands.
 - **No E2E:** this isn't a critical user journey, and E2E runs against docker-compose, not Azure.
 
 ### Constraints
 
-- The App Gateway serves **both dev and staging**. Every change is a full PUT (3–8 minutes), and concurrent PUTs can silently lose changes. Only the reconcile script touches it, and only under the global concurrency lock.
-- Gateway/ACA must forward a Host header that ends in `:443` and starts with the preview backend prefix.
-- Blocked on Increment 0 DevOps prerequisites: SP permissions, the preview Postgres server, secrets, and the `preview` label.
-- Open questions to settle before Increments 4–5:
-  - Can the shared probe/http-settings use a host-name pairing?
-  - Does the gateway PUT honour `If-Match`?
-  - How do `az containerapp job start` overrides behave?
-  - Can `psqladmin` force-drop databases owned by `ops`?
-- Previews have limits: FakeAuth only; no `/storybook` or `/docs/*`; no document upload until the managed identity lands; amending an applied migration needs a manual reseed.
+- **The shared App Gateway is managed by Terraform.** Previews must never change it after the one-time wildcard change.
+- **Blocked on DevOps (Increment 0):**
+  - the wildcard listener (priority after dev and staging, plus IPv6) and DNS records
+  - the router container app
+  - the preview Postgres server with `GRANT ops TO psqladmin`
+  - the two secrets
+  - the deploy identity: a narrow OIDC identity, ideally on its own resource group
+  - making the GHCR package pullable
+- **Carried into part 3, from the reviews:**
+  - **Locking:** one lock per PR, plus a short lock only for claiming one of the 8 slots. Not a single global concurrency group, which can drop pending runs.
+  - **Connections:** a per-database `CONNECTION LIMIT`, one backend replica per preview, and DB jobs run one at a time.
+  - **TTL:** based on activity, not just the last commit, with a warning comment before teardown.
+  - **Reaper:** finds orphans from Azure resources (`opre-ops-pr*` apps, `ops_pr_*` databases), not from the PR list.
+  - **Health check:** after each deploy, assert `db_conn_is_ok` in `/api/v1/health/`. The gateway only probes the router.
+  - **QA-facing:** one PR comment updated as status changes (URL, commit, status, last seeded); the list of FakeAuth roles; what happens at the cap; how to trigger a reseed; the known limits.
+- **Preview limits:** FakeAuth only, no `/storybook` or `/docs/*`, no document upload until the managed identity lands, and changing an already-applied migration needs a manual reseed.
