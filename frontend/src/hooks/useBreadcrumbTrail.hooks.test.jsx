@@ -100,6 +100,20 @@ describe("useAncestryForChildren", () => {
         );
         expect(result.current).toEqual([portfolios, portfolioA, { label: "CAN 1", to: "/cans/1" }]);
     });
+
+    it("starts at the fallback crumb instead of the carried trail when keepTrail is false", () => {
+        const { result } = renderAt(
+            () =>
+                useAncestryForChildren({
+                    ownCrumb: { label: "CAN 1", to: "/cans/1" },
+                    fallbackCrumb,
+                    keepTrail: false
+                }),
+            "/cans/1/spending",
+            { targetPath: "/cans/1", ancestors: [portfolios, portfolioA] }
+        );
+        expect(result.current).toEqual([fallbackCrumb, { label: "CAN 1", to: "/cans/1" }]);
+    });
 });
 
 describe("useTrailNavigate", () => {

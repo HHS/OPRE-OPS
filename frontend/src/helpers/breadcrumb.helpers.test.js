@@ -6,6 +6,7 @@ import {
     LIST_CRUMBS,
     resourceBasePath,
     trailFor,
+    trailIncludesList,
     trailMatchesPath,
     truncateCrumbLabel,
     withListQuery
@@ -89,6 +90,19 @@ describe("resourceBasePath", () => {
         expect(resourceBasePath("/agreements/review/5/edit?returnTo=x")).toBe("/agreements/5");
         expect(resourceBasePath("/agreements/approve/5?type=status-change")).toBe("/agreements/5");
         expect(resourceBasePath("/agreements/create")).toBe("/agreements/create");
+    });
+});
+
+describe("trailIncludesList", () => {
+    it("finds a list crumb in the trail, whatever query it carries", () => {
+        const trail = { targetPath: "/cans/1", ancestors: [{ label: "Projects", to: "/projects?filter=all" }] };
+        expect(trailIncludesList(trail, LIST_CRUMBS.projects)).toBe(true);
+    });
+
+    it("is false when the list is not in the trail, or there is no trail", () => {
+        const trail = { targetPath: "/cans/1", ancestors: [portfolios, { label: "Portfolio A", to: "/portfolios/3" }] };
+        expect(trailIncludesList(trail, LIST_CRUMBS.projects)).toBe(false);
+        expect(trailIncludesList(null, LIST_CRUMBS.projects)).toBe(false);
     });
 });
 

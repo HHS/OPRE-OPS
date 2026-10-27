@@ -120,6 +120,17 @@ export const withListQuery = (listCrumb, { pathname, search = "" }) =>
     pathname === listCrumb.to ? { ...listCrumb, to: `${listCrumb.to}${search}` } : listCrumb;
 
 /**
+ * Whether a trail passes through a list page (e.g. a CAN reached via the
+ * Projects list), whatever tab or query that list crumb carries.
+ *
+ * @param {BreadcrumbTrail | null | undefined} trail
+ * @param {BreadcrumbAncestor} listCrumb - A `LIST_CRUMBS` entry.
+ * @returns {boolean}
+ */
+export const trailIncludesList = (trail, listCrumb) =>
+    Boolean(trail?.ancestors.some((ancestor) => ancestor.to.split("?")[0] === listCrumb.to));
+
+/**
  * Decide whether a trail applies to the current location.
  *
  * Matches when the current pathname belongs to the same resource as the

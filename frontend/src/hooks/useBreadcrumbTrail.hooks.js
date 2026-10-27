@@ -67,6 +67,10 @@ export const useTrailNavigate = () => {
  * carried trail's ancestors (or `fallbackCrumb` when there is none) plus the
  * page's own crumb.
  *
+ * Pass `keepTrail: false` to start the children's trail at `fallbackCrumb`
+ * even when a trail was carried here, for pages whose children don't belong
+ * to the carried context.
+ *
  * The own crumb links to the current tab (pathname), with `?fy=` when a
  * `fiscalYear` is given, so following it back restores both; pass `to` to
  * link elsewhere.
@@ -74,13 +78,15 @@ export const useTrailNavigate = () => {
  * @param {Object} params
  * @param {{ label: string, to?: string, fiscalYear?: number | string | null }} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
+ * @param {boolean} [params.keepTrail] - Whether to build on the carried trail (default true).
  * @returns {BreadcrumbAncestor[]}
  */
-export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
+export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb, keepTrail = true }) => {
     const { pathname } = useLocation();
     const trail = useBreadcrumbTrail();
     const to = ownCrumb.to ?? (ownCrumb.fiscalYear ? `${pathname}?fy=${ownCrumb.fiscalYear}` : pathname);
-    return [...(trail?.ancestors ?? [fallbackCrumb]), { label: ownCrumb.label, to }];
+    const ancestors = keepTrail && trail ? trail.ancestors : [fallbackCrumb];
+    return [...ancestors, { label: ownCrumb.label, to }];
 };
 
 /**
