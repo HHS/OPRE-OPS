@@ -1,6 +1,30 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import icons from "../../../uswds/img/sprite.svg";
+import Tooltip from "../../UI/USWDS/Tooltip";
+
+/**
+ * Shrinks a wrapped tooltip to hug its longest line. CSS can balance the line lengths,
+ * but a wrapped box stays at its max width, which leaves empty space on the right.
+ * @param {Element | null} tooltipBody - The USWDS .usa-tooltip__body element.
+ */
+const fitTooltipToText = (tooltipBody) => {
+    if (!tooltipBody) return;
+    tooltipBody.style.width = "";
+    const range = document.createRange();
+    range.selectNodeContents(tooltipBody);
+    const lines = [...range.getClientRects()];
+    if (lines.length === 0) return;
+    const textWidth = Math.max(...lines.map((r) => r.right)) - Math.min(...lines.map((r) => r.left));
+    const { paddingLeft, paddingRight } = getComputedStyle(tooltipBody);
+    const padding = (parseFloat(paddingLeft) || 0) + (parseFloat(paddingRight) || 0);
+    tooltipBody.style.width = `${Math.ceil(textWidth + padding)}px`;
+};
+
+const handleShowTitleTooltip = (event) => {
+    const wrapper = event.currentTarget;
+    requestAnimationFrame(() => fitTooltipToText(wrapper.querySelector(".usa-tooltip__body")));
+};
 
 /**
  * The TablePageLayout component is a layout component that displays a title and subtitle
@@ -19,6 +43,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {React.ReactNode} [props.TableSection] - The table to display.
  * @param {React.ReactNode} props.TabsSection - The tabs to display.
  * @param {string} props.title - The title to display.
+ * @param {string} [props.titleTooltip] - Definition shown in a tooltip from an info icon next to the title - optional.
  * @returns {JSX.Element} - The rendered component.
  */
 export const TablePageLayout = ({
@@ -33,12 +58,45 @@ export const TablePageLayout = ({
     SummaryCardsSection,
     TableSection = null,
     TabsSection,
-    title
+    title,
+    titleTooltip
 }) => {
     return (
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
-                <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
+                <div className="display-flex flex-align-start">
+                    <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
+                    {titleTooltip && (
+                        <span
+                            className="display-flex"
+                            onMouseEnter={handleShowTitleTooltip}
+                            onFocus={handleShowTitleTooltip}
+                        >
+                            <Tooltip
+                                label={titleTooltip}
+                                position="right"
+                                className="title-info-tooltip display-flex margin-left-05"
+                            >
+                                {/* Button stays 24x24px to meet the WCAG 2.2 minimum target size; the icon inside is 20px */}
+                                <button
+                                    type="button"
+                                    className="usa-button usa-button--unstyled display-flex flex-align-center flex-justify-center height-3 width-3"
+                                    aria-label={`About ${title}`}
+                                    data-cy="title-info-icon"
+                                >
+                                    <svg
+                                        className="usa-icon height-205 width-205 text-brand-primary"
+                                        aria-hidden="true"
+                                        focusable="false"
+                                        role="img"
+                                    >
+                                        <use href={`${icons}#info_outline`}></use>
+                                    </svg>
+                                </button>
+                            </Tooltip>
+                        </span>
+                    )}
+                </div>
                 {buttonLink && buttonText && (
                     <Link
                         to={buttonLink}
@@ -85,5 +143,6 @@ TablePageLayout.propTypes = {
     SummaryCardsSection: PropTypes.node,
     TableSection: PropTypes.node,
     TabsSection: PropTypes.node.isRequired,
-    title: PropTypes.string.isRequired
+    title: PropTypes.string.isRequired,
+    titleTooltip: PropTypes.string
 };
