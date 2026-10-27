@@ -118,4 +118,7 @@ ALLOW_PAST_OBLIGATE_BY_DATES = os.getenv("ALLOW_PAST_OBLIGATE_BY_DATES", "false"
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"
 
+# Whether /api/v1/health/ checks the HHS AMS OAuth server.
+HEALTH_CHECK_AUTH_SERVICES = True
+
 SUPER_USER = "SUPER_USER"
