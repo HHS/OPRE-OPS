@@ -552,9 +552,17 @@ describe("AgreementNameComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
-        const secondaryLines = container.querySelectorAll(".text-base-dark.font-sans-3xs");
+        const secondaryLines = container.querySelectorAll(".font-sans-3xs");
         expect(secondaryLines).toHaveLength(1);
         expect(secondaryLines[0]).toHaveTextContent("Full Title For Agreement Two");
+
+        // The nickname line is bolded so it reads as the primary value; the full-title line
+        // underneath uses the same (unmodified) font color as other dropdown options rather
+        // than a muted one, per the UX-approved interaction spec for issue #6144.
+        // eslint-disable-next-line testing-library/no-node-access
+        const primaryLine = secondaryLines[0].previousSibling;
+        expect(primaryLine).toHaveClass("text-bold");
+        expect(secondaryLines[0]).not.toHaveClass("text-base-dark");
     });
 
     it("finds the option by typing the full name even though the nickname is the visible label", () => {

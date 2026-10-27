@@ -9,6 +9,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
     getAgreementContractNumber,
@@ -39,9 +40,9 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     // When the nickname-preferred agreementName differs from the full title, the full title
-    // must reach keyboard/screen-reader users through the link's own accessible name — not a
-    // second tooltip-triggering tab stop nested inside the link, which USWDS's tooltip script
-    // would make focusable but not activatable (OPS-6144).
+    // must reach keyboard/screen-reader users through the link's own accessible name. The
+    // hover tooltip below is applied to the Link itself (not a nested span inside it) so it
+    // doesn't add a second, focusable-but-not-activatable tab stop (OPS-6144).
     const fullAgreementName = agreement?.name;
     const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== agreementName;
     const agreementLinkLabel = hasDistinctFullName
@@ -97,18 +98,22 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const TableRowData = (
         <>
             <td data-cy="agreement-name">
-                <Link
-                    className="text-ink text-no-underline"
-                    to={agreementPath}
-                    state={listTrailState(agreementPath)}
-                    aria-label={agreementLinkLabel}
-                    title={hasDistinctFullName ? fullAgreementName : undefined}
+                <Tooltip
+                    label={hasDistinctFullName ? fullAgreementName : ""}
+                    position="right"
                 >
-                    <TextClip
-                        text={agreementName}
-                        maxLines={2}
-                    />
-                </Link>
+                    <Link
+                        className="text-ink text-no-underline"
+                        to={agreementPath}
+                        state={listTrailState(agreementPath)}
+                        aria-label={agreementLinkLabel}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            maxLines={2}
+                        />
+                    </Link>
+                </Tooltip>
             </td>
             <td data-cy="agreement-type">{agreementType || ""}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
