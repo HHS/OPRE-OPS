@@ -7,7 +7,7 @@ import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
 
 /**
- * Review card for a Services Component addition or deletion on an Awarded agreement (OPS-6440).
+ * Review card for a Services Component addition on an Awarded agreement (OPS-6440).
  * Reviewed on the budget-change surface, like BudgetChangeReviewCard.
  * @component
  * @param {Object} props - Properties passed to component

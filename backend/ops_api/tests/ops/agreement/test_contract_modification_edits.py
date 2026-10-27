@@ -923,13 +923,3 @@ def test_latest_per_budget_line_field_keys_services_components_separately():
     latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, amount])
 
     assert latest == [sc2_add, sc3_add, amount]
-
-
-def test_latest_per_budget_line_field_deleted_services_component_shows_only_its_delete():
-    sc2_add = _edit("services_component_create", sc_id=2)
-    sc2_delete = _edit("services_component_delete", sc_id=2)
-    sc3_add = _edit("services_component_create", sc_id=3)
-
-    latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, sc2_delete])
-
-    assert latest == [sc3_add, sc2_delete]

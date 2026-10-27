@@ -54,7 +54,7 @@ class ContractModificationEditService:
 
         # Each budget line change request carries exactly one field (add_bli_change_requests
         # creates one per field; a delete request carries the "delete" sentinel). A Services
-        # Component request carries "services_component_create" or "services_component_delete".
+        # Component request carries "services_component_create".
         field = next(iter(change_request.requested_change_data))
         diff = (change_request.requested_change_diff or {}).get(field, {})
 
@@ -96,21 +96,15 @@ class ContractModificationEditService:
             # otherwise two SC adds would collapse into one (OPS-6440).
             if edit.services_component_id is not None:
                 target = ("sc", edit.services_component_id)
-                is_delete = edit.field == "services_component_delete"
             else:
                 target = ("bli", edit.budget_line_item_id)
-                is_delete = edit.field == "delete"
-            if is_delete:
+            if edit.field == "delete":
                 deleted.add(target)
             key = (target, edit.field)
             # re-insert so the edit sorts by its latest occurrence
             latest.pop(key, None)
             latest[key] = edit
-        return [
-            edit
-            for (target, field), edit in latest.items()
-            if not (target in deleted and field not in ("delete", "services_component_delete"))
-        ]
+        return [edit for (target, field), edit in latest.items() if not (target in deleted and field != "delete")]
 
     def attach_pending_edits_to_mod(self, agreement_id: int, agreement_mod_id: int, edit_ids: list[int]) -> int:
         """Attach the given pending edits on the agreement to the given modification.

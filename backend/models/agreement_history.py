@@ -440,7 +440,7 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
-        if property_changed in ("services_component_create", "services_component_delete"):
+        if property_changed == "services_component_create":
             return create_services_component_change_request_history_event(
                 change_request, event, session, new_change_request, reviewer_user
             )
@@ -607,27 +607,22 @@ def create_change_request_history_event(
 def create_services_component_change_request_history_event(
     change_request: dict, event: OpsEvent, session: Session, new_change_request: bool, reviewer_user
 ) -> AgreementHistory:
-    """History for a Services Component add/delete request (OPS-6440), requested or reviewed.
+    """History for a Services Component add request (OPS-6440), requested or reviewed.
 
     The requestor is resolved via created_by, and the SC name from the frozen diff, because a
-    declined add or an approved delete removes the SC (the request's SC id is then NULL).
+    declined add removes the SC (the request's SC id is then NULL).
     """
-    is_create = "services_component_create" in change_request["requested_change_data"]
-    field = "services_component_create" if is_create else "services_component_delete"
-    diff = (change_request.get("requested_change_diff") or {}).get(field, {})
-    name = diff.get("new") if is_create else diff.get("old")
+    name = (change_request.get("requested_change_diff") or {}).get("services_component_create", {}).get("new")
     requestor_user = session.get(User, change_request["created_by"])
     requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
-    noun = "Addition" if is_create else "Deletion"
-    verb, gerund = ("add", "adding") if is_create else ("delete", "deleting")
 
     if new_change_request:
-        title = f"Services Component {noun} Requested"
-        message = f"{requestor_name} requested to {verb} {name} and it's currently In Review for approval."
+        title = "Services Component Addition Requested"
+        message = f"{requestor_name} requested to add {name} and it's currently In Review for approval."
     else:
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
-        title = f"Services Component {noun} {change_request_status.capitalize()}"
-        message = f"{reviewer_user.full_name} {change_request_status} {gerund} {name} as requested by {requestor_name}."
+        title = f"Services Component Addition {change_request_status.capitalize()}"
+        message = f"{reviewer_user.full_name} {change_request_status} adding {name} as requested by {requestor_name}."
 
     agreement_id = change_request["agreement_id"]
     agreement = session.get(Agreement, agreement_id)

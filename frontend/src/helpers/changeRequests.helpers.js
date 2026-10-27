@@ -51,10 +51,6 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
             oldValue = changeTo.services_component_create.old ?? "None";
             newValue = changeTo.services_component_create.new;
             break;
-        case KEY_NAMES.SERVICES_COMPONENT_DELETE:
-            oldValue = changeTo.services_component_delete.old;
-            newValue = changeTo.services_component_delete.new;
-            break;
         default:
             break;
     }

@@ -46,17 +46,9 @@ describe("ServicesComponentChangeReviewCard (OPS-6440)", () => {
         expect(screen.getByText("None")).toBeInTheDocument();
     });
 
-    it("renders a Services Component deletion", () => {
-        renderCard(changeRequest({ services_component_delete: { old: "SC2", new: "Deleted" } }, [15010]));
-
-        expect(screen.getByText("Delete Services Component")).toBeInTheDocument();
-        expect(screen.getByText("15010")).toBeInTheDocument();
-        expect(screen.getByText("Deleted")).toBeInTheDocument();
-    });
-
     it("shows None when no budget lines are listed", () => {
-        renderCard(changeRequest({ services_component_delete: { old: "SC2", new: "Deleted" } }, []));
+        renderCard(changeRequest({ services_component_create: { old: null, new: "SC2" } }, []));
 
-        expect(screen.getByText("None")).toBeInTheDocument();
+        expect(screen.getAllByText("None").length).toBe(2);
     });
 });

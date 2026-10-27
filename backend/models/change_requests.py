@@ -175,11 +175,11 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
 
 
 class ServicesComponentChangeRequest(AgreementChangeRequest):
-    """A request to add or delete a Services Component on an Awarded agreement (OPS-6440).
+    """A request to add a Services Component on an Awarded agreement (OPS-6440).
 
     Only SCs with non-Draft budget lines need approval. ``services_component_id`` is
-    ``SET NULL`` so the request keeps its history after an approved delete or a declined
-    add removes the SC; the display names are frozen in ``requested_change_diff``.
+    ``SET NULL`` so the request keeps its history after a declined add (or a later delete)
+    removes the SC; the display name is frozen in ``requested_change_diff``.
     """
 
     services_component_id: Mapped[Optional[int]] = mapped_column(
@@ -202,18 +202,15 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
             cls.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
         )
 
-    # Deliberately not "delete": a bare "delete" key is read as a budget line delete elsewhere.
     create_field_name = "services_component_create"
-    delete_field_name = "services_component_delete"
-    services_component_field_names = [create_field_name, delete_field_name]
 
     @hybrid_property
     def has_services_component_change(self):
-        return any(key in self.requested_change_data for key in self.services_component_field_names)
+        return self.create_field_name in self.requested_change_data
 
     @has_services_component_change.expression
     def has_services_component_change(cls):
-        return cls.requested_change_data.has_any(cls.services_component_field_names)
+        return cls.requested_change_data.has_key(cls.create_field_name)
 
     @hybrid_property
     def is_services_component_create(self):
@@ -222,14 +219,6 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
     @is_services_component_create.expression
     def is_services_component_create(cls):
         return cls.requested_change_data.has_key(cls.create_field_name)
-
-    @hybrid_property
-    def is_services_component_delete(self):
-        return self.delete_field_name in self.requested_change_data
-
-    @is_services_component_delete.expression
-    def is_services_component_delete(cls):
-        return cls.requested_change_data.has_key(cls.delete_field_name)
 
     @hybrid_property
     def requires_contract_modification(self):
@@ -245,13 +234,12 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
         data = super().to_dict()
         data["has_services_component_change"] = bool(self.has_services_component_change)
         data["is_services_component_create"] = bool(self.is_services_component_create)
-        data["is_services_component_delete"] = bool(self.is_services_component_delete)
         data["requires_contract_modification"] = bool(self.requires_contract_modification)
         return data
 
 
 # At most one SC change request in review per SC, so parallel requests can't create a duplicate
-# (an in-review SC can't be edited or deleted, so an add and a delete never overlap either).
+# (an in-review SC can't be edited or deleted).
 Index(
     "ix_change_request_one_in_review_per_services_component",
     ServicesComponentChangeRequest.__table__.c.services_component_id,
@@ -283,7 +271,7 @@ def check_budget_line_id(mapper, connection, target):
 
 
 # require services_component_id when an SC change request is created.
-# (It's SET NULL afterwards, when an approved delete or a declined add removes the SC.)
+# (It's SET NULL afterwards, when a declined add or a later delete removes the SC.)
 @event.listens_for(ServicesComponentChangeRequest, "before_insert")
 def check_services_component_id(mapper, connection, target):
     if target.services_component_id is None:

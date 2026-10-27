@@ -118,7 +118,7 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
             </li>
         );
     }
-    // Services Component addition/deletion (OPS-6440), e.g. "Adding: SC3 BL 15012".
+    // Services Component addition (OPS-6440), e.g. "Adding: SC3 BL 15012".
     const servicesComponentLines = getServicesComponentChangeLines(changeRequest);
     if (servicesComponentLines.length > 0) {
         return (

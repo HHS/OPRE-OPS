@@ -1156,7 +1156,7 @@
     },
     {
       // SC3 on CONTRACT #523 has no budget lines, for manual testing of OPS-6440: deleting it
-      // applies directly, while deleting SC1/SC2 (which have non-Draft BLs) goes to approval.
+      // applies directly, while deleting SC2 (which has non-Draft BLs) is blocked for non-superusers.
       id: 60,
       number: 3,
       optional: false,

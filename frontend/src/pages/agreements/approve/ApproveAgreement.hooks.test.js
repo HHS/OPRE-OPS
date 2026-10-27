@@ -258,8 +258,9 @@ describe("useApproveAgreement", () => {
                         id: 9100,
                         has_services_component_change: true,
                         has_proc_shop_change: false,
-                        requested_change_data: { services_component_delete: true },
-                        requested_change_diff: { services_component_delete: { old: "SC2", new: "Deleted" } },
+                        is_services_component_create: true,
+                        requested_change_data: { services_component_create: true },
+                        requested_change_diff: { services_component_create: { old: null, new: "SC2" } },
                         requested_change_info: { target_display_name: "SC2", linked_budget_line_item_ids: [15010] }
                     }
                 ]
@@ -282,7 +283,7 @@ describe("useApproveAgreement", () => {
         expect(reviewCRMock).toHaveBeenCalledWith({ id: 9100, data: { action: "APPROVE", reviewer_notes: "" } });
         expect(setAlertMock).toHaveBeenCalledWith(
             expect.objectContaining({
-                message: expect.stringContaining("Deleting: SC2\n \u2022 Removing: BL 15010 from SC2")
+                message: expect.stringContaining("Adding: SC2 BL 15010")
             })
         );
     });

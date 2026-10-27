@@ -44,7 +44,7 @@ class ContractModificationEdit(BaseModel):
         ForeignKey("change_request.id", ondelete="SET NULL"), nullable=True
     )
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    # Set for Services Component add/delete rows (OPS-6440). No FK, so the row survives the SC's deletion.
+    # Set for Services Component add rows (OPS-6440). No FK, so the row survives the SC's deletion.
     services_component_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     field: Mapped[str] = mapped_column(String, nullable=False)

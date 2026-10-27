@@ -19,7 +19,6 @@ const POP_DELETE_CONFIRMATION_MESSAGE =
  * @param {Function} setHasUnsavedChanges - Function to mark the parent form dirty.
  * @param {import('vest').Suite<any, any>} [scFormSuite] - Vest suite for the SC form's required fields.
  * @param {import('../../types/BudgetLineTypes').BudgetLine[]} [nonDraftBudgetLines] - Non-draft BLIs used by the PoP validation suite.
- * @param {function(number): boolean} [deleteRequiresApproval] - Whether deleting the saved services component with this id goes to Division Director approval on save (OPS-6440).
  */
 const useServicesComponents = (
     agreementId,
@@ -27,8 +26,7 @@ const useServicesComponents = (
     continueBtnText,
     setHasUnsavedChanges,
     scFormSuite,
-    nonDraftBudgetLines = [],
-    deleteRequiresApproval = () => false
+    nonDraftBudgetLines = []
 ) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(serviceRequirementType);
     const [formData, setFormData] = React.useState(initialFormData);
@@ -43,10 +41,7 @@ const useServicesComponents = (
     const { setAlert } = useAlert();
 
     const dispatch = useEditAgreementDispatch();
-    const {
-        services_components: servicesComponents,
-        pending_deletion_services_components_numbers: pendingDeletionNumbers = []
-    } = useEditAgreement() || {};
+    const { services_components: servicesComponents } = useEditAgreement() || {};
 
     // Reset the PoP validation suite on mount and unmount so a stale result from a
     // previous agreement or SC never carries over into this session. (mirrors issue #5894)
@@ -170,14 +165,9 @@ const useServicesComponents = (
      * @param {object} selectedServicesComponent
      */
     const performDelete = (selectedServicesComponent) => {
-        // On an Awarded agreement, deleting an SC with non-Draft budget lines goes to approval. Keep
-        // the lines linked: unlinking them here would leave the SC empty on save, and the backend
-        // would delete it without approval. They're unlinked when the deletion is approved.
-        const requiresApproval = deleteRequiresApproval(selectedServicesComponent.id);
         dispatch({
             type: "DELETE_SERVICE_COMPONENT",
-            payload: selectedServicesComponent,
-            keepBudgetLineLinks: requiresApproval
+            payload: selectedServicesComponent
         });
         setHasUnsavedChanges(true);
         setShowModal(false);
@@ -186,9 +176,7 @@ const useServicesComponents = (
         setFormData(initialFormData);
         setAlert({
             type: "success",
-            message: requiresApproval
-                ? `The deletion of ${selectedServicesComponent.display_title} has been queued and will be sent to your Division Director for approval when you click ${continueBtnText} below.`
-                : `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
+            message: `${selectedServicesComponent.display_title} has been successfully deleted. When you're done editing, click ${continueBtnText} below.`,
             isCloseable: false,
             isToastMessage: true
         });
@@ -251,11 +239,7 @@ const useServicesComponents = (
         setFormData(newFormData);
     };
 
-    // An SC whose deletion is going to approval keeps its number until it's approved (OPS-6440).
-    const servicesComponentsNumbers = [
-        ...servicesComponents.map((component) => component.number),
-        ...pendingDeletionNumbers
-    ];
+    const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
 
     return {
         serviceTypeReq,

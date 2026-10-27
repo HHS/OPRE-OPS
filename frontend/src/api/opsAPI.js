@@ -1184,14 +1184,7 @@ export const opsApi = createApi({
                 url: `/services-components/${id}`,
                 method: "DELETE"
             }),
-            // On an Awarded agreement the delete may create a change request instead (OPS-6440).
-            invalidatesTags: [
-                "ServicesComponents",
-                "Agreements",
-                "BudgetLineItems",
-                "AgreementHistory",
-                "ChangeRequests"
-            ]
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         addGrantNumber: builder.mutation({
             query: (data) => {

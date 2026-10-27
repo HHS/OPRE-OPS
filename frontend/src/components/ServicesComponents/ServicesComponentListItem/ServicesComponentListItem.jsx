@@ -1,6 +1,7 @@
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { EDIT_DISABLED_TOOLTIPS } from "../../../helpers/agreement.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
@@ -17,6 +18,7 @@ import ServicesComponentMetadata from "../ServicesComponentMetadata";
  * @param {Function} props.handleDelete - Function to handle delete operation.
  * @param {boolean} [props.isSubComponent] - Indicates if the item is a sub-component.
  * @param {string} [props.lockedMessage] - When set, the item has a change in review: edit and delete are disabled and this is their tooltip (OPS-6440).
+ * @param {boolean} [props.isAwardedDeleteBlocked] - The item has non-Draft budget lines on an awarded agreement, so it can't be deleted (OPS-6440).
  * @returns {JSX.Element}
  *
  * @example
@@ -32,14 +34,15 @@ function ServicesComponentListItem({
     description,
     handleDelete,
     isSubComponent,
-    lockedMessage = ""
+    lockedMessage = "",
+    isAwardedDeleteBlocked = false
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
 
     const isFirstServiceComponent = number === 1;
     const isLocked = Boolean(lockedMessage);
     const isEditDisabled = isLocked || isSubComponent;
-    const isDeleteDisabled = isLocked || isSubComponent || isFirstServiceComponent;
+    const isDeleteDisabled = isLocked || isSubComponent || isFirstServiceComponent || isAwardedDeleteBlocked;
 
     const SUB_COMPONENT_DISABLED_MSG = "Sub-Services Components are from legacy contracts and cannot be edited";
     const FIRST_SERVICE_COMPONENT_DISABLED_MSG = "All agreements must start with an SC1 or Base Period";
@@ -50,7 +53,9 @@ function ServicesComponentListItem({
         ? lockedMessage
         : isSubComponent
           ? SUB_COMPONENT_DISABLED_MSG
-          : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
+          : isFirstServiceComponent
+            ? FIRST_SERVICE_COMPONENT_DISABLED_MSG
+            : EDIT_DISABLED_TOOLTIPS.awardedServicesComponentDelete;
 
     return (
         <div

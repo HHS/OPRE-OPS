@@ -5,31 +5,20 @@ import ServicesComponentListItem from "./ServicesComponentListItem";
 
 const TITLE = "This services component has pending edits that will require a contract modification:";
 
-const changeRequest = (kind, linkedIds) => ({
-    requested_change_diff:
-        kind === "add"
-            ? { services_component_create: { old: null, new: "SC2" } }
-            : { services_component_delete: { old: "SC2", new: "Deleted" } },
+const changeRequest = (linkedIds) => ({
+    requested_change_diff: { services_component_create: { old: null, new: "SC2" } },
     requested_change_info: { target_display_name: "SC2", linked_budget_line_item_ids: linkedIds }
 });
 
 describe("getServicesComponentLockedMessage (OPS-6440)", () => {
     it("lists a pending addition with its budget lines on one line", () => {
-        const sc = { in_review: true, change_requests_in_review: [changeRequest("add", [15012, 15013])] };
+        const sc = { in_review: true, change_requests_in_review: [changeRequest([15012, 15013])] };
 
         expect(getServicesComponentLockedMessage(sc)).toBe(`${TITLE}\n • Adding: SC2 BL 15012, BL 15013`);
     });
 
-    it("lists a pending deletion, with each budget line removed from the SC rather than deleted", () => {
-        const sc = { in_review: true, change_requests_in_review: [changeRequest("delete", [15010, 15011])] };
-
-        expect(getServicesComponentLockedMessage(sc)).toBe(
-            `${TITLE}\n • Deleting: SC2\n • Removing: BL 15010 from SC2\n • Removing: BL 15011 from SC2`
-        );
-    });
-
     it("omits budget lines when the request lists none", () => {
-        const sc = { in_review: true, change_requests_in_review: [changeRequest("add", [])] };
+        const sc = { in_review: true, change_requests_in_review: [changeRequest([])] };
 
         expect(getServicesComponentLockedMessage(sc)).toBe(`${TITLE}\n • Adding: SC2`);
     });
@@ -59,7 +48,7 @@ describe("ServicesComponentListItem", () => {
     const hoverItem = () => fireEvent.mouseOver(screen.getByText("Services Component 2"));
 
     it("disables edit and delete with the pending-change tooltip while a change is in review", () => {
-        const lockedMessage = `${TITLE}\n \u2022 Deleting: SC2`;
+        const lockedMessage = `${TITLE}\n \u2022 Adding: SC2 BL 15012`;
         renderItem({ lockedMessage });
         hoverItem();
 
@@ -69,6 +58,28 @@ describe("ServicesComponentListItem", () => {
         expect(editButton).toHaveAttribute("aria-label", lockedMessage);
         expect(deleteButton).toHaveAttribute("aria-label", lockedMessage);
         expect(screen.queryByText("In Review")).not.toBeInTheDocument();
+    });
+
+    it("disables only delete, with the awarded-agreement tooltip, when the SC has budget lines on an awarded agreement", () => {
+        renderItem({ isAwardedDeleteBlocked: true });
+        hoverItem();
+
+        const [editButton, deleteButton] = screen.getAllByRole("button");
+        expect(editButton).toBeEnabled();
+        expect(deleteButton).toBeDisabled();
+        expect(deleteButton).toHaveAttribute(
+            "aria-label",
+            "Services Components with budget lines cannot be deleted on awarded agreements"
+        );
+    });
+
+    it("shows the SC1 tooltip rather than the awarded one for the first services component", () => {
+        renderItem({ number: 1, isAwardedDeleteBlocked: true });
+        hoverItem();
+
+        const [, deleteButton] = screen.getAllByRole("button");
+        expect(deleteButton).toBeDisabled();
+        expect(deleteButton).toHaveAttribute("aria-label", "All agreements must start with an SC1 or Base Period");
     });
 
     it("keeps edit and delete enabled when nothing is in review", () => {
@@ -82,22 +93,17 @@ describe("ServicesComponentListItem", () => {
 });
 
 describe("getServicesComponentChangeMessages (OPS-6440)", () => {
-    it("lists Services Component additions and deletions for the Changes In Review banner", () => {
+    it("lists Services Component additions for the Changes In Review banner", () => {
         const changeRequests = [
             {
                 has_services_component_change: true,
                 is_services_component_create: true,
                 requested_change_info: { target_display_name: "SC3" }
             },
-            {
-                has_services_component_change: true,
-                is_services_component_create: false,
-                requested_change_info: { target_display_name: "SC2" }
-            },
             { has_proc_shop_change: true }
         ];
 
-        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition", "SC2 Deletion"]);
+        expect(getServicesComponentChangeMessages(changeRequests)).toEqual(["SC3 Addition"]);
     });
 
     it("returns nothing without change requests", () => {

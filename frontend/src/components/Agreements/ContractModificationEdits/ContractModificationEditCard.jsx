@@ -10,19 +10,18 @@ import TermTag from "../../ChangeRequests/TermTag";
  * @property {number} id
  * @property {string} modification_type - e.g. "MODIFIED_LOE"
  * @property {number | null} budget_line_item_id
- * @property {number | null} [services_component_id] - Set for a Services Component addition/deletion
- * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", "services_component_delete")
+ * @property {number | null} [services_component_id] - Set for a Services Component addition
+ * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create")
  * @property {*} old_value
  * @property {*} new_value
  * @property {{id: number, full_name: string} | null} requested_by
  * @property {string | null} requested_on
  */
 
-// Services Component additions/deletions (OPS-6440) show the SC and what happened to it, with no
-// From/To, per the design.
+// Services Component additions (OPS-6440) show the SC and what happened to it, with no From/To,
+// per the design.
 const SERVICES_COMPONENT_CHANGE_LABELS = {
-    services_component_create: "Add SC",
-    services_component_delete: "Delete SC"
+    services_component_create: "Add SC"
 };
 
 /**

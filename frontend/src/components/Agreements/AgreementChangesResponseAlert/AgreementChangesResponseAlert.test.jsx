@@ -99,21 +99,6 @@ describe("AgreementChangesAlert", () => {
 });
 
 describe("formatChangeRequest — Services Component requests (OPS-6440)", () => {
-    it("lists a Services Component deletion and the budget lines removed from it", () => {
-        render(
-            <ul>
-                {formatChangeRequest({
-                    status: "REJECTED",
-                    requested_change_diff: { services_component_delete: { old: "SC2", new: "Deleted" } },
-                    requested_change_info: { linked_budget_line_item_ids: [15010] }
-                })}
-            </ul>
-        );
-
-        expect(screen.getByText("Deleting: SC2")).toBeInTheDocument();
-        expect(screen.getByText("Removing: BL 15010 from SC2")).toBeInTheDocument();
-    });
-
     it("lists a Services Component addition with its budget lines", () => {
         render(
             <ul>

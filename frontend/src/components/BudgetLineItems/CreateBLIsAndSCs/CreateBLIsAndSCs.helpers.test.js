@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import {
-    addServiceComponentIdToBLI,
     buildEditedBudgetLinePayload,
     buildSaveSuccessAlert,
     computeBudgetLinePageErrors,
     feesForCards,
     getEffectiveScDateRange,
-    getServicesComponentApprovalChanges,
-    isServicesComponentDeleteRoutedToApproval,
+    getServicesComponentAdditionsForApproval,
+    isServicesComponentDeleteBlocked,
     totalsForCards
 } from "./CreateBLIsAndSCs.helpers";
 
@@ -155,10 +154,10 @@ describe("buildSaveSuccessAlert", () => {
             canEditDirectly: false,
             isSuperUser: false,
             isThereAnyBLIsFinancialSnapshotChanged: false,
-            servicesComponentChangeMessages: ["• SC3 Addition", "• SC2 Deletion"]
+            servicesComponentChangeMessages: ["• SC3 Addition"]
         });
         expect(alert.heading).toBe("Changes Sent to Approval");
-        expect(alert.message).toContain("• SC3 Addition\n• SC2 Deletion");
+        expect(alert.message).toContain("• SC3 Addition");
     });
 });
 
@@ -168,9 +167,8 @@ describe("services component approval (OPS-6440)", () => {
 
     it("an SC addition needs approval only when a non-Draft line points at it", () => {
         const pendingSc2 = { ...sc2, awaiting_add_approval: true };
-        const { additions } = getServicesComponentApprovalChanges({
+        const additions = getServicesComponentAdditionsForApproval({
             servicesComponents: [pendingSc2, sc3],
-            deletedServicesComponentsIds: [],
             tempBudgetLines: [
                 { id: 1, status: BLI_STATUS.PLANNED, services_component_id: 21 },
                 { id: 2, status: BLI_STATUS.DRAFT, services_component_number: 3 }
@@ -180,9 +178,9 @@ describe("services component approval (OPS-6440)", () => {
         expect(additions).toEqual([pendingSc2]);
     });
 
-    it("a line regrouped under another SC no longer counts toward the deleted SC", () => {
+    it("a line regrouped under another SC no longer blocks deleting the SC", () => {
         expect(
-            isServicesComponentDeleteRoutedToApproval({
+            isServicesComponentDeleteBlocked({
                 servicesComponentId: 21,
                 servicesComponents: [sc3],
                 tempBudgetLines: [
@@ -192,9 +190,9 @@ describe("services component approval (OPS-6440)", () => {
         ).toBe(false);
     });
 
-    it("a deleted SC whose Planned line is going to approval for deletion still needs approval", () => {
+    it("an SC whose Planned line is going to approval for deletion is still blocked", () => {
         expect(
-            isServicesComponentDeleteRoutedToApproval({
+            isServicesComponentDeleteBlocked({
                 servicesComponentId: 21,
                 servicesComponents: [],
                 tempBudgetLines: [],
@@ -204,21 +202,14 @@ describe("services component approval (OPS-6440)", () => {
         ).toBe(true);
     });
 
-    it("an unsaved SC never goes to approval for deletion", () => {
+    it("an unsaved SC is never blocked", () => {
         expect(
-            isServicesComponentDeleteRoutedToApproval({
+            isServicesComponentDeleteBlocked({
                 servicesComponentId: undefined,
                 servicesComponents: [],
                 tempBudgetLines: [{ id: 1, status: BLI_STATUS.PLANNED }]
             })
         ).toBe(false);
-    });
-
-    it("addServiceComponentIdToBLI keeps the link to an SC whose deletion is going to approval", () => {
-        const bli = { id: 1, services_component_id: 21, services_component_number: 2 };
-
-        expect(addServiceComponentIdToBLI(bli, [], [21]).services_component_id).toBe(21);
-        expect(addServiceComponentIdToBLI(bli, []).services_component_id).toBeNull();
     });
 });
 

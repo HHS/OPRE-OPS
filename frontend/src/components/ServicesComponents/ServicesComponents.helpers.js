@@ -43,11 +43,9 @@ const SERVICES_COMPONENT_PENDING_TITLE =
     "This services component has pending edits that will require a contract modification:";
 
 /**
- * Describe a Services Component add/delete change request (OPS-6440) as display lines, without
- * bullets: "Adding: SC3 BL 15012, BL 15013", or "Deleting: SC2" followed by "Removing: BL 15010 from
- * SC2" for each linked budget line. A deleted SC's budget lines are only removed from it, not deleted,
- * so they never appear next to "Deleting". Read from the request's frozen diff, so it works after the
- * SC itself is gone.
+ * Describe a Services Component add change request (OPS-6440) as display lines, without bullets:
+ * "Adding: SC3 BL 15012, BL 15013". Read from the request's frozen diff, so it works after the SC
+ * itself is gone.
  *
  * @param {import("../../types/ChangeRequestsTypes").ChangeRequest} changeRequest
  * @returns {string[]}
@@ -61,16 +59,12 @@ export function getServicesComponentChangeLines(changeRequest) {
         const name = diff.services_component_create.new;
         return [[`Adding: ${name}`, budgetLines.join(", ")].filter(Boolean).join(" ")];
     }
-    if (diff.services_component_delete) {
-        const name = diff.services_component_delete.old;
-        return [`Deleting: ${name}`, ...budgetLines.map((budgetLine) => `Removing: ${budgetLine} from ${name}`)];
-    }
     return [];
 }
 
 /**
- * "Changes In Review" banner entries for an agreement's Services Component additions/deletions in
- * review (OPS-6440), e.g. "SC3 Addition" or "SC2 Deletion".
+ * "Changes In Review" banner entries for an agreement's Services Component additions in review
+ * (OPS-6440), e.g. "SC3 Addition".
  *
  * @param {Array<any>} changeRequests - The agreement's change_requests_in_review.
  * @returns {string[]}
@@ -78,13 +72,13 @@ export function getServicesComponentChangeLines(changeRequest) {
 export const getServicesComponentChangeMessages = (changeRequests) =>
     (changeRequests ?? [])
         .filter((changeRequest) => changeRequest?.has_services_component_change)
-        .map((changeRequest) => {
-            const name = changeRequest.requested_change_info?.target_display_name ?? "Services Component";
-            return `${name} ${changeRequest.is_services_component_create ? "Addition" : "Deletion"}`;
-        });
+        .map(
+            (changeRequest) =>
+                `${changeRequest.requested_change_info?.target_display_name ?? "Services Component"} Addition`
+        );
 
 /**
- * Tooltip for a services component whose addition or deletion is in review (OPS-6440), in the same
+ * Tooltip for a services component whose addition is in review (OPS-6440), in the same
  * format as a budget line's pending-edits tooltip.
  *
  * @param {object} servicesComponent - A services component as returned by the API.
@@ -96,15 +90,3 @@ export function getServicesComponentLockedMessage(servicesComponent) {
         .flatMap(getServicesComponentChangeLines)
         .reduce((message, line) => `${message}\n \u2022 ${line}`, SERVICES_COMPONENT_PENDING_TITLE);
 }
-
-/**
- * Whether a services component's deletion is in review (OPS-6440). Budget lines shouldn't be moved
- * onto it: the delete request's linked budget lines are frozen when it's made.
- *
- * @param {object} servicesComponent - A services component as returned by the API.
- * @returns {boolean}
- */
-export const isServicesComponentDeleteInReview = (servicesComponent) =>
-    (servicesComponent?.change_requests_in_review ?? []).some(
-        (changeRequest) => changeRequest?.is_services_component_delete
-    );

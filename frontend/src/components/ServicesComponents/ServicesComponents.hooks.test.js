@@ -31,8 +31,7 @@ const bli = (date_needed) => ({ date_needed });
 const renderUseServicesComponents = (
     setHasUnsavedChanges = vi.fn(),
     scFormSuite = undefined,
-    nonDraftBudgetLines = [],
-    deleteRequiresApproval = undefined
+    nonDraftBudgetLines = []
 ) =>
     renderHook(() =>
         useServicesComponents(
@@ -41,8 +40,7 @@ const renderUseServicesComponents = (
             CONTINUE_BTN_TEXT,
             setHasUnsavedChanges,
             scFormSuite,
-            nonDraftBudgetLines,
-            deleteRequiresApproval
+            nonDraftBudgetLines
         )
     );
 
@@ -326,8 +324,7 @@ describe("useServicesComponents", () => {
 
             expect(dispatchMock).toHaveBeenCalledWith({
                 type: "DELETE_SERVICE_COMPONENT",
-                payload: expect.objectContaining({ number: 1, display_title: "SC1" }),
-                keepBudgetLineLinks: false
+                payload: expect.objectContaining({ number: 1, display_title: "SC1" })
             });
             expect(setHasUnsavedChanges).toHaveBeenCalledWith(true);
             expect(result.current.showModal).toBe(false);
@@ -351,41 +348,9 @@ describe("useServicesComponents", () => {
 
             expect(dispatchMock).toHaveBeenCalledWith({
                 type: "DELETE_SERVICE_COMPONENT",
-                payload: expect.objectContaining({ number: 1 }),
-                keepBudgetLineLinks: false
+                payload: expect.objectContaining({ number: 1 })
             });
             expect(result.current.showModal).toBe(false);
-        });
-    });
-
-    describe("handleDelete — deletion that goes to approval (OPS-6440)", () => {
-        it("keeps the budget line links, uses the usual confirmation, and says the deletion goes to the Division Director", () => {
-            useEditAgreementMock.mockReturnValue({
-                services_components: [{ id: 21, number: 2, display_title: "SC2" }]
-            });
-            const deleteRequiresApproval = vi.fn((id) => id === 21);
-            const { result } = renderUseServicesComponents(vi.fn(), undefined, [], deleteRequiresApproval);
-
-            act(() => {
-                result.current.handleDelete(2);
-            });
-            // The contract-modification modal is shown once, on save; deleting uses the usual confirmation.
-            expect(result.current.modalProps.heading).toBe("Are you sure you want to delete SC2?");
-
-            act(() => {
-                result.current.modalProps.handleConfirm();
-            });
-
-            expect(dispatchMock).toHaveBeenCalledWith({
-                type: "DELETE_SERVICE_COMPONENT",
-                payload: expect.objectContaining({ id: 21 }),
-                keepBudgetLineLinks: true
-            });
-            expect(setAlertMock).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: expect.stringContaining("will be sent to your Division Director for approval")
-                })
-            );
         });
     });
 

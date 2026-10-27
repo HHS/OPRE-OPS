@@ -95,8 +95,8 @@ class ServicesComponent(BaseModel):
 
     @property
     def has_non_draft_budget_lines(self) -> bool:
-        """Only non-Draft budget lines make an SC add/delete on an Awarded agreement need
-        approval; Draft lines come into play when they become Planned (OPS-6440).
+        """Only non-Draft budget lines gate an SC on an Awarded agreement: an add needs approval
+        and a delete is blocked. Draft lines come into play when they become Planned (OPS-6440).
 
         Queried rather than read from ``budget_line_items`` so links flushed in the current
         transaction (set via ``services_component_id``) are seen."""

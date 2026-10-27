@@ -176,7 +176,7 @@ const useApproveAgreement = () => {
         (changeRequest) =>
             changeRequest.has_budget_change ||
             changeRequest.has_proc_shop_change ||
-            // Services Component additions/deletions are reviewed on the budget-change page (OPS-6440).
+            // Services Component additions are reviewed on the budget-change page (OPS-6440).
             changeRequest.has_services_component_change
     );
     const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
@@ -195,7 +195,7 @@ const useApproveAgreement = () => {
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
-    // Services Component additions/deletions, in the same bullet format as the budget messages (OPS-6440).
+    // Services Component additions, in the same bullet format as the budget messages (OPS-6440).
     const servicesComponentChangeMessages = changeRequestsInReview
         .filter((changeRequest) => changeRequest.has_services_component_change)
         .flatMap(getServicesComponentChangeLines)

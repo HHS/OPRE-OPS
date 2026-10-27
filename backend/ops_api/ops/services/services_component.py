@@ -23,6 +23,7 @@ IN_REVIEW_MESSAGE = (
     "This services component is pending approval and will require a contract modification. "
     "It can't be changed until the Division Director reviews it."
 )
+AWARDED_DELETE_BLOCKED_MESSAGE = "Services Components with budget lines cannot be deleted on awarded agreements."
 
 
 class ServicesComponentService:
@@ -165,15 +166,12 @@ class ServicesComponentService:
 
         return updated_service_component, 200
 
-    def delete(self, obj_id: int, commit: bool = True) -> int | None:
+    def delete(self, obj_id: int, commit: bool = True) -> None:
         """
         Delete a services component.
 
-        On an Awarded agreement, an SC with non-Draft budget lines isn't deleted: a deletion
-        change request goes to the Division Director instead, the SC and its budget line links
-        stay until it's approved, and its id is returned (OPS-6440). Otherwise the SC is deleted
-        and None is returned. ``commit=False`` creates the request without committing or
-        notifying (edit bundle).
+        On an Awarded agreement, an SC with non-Draft budget lines can only be deleted by a
+        superuser (OPS-6440).
 
         Args:
             obj_id: The ID of the services component to delete
@@ -181,6 +179,7 @@ class ServicesComponentService:
         Raises:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to delete this services component
+            ValidationError: If the SC is in review, or is blocked on an Awarded agreement
         """
         if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
@@ -190,19 +189,17 @@ class ServicesComponentService:
         ChangeRequestService(self.db_session).lock_services_component(obj_id)
         self._check_not_in_review(services_component)
 
-        if self.delete_requires_approval(services_component):
-            return ChangeRequestService(self.db_session).add_services_component_delete_change_request(
-                services_component, commit=commit
-            )
+        if self.delete_blocked(services_component):
+            raise ValidationError({"services_component": [AWARDED_DELETE_BLOCKED_MESSAGE]})
 
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
-        return None
 
     @staticmethod
-    def delete_requires_approval(services_component: ServicesComponent) -> bool:
-        """Whether deleting this SC goes to Division Director approval instead of applying."""
+    def delete_blocked(services_component: ServicesComponent) -> bool:
+        """Whether this SC can't be deleted: it has non-Draft budget lines on an Awarded agreement
+        and the user isn't a superuser."""
         return sc_requires_approval_gate(services_component.agreement) and services_component.has_non_draft_budget_lines
 
     @staticmethod

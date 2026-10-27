@@ -1,6 +1,6 @@
 """add services component change request
 
-OPS-6440 (AC6/AC7): Services Component add/delete change requests on Awarded agreements.
+OPS-6440 (AC6): Services Component add change requests on Awarded agreements.
 Adds the SERVICES_COMPONENT_CHANGE_REQUEST change request type, change_request.services_component_id
 (with a partial unique index allowing one in-review SC change request per SC),
 services_component.awaiting_add_approval, and contract_modification_edit.services_component_id.

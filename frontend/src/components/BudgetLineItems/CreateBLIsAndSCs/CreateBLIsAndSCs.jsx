@@ -126,7 +126,7 @@ export const CreateBLIsAndSCs = ({
         datePickerSuite,
         scFormSuite,
         nonDraftBudgetLines,
-        servicesComponentDeleteRequiresApproval,
+        isServicesComponentDeleteDisabled,
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
@@ -443,7 +443,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
-                                deleteRequiresApproval={servicesComponentDeleteRequiresApproval}
+                                isDeleteDisabled={isServicesComponentDeleteDisabled}
                             />
                         ))}
                     {!isGrant && (
@@ -510,7 +510,7 @@ export const CreateBLIsAndSCs = ({
                                 hasUnsavedChanges={hasUnsavedChanges}
                                 scFormSuite={scFormSuite}
                                 nonDraftBudgetLines={nonDraftBudgetLines}
-                                deleteRequiresApproval={servicesComponentDeleteRequiresApproval}
+                                isDeleteDisabled={isServicesComponentDeleteDisabled}
                             />
                         ))}
                     {/* This is already the budget-line edit surface, so no inline Edit button belongs here. */}

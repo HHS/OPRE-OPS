@@ -240,38 +240,23 @@ def test_build_review_outcome_title_and_message_invalid_status():
 
 
 @pytest.mark.parametrize(
-    "is_create,status,expected_title,expected_msg",
+    "status,expected_title,expected_msg",
     [
         (
-            True,
             ChangeRequestStatus.APPROVED,
             "Services Component Change Approved",
             "Your request to add SC3 has been approved.",
         ),
         (
-            True,
             ChangeRequestStatus.REJECTED,
             "Services Component Change Declined",
             "Your request to add SC3 has been declined.",
         ),
-        (
-            False,
-            ChangeRequestStatus.APPROVED,
-            "Services Component Change Approved",
-            "Your request to delete SC3 has been approved.",
-        ),
-        (
-            False,
-            ChangeRequestStatus.REJECTED,
-            "Services Component Change Declined",
-            "Your request to delete SC3 has been declined.",
-        ),
     ],
 )
-def test_build_review_outcome_title_and_message_services_component(is_create, status, expected_title, expected_msg):
+def test_build_review_outcome_title_and_message_services_component(status, expected_title, expected_msg):
     cr = Mock(
         change_request_type=ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
-        is_services_component_create=is_create,
         status=status,
         requested_change_info={"target_display_name": "SC3"},
     )

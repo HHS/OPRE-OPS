@@ -154,14 +154,7 @@ class AgreementEditBundleService:
             deferred_notifications.extend(delete_change_request_ids)
 
             # 7. SC deletes and grant number deletes (after BLI deletes — BLIs reference both)
-            # On an Awarded agreement, deleting an SC with non-Draft budget lines produces a
-            #    deletion change request instead (OPS-6440).
-            sc_deleted_count, sc_delete_change_request_ids = self._delete_services_components(
-                sc_payload.get("delete", []) or []
-            )
-            result.services_components_deleted = sc_deleted_count
-            result.change_request_ids.extend(sc_delete_change_request_ids)
-            deferred_notifications.extend(sc_delete_change_request_ids)
+            result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
             result.grant_numbers_deleted = self._delete_grant_numbers(agreement_id, gn_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
@@ -269,14 +262,10 @@ class AgreementEditBundleService:
             self._scs.update(sc_id, loaded, commit=False)
         return len(items)
 
-    def _delete_services_components(self, ids: list[int]) -> tuple[int, list[int]]:
-        """Returns ``(deleted_count, change_request_ids)``; SCs routed to approval aren't counted."""
-        change_request_ids: list[int] = []
+    def _delete_services_components(self, ids: list[int]) -> int:
         for sc_id in ids:
-            change_request_id = self._scs.delete(sc_id, commit=False)
-            if change_request_id is not None:
-                change_request_ids.append(change_request_id)
-        return len(ids) - len(change_request_ids), change_request_ids
+            self._scs.delete(sc_id, commit=False)
+        return len(ids)
 
     # ------------------------------------------------------------------
     # Grant Numbers

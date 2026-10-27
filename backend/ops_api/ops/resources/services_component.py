@@ -96,22 +96,8 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.DELETE, Permission.SERVICES_COMPONENT)
     def delete(self, id: int) -> Response:
-        service = ServicesComponentService(current_app.db_session)
-        # On an Awarded agreement, deleting an SC with non-Draft budget lines goes to approval
-        # instead (OPS-6440). Nothing is deleted yet, so no "Services Component Deleted" event;
-        # the change request records its own history.
-        if service.delete_requires_approval(service.get(id)):
-            change_request_id = service.delete(id)
-            return make_response_with_headers(
-                {
-                    "message": "ServicesComponent deletion sent to approval",
-                    "id": id,
-                    "change_request_id": change_request_id,
-                },
-                202,
-            )
-
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
+            service: OpsService[ServicesComponent] = ServicesComponentService(current_app.db_session)
             old_services_component = service.get(id)
             sc_id = id
             service.delete(id)

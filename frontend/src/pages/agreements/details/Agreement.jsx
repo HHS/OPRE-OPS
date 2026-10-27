@@ -139,7 +139,7 @@ const Agreement = () => {
     if (budgetLineChangeRequests.length > 0) {
         changeRequests = [...budgetLineChangeRequests];
     }
-    // Services Component additions/deletions in review (OPS-6440). They have no "In Review" tag in
+    // Services Component additions in review (OPS-6440). They have no "In Review" tag in
     // the SC list, so the banner is where they show.
     changeRequests = [
         ...changeRequests,

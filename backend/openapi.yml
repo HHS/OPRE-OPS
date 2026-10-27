@@ -5203,10 +5203,9 @@ paths:
       operationId: deleteServicesComponent
       summary: Delete a Service Component
       description: >-
-        Deletes the services component. On an Awarded agreement, deleting a services component
-        that has non-Draft budget lines is sent to Division Director approval instead (202): the
-        services component stays until the request is approved. A services component with a change
-        request in review can't be deleted (400).
+        Deletes the services component. On an Awarded agreement, a services component that has
+        non-Draft budget lines can only be deleted by a superuser; anyone else gets a 400. A services
+        component with a change request in review can't be deleted (400).
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
@@ -5221,22 +5220,6 @@ paths:
       responses:
         "200":
           description: OK
-        "202":
-          description: Deletion sent to Division Director approval
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: ServicesComponent deletion sent to approval
-                  id:
-                    type: integer
-                    example: 2
-                  change_request_id:
-                    type: integer
-                    example: 512
         "400":
           description: Bad Request
         "401":
@@ -7284,7 +7267,7 @@ components:
         services_component_id:
           type: integer
           nullable: true
-          description: Set for services component add/delete rows. Kept after the services component is deleted.
+          description: Set for services component add rows. Kept after the services component is deleted.
           example: null
         field:
           type: string
@@ -8337,11 +8320,8 @@ components:
         has_services_component_change:
           type: boolean
           example: false
-          description: True for a services component add or delete request.
+          description: True for a services component add request.
         is_services_component_create:
-          type: boolean
-          example: false
-        is_services_component_delete:
           type: boolean
           example: false
         requested_change_info:
@@ -8518,11 +8498,11 @@ components:
         in_review:
           type: boolean
           example: false
-          description: True while an add or delete change request for this services component is in review.
+          description: True while an add change request for this services component is in review.
         change_requests_in_review:
           type: array
           nullable: true
-          description: The services component's add or delete change requests in review, or null.
+          description: The services component's add change requests in review, or null.
           items:
             $ref: "#/components/schemas/GenericChangeRequest"
     ServicesComponentRequest:

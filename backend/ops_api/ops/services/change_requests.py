@@ -165,7 +165,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             self.db_session.commit()
             change_request.to_dict = lambda: snapshot
 
-        # Removing the SC (approved delete, declined add) also happens after the CR is finalized.
+        # Removing the SC (declined add) also happens after the CR is finalized.
         # change_request.services_component_id is SET NULL, so the CR keeps its history.
         if services_component_to_delete is not None:
             self._delete_reviewed_services_component(services_component_to_delete)
@@ -547,21 +547,6 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             commit,
         )
 
-    def add_services_component_delete_change_request(
-        self, services_component: ServicesComponent, commit: bool = True
-    ) -> int:
-        """Request approval to delete a Services Component on an Awarded agreement.
-
-        The SC and its budget line links stay until approval; an approved delete removes the
-        SC and its budget lines lose their SC (``SET NULL``).
-        """
-        return self._add_services_component_change_request(
-            services_component,
-            ServicesComponentChangeRequest.delete_field_name,
-            {"old": services_component.display_name, "new": "Deleted"},
-            commit,
-        )
-
     def _add_services_component_change_request(
         self, services_component: ServicesComponent, field: str, diff: dict, commit: bool
     ) -> int:
@@ -695,10 +680,9 @@ class ChangeRequestService(OpsService[ChangeRequest]):
     def _apply_services_component_review(
         self, change_request: ServicesComponentChangeRequest
     ) -> ServicesComponent | None:
-        """Apply a reviewed SC change request. Returns the SC to delete last, if any.
+        """Apply a reviewed SC add request. Returns the SC to delete last, if any.
 
-        Approved add: the SC becomes a normal SC. Declined add: the SC is removed.
-        Approved delete: the SC is removed. Declined delete: nothing changes.
+        Approved: the SC becomes a normal SC. Declined: the SC is removed.
         """
         services_component = self.db_session.get(
             ServicesComponent, change_request.services_component_id, with_for_update=True, populate_existing=True
@@ -711,13 +695,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             # Recorded before the SC is removed, while the change request still points at it.
             ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
 
-        if change_request.is_services_component_create:
-            if approved:
-                services_component.awaiting_add_approval = False
-                return None
-            # Never remove an SC whose addition was already approved.
-            return services_component if services_component.awaiting_add_approval else None
-        return services_component if approved else None
+        if approved:
+            services_component.awaiting_add_approval = False
+            return None
+        # Never remove an SC whose addition was already approved.
+        return services_component if services_component.awaiting_add_approval else None
 
     def _delete_reviewed_services_component(self, services_component: ServicesComponent) -> None:
         """Delete an SC removed by review, recording the usual "Services Component Deleted" history."""

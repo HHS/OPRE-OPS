@@ -46,7 +46,7 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
         # A deletion request reviews on the budget-change surface (BudgetChangeReviewCard).
         change_type = "budget-change"
     elif getattr(change_request, "has_services_component_change", False):
-        # Services Component add/delete requests review on the budget-change surface too (OPS-6440).
+        # Services Component add requests review on the budget-change surface too (OPS-6440).
         change_type = "budget-change"
     elif getattr(change_request, "has_proc_shop_change", False):
         change_type = "procurement-shop-change"
@@ -132,12 +132,11 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
 
 
 def _services_component_review_outcome(change_request: ChangeRequest) -> tuple[str, str]:
-    """Title and message for a reviewed Services Component add/delete request (OPS-6440)."""
+    """Title and message for a reviewed Services Component add request (OPS-6440)."""
     name = (change_request.requested_change_info or {}).get("target_display_name", "the services component")
-    action = "add" if change_request.is_services_component_create else "delete"
     if change_request.status == ChangeRequestStatus.APPROVED:
-        return "Services Component Change Approved", f"Your request to {action} {name} has been approved."
-    return "Services Component Change Declined", f"Your request to {action} {name} has been declined."
+        return "Services Component Change Approved", f"Your request to add {name} has been approved."
+    return "Services Component Change Declined", f"Your request to add {name} has been declined."
 
 
 def build_review_outcome_title_and_message(
