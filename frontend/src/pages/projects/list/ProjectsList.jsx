@@ -19,6 +19,8 @@ import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers
 import ProjectFilterButton from "./ProjectFilterButton/ProjectFilterButton";
 import ProjectFilterTags from "./ProjectFilterTags/ProjectFilterTags";
 
+const PROJECTS_DEFINITION = "A project is a body of work composed of agreements that share a common topic or theme";
+
 /**
  * Page component for the projects list with server-side pagination, sorting, and fiscal year filtering.
  * @returns {React.ReactElement | null}
@@ -166,6 +168,7 @@ const ProjectsList = () => {
             <App breadCrumbName="Projects">
                 <TablePageLayout
                     title="Projects"
+                    titleTooltip={PROJECTS_DEFINITION}
                     subtitle="All Projects"
                     details="This is a list of all projects across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals."
                     TabsSection={
@@ -192,6 +195,7 @@ const ProjectsList = () => {
         <App breadCrumbName="Projects">
             <TablePageLayout
                 title="Projects"
+                titleTooltip={PROJECTS_DEFINITION}
                 subtitle="All Projects"
                 details="This is a list of all projects across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals."
                 FilterTags={
