@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from data_tools.src.common.utils import (
@@ -151,9 +151,11 @@ def _resolve_procurement_fee(data, proc_shop, agreement, session):
 
 def _find_agreement_and_can(data, session):
     """Find the agreement and CAN for the budget line item."""
+    # ignore leading/trailing whitespace in the agreement names. OPRE is known for including
+    # leading and trailing spaces in data sent and that's already in the persisted data
     agreement = session.execute(
         select(Agreement)
-        .where(Agreement.name == data.AGREEMENT_NAME)
+        .where(func.trim(Agreement.name) == data.AGREEMENT_NAME.strip())
         .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
     ).scalar_one_or_none()
 
