@@ -49,7 +49,7 @@ Delivery:
 | Part | Status | Contents |
 |---|---|---|
 | Part 1 | Merged (PR 6448) | `preview.py`, `preview_seed.sh`, startup prefix check, frontend backend-domain fallback |
-| Part 2, PR A (`OPS-6419/preview-backend-fixes`) | In progress | Pool 2 + 1 with a 10s timeout, a `HEALTH_CHECK_AUTH_SERVICES` flag (off on previews), and a startup wiring test |
+| Part 2, PR A (`OPS-6419/preview-backend-fixes`) | In progress | Pool 2 + 3 (threads + 1, to avoid write deadlocks) with a 10s timeout, a `HEALTH_CHECK_AUTH_SERVICES` flag (off on previews), and a startup wiring test |
 | Part 2, PR B (this branch) | In progress | The router image and its build/smoke-test workflow, ADR 032, this story update |
 | Part 3 | Blocked on DevOps | The create, destroy and reap workflows, plus the docs |
 
@@ -58,7 +58,7 @@ Decisions so far:
 - **Reseed (AC6):** a `workflow_dispatch` trigger on `preview_create.yml`, with `pr_number` and `reseed` inputs and a same-repo check.
 - **First label vs. later push (AC5):** `preview_seed.sh ensure` checks a "seed finished" marker on the database.
 - **Fork safety (AC10):** `pull_request`, not `pull_request_target`, plus a job-level check that the PR's head repo is this repo.
-- **Database:** one B1ms preview server (35 usable connections). Each preview's pool is 2 + 1, so 8 previews plus jobs fit.
+- **Database:** one B1ms preview server (35 usable connections). Each preview keeps 2 connections idle and up to 5 under load (threads + 1, because a write can hold two connections). Steady state is about 16; going past 35 needs all 8 previews at full write load at once.
 
 ### Key Files
 
