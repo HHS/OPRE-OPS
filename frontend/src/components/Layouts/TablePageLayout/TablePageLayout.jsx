@@ -69,7 +69,7 @@ export const TablePageLayout = ({
                     {titleTooltip && (
                         <span
                             className="display-flex"
-                            onMouseOver={handleShowTitleTooltip}
+                            onMouseEnter={handleShowTitleTooltip}
                             onFocus={handleShowTitleTooltip}
                         >
                             <Tooltip
