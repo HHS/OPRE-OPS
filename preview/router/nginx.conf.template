@@ -2,7 +2,7 @@
 # Rendered by docker-entrypoint.sh; only ${ACA_DOMAIN} and ${RESOLVER} are substituted.
 # See README.md.
 
-worker_processes auto;
+worker_processes 1;
 pid /tmp/nginx.pid;
 error_log /dev/stderr warn;
 

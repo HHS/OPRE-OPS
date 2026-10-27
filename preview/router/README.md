@@ -27,6 +27,7 @@ The router sends `Host: <target>:443`, which the backend's CSRF check requires. 
 | Replicas | Minimum 1 (it's the only path to every preview) |
 
 **Gateway settings for the wildcard listener:**
+- **Module change:** the shared `app-gateway` module only passes `host_name` today, but Azure accepts wildcards only in `host_names`. Its `http_listener` block needs a `host_names` passthrough.
 - **Rule priority:** must be a **higher number** than the dev and staging rules (100+i and 200+i), so their hostnames match first. Add a matching IPv6 listener, plus `*` A and AAAA records.
 - **Backend HTTP settings:** HTTPS 443, `pick_host_name_from_backend_address = true`, `request_timeout` 60s or more.
 - **Health probe:** host = the router's FQDN, `pick_host_name_from_backend_http_settings = false`, path `/healthz`, match 200–399.
