@@ -13,11 +13,12 @@ HOST_HEADER_PREFIX = os.environ["HOST_HEADER_PREFIX"]  # e.g. opre-ops-pr123-app
 
 SQLALCHEMY_ECHO = False
 
-# Up to 8 previews share one B1ms Postgres server (35 usable connections), so each
-# backend gets at most 3: 8 x 3 plus seed/migrate jobs fits. A 4th concurrent request
-# waits up to 10s for a connection and then fails, which is fine for QA traffic.
+# Up to 8 previews share one small Postgres server, so keep each pool small. A write
+# request can hold two connections at once (the request session plus OpsEventHandler's
+# own Session), so the pool must be at least gunicorn threads (4) + 1 or concurrent
+# writes deadlock until the timeout. Idle, each preview keeps only 2 open.
 SQLALCHEMY_POOL_SIZE = 2
-SQLALCHEMY_MAX_OVERFLOW = 1
+SQLALCHEMY_MAX_OVERFLOW = 3
 SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Previews have no HHS AMS client, so the health check skips the auth services check.
