@@ -46,6 +46,11 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
             oldValue = renderField(keyName, "amount", changeTo.delete.old);
             newValue = changeTo.delete.new;
             break;
+        case KEY_NAMES.SERVICES_COMPONENT_CREATE:
+            // Services Component addition (OPS-6440): there's no SC before, the new SC's name after.
+            oldValue = changeTo.services_component_create.old ?? "None";
+            newValue = changeTo.services_component_create.new;
+            break;
         default:
             break;
     }

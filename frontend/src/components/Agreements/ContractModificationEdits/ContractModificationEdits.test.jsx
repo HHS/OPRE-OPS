@@ -302,6 +302,21 @@ describe("ContractModificationEdits", () => {
         expect(cardValues(deleteCard).slice(3)).toEqual(["Deleted", "$600,000.00", "Deleted"]);
     });
 
+    it("renders a Services Component addition with the SC and no From/To (OPS-6440)", () => {
+        const scEdit = { ...AMOUNT_EDIT, budget_line_item_id: null, services_component_id: 31 };
+        mockQuery({
+            data: [{ ...scEdit, id: 5, field: "services_component_create", old_value: null, new_value: "OSC3" }]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        const [addCard] = getCards();
+        expect(cardValues(addCard)).toEqual(["First Last Name", "Modified Level of Effort", "OSC3", "Add SC"]);
+        expect(within(addCard).getByText("SC")).toBeInTheDocument();
+        expect(within(addCard).queryByText("BL ID")).not.toBeInTheDocument();
+        expect(within(addCard).queryByText("From")).not.toBeInTheDocument();
+    });
+
     it("still offers Start modification when there are no edits, to execute Planned budget lines as-is", () => {
         mockQuery({ data: [] });
 

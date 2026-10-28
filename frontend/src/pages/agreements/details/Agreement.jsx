@@ -22,6 +22,7 @@ import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from ".
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
+import { getServicesComponentChangeMessages } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
@@ -134,13 +135,18 @@ const Agreement = () => {
     /** @type string[] */
     let changeRequests = [];
 
-    /** @type string[] */
-    let allChangeRequests = [];
-
     let budgetLineChangeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
     if (budgetLineChangeRequests.length > 0) {
         changeRequests = [...budgetLineChangeRequests];
     }
+    // Services Component additions in review (OPS-6440). They have no "In Review" tag in
+    // the SC list, so the banner is where they show.
+    changeRequests = [
+        ...changeRequests,
+        ...getServicesComponentChangeMessages(agreement?.change_requests_in_review ?? [])
+    ];
+    /** @type string[] */
+    let allChangeRequests = [...changeRequests];
 
     if (shouldFetchProcurementShops) {
         const newTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage ?? 0);

@@ -11,6 +11,7 @@ edits; ``division_director_auth_client`` (user 522) directs division 5, which ma
 """
 
 import datetime
+from types import SimpleNamespace
 
 import pytest
 from flask import url_for
@@ -125,7 +126,7 @@ def make_agreement(loaded_db, test_project):
     yield _make
 
     loaded_db.rollback()
-    for agreement_id, sc_id in created:
+    for agreement_id, _ in created:
         params = {"id": agreement_id}
         loaded_db.execute(text("DELETE FROM contract_modification_request WHERE agreement_id = :id"), params)
         loaded_db.execute(text("DELETE FROM contract_modification_edit WHERE agreement_id = :id"), params)
@@ -136,10 +137,10 @@ def make_agreement(loaded_db, test_project):
         for bli in loaded_db.query(ContractBudgetLineItem).filter_by(agreement_id=agreement_id).all():
             loaded_db.delete(bli)
         loaded_db.commit()
-        sc = loaded_db.get(ServicesComponent, sc_id)
-        if sc is not None:
+        # Every SC on the agreement, including any a test added after the first one.
+        for sc in loaded_db.query(ServicesComponent).filter_by(agreement_id=agreement_id).all():
             loaded_db.delete(sc)
-            loaded_db.commit()
+        loaded_db.commit()
         agreement = loaded_db.get(ContractAgreement, agreement_id)
         if agreement is not None:
             loaded_db.delete(agreement)
@@ -739,3 +740,21 @@ def test_pre_award_planned_to_executing_request_cannot_be_approved_after_award(
     assert loaded_db.get(BudgetLineItemChangeRequest, cr.id).status == ChangeRequestStatus.IN_REVIEW
     assert loaded_db.get(ContractBudgetLineItem, bli.id).status == BudgetLineItemStatus.PLANNED
     assert _edits(loaded_db, agreement.id) == []
+
+
+# ---=== Services Component rows (OPS-6440) ===---
+
+
+def _edit(field, *, bli_id=None, sc_id=None):
+    return SimpleNamespace(field=field, budget_line_item_id=bli_id, services_component_id=sc_id)
+
+
+def test_latest_per_budget_line_field_keys_services_components_separately():
+    """SC rows have no budget line, so two SC adds must not collapse into one row."""
+    sc2_add = _edit("services_component_create", sc_id=2)
+    sc3_add = _edit("services_component_create", sc_id=3)
+    amount = _edit("amount", bli_id=10)
+
+    latest = ContractModificationEditService._latest_per_budget_line_field([sc2_add, sc3_add, amount])
+
+    assert latest == [sc2_add, sc3_add, amount]

@@ -42,5 +42,6 @@ export const KEY_NAMES = {
     DATE_NEEDED: "date_needed",
     STATUS: "status",
     PROC_SHOP: "awarding_entity_id",
-    DELETE: "delete"
+    DELETE: "delete",
+    SERVICES_COMPONENT_CREATE: "services_component_create"
 };

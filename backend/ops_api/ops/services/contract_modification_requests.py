@@ -202,7 +202,8 @@ class ContractModificationRequestService:
         request.agreement_mod_id = agreement_mod.id
 
     def _get_executable_budget_lines(self, agreement_id: int, budget_line_item_ids: list[int]) -> list[BudgetLineItem]:
-        """Only Planned, current-FY budget lines not already in review can be executed."""
+        """Only Planned, current-FY budget lines not already in review, and not in a Services
+        Component whose addition is still awaiting approval (OPS-6440), can be executed."""
         if not budget_line_item_ids:
             return []
         budget_line_items = list(
@@ -220,6 +221,8 @@ class ContractModificationRequestService:
                 errors.append(f"Budget line {bli.id} is not in the current fiscal year.")
             elif bli.in_review:
                 errors.append(f"Budget line {bli.id} has changes in review.")
+            elif bli.services_component is not None and bli.services_component.awaiting_add_approval:
+                errors.append(f"Budget line {bli.id} is in a Services Component that is awaiting approval.")
         if errors:
             raise ValidationError({"budget_line_item_ids": errors})
         return budget_line_items

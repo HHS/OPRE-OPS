@@ -5303,6 +5303,10 @@ paths:
         - Service Components
       operationId: deleteServicesComponent
       summary: Delete a Service Component
+      description: >-
+        Deletes the services component. On an Awarded agreement, a services component that has
+        non-Draft budget lines can only be deleted by a superuser; anyone else gets a 400. A services
+        component with a change request in review can't be deleted (400).
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
@@ -7366,8 +7370,13 @@ components:
         budget_line_item_id:
           type: integer
           nullable: true
-          description: The "BL ID". Kept after the budget line is deleted.
+          description: The "BL ID". Kept after the budget line is deleted. Null for services component rows.
           example: 123458
+        services_component_id:
+          type: integer
+          nullable: true
+          description: Set for services component add rows. Kept after the services component is deleted.
+          example: null
         field:
           type: string
           description: The edited field, i.e. "Change To" (amount, can_id, date_needed, delete).
@@ -8461,6 +8470,21 @@ components:
             was already Awarded -- i.e. anything that changes money or time on the awarded
             contract (Modified LOE contract mod). Snapshotted at submission, so a request made
             before the award stays false. Status-change requests are always false.
+        services_component_id:
+          type: integer
+          nullable: true
+          description: Present for SERVICES_COMPONENT_CHANGE_REQUEST. Null once the services component is removed.
+          example: null
+        has_services_component_change:
+          type: boolean
+          example: false
+          description: True for a services component add request.
+        requested_change_info:
+          type: object
+          nullable: true
+          description: >-
+            Extra request details: target_display_name, requires_contract_modification, and for
+            services component requests linked_budget_line_item_ids.
 
     AgreementChangeRequest:
       allOf:
@@ -8620,6 +8644,22 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+        awaiting_add_approval:
+          type: boolean
+          example: false
+          description: >-
+            True for a services component added on an Awarded agreement whose addition hasn't been
+            approved. Its addition goes to Division Director approval once it has a non-Draft budget line.
+        in_review:
+          type: boolean
+          example: false
+          description: True while an add change request for this services component is in review.
+        change_requests_in_review:
+          type: array
+          nullable: true
+          description: The services component's add change requests in review, or null.
+          items:
+            $ref: "#/components/schemas/GenericChangeRequest"
     ServicesComponentRequest:
       type: object
       properties:

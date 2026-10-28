@@ -237,6 +237,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.DELETE_CHANGE_REQUEST, agreement_history_trigger)
     # Subscribe to UPDATE_CHANGE_REQUEST for procurement tracker creation
     MessageBus.subscribe_globally(OpsEventType.UPDATE_CHANGE_REQUEST, procurement_tracker_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)

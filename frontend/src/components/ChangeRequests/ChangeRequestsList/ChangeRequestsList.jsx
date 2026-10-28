@@ -9,6 +9,7 @@ import {
 } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
+import ServicesComponentChangeReviewCard from "../ServicesComponentChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
@@ -112,6 +113,8 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         if (cr.has_budget_change || cr.has_delete_change)
             cards.push({ _type: "crBudget", _sortDate: cr.created_on ?? "", item: cr });
         if (cr.has_status_change) cards.push({ _type: "crStatus", _sortDate: cr.created_on ?? "", item: cr });
+        if (cr.has_services_component_change)
+            cards.push({ _type: "crServicesComponent", _sortDate: cr.created_on ?? "", item: cr });
         return cards;
     });
 
@@ -240,6 +243,15 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             requesterName={cr.created_by_user?.display_name ?? cr.created_by_user?.full_name}
                             bliId={cr.budget_line_item_id ?? 0}
                             changeTo={cr.requested_change_diff}
+                            handleReviewChangeRequest={handleReviewChangeRequest}
+                        />
+                    );
+                }
+                if (_type === "crServicesComponent") {
+                    return (
+                        <ServicesComponentChangeReviewCard
+                            key={`cr-services-component-${cr.id}`}
+                            changeRequest={cr}
                             handleReviewChangeRequest={handleReviewChangeRequest}
                         />
                     );

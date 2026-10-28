@@ -18,4 +18,18 @@ describe("getModBudgetLineDisabledReason", () => {
     ])("disables a %s budget line", (_label, overrides, reason) => {
         expect(getModBudgetLineDisabledReason({ ...plannedThisFY, ...overrides })).toBe(reason);
     });
+
+    it("disables a budget line in a services component awaiting approval of its addition", () => {
+        const servicesComponents = [
+            { id: 1, awaiting_add_approval: false },
+            { id: 2, awaiting_add_approval: true }
+        ];
+
+        expect(getModBudgetLineDisabledReason({ ...plannedThisFY, services_component_id: 2 }, servicesComponents)).toBe(
+            MOD_BLI_DISABLED_REASONS.SC_AWAITING_APPROVAL
+        );
+        expect(
+            getModBudgetLineDisabledReason({ ...plannedThisFY, services_component_id: 1 }, servicesComponents)
+        ).toBeNull();
+    });
 });

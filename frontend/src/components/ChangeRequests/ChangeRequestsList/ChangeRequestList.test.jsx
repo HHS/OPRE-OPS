@@ -151,6 +151,41 @@ describe("ChangeRequestList", () => {
         expect(statusHeadings.length).toBeGreaterThanOrEqual(1);
     });
 
+    it("renders a Services Component change request as its own card (OPS-6440)", async () => {
+        const servicesComponentCR = {
+            id: 77,
+            agreement_id: agreement.id,
+            change_request_type: "SERVICES_COMPONENT_CHANGE_REQUEST",
+            has_services_component_change: true,
+            has_proc_shop_change: false,
+            created_on: "2026-10-23T12:00:00.000000",
+            created_by_user: { full_name: "Admin Demo" },
+            requested_change_data: { services_component_create: true },
+            requested_change_diff: { services_component_create: { old: null, new: "SC3" } },
+            requested_change_info: { target_display_name: "SC3", linked_budget_line_item_ids: [15012] }
+        };
+
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: [servicesComponentCR], count: 1, limit: 1000, offset: 0 }
+        });
+        useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetPendingAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
+        useGetUserFullNameFromId.mockReturnValue("Admin Demo");
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <ChangeRequestList handleReviewChangeRequest={vi.fn()} />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(await screen.findByText("Add Services Component")).toBeInTheDocument();
+        expect(screen.getByText("15012")).toBeInTheDocument();
+    });
+
     it("sorts pre-award approvals and change requests together by date descending", async () => {
         // CR created on an older date; pre-award approval requested on a newer date.
         // Pre-award card should appear before the CR card in the rendered list.

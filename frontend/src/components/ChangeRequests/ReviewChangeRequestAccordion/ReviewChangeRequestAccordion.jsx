@@ -4,6 +4,7 @@ import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../ChangeRequests.constants";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
+import ServicesComponentChangeReviewCard from "../ServicesComponentChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
@@ -73,6 +74,15 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                                 forceHover={true}
                             />
                         )}
+                        {changeRequest.has_services_component_change &&
+                            changeType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && (
+                                <ServicesComponentChangeReviewCard
+                                    changeRequest={changeRequest}
+                                    handleReviewChangeRequest={() => {}}
+                                    isCondensed={true}
+                                    forceHover={true}
+                                />
+                            )}
                         {changeRequest.has_status_change &&
                             changeType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
                             changeRequest.requested_change_data.status === changeRequestStatus && (

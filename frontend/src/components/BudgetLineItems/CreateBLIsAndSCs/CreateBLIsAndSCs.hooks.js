@@ -25,6 +25,7 @@ import {
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { formatServiceComponent } from "../../ServicesComponents/ServicesComponents.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { formatDateForScreen } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -45,6 +46,8 @@ import {
     buildNewAgreementBudgetPayload,
     buildNewBudgetLineItem,
     buildSaveSuccessAlert,
+    getServicesComponentAdditionsForApproval,
+    isServicesComponentDeleteBlocked,
     computeBudgetLinePageErrors,
     feesForCards,
     getBudgetLinesUrl,
@@ -181,6 +184,41 @@ const useCreateBLIsAndSCs = (
     // Contract-modification tracking (OPS-3072) only applies on an Awarded agreement with the
     // backend's ENABLE_MODIFIED_LOE_EDITS capability on.
     const tracksContractModifications = enableModifiedLoeEdits && Boolean(selectedAgreement?.is_awarded);
+    // On an Awarded agreement, services components with non-Draft budget lines are gated (OPS-6440):
+    // an addition goes to Division Director approval, and a deletion is blocked. Only superusers
+    // bypass this, matching the backend.
+    const scChangesRequireApproval = tracksContractModifications && !isSuperUser;
+    const pendingServicesComponentAdditions = React.useMemo(
+        () =>
+            scChangesRequireApproval
+                ? getServicesComponentAdditionsForApproval({ servicesComponents, tempBudgetLines })
+                : [],
+        [scChangesRequireApproval, servicesComponents, tempBudgetLines]
+    );
+    const hasServicesComponentChangesForApproval = pendingServicesComponentAdditions.length > 0;
+    const servicesComponentChangeMessages = React.useMemo(
+        () =>
+            pendingServicesComponentAdditions.map(
+                (sc) =>
+                    `• ${sc.display_name ?? formatServiceComponent(sc.number, sc.optional, agreement?.service_requirement_type, true)} Addition`
+            ),
+        [pendingServicesComponentAdditions, agreement?.service_requirement_type]
+    );
+    /**
+     * Whether this saved services component can't be deleted: on an Awarded agreement it still has
+     * non-Draft budget lines and the user isn't a superuser (OPS-6440). Its delete button is disabled.
+     * @param {number | undefined} servicesComponentId
+     * @returns {boolean}
+     */
+    const isServicesComponentDeleteDisabled = (servicesComponentId) =>
+        scChangesRequireApproval &&
+        isServicesComponentDeleteBlocked({
+            servicesComponentId,
+            servicesComponents,
+            tempBudgetLines,
+            budgetLines,
+            deletedBudgetLines
+        });
 
     // Budget Team members and superusers write financial changes directly (no change-request
     // workflow), matching the backend's is_budget_team()/is_super_user() bypasses.
@@ -348,25 +386,25 @@ const useCreateBLIsAndSCs = (
      */
     const handleDeletions = React.useCallback(async () => {
         try {
-            const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
-                deleteServicesComponent(id).unwrap()
-            );
-            const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
-                deleteGrantNumber(id).unwrap()
-            );
-            const blisDeletionPromises = deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap());
-
-            // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.
-            await Promise.all(blisDeletionPromises);
-            await Promise.all(serviceComponentDeletionPromises);
-            await Promise.all(grantNumberDeletionPromises);
+            // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still
+            // referencing it. Each group starts only after the previous one finishes.
+            await Promise.all(deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap()));
+            await Promise.all(deletedServicesComponentsIds.map((id) => deleteServicesComponent(id).unwrap()));
+            await Promise.all((deletedGrantNumbersIds ?? []).map((id) => deleteGrantNumber(id).unwrap()));
         } catch (error) {
             console.error("Error deleting budget lines:", error);
+            // e.g. an SC delete blocked on an Awarded agreement (OPS-6440) returns its reason in errors
+            const backendMessage = Object.values(error?.data?.errors ?? {})
+                .flat()
+                .find((message) => typeof message === "string");
             setAlert({
                 type: "error",
                 heading: "Error",
-                message: "An error occurred while deleting budget lines. Please try again."
+                message: backendMessage ?? "An error occurred while deleting budget lines. Please try again."
             });
+            // Rethrow so handleSave doesn't follow up with a success alert. RTK Query errors are frozen,
+            // so wrap the error instead of marking it.
+            throw { alertShown: true, cause: error };
         }
     }, [
         deletedServicesComponentsIds,
@@ -546,11 +584,13 @@ const useCreateBLIsAndSCs = (
                     selectedAgreement,
                     savedViaModal,
                     blockerLocationPathname: blocker.location?.pathname,
-                    isThereAnyBLIsFinancialSnapshotChanged
+                    isThereAnyBLIsFinancialSnapshotChanged,
+                    servicesComponentChangeMessages
                 })
             );
         },
         [
+            servicesComponentChangeMessages,
             tempBudgetLines,
             deletedBudgetLines,
             budgetLines,
@@ -915,6 +955,9 @@ const useCreateBLIsAndSCs = (
                 if (suppressErrorAlert) {
                     throw error;
                 }
+                if (error?.alertShown) {
+                    return;
+                }
                 setAlert({
                     type: "error",
                     heading: "Error",
@@ -949,14 +992,17 @@ const useCreateBLIsAndSCs = (
     // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
     // Draft BLs are added, edited, and deleted freely; they only require a contract modification
     // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
-    // and SC changes are saved directly (not through approval), so neither is counted here.
+    // so adding one isn't counted here. Adding a services component counts when it has non-Draft
+    // budget lines (OPS-6440); deleting one isn't, since that's blocked for everyone but superusers.
+    // Only superusers bypass the addition, so it isn't gated on canEditDirectly.
     // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
     const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
         const bli = budgetLines?.find((b) => b.id === id);
         return bli && bli.status !== BLI_STATUS.DRAFT;
     });
     const requiresContractModification =
-        tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs);
+        (tracksContractModifications && !canEditDirectly && (hasFinancialSnapshotChanges || hasDeletedNonDraftBLIs)) ||
+        hasServicesComponentChangesForApproval;
 
     useCreateBLIsAndSCsSaveBlocker({
         blocker,
@@ -981,6 +1027,7 @@ const useCreateBLIsAndSCs = (
         datePickerSuite,
         scFormSuite,
         nonDraftBudgetLines,
+        isServicesComponentDeleteDisabled,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,

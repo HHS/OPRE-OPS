@@ -11,6 +11,7 @@ from models import (
     ChangeRequestStatus,
     ChangeRequestType,
     Division,
+    ServicesComponentChangeRequest,
     User,
 )
 from ops_api.ops.utils import change_requests_helpers as cr_helpers
@@ -22,6 +23,10 @@ def test_get_model_class_by_type_valid():
     assert (
         cr_helpers.get_model_class_by_type(ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST)
         is BudgetLineItemChangeRequest
+    )
+    assert (
+        cr_helpers.get_model_class_by_type(ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST)
+        is ServicesComponentChangeRequest
     )
 
 
@@ -36,6 +41,7 @@ def test_get_model_class_by_type_invalid():
         ({"has_status_change": True}, "status-change"),
         ({"has_budget_change": True}, "budget-change"),
         ({"has_proc_shop_change": True}, "procurement-shop-change"),
+        ({"has_services_component_change": True}, "budget-change"),
     ],
 )
 def test_build_approve_url_change_types(attrs, expected_type):
@@ -231,3 +237,28 @@ def test_build_review_outcome_title_and_message_invalid_status():
 
     with pytest.raises(ValueError, match="Unsupported status: IN_REVIEW"):
         cr_helpers.build_review_outcome_title_and_message(cr)
+
+
+@pytest.mark.parametrize(
+    "status,expected_title,expected_msg",
+    [
+        (
+            ChangeRequestStatus.APPROVED,
+            "Services Component Change Approved",
+            "Your request to add SC3 has been approved.",
+        ),
+        (
+            ChangeRequestStatus.REJECTED,
+            "Services Component Change Declined",
+            "Your request to add SC3 has been declined.",
+        ),
+    ],
+)
+def test_build_review_outcome_title_and_message_services_component(status, expected_title, expected_msg):
+    cr = Mock(
+        change_request_type=ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+        status=status,
+        requested_change_info={"target_display_name": "SC3"},
+    )
+
+    assert cr_helpers.build_review_outcome_title_and_message(cr) == (expected_title, expected_msg)

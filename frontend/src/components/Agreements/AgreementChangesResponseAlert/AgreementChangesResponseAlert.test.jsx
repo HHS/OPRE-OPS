@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { vi } from "vitest";
 import store from "../../../store";
 import AgreementChangesResponseAlert from "./AgreementChangesResponseAlert";
+import { formatChangeRequest } from "./AgreementChangesResponseAlert.hooks";
 
 const changeRequests = [
     {
@@ -94,5 +95,21 @@ describe("AgreementChangesAlert", () => {
         await waitFor(() => {
             expect(screen.queryByRole("status", { name: "alert" })).not.toBeInTheDocument();
         });
+    });
+});
+
+describe("formatChangeRequest — Services Component requests (OPS-6440)", () => {
+    it("lists a Services Component addition with its budget lines", () => {
+        render(
+            <ul>
+                {formatChangeRequest({
+                    status: "APPROVED",
+                    requested_change_diff: { services_component_create: { old: null, new: "SC3" } },
+                    requested_change_info: { linked_budget_line_item_ids: [15012, 15013] }
+                })}
+            </ul>
+        );
+
+        expect(screen.getByText("Adding: SC3 BL 15012, BL 15013")).toBeInTheDocument();
     });
 });

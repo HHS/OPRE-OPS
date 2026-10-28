@@ -225,7 +225,8 @@ export const codesToDisplayText = {
         can_id: "CAN",
         date_needed: "Obligate By Date",
         status: "Status",
-        delete: "Deleted"
+        delete: "Deleted",
+        services_component_create: "Add Services Component"
     },
     modificationEditType: {
         MODIFIED_LOE: "Modified Level of Effort"

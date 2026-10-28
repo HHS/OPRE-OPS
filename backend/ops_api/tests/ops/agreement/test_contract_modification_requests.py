@@ -27,8 +27,11 @@ from models import (
     ModType,
     OpsEvent,
     OpsEventType,
+    ServicesComponent,
+    ServicesComponentChangeRequest,
     User,
 )
+from models.utils.fiscal_year import get_current_fiscal_year
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
     DIVISION_DIRECTOR_USER_ID,
@@ -205,6 +208,123 @@ def test_submit_rejects_budget_lines_that_cannot_be_executed(
 
     assert response.status_code == 400, response.json
     assert reason in response.json["errors"]["budget_line_item_ids"][0]
+
+
+def _executable_bli(loaded_db, agreement, test_can):
+    """A Planned BLI that can be both executed (current FY) and edited (Need By Date not past)."""
+    return _add_bli(loaded_db, agreement, test_can, date_needed=datetime.date(get_current_fiscal_year(), 9, 30))
+
+
+def _move_into_pending_sc(client, loaded_db, agreement, bli):
+    """Add SC2 after award (pending) and move ``bli`` into it, which requests SC2's addition."""
+    response = client.post(
+        url_for("api.services-component-group"), json={"agreement_id": agreement.id, "number": 2, "optional": False}
+    )
+    assert response.status_code == 201, response.json
+    sc2_id = response.json["id"]
+    response = client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc2_id})
+    assert response.status_code in (200, 202), response.json
+    change_request = loaded_db.scalars(
+        select(ServicesComponentChangeRequest).where(ServicesComponentChangeRequest.services_component_id == sc2_id)
+    ).one()
+    return sc2_id, change_request.id
+
+
+def test_submit_rejects_a_budget_line_in_an_sc_awaiting_approval(
+    awarded_with_edit, basic_user_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, _, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    _move_into_pending_sc(basic_user_auth_client, loaded_db, agreement, executable)
+
+    response = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id])
+
+    assert response.status_code == 400, response.json
+    assert response.json["errors"]["budget_line_item_ids"] == [
+        f"Budget line {executable.id} is in a Services Component that is awaiting approval."
+    ]
+
+
+def test_sc_addition_edit_is_attached_by_an_approved_modification(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, _, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id, change_request_id = _move_into_pending_sc(basic_user_auth_client, loaded_db, agreement, executable)
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
+    )
+    assert response.status_code == 200, response.json
+    (sc_edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
+    assert sc_edit.field == "services_component_create"
+
+    request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+    request = loaded_db.get(ContractModificationRequest, request_id)
+    assert sc_edit.id in {edit.id for edit in request.edits}
+    response = _review_mod(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    loaded_db.expire_all()
+    assert loaded_db.get(type(sc_edit), sc_edit.id).agreement_mod_id == response.json["agreement_mod_id"]
+    assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
+
+
+def _approved_sc_addition_emptied(client, director_client, loaded_db, agreement, bli, sc1_id):
+    """Approve "Add SC2" for ``bli``, then move ``bli`` back to SC1 so SC2 has no budget lines."""
+    sc2_id, change_request_id = _move_into_pending_sc(client, loaded_db, agreement, bli)
+    response = director_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
+    )
+    assert response.status_code == 200, response.json
+    response = client.patch(url_for("api.budget-line-items-item", id=bli.id), json={"services_component_id": sc1_id})
+    assert response.status_code in (200, 202), response.json
+    return sc2_id
+
+
+def test_deleting_an_approved_sc_removes_its_pending_addition_edit(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, first, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id = _approved_sc_addition_emptied(
+        basic_user_auth_client,
+        division_director_auth_client,
+        loaded_db,
+        agreement,
+        executable,
+        first.services_component_id,
+    )
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 200, response.json
+    assert [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id] == []
+    pending = _get_pending(basic_user_auth_client, agreement.id).json["data"]
+    assert [e for e in pending if e["services_component_id"] == sc2_id] == []
+
+
+def test_deleting_an_sc_whose_addition_is_in_a_modification_in_review_returns_400(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, first, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc2_id = _approved_sc_addition_emptied(
+        basic_user_auth_client,
+        division_director_auth_client,
+        loaded_db,
+        agreement,
+        executable,
+        first.services_component_id,
+    )
+    assert _submit(basic_user_auth_client, agreement.id).status_code == 201
+
+    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+
+    assert response.status_code == 400, response.json
+    assert "contract modification that is in review" in response.json["errors"]["services_component"][0]
+    loaded_db.expire_all()
+    assert loaded_db.get(ServicesComponent, sc2_id) is not None
+    assert len([e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]) == 1
 
 
 def test_submit_rejects_a_budget_line_on_another_agreement(
