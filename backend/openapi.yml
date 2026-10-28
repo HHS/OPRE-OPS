@@ -8321,9 +8321,6 @@ components:
           type: boolean
           example: false
           description: True for a services component add request.
-        is_services_component_create:
-          type: boolean
-          example: false
         requested_change_info:
           type: object
           nullable: true

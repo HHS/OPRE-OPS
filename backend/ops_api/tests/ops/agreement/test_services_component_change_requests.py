@@ -14,7 +14,7 @@ import datetime
 
 import pytest
 from flask import url_for
-from sqlalchemy import select, text
+from sqlalchemy import select, text, update
 from sqlalchemy.exc import IntegrityError
 
 from models import (
@@ -205,7 +205,6 @@ def test_add_request_payload_notifies_director_and_marks_sc_in_review(
     assert cr.requested_change_info["linked_budget_line_item_ids"] == [bli.id]
     data = cr.to_dict()
     assert data["has_services_component_change"] is True
-    assert data["is_services_component_create"] is True
     assert data["requires_contract_modification"] is True
 
     assert sc2.in_review is True
@@ -392,7 +391,7 @@ def test_draft_to_planned_on_pending_sc_requests_sc_addition_too(
 
     (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
     assert cr.services_component_id == sc2_id
-    assert cr.is_services_component_create is True
+    assert cr.has_services_component_change is True
     assert cr.created_by == BASIC_USER_ID
     assert _bli_change_request(loaded_db, bli.id).has_status_change is True
     assert "Services Component Addition Requested" in _history_titles(loaded_db, awarded_agreement.id)
@@ -518,6 +517,26 @@ def test_withdraw_when_last_non_draft_budget_line_is_unlinked(
     assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
 
 
+def test_ensure_add_request_rereads_flag_after_lock(
+    app, mocker, modified_loe_enabled, loaded_db, test_can, awarded_agreement, app_ctx
+):
+    mocker.patch("ops_api.ops.utils.budget_line_items_helpers.is_super_user", return_value=False)
+    sc2 = _add_sc(loaded_db, awarded_agreement, 2, awaiting_add_approval=True)
+    _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
+    # An approval committed by another request: the row is updated, the loaded SC still says pending.
+    loaded_db.execute(
+        update(ServicesComponent).where(ServicesComponent.id == sc2.id).values(awaiting_add_approval=False),
+        execution_options={"synchronize_session": False},
+    )
+    assert sc2.awaiting_add_approval is True
+
+    with app.test_request_context():
+        change_request_id = ChangeRequestService(loaded_db).ensure_services_component_add_change_request(sc2)
+
+    assert change_request_id is None
+    assert _sc_change_requests(loaded_db, awarded_agreement.id) == []
+
+
 # ---=== Services Component service and resource (step 3) ===---
 
 
@@ -567,7 +586,7 @@ def test_linking_planned_budget_lines_to_pending_sc_creates_one_request(
     assert response.status_code in (200, 202), response.json
 
     (cr,) = _sc_change_requests(loaded_db, awarded_agreement.id)
-    assert cr.is_services_component_create is True
+    assert cr.has_services_component_change is True
     assert cr.requested_change_info["linked_budget_line_item_ids"] == [first_id, second_id]
     response = basic_user_auth_client.get(url_for("api.services-component-item", id=sc2_id))
     assert response.json["in_review"] is True
@@ -657,14 +676,16 @@ def test_superuser_linking_a_planned_budget_line_applies_the_sc_addition(
     assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
 
 
+@pytest.mark.parametrize("client_fixture", ["basic_user_auth_client", "budget_team_auth_client"])
 def test_deleting_sc_with_planned_budget_lines_is_blocked(
-    modified_loe_enabled, basic_user_auth_client, loaded_db, test_can, awarded_agreement, app_ctx
+    request, client_fixture, modified_loe_enabled, loaded_db, test_can, awarded_agreement, app_ctx
 ):
+    client = request.getfixturevalue(client_fixture)
     sc2 = _add_sc(loaded_db, awarded_agreement, 2)
     bli = _add_bli(loaded_db, awarded_agreement, sc2, test_can, BudgetLineItemStatus.PLANNED)
     sc2_id, bli_id = sc2.id, bli.id
 
-    response = basic_user_auth_client.delete(url_for("api.services-component-item", id=sc2_id))
+    response = client.delete(url_for("api.services-component-item", id=sc2_id))
 
     assert response.status_code == 400, response.json
     assert response.json["errors"]["services_component"] == [
@@ -810,7 +831,7 @@ def test_sc_response_includes_its_in_review_request(
     assert response.status_code == 200, response.json
     (item,) = response.json["change_requests_in_review"]
     assert item["id"] == cr.id
-    assert item["is_services_component_create"] is True
+    assert item["has_services_component_change"] is True
     assert item["requested_change_info"]["linked_budget_line_item_ids"] == [bli.id]
 
     response = basic_user_auth_client.get(

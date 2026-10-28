@@ -157,7 +157,6 @@ describe("ChangeRequestList", () => {
             agreement_id: agreement.id,
             change_request_type: "SERVICES_COMPONENT_CHANGE_REQUEST",
             has_services_component_change: true,
-            is_services_component_create: true,
             has_proc_shop_change: false,
             created_on: "2026-10-23T12:00:00.000000",
             created_by_user: { full_name: "Admin Demo" },

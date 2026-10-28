@@ -396,11 +396,16 @@ const useCreateBLIsAndSCs = (
             await Promise.all(grantNumberDeletionPromises);
         } catch (error) {
             console.error("Error deleting budget lines:", error);
+            // e.g. an SC delete blocked on an Awarded agreement (OPS-6440) returns its reason in errors
+            const backendMessage = Object.values(error?.data?.errors ?? {}).flat()[0];
             setAlert({
                 type: "error",
                 heading: "Error",
-                message: "An error occurred while deleting budget lines. Please try again."
+                message: backendMessage ?? "An error occurred while deleting budget lines. Please try again."
             });
+            // Rethrow so handleSave doesn't follow up with a success alert
+            error.alertShown = true;
+            throw error;
         }
     }, [
         deletedServicesComponentsIds,
@@ -951,6 +956,9 @@ const useCreateBLIsAndSCs = (
                 if (suppressErrorAlert) {
                     throw error;
                 }
+                if (error?.alertShown) {
+                    return;
+                }
                 setAlert({
                     type: "error",
                     heading: "Error",
@@ -985,9 +993,9 @@ const useCreateBLIsAndSCs = (
     // `requiresFinancialApproval` already gates (Decision 10: not a second, stacked approval).
     // Draft BLs are added, edited, and deleted freely; they only require a contract modification
     // once changed to Planned (on the Change BL Status page). New BLs are always created as Draft,
-    // so adding one isn't counted here. Adding or deleting a services component counts when it has
-    // non-Draft budget lines (OPS-6440); only superusers bypass that, so it isn't gated on
-    // canEditDirectly.
+    // so adding one isn't counted here. Adding a services component counts when it has non-Draft
+    // budget lines (OPS-6440); deleting one isn't, since that's blocked for everyone but superusers.
+    // Only superusers bypass the addition, so it isn't gated on canEditDirectly.
     // Only persisted BLs count: deleting a never-saved BL leaves its temp id in the deleted list.
     const hasDeletedNonDraftBLIs = deletedBudgetLines.some((id) => {
         const bli = budgetLines?.find((b) => b.id === id);

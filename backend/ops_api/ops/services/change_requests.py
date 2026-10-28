@@ -540,23 +540,14 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         ``awaiting_add_approval`` flag, and a decline removes it. ``commit=False`` follows
         ``add_bli_change_requests``: no commit and no notification.
         """
-        return self._add_services_component_change_request(
-            services_component,
-            ServicesComponentChangeRequest.create_field_name,
-            {"old": None, "new": services_component.display_name},
-            commit,
-        )
-
-    def _add_services_component_change_request(
-        self, services_component: ServicesComponent, field: str, diff: dict, commit: bool
-    ) -> int:
+        field = ServicesComponentChangeRequest.create_field_name
         with OpsEventHandler(OpsEventType.CREATE_CHANGE_REQUEST) as cr_meta:
             change_request_data = {
                 "services_component_id": services_component.id,
                 "agreement_id": services_component.agreement_id,
                 "requested_change_data": {field: True},
                 # Display names are frozen here so history survives the SC being removed.
-                "requested_change_diff": {field: diff},
+                "requested_change_diff": {field: {"old": None, "new": services_component.display_name}},
                 "requested_change_info": {
                     "target_display_name": services_component.display_name,
                     "requires_contract_modification": agreement_tracks_contract_modifications(
@@ -587,6 +578,10 @@ class ChangeRequestService(OpsService[ChangeRequest]):
             return None
         # Budget line PATCHes for the same SC run in parallel; serialize them so only one creates the request.
         self.lock_services_component(services_component.id)
+        # The flag was read before the lock; a review that committed while we waited may have cleared it.
+        self.db_session.refresh(services_component, attribute_names=["awaiting_add_approval"])
+        if not services_component.awaiting_add_approval:
+            return None
         if not sc_requires_approval_gate(services_component.agreement):
             # A superuser (or a flag/award change) applies the addition directly once it has a
             # non-Draft budget line, so the SC isn't left pending with no request.
@@ -663,7 +658,6 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         return self.db_session.scalar(
             select(ServicesComponentChangeRequest).where(
                 ServicesComponentChangeRequest.in_review_filter(),
-                ServicesComponentChangeRequest.is_services_component_create,
                 ServicesComponentChangeRequest.services_component_id == services_component_id,
             )
         )
@@ -690,12 +684,8 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         if services_component is None:
             return None
 
-        approved = change_request.status == ChangeRequestStatus.APPROVED
-        if approved:
-            # Recorded before the SC is removed, while the change request still points at it.
+        if change_request.status == ChangeRequestStatus.APPROVED:
             ContractModificationEditService(self.db_session).create_from_approved_change_request(change_request)
-
-        if approved:
             services_component.awaiting_add_approval = False
             return None
         # Never remove an SC whose addition was already approved.

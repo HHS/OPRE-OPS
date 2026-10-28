@@ -34,7 +34,6 @@ class GenericChangeRequestResponseSchema(ChangeRequestResponseSchema):
     requires_contract_modification = fields.Bool(load_default=False)
     services_component_id = fields.Int(required=False, allow_none=True)
     has_services_component_change = fields.Bool(load_default=False)
-    is_services_component_create = fields.Bool(load_default=False)
 
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -46,7 +45,6 @@ class AgreementChangeRequestResponseSchema(ChangeRequestResponseSchema):
     # line requests in the same list don't have these attributes, so they serialize as before.
     services_component_id = fields.Int(allow_none=True)
     has_services_component_change = fields.Bool()
-    is_services_component_create = fields.Bool()
 
 
 class BudgetLineItemChangeRequestResponseSchema(ChangeRequestResponseSchema):

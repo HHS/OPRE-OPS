@@ -97,7 +97,6 @@ describe("getServicesComponentChangeMessages (OPS-6440)", () => {
         const changeRequests = [
             {
                 has_services_component_change: true,
-                is_services_component_create: true,
                 requested_change_info: { target_display_name: "SC3" }
             },
             { has_proc_shop_change: true }

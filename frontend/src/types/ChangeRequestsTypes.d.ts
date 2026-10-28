@@ -15,7 +15,6 @@ export type ChangeRequest = {
     has_proc_shop_change?: boolean;
     has_delete_change?: boolean;
     has_services_component_change?: boolean;
-    is_services_component_create?: boolean;
     requires_contract_modification?: boolean;
     services_component_id?: number | null;
     id: number;

@@ -702,6 +702,30 @@ describe("useCreateBLIsAndSCs", () => {
                 expect(message).not.toContain("Services Component 3 Addition");
             });
 
+            it("shows the backend's reason, not a success alert, when an SC delete is rejected", async () => {
+                const reason = "Services Components with budget lines cannot be deleted on awarded agreements.";
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1 }],
+                    deleted_services_components_ids: [21]
+                });
+                deleteServicesComponentMock.mockReturnValue({
+                    unwrap: () =>
+                        Promise.reject({
+                            status: 400,
+                            data: { message: "Validation failed", errors: { services_component: [reason] } }
+                        })
+                });
+                const { result } = renderAwarded();
+
+                await act(async () => {
+                    await result.current.handleSave(false);
+                });
+
+                expect(setAlertMock).toHaveBeenCalledTimes(1);
+                expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+            });
+
             it("disables deleting a saved SC whose Planned budget line's own deletion is going to approval", () => {
                 // The deleted line is gone from context but still linked in the saved budget lines.
                 useEditAgreementMock.mockReturnValue({

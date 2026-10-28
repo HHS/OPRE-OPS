@@ -213,14 +213,6 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
         return cls.requested_change_data.has_key(cls.create_field_name)
 
     @hybrid_property
-    def is_services_component_create(self):
-        return self.create_field_name in self.requested_change_data
-
-    @is_services_component_create.expression
-    def is_services_component_create(cls):
-        return cls.requested_change_data.has_key(cls.create_field_name)
-
-    @hybrid_property
     def requires_contract_modification(self):
         """Snapshotted at creation, same as BudgetLineItemChangeRequest.requires_contract_modification."""
         return bool((self.requested_change_info or {}).get("requires_contract_modification"))
@@ -233,7 +225,6 @@ class ServicesComponentChangeRequest(AgreementChangeRequest):
         """Override to_dict to include hybrid properties."""
         data = super().to_dict()
         data["has_services_component_change"] = bool(self.has_services_component_change)
-        data["is_services_component_create"] = bool(self.is_services_component_create)
         data["requires_contract_modification"] = bool(self.requires_contract_modification)
         return data
 

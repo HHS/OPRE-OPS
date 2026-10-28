@@ -258,7 +258,6 @@ describe("useApproveAgreement", () => {
                         id: 9100,
                         has_services_component_change: true,
                         has_proc_shop_change: false,
-                        is_services_component_create: true,
                         requested_change_data: { services_component_create: true },
                         requested_change_diff: { services_component_create: { old: null, new: "SC2" } },
                         requested_change_info: { target_display_name: "SC2", linked_budget_line_item_ids: [15010] }
