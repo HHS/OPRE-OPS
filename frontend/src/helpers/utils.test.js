@@ -1,6 +1,7 @@
 import {
     getCurrentFiscalYear,
     parseFiscalYearParam,
+    withFiscalYearParam,
     calculatePercent,
     convertCodeForDisplay,
     fiscalYearFromDate,
@@ -462,6 +463,19 @@ describe("applyMinimumArcValue", () => {
         // Guard fires: returns adjustedItems with floors but no redistribution
         expect(result[0].value).toBe(2);
         expect(result[1].value).toBe(2);
+    });
+});
+
+describe("withFiscalYearParam", () => {
+    it("adds the selected fiscal year to the link", () => {
+        expect(withFiscalYearParam("/cans/504", 2025)).toBe("/cans/504?fy=2025");
+        expect(withFiscalYearParam("/cans/504", "2025")).toBe("/cans/504?fy=2025");
+    });
+
+    it("leaves the link unchanged without a specific fiscal year", () => {
+        expect(withFiscalYearParam("/cans/504", undefined)).toBe("/cans/504");
+        expect(withFiscalYearParam("/cans/504", null)).toBe("/cans/504");
+        expect(withFiscalYearParam("/cans/504", "All")).toBe("/cans/504");
     });
 });
 

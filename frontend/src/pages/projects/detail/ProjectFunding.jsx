@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
@@ -8,9 +8,10 @@ import ProjectFundingByPortfolioCard from "../../../components/Projects/ProjectF
 import ProjectFundingCANsTable from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTable";
 import ProjectFundingCANsTableLoading from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
-import { getCurrentFiscalYear, parseFiscalYearParam } from "../../../helpers/utils";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useDetailFiscalYear, useSyncFiscalYearParam } from "../../../hooks/useDetailFiscalYear.hooks";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 
 /**
@@ -22,12 +23,11 @@ const ProjectFunding = () => {
     const { id } = useParams();
     const projectId = id ? +id : -1;
 
-    // A `?fy=` param (set by breadcrumb links back to this tab) seeds the selected FY.
-    const [searchParams] = useSearchParams();
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(
-        () => parseFiscalYearParam(searchParams.get("fy")) ?? getCurrentFiscalYear()
-    );
+    // Shared with the portfolio and CAN pages, so going back shows the FY last picked on any of them.
+    const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } =
+        useDetailFiscalYear(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
+    useSyncFiscalYearParam(fiscalYear);
 
     /** @type {{data?: import("../../../types/ProjectTypes").Project | undefined, error?: Object, isLoading: boolean}} */
     const {

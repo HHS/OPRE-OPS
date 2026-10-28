@@ -7,6 +7,7 @@ import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useHandOverFiscalYear } from "../../../hooks/useDetailFiscalYear.hooks";
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -45,6 +46,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
     const agreementList = project.agreement_name_list ?? [];
     const listTrailState = useListTrailState("projects");
     const projectPath = `/projects/${project.id}`;
+    const handOverFiscalYear = useHandOverFiscalYear();
 
     const visibleColumns = [
         <td key="title">
@@ -52,6 +54,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                 className="text-ink text-no-underline"
                 to={projectPath}
                 state={listTrailState(projectPath)}
+                onClick={handOverFiscalYear(selectedFiscalYear)}
             >
                 {project.title}
             </Link>

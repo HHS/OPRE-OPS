@@ -60,6 +60,18 @@ describe("CanCard", () => {
         });
     });
 
+    it("links to the CAN on the fiscal year the card shows", () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+        expect(screen.getByRole("link")).toHaveAttribute("href", `/cans/${mockCan.id}?fy=${mockFiscalYear}`);
+    });
+
     it("renders CanCard with correct information", async () => {
         render(
             <BrowserRouter>

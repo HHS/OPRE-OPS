@@ -23,6 +23,26 @@ vi.mock("react-router-dom", async (importOriginal) => {
     };
 });
 
+// Stand-in for the shared detail-page FY (tested in useDetailFiscalYear.hooks.test.jsx):
+// local state seeded from `?fy=` or the page's fallback; only a specific year can be set.
+vi.mock("../../../hooks/useDetailFiscalYear.hooks", async () => {
+    const { useState } = await import("react");
+    const { parseFiscalYearParam } = await vi.importActual("../../../helpers/utils");
+    return {
+        useDetailFiscalYear: (fallback) => {
+            const [fiscalYear, setState] = useState(
+                () => parseFiscalYearParam(new URLSearchParams(mockSearch).get("fy")) ?? fallback
+            );
+            const setFiscalYear = (value) => {
+                const next = parseFiscalYearParam(String(value));
+                if (next) setState(next);
+            };
+            return { fiscalYear, setFiscalYear };
+        },
+        useSyncFiscalYearParam: () => {}
+    };
+});
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetCanByIdQuery: (...args) => useGetCanByIdQueryMock(...args),
     useGetCanFundingQuery: (...args) => useGetCanFundingQueryMock(...args)
@@ -268,7 +288,8 @@ describe("useCan", () => {
         expect(result.current.isTableLoading).toBe(true);
     });
 
-    it("handles 'All' fiscal year selection without infinite loop", async () => {
+    it("handles 'All' fiscal years (from ?fy=all) without infinite loop", async () => {
+        mockSearch = "?fy=all";
         useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
             if (fiscalYear === 2025) {
                 return { data: { funding: { available_funding: 75 } }, isLoading: false };
@@ -289,10 +310,6 @@ describe("useCan", () => {
         });
 
         const { result } = renderHook(() => useCan());
-
-        act(() => {
-            result.current.setSelectedFiscalYear("All");
-        });
 
         await waitFor(() => {
             expect(result.current.fiscalYear).toBeNull();

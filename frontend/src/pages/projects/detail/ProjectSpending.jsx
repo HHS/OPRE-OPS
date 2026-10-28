@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
     useGetAgreementsByResearchProjectFilterQuery,
@@ -9,13 +9,14 @@ import {
 import FiscalYear from "../../../components/UI/FiscalYear";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
-import { getCurrentFiscalYear, computeDisplayPercents, parseFiscalYearParam } from "../../../helpers/utils";
+import { getCurrentFiscalYear, computeDisplayPercents } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
 import ProjectSpendingAgreementsTableLoading from "../../../components/Projects/ProjectSpendingAgreementsTable/ProjectSpendingAgreementsTableLoading";
 import ProjectSpendingTotalsCard from "../../../components/Projects/ProjectSpendingTotalsCard";
 import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useDetailFiscalYear, useSyncFiscalYearParam } from "../../../hooks/useDetailFiscalYear.hooks";
 
 /**
  * Derives the default fiscal year to display.
@@ -50,11 +51,9 @@ const ProjectSpending = () => {
     const { id } = useParams();
     const projectId = id ? +id : -1;
 
-    const [selectedFY, setSelectedFY] = React.useState(null);
-    // A `?fy=` param (set by breadcrumb links back to this tab) seeds the selected FY
-    // when that FY has spending data; otherwise the default FY applies.
-    const [searchParams] = useSearchParams();
-    const fiscalYearFromUrl = parseFiscalYearParam(searchParams.get("fy"));
+    // The FY is shared with the portfolio, CAN and project funding pages, so going back shows
+    // the FY last picked on any of them. It applies here when this project has spending in it.
+    const { fiscalYear: requestedFY, setFiscalYear: setSelectedFY } = useDetailFiscalYear();
 
     const {
         data: project,
@@ -83,20 +82,21 @@ const ProjectSpending = () => {
         skip: !projectId || projectId === -1
     });
 
+    // Once spending data arrives: the requested FY when it has spending, otherwise the default FY.
+    const agreementsByFy = spendingData?.agreements_by_fy;
+    const selectedFY = agreementsByFy
+        ? requestedFY && requestedFY in agreementsByFy
+            ? Number(requestedFY)
+            : getDefaultFY(agreementsByFy)
+        : null;
+    useSyncFiscalYearParam(selectedFY);
+
     // Ancestry passed to the agreement links below, so an agreement opened from
     // here shows "… > <project> > <agreement>".
     const linkAncestry = useAncestryForChildren({
         ownCrumb: { label: project?.title ?? "Project", fiscalYear: selectedFY },
         fallbackCrumb: LIST_CRUMBS.projects
     });
-
-    // Set default FY once spending data arrives — all hooks must run before any early returns
-    useEffect(() => {
-        if (spendingData?.agreements_by_fy && selectedFY === null) {
-            const urlFYAvailable = fiscalYearFromUrl && fiscalYearFromUrl in spendingData.agreements_by_fy;
-            setSelectedFY(urlFYAvailable ? fiscalYearFromUrl : getDefaultFY(spendingData.agreements_by_fy));
-        }
-    }, [spendingData, selectedFY, fiscalYearFromUrl]);
 
     // Every FY that has any budget line, including draft-only years with no spending,
     // sorted descending — must be before early returns
