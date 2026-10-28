@@ -55,12 +55,12 @@ const useStartModification = (agreementId) => {
     React.useEffect(() => {
         setBudgetLines(
             (agreement?.budget_line_items ?? []).map((bli) => {
-                const disabledReason = getModBudgetLineDisabledReason(bli);
+                const disabledReason = getModBudgetLineDisabledReason(bli, servicesComponents);
                 return { ...bli, selected: false, actionable: !disabledReason, disabledReason };
             })
         );
         setToggleStates({});
-    }, [agreement]);
+    }, [agreement, servicesComponents]);
 
     const isInReview = modificationRequests.some((request) => request.status === "IN_REVIEW");
     // Only an Awarded agreement with the capability on and no modification in review can start one.

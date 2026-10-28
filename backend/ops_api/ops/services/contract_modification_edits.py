@@ -18,10 +18,18 @@ from models import (
     ChangeRequestStatus,
     ChangeRequestType,
     ContractModificationEdit,
+    ContractModificationRequest,
+    ContractModificationRequestStatus,
     ModificationEditType,
+    ServicesComponentChangeRequest,
 )
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
+
+SC_ADDITION_IN_MODIFICATION_MESSAGE = (
+    "This Services Component's addition is in a contract modification that is in review, "
+    "so it can't be deleted until the modification is approved or declined."
+)
 
 
 class ContractModificationEditService:
@@ -128,6 +136,37 @@ class ContractModificationEditService:
             .execution_options(synchronize_session="fetch")
         )
         return result.rowcount
+
+    def discard_pending_services_component_addition(self, services_component_id: int) -> None:
+        """Remove the pending "Add SC" edit of a Services Component being deleted (OPS-6440).
+
+        Otherwise the edit stays pending and goes into the next modification for an SC that no
+        longer exists. If the edit is in a contract modification in review, removing it would
+        change what the Division Director is reviewing, so the delete is rejected instead.
+        Does not commit.
+        """
+        edits = self.db_session.scalars(
+            select(ContractModificationEdit).where(
+                ContractModificationEdit.services_component_id == services_component_id,
+                ContractModificationEdit.field == ServicesComponentChangeRequest.create_field_name,
+                ContractModificationEdit.agreement_mod_id.is_(None),
+            )
+        ).all()
+        if not edits:
+            return
+        in_review_request_id = self.db_session.scalar(
+            select(ContractModificationRequest.id)
+            .join(ContractModificationRequest.edits)
+            .where(
+                ContractModificationEdit.id.in_([edit.id for edit in edits]),
+                ContractModificationRequest.status == ContractModificationRequestStatus.IN_REVIEW,
+            )
+            .limit(1)
+        )
+        if in_review_request_id is not None:
+            raise ValidationError({"services_component": [SC_ADDITION_IN_MODIFICATION_MESSAGE]})
+        for edit in edits:
+            self.db_session.delete(edit)
 
     def _get_supported_agreement(self, agreement_id: int) -> Agreement:
         agreement = self.db_session.get(Agreement, agreement_id)

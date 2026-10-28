@@ -709,13 +709,12 @@ describe("useCreateBLIsAndSCs", () => {
                     services_components: [{ id: 11, number: 1 }],
                     deleted_services_components_ids: [21]
                 });
-                deleteServicesComponentMock.mockReturnValue({
-                    unwrap: () =>
-                        Promise.reject({
-                            status: 400,
-                            data: { message: "Validation failed", errors: { services_component: [reason] } }
-                        })
+                // RTK Query hands back its errors frozen.
+                const rtkError = Object.freeze({
+                    status: 400,
+                    data: Object.freeze({ message: "Validation failed", errors: { services_component: [reason] } })
                 });
+                deleteServicesComponentMock.mockReturnValue({ unwrap: () => Promise.reject(rtkError) });
                 const { result } = renderAwarded();
 
                 await act(async () => {
@@ -724,6 +723,34 @@ describe("useCreateBLIsAndSCs", () => {
 
                 expect(setAlertMock).toHaveBeenCalledTimes(1);
                 expect(setAlertMock).toHaveBeenCalledWith({ type: "error", heading: "Error", message: reason });
+            });
+
+            it("deletes services components only after the budget line deletes finish", async () => {
+                useEditAgreementMock.mockReturnValue({
+                    ...editAgreementMockData,
+                    services_components: [{ id: 11, number: 1 }],
+                    deleted_services_components_ids: [21],
+                    deleted_budget_line_items_ids: [710]
+                });
+                let finishBudgetLineDelete;
+                deleteBudgetLineItemMock.mockReturnValue({
+                    unwrap: () => new Promise((resolve) => (finishBudgetLineDelete = resolve))
+                });
+                deleteServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+                const { result } = renderAwarded();
+
+                let save;
+                await act(async () => {
+                    save = result.current.handleSave(false);
+                });
+                expect(deleteBudgetLineItemMock).toHaveBeenCalledWith(710);
+                expect(deleteServicesComponentMock).not.toHaveBeenCalled();
+
+                await act(async () => {
+                    finishBudgetLineDelete({});
+                    await save;
+                });
+                expect(deleteServicesComponentMock).toHaveBeenCalledWith(21);
             });
 
             it("disables deleting a saved SC whose Planned budget line's own deletion is going to approval", () => {

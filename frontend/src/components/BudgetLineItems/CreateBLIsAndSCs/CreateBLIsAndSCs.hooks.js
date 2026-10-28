@@ -386,30 +386,25 @@ const useCreateBLIsAndSCs = (
      */
     const handleDeletions = React.useCallback(async () => {
         try {
-            const serviceComponentDeletionPromises = deletedServicesComponentsIds.map((id) =>
-                deleteServicesComponent(id).unwrap()
-            );
-            const grantNumberDeletionPromises = (deletedGrantNumbersIds ?? []).map((id) =>
-                deleteGrantNumber(id).unwrap()
-            );
-            const blisDeletionPromises = deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap());
-
-            // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still referencing it.
-            await Promise.all(blisDeletionPromises);
-            await Promise.all(serviceComponentDeletionPromises);
-            await Promise.all(grantNumberDeletionPromises);
+            // BLIs first so a grant number / SC with a SET NULL FK isn't deleted out from under a BLI still
+            // referencing it. Each group starts only after the previous one finishes.
+            await Promise.all(deletedBudgetLines.map((id) => deleteBudgetLineItem(id).unwrap()));
+            await Promise.all(deletedServicesComponentsIds.map((id) => deleteServicesComponent(id).unwrap()));
+            await Promise.all((deletedGrantNumbersIds ?? []).map((id) => deleteGrantNumber(id).unwrap()));
         } catch (error) {
             console.error("Error deleting budget lines:", error);
             // e.g. an SC delete blocked on an Awarded agreement (OPS-6440) returns its reason in errors
-            const backendMessage = Object.values(error?.data?.errors ?? {}).flat()[0];
+            const backendMessage = Object.values(error?.data?.errors ?? {})
+                .flat()
+                .find((message) => typeof message === "string");
             setAlert({
                 type: "error",
                 heading: "Error",
                 message: backendMessage ?? "An error occurred while deleting budget lines. Please try again."
             });
-            // Rethrow so handleSave doesn't follow up with a success alert
-            error.alertShown = true;
-            throw error;
+            // Rethrow so handleSave doesn't follow up with a success alert. RTK Query errors are frozen,
+            // so wrap the error instead of marking it.
+            throw { alertShown: true, cause: error };
         }
     }, [
         deletedServicesComponentsIds,

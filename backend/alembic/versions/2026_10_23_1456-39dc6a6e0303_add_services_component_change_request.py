@@ -61,8 +61,8 @@ def upgrade() -> None:
         ["id"],
         ondelete="SET NULL",
     )
-    # This index's WHERE clause compares against the changerequesttype enum, so a later
-    # sync_enum_values on that type must list it in indexes_to_recreate.
+    # This index's WHERE clause compares against the changerequesttype and changerequeststatus
+    # enums, so a later sync_enum_values on either type must list it in indexes_to_recreate.
     op.create_index(
         "ix_change_request_one_in_review_per_services_component",
         "change_request",

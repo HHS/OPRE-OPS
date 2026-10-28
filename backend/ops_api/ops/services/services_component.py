@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from models import Agreement, ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
@@ -171,7 +172,7 @@ class ServicesComponentService:
         Delete a services component.
 
         On an Awarded agreement, an SC with non-Draft budget lines can only be deleted by a
-        superuser (OPS-6440).
+        superuser (OPS-6440). The SC's pending "Add SC" edit, if any, is removed with it.
 
         Args:
             obj_id: The ID of the services component to delete
@@ -179,7 +180,8 @@ class ServicesComponentService:
         Raises:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to delete this services component
-            ValidationError: If the SC is in review, or is blocked on an Awarded agreement
+            ValidationError: If the SC is in review, is blocked on an Awarded agreement, or its
+                addition is in a contract modification in review
         """
         if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
@@ -191,6 +193,7 @@ class ServicesComponentService:
 
         if self.delete_blocked(services_component):
             raise ValidationError({"services_component": [AWARDED_DELETE_BLOCKED_MESSAGE]})
+        ContractModificationEditService(self.db_session).discard_pending_services_component_addition(obj_id)
 
         self.db_session.delete(services_component)
         if commit:
