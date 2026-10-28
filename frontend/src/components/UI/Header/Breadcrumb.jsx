@@ -75,7 +75,11 @@ const Breadcrumb = ({ currentName, parentCrumb }) => {
                 key={index}
                 label={ancestor.label}
                 to={ancestor.to}
-                state={index > 0 ? buildTrailState(ancestor.to, trail.ancestors.slice(0, index)) : undefined}
+                state={
+                    index > 0
+                        ? buildTrailState(ancestor.to, trail.ancestors.slice(0, index), ancestor.label)
+                        : undefined
+                }
             />
         ));
     } else {
@@ -98,7 +102,7 @@ const Breadcrumb = ({ currentName, parentCrumb }) => {
             <CrumbLink
                 label={parentCrumb.label}
                 to={parentCrumb.to}
-                state={trail ? buildTrailState(parentCrumb.to, ancestors) : undefined}
+                state={buildTrailState(parentCrumb.to, ancestors, parentCrumb.label)}
             />
         );
     }

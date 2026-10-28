@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useCarriedPageLabel, useForwardedTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -36,6 +36,8 @@ const Agreement = () => {
     const location = useLocation();
     // Keep the breadcrumb trail when returning to this agreement's pages.
     const trailState = useForwardedTrailState();
+    // The name the opening link showed, so the breadcrumb leaf doesn't wait for the agreement to load.
+    const carriedName = useCarriedPageLabel();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
@@ -198,7 +200,7 @@ const Agreement = () => {
 
     if (isLoadingAgreement) {
         return (
-            <App breadCrumbName="Agreement">
+            <App breadCrumbName={carriedName ?? ""}>
                 <h1>Loading...</h1>
             </App>
         );

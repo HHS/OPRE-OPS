@@ -30,6 +30,20 @@ export const useBreadcrumbTrail = () => {
 };
 
 /**
+ * The current page's name as carried by the link that opened it (see
+ * `buildTrailState`), for its leaf crumb while the page's own data loads.
+ * Unlike `useBreadcrumbTrail`, a trail with no ancestors still counts here: a
+ * link with nothing to show before the page can still name it.
+ *
+ * @returns {string | undefined}
+ */
+export const useCarriedPageLabel = () => {
+    const { pathname, state } = useLocation();
+    const trail = getTrailFromState(state);
+    return trailMatchesPath(trail, pathname) ? trail.targetLabel : undefined;
+};
+
+/**
  * Location state that carries the current trail, for `<Link state>` /
  * `<Navigate state>` to another page of the same resource (e.g. a tab).
  * Imperative navigation should use `useTrailNavigate` instead.
@@ -103,12 +117,13 @@ export const useListCrumb = (listKey) => {
 
 /**
  * Build location state for links from a list page's rows: each destination's
- * trail is the list's crumb (see `useListCrumb`).
+ * trail is the list's crumb (see `useListCrumb`), plus the row's name for the
+ * destination's leaf crumb while it loads.
  *
  * @param {keyof typeof LIST_CRUMBS} listKey
- * @returns {(targetPath: string) => { breadcrumbTrail: BreadcrumbTrail }}
+ * @returns {(targetPath: string, targetLabel?: string) => { breadcrumbTrail: BreadcrumbTrail }}
  */
 export const useListTrailState = (listKey) => {
     const listCrumb = useListCrumb(listKey);
-    return (targetPath) => buildTrailState(targetPath, [listCrumb]);
+    return (targetPath, targetLabel) => buildTrailState(targetPath, [listCrumb], targetLabel);
 };

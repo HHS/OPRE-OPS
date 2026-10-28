@@ -15,6 +15,8 @@
  * @typedef {Object} BreadcrumbTrail
  * @property {string} targetPath - Destination path the trail applies to (e.g. "/agreements/123").
  * @property {BreadcrumbAncestor[]} ancestors - Crumbs shown before the leaf, in order.
+ * @property {string} [targetLabel] - The destination's own name, known to the link (e.g. an agreement row's
+ *   title), so its leaf crumb can show it before the destination's data has loaded.
  */
 
 /** Location-state key under which a link carries its breadcrumb trail. */
@@ -34,9 +36,11 @@ export const toTrailState = (trail) => ({ [TRAIL_STATE_KEY]: trail });
  *
  * @param {string} targetPath - The link's destination path.
  * @param {BreadcrumbAncestor[]} [ancestors] - Crumbs to show before the destination's leaf.
+ * @param {string} [targetLabel] - The destination's name, shown as its leaf while it loads.
  * @returns {{ breadcrumbTrail: BreadcrumbTrail }}
  */
-export const buildTrailState = (targetPath, ancestors = []) => toTrailState({ targetPath, ancestors });
+export const buildTrailState = (targetPath, ancestors = [], targetLabel) =>
+    toTrailState(targetLabel ? { targetPath, ancestors, targetLabel } : { targetPath, ancestors });
 
 /**
  * Read the breadcrumb trail carried on a location's state, if any.

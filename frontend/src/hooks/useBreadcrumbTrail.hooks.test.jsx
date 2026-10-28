@@ -6,6 +6,7 @@ import { buildTrailState } from "../helpers/breadcrumb.helpers";
 import {
     useAncestryForChildren,
     useBreadcrumbTrail,
+    useCarriedPageLabel,
     useForwardedTrailState,
     useListCrumb,
     useListTrailState,
@@ -17,7 +18,7 @@ const renderAt = (hook, url, trail) => {
     const entry = {
         pathname,
         search: search ? `?${search}` : "",
-        state: trail ? buildTrailState(trail.targetPath, trail.ancestors) : null
+        state: trail ? buildTrailState(trail.targetPath, trail.ancestors, trail.targetLabel) : null
     };
     const wrapper = ({ children }) => <MemoryRouter initialEntries={[entry]}>{children}</MemoryRouter>;
     return renderHook(hook, { wrapper });
@@ -41,6 +42,26 @@ describe("useBreadcrumbTrail", () => {
     it("treats a trail with no ancestors as no trail, so the route hierarchy is used", () => {
         const { result } = renderAt(() => useBreadcrumbTrail(), "/cans/1", { targetPath: "/cans/1", ancestors: [] });
         expect(result.current).toBeNull();
+    });
+});
+
+describe("useCarriedPageLabel", () => {
+    it("returns the name the opening link carried, even with no ancestors", () => {
+        const { result } = renderAt(() => useCarriedPageLabel(), "/agreements/1/budget-lines", {
+            targetPath: "/agreements/1",
+            ancestors: [],
+            targetLabel: "Agreement X"
+        });
+        expect(result.current).toBe("Agreement X");
+    });
+
+    it("ignores a name carried for a different resource", () => {
+        const { result } = renderAt(() => useCarriedPageLabel(), "/agreements/2", {
+            targetPath: "/agreements/1",
+            ancestors: [portfolios],
+            targetLabel: "Agreement X"
+        });
+        expect(result.current).toBeUndefined();
     });
 });
 

@@ -73,6 +73,14 @@ describe("buildTrailState / getTrailFromState", () => {
         expect(getTrailFromState(state)).toEqual({ targetPath: "/cans/1", ancestors: [cans] });
     });
 
+    it("carries the destination's name when the link provides one", () => {
+        expect(getTrailFromState(buildTrailState("/agreements/1", [portfolios], "Agreement X"))).toEqual({
+            targetPath: "/agreements/1",
+            ancestors: [portfolios],
+            targetLabel: "Agreement X"
+        });
+    });
+
     it("returns null when the location carries no trail", () => {
         expect(getTrailFromState(null)).toBeNull();
         expect(getTrailFromState({ other: true })).toBeNull();

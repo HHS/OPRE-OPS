@@ -164,7 +164,8 @@ describe("ProjectSpendingAgreementRow", () => {
 
         expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/1",
-            ancestors: ancestry
+            ancestors: ancestry,
+            targetLabel: "Contract #1: African American Child and Family Research Center"
         });
     });
 });
