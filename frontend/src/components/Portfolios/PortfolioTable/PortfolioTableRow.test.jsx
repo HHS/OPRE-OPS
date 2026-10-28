@@ -35,6 +35,14 @@ describe("PortfolioTableRow", () => {
         expect(link).toHaveAttribute("href", "/portfolios/1/spending?fy=2025");
     });
 
+    it("hands the list's FY over to the detail pages when the portfolio link is clicked", async () => {
+        const { store } = renderRow(<PortfolioTableRow {...defaultProps} />);
+
+        await userEvent.click(screen.getByRole("link", { name: "Child Care (CC)" }));
+
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(2025);
+    });
+
     it("displays total funding with currency format", () => {
         renderRow(<PortfolioTableRow {...defaultProps} />);
 

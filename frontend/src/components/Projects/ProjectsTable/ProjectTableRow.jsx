@@ -4,7 +4,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable/TableRowExpandable";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { NO_DATA } from "../../../constants";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, withFiscalYearParam } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 import { useHandOverFiscalYear } from "../../../hooks/useDetailFiscalYear.hooks";
@@ -45,7 +45,8 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
 
     const agreementList = project.agreement_name_list ?? [];
     const listTrailState = useListTrailState("projects");
-    const projectPath = `/projects/${project.id}`;
+    // Open the project on the FY selected in the list.
+    const projectPath = withFiscalYearParam(`/projects/${project.id}`, selectedFiscalYear);
     const handOverFiscalYear = useHandOverFiscalYear();
 
     const visibleColumns = [
