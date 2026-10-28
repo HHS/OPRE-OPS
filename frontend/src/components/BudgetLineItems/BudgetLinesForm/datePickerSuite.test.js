@@ -263,3 +263,22 @@ describe("datePickerSuite Validation", () => {
         });
     });
 });
+
+describe("datePickerSuite — with ALLOW_PAST_OBLIGATE_BY_DATES on", () => {
+    it("accepts a past date", () => {
+        const result = suite.run({ needByDate: "01/01/2020" }, false, true);
+
+        expect(result.hasErrors()).toBe(false);
+    });
+
+    it("still applies the Period of Performance rule to a non-Draft line", () => {
+        const result = suite.run(
+            { needByDate: screenFromToday(-10), scStartDate: SC_START, scEndDate: SC_END, isDraft: false },
+            false,
+            true
+        );
+
+        expect(result.getErrors("needByDate")).toContain(POP_ERROR);
+        expect(result.getErrors("needByDate")).not.toContain("Date must be in the future");
+    });
+});

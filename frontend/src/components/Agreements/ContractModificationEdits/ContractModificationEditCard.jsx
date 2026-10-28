@@ -4,6 +4,7 @@ import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
+import Tag from "../../UI/Tag";
 
 /**
  * @typedef {Object} ContractModificationEdit
@@ -16,6 +17,7 @@ import TermTag from "../../ChangeRequests/TermTag";
  * @property {*} new_value
  * @property {{id: number, full_name: string} | null} requested_by
  * @property {string | null} requested_on
+ * @property {boolean} [in_review] - Part of the contract modification that is in review
  */
 
 // Services Component additions (OPS-6440) show the SC and what happened to it, with no From/To,
@@ -101,6 +103,14 @@ const ContractModificationEditCard = ({ edit }) => {
                         className="grid-col-2 margin-0"
                     />
                 </>
+            )}
+            {edit.in_review && (
+                <Tag
+                    tagStyle="lightTextRedBackground"
+                    className="margin-left-auto padding-x-05 text-no-wrap"
+                    text="In Review"
+                    data-cy="contract-modification-edit-in-review"
+                />
             )}
         </div>
     );

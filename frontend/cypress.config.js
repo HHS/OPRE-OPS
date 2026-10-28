@@ -2,8 +2,12 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
     allowCypressEnv: false,
+    // Ports/domains match docker-compose.yml so a non-default (e.g. worktree) stack can be targeted
+    expose: {
+        backendDomain: process.env.BACKEND_DOMAIN || "http://localhost:8080"
+    },
     e2e: {
-        baseUrl: "http://localhost:3000",
+        baseUrl: `http://localhost:${process.env.FRONTEND_PORT || 3000}`,
         specPattern: [
             "cypress/e2e/reviewAgreement.cy.js", // <-- there is another test that must affect the BLI calculations here
             "cypress/e2e/budgetLineItemsList.cy.js", // <-- there is another test that must affect the BLI calculations here
@@ -57,7 +61,8 @@ export default defineConfig({
             "cypress/e2e/procurementDashboard.cy.js",
             "cypress/e2e/preAwardApproval.cy.js",
             "cypress/e2e/changeRequestsPagination.cy.js",
-            "cypress/e2e/requestAwardApproval.cy.js"
+            "cypress/e2e/requestAwardApproval.cy.js",
+            "cypress/e2e/startContractModification.cy.js"
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage

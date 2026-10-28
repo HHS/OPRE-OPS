@@ -93,10 +93,10 @@ const Agreement = () => {
     let oldAwardingEntityId = -1;
 
     let user_agreement_notifications = [];
-    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
-        user_oidc_id: activeUser?.oidc_id,
-        agreement_id: agreementId
-    });
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery(
+        { user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId },
+        { skip: !activeUser?.oidc_id || !agreementId }
+    );
 
     if (query_response) {
         user_agreement_notifications = query_response.data;

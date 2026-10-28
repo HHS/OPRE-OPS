@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 
 const cypressEnv = Cypress.config("env") || {};
 const runId = cypressEnv.GITHUB_RUN_ID || cypressEnv.CI_PIPELINE_ID || "local";
@@ -62,7 +62,7 @@ const resolveProjectId = () => {
     return cy
         .request({
             method: "GET",
-            url: "http://localhost:8080/api/v1/projects/",
+            url: `${BACKEND_DOMAIN}/api/v1/projects/`,
             headers: getAuthHeaders(),
             failOnStatusCode: false
         })
@@ -101,7 +101,7 @@ const createAgreement = (overrides = {}) => {
         return cy
             .request({
                 method: "POST",
-                url: "http://localhost:8080/api/v1/agreements/",
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
                 failOnStatusCode: false,
                 body: payload,
                 headers: getJsonHeaders()
@@ -121,7 +121,7 @@ const createServicesComponent = (agreementId, overrides = {}) => {
     return cy
         .request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/services-components/",
+            url: `${BACKEND_DOMAIN}/api/v1/services-components/`,
             body: {
                 agreement_id: agreementId,
                 ...servicesComponentData,
@@ -141,7 +141,7 @@ const createBudgetLineItem = (agreementId, servicesComponentId, overrides = {}) 
     return cy
         .request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/budget-line-items/",
+            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
             body: {
                 agreement_id: agreementId,
                 services_component_id: servicesComponentId,
@@ -166,7 +166,7 @@ const deleteCreatedAgreements = () => {
     cy.wrap(createdAgreementIds.splice(0)).each((agreementId) => {
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: getAuthHeaders(),
             failOnStatusCode: false
         }).then((response) => {
@@ -400,7 +400,7 @@ describe("create agreement and test validations", () => {
             // Confirm the send-to-approval flow proves team members are not required.
             cy.request({
                 method: "GET",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
                 headers: getAuthHeaders()
             }).then((response) => {
                 expect(response.body.project_officer_id).to.eq(agreementDetailsData.project_officer_id);

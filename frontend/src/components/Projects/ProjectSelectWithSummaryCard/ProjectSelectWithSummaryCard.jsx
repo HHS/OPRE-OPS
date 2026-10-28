@@ -39,7 +39,7 @@ const ProjectSelectWithSummaryCard = ({
         const { title, description } = selectedResearchProject;
         return (
             <div
-                className="bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
+                className="ops-card bg-base-lightest font-family-sans font-12px border-1px border-base-light radius-sm margin-top-4"
                 style={{ width: "23.9375rem", minHeight: "7.5625rem" }}
                 data-cy="project-summary-card"
                 data-testid="project-summary-card"

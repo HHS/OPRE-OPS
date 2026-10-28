@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { terminalLog, testLogin } from "./utils";
+import { terminalLog, testLogin, BACKEND_DOMAIN } from "./utils";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 
 let testAgreement = {
@@ -110,7 +110,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/`,
             body: testAgreement,
             headers: {
                 Authorization: bearer_token,
@@ -127,7 +127,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     afterEach(() => {
         cy.request({
             method: "DELETE",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            url: `${BACKEND_DOMAIN}/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
                 Accept: "application/json"
@@ -173,7 +173,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         const bliData = { ...testDraftBli, agreement_id: agreementId };
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/budget-line-items/",
+            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
             body: bliData,
             headers: {
                 Authorization: bearer_token,
@@ -218,7 +218,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         const bliData = { ...testDraftBli, agreement_id: agreementId };
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/budget-line-items/",
+            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
             body: bliData,
             headers: {
                 Authorization: bearer_token,
@@ -260,7 +260,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         const bliData = { ...testPlannedBli, agreement_id: agreementId };
         cy.request({
             method: "POST",
-            url: "http://localhost:8080/api/v1/budget-line-items/",
+            url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/`,
             body: bliData,
             headers: {
                 Authorization: bearer_token,
@@ -324,7 +324,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.then(() => {
             cy.request({
                 method: "DELETE",
-                url: `http://localhost:8080/api/v1/budget-line-items/${budgetLineId}`,
+                url: `${BACKEND_DOMAIN}/api/v1/budget-line-items/${budgetLineId}`,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"

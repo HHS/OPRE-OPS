@@ -31,7 +31,7 @@ from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.services.project_messages import project_history_trigger
 from ops_api.ops.urls import register_api
-from ops_api.ops.utils.api_helpers import is_deployed_system
+from ops_api.ops.utils.api_helpers import is_deployed_system, validate_host_header_prefix
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 # Set the timezone to UTC
@@ -71,6 +71,7 @@ def create_app() -> Flask:  # noqa: C901
     if os.getenv("OPS_CONFIG"):
         app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()  # type: ignore [attr-defined]
+    validate_host_header_prefix(app.config.get("HOST_HEADER_PREFIX", "localhost"))
 
     # fall back for pytest to use
     app.config.setdefault(
@@ -248,6 +249,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.DELETE_GRANT_NUMBER, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.START_CONTRACT_MODIFICATION, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.REVIEW_CONTRACT_MODIFICATION, agreement_history_trigger)
 
     # Subscribe to events that should generate project history events
     MessageBus.subscribe_globally(OpsEventType.CREATE_PROJECT, project_history_trigger)

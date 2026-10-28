@@ -8,7 +8,7 @@ Autogenerate also reported unrelated pre-existing drift (vendor_version, notific
 project_history indexes, procurement_tracker_step FKs, opseventtype ordering); that was removed.
 
 Revision ID: 39dc6a6e0303
-Revises: 158fdbfa2907
+Revises: a73a897bb0db
 Create Date: 2026-10-23 14:56:41.000000+00:00
 
 """
@@ -21,7 +21,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = "39dc6a6e0303"
-down_revision: Union[str, None] = "158fdbfa2907"
+down_revision: Union[str, None] = "a73a897bb0db"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

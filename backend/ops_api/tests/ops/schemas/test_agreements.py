@@ -361,13 +361,26 @@ class TestAgreementDataNestedFields:
         assert "awarded_grant_number" in GrantAgreementResponse().fields
         assert "awarded_grant_number" in GrantListAgreementResponse().fields
 
-    def test_grant_agreement_data_rejects_invalid_funding_period_months(self):
-        """Test that GrantAgreementData only allows 12 or 18 for funding_period_months."""
+    @pytest.mark.parametrize("funding_period_months", [12, 18, 36, 60])
+    def test_grant_agreement_data_accepts_valid_funding_period_months(self, funding_period_months):
+        """Test that GrantAgreementData accepts each allowed funding_period_months value."""
         schema = GrantAgreementData()
         data = {
             "name": "Test Grant",
             "agreement_type": "GRANT",
-            "funding_period_months": 24,
+            "funding_period_months": funding_period_months,
+        }
+        result = schema.load(data)
+        assert result["funding_period_months"] == funding_period_months
+
+    @pytest.mark.parametrize("funding_period_months", [0, 24, 48, 61])
+    def test_grant_agreement_data_rejects_invalid_funding_period_months(self, funding_period_months):
+        """Test that GrantAgreementData only allows 12, 18, 36 or 60 for funding_period_months."""
+        schema = GrantAgreementData()
+        data = {
+            "name": "Test Grant",
+            "agreement_type": "GRANT",
+            "funding_period_months": funding_period_months,
         }
         with pytest.raises(ValidationError):
             schema.load(data)

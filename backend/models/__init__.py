@@ -6,6 +6,7 @@ from .cans import *
 from .budget_line_items import *
 from .change_requests import *
 from .contract_modification_edits import *
+from .contract_modification_requests import *
 from .document import *
 from .events import *
 from .can_history import *

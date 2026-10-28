@@ -1,8 +1,8 @@
 Feature: Administrative Power User Can Set a Past Obligate-By Date on Budget Lines
   As an Administrative Power User (SUPER_USER), I want to be able to set an obligate-by date in
   the past when creating or editing a budget line so that I can record budget lines for obligations
-  that occurred in a prior fiscal period. Non-admin users must continue to be blocked from setting
-  an obligate-by date in the past.
+  that occurred in a prior fiscal period. Non-admin users are blocked from setting an obligate-by
+  date in the past unless the ALLOW_PAST_OBLIGATE_BY_DATES configuration is on.
 
   Scenario: Administrative Power User edits a planned BLI's obligate-by date to a past date
     Given I am logged in as an Administrative Power User
@@ -25,6 +25,7 @@ Feature: Administrative Power User Can Set a Past Obligate-By Date on Budget Lin
 
   Scenario: Standard user is blocked from editing a planned BLI's obligate-by date to a past date
     Given I am logged in as a Budget Team user
+    And past Obligate By dates are not allowed
     And I have a valid Agreement
     And I have a PLANNED BLI with a future Need By Date
 
@@ -34,6 +35,7 @@ Feature: Administrative Power User Can Set a Past Obligate-By Date on Budget Lin
 
   Scenario: Standard user is blocked from transitioning a BLI to PLANNED with a past obligate-by date
     Given I am logged in as a Budget Team user
+    And past Obligate By dates are not allowed
     And I have a valid Agreement
 
     When the Budget Team user POSTs a DRAFT BLI with a past Need By Date

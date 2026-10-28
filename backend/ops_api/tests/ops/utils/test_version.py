@@ -163,6 +163,36 @@ info:
             assert response.json["skip_cr_for_draft_planned"] is True
 
 
+def test_version_endpoint_exposes_allow_past_obligate_by_dates_flag_when_disabled(auth_client, app):
+    """When the capability is disabled in config, /version/ reports it as False."""
+    openapi_content = """
+openapi: 3.1.0
+info:
+  title: Test API
+  version: 0.1.1
+"""
+    with patch("builtins.open", mock_open(read_data=openapi_content)):
+        with patch.dict(app.config, {"ALLOW_PAST_OBLIGATE_BY_DATES": False}):
+            response = auth_client.get("/api/v1/version/")
+            assert response.status_code == 200
+            assert response.json["allow_past_obligate_by_dates"] is False
+
+
+def test_version_endpoint_exposes_allow_past_obligate_by_dates_flag_when_enabled(auth_client, app):
+    """When the capability is enabled in config, /version/ reports it as True."""
+    openapi_content = """
+openapi: 3.1.0
+info:
+  title: Test API
+  version: 0.1.1
+"""
+    with patch("builtins.open", mock_open(read_data=openapi_content)):
+        with patch.dict(app.config, {"ALLOW_PAST_OBLIGATE_BY_DATES": True}):
+            response = auth_client.get("/api/v1/version/")
+            assert response.status_code == 200
+            assert response.json["allow_past_obligate_by_dates"] is True
+
+
 def test_get_api_version_static_method():
     """Test that get_api_version can be called as a static method."""
     openapi_content = """

@@ -56,7 +56,7 @@ function ReviewCard({
     const title = titleGenerator(type);
     return (
         <div
-            className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
+            className={`ops-card width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
                 forceHover ? "bg-base-lightest border-base-lighter" : "border-base-light hover:border-base-lighter"
             }`}
             data-cy="review-card"

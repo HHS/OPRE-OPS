@@ -13,6 +13,7 @@ class NotificationType(Enum):
     CHANGE_REQUEST_NOTIFICATION = auto()
     PRE_AWARD_APPROVAL_NOTIFICATION = auto()
     AWARD_APPROVAL_NOTIFICATION = auto()
+    CONTRACT_MODIFICATION_REQUEST_NOTIFICATION = auto()
 
 
 class Notification(BaseModel):
@@ -107,4 +108,22 @@ class AwardApprovalNotification(Notification):
 
     __mapper_args__ = {
         "polymorphic_identity": NotificationType.AWARD_APPROVAL_NOTIFICATION,
+    }
+
+
+class ContractModificationRequestNotification(Notification):
+    """Notification for a contract modification request and its review outcome (#3268)."""
+
+    contract_modification_request_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("contract_modification_request.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+    contract_modification_request = relationship(
+        "ContractModificationRequest",
+        passive_deletes=True,
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": NotificationType.CONTRACT_MODIFICATION_REQUEST_NOTIFICATION,
     }

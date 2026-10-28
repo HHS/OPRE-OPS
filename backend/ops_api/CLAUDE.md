@@ -43,7 +43,7 @@ alembic upgrade head
 alembic downgrade -1   # Rollback
 ```
 
-Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying. Use the `/db-migrations` skill for the full workflow — it includes Docker pre-flight checks, a review checklist (renamed columns, enum value changes, NOT NULL two-step migrations), and a critical reminder that new models inheriting `BaseModel` also need a `*_history` table. The skill is NOT auto-invoked.
+Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying. Use the `/db-migrations` skill for the full workflow — it includes Docker pre-flight checks, a review checklist (renamed columns, enum value changes, NOT NULL two-step migrations), and a critical reminder that new models inheriting `BaseModel` also need a `*_version` table (sqlalchemy-continuum versioning). The skill is NOT auto-invoked.
 
 ## Architecture
 
@@ -124,7 +124,7 @@ Separate from the MessageBus, all SQLAlchemy models inheriting from `BaseModel` 
 - `portfolios.py`: Portfolio
 - `users.py`: User, UserStatus
 - `events.py`: Domain events for audit tracking
-- `*_history.py`: History tracking for each model
+- `agreement_history.py`, `can_history.py`, `project_history.py`: Domain history for agreements, CANs and projects (row-level versioning for every model is handled by sqlalchemy-continuum `*_version` tables)
 
 ### Key Test Fixtures
 

@@ -51,3 +51,6 @@ SKIP_CR_FOR_DRAFT_PLANNED = True
 # Modified LOE contract mod, slice 1). Enabled in dev for testing; left OFF in staging/prod
 # until the full modified-LOE flow ships.
 ENABLE_MODIFIED_LOE_EDITS = True
+
+# Allow today/past Obligate By dates on non-Draft budget lines (issue 6443); see default_settings.py to turn it off.
+ALLOW_PAST_OBLIGATE_BY_DATES = True

@@ -136,7 +136,8 @@ export const CreateBLIsAndSCs = ({
         requiresFinancialApproval,
         requiresContractModification,
         grantNumberNumber,
-        setGrantNumberNumber
+        setGrantNumberNumber,
+        allowPastObligateByDates
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -564,6 +565,7 @@ export const CreateBLIsAndSCs = ({
                     workflow={workflow}
                     scStartDate={effectiveScStartDate}
                     scEndDate={effectiveScEndDate}
+                    allowPastObligateByDates={allowPastObligateByDates}
                 />
             )}
 

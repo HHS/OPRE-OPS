@@ -1,10 +1,9 @@
 import { omit } from "lodash";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
-import { dateToYearMonthDay } from "../components/ServicesComponents/ServicesComponents.helpers";
 import { NO_DATA } from "../constants";
 import { AgreementFields, AgreementType } from "../pages/agreements/agreements.constants";
 import { BLI_STATUS } from "./budgetLines.helpers";
-import { convertCodeForDisplay } from "./utils";
+import { convertCodeForDisplay, formatDate } from "./utils";
 
 export const PARTNER_AGREEMENT_TYPES = [AGREEMENT_TYPES.AA, AGREEMENT_TYPES.IAA];
 export const AGREEMENT_TYPE_ORDER = [
@@ -266,9 +265,9 @@ export const formatPeriodOfPerformance = (startDate, endDate) => {
     if (!startDate || !endDate) {
         return NO_DATA;
     }
-    const start = dateToYearMonthDay(startDate);
-    const end = dateToYearMonthDay(endDate);
-    return `${start.month}/${start.day}/${start.year} - ${end.month}/${end.day}/${end.year}`;
+    const start = formatDate(new Date(startDate + "T00:00:00Z"));
+    const end = formatDate(new Date(endDate + "T00:00:00Z"));
+    return `${start} - ${end}`;
 };
 
 // Mapping of AgreementType to the set of visible AgreementFields
@@ -292,6 +291,7 @@ const AGREEMENT_TYPE_VISIBLE_FIELDS = {
     ]),
     [AgreementType.AA]: new Set([
         AgreementFields.DescriptionAndNotes,
+        AgreementFields.PeriodOfPerformance,
         AgreementFields.ContractType,
         AgreementFields.ContractNumber,
         AgreementFields.ServiceRequirementType,

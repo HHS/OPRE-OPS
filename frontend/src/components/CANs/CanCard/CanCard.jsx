@@ -82,7 +82,7 @@ const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
     return (
         <div
             data-cy={`can-card-${can.display_name}`}
-            className={style.container}
+            className={`ops-card ${style.container}`}
         >
             <Link
                 to={`/cans/${can.id}`}

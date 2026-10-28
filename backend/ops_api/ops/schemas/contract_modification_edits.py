@@ -1,9 +1,8 @@
 """Schemas for "Edits That Require a Contract Modification" (Award & Modifications tab)."""
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
-from models import ModificationEditType
-from ops_api.ops.schemas.procurement_actions import AgreementModSchema
+from models import ContractModificationRequestStatus, ModificationEditType
 
 
 class RequestedBySchema(Schema):
@@ -27,8 +26,36 @@ class ContractModificationEditSchema(Schema):
     requested_on = fields.DateTime(allow_none=True)
     change_request_id = fields.Integer(allow_none=True)
     agreement_mod_id = fields.Integer(allow_none=True)
+    # True when the edit is part of the contract modification that is in review.
+    in_review = fields.Boolean(dump_default=False)
 
 
-class StartContractModificationResponseSchema(Schema):
-    agreement_mod = fields.Nested(AgreementModSchema, required=True)
+class SubmitContractModificationRequestSchema(Schema):
+    budget_line_item_ids = fields.List(fields.Integer(), load_default=list)
+    requestor_notes = fields.String(allow_none=True, load_default=None, validate=validate.Length(max=150))
+
+
+class ReviewContractModificationRequestSchema(Schema):
+    action = fields.String(required=True, validate=validate.OneOf(["APPROVE", "DECLINE"]))
+    reviewer_notes = fields.String(allow_none=True, load_default=None)
+
+
+class ContractModificationRequestSchema(Schema):
+    """A contract modification sent to the Division Director (#3268)."""
+
+    id = fields.Integer(required=True)
+    agreement_id = fields.Integer(required=True)
+    status = fields.Enum(ContractModificationRequestStatus, required=True)
+    requestor_notes = fields.String(allow_none=True)
+    reviewer_notes = fields.String(allow_none=True)
+    reviewed_by_id = fields.Integer(allow_none=True)
+    reviewed_on = fields.DateTime(allow_none=True)
+    agreement_mod_id = fields.Integer(allow_none=True)
+    created_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(allow_none=True)
     edits = fields.List(fields.Nested(ContractModificationEditSchema), required=True)
+    budget_line_item_ids = fields.Method("_budget_line_item_ids")
+
+    @staticmethod
+    def _budget_line_item_ids(request):
+        return sorted(bli.id for bli in request.budget_line_items)
