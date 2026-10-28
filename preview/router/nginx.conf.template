@@ -1,0 +1,88 @@
+# Preview router: sends https://pr-<N>.ops.opre.acf.gov to PR <N>'s container apps.
+# Rendered by docker-entrypoint.sh; only ${ACA_DOMAIN} and ${RESOLVER} are substituted.
+# See README.md.
+
+worker_processes 1;
+pid /tmp/nginx.pid;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    server_tokens off;
+
+    # Runs as the nginx user, so every writable path lives in /tmp.
+    client_body_temp_path /tmp/client_body;
+    proxy_temp_path /tmp/proxy;
+    fastcgi_temp_path /tmp/fastcgi;
+    uwsgi_temp_path /tmp/uwsgi;
+    scgi_temp_path /tmp/scgi;
+
+    log_format router '$remote_addr "$http_x_original_host" "$request" $status '
+                      'target=$target upstream_status=$upstream_status rt=$request_time';
+    access_log /dev/stdout router;
+
+    # proxy_pass uses a variable, so upstream names are resolved per request.
+    resolver ${RESOLVER} valid=30s ipv6=off;
+    resolver_timeout 5s;
+
+    # The App Gateway rewrites Host to this app's own address and keeps the
+    # original in x-original-host. Strictly anchored: anything else gets a 404,
+    # so the router can't be used to reach other hosts.
+    map $http_x_original_host $pr {
+        "~*^pr-(?<n>[1-9][0-9]{0,5})\.ops\.opre\.acf\.gov(:443)?$" $n;
+        default "";
+    }
+
+    # Same split as dev's gateway path map (minus /docs).
+    map $uri $svc {
+        "~^/(api|auth|documents)(/|$)" backend;
+        default frontend;
+    }
+
+    server {
+        listen 8080;
+
+        client_max_body_size 32m;
+        large_client_header_buffers 4 16k;
+
+        # Gateway health probe: no x-original-host, never depends on a preview.
+        location = /healthz {
+            access_log off;
+            default_type text/plain;
+            return 200 "ok\n";
+        }
+
+        location / {
+            if ($pr = "") {
+                return 404;
+            }
+
+            set $target "opre-ops-pr${pr}-app-${svc}.${ACA_DOMAIN}";
+            proxy_pass https://$target;
+            proxy_http_version 1.1;
+
+            # The backend's check_csrf requires Host to be its own name with :443.
+            proxy_set_header Host "$target:443";
+            proxy_set_header Connection "";
+
+            # Redirects built from that Host (e.g. Flask's trailing-slash 308s)
+            # would send browsers to the internal name; keep them on pr-<N>.
+            proxy_redirect "~^https?://opre-ops-pr[0-9]+-app-(?:frontend|backend)\.[^/]+(/.*)$" $1;
+
+            proxy_ssl_server_name on;
+            proxy_ssl_name $target;
+            proxy_ssl_protocols TLSv1.2 TLSv1.3;
+            proxy_ssl_verify on;
+            proxy_ssl_verify_depth 3;
+            proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+
+            proxy_read_timeout 120s;
+            proxy_send_timeout 120s;
+            proxy_buffer_size 16k;
+            proxy_buffers 8 16k;
+        }
+    }
+}
