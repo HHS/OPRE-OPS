@@ -93,7 +93,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                                 <Link
                                     key={agreement.id}
                                     to={`/agreements/${agreement.id}`}
-                                    state={listTrailState(`/agreements/${agreement.id}`)}
+                                    state={listTrailState(`/agreements/${agreement.id}`, agreement.name)}
                                     className="bg-primary-lighter text-ink text-no-underline font-sans-3xs padding-x-1 padding-y-05 radius-md margin-right-1 margin-bottom-1"
                                     title={agreement.name}
                                     data-testid="agreement-tag"

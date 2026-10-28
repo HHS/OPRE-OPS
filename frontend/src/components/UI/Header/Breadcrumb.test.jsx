@@ -62,10 +62,29 @@ const agreementsRouteHandle = {
 };
 
 describe("Breadcrumb", () => {
-    it("always renders Home and the leaf currentName", () => {
+    it("always renders Home, and the leaf currentName marked as the current page", () => {
         renderBreadcrumb();
         expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-        expect(screen.getByText("Agreement 1")).toBeInTheDocument();
+        expect(screen.getByText("Agreement 1")).toHaveAttribute("aria-current", "page");
+    });
+
+    it("renders no leaf while its name is still loading", () => {
+        render(
+            <RouterProvider
+                router={createMemoryRouter(
+                    [
+                        {
+                            path: "/agreements/:id",
+                            element: <Breadcrumb currentName="" />,
+                            handle: agreementsRouteHandle
+                        }
+                    ],
+                    { initialEntries: ["/agreements/1"] }
+                )}
+            />
+        );
+        expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Home", "Agreements"]);
+        screen.getAllByRole("listitem").forEach((item) => expect(item).not.toHaveAttribute("aria-current"));
     });
 
     it("renders the carried trail's ancestors when the trail matches the current path", () => {

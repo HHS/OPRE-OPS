@@ -50,8 +50,9 @@ CrumbLink.propTypes = {
  * Renders a context-aware trail when the current location carries a trail that
  * applies to it (i.e. the user drilled in via a known navigation path);
  * otherwise falls back to the canonical route hierarchy derived from React
- * Router `handle.crumb` functions. `Home` and the leaf `currentName` are always
- * rendered.
+ * Router `handle.crumb` functions. `Home` is always rendered, and the leaf
+ * `currentName` (marked as the current page) whenever it isn't empty; it is
+ * empty while the page's name loads.
  *
  * Each trail crumb carries the crumbs before it as its own trail, so going
  * back to an ancestor keeps that ancestor's context (e.g. clicking "CAN 1" in
@@ -67,7 +68,7 @@ CrumbLink.propTypes = {
  * "… > <agreement> > Change BL Status" however the user got there.
  *
  * @param {Object} props - Properties passed to component
- * @param {string} props.currentName - The name of the current (leaf) breadcrumb
+ * @param {string} props.currentName - The name of the current (leaf) breadcrumb; "" while it loads
  * @param {import("../../../helpers/breadcrumb.helpers").BreadcrumbAncestor} [props.parentCrumb] - The resource the current page belongs to
  * @returns {React.JSX.Element} - The rendered component
  */
@@ -138,7 +139,14 @@ const Breadcrumb = ({ currentName, parentCrumb }) => {
                             {crumb}
                         </li>
                     ))}
-                    <li className="usa-breadcrumb__list-item">{currentName}</li>
+                    {currentName && (
+                        <li
+                            className="usa-breadcrumb__list-item"
+                            aria-current="page"
+                        >
+                            {currentName}
+                        </li>
+                    )}
                 </ol>
             </nav>
         </section>

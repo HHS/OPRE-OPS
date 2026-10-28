@@ -214,7 +214,8 @@ describe("ProjectTableRow", () => {
 
         expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/1",
-            ancestors: [{ label: "Projects", to: "/projects" }]
+            ancestors: [{ label: "Projects", to: "/projects" }],
+            targetLabel: "Agreement Nickname"
         });
     });
 });

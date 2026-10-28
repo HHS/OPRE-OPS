@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 import { actionOptions } from "./ReviewAgreement.constants";
 import { POP_RANGE_ERROR_KEY } from "./suite";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 
 const navigateMock = vi.fn();
 const setAlertMock = vi.fn();
@@ -16,11 +17,15 @@ const useIsUserSuperUserMock = vi.fn();
 // Stable module-level reference so the grantNumbers decoration effect doesn't loop.
 const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 
+// Change BL Status's location: a breadcrumb trail, when a test sets one.
+let mockLocation = { pathname: "/agreements/review/77", state: null };
+
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useNavigate: () => navigateMock
+        useNavigate: () => navigateMock,
+        useLocation: () => mockLocation
     };
 });
 
@@ -737,5 +742,30 @@ describe("useReviewAgreement", () => {
         });
 
         expect(navigateMock).toHaveBeenCalledWith("/agreements/77/budget-lines");
+    });
+
+    it("keeps the breadcrumb trail when cancelling back to the agreement", () => {
+        const budgetLines = { label: "Budget Lines", to: "/budget-lines" };
+        mockLocation = {
+            pathname: "/agreements/review/77",
+            state: buildTrailState("/agreements/review/77", [
+                budgetLines,
+                { label: "Agreement 77", to: "/agreements/77/budget-lines" }
+            ])
+        };
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleCancel();
+        });
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        // Back on the agreement, the trail ends just before it: "Budget Lines > Agreement 77".
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/77/budget-lines", {
+            state: buildTrailState("/agreements/77/budget-lines", [budgetLines])
+        });
+        mockLocation = { pathname: "/agreements/review/77", state: null };
     });
 });
