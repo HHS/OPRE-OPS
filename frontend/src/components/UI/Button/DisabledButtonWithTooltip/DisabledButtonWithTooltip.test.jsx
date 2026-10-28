@@ -73,4 +73,17 @@ describe("DisabledButtonWithTooltip", () => {
         expect(wrapper).toHaveStyle({ cursor: "not-allowed" });
         expect(wrapper).toHaveStyle({ display: "inline-block" });
     });
+
+    it("names the wrapper and the button with ariaLabel when given", () => {
+        render(
+            <DisabledButtonWithTooltip
+                label="tooltip"
+                ariaLabel="Upload file: Certificate of Funding"
+            >
+                Upload file
+            </DisabledButtonWithTooltip>
+        );
+        const buttons = screen.getAllByRole("button", { name: "Upload file: Certificate of Funding" });
+        expect(buttons.map((el) => el.tagName).sort()).toEqual(["BUTTON", "DIV"]);
+    });
 });

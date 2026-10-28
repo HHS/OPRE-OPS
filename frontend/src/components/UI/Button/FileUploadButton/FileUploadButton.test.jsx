@@ -505,7 +505,7 @@ describe("FileUploadButton component", () => {
     });
 
     describe("Accessibility", () => {
-        it("button has correct aria-label from buttonText prop", () => {
+        it("button aria-label names the action and what it uploads", () => {
             render(
                 <FileUploadButton
                     id="test-upload"
@@ -515,8 +515,20 @@ describe("FileUploadButton component", () => {
                 />
             );
 
-            const button = screen.getByRole("button", { name: "Upload File" });
-            expect(button).toHaveAttribute("aria-label", "Upload File");
+            const button = screen.getByRole("button", { name: "Upload File: Custom Label" });
+            expect(button).toHaveAttribute("aria-label", "Upload File: Custom Label");
+        });
+
+        it("button aria-label is just the action when no label is given", () => {
+            render(
+                <FileUploadButton
+                    id="test-upload"
+                    onFileChange={mockOnFileChange}
+                    buttonText="Upload File"
+                />
+            );
+
+            expect(screen.getByRole("button", { name: "Upload File" })).toBeInTheDocument();
         });
 
         it("button aria-label includes action and selectedFile name when provided", () => {

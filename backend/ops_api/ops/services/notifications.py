@@ -3,6 +3,7 @@ from typing import Any, Type
 from models import (
     AwardApprovalNotification,
     ChangeRequestNotification,
+    ContractModificationRequestNotification,
     Notification,
     NotificationType,
     PreAwardApprovalNotification,
@@ -35,6 +36,8 @@ class NotificationService(OpsService[Notification]):
             cls = PreAwardApprovalNotification
         elif notification_type == NotificationType.AWARD_APPROVAL_NOTIFICATION:
             cls = AwardApprovalNotification
+        elif notification_type == NotificationType.CONTRACT_MODIFICATION_REQUEST_NOTIFICATION:
+            cls = ContractModificationRequestNotification
         else:
             cls = Notification
 

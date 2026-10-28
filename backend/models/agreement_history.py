@@ -41,6 +41,8 @@ class AgreementHistoryType(Enum):
     GRANT_NUMBER_UPDATED = auto()
     GRANT_NUMBER_DELETED = auto()
     CONTRACT_MODIFICATION_STARTED = auto()
+    CONTRACT_MODIFICATION_APPROVED = auto()
+    CONTRACT_MODIFICATION_DECLINED = auto()
 
 
 class AgreementHistory(BaseModel):
@@ -384,18 +386,48 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 history_events.append(history_event)
         case OpsEventType.START_CONTRACT_MODIFICATION:
             edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
+            bli_count = len(event.event_details.get("budget_line_item_ids", []))
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
                     agreement_id_record=event.event_details["agreement_id"],
                     ops_event_id=event.id,
-                    history_title="Contract Modification Started",
+                    history_title="Contract Modification Sent to Approval",
                     history_message=(
-                        f"{event_user.full_name} started a contract modification including "
-                        f"{edit_count} edit{'' if edit_count == 1 else 's'}."
+                        f"{event_user.full_name} sent a contract modification to approval including "
+                        f"{edit_count} edit{'' if edit_count == 1 else 's'} and "
+                        f"{bli_count} budget line{'' if bli_count == 1 else 's'} to execute."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.CONTRACT_MODIFICATION_STARTED,
+                )
+            )
+        case OpsEventType.REVIEW_CONTRACT_MODIFICATION:
+            approved = event.event_details.get("status") == "APPROVED"
+            reviewer_notes = event.event_details.get("reviewer_notes")
+            executed_ids = event.event_details.get("budget_line_item_ids", []) if approved else []
+            executed = (
+                f" {', '.join(f'BL {bli_id}' for bli_id in executed_ids)} changed from Planned to Executing."
+                if executed_ids
+                else ""
+            )
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["agreement_id"],
+                    agreement_id_record=event.event_details["agreement_id"],
+                    ops_event_id=event.id,
+                    history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
+                    history_message=(
+                        f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
+                        + executed
+                        + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
+                    ),
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=(
+                        AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED
+                        if approved
+                        else AgreementHistoryType.CONTRACT_MODIFICATION_DECLINED
+                    ),
                 )
             )
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
