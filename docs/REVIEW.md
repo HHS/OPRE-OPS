@@ -122,7 +122,7 @@ AI reviewers also:
 
 Every PR needs an approving review from a person before it merges.
 
-If the author uses AI review, running it and resolving its findings is the author's job before asking for human review. **Reviewers aren't expected to run their own agents to hunt for more S2 and S3 findings.** That adds review rounds and rarely finds blockers. Using a tool to check one specific concern is fine.
+If the author uses AI review, running it and resolving its findings is the author's job before asking for human review. The shared AI review is the `/ops-pr-review` skill. **Reviewers aren't expected to run their own agents to hunt for more S2 and S3 findings.** That adds review rounds and rarely finds blockers. Using a tool to check one specific concern is fine.
 
 The human reviewer checks what agents are bad at:
 
@@ -188,5 +188,7 @@ These rules already live elsewhere. Reviewers check against them; this document 
 This is a team standard. Change it through a normal PR that the whole team can review.
 
 The **Code Review** section of the root [CLAUDE.md](../CLAUDE.md#code-review) summarizes this document, because some AI review tools read only `CLAUDE.md` files. Change both in the same PR. If they ever differ, this document wins.
+
+The [`/ops-pr-review` skill](../.claude/skills/ops-pr-review/SKILL.md) reads this document on every run instead of copying it, but it points to some sections by name (Scope, Risk Tiers, When a Review Is Done, Reporting Findings, Disputes and Won't-Fix, Project Rules to Check). If you rename or remove one of those, update the skill in the same PR.
 
 When the same kind of S1 or S2 finding keeps showing up across PRs, prefer turning it into a deterministic check (a lint rule, a test, a `CLAUDE.md` convention or a project skill) over relying on reviewers to catch it again. Then add it to [Project Rules to Check](#project-rules-to-check).
