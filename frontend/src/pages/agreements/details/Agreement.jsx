@@ -22,6 +22,7 @@ import { calculateFeeTotal, isContractOrAaAgreement, isNotDevelopedYet } from ".
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
+import { getServicesComponentChangeMessages } from "../../../components/ServicesComponents/ServicesComponents.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
@@ -92,10 +93,10 @@ const Agreement = () => {
     let oldAwardingEntityId = -1;
 
     let user_agreement_notifications = [];
-    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({
-        user_oidc_id: activeUser?.oidc_id,
-        agreement_id: agreementId
-    });
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery(
+        { user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId },
+        { skip: !activeUser?.oidc_id || !agreementId }
+    );
 
     if (query_response) {
         user_agreement_notifications = query_response.data;
@@ -134,13 +135,18 @@ const Agreement = () => {
     /** @type string[] */
     let changeRequests = [];
 
-    /** @type string[] */
-    let allChangeRequests = [];
-
     let budgetLineChangeRequests = useChangeRequestsForAgreement(agreement?.id ?? 0);
     if (budgetLineChangeRequests.length > 0) {
         changeRequests = [...budgetLineChangeRequests];
     }
+    // Services Component additions in review (OPS-6440). They have no "In Review" tag in
+    // the SC list, so the banner is where they show.
+    changeRequests = [
+        ...changeRequests,
+        ...getServicesComponentChangeMessages(agreement?.change_requests_in_review ?? [])
+    ];
+    /** @type string[] */
+    let allChangeRequests = [...changeRequests];
 
     if (shouldFetchProcurementShops) {
         const newTotal = calculateFeeTotal(agreement?.budget_line_items ?? [], newProcurementShop?.fee_percentage ?? 0);

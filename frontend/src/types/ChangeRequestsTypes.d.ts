@@ -14,6 +14,9 @@ export type ChangeRequest = {
     has_status_change?: boolean;
     has_proc_shop_change?: boolean;
     has_delete_change?: boolean;
+    has_services_component_change?: boolean;
+    requires_contract_modification?: boolean;
+    services_component_id?: number | null;
     id: number;
     managing_division_id: number | null;
     requested_change_data: {
@@ -23,6 +26,7 @@ export type ChangeRequest = {
         status?: string;
         awarding_entity_id?: number;
         delete?: boolean;
+        services_component_create?: boolean;
     };
     requested_change_diff: {
         amount?: {
@@ -49,7 +53,16 @@ export type ChangeRequest = {
             new: string;
             old: number;
         };
+        services_component_create?: {
+            new: string;
+            old: null;
+        };
     };
+    requested_change_info?: {
+        target_display_name?: string;
+        requires_contract_modification?: boolean;
+        linked_budget_line_item_ids?: number[];
+    } | null;
     requestor_notes: string | null;
     reviewed_on: string | null;
     reviewer_notes: string | null;

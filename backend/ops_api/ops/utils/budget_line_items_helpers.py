@@ -20,14 +20,22 @@ from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.users import is_budget_team, is_super_user
 
 
+def agreement_tracks_contract_modifications(agreement) -> bool:
+    """Whether changes to this agreement require a contract modification (OPS-3072): the
+    ENABLE_MODIFIED_LOE_EDITS capability is on and the agreement is Awarded."""
+    return bool(current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False) and agreement and agreement.is_awarded)
+
+
 def tracks_contract_modifications(budget_line_item: BudgetLineItem) -> bool:
-    """Whether edits to this budget line require a contract modification (OPS-3072): the
-    ENABLE_MODIFIED_LOE_EDITS capability is on and the budget line's agreement is Awarded."""
-    return bool(
-        current_app.config.get("ENABLE_MODIFIED_LOE_EDITS", False)
-        and budget_line_item.agreement
-        and budget_line_item.agreement.is_awarded
-    )
+    """Whether edits to this budget line require a contract modification (OPS-3072)."""
+    return agreement_tracks_contract_modifications(budget_line_item.agreement)
+
+
+def sc_requires_approval_gate(agreement) -> bool:
+    """Whether Services Component changes on this agreement are gated when the SC has non-Draft
+    budget lines (OPS-6440): an add goes through Division Director approval, and a delete is
+    blocked. Superusers bypass this, matching the other awarded locks."""
+    return agreement_tracks_contract_modifications(agreement) and not is_super_user(current_user, current_app)
 
 
 def validate_no_execution_status_change_on_awarded(budget_line_item: BudgetLineItem, new_status: Any) -> None:

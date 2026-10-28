@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, and_, event, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -23,6 +23,7 @@ class ChangeRequestType(Enum):
     CHANGE_REQUEST = auto()
     AGREEMENT_CHANGE_REQUEST = auto()
     BUDGET_LINE_ITEM_CHANGE_REQUEST = auto()
+    SERVICES_COMPONENT_CHANGE_REQUEST = auto()
 
 
 class ChangeRequest(BaseModel):
@@ -173,12 +174,79 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
         return data
 
 
+class ServicesComponentChangeRequest(AgreementChangeRequest):
+    """A request to add a Services Component on an Awarded agreement (OPS-6440).
+
+    Only SCs with non-Draft budget lines need approval. ``services_component_id`` is
+    ``SET NULL`` so the request keeps its history after a declined add (or a later delete)
+    removes the SC; the display name is frozen in ``requested_change_diff``.
+    """
+
+    services_component_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("services_component.id", ondelete="SET NULL"), index=True
+    )
+    services_component = relationship(
+        "ServicesComponent",
+        passive_deletes=True,
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+    }
+
+    @classmethod
+    def in_review_filter(cls):
+        """Base filter matching ServicesComponentChangeRequest rows currently in review."""
+        return and_(
+            cls.status == ChangeRequestStatus.IN_REVIEW,
+            cls.change_request_type == ChangeRequestType.SERVICES_COMPONENT_CHANGE_REQUEST,
+        )
+
+    create_field_name = "services_component_create"
+
+    @hybrid_property
+    def has_services_component_change(self):
+        return self.create_field_name in self.requested_change_data
+
+    @has_services_component_change.expression
+    def has_services_component_change(cls):
+        return cls.requested_change_data.has_key(cls.create_field_name)
+
+    @hybrid_property
+    def requires_contract_modification(self):
+        """Snapshotted at creation, same as BudgetLineItemChangeRequest.requires_contract_modification."""
+        return bool((self.requested_change_info or {}).get("requires_contract_modification"))
+
+    @requires_contract_modification.expression
+    def requires_contract_modification(cls):
+        return cls.requested_change_info["requires_contract_modification"].as_boolean().is_(True)
+
+    def to_dict(self):
+        """Override to_dict to include hybrid properties."""
+        data = super().to_dict()
+        data["has_services_component_change"] = bool(self.has_services_component_change)
+        data["requires_contract_modification"] = bool(self.requires_contract_modification)
+        return data
+
+
+# At most one SC change request in review per SC, so parallel requests can't create a duplicate
+# (an in-review SC can't be edited or deleted).
+Index(
+    "ix_change_request_one_in_review_per_services_component",
+    ServicesComponentChangeRequest.__table__.c.services_component_id,
+    unique=True,
+    postgresql_where=text("status = 'IN_REVIEW' AND change_request_type = 'SERVICES_COMPONENT_CHANGE_REQUEST'"),
+)
+
+
 # require agreement_id for Agreement changes.
 # (It has to be Optional in the model to keep the column nullable for other types)
 @event.listens_for(AgreementChangeRequest, "before_insert")
 @event.listens_for(AgreementChangeRequest, "before_update")
 @event.listens_for(BudgetLineItemChangeRequest, "before_insert")
 @event.listens_for(BudgetLineItemChangeRequest, "before_update")
+@event.listens_for(ServicesComponentChangeRequest, "before_insert")
+@event.listens_for(ServicesComponentChangeRequest, "before_update")
 def check_agreement_id(mapper, connection, target):
     if target.agreement_id is None:
         raise ValueError("agreement_id is required for AgreementChangeRequest")
@@ -191,3 +259,11 @@ def check_agreement_id(mapper, connection, target):
 def check_budget_line_id(mapper, connection, target):
     if target.budget_line_item_id is None:
         raise ValueError("budget_line_item_id is required for BudgetLineItemChangeRequest")
+
+
+# require services_component_id when an SC change request is created.
+# (It's SET NULL afterwards, when a declined add or a later delete removes the SC.)
+@event.listens_for(ServicesComponentChangeRequest, "before_insert")
+def check_services_component_id(mapper, connection, target):
+    if target.services_component_id is None:
+        raise ValueError("services_component_id is required for ServicesComponentChangeRequest")

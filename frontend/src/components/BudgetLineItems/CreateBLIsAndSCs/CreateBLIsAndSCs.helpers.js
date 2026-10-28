@@ -72,6 +72,75 @@ export const attachScPeriodToBudgetLines = (tempBudgetLines, servicesComponents)
     });
 
 /**
+ * Resolve the services component a budget line is grouped under. Prefers services_component_number
+ * over services_component_id, the same precedence as attachScPeriodToBudgetLines.
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine} bli
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
+ * @returns {import("../../../types/ServicesComponents").ServicesComponents | undefined}
+ */
+export const findServicesComponentForBudgetLine = (bli, servicesComponents) =>
+    bli.services_component_number != null
+        ? servicesComponents.find((sc) => sc.number === bli.services_component_number)
+        : servicesComponents.find((sc) => sc.id === bli.services_component_id);
+
+const isNonDraftBudgetLine = (bli) => Boolean(bli?.status) && bli.status !== BLI_STATUS.DRAFT;
+
+/**
+ * Whether deleting a saved services component is blocked (OPS-6440). On an Awarded agreement it is
+ * when the SC still has non-Draft budget lines -- including ones whose own deletion is going to
+ * approval in the same save, since those stay linked until approved. Mirrors the backend's check.
+ * The caller applies the awarded / non-superuser gate.
+ * @param {Object} args
+ * @param {number | undefined} args.servicesComponentId
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents - The current (editor) services components
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} [args.budgetLines] - The saved budget lines
+ * @param {Array<number>} [args.deletedBudgetLines] - Ids of budget lines deleted in this save
+ * @returns {boolean}
+ */
+export const isServicesComponentDeleteBlocked = ({
+    servicesComponentId,
+    servicesComponents,
+    tempBudgetLines,
+    budgetLines = [],
+    deletedBudgetLines = []
+}) => {
+    if (!servicesComponentId) return false;
+    const stillLinked = tempBudgetLines.some((bli) => {
+        if (!isNonDraftBudgetLine(bli) || bli.services_component_id !== servicesComponentId) return false;
+        // A line regrouped under another services component in this save no longer counts.
+        const resolved = findServicesComponentForBudgetLine(bli, servicesComponents);
+        return !resolved || resolved.id === servicesComponentId;
+    });
+    const deletedButLinked = budgetLines.some(
+        (bl) =>
+            deletedBudgetLines.includes(bl.id) &&
+            isNonDraftBudgetLine(bl) &&
+            bl.services_component_id === servicesComponentId
+    );
+    return stillLinked || deletedButLinked;
+};
+
+/**
+ * The services component additions in this save that go to Division Director approval (OPS-6440):
+ * on an Awarded agreement, a new SC, or one still awaiting approval of its addition, needs approval
+ * once a non-Draft line points at it. The caller applies the awarded / non-superuser gate.
+ * @param {Object} args
+ * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} args.servicesComponents
+ * @param {import("../../../types/BudgetLineTypes").BudgetLine[]} args.tempBudgetLines
+ * @returns {Array<import("../../../types/ServicesComponents").ServicesComponents>}
+ */
+export const getServicesComponentAdditionsForApproval = ({ servicesComponents, tempBudgetLines }) =>
+    servicesComponents.filter(
+        (sc) =>
+            (!("created_on" in sc) || sc.awaiting_add_approval) &&
+            !sc.in_review &&
+            tempBudgetLines.some(
+                (bli) => isNonDraftBudgetLine(bli) && findServicesComponentForBudgetLine(bli, servicesComponents) === sc
+            )
+    );
+
+/**
  * Derive the effective SC window across all services components (saved and unsaved).
  * @param {Array<import("../../../types/ServicesComponents").ServicesComponents>} servicesComponents
  * @returns {{start: string|null, end: string|null}}
@@ -265,6 +334,7 @@ export const buildBudgetChangeMessages = (tempBudgetLines, cans) => {
  * @param {boolean} args.savedViaModal - Whether this save was triggered from the unsaved-changes blocker modal
  * @param {string|undefined} args.blockerLocationPathname - Where the blocker was navigating to, when `savedViaModal` is true
  * @param {boolean} args.isThereAnyBLIsFinancialSnapshotChanged
+ * @param {Array<string>} [args.servicesComponentChangeMessages] - Pending services component additions sent to approval, e.g. "• SC3 Addition"
  * @returns {import("../../../hooks/use-alert.hooks").AlertData} The `setAlert(...)` payload.
  */
 export const buildSaveSuccessAlert = ({
@@ -277,7 +347,8 @@ export const buildSaveSuccessAlert = ({
     selectedAgreement,
     savedViaModal,
     blockerLocationPathname,
-    isThereAnyBLIsFinancialSnapshotChanged
+    isThereAnyBLIsFinancialSnapshotChanged,
+    servicesComponentChangeMessages = []
 }) => {
     const budgetChangeMessages = buildBudgetChangeMessages(tempBudgetLines, cans);
     // Deletions of PLANNED/IN_EXECUTION lines route to an approval change request rather than
@@ -298,8 +369,12 @@ export const buildSaveSuccessAlert = ({
         .map((bl) => `• BL ${bl?.id || "Unknown"} Deletion`)
         .join("\n");
     const anyChangeSentToApproval =
-        (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) || deletionsRoutedToApproval.length > 0;
-    const pendingChanges = [budgetChangeMessages, deletionChangeMessages].filter(Boolean).join("\n");
+        (isThereAnyBLIsFinancialSnapshotChanged && !canEditDirectly) ||
+        deletionsRoutedToApproval.length > 0 ||
+        servicesComponentChangeMessages.length > 0;
+    const pendingChanges = [budgetChangeMessages, deletionChangeMessages, ...servicesComponentChangeMessages]
+        .filter(Boolean)
+        .join("\n");
     const redirectUrl = savedViaModal ? blockerLocationPathname : getBudgetLinesUrl(selectedAgreement?.id);
 
     if (anyChangeSentToApproval) {

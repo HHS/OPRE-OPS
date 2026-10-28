@@ -13,13 +13,15 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     event,
+    exists,
     select,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
-from models import ContractAgreement, ServiceRequirementType
+from models import BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServiceRequirementType
 from models.base import BaseModel
+from models.change_requests import ServicesComponentChangeRequest
 
 
 class ServicesComponent(BaseModel):
@@ -69,6 +71,48 @@ class ServicesComponent(BaseModel):
     )
 
     display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
+
+    # True while an SC added on an Awarded agreement hasn't had its addition approved (OPS-6440).
+    # The add change request is only created once the SC has a non-Draft budget line.
+    awaiting_add_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+
+    @property
+    def change_requests_in_review(self):
+        session = object_session(self)
+        if session is None or self.id is None:
+            return None
+        change_requests = session.scalars(
+            select(ServicesComponentChangeRequest).where(
+                ServicesComponentChangeRequest.in_review_filter(),
+                ServicesComponentChangeRequest.services_component_id == self.id,
+            )
+        ).all()
+        return change_requests if change_requests else None
+
+    @property
+    def in_review(self) -> bool:
+        return self.change_requests_in_review is not None
+
+    @property
+    def has_non_draft_budget_lines(self) -> bool:
+        """Only non-Draft budget lines gate an SC on an Awarded agreement: an add needs approval
+        and a delete is blocked. Draft lines come into play when they become Planned (OPS-6440).
+
+        Queried rather than read from ``budget_line_items`` so links flushed in the current
+        transaction (set via ``services_component_id``) are seen."""
+        session = object_session(self)
+        if session is None or self.id is None:
+            return False
+        return bool(
+            session.scalar(
+                select(
+                    exists().where(
+                        BudgetLineItem.services_component_id == self.id,
+                        BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+                    )
+                )
+            )
+        )
 
     def severable(self):
         return self.agreement and self.agreement.service_requirement_type == ServiceRequirementType.SEVERABLE

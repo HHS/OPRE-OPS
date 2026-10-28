@@ -40,17 +40,8 @@ def map_document_type_to_enum(document_type):
     """
     Map the document type string to the DocumentType enum.
     """
-    itar_checklist = DocumentType.ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS
-    document_type_mapping = {
-        DocumentType.CERTIFICATION_OF_FUNDING.name.lower(): DocumentType.CERTIFICATION_OF_FUNDING,
-        DocumentType.STATEMENT_OF_REQUIREMENTS.name.lower(): DocumentType.STATEMENT_OF_REQUIREMENTS,
-        itar_checklist.name.lower(): itar_checklist,
-        DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE.name.lower(): DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE,
-        DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION.name.lower(): DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION,
-        DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT.name.lower(): DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT,
-        DocumentType.PRE_AWARD_CONSENSUS_MEMO.name.lower(): DocumentType.PRE_AWARD_CONSENSUS_MEMO,
-        DocumentType.ADDITIONAL_DOCUMENT.name.lower(): DocumentType.ADDITIONAL_DOCUMENT,
-    }
+    # Built from the enum so a new DocumentType can't be left out (and silently map to None).
+    document_type_mapping = {document_type_enum.name.lower(): document_type_enum for document_type_enum in DocumentType}
 
     return document_type_mapping.get(document_type.lower())
 

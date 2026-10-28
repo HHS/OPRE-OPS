@@ -126,9 +126,12 @@ class AgreementEditBundleService:
             result.grant_numbers_updated = self._update_grant_numbers(agreement_id, gn_payload.get("update", []) or [])
 
             # 4. BLI creates (resolves services_component_ref / grant_number_ref)
-            result.budget_line_items_created = self._create_budget_line_items(
+            created_count, create_change_request_ids = self._create_budget_line_items(
                 agreement, bli_payload.get("create", []) or [], sc_ref_map, gn_ref_map
             )
+            result.budget_line_items_created = created_count
+            result.change_request_ids.extend(create_change_request_ids)
+            deferred_notifications.extend(create_change_request_ids)
 
             # 5. BLI updates — may produce change requests; collected for post-commit notify.
             #    Pass the same sc_ref_map / gn_ref_map so an existing BLI reassigned to a
@@ -321,10 +324,11 @@ class AgreementEditBundleService:
         items: list[dict[str, Any]],
         sc_ref_map: dict[str, int],
         gn_ref_map: dict[str, int] | None = None,
-    ) -> int:
+    ) -> tuple[int, list[int]]:
         # NestedBudgetLineItemRequestSchema converts string enums (status) to enum
         # values and supports services_component_ref / grant_number_ref. agreement_id is set by us.
         gn_ref_map = gn_ref_map or {}
+        change_request_ids: list[int] = []
         bli_create_schema = NestedBudgetLineItemRequestSchema()
         for bli_data in items:
             loaded = bli_create_schema.load(bli_data, unknown=EXCLUDE)
@@ -355,8 +359,9 @@ class AgreementEditBundleService:
                     )
                 loaded["grant_number_id"] = gn_ref_map[grant_number_ref]
             loaded["agreement_id"] = agreement.id
-            self._blis.create(loaded, commit=False)
-        return len(items)
+            _, ids = self._blis.create_with_change_request_ids(loaded, commit=False)
+            change_request_ids.extend(ids)
+        return len(items), change_request_ids
 
     def _update_budget_line_items(
         self, items: list[dict[str, Any]], sc_ref_map: dict[str, int], gn_ref_map: dict[str, int] | None = None

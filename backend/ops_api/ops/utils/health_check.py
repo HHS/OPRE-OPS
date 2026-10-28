@@ -14,6 +14,8 @@ async def check_auth_services() -> dict:
     """
 
     resp = {"status_code": None, "alarm_level": 0}
+    if not current_app.config.get("HEALTH_CHECK_AUTH_SERVICES", True):
+        return resp
     try:
         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
         server_metadata_url = authlib_client_config["server_metadata_url"]

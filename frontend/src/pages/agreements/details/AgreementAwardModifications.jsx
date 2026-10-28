@@ -34,7 +34,10 @@ const AgreementAwardModifications = ({ agreement }) => {
     const { data: versionData } = useGetVersionQuery();
     const showContractModifications = Boolean(agreement?.is_awarded && versionData?.enable_modified_loe_edits);
     const contractModifications = showContractModifications ? (
-        <ContractModificationEdits agreementId={agreementId} />
+        <ContractModificationEdits
+            agreementId={agreementId}
+            isAgreementEditable={Boolean(agreement?._meta?.isEditable)}
+        />
     ) : null;
 
     const heading = (

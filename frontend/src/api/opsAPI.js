@@ -63,6 +63,7 @@ export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
         "Agreements",
+        "ContractModifications",
         "Projects",
         "User",
         "Users",
@@ -468,7 +469,8 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            // Linking a budget line to a pending services component can send it to approval (OPS-6440).
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         updateBudgetLineItem: builder.mutation({
             query: ({ id, data }) => {
@@ -479,7 +481,13 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests",
+                "ServicesComponents"
+            ]
         }),
         deleteBudgetLineItem: builder.mutation({
             query: (id) => ({
@@ -489,7 +497,13 @@ export const opsApi = createApi({
             // Surface the HTTP status so callers can distinguish an immediate delete (200) from a
             // deletion routed to an approval change request (202, PLANNED/IN_EXECUTION).
             transformResponse: (response, meta) => ({ ...response, statusCode: meta?.response?.status }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ChangeRequests",
+                "ServicesComponents"
+            ]
         }),
         // NOTE: will fetch 50 agreements due to limit on backend
         getAgreementsByResearchProjectFilter: builder.query({
@@ -644,7 +658,25 @@ export const opsApi = createApi({
             query: (id) => `/agreements/${id}/contract-modification-edits/`,
             transformResponse: (response) => response?.data ?? [],
             // Edits are written when a change request is approved, so refetch on review too.
-            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ChangeRequests"]
+            providesTags: (_result, _error, id) => [
+                { type: "Agreements", id },
+                "ChangeRequests",
+                "ContractModifications"
+            ]
+        }),
+        getAgreementContractModificationsById: builder.query({
+            query: (id) => `/agreements/${id}/contract-modifications/`,
+            transformResponse: (response) => response?.data ?? [],
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "ContractModifications"]
+        }),
+        submitContractModification: builder.mutation({
+            query: ({ agreementId, budgetLineItemIds, requestorNotes }) => ({
+                url: `/agreements/${agreementId}/contract-modifications/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: { budget_line_item_ids: budgetLineItemIds, requestor_notes: requestorNotes || null }
+            }),
+            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
@@ -1008,14 +1040,10 @@ export const opsApi = createApi({
             skip: (arg) => !arg?.id
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
-            query: ({ user_oidc_id, agreement_id }) => {
-                if (!user_oidc_id || !agreement_id) {
-                    return { skip: true };
-                }
-                return {
-                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`
-                };
-            },
+            // Callers must pass `skip` until both ids are known; returning `{ skip: true }` from
+            // here doesn't skip, it requests the API root.
+            query: ({ user_oidc_id, agreement_id }) =>
+                `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
             providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
@@ -1230,7 +1258,15 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ChangeRequests"]
+            // Approving or declining applies the change (e.g. removes a Services Component, OPS-6440), so
+            // refresh what it touches, not just the change request lists.
+            invalidatesTags: [
+                "ChangeRequests",
+                "Agreements",
+                "BudgetLineItems",
+                "ServicesComponents",
+                "AgreementHistory"
+            ]
         }),
         getDivisions: builder.query({
             query: () => `/divisions/`,
@@ -1430,6 +1466,8 @@ export const {
     useGetSpecialTopicsQuery,
     useGetAgreementAwardHistoryByIdQuery,
     useGetAgreementContractModificationEditsByIdQuery,
+    useGetAgreementContractModificationsByIdQuery,
+    useSubmitContractModificationMutation,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

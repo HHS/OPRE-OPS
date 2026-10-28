@@ -1,6 +1,7 @@
 import { useDismissNotificationMutation, useGetProcurementShopByIdQuery } from "../../../api/opsAPI";
 import { calculateFeeTotal } from "../../../helpers/agreement.helpers";
 import { convertToCurrency, renderField } from "../../../helpers/utils";
+import { getServicesComponentChangeLines } from "../../ServicesComponents/ServicesComponents.helpers";
 
 /**
  * @param {Object[]} changeRequestNotifications
@@ -115,6 +116,17 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
                 {bliId} Status: {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.old)} to{" "}
                 {renderField("BudgetLine", "status", changeRequest.requested_change_diff.status.new)}
             </li>
+        );
+    }
+    // Services Component addition (OPS-6440), e.g. "Adding: SC3 BL 15012".
+    const servicesComponentLines = getServicesComponentChangeLines(changeRequest);
+    if (servicesComponentLines.length > 0) {
+        return (
+            <>
+                {servicesComponentLines.map((line) => (
+                    <li key={line}>{line}</li>
+                ))}
+            </>
         );
     }
     if (changeRequest?.has_proc_shop_change && oldProcurementShop && newProcurementShop) {
