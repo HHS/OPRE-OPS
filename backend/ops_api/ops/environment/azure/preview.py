@@ -14,9 +14,13 @@ HOST_HEADER_PREFIX = os.environ["HOST_HEADER_PREFIX"]  # e.g. opre-ops-pr123-app
 SQLALCHEMY_ECHO = False
 
 # Up to 8 previews share one small Postgres server, so keep each pool small. A write
-# request can hold two connections at once (the request session plus OpsEventHandler's
-# own Session), so the pool must be at least gunicorn threads (4) + 1 or concurrent
-# writes deadlock until the timeout. Idle, each preview keeps only 2 open.
+# request holds the request session's connection while each OpsEventHandler exit briefly
+# opens (and closes) its own Session, so a thread needs at most 2 at once. With 4 gunicorn
+# threads that's up to 8 wanted under full load; a pool of threads + 1 (5) doesn't cover
+# that, but it guarantees one thread can always get its second connection and finish, so
+# extra writes wait (up to SQLALCHEMY_POOL_TIMEOUT) instead of deadlocking. With fewer, every
+# connection can be held by a write waiting for its second, so they all time out and fail.
+# Idle, each preview keeps only 2 open.
 SQLALCHEMY_POOL_SIZE = 2
 SQLALCHEMY_MAX_OVERFLOW = 3
 SQLALCHEMY_POOL_TIMEOUT = 10
