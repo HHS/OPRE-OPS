@@ -29,6 +29,7 @@ The router sends `Host: <target>:443`, which the backend's CSRF check requires. 
 **Gateway settings for the wildcard listener:**
 - **Module change:** the shared `app-gateway` module only passes `host_name` today, but Azure accepts wildcards only in `host_names`. Its `http_listener` block needs a `host_names` passthrough.
 - **Rule priority:** must be a **higher number** than the dev and staging rules (100+i and 200+i), so their hostnames match first. Add a matching IPv6 listener, plus `*` A and AAAA records.
+  - **Right after the gateway apply, check dev and staging still route to their own apps:** `curl -sI https://dev.ops.opre.acf.gov/` and `curl -s https://dev.ops.opre.acf.gov/api/v1/health/` (and the same for `stg`) should return their normal responses, not the router's 404. A 404 from the router means the wildcard rule is matching first; fix the priority before deploying any preview.
 - **Backend HTTP settings:** HTTPS 443, `pick_host_name_from_backend_address = true`, `request_timeout` 60s or more.
 - **Health probe:** host = the router's FQDN, `pick_host_name_from_backend_http_settings = false`, path `/healthz`, match 200–399.
 
