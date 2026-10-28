@@ -11,7 +11,7 @@ from typing import Optional
 
 from flask import current_app
 from flask_jwt_extended import get_current_user
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -20,6 +20,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractModificationRequest,
+    ContractModificationRequestNotification,
     ContractModificationRequestStatus,
     ModType,
     NotificationType,
@@ -160,6 +161,7 @@ class ContractModificationRequestService:
             request.reviewed_by_id = user.id
             request.reviewed_on = datetime.now(timezone.utc).replace(tzinfo=None)
             request.reviewer_notes = reviewer_notes
+            self._close_review_requests(request)
             self._notify_submitter(request)
             self.db_session.commit()
         except Exception:
@@ -241,6 +243,20 @@ class ContractModificationRequestService:
                 },
                 commit=False,
             )
+
+    def _close_review_requests(self, request: ContractModificationRequest) -> None:
+        """Mark the Directors' "please review" notifications for this request read. Once reviewed
+        they're stale, and they share a notification type with the submitter's outcome
+        notification, so left unread they'd show as an Approved / Declined alert."""
+        self.db_session.execute(
+            update(ContractModificationRequestNotification)
+            .where(
+                ContractModificationRequestNotification.contract_modification_request_id == request.id,
+                ContractModificationRequestNotification.is_read.is_(False),
+            )
+            .values(is_read=True)
+            .execution_options(synchronize_session="fetch")
+        )
 
     def _notify_submitter(self, request: ContractModificationRequest) -> None:
         approved = request.status == ContractModificationRequestStatus.APPROVED

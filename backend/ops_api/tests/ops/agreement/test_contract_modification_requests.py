@@ -473,3 +473,24 @@ def test_seeded_contract_modification_edit_points_at_agreement_523s_planned_budg
     assert bli is not None and bli.agreement_id == 523
     assert bli.status == BudgetLineItemStatus.PLANNED
     assert float(bli.amount) == edit.new_value
+
+
+@pytest.mark.parametrize("action", ["APPROVE", "DECLINE"])
+def test_review_marks_the_directors_request_notification_read(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, action, app_ctx
+):
+    """The Director's "please review" notification shares a type with the submitter's outcome
+    notification; once reviewed it must not stay unread, or it shows as an outcome alert."""
+    agreement, _, _ = awarded_with_edit
+    request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    assert _review_mod(division_director_auth_client, request_id, action).status_code == 200
+
+    loaded_db.expire_all()
+    notifications = loaded_db.scalars(
+        select(ContractModificationRequestNotification).where(
+            ContractModificationRequestNotification.contract_modification_request_id == request_id
+        )
+    ).all()
+    by_recipient = {n.recipient_id: n.is_read for n in notifications}
+    assert by_recipient == {DIVISION_DIRECTOR_USER_ID: True, BASIC_USER_ID: False}
