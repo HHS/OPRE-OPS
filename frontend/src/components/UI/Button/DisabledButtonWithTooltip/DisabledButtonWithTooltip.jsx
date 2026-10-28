@@ -16,6 +16,8 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {string} [props.className="usa-button"] - CSS class for the inner `<button>`.
  * @param {string} [props.dataCy] - data-cy selector for the inner `<button>`.
  * @param {React.CSSProperties} [props.wrapperStyle] - Extra inline styles for the focusable wrapper div.
+ * @param {string} [props.ariaLabel] - Accessible name for the wrapper and button, when the visible text alone
+ *     doesn't tell several similar buttons apart (e.g. "Upload file: Certificate of Funding").
  * @param {React.ReactNode} props.children - Button label content.
  * @returns {React.ReactElement}
  */
@@ -25,6 +27,7 @@ const DisabledButtonWithTooltip = ({
     className = "usa-button",
     dataCy,
     wrapperStyle,
+    ariaLabel,
     children
 }) => (
     <Tooltip
@@ -36,12 +39,14 @@ const DisabledButtonWithTooltip = ({
             tabIndex={0}
             role="button"
             aria-disabled="true"
+            aria-label={ariaLabel}
             style={{ ...wrapperStyle, display: "inline-block", cursor: "not-allowed" }}
         >
             <button
                 type="button"
                 className={className}
                 data-cy={dataCy}
+                aria-label={ariaLabel}
                 disabled={true}
                 style={{ pointerEvents: "none" }}
             >

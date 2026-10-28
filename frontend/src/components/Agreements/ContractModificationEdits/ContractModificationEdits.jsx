@@ -9,7 +9,7 @@ import {
 } from "../../../api/opsAPI";
 import { useCanEditByRole } from "../../../hooks/user.hooks";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
-import Tooltip from "../../UI/USWDS/Tooltip";
+import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import ContractModificationEditCard from "./ContractModificationEditCard";
 
 const MOD_REQUEST_NOTIFICATION = "CONTRACT_MODIFICATION_REQUEST_NOTIFICATION";
@@ -130,18 +130,6 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
         disabledReason = "A Contract Modification is already in review for this agreement";
     }
 
-    const startButton = (
-        <button
-            type="button"
-            className="usa-button"
-            data-cy="start-modification-btn"
-            disabled={Boolean(disabledReason)}
-            onClick={() => navigate(`/agreements/${agreementId}/start-modification`)}
-        >
-            Start modification
-        </button>
-    );
-
     return (
         <section
             className="margin-bottom-6"
@@ -178,14 +166,22 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
             )}
             <div className="display-flex flex-justify-end margin-top-4">
                 {disabledReason ? (
-                    <Tooltip
+                    // Focusable wrapper so keyboard users can reach the reason (a disabled button can't take focus).
+                    <DisabledButtonWithTooltip
                         label={disabledReason}
-                        position="top"
+                        dataCy="start-modification-btn"
                     >
-                        {startButton}
-                    </Tooltip>
+                        Start modification
+                    </DisabledButtonWithTooltip>
                 ) : (
-                    startButton
+                    <button
+                        type="button"
+                        className="usa-button"
+                        data-cy="start-modification-btn"
+                        onClick={() => navigate(`/agreements/${agreementId}/start-modification`)}
+                    >
+                        Start modification
+                    </button>
                 )}
             </div>
         </section>

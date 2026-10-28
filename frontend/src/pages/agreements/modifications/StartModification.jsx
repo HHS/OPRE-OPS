@@ -13,7 +13,7 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import DisabledButtonWithTooltip from "../../../components/UI/Button/DisabledButtonWithTooltip";
 import {
     findDescription,
     findIfOptional,
@@ -241,19 +241,12 @@ export const StartModification = () => {
                         Send to Approval
                     </button>
                 ) : (
-                    <Tooltip
+                    <DisabledButtonWithTooltip
                         label="Select a budget line to execute, or make an edit that requires a contract modification"
-                        position="top"
+                        dataCy="send-to-approval-btn"
                     >
-                        <button
-                            type="button"
-                            className="usa-button"
-                            data-cy="send-to-approval-btn"
-                            disabled={true}
-                        >
-                            Send to Approval
-                        </button>
-                    </Tooltip>
+                        Send to Approval
+                    </DisabledButtonWithTooltip>
                 )}
             </div>
         </App>

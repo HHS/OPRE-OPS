@@ -7,6 +7,18 @@ import { setupStore } from "../../../store";
 import { StartModification } from "./StartModification";
 import useStartModification from "./StartModification.hooks";
 
+/** True for a DisabledButtonWithTooltip: a disabled button inside a focusable, aria-disabled wrapper. */
+const isDisabledWithReachableTooltip = (name) => {
+    const matches = screen.getAllByRole("button", { name });
+    const button = matches.find((el) => el.tagName === "BUTTON");
+    const wrapper = matches.find((el) => el.tagName === "DIV");
+    return (
+        Boolean(button?.disabled) &&
+        wrapper?.getAttribute("tabindex") === "0" &&
+        wrapper?.getAttribute("aria-disabled") === "true"
+    );
+};
+
 vi.mock("./StartModification.hooks", async (importOriginal) => ({
     ...(await importOriginal()),
     default: vi.fn()
@@ -72,7 +84,7 @@ describe("StartModification", () => {
         renderPage();
 
         expect(screen.getByRole("heading", { name: "Start Modification" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Send to Approval" })).toBeDisabled();
+        expect(isDisabledWithReachableTooltip("Send to Approval")).toBe(true);
     });
 
     it("sends to approval when ready", async () => {

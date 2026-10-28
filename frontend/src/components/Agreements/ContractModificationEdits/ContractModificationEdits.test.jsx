@@ -59,6 +59,18 @@ const mockQuery = (result) =>
 
 const getCards = () => screen.queryAllByRole("listitem");
 
+/** True for a DisabledButtonWithTooltip: a disabled button inside a focusable, aria-disabled wrapper. */
+const isDisabledWithReachableTooltip = (name) => {
+    const matches = screen.getAllByRole("button", { name });
+    const button = matches.find((el) => el.tagName === "BUTTON");
+    const wrapper = matches.find((el) => el.tagName === "DIV");
+    return (
+        Boolean(button?.disabled) &&
+        wrapper?.getAttribute("tabindex") === "0" &&
+        wrapper?.getAttribute("aria-disabled") === "true"
+    );
+};
+
 // Card definitions, in order: Requested by, Modification Type, BL ID, Change To, From, To.
 const cardValues = (card) =>
     within(card)
@@ -134,7 +146,7 @@ describe("ContractModificationEdits", () => {
             />
         );
 
-        expect(screen.getByRole("button", { name: "Start modification" })).toBeDisabled();
+        expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
     });
 
     it("disables Start modification and marks edits In Review while a modification is in review", () => {
@@ -148,7 +160,7 @@ describe("ContractModificationEdits", () => {
             />
         );
 
-        expect(screen.getByRole("button", { name: "Start modification" })).toBeDisabled();
+        expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
         expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
     });
