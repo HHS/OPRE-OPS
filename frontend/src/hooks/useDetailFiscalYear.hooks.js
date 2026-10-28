@@ -21,6 +21,8 @@ const useSharedFiscalYear = () => useSelector((state) => state.sessionUI?.detail
  *
  * The page's year is the shared one; until there is one, the `?fy=` param
  * (from a link, a refresh or a copied URL), and failing that `fallbackFiscalYear`.
+ * A `?fy=` year also becomes the shared one, so it survives a tab switch (tab
+ * links carry no query) and applies to the pages before it.
  *
  * @param {number | string | null} [fallbackFiscalYear] - The page's default when no year has been chosen.
  * @returns {{ fiscalYear: number | string | null, setFiscalYear: (fiscalYear: number | string) => void }}
@@ -29,7 +31,12 @@ export const useDetailFiscalYear = (fallbackFiscalYear = null) => {
     const dispatch = useDispatch();
     const sharedFiscalYear = useSharedFiscalYear();
     const [searchParams] = useSearchParams();
-    const fiscalYear = sharedFiscalYear ?? parseFiscalYearParam(searchParams.get("fy")) ?? fallbackFiscalYear;
+    const urlFiscalYear = parseFiscalYearParam(searchParams.get("fy"));
+    const fiscalYear = sharedFiscalYear ?? urlFiscalYear ?? fallbackFiscalYear;
+
+    useEffect(() => {
+        if (sharedFiscalYear === null && urlFiscalYear) dispatch(setDetailFiscalYear(urlFiscalYear));
+    }, [dispatch, sharedFiscalYear, urlFiscalYear]);
 
     const setFiscalYear = useCallback(
         (value) => {

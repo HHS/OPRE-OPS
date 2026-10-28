@@ -195,3 +195,47 @@ describe("going back between detail pages", () => {
         expect(screen.getByTestId("page")).toHaveTextContent("Portfolio FY 2023");
     });
 });
+
+describe("a year from ?fy= on a fresh load (new tab, refresh, bookmark)", () => {
+    const Page = ({ name }) => {
+        const { fiscalYear } = useDetailFiscalYear(2027);
+        useSyncFiscalYearParam(fiscalYear);
+        return (
+            <div>
+                <p data-testid="page">{`${name} FY ${fiscalYear}`}</p>
+                <Link to="/cans/5/funding">CAN Funding tab</Link>
+                <Link to="/portfolios/2/funding?fy=2025">Portfolio crumb</Link>
+            </div>
+        );
+    };
+
+    const renderFreshAt = (url) =>
+        render(
+            <Provider store={makeStore()}>
+                <MemoryRouter initialEntries={[url]}>
+                    <Routes>
+                        <Route
+                            path="/cans/:id/*"
+                            element={<Page name="CAN" />}
+                        />
+                        <Route
+                            path="/portfolios/:id/*"
+                            element={<Page name="Portfolio" />}
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+
+    it("survives a switch to another tab, whose link carries no ?fy=", () => {
+        renderFreshAt("/cans/5/spending?fy=2023");
+        fireEvent.click(screen.getByRole("link", { name: "CAN Funding tab" }));
+        expect(screen.getByTestId("page")).toHaveTextContent("CAN FY 2023");
+    });
+
+    it("applies to an earlier page reached by a breadcrumb carrying an older ?fy=", () => {
+        renderFreshAt("/cans/5/spending?fy=2023");
+        fireEvent.click(screen.getByRole("link", { name: "Portfolio crumb" }));
+        expect(screen.getByTestId("page")).toHaveTextContent("Portfolio FY 2023");
+    });
+});
