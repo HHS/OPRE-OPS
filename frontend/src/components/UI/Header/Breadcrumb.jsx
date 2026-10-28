@@ -6,7 +6,9 @@ import { useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 /**
  * A link to an intermediate crumb. Its visible text is shortened to keep the
  * breadcrumb on one line (see `truncateCrumbLabel`); when shortened, the full
- * label stays available as its accessible name and hover title.
+ * label stays available as its hover title and, through screen-reader-only
+ * text, its accessible name. (An `aria-label` would fail axe's
+ * label-content-name-mismatch rule: the visible "…" isn't part of the full name.)
  *
  * @param {Object} props
  * @param {string} props.label - The full crumb label.
@@ -22,10 +24,16 @@ const CrumbLink = ({ label, to, state }) => {
             to={to}
             state={state}
             className="text-primary"
-            aria-label={isTruncated ? label : undefined}
             title={isTruncated ? label : undefined}
         >
-            {text}
+            {isTruncated ? (
+                <>
+                    <span aria-hidden="true">{text}</span>
+                    <span className="usa-sr-only">{label}</span>
+                </>
+            ) : (
+                label
+            )}
         </Link>
     );
 };

@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import axe from "axe-core";
 import { createMemoryRouter, Link, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
@@ -136,9 +137,9 @@ describe("Breadcrumb", () => {
         expect(screen.getByRole("link", { name: "Portfolio A" })).toHaveAttribute("href", "/portfolios/5/funding");
     });
 
-    it("shortens long carried crumbs but keeps their full name accessible, and shows the leaf in full", () => {
+    it("shortens long carried crumbs but keeps their full name accessible, and shows the leaf in full", async () => {
         const longName = "Contract #1: African American Child and Family Research Center";
-        render(
+        const { container } = render(
             <RouterProvider
                 router={createMemoryRouter(
                     [{ path: "/agreements/review/:id", element: <Breadcrumb currentName={longName} /> }],
@@ -158,8 +159,12 @@ describe("Breadcrumb", () => {
         );
 
         const crumb = screen.getByRole("link", { name: longName });
-        expect(crumb).toHaveTextContent(/^Contract #1: African Amer…$/);
+        expect(within(crumb).getByText("Contract #1: African Amer…")).toHaveAttribute("aria-hidden", "true");
         expect(crumb).toHaveAttribute("title", longName);
+        // CI's axe scan requires a labelled link's visible text to be part of its accessible name.
+        // jsdom can't compute visibility, so axe reports a mismatch here as "incomplete", not a violation.
+        const results = await axe.run(container, { runOnly: ["label-content-name-mismatch", "link-name"] });
+        expect([...results.violations, ...results.incomplete].map((result) => result.id)).toEqual([]);
         // Short crumbs are untouched and get no extra label.
         expect(screen.getByRole("link", { name: "Projects" })).not.toHaveAttribute("title");
         // The leaf is not shortened.
