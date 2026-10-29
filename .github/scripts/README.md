@@ -196,7 +196,7 @@ set -euo pipefail
 
 - Adding the label requests a review from the next available person in `.github/review_rotation.json`, posts a PR comment, and pings Slack.
 - The PR author can comment `/reroll` to swap in the next available person.
-- People are skipped if they wrote the PR, were already picked for it, or are off today on the team calendar (an event titled with their name plus OOO, PTO, off, out, leave, sick, holiday or vacation).
+- People are skipped if they wrote the PR, were already picked for it, or are off today on the team calendar: an event titled with their name plus OOO, PTO, off, out, leave, sick, holiday or vacation that is all-day, or timed events adding up to at least `min_off_hours` (default 4) that day. A short appointment doesn't take anyone out of the rotation.
 
 **Setup**: add a `TEAM_CALENDAR_ICS_URL` repo secret holding the calendar's "Secret address in iCal format" (Google Calendar → Settings → Integrate calendar). Without it, picks still happen but ignore the calendar.
 

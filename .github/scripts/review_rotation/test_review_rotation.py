@@ -42,28 +42,60 @@ class TestIsOffEvent:
 class TestPeopleOff:
     def test_all_day_event_today(self):
         cal = ics("DTSTART;VALUE=DATE:20261029\r\nDTEND;VALUE=DATE:20261030\r\nSUMMARY:Alice OOO")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == {"alice"}
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == {"alice"}
 
     def test_all_day_event_other_day_ignored(self):
         cal = ics("DTSTART;VALUE=DATE:20261030\r\nDTEND;VALUE=DATE:20261031\r\nSUMMARY:Alice OOO")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == set()
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == set()
 
     def test_multi_day_event_covering_today(self):
         cal = ics("DTSTART;VALUE=DATE:20261026\r\nDTEND;VALUE=DATE:20261031\r\nSUMMARY:Bob vacation")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == {"bob"}
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == {"bob"}
 
-    def test_partial_day_event_counts(self):
+    def test_short_appointment_does_not_count(self):
+        # 3 hours, under the 4-hour minimum.
         cal = ics("DTSTART:20261029T180000Z\r\nDTEND:20261029T210000Z\r\nSUMMARY:Carol out - appointment")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == {"carol"}
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == set()
+
+    def test_long_timed_absence_counts(self):
+        cal = ics("DTSTART:20261029T130000Z\r\nDTEND:20261029T180000Z\r\nSUMMARY:Carol out - morning")
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == {"carol"}
+
+    def test_overlapping_events_count_once(self):
+        # 9-12 and 11-14 Eastern: 5 hours combined, not 6.
+        cal = ics(
+            "DTSTART;TZID=America/New_York:20261029T090000\r\nDTEND;TZID=America/New_York:20261029T120000\r\n"
+            "SUMMARY:Reed OOO",
+            "DTSTART;TZID=America/New_York:20261029T110000\r\nDTEND;TZID=America/New_York:20261029T140000\r\n"
+            "SUMMARY:Reed out",
+        )
+        pool = [rr.Member("reed", ("Reed",))]
+        assert rr.people_off(cal, pool, date(2026, 10, 29), TZ, 5) == {"reed"}
+        assert rr.people_off(cal, pool, date(2026, 10, 29), TZ, 5.5) == set()
+
+    def test_short_events_add_up(self):
+        cal = ics(
+            "DTSTART:20261029T130000Z\r\nDTEND:20261029T150000Z\r\nSUMMARY:Alice out",
+            "DTSTART:20261029T180000Z\r\nDTEND:20261029T200000Z\r\nSUMMARY:Alice out again",
+        )
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == {"alice"}
+
+    def test_only_hours_inside_today_count(self):
+        # 10pm-4am Eastern: only 2 of the 6 hours fall on Oct 29.
+        cal = ics(
+            "DTSTART;TZID=America/New_York:20261029T220000\r\nDTEND;TZID=America/New_York:20261030T040000\r\n"
+            "SUMMARY:Bob out - travel"
+        )
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == set()
 
     def test_recurring_event(self):
         # Weekly Thursday off, starting weeks before today.
         cal = ics("DTSTART;VALUE=DATE:20261001\r\nDTEND;VALUE=DATE:20261002\r\nRRULE:FREQ=WEEKLY\r\nSUMMARY:Bob off")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == {"bob"}
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == {"bob"}
 
     def test_non_off_event_ignored(self):
         cal = ics("DTSTART:20261029T150000Z\r\nDTEND:20261029T160000Z\r\nSUMMARY:Alice / Carol sync")
-        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ) == set()
+        assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == set()
 
 
 class TestChooseReviewer:
@@ -173,7 +205,7 @@ def run(tmp_path, monkeypatch):
     def _run(mode, pr, comments=(), off=frozenset()):
         fake = FakeGitHub(pr, list(comments))
         monkeypatch.setattr(rr, "GitHub", lambda token, repo: fake)
-        monkeypatch.setattr(rr, "fetch_calendar_off", lambda pool, tz: set(off))
+        monkeypatch.setattr(rr, "fetch_calendar_off", lambda pool, tz, min_off_hours: set(off))
         for key, value in {
             "MODE": mode,
             "REPO": "o/r",

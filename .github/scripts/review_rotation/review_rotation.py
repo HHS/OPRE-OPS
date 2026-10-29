@@ -43,17 +43,55 @@ def is_off_event(summary: str, calendar_names: tuple[str, ...]) -> bool:
     return any(re.search(rf"\b{re.escape(name)}\b", summary, re.IGNORECASE) for name in calendar_names)
 
 
-def people_off(ics_text: str, pool: list[Member], today: date, tz: ZoneInfo) -> set[str]:
-    """GitHub logins of pool members with an off event overlapping `today` (in `tz`)."""
+def off_hours(intervals: list[tuple[datetime, datetime]], day_start: datetime, day_end: datetime) -> float:
+    """Hours of `day_start..day_end` covered by `intervals`, counting overlapping events once."""
+    clipped = sorted((max(s, day_start), min(e, day_end)) for s, e in intervals if s < day_end and e > day_start)
+    total = timedelta()
+    cur_start, cur_end = None, None
+    for s, e in clipped:
+        if cur_end is None or s > cur_end:
+            if cur_end is not None:
+                total += cur_end - cur_start
+            cur_start, cur_end = s, e
+        else:
+            cur_end = max(cur_end, e)
+    if cur_end is not None:
+        total += cur_end - cur_start
+    return total.total_seconds() / 3600
+
+
+def people_off(ics_text: str, pool: list[Member], today: date, tz: ZoneInfo, min_off_hours: float) -> set[str]:
+    """GitHub logins of pool members who are off on `today` (in `tz`).
+
+    An all-day off event always counts. Timed off events count only once they add up to
+    `min_off_hours` that day, so a short appointment doesn't take someone out of the rotation.
+    """
     # Imported here so the pure rotation logic stays importable without the calendar deps.
     import icalendar
     import recurring_ical_events
 
     calendar = icalendar.Calendar.from_ical(ics_text)
-    start = datetime.combine(today, time.min, tz)
-    events = recurring_ical_events.of(calendar).between(start, start + timedelta(days=1))
-    summaries = [str(event.get("SUMMARY", "")) for event in events]
-    return {m.github for m in pool if any(is_off_event(s, m.calendar_names) for s in summaries)}
+    day_start = datetime.combine(today, time.min, tz)
+    day_end = day_start + timedelta(days=1)
+    events = recurring_ical_events.of(calendar).between(day_start, day_end)
+
+    off = set()
+    for member in pool:
+        timed = []
+        for event in events:
+            if not is_off_event(str(event.get("SUMMARY", "")), member.calendar_names):
+                continue
+            start = event["DTSTART"].dt
+            if not isinstance(start, datetime):  # all-day event
+                off.add(member.github)
+                break
+            end = event["DTEND"].dt if "DTEND" in event else start
+            # Floating times (no timezone) are read as the team's timezone.
+            timed.append((start if start.tzinfo else start.replace(tzinfo=tz), end if end.tzinfo else end.replace(tzinfo=tz)))
+        else:
+            if off_hours(timed, day_start, day_end) >= min_off_hours:
+                off.add(member.github)
+    return off
 
 
 def choose_reviewer(
@@ -170,7 +208,7 @@ class GitHub:
             page += 1
 
 
-def fetch_calendar_off(pool: list[Member], tz: ZoneInfo) -> set[str]:
+def fetch_calendar_off(pool: list[Member], tz: ZoneInfo, min_off_hours: float) -> set[str]:
     """Fail open: a missing or broken calendar means nobody is treated as off."""
     url = os.environ.get("TEAM_CALENDAR_ICS_URL")
     if not url:
@@ -179,7 +217,7 @@ def fetch_calendar_off(pool: list[Member], tz: ZoneInfo) -> set[str]:
     try:
         with open_https(url, timeout=15) as resp:
             ics_text = resp.read().decode()
-        return people_off(ics_text, pool, datetime.now(tz).date(), tz)
+        return people_off(ics_text, pool, datetime.now(tz).date(), tz, min_off_hours)
     except Exception as exc:  # noqa: BLE001 -- any calendar failure must not block a review pick
         print(f"::warning::Could not read the team calendar ({type(exc).__name__}); picking without it.")
         return set()
@@ -219,7 +257,7 @@ def main() -> int:
 
     pool = load_pool(config)
     tz = ZoneInfo(config["timezone"])
-    off = fetch_calendar_off(pool, tz)
+    off = fetch_calendar_off(pool, tz, config.get("min_off_hours", 4))
     old_pick = picked[-1] if picked else None
     new_pick = choose_reviewer(pool, pr_number, pr["user"]["login"], picked, off)
 
