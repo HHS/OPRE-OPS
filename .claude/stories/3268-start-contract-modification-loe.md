@@ -11,19 +11,19 @@ Let a COR bundle the approved modified-LOE edits on an awarded agreement (plus a
 
 ## Acceptance Criteria
 
-- [ ] User can see the edit they made on a BL or SC that triggered the Modified Level of Effort listed under "Edits That Require a Contract Modification" on the Award & Modifications Tab
-- [ ] User can click Start Modification on the Award & Modifications Tab
-- [ ] User can review the details of the agreement
-- [ ] User can select Planned BLs to Execute (if applicable)
-- [ ] User cannot select Draft and Obligated BLs (disabled with tooltip)
-- [ ] User can Review CANs to see the impact on the CAN/budget for any BLs selcted
-- [ ] User can review the summary of their contract modification including the details of their modified LOE (which BLs or SCs were changed)
+- [x] User can see the edit they made on a BL or SC that triggered the Modified Level of Effort listed under "Edits That Require a Contract Modification" on the Award & Modifications Tab
+- [x] User can click Start Modification on the Award & Modifications Tab
+- [x] User can review the details of the agreement
+- [x] User can select Planned BLs to Execute (if applicable)
+- [x] User cannot select Draft and Obligated BLs (disabled with tooltip)
+- [x] User can Review CANs to see the impact on the CAN/budget for any BLs selcted
+- [x] User can review the summary of their contract modification including the details of their modified LOE (which BLs or SCs were changed)
 - [ ] User can upload any relevant documents, as needed
-- [ ] User can provide optional notes to the approver, as needed
-- [ ] User can click "Send to Approval" to send the mod to their DD
-- [ ] All relevant alerts are displayed as changes are successfully sent to approval, In Review, and either approved or declined
-- [ ] All modified LOE changes included in the mod appear with an In Review status
-- [ ] All relevant event / history records should be recorded denoting the who (user), when, and what, and remote IP of changes being made/requested.
+- [x] User can provide optional notes to the approver, as needed
+- [x] User can click "Send to Approval" to send the mod to their DD
+- [x] All relevant alerts are displayed as changes are successfully sent to approval, In Review, and either approved or declined
+- [x] All modified LOE changes included in the mod appear with an In Review status
+- [x] All relevant event / history records should be recorded denoting the who (user), when, and what, and remote IP of changes being made/requested.
 
 ## Technical Details
 
@@ -109,6 +109,8 @@ Frontend:
 - Contract and AA agreements only (`_SUPPORTED_AGREEMENT_TYPES`).
 - Out of scope:
   - Add BL, Add SC and Delete SC cards (#3072 / OPS-6440)
+- **SC edits (follow-up on `OPS-3268/sc-mod-edits`):** PR 6447 (OPS-6440) records an approved "Add SC" as a pending edit and renders it on the shared edit card, so it appears on the Award & Modifications tab and the Start Modification summary. The follow-up adds submit/decline tests for SC edits and names the added SCs in the START and REVIEW history messages ("including 2 edits (adding SC2)", "It included adding SC2.").
+  - **SC deletes are not modification edits.** Deleting an SC with non-Draft BLs on an awarded agreement is blocked (superuser-only per #3072), so there's no "Delete SC" card.
   - the DD approve/decline UI (#3331); backend transitions (`PATCH /contract-modification-requests/<id>/`) and submitter-side alerts are in scope
   - creating a ProcurementAction or tracker for the mod (that screen is a placeholder in the designs)
 - **Merge-conflict mitigation with OPS-6440** (SC add/delete, Santi-3rd):
