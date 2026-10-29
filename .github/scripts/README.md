@@ -189,3 +189,22 @@ set -euo pipefail
 
 # Script implementation...
 ```
+
+## review_rotation/
+
+**Purpose**: Round-robin reviewer pick for PRs labeled `ready-for-human-review`, run by `.github/workflows/review_rotation.yml`.
+
+- Adding the label requests a review from the next available person in `.github/review_rotation.json`, posts a PR comment, and pings Slack.
+- The PR author can comment `/reroll` to swap in the next available person.
+- People are skipped if they wrote the PR, were already picked for it, or are off today on the team calendar (an event titled with their name plus OOO, PTO, off, out, leave, sick, holiday or vacation).
+
+**Setup**: add a `TEAM_CALENDAR_ICS_URL` repo secret holding the calendar's "Secret address in iCal format" (Google Calendar → Settings → Integrate calendar). Without it, picks still happen but ignore the calendar.
+
+**Tests**:
+
+```bash
+cd .github/scripts/review_rotation
+uv run --no-project --with-requirements requirements.txt --with pytest pytest
+```
+
+To update pinned dependencies, edit `requirements.in` and run `uv pip compile requirements.in --generate-hashes -o requirements.txt`.

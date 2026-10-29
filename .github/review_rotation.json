@@ -1,0 +1,15 @@
+{
+    "_comment": "Round-robin reviewer rotation used by review_rotation.yml. Adding `label` to a PR requests a review from the next available pool member; the PR author can comment /reroll to pick someone else. A pool member counts as off for the day when a team-calendar event today has one of their calendar_names AND an off word (OOO, PTO, off, out, leave, sick, holiday) in its title. Slack IDs come from slack_user_map.json.",
+    "label": "ready-for-human-review",
+    "timezone": "America/New_York",
+    "pool": [
+        { "github": "andressacurvelo", "calendar_names": ["Andressa"] },
+        { "github": "santi-3rd", "calendar_names": ["Guillermo"] },
+        { "github": "jonnalley", "calendar_names": ["Jonathan"] },
+        { "github": "kimschulke", "calendar_names": ["Kim"] },
+        { "github": "npage123", "calendar_names": ["Nate"] },
+        { "github": "weimiao67", "calendar_names": ["Wei"] },
+        { "github": "rajohnson90", "calendar_names": ["Reed"] },
+        { "github": "josbell", "calendar_names": ["Josbell"] }
+    ]
+}
