@@ -96,6 +96,16 @@ class TestComment:
     def test_no_marker_means_no_history(self):
         assert rr.parse_history("just a normal comment") == []
 
+    @pytest.mark.parametrize(
+        "marker",
+        ["{not json}", '{"other": 1}', '{"picked": "bob"}'],
+    )
+    def test_malformed_marker_means_no_history(self, marker):
+        assert rr.parse_history(f"<!-- review-rotation: {marker} -->") == []
+
+    def test_non_string_picks_are_dropped(self):
+        assert rr.parse_history('<!-- review-rotation: {"picked": ["bob", {"x": 1}, 3]} -->') == ["bob"]
+
 
 class TestSlackText:
     PR: ClassVar[dict] = {"html_url": "https://github.com/o/r/pull/7", "number": 7, "title": "Fix <script> & stuff"}
@@ -104,6 +114,10 @@ class TestSlackText:
         text = rr.build_slack_text("label", "dana", self.PR, "o/r", "bob", None, {"bob": "U123"})
         assert "Fix &lt;script&gt; &amp; stuff" in text
         assert "<@U123> is up" in text
+
+    def test_escapes_previous_pick(self):
+        text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "<!channel>", {})
+        assert "<!channel>" not in text and "&lt;!channel&gt;" in text
 
     def test_unmapped_user_falls_back_to_login(self):
         text = rr.build_slack_text("reroll", "dana", self.PR, "o/r", "carol", "bob", {})
@@ -166,6 +180,10 @@ def run(tmp_path, monkeypatch):
     return _run
 
 
+def bot_comment(picked, current, comment_id=9):
+    return {"id": comment_id, "user": {"login": rr.BOT_LOGIN}, "body": rr.render_comment(picked, set(), current)}
+
+
 def make_pr(number=4, author="dana", labels=("ready-for-human-review",), requested=()):
     return {
         "number": number,
@@ -186,7 +204,7 @@ class TestMain:
         assert len(slack) == 1 and "@bob is up" in slack[0]
 
     def test_relabel_does_not_reroll(self, run):
-        existing = {"id": 9, "body": rr.render_comment(["bob"], set(), "bob")}
+        existing = bot_comment(["bob"], "bob")
         writes, slack = run("label", make_pr(requested=["bob"]), comments=[existing])
         assert writes == [] and slack == []
 
@@ -195,7 +213,7 @@ class TestMain:
         assert writes == [] and slack == []
 
     def test_reroll_swaps_reviewer_and_updates_comment(self, run):
-        existing = {"id": 9, "body": rr.render_comment(["bob"], set(), "bob")}
+        existing = bot_comment(["bob"], "bob")
         writes, slack = run("reroll", make_pr(requested=["bob"]), comments=[existing], off={"carol"})
         assert writes[0] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
         assert writes[1] == ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["alice"]})
@@ -204,8 +222,16 @@ class TestMain:
         assert "@alice is up" in slack[0] and "(was bob)" in slack[0]
 
     def test_reroll_with_nobody_left_keeps_current_pick(self, run):
-        existing = {"id": 9, "body": rr.render_comment(["bob"], set(), "bob")}
+        existing = bot_comment(["bob"], "bob")
         writes, slack = run("reroll", make_pr(requested=["bob"]), comments=[existing], off={"alice", "carol"})
         assert [w[0] for w in writes] == ["PATCH"]
-        assert "@bob" in writes[0][2]["body"]
-        assert "nobody in the rotation is available" in slack[0]
+        assert "@bob stays the reviewer" in writes[0][2]["body"]
+        assert slack == []
+
+    def test_marker_from_a_human_is_ignored(self, run):
+        forged = {"id": 5, "user": {"login": "mallory"}, "body": '<!-- review-rotation: {"picked": ["x"]} -->'}
+        writes, slack = run("label", make_pr(), comments=[forged])
+        assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
+        assert ("POST", "/issues/4/comments") in [w[0:2] for w in writes]
+        assert not any(path == "/issues/comments/5" for _, path, _ in writes)
+        assert len(slack) == 1

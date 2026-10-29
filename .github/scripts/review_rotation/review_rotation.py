@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo
 
 MARKER_RE = re.compile(r"<!-- review-rotation: (\{.*?\}) -->")
 OFF_WORDS = ("ooo", "pto", "off", "out", "leave", "sick", "holiday", "vacation")
+BOT_LOGIN = "github-actions[bot]"
 OFF_WORDS_RE = re.compile(r"\b(" + "|".join(OFF_WORDS) + r")\b", re.IGNORECASE)
 
 
@@ -68,15 +69,24 @@ def choose_reviewer(
 
 
 def parse_history(comment_body: str) -> list[str]:
+    """Picks recorded in the marker; a missing or malformed marker counts as no history."""
     match = MARKER_RE.search(comment_body or "")
-    return json.loads(match.group(1))["picked"] if match else []
+    if not match:
+        return []
+    try:
+        picked = json.loads(match.group(1))["picked"]
+    except (ValueError, KeyError, TypeError):
+        return []
+    return [p for p in picked if isinstance(p, str)] if isinstance(picked, list) else []
 
 
-def render_comment(picked: list[str], off: set[str], current: str | None) -> str:
+def render_comment(picked: list[str], off: set[str], current: str | None, reroll_found_nobody: bool = False) -> str:
     marker = f"<!-- review-rotation: {json.dumps({'picked': picked})} -->"
     lines = [marker]
     if current:
         lines.append(f"**Reviewer:** @{current} (picked by rotation)")
+        if reroll_found_nobody:
+            lines.append(f"The last `/reroll` found nobody else available, so @{current} stays the reviewer.")
     else:
         lines.append("**Reviewer:** nobody in the rotation is available right now. Please pick a reviewer manually.")
     # Backticks, not @, so skipped people don't get a GitHub notification.
@@ -105,7 +115,7 @@ def build_slack_text(
 ) -> str:
     link = f"<{pr['html_url']}|{repo}#{pr['number']}: {slack_escape(pr['title'])}>"
     if mode == "reroll":
-        action = f"*{actor}* rerolled the reviewer for {link}" + (f" (was {old_pick})" if old_pick else "")
+        action = f"*{actor}* rerolled the reviewer for {link}" + (f" (was {slack_escape(old_pick)})" if old_pick else "")
     else:
         action = f"*{actor}* marked {link} ready for human review"
     if new_pick:
@@ -138,7 +148,8 @@ class GitHub:
         while True:
             comments = self.request("GET", f"/issues/{pr_number}/comments?per_page=100&page={page}")
             for comment in comments:
-                if MARKER_RE.search(comment["body"] or ""):
+                # Only the bot's own comment holds the history; a marker anyone else posts is ignored.
+                if comment["user"]["login"] == BOT_LOGIN and MARKER_RE.search(comment["body"] or ""):
                     return comment
             if len(comments) < 100:
                 return None
@@ -207,13 +218,16 @@ def main() -> int:
     # With no replacement available, a reroll keeps the current pick rather than leaving nobody.
     current = new_pick or old_pick
 
-    body = render_comment(picked, off, current)
+    body = render_comment(picked, off, current, reroll_found_nobody=mode == "reroll" and not new_pick)
     if comment:
         gh.request("PATCH", f"/issues/comments/{comment['id']}", {"body": body})
     else:
         gh.request("POST", f"/issues/{pr_number}/comments", {"body": body})
 
-    post_slack(build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map))
+    # A reroll that finds nobody changes nothing for the team, so it only updates the PR comment.
+    # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
+    if new_pick or mode == "label":
+        post_slack(build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map))
     print(f"Picked {new_pick or 'nobody'} (history: {picked}, off today: {sorted(off)})")
     return 0
 
