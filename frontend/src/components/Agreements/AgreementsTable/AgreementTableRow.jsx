@@ -9,6 +9,7 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { AGREEMENT_TYPES } from "../../../components/ServicesComponents/ServicesComponents.constants";
 import {
     getAgreementContractNumber,
@@ -38,6 +39,15 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
+    // When the nickname-preferred agreementName differs from the full title, the full title
+    // must reach keyboard/screen-reader users through the link's own accessible name. The
+    // hover tooltip below is applied to the Link itself (not a nested span inside it) so it
+    // doesn't add a second, focusable-but-not-activatable tab stop (OPS-6144).
+    const fullAgreementName = agreement?.name;
+    const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== agreementName;
+    const agreementLinkLabel = hasDistinctFullName
+        ? `View agreement details for ${agreementName}, full title ${fullAgreementName}`
+        : `View agreement details for ${agreementName || "agreement"}`;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementTotal = agreement?.agreement_total ?? 0;
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
@@ -88,17 +98,22 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
     const TableRowData = (
         <>
             <td data-cy="agreement-name">
-                <Link
-                    className="text-ink text-no-underline"
-                    to={agreementPath}
-                    state={listTrailState(agreementPath, agreement?.display_name)}
-                    aria-label={`View agreement details for ${agreementName || "agreement"}`}
+                <Tooltip
+                    label={hasDistinctFullName ? fullAgreementName : ""}
+                    position="right"
                 >
-                    <TextClip
-                        text={agreementName}
-                        maxLines={2}
-                    />
-                </Link>
+                    <Link
+                        className="text-ink text-no-underline"
+                        to={agreementPath}
+                        state={listTrailState(agreementPath, agreement?.display_name)}
+                        aria-label={agreementLinkLabel}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            maxLines={2}
+                        />
+                    </Link>
+                </Tooltip>
             </td>
             <td data-cy="agreement-type">{agreementType || ""}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>

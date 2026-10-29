@@ -170,6 +170,50 @@ describe("AgreementTableRow", () => {
         expect(screen.getAllByText("$315.00")).toHaveLength(1);
     });
 
+    describe("nickname vs. full title accessibility", () => {
+        // OPS-6144 regression: a nickname-preferred display name must not add a second,
+        // tooltip-triggering tab stop. The Tooltip component is applied to the Link itself
+        // (the sole, already-focusable trigger), not to a nested span inside it, so USWDS's
+        // tooltip script enhances that one tab stop instead of creating a second one.
+        const agreementWithNickname = {
+            ...baseAgreement,
+            name: "Full Contract Title",
+            display_name: "ABC Nickname"
+        };
+
+        test("shows the full title in a styled tooltip on the link, not a nested tab stop", () => {
+            renderComponent(undefined, agreementWithNickname);
+
+            const link = screen.getByRole("link", {
+                name: "View agreement details for ABC Nickname, full title Full Contract Title"
+            });
+            // USWDS's tooltip setup strips the native `title` attribute and replaces it with
+            // an aria-described, app-styled `.usa-tooltip__body` sibling — this is the same
+            // Tooltip component/markup used by the rest of the app, not a native browser tooltip.
+            expect(link).not.toHaveAttribute("title");
+            expect(link).toHaveClass("usa-tooltip__trigger");
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const tooltipBody = document.querySelector(".usa-tooltip__body");
+            expect(tooltipBody).toHaveTextContent("Full Contract Title");
+            expect(link).toHaveAttribute("aria-describedby", tooltipBody.getAttribute("id"));
+
+            // The TextClip span inside the link must not be an independent tab stop
+            const clippedText = screen.getByText("ABC Nickname");
+            expect(clippedText).not.toHaveAttribute("tabindex");
+        });
+
+        test("does not add a tooltip when there is no distinct full title", () => {
+            renderComponent();
+
+            const link = screen.getByRole("link", { name: "View agreement details for Test Agreement" });
+            expect(link).not.toHaveAttribute("title");
+            expect(link).not.toHaveClass("usa-tooltip__trigger");
+            // eslint-disable-next-line testing-library/no-node-access
+            expect(document.querySelectorAll(".usa-tooltip__body")).toHaveLength(0);
+        });
+    });
+
     describe("Super User Edit Permissions", () => {
         test("super user can edit agreements regardless of team membership", async () => {
             // API returns isEditable: true for super users

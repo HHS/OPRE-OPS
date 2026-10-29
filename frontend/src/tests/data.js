@@ -213,7 +213,10 @@ export const agreement = {
     created_on: "2024-05-27T19:20:43.774009Z",
     delivered_status: false,
     description: "Test description",
-    display_name: "Contract #1: African American Child and Family Research Center",
+    // Nickname-preferred, per issue #6144 — must match nick_name ("AACFRC") above, since
+    // display_name is now an impossible server response if it doesn't. Individual tests that
+    // need the full name should read `agreement.name` directly.
+    display_name: "AACFRC",
     id: 1,
     name: "Contract #1: African American Child and Family Research Center",
     notes: "",
@@ -302,6 +305,17 @@ export const agreement = {
     vendor: "Vendor 1",
     vendor_id: 500,
     is_awarded: false
+};
+
+// Clone of `agreement` with a whitespace-only nickname and no display_name, so the
+// None/blank/whitespace fallback path in getAgreementDisplayName can be exercised against a
+// fixture (not just inline literals). Ref: issue #6144 — there was previously no Agreement
+// fixture in this file with a blank nickname (the only bare `nick_name: ""` occurrences belong
+// to nested CAN objects, not an Agreement).
+export const agreementWithoutNickname = {
+    ...agreement,
+    nick_name: "   ",
+    display_name: undefined
 };
 
 export const document = {

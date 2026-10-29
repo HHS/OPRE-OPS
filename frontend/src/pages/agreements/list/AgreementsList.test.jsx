@@ -11,6 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { tableSortCodes } from "../../../helpers/utils";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { setupStore } from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -673,8 +674,79 @@ describe("AgreementsList - Pagination", () => {
             await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
 
             const headers = exportTableToXlsx.mock.calls[0][0].headers;
-            expect(headers[5]).toBe("FY25 Obligated");
-            expect(headers[10]).toBe("Lifetime Obligated");
+            expect(headers[6]).toBe("FY25 Obligated");
+            expect(headers[11]).toBe("Lifetime Obligated");
+        });
+
+        it("exports the Agreement Nickname header/column and derives currencyColumns from the header array (issue #6144 AC 4)", async () => {
+            exportTableToXlsx.mockClear();
+
+            const nicknamedAgreement = {
+                id: 1,
+                name: "Full Legal Title For Testing",
+                nick_name: "NICK",
+                display_name: "NICK",
+                agreement_type: "CONTRACT",
+                project_officer_id: null
+            };
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: {
+                    agreements: [nicknamedAgreement],
+                    count: 1,
+                    limit: 10,
+                    offset: 0
+                },
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            const mockGetAllAgreementsTrigger = vi.fn(() => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [nicknamedAgreement],
+                        count: 1,
+                        limit: 50,
+                        offset: 0
+                    })
+            }));
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+            useLazyGetUserQuery.mockReturnValue([vi.fn(() => ({ unwrap: () => Promise.resolve({}) })), {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText("Export")).toBeInTheDocument();
+            });
+
+            const exportButton = screen.getByRole("button", { name: /export/i });
+            exportButton.click();
+
+            await waitFor(() => {
+                expect(exportTableToXlsx).toHaveBeenCalled();
+            });
+
+            const callArgs = exportTableToXlsx.mock.calls[exportTableToXlsx.mock.calls.length - 1][0];
+
+            expect(callArgs.headers[0]).toBe("Agreement");
+            expect(callArgs.headers[1]).toBe("Agreement Nickname");
+            // Default FY selection is "All", so the static "Lifetime Obligated" column (which
+            // would otherwise duplicate the dynamic fyLabel column) is omitted — see the
+            // omitWhenAllFY comment in AgreementsList.jsx.
+            expect(callArgs.currencyColumns).toEqual([5, 6, 9, 10]);
+
+            const row = callArgs.rowMapper(nicknamedAgreement);
+            // Column 0 is the raw full name (NOT getAgreementName, which is now nickname-preferred);
+            // column 1 is the raw nickname.
+            expect(row[0]).toBe("Full Legal Title For Testing");
+            expect(row[1]).toBe("NICK");
         });
     });
 
@@ -1083,9 +1155,9 @@ describe("AgreementsList - Export Lifetime Obligated value under All FYs", () =>
             lifetime_obligated: 75000
         });
 
-        // "Lifetime Obligated" is the 6th column (index 5) when All FYs is selected.
+        // "Lifetime Obligated" is the 7th column (index 6) when All FYs is selected.
         // The export must emit lifetime_obligated, not fy_obligated.
-        expect(row[5]).toBe(75000);
+        expect(row[6]).toBe(75000);
     });
 });
 

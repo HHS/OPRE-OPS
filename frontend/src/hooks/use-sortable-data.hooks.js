@@ -3,6 +3,7 @@ import { formatDateNeeded, calculatePercent, fiscalYearFromDate } from "../helpe
 import { tableSortCodes } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
 import { BLI_STATUS } from "../helpers/budgetLines.helpers";
+import { getAgreementDisplayName } from "../helpers/agreement.helpers";
 import { NO_DATA } from "../constants";
 export const SORT_TYPES = {
     ALL_BUDGET_LINES: "All Budget Lines",
@@ -20,7 +21,7 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
         case tableSortCodes.budgetLineCodes.BL_ID_NUMBER:
             return budgetLine.id;
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
-            return budgetLine.agreement?.name ?? NO_DATA;
+            return getAgreementDisplayName(budgetLine.agreement) || NO_DATA;
         case tableSortCodes.budgetLineCodes.SERVICES_COMPONENT:
             return budgetLine.services_component_id || "";
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
@@ -62,7 +63,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, sortContext = {}) => {
             return effectiveClin == null || Number.isNaN(clinNumber) ? SORT_TO_END : clinNumber;
         }
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
-            return budgetLine.agreement?.name ?? NO_DATA;
+            return getAgreementDisplayName(budgetLine.agreement) || NO_DATA;
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
             return budgetLine.date_needed ? new Date(budgetLine.date_needed) : new Date(0);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:

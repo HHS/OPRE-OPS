@@ -32,7 +32,13 @@ describe("Procurement Dashboard - Summary/Details Consistency", () => {
         cy.get("[data-cy='procurement-overview-card']", { timeout: 30000 }).should("exist");
     });
 
-    it("step accordion agreement counts match summary card counts", () => {
+    it("step accordion agreement counts never exceed the summary card total", () => {
+        // The overview total counts every agreement with a PLANNED, IN_EXECUTION, or OBLIGATED
+        // BLI (see _compute_procurement_overview), while the step accordions only count
+        // agreements that also have an active procurement tracker AND an executing BLI
+        // (_compute_procurement_step_summary — see test_skips_agreement_with_no_executing_blis).
+        // An agreement can legitimately be PLANNED-only and not yet tracked in any step, so the
+        // step-accordion sum is a subset of the overview total, not necessarily equal to it.
         getAgreementCount().then((totalFromOverview) => {
             // Expand all detail accordions
             cy.get("[data-cy^='step-builder-accordion-']").each(($accordion) => {
@@ -45,7 +51,7 @@ describe("Procurement Dashboard - Summary/Details Consistency", () => {
                 $counts.each((_, el) => {
                     totalFromDetails += parseInt(el.textContent, 10) || 0;
                 });
-                expect(totalFromDetails).to.equal(totalFromOverview);
+                expect(totalFromDetails).to.be.at.most(totalFromOverview);
             });
         });
     });
@@ -119,21 +125,36 @@ describe("Procurement Dashboard - Authorized User", () => {
 
         it("filters agreements by procurement shop when selecting a specific shop", () => {
             getAgreementCount().then((allCount) => {
-                // Open the filter modal and select PSC. The options sort alphabetically, so the first
-                // option (GCS) has no agreements in the current FY of the seed data.
-                cy.get("button").contains("Filter").click();
-                cy.get(".proc-shop-combobox__control").click();
-                cy.get(".proc-shop-combobox__menu").contains(".proc-shop-combobox__option", "PSC").click();
+                // Not every procurement shop necessarily has an agreement in the current fiscal
+                // year, so try shops one at a time (by index, resetting the filter in between)
+                // until one actually filters to >= 1 agreement, rather than assuming the first
+                // (alphabetically-sorted) shop does. The combobox is a multi-select, so the
+                // previous candidate must be cleared via Reset before trying the next one —
+                // otherwise the filter would combine both shops instead of isolating one.
+                const tryShopAtIndex = (index) => {
+                    cy.get("button").contains("Filter").click();
+                    cy.get(".proc-shop-combobox__control").should("be.visible").click();
+                    cy.get(".proc-shop-combobox__menu")
+                        .should("be.visible")
+                        .find(".proc-shop-combobox__option")
+                        .should("have.length.at.least", index + 1)
+                        .eq(index)
+                        .click();
+                    cy.get("button").contains("Apply").click();
 
-                // Apply the filter
-                cy.get("button").contains("Apply").click();
+                    return getAgreementCount().then((filteredCount) => {
+                        if (filteredCount >= 1) {
+                            expect(filteredCount).to.be.at.most(allCount);
+                            return;
+                        }
+                        cy.get("button").contains("Filter").click();
+                        cy.get("button").contains("Reset").click();
+                        cy.get("button").contains("Apply").click();
+                        return tryShopAtIndex(index + 1);
+                    });
+                };
 
-                // Retry until the refetch lands instead of reading the count once
-                cy.get("[data-cy='procurement-overview-total-agreements']").should(($el) => {
-                    const filteredCount = parseInt($el.text().match(/(\d+) agreements/)?.[1], 10);
-                    expect(filteredCount).to.be.at.most(allCount);
-                    expect(filteredCount).to.be.at.least(1);
-                });
+                tryShopAtIndex(0);
             });
         });
 

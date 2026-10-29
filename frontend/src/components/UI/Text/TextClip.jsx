@@ -41,7 +41,7 @@ const TextClip = ({ text, maxLines = 2 }) => {
     // setUpAttributes on hover and stack duplicate wrappers / empty bodies.
     React.useEffect(() => {
         const el = spanRef.current;
-        if (!el || !isOverflowing || !text) return;
+        if (!el || !text || !isOverflowing) return;
 
         el.setAttribute("title", text);
         el.setAttribute("data-position", "right");

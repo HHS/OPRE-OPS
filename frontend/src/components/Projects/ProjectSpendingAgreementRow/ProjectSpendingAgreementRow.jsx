@@ -52,7 +52,7 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry 
         resolvedFyTotal = 0;
     }
 
-    const agreementName = getAgreementName(agreement) ?? NO_DATA;
+    const agreementName = getAgreementName(agreement) || NO_DATA;
     const agreementType = getAgreementType(agreement?.agreement_type) ?? NO_DATA;
     const agreementStartDate = getAgreementStartDate(agreement);
     const agreementEndDate = getAgreementEndDate(agreement);

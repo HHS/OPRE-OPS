@@ -579,6 +579,59 @@ describe("useReviewBudgetTeamRequisition", () => {
                 expect(callArgs.data.is_draft).toBeUndefined();
             });
         });
+
+        it("uses the nickname-preferred display name in the success toast", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({});
+            mockUpdateProcurementTrackerStep.mockReturnValue({ unwrap: mockUnwrap });
+
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Full Contract Title", nick_name: "Short Name", display_name: "Short Name" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            result.current.setRequisitionNumber("REQ-12345");
+            result.current.setRequisitionDate("05/21/2026");
+            result.current.setAttestationChecked(true);
+
+            await waitFor(() => {
+                expect(result.current.isFormValid()).toBe(true);
+            });
+
+            await result.current.handleApprove();
+
+            await waitFor(() => {
+                expect(result.current.showModal).toBe(true);
+            });
+
+            await result.current.modalProps.handleConfirm();
+
+            await waitFor(() => {
+                expect(mockSetAlert).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        message: expect.stringContaining("Short Name")
+                    })
+                );
+            });
+            const alertCall = mockSetAlert.mock.calls.find((call) => call[0].message?.includes("Short Name"));
+            expect(alertCall[0].message).not.toContain("Full Contract Title");
+        });
     });
 
     describe("Form validation", () => {
