@@ -407,6 +407,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
         case OpsEventType.START_CONTRACT_MODIFICATION:
             edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
             bli_count = len(event.event_details.get("budget_line_item_ids", []))
+            sc_added = _services_components_added_phrase(event)
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -415,7 +416,8 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_title="Contract Modification Sent to Approval",
                     history_message=(
                         f"{event_user.full_name} sent a contract modification to approval including "
-                        f"{edit_count} edit{'' if edit_count == 1 else 's'} and "
+                        f"{edit_count} edit{'' if edit_count == 1 else 's'}"
+                        f"{f' ({sc_added})' if sc_added else ''} and "
                         f"{bli_count} budget line{'' if bli_count == 1 else 's'} to execute."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -431,6 +433,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 if executed_ids
                 else ""
             )
+            sc_added = _services_components_added_phrase(event)
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
@@ -439,6 +442,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                     history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
                     history_message=(
                         f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
+                        + (f" It included {sc_added}." if sc_added else "")
                         + executed
                         + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
                     ),
@@ -634,6 +638,16 @@ def create_change_request_history_event(
             else AgreementHistoryType.CHANGE_REQUEST_UPDATED
         ),
     )
+
+
+def _services_components_added_phrase(event: OpsEvent) -> str:
+    """e.g. "adding SC2 and SC3" for a contract modification that includes Services Component
+    additions (OPS-6440), or "" when it has none."""
+    names = event.event_details.get("services_components_added") or []
+    if not names:
+        return ""
+    joined = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+    return f"adding {joined}"
 
 
 def create_services_component_change_request_history_event(
