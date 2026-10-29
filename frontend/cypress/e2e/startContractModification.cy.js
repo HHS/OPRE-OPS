@@ -97,26 +97,28 @@ describe("Start a Contract Modification", () => {
         cy.contains("h2", "Contract Modification In Review").should("be.visible");
         cy.get('[data-cy="start-modification-btn"]').should("be.disabled");
 
-        // At 200% zoom on a 1280px screen (640 CSS px) the edit cards must still fit, with no value
-        // hidden under the In Review tag.
+        // At 200% zoom on a 1280px screen (640 CSS px) the edit cards must still fit, and the From/To
+        // values must stay on one line rather than being squeezed under the In Review tag.
         cy.viewport(640, 800);
+        // The heading and the cards come from different queries, so wait until every card has
+        // refetched and shows In Review before measuring.
         cy.get('[data-cy="contract-modification-edit-card"]')
-            .should("have.length.at.least", 1)
-            .each(($card) => {
-                const card = $card[0];
-                expect(card.scrollWidth, "card has no horizontal overflow").to.be.at.most(card.clientWidth);
-                const tag = card.querySelector('[data-cy="contract-modification-edit-in-review"]');
-                expect(tag, "In Review tag").to.exist;
-                const tagRect = tag.getBoundingClientRect();
-                card.querySelectorAll("dd").forEach((value) => {
-                    const rect = value.getBoundingClientRect();
-                    const overlaps =
-                        rect.right > tagRect.left &&
-                        rect.left < tagRect.right &&
-                        rect.bottom > tagRect.top &&
-                        rect.top < tagRect.bottom;
-                    expect(overlaps, `"${value.textContent}" is clear of the In Review tag`).to.be.false;
+            .its("length")
+            .then((cardCount) => {
+                cy.get('[data-cy="contract-modification-edit-in-review"]').should("have.length", cardCount);
+            });
+        cy.get('[data-cy="contract-modification-edit-card"]').each(($card) => {
+            const card = $card[0];
+            expect(card.scrollWidth, "card has no horizontal overflow").to.be.at.most(card.clientWidth);
+            card.querySelectorAll("dl").forEach((term) => {
+                const label = term.querySelector("dt")?.textContent;
+                if (label !== "From" && label !== "To") return;
+                // The value tag is inline-block, so a wrapped value shows up as a taller box (one line
+                // is 20px, two are 34px).
+                term.querySelectorAll("dd > span").forEach((value) => {
+                    expect(value.getBoundingClientRect().height, `${label} "${value.textContent}" doesn't wrap`).to.be.below(28);
                 });
             });
+        });
     });
 });
