@@ -43,10 +43,12 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                 reviewContractModification({ requestId: request.id, action, reviewerNotes: reviewerNotes || null })
                     .unwrap()
                     .catch((error) => {
-                        setSubmitError(
-                            // @ts-expect-error - RTK Query error has data property
-                            error?.data?.error || "Failed to submit your review. Please try again."
-                        );
+                        // e.g. a bundled budget line changed after this request was sent; the backend's reason
+                        // is in errors, not a top-level error field
+                        const backendMessage = Object.values(error?.data?.errors ?? {})
+                            .flat()
+                            .find((message) => typeof message === "string");
+                        setSubmitError(backendMessage ?? "Failed to submit your review. Please try again.");
                     });
             }
         });

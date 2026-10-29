@@ -87,9 +87,12 @@ describe("ContractModificationRequestReviewCard", () => {
     });
 
     it("shows an inline error when the review fails", async () => {
-        const unwrap = vi
-            .fn()
-            .mockRejectedValue({ data: { error: "Budget line 123459 changed after this request was sent." } });
+        const unwrap = vi.fn().mockRejectedValue({
+            data: {
+                message: "Validation failed",
+                errors: { budget_line_item_ids: ["Budget line 123459 changed after this request was sent."] }
+            }
+        });
         mockReview.mockReturnValue({ unwrap });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
 
