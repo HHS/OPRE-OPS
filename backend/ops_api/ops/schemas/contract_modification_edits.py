@@ -55,6 +55,9 @@ class ContractModificationRequestSchema(Schema):
     created_on = fields.DateTime(allow_none=True)
     edits = fields.List(fields.Nested(ContractModificationEditSchema), required=True)
     budget_line_item_ids = fields.Method("_budget_line_item_ids")
+    # True when the current user may approve/decline this request (it's in review, and they're
+    # a superuser or a Division Director/deputy for the agreement).
+    can_review = fields.Boolean(dump_default=False)
 
     @staticmethod
     def _budget_line_item_ids(request):

@@ -689,6 +689,15 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications"]
         }),
+        reviewContractModification: builder.mutation({
+            query: ({ requestId, action, reviewerNotes }) => ({
+                url: `/contract-modification-requests/${requestId}/`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: { action, reviewer_notes: reviewerNotes || null }
+            }),
+            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications", "AgreementHistory"]
+        }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
             providesTags: ["Projects"]
@@ -1479,6 +1488,7 @@ export const {
     useGetAgreementContractModificationEditsByIdQuery,
     useGetAgreementContractModificationsByIdQuery,
     useSubmitContractModificationMutation,
+    useReviewContractModificationMutation,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
     useLazyGetProcurementTrackersByAgreementIdsQuery,

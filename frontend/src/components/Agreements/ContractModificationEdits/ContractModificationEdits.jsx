@@ -11,6 +11,7 @@ import { useCanEditByRole } from "../../../hooks/user.hooks";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import DisabledButtonWithTooltip from "../../UI/Button/DisabledButtonWithTooltip";
 import ContractModificationEditCard from "./ContractModificationEditCard";
+import ContractModificationRequestReviewCard from "./ContractModificationRequestReviewCard";
 
 const MOD_REQUEST_NOTIFICATION = "CONTRACT_MODIFICATION_REQUEST_NOTIFICATION";
 
@@ -102,7 +103,8 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
         return null;
     }
 
-    const isInReview = modificationRequests.some((request) => request.status === "IN_REVIEW");
+    const inReviewRequest = modificationRequests.find((request) => request.status === "IN_REVIEW");
+    const isInReview = Boolean(inReviewRequest);
 
     let content;
     if (isError) {
@@ -141,13 +143,17 @@ const ContractModificationEdits = ({ agreementId, isAgreementEditable = false })
                     onDismiss={() => dismissNotification(latestOutcome.id)}
                 />
             )}
-            {isInReview && (
-                <SimpleAlert
-                    type="warning"
-                    heading="Contract Modification In Review"
-                    message="There is a Contract Modification pending approval from the Division Director."
-                    headingLevel={2}
-                />
+            {inReviewRequest?.can_review ? (
+                <ContractModificationRequestReviewCard request={inReviewRequest} />
+            ) : (
+                isInReview && (
+                    <SimpleAlert
+                        type="warning"
+                        heading="Contract Modification In Review"
+                        message="There is a Contract Modification pending approval from the Division Director."
+                        headingLevel={2}
+                    />
+                )
             )}
             <h2 className="font-sans-lg">Contract Modifications</h2>
             <p className="font-sans-sm line-height-body-5">
