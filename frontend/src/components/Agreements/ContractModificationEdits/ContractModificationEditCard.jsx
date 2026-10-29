@@ -26,10 +26,14 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
     services_component_create: "Add SC"
 };
 
-// Fixed columns from the Figma "MODs Review Card" (Requested by, Modification Type, BL ID / SC,
-// Change To, From, To, In Review), so fields line up across cards whatever each card shows.
-const CARD_COLUMNS = "148px 166px 132px 115px 134px minmax(0, 1fr) auto";
-const IN_REVIEW_COLUMN = 7;
+// Columns from the Figma "MODs Review Card" (Requested by, Modification Type, BL ID / SC, Change To,
+// From, To, In Review). They're fr, not px, so they hit the Figma px at full width (850px for the
+// six fields) but shrink and wrap when the card is narrower, e.g. at 200% zoom. Tracks never go
+// below their content's minimum, so a value can't collapse under the In Review tag; From and To
+// keep their full width so an amount like $175,000.00 isn't split mid-number. The In Review column
+// has a fixed minimum so cards with and without the tag line up.
+const CARD_COLUMNS =
+    "148fr 166fr 132fr 115fr minmax(max-content, 134fr) minmax(max-content, 155fr) minmax(4.5rem, auto)";
 
 /**
  * One approved edit on an Awarded agreement that requires a contract modification.
@@ -114,7 +118,7 @@ const ContractModificationEditCard = ({ edit }) => {
                 <Tag
                     tagStyle="lightTextRedBackground"
                     // Inline nowrap: Tag's own inline whiteSpace would override a class.
-                    style={{ gridColumn: IN_REVIEW_COLUMN, justifySelf: "end", whiteSpace: "nowrap" }}
+                    style={{ gridColumn: "-2 / -1", justifySelf: "end", whiteSpace: "nowrap" }}
                     text="In Review"
                     dataCy="contract-modification-edit-in-review"
                 />
