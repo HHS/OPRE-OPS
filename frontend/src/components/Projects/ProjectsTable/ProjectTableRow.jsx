@@ -4,9 +4,10 @@ import TableRowExpandable from "../../UI/TableRowExpandable/TableRowExpandable";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { NO_DATA } from "../../../constants";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, withFiscalYearParam } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useHandOverFiscalYear } from "../../../hooks/useDetailFiscalYear.hooks";
 
 /** Max characters for agreement name before truncation. */
 const MAX_AGREEMENT_NAME_LENGTH = 25;
@@ -44,7 +45,9 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
 
     const agreementList = project.agreement_name_list ?? [];
     const listTrailState = useListTrailState("projects");
-    const projectPath = `/projects/${project.id}`;
+    // Open the project on the FY selected in the list.
+    const projectPath = withFiscalYearParam(`/projects/${project.id}`, selectedFiscalYear);
+    const handOverFiscalYear = useHandOverFiscalYear();
 
     const visibleColumns = [
         <td key="title">
@@ -52,6 +55,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                 className="text-ink text-no-underline"
                 to={projectPath}
                 state={listTrailState(projectPath)}
+                onClick={handOverFiscalYear(selectedFiscalYear)}
             >
                 {project.title}
             </Link>
@@ -90,6 +94,8 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                                 <Link
                                     key={agreement.id}
                                     to={`/agreements/${agreement.id}`}
+                                    // No name for the breadcrumb leaf: this list shows the nickname when there is
+                                    // one, but the agreement page's leaf is the full name, so it would change on load.
                                     state={listTrailState(`/agreements/${agreement.id}`)}
                                     className="bg-primary-lighter text-ink text-no-underline font-sans-3xs padding-x-1 padding-y-05 radius-md margin-right-1 margin-bottom-1"
                                     title={agreement.name}

@@ -66,18 +66,18 @@ describe("ProjectFundingCANsTable", () => {
         expect(screen.queryByText("FY 25 Project Funding")).not.toBeInTheDocument();
     });
 
-    it("renders each CAN number as a link to its detail page", () => {
+    it("renders each CAN number as a link to its detail page, on the project's selected FY", () => {
         renderComponent();
         const link = screen.getByRole("link", { name: "G99MVT3" });
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute("href", "/cans/515");
+        expect(link).toHaveAttribute("href", "/cans/515?fy=2025");
     });
 
     it("renders a link for every CAN row", () => {
         renderComponent();
-        expect(screen.getByRole("link", { name: "G99MVT3" })).toHaveAttribute("href", "/cans/515");
-        expect(screen.getByRole("link", { name: "G994426" })).toHaveAttribute("href", "/cans/504");
-        expect(screen.getByRole("link", { name: "G99XXX3" })).toHaveAttribute("href", "/cans/509");
+        expect(screen.getByRole("link", { name: "G99MVT3" })).toHaveAttribute("href", "/cans/515?fy=2025");
+        expect(screen.getByRole("link", { name: "G994426" })).toHaveAttribute("href", "/cans/504?fy=2025");
+        expect(screen.getByRole("link", { name: "G99XXX3" })).toHaveAttribute("href", "/cans/509?fy=2025");
     });
 
     it("renders portfolio name for each row", () => {
@@ -121,6 +121,6 @@ describe("ProjectFundingCANsTable", () => {
 
         await userEvent.click(screen.getByRole("link", { name: "G99MVT3" }));
 
-        expect(getProbedTrail()).toEqual({ targetPath: "/cans/515", ancestors: ancestry });
+        expect(getProbedTrail()).toEqual({ targetPath: "/cans/515?fy=2025", ancestors: ancestry });
     });
 });

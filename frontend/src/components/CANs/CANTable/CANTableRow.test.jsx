@@ -114,8 +114,49 @@ describe("CANTableRow", () => {
         await userEvent.click(screen.getByRole("link", { name: "Test CAN" }));
 
         expect(getProbedTrail()).toEqual({
-            targetPath: `/cans/${mockProps.canId}`,
+            targetPath: `/cans/${mockProps.canId}?fy=2023`,
             ancestors: [{ label: "CANs", to: "/cans" }]
         });
+    });
+
+    it("hands the list's FY over to the detail pages when the CAN link is clicked", async () => {
+        const { store } = renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow {...mockProps} />
+                </tbody>
+            </table>
+        );
+
+        await userEvent.click(screen.getByRole("link", { name: mockProps.name }));
+
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(2023);
+    });
+
+    it("links to the CAN on the list's selected FY, and without one when the list shows all FYs", () => {
+        const { unmount } = renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow {...mockProps} />
+                </tbody>
+            </table>
+        );
+        expect(screen.getByRole("link", { name: mockProps.name })).toHaveAttribute(
+            "href",
+            `/cans/${mockProps.canId}?fy=2023`
+        );
+        unmount();
+
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <CANTableRow
+                        {...mockProps}
+                        fiscalYear={undefined}
+                    />
+                </tbody>
+            </table>
+        );
+        expect(screen.getByRole("link", { name: mockProps.name })).toHaveAttribute("href", `/cans/${mockProps.canId}`);
     });
 });

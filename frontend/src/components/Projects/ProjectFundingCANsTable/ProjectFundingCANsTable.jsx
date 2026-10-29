@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
+import { withFiscalYearParam } from "../../../helpers/utils";
 import { formatActivePeriod, getTableHeadings } from "./ProjectFundingCANsTable.constants";
 
 /**
@@ -57,23 +58,27 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear, ancestry = [] }) => {
                 </tr>
             </thead>
             <tbody>
-                {cans.map((can) => (
-                    <tr key={can.id}>
-                        <td>
-                            <Link
-                                to={`/cans/${can.id}`}
-                                state={buildTrailState(`/cans/${can.id}`, ancestry)}
-                                className="text-ink text-no-underline"
-                            >
-                                {can.number}
-                            </Link>
-                        </td>
-                        <td>{can.portfolio}</td>
-                        <td>{formatActivePeriod(can.active_period)}</td>
-                        <td>{formatCurrency(can.fy_funding)}</td>
-                        <td>{formatCurrency(can.lifetime_funding)}</td>
-                    </tr>
-                ))}
+                {cans.map((can) => {
+                    // Open the CAN on the project's selected FY.
+                    const canPath = withFiscalYearParam(`/cans/${can.id}`, fiscalYear);
+                    return (
+                        <tr key={can.id}>
+                            <td>
+                                <Link
+                                    to={canPath}
+                                    state={buildTrailState(canPath, ancestry)}
+                                    className="text-ink text-no-underline"
+                                >
+                                    {can.number}
+                                </Link>
+                            </td>
+                            <td>{can.portfolio}</td>
+                            <td>{formatActivePeriod(can.active_period)}</td>
+                            <td>{formatCurrency(can.fy_funding)}</td>
+                            <td>{formatCurrency(can.lifetime_funding)}</td>
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     );

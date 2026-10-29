@@ -4,6 +4,8 @@ import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useHandOverFiscalYear } from "../../../hooks/useDetailFiscalYear.hooks";
+import { withFiscalYearParam } from "../../../helpers/utils";
 
 /**
  * CanTableRow component of CANTable
@@ -19,12 +21,14 @@ import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
  * @param {string} props.portfolio - Portfolio abbreviation
  * @returns {JSX.Element}
  */
-const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obligateBy, portfolio }) => {
+const CANTableRow = ({ activePeriod, canId, fiscalYear, fundingSummary, name, nickname, obligateBy, portfolio }) => {
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
     const listTrailState = useListTrailState("cans");
-    const canPath = `/cans/${canId}`;
+    const handOverFiscalYear = useHandOverFiscalYear();
+    // Open the CAN on the FY selected in the list.
+    const canPath = withFiscalYearParam(`/cans/${canId}`, fiscalYear);
 
     return (
         <tr>
@@ -36,6 +40,7 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                     <Link
                         to={canPath}
                         state={listTrailState(canPath)}
+                        onClick={handOverFiscalYear(fiscalYear)}
                         className="text-ink text-no-underline"
                     >
                         {name}

@@ -7,6 +7,8 @@ import TestApplicationContext from "../../../applicationContext/TestApplicationC
 import { configureStore } from "@reduxjs/toolkit";
 import { vi } from "vitest";
 import { USER_ROLES } from "../../../components/Users/User.constants";
+import userEvent from "@testing-library/user-event";
+import { buildTrailState, getTrailFromState } from "../../../helpers/breadcrumb.helpers";
 
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
@@ -180,6 +182,83 @@ describe("AgreementBudgetLines", () => {
 
             const requestLink = screen.getByRole("link", { name: "Change BL Status" });
             expect(requestLink).toHaveAttribute("data-cy", "bli-continue-btn");
+        });
+    });
+
+    describe("Change BL Status breadcrumb trail", () => {
+        const superUserStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Super User",
+                        email: "super@example.com",
+                        roles: [{ name: USER_ROLES.SUPER_USER }],
+                        is_superuser: true
+                    }
+                })
+            }
+        });
+
+        // A fresh history per test, so following the link doesn't move the shared one.
+        const renderWithHistory = (testHistory) =>
+            render(
+                <Provider store={superUserStore}>
+                    <Router
+                        location={testHistory.location}
+                        navigator={testHistory}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                            isEditMode={false}
+                            setIsEditMode={vi.fn()}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("carries Agreements > <agreement> to the change request page when no trail was carried here", async () => {
+            const testHistory = createMemoryHistory({ initialEntries: ["/agreements/1/budget-lines"] });
+            renderWithHistory(testHistory);
+
+            await userEvent.click(screen.getByRole("link", { name: "Change BL Status" }));
+
+            expect(testHistory.location.pathname).toBe("/agreements/review/1");
+            expect(getTrailFromState(testHistory.location.state)).toEqual({
+                targetPath: "/agreements/review/1",
+                ancestors: [
+                    { label: "Agreements", to: "/agreements" },
+                    { label: "Test Agreement", to: "/agreements/1/budget-lines" }
+                ]
+            });
+        });
+
+        test("keeps the trail carried to the agreement, then adds the agreement crumb", async () => {
+            const testHistory = createMemoryHistory({
+                initialEntries: [
+                    {
+                        pathname: "/agreements/1/budget-lines",
+                        state: buildTrailState("/agreements/1", [
+                            { label: "Projects", to: "/projects" },
+                            { label: "Project Alpha", to: "/projects/10/spending?fy=2025" }
+                        ])
+                    }
+                ]
+            });
+            renderWithHistory(testHistory);
+
+            await userEvent.click(screen.getByRole("link", { name: "Change BL Status" }));
+
+            expect(getTrailFromState(testHistory.location.state)).toEqual({
+                targetPath: "/agreements/review/1",
+                ancestors: [
+                    { label: "Projects", to: "/projects" },
+                    { label: "Project Alpha", to: "/projects/10/spending?fy=2025" },
+                    { label: "Test Agreement", to: "/agreements/1/budget-lines" }
+                ]
+            });
         });
     });
 

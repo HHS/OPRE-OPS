@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useAncestryForChildren, useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { buildTrailState, LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import {
     useGetGrantNumbersListQuery,
     useGetServicesComponentsListQuery,
@@ -79,6 +80,12 @@ const AgreementBudgetLines = ({
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useTrailNavigate();
+    // Change BL Status reads "… > <agreement> > Change BL Status", with the agreement crumb linking back to this tab.
+    const changeStatusPath = `/agreements/review/${agreement?.id}`;
+    const changeStatusAncestry = useAncestryForChildren({
+        ownCrumb: { label: agreement?.name ?? "Agreement" },
+        fallbackCrumb: LIST_CRUMBS.agreements
+    });
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
@@ -430,7 +437,8 @@ const AgreementBudgetLines = ({
                     {canRequestStatusChange ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
-                            to={`/agreements/review/${agreement?.id}`}
+                            to={changeStatusPath}
+                            state={buildTrailState(changeStatusPath, changeStatusAncestry)}
                             data-cy="bli-continue-btn"
                         >
                             Change BL Status

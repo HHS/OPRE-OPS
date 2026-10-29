@@ -30,6 +30,20 @@ export const useBreadcrumbTrail = () => {
 };
 
 /**
+ * The current page's name as carried by the link that opened it (see
+ * `buildTrailState`), for its leaf crumb while the page's own data loads.
+ * Unlike `useBreadcrumbTrail`, a trail with no ancestors still counts here: a
+ * link with nothing to show before the page can still name it.
+ *
+ * @returns {string | undefined}
+ */
+export const useCarriedPageLabel = () => {
+    const { pathname, state } = useLocation();
+    const trail = getTrailFromState(state);
+    return trailMatchesPath(trail, pathname) ? trail.targetLabel : undefined;
+};
+
+/**
  * Location state that carries the current trail, for `<Link state>` /
  * `<Navigate state>` to another page of the same resource (e.g. a tab).
  * Imperative navigation should use `useTrailNavigate` instead.
@@ -67,6 +81,10 @@ export const useTrailNavigate = () => {
  * carried trail's ancestors (or `fallbackCrumb` when there is none) plus the
  * page's own crumb.
  *
+ * Pass `keepTrail: false` to start the children's trail at `fallbackCrumb`
+ * even when a trail was carried here, for pages whose children don't belong
+ * to the carried context.
+ *
  * The own crumb links to the current tab (pathname), with `?fy=` when a
  * `fiscalYear` is given, so following it back restores both; pass `to` to
  * link elsewhere.
@@ -74,13 +92,15 @@ export const useTrailNavigate = () => {
  * @param {Object} params
  * @param {{ label: string, to?: string, fiscalYear?: number | string | null }} params.ownCrumb - The current page's own crumb.
  * @param {BreadcrumbAncestor} params.fallbackCrumb - The route-hierarchy crumb used when no trail applies.
+ * @param {boolean} [params.keepTrail] - Whether to build on the carried trail (default true).
  * @returns {BreadcrumbAncestor[]}
  */
-export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb }) => {
+export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb, keepTrail = true }) => {
     const { pathname } = useLocation();
     const trail = useBreadcrumbTrail();
     const to = ownCrumb.to ?? (ownCrumb.fiscalYear ? `${pathname}?fy=${ownCrumb.fiscalYear}` : pathname);
-    return [...(trail?.ancestors ?? [fallbackCrumb]), { label: ownCrumb.label, to }];
+    const ancestors = keepTrail && trail ? trail.ancestors : [fallbackCrumb];
+    return [...ancestors, { label: ownCrumb.label, to }];
 };
 
 /**
@@ -97,12 +117,13 @@ export const useListCrumb = (listKey) => {
 
 /**
  * Build location state for links from a list page's rows: each destination's
- * trail is the list's crumb (see `useListCrumb`).
+ * trail is the list's crumb (see `useListCrumb`), plus the row's name for the
+ * destination's leaf crumb while it loads.
  *
  * @param {keyof typeof LIST_CRUMBS} listKey
- * @returns {(targetPath: string) => { breadcrumbTrail: BreadcrumbTrail }}
+ * @returns {(targetPath: string, targetLabel?: string) => { breadcrumbTrail: BreadcrumbTrail }}
  */
 export const useListTrailState = (listKey) => {
     const listCrumb = useListCrumb(listKey);
-    return (targetPath) => buildTrailState(targetPath, [listCrumb]);
+    return (targetPath, targetLabel) => buildTrailState(targetPath, [listCrumb], targetLabel);
 };

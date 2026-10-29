@@ -42,7 +42,8 @@ describe("CAN List", () => {
         cy.get("h1").should("have.text", "CANs");
         cy.get("tbody").find("tr").should("have.length", defaultTableRowsPerPage);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 78,200,000");
-        cy.get('a[href="/cans/503"]').should("exist");
+        // CAN links open the CAN on the list's selected FY
+        cy.get('a[href^="/cans/503?fy="]').should("exist");
     });
 
     it("the available budget should match the table total", () => {

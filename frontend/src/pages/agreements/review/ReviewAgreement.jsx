@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import classnames from "vest/classnames";
 import App from "../../../App";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
@@ -28,6 +28,8 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementType } from "../agreements.constants";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 
 /**
  * @component - Renders a page for reviewing an Agreement and sending Status Changes to approval.
@@ -37,7 +39,7 @@ import useReviewAgreement from "./ReviewAgreement.hooks";
 export const ReviewAgreement = () => {
     const urlPathParams = useParams();
     const agreementId = Number(urlPathParams?.id);
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
 
     const {
         handleSelectBLI,
@@ -111,14 +113,20 @@ export const ReviewAgreement = () => {
 
     if (isLoadingAgreement) {
         return (
-            <App breadCrumbName="Change BL Status">
+            <App
+                breadCrumbName="Change BL Status"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <h1>Loading...</h1>
             </App>
         );
     }
 
     return (
-        <App breadCrumbName="Change BL Status">
+        <App
+            breadCrumbName="Change BL Status"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}

@@ -76,7 +76,7 @@ const CANBudgetLineTableRow = ({
                         <Link
                             className="text-ink text-no-underline"
                             to={agreementPath}
-                            state={buildTrailState(agreementPath, ancestry)}
+                            state={buildTrailState(agreementPath, ancestry, agreementName?.trim())}
                             aria-label={resolvedAgreementName}
                         >
                             <TextClip

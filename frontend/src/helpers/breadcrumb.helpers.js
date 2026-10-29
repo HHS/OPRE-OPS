@@ -15,6 +15,8 @@
  * @typedef {Object} BreadcrumbTrail
  * @property {string} targetPath - Destination path the trail applies to (e.g. "/agreements/123").
  * @property {BreadcrumbAncestor[]} ancestors - Crumbs shown before the leaf, in order.
+ * @property {string} [targetLabel] - The destination's own name, known to the link (e.g. an agreement row's
+ *   title), so its leaf crumb can show it before the destination's data has loaded.
  */
 
 /** Location-state key under which a link carries its breadcrumb trail. */
@@ -34,9 +36,11 @@ export const toTrailState = (trail) => ({ [TRAIL_STATE_KEY]: trail });
  *
  * @param {string} targetPath - The link's destination path.
  * @param {BreadcrumbAncestor[]} [ancestors] - Crumbs to show before the destination's leaf.
+ * @param {string} [targetLabel] - The destination's name, shown as its leaf while it loads.
  * @returns {{ breadcrumbTrail: BreadcrumbTrail }}
  */
-export const buildTrailState = (targetPath, ancestors = []) => toTrailState({ targetPath, ancestors });
+export const buildTrailState = (targetPath, ancestors = [], targetLabel) =>
+    toTrailState(targetLabel ? { targetPath, ancestors, targetLabel } : { targetPath, ancestors });
 
 /**
  * Read the breadcrumb trail carried on a location's state, if any.
@@ -47,13 +51,24 @@ export const buildTrailState = (targetPath, ancestors = []) => toTrailState({ ta
 export const getTrailFromState = (locationState) => locationState?.[TRAIL_STATE_KEY] ?? null;
 
 /**
+ * Agreement pages whose route puts an action before the id
+ * ("/agreements/review/:id", "/agreements/approve/:id").
+ */
+const AGREEMENT_ACTION_PREFIXES = ["review", "approve"];
+
+/**
  * The resource a path belongs to: its first two segments, without query
- * (e.g. "/cans/1/spending?fy=2025" → "/cans/1").
+ * (e.g. "/cans/1/spending?fy=2025" → "/cans/1"). Agreement action routes
+ * belong to their agreement ("/agreements/review/1/edit" → "/agreements/1").
  *
  * @param {string} path
  * @returns {string}
  */
-export const resourceBasePath = (path) => "/" + path.split("?")[0].split("/").filter(Boolean).slice(0, 2).join("/");
+export const resourceBasePath = (path) => {
+    const segments = path.split("?")[0].split("/").filter(Boolean);
+    if (segments[0] === "agreements" && AGREEMENT_ACTION_PREFIXES.includes(segments[1])) segments.splice(1, 1);
+    return "/" + segments.slice(0, 2).join("/");
+};
 
 /**
  * Canonical list-page crumbs, also used to build the route `handle.crumb`
@@ -71,6 +86,31 @@ export const LIST_CRUMBS = {
     procurementDashboard: { label: "Procurement Dashboard", to: "/procurement-dashboard" }
 };
 
+/** Longest visible label for a crumb before the leaf; longer labels are cut and end in an ellipsis. */
+export const MAX_CRUMB_LABEL_LENGTH = 25;
+
+/**
+ * Shorten a crumb label to its first `maxLength` characters followed by "…",
+ * so a trail of long names fits on one line. Shorter labels are returned as is.
+ *
+ * @param {string} label
+ * @param {number} [maxLength]
+ * @returns {string}
+ */
+export const truncateCrumbLabel = (label, maxLength = MAX_CRUMB_LABEL_LENGTH) =>
+    label.length > maxLength ? `${label.slice(0, maxLength).trimEnd()}…` : label;
+
+/**
+ * The crumb for an agreement, used as the `parentCrumb` of the agreement's
+ * change-request pages (Change BL Status, approvals, …). Labelled like the
+ * agreement page's own leaf crumb so the two match.
+ *
+ * @param {{ id: number, name?: string } | null | undefined} agreement
+ * @returns {BreadcrumbAncestor | undefined} Undefined until the agreement has loaded.
+ */
+export const agreementCrumb = (agreement) =>
+    agreement?.id ? { label: agreement.name ?? "Agreement", to: `/agreements/${agreement.id}` } : undefined;
+
 /**
  * Return a list crumb that links back to the list's current tab when the user
  * is on that list page (e.g. "/agreements?filter=my-agreements"), so following
@@ -82,6 +122,17 @@ export const LIST_CRUMBS = {
  */
 export const withListQuery = (listCrumb, { pathname, search = "" }) =>
     pathname === listCrumb.to ? { ...listCrumb, to: `${listCrumb.to}${search}` } : listCrumb;
+
+/**
+ * Whether a trail passes through a list page (e.g. a CAN reached via the
+ * Projects list), whatever tab or query that list crumb carries.
+ *
+ * @param {BreadcrumbTrail | null | undefined} trail
+ * @param {BreadcrumbAncestor} listCrumb - A `LIST_CRUMBS` entry.
+ * @returns {boolean}
+ */
+export const trailIncludesList = (trail, listCrumb) =>
+    Boolean(trail?.ancestors.some((ancestor) => ancestor.to.split("?")[0] === listCrumb.to));
 
 /**
  * Decide whether a trail applies to the current location.

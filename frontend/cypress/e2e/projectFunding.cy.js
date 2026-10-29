@@ -43,12 +43,12 @@ describe("Project Funding Tab", () => {
         // At least one CAN row should be present for project 1000
         cy.get("table tbody tr").should("have.length.greaterThan", 0);
 
-        // CAN numbers should be links to /cans/:id
+        // CAN numbers should be links to /cans/:id, opening on the project's selected FY
         cy.get("table tbody tr")
             .first()
             .find("a")
             .should("have.attr", "href")
-            .and("match", /^\/cans\/\d+$/);
+            .and("match", /^\/cans\/\d+\?fy=\d{4}$/);
     });
 
     it("updates the FY funding column header when the FY selector changes", () => {

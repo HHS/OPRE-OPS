@@ -11,6 +11,7 @@ import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * @component - Budget Team Requisition Review page with full functionality
@@ -65,7 +66,10 @@ export const ReviewBudgetTeamRequisition = () => {
 
     if (!hasPermission) {
         return (
-            <App breadCrumbName="Pre-Award Requisition">
+            <App
+                breadCrumbName="Pre-Award Requisition"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <SimpleAlert
                     type="error"
                     heading="Access Denied"
@@ -77,7 +81,10 @@ export const ReviewBudgetTeamRequisition = () => {
     }
 
     return (
-        <App breadCrumbName="Pre-Award Requisition">
+        <App
+            breadCrumbName="Pre-Award Requisition"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             <PageHeader
                 title="Pre-Award Requisition"
                 subTitle={agreement?.name}

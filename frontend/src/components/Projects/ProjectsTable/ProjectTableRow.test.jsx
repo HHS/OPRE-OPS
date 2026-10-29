@@ -43,11 +43,21 @@ const renderRow = (project = MOCK_PROJECT, selectedFiscalYear = "2026") =>
     );
 
 describe("ProjectTableRow", () => {
-    it("renders the project title as a link", () => {
-        renderRow();
-        const link = screen.getByRole("link", { name: "Project Alpha" });
-        expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute("href", "/projects/10");
+    it("links to the project on the list's selected FY, and without one when the list shows all FYs", () => {
+        const { unmount } = renderRow();
+        expect(screen.getByRole("link", { name: "Project Alpha" })).toHaveAttribute("href", "/projects/10?fy=2026");
+        unmount();
+
+        renderRow(MOCK_PROJECT, "All");
+        expect(screen.getByRole("link", { name: "Project Alpha" })).toHaveAttribute("href", "/projects/10");
+    });
+
+    it("hands the list's FY over to the detail pages when the project link is clicked", async () => {
+        const { store } = renderRow(MOCK_PROJECT, "2025");
+
+        await userEvent.click(screen.getByRole("link", { name: "Project Alpha" }));
+
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(2025);
     });
 
     it("renders the project title link with text-ink text-no-underline classes", () => {
@@ -200,7 +210,7 @@ describe("ProjectTableRow", () => {
         await userEvent.click(screen.getByRole("link", { name: MOCK_PROJECT.title }));
 
         expect(getProbedTrail()).toEqual({
-            targetPath: "/projects/10",
+            targetPath: "/projects/10?fy=2026",
             ancestors: [{ label: "Projects", to: "/projects" }]
         });
     });

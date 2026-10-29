@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useGetAgreementByIdQuery,
     useGetGrantNumbersListQuery,
@@ -60,7 +60,8 @@ const useReviewAgreement = (agreementId) => {
     const [afterApproval, setAfterApproval] = useToggle(true);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
-    const navigate = useNavigate();
+    // Keeps the breadcrumb trail when leaving for this agreement's pages (e.g. Cancel Status Change).
+    const navigate = useTrailNavigate();
 
     // Per-environment capability: when ON, Draft→Planned status changes apply immediately
     // (no Change Request). Default to false (safe = "Send to Approval") until the query

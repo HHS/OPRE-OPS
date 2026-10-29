@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
 import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { useHandOverFiscalYear } from "../../../hooks/useDetailFiscalYear.hooks";
 
 /**
  * PortfolioTableRow component - displays a single portfolio row with funding data
@@ -14,6 +15,7 @@ import { useListTrailState } from "../../../hooks/useBreadcrumbTrail.hooks";
 const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
     const fundingSummary = portfolio.fundingSummary;
     const listTrailState = useListTrailState("portfolios");
+    const handOverFiscalYear = useHandOverFiscalYear();
     const portfolioPath = `/portfolios/${portfolio.id}`;
 
     // Extract funding values
@@ -32,6 +34,7 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
                 <Link
                     to={`${portfolioPath}/spending?fy=${fiscalYear}`}
                     state={listTrailState(portfolioPath)}
+                    onClick={handOverFiscalYear(fiscalYear)}
                     className="text-ink text-no-underline"
                 >
                     {portfolio.name || portfolio.abbreviation
