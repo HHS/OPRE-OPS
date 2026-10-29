@@ -663,14 +663,32 @@ def test_modification_document_types_can_be_uploaded(
     loaded_db.commit()
 
 
-def test_seeded_contract_modification_edit_points_at_agreement_523s_planned_budget_line(loaded_db, app_ctx):
-    """The seed hard-codes the edit's budget_line_item_id (it has no FK); keep it pointing at 523's
-    Planned BLI if seed rows ahead of it change the ids the loader assigns."""
-    (edit,) = [e for e in _edits(loaded_db, 523) if e.budget_line_item_id is not None]
-    bli = loaded_db.get(ContractBudgetLineItem, edit.budget_line_item_id)
+def test_seeded_contract_modification_edits_cover_every_edit_type_on_agreement_523(loaded_db, app_ctx):
+    """Agreement 523 seeds one pending edit per type for manual testing. The seed hard-codes their
+    budget_line_item_id (it has no FK), so keep the BL edits pointing at 523's Planned BLI with
+    new values that match it, and the delete edit pointing at no budget line."""
+    edits = _edits(loaded_db, 523)
+    assert sorted(edit.field for edit in edits) == [
+        "amount",
+        "can_id",
+        "date_needed",
+        "delete",
+        "services_component_create",
+        "status",
+    ]
+    assert all(edit.agreement_mod_id is None for edit in edits)
+
+    by_field = {edit.field: edit for edit in edits}
+    bli = loaded_db.get(ContractBudgetLineItem, by_field["amount"].budget_line_item_id)
     assert bli is not None and bli.agreement_id == 523
     assert bli.status == BudgetLineItemStatus.PLANNED
-    assert float(bli.amount) == edit.new_value
+    for field in ("status", "date_needed", "can_id"):
+        assert by_field[field].budget_line_item_id == bli.id
+    assert float(bli.amount) == by_field["amount"].new_value
+    assert bli.can_id == by_field["can_id"].new_value
+    assert bli.date_needed.isoformat() == by_field["date_needed"].new_value
+    assert bli.status.name == by_field["status"].new_value
+    assert loaded_db.get(ContractBudgetLineItem, by_field["delete"].budget_line_item_id) is None
 
 
 def test_seeded_sc_addition_edit_points_at_agreement_523s_sc4(loaded_db, app_ctx):

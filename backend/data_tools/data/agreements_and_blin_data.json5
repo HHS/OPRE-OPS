@@ -20222,6 +20222,47 @@
   // without a tester first walking a change request through approval. budget_line_item_id has no
   // FK; it's the id the seed assigns to 523's Planned BLI ("LI 4") and is only displayed.
   contract_modification_edit: [
+    // Pending "Edits That Require a Contract Modification" on CONTRACT #523, one per edit type, for
+    // manual testing of OPS-3268. BL 16066 (LI 4) carries the status, Obligate By, CAN and amount
+    // edits, and each matches its current value: it went Draft -> Planned after award, then had
+    // its Obligate By date, CAN and amount changed.
+    {
+      agreement_id: 523,
+      modification_type: "MODIFIED_LOE",
+      budget_line_item_id: 16066,
+      field: "status",
+      old_value: "DRAFT",
+      new_value: "PLANNED",
+      requested_by_id: 521,
+      requested_on: "2026-09-28T14:00:00",
+      approved_by_id: 522,
+      approved_on: "2026-09-28T16:00:00",
+    },
+    {
+      agreement_id: 523,
+      modification_type: "MODIFIED_LOE",
+      budget_line_item_id: 16066,
+      field: "date_needed",
+      old_value: "2044-04-01",
+      new_value: "2044-07-01",
+      requested_by_id: 521,
+      requested_on: "2026-09-29T14:00:00",
+      approved_by_id: 522,
+      approved_on: "2026-09-29T16:00:00",
+    },
+    {
+      // CAN 501 (G99IA14) -> 504 (G994426)
+      agreement_id: 523,
+      modification_type: "MODIFIED_LOE",
+      budget_line_item_id: 16066,
+      field: "can_id",
+      old_value: 501,
+      new_value: 504,
+      requested_by_id: 521,
+      requested_on: "2026-09-30T14:00:00",
+      approved_by_id: 522,
+      approved_on: "2026-09-30T16:00:00",
+    },
     {
       agreement_id: 523,
       modification_type: "MODIFIED_LOE",
@@ -20246,6 +20287,20 @@
       requested_on: "2026-10-03T14:00:00",
       approved_by_id: 522,
       approved_on: "2026-10-04T14:00:00",
+    },
+    {
+      // An approved delete of a Planned BL: the BL is gone, so its id deliberately matches no seeded
+      // budget line (the column has no FK, like a real deleted BL's edit).
+      agreement_id: 523,
+      modification_type: "MODIFIED_LOE",
+      budget_line_item_id: 99001,
+      field: "delete",
+      old_value: 80000.0,
+      new_value: "Deleted",
+      requested_by_id: 521,
+      requested_on: "2026-10-05T14:00:00",
+      approved_by_id: 522,
+      approved_on: "2026-10-06T14:00:00",
     },
   ],
 }
