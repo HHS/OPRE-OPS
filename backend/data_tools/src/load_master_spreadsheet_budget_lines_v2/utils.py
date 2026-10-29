@@ -153,11 +153,19 @@ def _find_agreement_and_can(data, session):
     """Find the agreement and CAN for the budget line item."""
     # ignore leading/trailing whitespace in the agreement names. OPRE is known for including
     # leading and trailing spaces in data sent and that's already in the persisted data
-    agreement = session.execute(
+    agreements = session.scalars(
         select(Agreement)
-        .where(func.trim(Agreement.name) == data.AGREEMENT_NAME.strip())
+        .where(func.trim(Agreement.name) == data.AGREEMENT_NAME)
         .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
-    ).scalar_one_or_none()
+    ).all()
+
+    if len(agreements) > 1:
+        # "Foo" and "Foo " can coexist; only an exact name match is unambiguous
+        agreements = [a for a in agreements if a.name == data.AGREEMENT_NAME]
+        if not agreements:
+            logger.warning(f"Agreement Name {data.AGREEMENT_NAME} matches multiple agreements and none exactly.")
+
+    agreement = agreements[0] if agreements else None
 
     if not agreement:
         logger.warning(f"Agreement with Agreement Name {data.AGREEMENT_NAME} not found.")
