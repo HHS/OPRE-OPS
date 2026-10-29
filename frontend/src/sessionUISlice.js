@@ -34,7 +34,8 @@ const listFilterDefaults = {
             agreementType: [],
             agreementName: [],
             contractNumber: [],
-            awardType: []
+            awardType: [],
+            division: []
         },
         selectedFiscalYear: "All"
     },

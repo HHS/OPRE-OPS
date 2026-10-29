@@ -17,6 +17,12 @@ import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYear
  */
 
 /**
+ * @typedef {Object} DivisionFilterItem
+ * @property {number} id
+ * @property {string} name
+ */
+
+/**
  * @typedef {Object} FilterItem
  * @property {string} title
  */
@@ -30,6 +36,7 @@ import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYear
  * @property {FilterItem[]} agreementName
  * @property {FilterItem[]} contractNumber
  * @property {FilterItem[]} awardType
+ * @property {DivisionFilterItem[]} division
  */
 
 /**
@@ -57,6 +64,15 @@ export const useTagsList = (filters) => {
                     filters[filterKey]?.map((item) => ({
                         tagText: item.name,
                         filter: filterName
+                    })) ?? [];
+                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            } else if (filterKey == "division") {
+                // Prefix the tag so it can't be mistaken for a portfolio's division (#6457).
+                const selectedTags =
+                    filters[filterKey]?.map((item) => ({
+                        tagText: `COR's Division: ${item.name}`,
+                        filter: filterName,
+                        id: item.id
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else if (filterKey == "fiscalYear") {
@@ -115,6 +131,10 @@ export const useTagsList = (filters) => {
         updateTags("awardType", "awardType");
     }, [filters.awardType, updateTags]);
 
+    useEffect(() => {
+        updateTags("division", "division");
+    }, [filters.division, updateTags]);
+
     return tagsList;
 };
 
@@ -169,6 +189,12 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 awardType: prevState.awardType.filter((award) => award.title !== tag.tagText)
+            }));
+            break;
+        case "division":
+            setFilters((prevState) => ({
+                ...prevState,
+                division: prevState.division.filter((division) => division.id !== tag.id)
             }));
             break;
         default:

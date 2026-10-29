@@ -781,6 +781,21 @@ class AgreementsService(OpsService[Agreement]):
         # TODO: Implement research_types filter once business requirements are clarified
         research_types = []
 
+        # Step 9: COR divisions - divisions of the agreements' primary COR (project officer).
+        # The alternate COR is intentionally ignored, and only divisions with at least one
+        # matching agreement are offered.
+        cor_divisions_query = (
+            select(distinct(Division.id), Division.name, Division.abbreviation)
+            .join(User, User.division == Division.id)
+            .join(Agreement, Agreement.project_officer_id == User.id)
+            .where(Agreement.id.in_(agreement_ids_subquery))
+        )
+        cor_divisions = [
+            {"id": d_id, "name": d_name, "abbreviation": d_abbr}
+            for d_id, d_name, d_abbr in self.db_session.execute(cor_divisions_query).all()
+        ]
+        cor_divisions = sorted(cor_divisions, key=lambda x: x["name"])
+
         # Build response
         filters = {
             "fiscal_years": fiscal_years,
@@ -790,6 +805,7 @@ class AgreementsService(OpsService[Agreement]):
             "agreement_names": agreement_names,
             "contract_numbers": contract_numbers,
             "research_types": research_types,
+            "cor_divisions": cor_divisions,
         }
 
         filter_response_schema = AgreementListFilterOptionResponseSchema()

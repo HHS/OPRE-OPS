@@ -386,6 +386,7 @@ class AgreementListFilterOptionResponseSchema(Schema):
     agreement_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     contract_numbers = fields.List(fields.String(), required=True)
     research_types = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    cor_divisions = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
 
 
 class AgreementSearchRequestSchema(PaginationSchema):

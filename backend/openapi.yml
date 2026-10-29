@@ -1117,6 +1117,7 @@ paths:
                   - agreement_names
                   - contract_numbers
                   - research_types
+                  - cor_divisions
                 properties:
                   fiscal_years:
                     type: array
@@ -1216,6 +1217,29 @@ paths:
                           type: string
                     description: List of research methodologies (currently returns empty array - business logic TBD)
                     example: []
+                  cor_divisions:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - abbreviation
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        abbreviation:
+                          type: string
+                    description: >-
+                      Divisions of the agreements' primary COR (project officer), limited to divisions with at
+                      least one matching agreement and sorted by name. The alternate COR is not considered.
+                      Values are valid for the `division` filter on GET /agreements/.
+                    example:
+                      - id: 1
+                        name: "Division of Child and Family Development"
+                        abbreviation: "DCFD"
         "400":
           description: Bad Request
         "401":

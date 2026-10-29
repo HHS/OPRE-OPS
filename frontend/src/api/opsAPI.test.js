@@ -392,6 +392,60 @@ describe("opsAPI - Agreements Pagination", () => {
     });
 
     describe("Filter Query Parameters", () => {
+        it("should include a division param per selected COR's division", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        division: [
+                            { id: 1, name: "Division A", abbreviation: "DA" },
+                            { id: 2, name: "Division B", abbreviation: "DB" }
+                        ]
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            const params = new URL(capturedUrl).searchParams;
+            expect(params.getAll("division")).toEqual(["1", "2"]);
+        });
+
+        it("should omit the division param when no COR's division is selected", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: { division: [] },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(new URL(capturedUrl).searchParams.has("division")).toBe(false);
+        });
+
         it("should include project_id params for projectTitle filter", async () => {
             let capturedUrl = "";
             server.use(

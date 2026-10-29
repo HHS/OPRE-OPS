@@ -65,6 +65,15 @@ vi.mock("./AgreementsFilterButton/AgreementsFilterButton", () => ({
             >
                 Apply with empty FY
             </button>
+            <button
+                data-testid="apply-cor-division"
+                onClick={() =>
+                    setFilters &&
+                    setFilters((prev) => ({ ...prev, division: [{ id: 7, name: "Division G", abbreviation: "DG" }] }))
+                }
+            >
+                Apply COR division
+            </button>
         </div>
     )
 }));
@@ -595,6 +604,42 @@ describe("AgreementsList - Pagination", () => {
                     limit: 50
                 })
             );
+        });
+
+        it("applies the COR's division filter to the list query and carries it into the export", async () => {
+            const queryParams = [];
+            useGetAgreementsQuery.mockImplementation((params) => {
+                queryParams.push(params);
+                return { data: mockAgreementsResponse, error: undefined, isLoading: false, isFetching: false };
+            });
+            const mockGetAllAgreementsTrigger = vi.fn((params) => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [{ id: 1, name: "Agreement 1", project_officer_id: null }],
+                        count: 1,
+                        limit: params.limit,
+                        offset: 0
+                    })
+            }));
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+            useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByTestId("apply-cor-division"));
+
+            const expectedDivision = [{ id: 7, name: "Division G", abbreviation: "DG" }];
+            await waitFor(() => expect(queryParams.at(-1).filters.division).toEqual(expectedDivision));
+
+            fireEvent.click(screen.getByRole("button", { name: /export/i }));
+            await waitFor(() => expect(mockGetAllAgreementsTrigger).toHaveBeenCalled());
+            expect(mockGetAllAgreementsTrigger.mock.calls[0][0].filters.division).toEqual(expectedDivision);
         });
 
         it("should pass 'Lifetime Obligated' column header to exportTableToXlsx when All FYs selected", async () => {

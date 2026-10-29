@@ -133,9 +133,9 @@ describe("ProcurementDashboardPage", () => {
         await user.keyboard("{Enter}");
         await user.click(screen.getByRole("button", { name: "Apply" }));
 
-        // The most recent render's filters should include the division id.
+        // The most recent render's filters should include the selected division (mapped to ids in opsAPI).
         const lastCall = mockUseGetAllAgreements.mock.calls.at(-1)[0];
-        expect(lastCall.filters.division).toEqual([1]);
+        expect(lastCall.filters.division.map((d) => d.id)).toEqual([1]);
     });
 
     it("renders a filter tag and removing it clears the division filter", async () => {

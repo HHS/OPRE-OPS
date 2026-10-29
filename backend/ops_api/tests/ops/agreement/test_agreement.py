@@ -996,6 +996,12 @@ def test_agreements_with_unknown_division_returns_empty(auth_client, app_ctx):
     assert response.json["data"] == []
 
 
+def test_agreements_with_invalid_division_returns_400(auth_client, app_ctx):
+    """A non-integer division value is rejected."""
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"division": "not-a-number"})
+    assert response.status_code == 400
+
+
 def test_agreements_with_only_my_filter(division_director_auth_client, app_ctx):
     query_dict = {"only_my": True}
     response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
@@ -4144,6 +4150,17 @@ class TestAgreementFilterOptions:
         assert "agreement_names" in data
         assert "contract_numbers" in data
         assert "research_types" in data
+        assert "cor_divisions" in data
+
+    def test_filter_options_cor_divisions_shape(self, auth_client, loaded_db, app_ctx):
+        """COR divisions are sorted by name and carry id, name and abbreviation."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        cor_divisions = response.json["cor_divisions"]
+        assert len(cor_divisions) > 0
+        assert all(set(d) == {"id", "name", "abbreviation"} for d in cor_divisions)
+        assert [d["name"] for d in cor_divisions] == sorted(d["name"] for d in cor_divisions)
 
     def test_filter_options_fiscal_years_sorted_descending(self, auth_client, loaded_db, app_ctx):
         """Fiscal years should be sorted in descending order."""
