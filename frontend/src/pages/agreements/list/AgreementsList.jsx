@@ -34,6 +34,9 @@ import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterBut
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 
+const AGREEMENTS_DEFINITION =
+    "An agreement is a general term to encompass the various types of work (contracts, grants, IAAs, etc.) happening at OPRE";
+
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
  */
@@ -324,6 +327,7 @@ const AgreementsList = () => {
             {!changeRequestUrl && (
                 <TablePageLayout
                     title="Agreements"
+                    titleTooltip={AGREEMENTS_DEFINITION}
                     subtitle={subtitle}
                     details={details}
                     TabsSection={<AgreementTabs />}
@@ -412,6 +416,7 @@ const AgreementsList = () => {
             {changeRequestUrl && (
                 <TablePageLayout
                     title="Agreements"
+                    titleTooltip={AGREEMENTS_DEFINITION}
                     subtitle={subtitle}
                     details={details}
                     TabsSection={<AgreementTabs />}

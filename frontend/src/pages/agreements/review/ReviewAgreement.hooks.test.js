@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import useReviewAgreement from "./ReviewAgreement.hooks";
 import { actionOptions } from "./ReviewAgreement.constants";
 import { POP_RANGE_ERROR_KEY } from "./suite";
+import { buildTrailState } from "../../../helpers/breadcrumb.helpers";
 
 const navigateMock = vi.fn();
 const setAlertMock = vi.fn();
@@ -16,11 +17,15 @@ const useIsUserSuperUserMock = vi.fn();
 // Stable module-level reference so the grantNumbers decoration effect doesn't loop.
 const EMPTY_GRANT_NUMBERS_RESULT = { data: [] };
 
+// Change BL Status's location: a breadcrumb trail, when a test sets one.
+let mockLocation = { pathname: "/agreements/review/77", state: null };
+
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useNavigate: () => navigateMock
+        useNavigate: () => navigateMock,
+        useLocation: () => mockLocation
     };
 });
 
@@ -229,6 +234,56 @@ describe("useReviewAgreement", () => {
         expect(result.current.pageErrors).toHaveProperty("can");
         expect(result.current.hasBLIError).toBe(true);
         expect(result.current.isSubmissionReady).toBe(true);
+    });
+
+    describe("ALLOW_PAST_OBLIGATE_BY_DATES", () => {
+        const selectPastDraft = async (allowPastObligateByDates) => {
+            useGetVersionQueryMock.mockReturnValue({
+                data: { version: "1.0.0", allow_past_obligate_by_dates: allowPastObligateByDates },
+                isSuccess: true
+            });
+            useGetAgreementByIdQueryMock.mockReturnValue({
+                isSuccess: true,
+                data: makeAgreement({
+                    budget_line_items: [
+                        {
+                            id: 101,
+                            amount: 1500,
+                            can_id: 5,
+                            services_component_id: 1,
+                            date_needed: "2020-06-21",
+                            status: "DRAFT",
+                            in_review: false
+                        }
+                    ]
+                }),
+                error: null,
+                isLoading: false
+            });
+            const view = renderHook(() => useReviewAgreement(77));
+            await waitFor(() =>
+                expect(view.result.current.groupedBudgetLinesByServicesComponent.length).toBeGreaterThan(0)
+            );
+            act(() => {
+                view.result.current.handleActionChange(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+                view.result.current.handleSelectBLI(101);
+            });
+            return view;
+        };
+
+        it("flags a past Obligate By date when the flag is off", async () => {
+            const { result } = await selectPastDraft(false);
+
+            await waitFor(() => expect(result.current.hasBLIError).toBe(true));
+            expect(result.current.pageErrors).toHaveProperty("date_needed");
+        });
+
+        it("does not flag a past Obligate By date when the flag is on", async () => {
+            const { result } = await selectPastDraft(true);
+
+            await waitFor(() => expect(result.current.isSubmissionReady).toBe(true));
+            expect(result.current.hasBLIError).toBe(false);
+        });
     });
 
     it("shows a single POP-range message no matter how many BLs violate it", async () => {
@@ -687,5 +742,30 @@ describe("useReviewAgreement", () => {
         });
 
         expect(navigateMock).toHaveBeenCalledWith("/agreements/77/budget-lines");
+    });
+
+    it("keeps the breadcrumb trail when cancelling back to the agreement", () => {
+        const budgetLines = { label: "Budget Lines", to: "/budget-lines" };
+        mockLocation = {
+            pathname: "/agreements/review/77",
+            state: buildTrailState("/agreements/review/77", [
+                budgetLines,
+                { label: "Agreement 77", to: "/agreements/77/budget-lines" }
+            ])
+        };
+        const { result } = renderHook(() => useReviewAgreement(77));
+
+        act(() => {
+            result.current.handleCancel();
+        });
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        // Back on the agreement, the trail ends just before it: "Budget Lines > Agreement 77".
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/77/budget-lines", {
+            state: buildTrailState("/agreements/77/budget-lines", [budgetLines])
+        });
+        mockLocation = { pathname: "/agreements/review/77", state: null };
     });
 });

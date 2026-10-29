@@ -7,13 +7,24 @@ from sqlalchemy.orm import Session
 
 from models import Agreement, ServicesComponent
 from ops_api.ops.auth.exceptions import ExtraCheckError
+from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
     ValidationError,
 )
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
-from ops_api.ops.utils.budget_line_items_helpers import get_agreement_pre_award_lock_message
+from ops_api.ops.utils.budget_line_items_helpers import (
+    get_agreement_pre_award_lock_message,
+    sc_requires_approval_gate,
+)
+
+IN_REVIEW_MESSAGE = (
+    "This services component is pending approval and will require a contract modification. "
+    "It can't be changed until the Division Director reviews it."
+)
+AWARDED_DELETE_BLOCKED_MESSAGE = "Services Components with budget lines cannot be deleted on awarded agreements."
 
 
 class ServicesComponentService:
@@ -87,9 +98,13 @@ class ServicesComponentService:
         if not associated_with_agreement(create_request.get("agreement_id")):
             raise AuthorizationError("User not authorized to create Services Component with this Agreement")
 
-        self._check_pre_award_lock(self.db_session.get(Agreement, create_request.get("agreement_id")))
+        agreement = self.db_session.get(Agreement, create_request.get("agreement_id"))
+        self._check_pre_award_lock(agreement)
 
         new_sc = ServicesComponent(**create_request)
+        # Added after award: the addition needs approval once the SC has a non-Draft budget
+        # line, so the add change request is created when one is linked (OPS-6440).
+        new_sc.awaiting_add_approval = sc_requires_approval_gate(agreement)
 
         try:
             self.db_session.add(new_sc)
@@ -127,6 +142,7 @@ class ServicesComponentService:
             raise ResourceNotFoundError("ServicesComponent", obj_id)
 
         self._check_pre_award_lock(services_component.agreement)
+        self._check_not_in_review(services_component)
 
         if "id" in updated_fields and obj_id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
@@ -155,22 +171,44 @@ class ServicesComponentService:
         """
         Delete a services component.
 
+        On an Awarded agreement, an SC with non-Draft budget lines can only be deleted by a
+        superuser (OPS-6440). The SC's pending "Add SC" edit, if any, is removed with it.
+
         Args:
             obj_id: The ID of the services component to delete
 
         Raises:
             ResourceNotFoundError: If the services component doesn't exist
             Forbidden: If the user is not authorized to delete this services component
+            ValidationError: If the SC is in review, is blocked on an Awarded agreement, or its
+                addition is in a contract modification in review
         """
         if not self._sc_associated_with_agreement(obj_id):
             raise AuthorizationError("User not authorized to delete Services Component with this Agreement")
 
         services_component = self.get(obj_id)
         self._check_pre_award_lock(services_component.agreement)
+        ChangeRequestService(self.db_session).lock_services_component(obj_id)
+        self._check_not_in_review(services_component)
+
+        if self.delete_blocked(services_component):
+            raise ValidationError({"services_component": [AWARDED_DELETE_BLOCKED_MESSAGE]})
+        ContractModificationEditService(self.db_session).discard_pending_services_component_addition(obj_id)
 
         self.db_session.delete(services_component)
         if commit:
             self.db_session.commit()
+
+    @staticmethod
+    def delete_blocked(services_component: ServicesComponent) -> bool:
+        """Whether this SC can't be deleted: it has non-Draft budget lines on an Awarded agreement
+        and the user isn't a superuser."""
+        return sc_requires_approval_gate(services_component.agreement) and services_component.has_non_draft_budget_lines
+
+    @staticmethod
+    def _check_not_in_review(services_component: ServicesComponent) -> None:
+        if services_component.in_review:
+            raise ValidationError({"services_component": [IN_REVIEW_MESSAGE]})
 
     @staticmethod
     def _check_pre_award_lock(agreement: Agreement | None) -> None:

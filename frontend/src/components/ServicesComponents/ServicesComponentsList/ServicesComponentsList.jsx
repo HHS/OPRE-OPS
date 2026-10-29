@@ -1,3 +1,4 @@
+import { getServicesComponentLockedMessage } from "../ServicesComponents.helpers";
 import ServicesComponentListItem from "../ServicesComponentListItem";
 
 /**
@@ -6,12 +7,13 @@ import ServicesComponentListItem from "../ServicesComponentListItem";
  * @param {Array<any>} props.servicesComponents - The list of service components.
  * @param {Function} props.setFormDataById - The function to set the form data by ID.
  * @param {Function} props.handleDelete - The function to handle the deletion of a service component.
+ * @param {function(number): boolean} [props.isDeleteDisabled] - Whether the saved services component with this id can't be deleted on an awarded agreement (OPS-6440).
  * @returns {React.ReactElement}
  *
  * @example
  * <ServicesComponentsList servicesComponents={servicesComponents} setFormDataById={setFormDataById} handleDelete={handleDelete} />
  */
-function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete }) {
+function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete, isDeleteDisabled = () => false }) {
     const sortedServicesComponents = [...servicesComponents].sort((a, b) => {
         // First, sort by number
         if (a.number !== b.number) {
@@ -49,6 +51,8 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         setFormDataById={setFormDataById}
                         handleDelete={handleDelete}
                         isSubComponent={!!item.sub_component}
+                        lockedMessage={getServicesComponentLockedMessage(item)}
+                        isAwardedDeleteBlocked={isDeleteDisabled(item.id)}
                     />
                 ))
             ) : (

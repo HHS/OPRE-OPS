@@ -92,6 +92,7 @@ class ModType(Enum):
     AMOUNT_TBD = auto()
     AS_IS = auto()
     REPLACEMENT_AMOUNT_FINAL = auto()
+    MODIFIED_LOE = auto()
 
 
 class AgreementClassification(Enum):

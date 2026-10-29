@@ -57,3 +57,14 @@ span.tooltip-right-wide {
 span.tooltip-right-wide .usa-tooltip__body--right.is-visible {
     transform: translateY(var(--tooltip-vertical-offset)) !important;
 }
+
+/* ---------- Page title info icon tooltips (TablePageLayout) ---------- */
+/* Narrower than the USWDS wrap default; text-wrap: balance evens out the line lengths.
+   TablePageLayout then shrinks the box to hug the longest line. */
+span.title-info-tooltip .usa-tooltip__body.is-set,
+span.title-info-tooltip .usa-tooltip__body.is-visible {
+    width: 30rem;
+    max-width: 30rem;
+    white-space: normal;
+    text-wrap: balance;
+}

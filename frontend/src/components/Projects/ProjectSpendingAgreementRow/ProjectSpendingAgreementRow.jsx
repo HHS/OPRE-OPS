@@ -74,7 +74,7 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal, ancestry 
                 <Link
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement?.id}`}
-                    state={buildTrailState(`/agreements/${agreement?.id}`, ancestry)}
+                    state={buildTrailState(`/agreements/${agreement?.id}`, ancestry, agreement?.display_name)}
                     aria-label={`View agreement details for ${agreementName}`}
                 >
                     <TextClip

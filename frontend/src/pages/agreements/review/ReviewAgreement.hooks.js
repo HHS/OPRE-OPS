@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useGetAgreementByIdQuery,
     useGetGrantNumbersListQuery,
@@ -60,7 +60,8 @@ const useReviewAgreement = (agreementId) => {
     const [afterApproval, setAfterApproval] = useToggle(true);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
-    const navigate = useNavigate();
+    // Keeps the breadcrumb trail when leaving for this agreement's pages (e.g. Cancel Status Change).
+    const navigate = useTrailNavigate();
 
     // Per-environment capability: when ON, Draft→Planned status changes apply immediately
     // (no Change Request). Default to false (safe = "Send to Approval") until the query
@@ -69,6 +70,7 @@ const useReviewAgreement = (agreementId) => {
     const { data: versionData } = useGetVersionQuery();
     const skipCrForDraftPlanned = versionData?.skip_cr_for_draft_planned ?? false;
     const enableModifiedLoeEdits = versionData?.enable_modified_loe_edits ?? false;
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     const {
         isSuccess,
@@ -151,8 +153,8 @@ const useReviewAgreement = (agreementId) => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
             return [];
         }
-        return validateBudgetLineItems(selectedBudgetLines);
-    }, [isGrant, selectedBudgetLines]);
+        return validateBudgetLineItems(selectedBudgetLines, allowPastObligateByDates);
+    }, [isGrant, selectedBudgetLines, allowPastObligateByDates]);
 
     const hasBLIError = React.useMemo(() => {
         if (!bliValidationResults || bliValidationResults.length === 0) {

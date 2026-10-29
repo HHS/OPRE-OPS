@@ -132,3 +132,17 @@ def is_deployed_system(host_header_prefix: str) -> bool:
     :param host_header_prefix: The prefix of the Host header to check (from the app config).
     """
     return "localhost" not in host_header_prefix.lower()
+
+
+def validate_host_header_prefix(host_header_prefix: str) -> None:
+    """
+    Fail fast if a deployed HOST_HEADER_PREFIX doesn't end at a delimiter.
+
+    check_csrf compares the Host header with startswith, so without a trailing "."
+    the prefix for one backend (e.g. PR 12's) would also accept another's (PR 123's).
+
+    :param host_header_prefix: The prefix of the Host header to check (from the app config).
+    :raises ValueError: If the system is deployed and the prefix doesn't end with ".".
+    """
+    if is_deployed_system(host_header_prefix) and not host_header_prefix.endswith("."):
+        raise ValueError(f"HOST_HEADER_PREFIX must end with '.' (got '{host_header_prefix}')")

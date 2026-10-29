@@ -1,10 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { useNavigate, useBlocker } from "react-router-dom";
+import { useBlocker } from "react-router-dom";
+import { useTrailNavigate } from "../../../hooks/useBreadcrumbTrail.hooks";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
-    useUpdateDocumentStatusMutation
+    useUpdateDocumentStatusMutation,
+    useGetVersionQuery
 } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
@@ -26,7 +28,7 @@ import { VALIDATABLE_BLI_STATUSES } from "./constants";
  * @returns {Object} - Hook state and handlers
  */
 export default function useRequestPreAwardApproval(agreementId) {
-    const navigate = useNavigate();
+    const navigate = useTrailNavigate();
     const { setAlert } = useAlert();
     const [notes, setNotes] = useState("");
     const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));
@@ -43,6 +45,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [addDocument] = useAddDocumentMutation();
     const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
+
+    const { data: versionData } = useGetVersionQuery();
+    const allowPastObligateByDates = versionData?.allow_past_obligate_by_dates ?? false;
 
     // Use shared data fetching and processing hook
     const {
@@ -95,8 +100,8 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const bliValidationResults = useMemo(() => {
         if (validatableBudgetLines.length === 0) return [];
-        return validateBudgetLineItems(validatableBudgetLines);
-    }, [validatableBudgetLines]);
+        return validateBudgetLineItems(validatableBudgetLines, allowPastObligateByDates);
+    }, [validatableBudgetLines, allowPastObligateByDates]);
 
     const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
 

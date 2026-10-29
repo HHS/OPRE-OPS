@@ -1,0 +1,97 @@
+name: Preview Router Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'preview/router/**'
+      - '.github/workflows/preview_router_build.yml'
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'preview/router/**'
+      - '.github/workflows/preview_router_build.yml'
+
+permissions:
+  contents: read
+
+env:
+  WORKING_DIR: "preview/router"
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build the router image
+        run: docker build -t preview-router:test ${{ env.WORKING_DIR }}
+
+      - name: Smoke-test routing
+        run: |
+          set -euo pipefail
+          # preview.invalid never resolves, so proxied requests return 502; the access log
+          # still records which upstream the router picked.
+          docker run -d --name router -p 8080:8080 -e ACA_DOMAIN=preview.invalid preview-router:test
+          for _ in $(seq 1 20); do curl -fs localhost:8080/healthz >/dev/null && break; sleep 0.5; done
+          curl -fs localhost:8080/healthz >/dev/null || { echo "::error::router did not start"; docker logs router; exit 1; }
+
+          status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+          expect() {
+            local want=$1; shift
+            local got; got=$(status "$@")
+            if [ "$got" != "$want" ]; then echo "::error::expected $want, got $got for: $*"; exit 1; fi
+          }
+
+          # The gateway probe sends no x-original-host.
+          expect 200 localhost:8080/healthz
+          expect 200 -H 'x-original-host: evil.com' localhost:8080/healthz
+
+          for host in evil.com pr-012.ops.opre.acf.gov pr-1.ops.opre.acf.gov.evil.com \
+                      xpr-1.ops.opre.acf.gov pr-1234567.ops.opre.acf.gov ''; do
+            expect 404 -H "x-original-host: $host" localhost:8080/
+          done
+          expect 404 localhost:8080/
+
+          expect 502 -H 'x-original-host: pr-12.ops.opre.acf.gov' localhost:8080/api/v1/agreements/
+          expect 502 -H 'x-original-host: pr-12.ops.opre.acf.gov:443' localhost:8080/agreements
+
+          logs=$(docker logs router 2>&1)
+          echo "$logs"
+          grep -q 'GET /api/v1/agreements/ HTTP/1.1" 502 target=opre-ops-pr12-app-backend.preview.invalid' <<< "$logs"
+          grep -q 'GET /agreements HTTP/1.1" 502 target=opre-ops-pr12-app-frontend.preview.invalid' <<< "$logs"
+
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  build-and-push:
+    if: github.event_name != 'pull_request'
+    needs: smoke-test
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Terraform pins the SHA tag; latest is the build action's cache source.
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-preview-router # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/Dockerfile
+          image_tags: "${{ github.sha }},latest"
+
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 alembic = "==1.20.1"
 alembic-postgresql-enum = "==1.10.0"
-authlib = "==1.8.0"
+authlib = "==1.9.1"
 azure-identity = "==1.26.0"
 azure-storage-blob = "==12.31.0"
 flask = "==3.1.3"

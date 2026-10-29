@@ -1343,7 +1343,8 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
         query_string={"only_my": False, "limit": 10, "offset": 0},
     )
     assert response.status_code == 200
-    all_count = len(response.json)
+    # Compare total counts, not page lengths: both pages can fill the limit.
+    all_count = response.json[0]["_meta"]["total_count"]
 
     # basic user should not be able to see any BLIs
     response = basic_user_auth_client.get(
@@ -1355,7 +1356,7 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
         },
     )
     assert response.status_code == 200
-    only_my_count = len(response.json)
+    only_my_count = response.json[0]["_meta"]["total_count"] if response.json else 0
 
     assert only_my_count < all_count
 
@@ -1369,7 +1370,7 @@ def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_a
         },
     )
     assert response.status_code == 200
-    only_my_count = len(response.json)
+    only_my_count = response.json[0]["_meta"]["total_count"]
 
     assert only_my_count == all_count
 

@@ -17,6 +17,7 @@ import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 // Feature flag for upload consensus memo functionality
 const ENABLE_UPLOAD_CONSENSUS_MEMO = false;
@@ -120,7 +121,10 @@ export const RequestPreAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Request Pre-Award Approval">
+        <App
+            breadCrumbName="Request Pre-Award Approval"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}

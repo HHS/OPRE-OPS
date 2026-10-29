@@ -1,7 +1,7 @@
 import React from "react";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { useGetCanFundingQuery } from "../../../api/opsAPI";
-import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
+import { calculatePercent, formatDateNeeded, withFiscalYearParam } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
@@ -75,6 +75,9 @@ const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
         }
     ];
 
+    // Open the CAN on the FY this card shows.
+    const canPath = withFiscalYearParam(`/cans/${canId}`, fiscalYear);
+
     if (isLoading) {
         return <p>Loading...</p>;
     }
@@ -85,8 +88,8 @@ const CanCard = ({ canId, fiscalYear, ancestry = [] }) => {
             className={`ops-card ${style.container}`}
         >
             <Link
-                to={`/cans/${can.id}`}
-                state={buildTrailState(`/cans/${can.id}`, ancestry)}
+                to={canPath}
+                state={buildTrailState(canPath, ancestry)}
                 className="text-no-underline text-ink"
             >
                 <dl className={`margin-0 ${style.leftMarginContainer}`}>

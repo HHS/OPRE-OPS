@@ -10,6 +10,7 @@ import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import AwardRequestForm from "../../../components/Agreements/AwardRequestForm";
 import useEditAwardApproval from "./EditAwardApproval.hooks";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * @component - Budget Team edit screen for a pending award approval request.
@@ -106,7 +107,10 @@ export const EditAwardApproval = () => {
 
     if (!hasPermission) {
         return (
-            <App breadCrumbName="Edit Award Approval">
+            <App
+                breadCrumbName="Edit Award Approval"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <SimpleAlert
                     type="error"
                     heading="Access Denied"
@@ -118,7 +122,10 @@ export const EditAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Edit Award Approval">
+        <App
+            breadCrumbName="Edit Award Approval"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}

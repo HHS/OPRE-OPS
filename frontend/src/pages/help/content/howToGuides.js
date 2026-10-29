@@ -183,7 +183,7 @@ export const data = [
 1. Fill out the services component, obligate by date, CAN, amount, and notes, as needed
     - All fields will be required once the budget line is in Planned or Executing status
 1. Click the **Add Budget Line** button
-    - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
+    - All new budget lines start in Draft Status. Changing them from Draft to Planned Status doesn't need approval
     - The BL ID will be referenced as TBD until you click the **Save & Exit** button, which is when a BL ID will be assigned by the system
 1. When you are done with all changes, click the **Save & Exit** button
       `

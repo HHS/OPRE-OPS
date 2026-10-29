@@ -75,7 +75,7 @@ describe("ProjectsTable", () => {
         renderTable();
         const link = screen.getByRole("link", { name: "Project Alpha" });
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute("href", "/projects/10");
+        expect(link).toHaveAttribute("href", "/projects/10?fy=2026");
     });
 
     it("displays the project type as a human-readable label", () => {

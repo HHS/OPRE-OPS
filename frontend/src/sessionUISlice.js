@@ -106,9 +106,15 @@ const buildPageState = (def) => ({
 const buildListFiltersInitialState = () =>
     Object.fromEntries(Object.entries(listFilterDefaults).map(([page, def]) => [page, buildPageState(def)]));
 
-/** @returns {{ listFilters: ReturnType<typeof buildListFiltersInitialState> }} */
+/**
+ * `detailFiscalYear` is the fiscal year shared by the portfolio, CAN and project
+ * detail pages (see `useDetailFiscalYear`): `null` until the user picks one on a
+ * detail page or opens one from a list set to a specific year.
+ * @returns {{ listFilters: ReturnType<typeof buildListFiltersInitialState>, detailFiscalYear: number | null }}
+ */
 const buildInitialState = () => ({
-    listFilters: buildListFiltersInitialState()
+    listFilters: buildListFiltersInitialState(),
+    detailFiscalYear: null
 });
 
 const sessionUISlice = createSlice({
@@ -147,6 +153,14 @@ const sessionUISlice = createSlice({
             const def = listFilterDefaults[page];
             if (!def) return;
             state.listFilters[page] = { ...buildPageState(def), selectedFiscalYear };
+        },
+        /**
+         * Set the fiscal year shared by the detail pages.
+         * @param {ReturnType<typeof buildInitialState>} state
+         * @param {{ payload: number }} action
+         */
+        setDetailFiscalYear: (state, action) => {
+            state.detailFiscalYear = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -157,6 +171,6 @@ const sessionUISlice = createSlice({
 });
 
 export { listFilterDefaults };
-export const { setListFilters, setListFiscalYear, changeListFiscalYear } = sessionUISlice.actions;
+export const { setListFilters, setListFiscalYear, changeListFiscalYear, setDetailFiscalYear } = sessionUISlice.actions;
 
 export default sessionUISlice.reducer;

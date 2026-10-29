@@ -15,7 +15,8 @@ import icons from "../../../../uswds/img/sprite.svg";
  * @param {Function} [props.onFileChange] - Callback when file is selected (upload variant)
  * @param {Function} [props.onDownload] - Callback when download is triggered (download variant)
  * @param {Object} [props.selectedFile] - Currently selected file object to display name
- * @param {string} [props.label="Upload File"] - Placeholder text when no file selected
+ * @param {string} [props.label] - What the button uploads (e.g. "Final Consensus Memo"). Shown when no file is
+ *     selected (default "Upload File") and added to the accessible name.
  * @param {string} [props.acceptedFileTypes="*"] - Accepted file types (e.g., ".pdf,.doc,.docx")
  * @param {boolean} [props.disabled=false] - Whether the button is disabled
  * @param {string} [props.disabledTooltip] - Tooltip message to show when disabled
@@ -58,7 +59,7 @@ function FileUploadButton({
     onFileChange,
     onDownload,
     selectedFile,
-    label = "Upload File",
+    label,
     acceptedFileTypes = "*/*",
     disabled = false,
     disabledTooltip,
@@ -82,6 +83,10 @@ function FileUploadButton({
         }
     };
 
+    // Name the button after what it uploads, so several on one page are distinguishable.
+    const describedAs = selectedFile?.name ?? (label !== buttonText ? label : undefined);
+    const accessibleName = describedAs && buttonText ? `${buttonText}: ${describedAs}` : buttonText || describedAs;
+
     const buttonClasses = disabled
         ? `display-flex flex-column padding-2 radius-lg border-2px bg-white border-base-light cursor-not-allowed ${className}`.trim()
         : `display-flex flex-column padding-2 radius-lg border-2px bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter cursor-pointer ${className}`.trim();
@@ -91,7 +96,7 @@ function FileUploadButton({
             type="button"
             onClick={handleButtonClick}
             disabled={disabled}
-            aria-label={selectedFile ? `${buttonText}: ${selectedFile.name}` : buttonText}
+            aria-label={accessibleName}
             className={buttonClasses}
             style={{
                 width,
@@ -106,7 +111,7 @@ function FileUploadButton({
             {/* Filename display section */}
             <div>
                 <span style={{ fontSize: "0.875rem", color: disabled ? "#c9c9c9" : "#757575" }}>
-                    {selectedFile ? selectedFile.name : label}
+                    {selectedFile ? selectedFile.name : (label ?? "Upload File")}
                 </span>
             </div>
 

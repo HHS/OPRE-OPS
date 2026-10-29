@@ -856,6 +856,14 @@
       cotr_id: 520,
       po_number: "PO-MLOE-0001",
       task_order_number: "TO-MLOE-0001",
+      // User Demo (a non-superuser) is on the team so a tester can make an edit that goes to the
+      // Division Director for approval and then shows on the Award & Modifications tab (#3268).
+      team_members: [
+        {
+          tablename: "ops_user",
+          id: 521,
+        },
+      ],
     },
     // OPS-6195 test agreements 25-28: executing BLI edits without approval until Pre-Award.
     {
@@ -1150,6 +1158,17 @@
       number: 2,
       optional: false,
       description: "Report Writing",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      agreement_id: 523,
+    },
+    {
+      // SC3 on CONTRACT #523 has no budget lines, for manual testing of OPS-6440: deleting it
+      // applies directly, while deleting SC2 (which has non-Draft BLs) is blocked for non-superusers.
+      id: 60,
+      number: 3,
+      optional: false,
+      description: "Dissemination",
       period_start: "2044-06-13T14:00:00",
       period_end: "2045-06-13T14:00:00",
       agreement_id: 523,
@@ -20185,6 +20204,24 @@
       on_hold: false,
       certified: false,
       closed: false,
+    },
+  ],
+  // One approved Modified LOE edit on CONTRACT #523, so the Award & Modifications tab and the
+  // Start Modification page (#3268) have an "Edit That Requires a Contract Modification" to show
+  // without a tester first walking a change request through approval. budget_line_item_id has no
+  // FK; it's the id the seed assigns to 523's Planned BLI ("LI 4") and is only displayed.
+  contract_modification_edit: [
+    {
+      agreement_id: 523,
+      modification_type: "MODIFIED_LOE",
+      budget_line_item_id: 16066,
+      field: "amount",
+      old_value: 175000.0,
+      new_value: 150000.0,
+      requested_by_id: 521,
+      requested_on: "2026-10-01T14:00:00",
+      approved_by_id: 522,
+      approved_on: "2026-10-02T14:00:00",
     },
   ],
 }

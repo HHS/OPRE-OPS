@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields
 
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+
 
 class ServicesComponentSchema(Schema):
     """Schema for services component resources.
@@ -21,6 +23,12 @@ class ServicesComponentSchema(Schema):
     created_on = fields.DateTime(dump_only=True)
     updated_by = fields.Integer(dump_only=True)
     updated_on = fields.DateTime(dump_only=True)
+    # Pending Services Component changes on an Awarded agreement (OPS-6440).
+    awaiting_add_approval = fields.Boolean(dump_only=True)
+    in_review = fields.Boolean(dump_only=True)
+    change_requests_in_review = fields.Nested(
+        GenericChangeRequestResponseSchema, many=True, dump_only=True, dump_default=None, allow_none=True
+    )
 
 
 class ServicesComponentItemResponse(ServicesComponentSchema):

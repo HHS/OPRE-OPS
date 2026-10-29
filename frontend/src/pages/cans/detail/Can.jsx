@@ -4,8 +4,8 @@ import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs"
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
 import { ALL_FISCAL_YEARS_PARAM } from "../../../helpers/utils";
-import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
-import { useAncestryForChildren } from "../../../hooks/useBreadcrumbTrail.hooks";
+import { LIST_CRUMBS, trailIncludesList } from "../../../helpers/breadcrumb.helpers";
+import { useAncestryForChildren, useBreadcrumbTrail } from "../../../hooks/useBreadcrumbTrail.hooks";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
@@ -59,9 +59,14 @@ const Can = () => {
     // known path (e.g. Portfolios > Portfolio A > CAN 1) the carried trail supplies the
     // ancestors; otherwise fall back to the CANs list. The leaf is this CAN, linking
     // back to the current tab and selected FY ("All" when `fiscalYear` is null).
+    // A project only draws funding from this CAN; the CAN's agreements aren't the
+    // project's, so when the user came here from a project the trail starts over
+    // at the CANs list ("CANs > CAN 1 > Agreement").
+    const trail = useBreadcrumbTrail();
     const linkAncestry = useAncestryForChildren({
         ownCrumb: { label: can?.display_name ?? "CAN", fiscalYear: fiscalYear ?? ALL_FISCAL_YEARS_PARAM },
-        fallbackCrumb: LIST_CRUMBS.cans
+        fallbackCrumb: LIST_CRUMBS.cans,
+        keepTrail: !trailIncludesList(trail, LIST_CRUMBS.projects)
     });
 
     if (isLoading) {

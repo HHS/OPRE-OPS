@@ -32,6 +32,7 @@ from ops_api.ops.views import (
     CAN_LIST_FILTER_OPTION_API_VIEW_FUNC,
     CHANGE_REQUEST_ITEM_API_VIEW_FUNC,
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
+    CONTRACT_MODIFICATION_REQUEST_ITEM_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
     DOCUMENT_ITEM_API_VIEW_FUNC,
@@ -314,6 +315,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/contract-modifications/",
         view_func=AGREEMENT_CONTRACT_MODIFICATIONS_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/contract-modification-requests/<int:id>/",
+        view_func=CONTRACT_MODIFICATION_REQUEST_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreements/<int:id>/edit-bundle",

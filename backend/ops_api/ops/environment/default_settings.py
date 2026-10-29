@@ -105,8 +105,20 @@ SKIP_CR_FOR_DRAFT_PLANNED = os.getenv("SKIP_CR_FOR_DRAFT_PLANNED", "false").lowe
 # explicitly enabled.
 ENABLE_MODIFIED_LOE_EDITS = os.getenv("ENABLE_MODIFIED_LOE_EDITS", "false").lower() == "true"
 
+# When True, a non-Draft budget line's Obligate By date (date_needed) may be today or in the
+# past for every user (issue 6443). The missing-date and within-Period-of-Performance rules still
+# apply. Default OFF. The ALLOW_PAST_OBLIGATE_BY_DATES env var sets it for local runs. Deployed
+# environments hard-code True in environment/azure/*.py; to turn it off there without a code change,
+# set FLASK_ALLOW_PAST_OBLIGATE_BY_DATES=false (lowercase false, or 0) on the backend container app
+# and restart it. from_prefixed_env parses the value as JSON, so "False" or "no" stays a truthy
+# string and leaves the feature on.
+ALLOW_PAST_OBLIGATE_BY_DATES = os.getenv("ALLOW_PAST_OBLIGATE_BY_DATES", "false").lower() == "true"
+
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"
+
+# Whether /api/v1/health/ checks the HHS AMS OAuth server.
+HEALTH_CHECK_AUTH_SERVICES = True
 
 SUPER_USER = "SUPER_USER"

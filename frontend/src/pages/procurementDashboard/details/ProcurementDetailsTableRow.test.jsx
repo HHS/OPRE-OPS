@@ -187,7 +187,8 @@ describe("ProcurementDetailsTableRow", () => {
 
         expect(getProbedTrail()).toEqual({
             targetPath: "/agreements/10",
-            ancestors: [{ label: "Procurement Dashboard", to: "/procurement-dashboard" }]
+            ancestors: [{ label: "Procurement Dashboard", to: "/procurement-dashboard" }],
+            targetLabel: "Agreement A"
         });
     });
 });

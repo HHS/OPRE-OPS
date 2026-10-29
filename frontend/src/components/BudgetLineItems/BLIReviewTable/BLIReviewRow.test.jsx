@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetUserByIdQuery } from "../../../api/opsAPI";
+import { useGetUserByIdQuery, useGetVersionQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import { budgetLine } from "../../../tests/data";
 import BLIReviewRow from "./BLIReviewRow";
@@ -12,7 +12,8 @@ const mockUpdateBudgetLineItem = vi.fn();
 
 vi.mock("../../../api/opsAPI", () => ({
     useGetUserByIdQuery: vi.fn(),
-    useUpdateBudgetLineItemMutation: vi.fn(() => [mockUpdateBudgetLineItem, { isLoading: false }])
+    useUpdateBudgetLineItemMutation: vi.fn(() => [mockUpdateBudgetLineItem, { isLoading: false }]),
+    useGetVersionQuery: vi.fn(() => ({ data: undefined }))
 }));
 
 vi.mock("../../../hooks/use-alert.hooks", () => ({
@@ -93,6 +94,7 @@ const renderComponent = (props = {}) => {
 describe("BLIReviewRow", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(useGetVersionQuery).mockReturnValue({ data: undefined });
         mockUpdateBudgetLineItem.mockClear();
     });
 
@@ -236,6 +238,24 @@ describe("BLIReviewRow", () => {
                 (cell) => cell.classList.contains("table-item-error") && cell.textContent === "TBD"
             );
             expect(errorCanCell).toBeUndefined();
+        });
+    });
+
+    describe("past Obligate By date", () => {
+        const pastBudgetLine = { ...defaultBudgetLine, date_needed: "2020-06-13", selected: true };
+
+        it("is flagged in review mode when ALLOW_PAST_OBLIGATE_BY_DATES is off", () => {
+            vi.mocked(useGetVersionQuery).mockReturnValue({ data: { allow_past_obligate_by_dates: false } });
+            renderComponent({ budgetLine: pastBudgetLine, isReviewMode: true });
+
+            expect(screen.getByRole("cell", { name: "6/13/2020" })).toHaveClass("table-item-error");
+        });
+
+        it("is not flagged in review mode when ALLOW_PAST_OBLIGATE_BY_DATES is on", () => {
+            vi.mocked(useGetVersionQuery).mockReturnValue({ data: { allow_past_obligate_by_dates: true } });
+            renderComponent({ budgetLine: pastBudgetLine, isReviewMode: true });
+
+            expect(screen.getByRole("cell", { name: "6/13/2020" })).not.toHaveClass("table-item-error");
         });
     });
 

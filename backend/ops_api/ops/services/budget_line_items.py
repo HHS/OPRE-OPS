@@ -124,6 +124,17 @@ class BudgetLineItemService:
         populate its id, but the session is not committed. The caller is then
         responsible for committing (used by the edit-bundle orchestrator).
         """
+        new_bli, _ = self.create_with_change_request_ids(create_request, commit=commit)
+        return new_bli
+
+    def create_with_change_request_ids(
+        self, create_request: dict[str, Any], commit: bool = True
+    ) -> tuple[BudgetLineItem, list[int]]:
+        """Same as ``create`` but also returns the ids of any change requests created.
+
+        Linking the new budget line to a pending Services Component can send the SC's
+        addition to approval (OPS-6440); the edit bundle notifies reviewers post-commit.
+        """
         agreement_id = create_request["agreement_id"]
 
         if not associated_with_agreement(agreement_id):
@@ -153,7 +164,8 @@ class BudgetLineItemService:
             self.db_session.commit()
         else:
             self.db_session.flush()
-        return new_bli
+        change_request_ids = self._sync_services_component_approval(None, new_bli.services_component_id, commit)
+        return new_bli, change_request_ids
 
     def delete(self, id: int, commit: bool = True) -> tuple[BudgetLineItem, int, int | None]:
         """
@@ -189,11 +201,16 @@ class BudgetLineItemService:
 
         is_super = is_super_user(current_user, current_app)
         if is_super or bli.status == BudgetLineItemStatus.DRAFT:
+            services_component_id = bli.services_component_id
             self.db_session.delete(bli)
             if commit:
                 self.db_session.commit()
             else:
                 self.db_session.flush()
+            # The line (and any Draft->Planned request on it) is gone, so a pending SC may no
+            # longer need approval (OPS-6440).
+            if services_component_id is not None:
+                self._sync_services_component_approval(services_component_id, None, commit)
             return bli, 200, None
 
         # PLANNED / IN_EXECUTION: deletion is a budget change and must be reviewed. Reuse the
@@ -686,6 +703,7 @@ class BudgetLineItemService:
         """
         budget_line_item = self._get_budget_line_item(id)
         self._validation(budget_line_item, updated_fields)
+        previous_services_component_id = budget_line_item.services_component_id
 
         # Extract key elements from updated_fields
         request = updated_fields.get("request")
@@ -757,9 +775,42 @@ class BudgetLineItemService:
                 budget_line_item, id, request, schema, updated_fields, commit=commit
             )
 
+        if budget_line_item.services_component_id != previous_services_component_id:
+            change_request_ids.extend(
+                self._sync_services_component_approval(
+                    previous_services_component_id, budget_line_item.services_component_id, commit
+                )
+            )
+
         logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
         return budget_line_item, (202 if change_request_ids else 200), change_request_ids
+
+    def _sync_services_component_approval(
+        self, old_services_component_id: int | None, new_services_component_id: int | None, commit: bool
+    ) -> list[int]:
+        """Keep pending Services Components' add requests in step with a budget line's link (OPS-6440).
+
+        Linking to a pending SC can send its addition to approval; unlinking can leave the old SC
+        with nothing needing approval, which withdraws its add request. Returns new change request ids.
+        """
+        change_request_service = ChangeRequestService(self.db_session)
+        change_request_ids: list[int] = []
+        to_ensure = [new_services_component_id]
+        if old_services_component_id is not None and not (
+            change_request_service.withdraw_services_component_add_if_unneeded(old_services_component_id, commit=commit)
+        ):
+            # Still pending: refresh the request's linked budget lines.
+            to_ensure.append(old_services_component_id)
+        for services_component_id in to_ensure:
+            if services_component_id is None:
+                continue
+            change_request_id = change_request_service.ensure_services_component_add_change_request(
+                self.db_session.get(ServicesComponent, services_component_id), commit=commit
+            )
+            if change_request_id is not None:
+                change_request_ids.append(change_request_id)
+        return change_request_ids
 
     def _get_budget_line_item(self, id: int) -> BudgetLineItem:
         """Retrieve budget line item by ID or raise appropriate error"""
@@ -1180,7 +1231,12 @@ class BudgetLineItemService:
         if final_date_needed is None:
             raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
 
-        if not is_super_user(current_user, current_app) and final_date_needed <= today:
+        # ALLOW_PAST_OBLIGATE_BY_DATES (issue 6443) lifts the strictly-future rule for everyone.
+        if (
+            not current_app.config.get("ALLOW_PAST_OBLIGATE_BY_DATES", False)
+            and not is_super_user(current_user, current_app)
+            and final_date_needed <= today
+        ):
             raise ValidationError(
                 {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
             )

@@ -23,6 +23,17 @@ export const ALL_FISCAL_YEARS_PARAM = "all";
 export const parseFiscalYearParam = (value) => (value && /^[1-9]\d{3}$/.test(value) ? Number(value) : null);
 
 /**
+ * Add a `?fy=` param to a link, so the page it opens starts on the fiscal year
+ * selected where the link was clicked. Without a specific year (e.g. "All"),
+ * the path is returned as is and the destination keeps its default.
+ * @param {string} path - The link's path, without a query.
+ * @param {number | string | null | undefined} fiscalYear - The selected fiscal year.
+ * @returns {string}
+ */
+export const withFiscalYearParam = (path, fiscalYear) =>
+    parseFiscalYearParam(String(fiscalYear ?? "")) ? `${path}?fy=${Number(fiscalYear)}` : path;
+
+/**
  * This function calculate a percent based on a numerator and denominator.
  * @param {number} numerator - The numerator. This parameter is required.
  * @param {number} denominator - The denominator. This parameter is required.
@@ -225,7 +236,8 @@ export const codesToDisplayText = {
         can_id: "CAN",
         date_needed: "Obligate By Date",
         status: "Status",
-        delete: "Deleted"
+        delete: "Deleted",
+        services_component_create: "Add Services Component"
     },
     modificationEditType: {
         MODIFIED_LOE: "Modified Level of Effort"

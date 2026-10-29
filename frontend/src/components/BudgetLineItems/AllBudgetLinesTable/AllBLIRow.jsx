@@ -61,7 +61,7 @@ const AllBLIRow = ({ budgetLine }) => {
                     {budgetLine?.agreement?.id ? (
                         <Link
                             to={agreementPath}
-                            state={listTrailState(agreementPath)}
+                            state={listTrailState(agreementPath, budgetLine?.agreement?.name?.trim())}
                             className="text-ink text-no-underline"
                             aria-label={agreementLinkLabel}
                         >

@@ -1,17 +1,16 @@
+import { configureStore } from "@reduxjs/toolkit";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { createElement } from "react";
+import { Provider } from "react-redux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import sessionUIReducer from "../../../sessionUISlice";
 import useCan from "./Can.hooks";
 
-const useSelectorMock = vi.fn();
 const useParamsMock = vi.fn();
 const useGetCanByIdQueryMock = vi.fn();
 const useGetCanFundingQueryMock = vi.fn();
 let mockPathname = "/cans/42";
 let mockSearch = "";
-
-vi.mock("react-redux", () => ({
-    useSelector: (selector) => useSelectorMock(selector)
-}));
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -19,7 +18,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
         ...actual,
         useParams: () => useParamsMock(),
         useLocation: () => ({ pathname: mockPathname }),
-        useSearchParams: () => [new URLSearchParams(mockSearch)]
+        useSearchParams: () => [new URLSearchParams(mockSearch), vi.fn()]
     };
 });
 
@@ -85,6 +84,20 @@ const canFixture = {
     }
 };
 
+/**
+ * Render useCan with a real store: a budget-team user, and the real sessionUI slice that
+ * holds the fiscal year shared by the detail pages.
+ */
+const renderUseCan = () => {
+    const store = configureStore({
+        reducer: {
+            auth: () => ({ activeUser: { roles: [{ name: "BUDGET_TEAM" }] } }),
+            sessionUI: sessionUIReducer
+        }
+    });
+    return renderHook(() => useCan(), { wrapper: ({ children }) => createElement(Provider, { store }, children) });
+};
+
 describe("useCan", () => {
     beforeEach(() => {
         mockSearch = "";
@@ -92,15 +105,6 @@ describe("useCan", () => {
         mockPathname = "/cans/42";
 
         useParamsMock.mockReturnValue({ id: "42" });
-        useSelectorMock.mockImplementation((selector) =>
-            selector({
-                auth: {
-                    activeUser: {
-                        roles: [{ name: "BUDGET_TEAM" }]
-                    }
-                }
-            })
-        );
 
         useGetCanByIdQueryMock.mockReturnValue({
             data: canFixture,
@@ -129,7 +133,7 @@ describe("useCan", () => {
     });
 
     it("derives fiscal-year data, counts, and ids from the CAN payload", () => {
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         expect(result.current.canId).toBe(42);
         expect(result.current.fiscalYear).toBe(2026);
@@ -156,7 +160,7 @@ describe("useCan", () => {
     });
 
     it("updates filtered results when the selected fiscal year changes and toggles edit modes", async () => {
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         act(() => {
             result.current.setSelectedFiscalYear("2025");
@@ -201,7 +205,7 @@ describe("useCan", () => {
             };
         });
 
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         act(() => {
             result.current.toggleFundingPageEditMode();
@@ -230,7 +234,7 @@ describe("useCan", () => {
         useGetCanByIdQueryMock.mockReturnValueOnce({ data: undefined, isLoading: false });
         useGetCanFundingQueryMock.mockImplementation(() => ({ data: undefined, isLoading: false }));
 
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         expect(result.current.can).toBeNull();
         expect(result.current.canNumber).toBe("TBD");
@@ -262,13 +266,14 @@ describe("useCan", () => {
             isFetching: true
         }));
 
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isTableLoading).toBe(true);
     });
 
-    it("handles 'All' fiscal year selection without infinite loop", async () => {
+    it("handles 'All' fiscal years (from ?fy=all) without infinite loop", async () => {
+        mockSearch = "?fy=all";
         useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
             if (fiscalYear === 2025) {
                 return { data: { funding: { available_funding: 75 } }, isLoading: false };
@@ -288,11 +293,7 @@ describe("useCan", () => {
             };
         });
 
-        const { result } = renderHook(() => useCan());
-
-        act(() => {
-            result.current.setSelectedFiscalYear("All");
-        });
+        const { result } = renderUseCan();
 
         await waitFor(() => {
             expect(result.current.fiscalYear).toBeNull();
@@ -303,7 +304,7 @@ describe("useCan", () => {
     });
 
     it("resets isEditMode when location.pathname changes", () => {
-        const { result, rerender } = renderHook(() => useCan());
+        const { result, rerender } = renderUseCan();
 
         act(() => {
             result.current.toggleDetailPageEditMode();
@@ -318,21 +319,33 @@ describe("useCan", () => {
 
     it("ignores an invalid ?fy= search param", () => {
         mockSearch = "?fy=abc";
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         expect(result.current.fiscalYear).toBe(2026);
     });
 
     it("seeds the selected fiscal year from the ?fy= search param", () => {
         mockSearch = "?fy=2025";
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
+
+        expect(result.current.fiscalYear).toBe(2025);
+    });
+
+    it("keeps a ?fy= year after switching to a tab whose link has no ?fy=", () => {
+        mockSearch = "?fy=2025";
+        const { result, rerender } = renderUseCan();
+        expect(result.current.fiscalYear).toBe(2025);
+
+        mockSearch = "";
+        mockPathname = "/cans/42/funding";
+        rerender();
 
         expect(result.current.fiscalYear).toBe(2025);
     });
 
     it("seeds 'All' fiscal years from ?fy=all", () => {
         mockSearch = "?fy=all";
-        const { result } = renderHook(() => useCan());
+        const { result } = renderUseCan();
 
         expect(result.current.fiscalYear).toBeNull();
     });

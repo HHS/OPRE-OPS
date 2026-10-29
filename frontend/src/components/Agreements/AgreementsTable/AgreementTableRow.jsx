@@ -105,7 +105,7 @@ export const AgreementTableRow = ({ agreement, selectedFiscalYear, disableRowAct
                     <Link
                         className="text-ink text-no-underline"
                         to={agreementPath}
-                        state={listTrailState(agreementPath)}
+                        state={listTrailState(agreementPath, agreement?.display_name)}
                         aria-label={agreementLinkLabel}
                     >
                         <TextClip

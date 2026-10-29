@@ -14,6 +14,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 import { BudgetLinesReviewAccordion } from "./BudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * @component - Renders a page for Division Directors to approve/decline pre-award approval requests.
@@ -62,7 +63,10 @@ export const ApprovePreAwardApproval = () => {
 
     if (!hasPermission) {
         return (
-            <App breadCrumbName="Approval for Pre-Award">
+            <App
+                breadCrumbName="Approval for Pre-Award"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <SimpleAlert
                     type="error"
                     heading="Access Denied"
@@ -74,7 +78,10 @@ export const ApprovePreAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Approval for Pre-Award">
+        <App
+            breadCrumbName="Approval for Pre-Award"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}

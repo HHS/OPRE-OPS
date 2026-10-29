@@ -1,9 +1,21 @@
+import pytest
 from flask import url_for
+
+from ops_api.ops import create_app
 
 
 def test_index(client):
     response = client.get("/")
     assert b"It works!" in response.data
+
+
+def test_create_app_rejects_undelimited_host_header_prefix(monkeypatch):
+    """create_app must enforce the prefix delimiter that check_csrf's startswith relies on."""
+    monkeypatch.delenv("OPS_CONFIG", raising=False)
+    monkeypatch.setenv("FLASK_HOST_HEADER_PREFIX", "opre-ops-pr12")
+
+    with pytest.raises(ValueError, match="must end with"):
+        create_app()
 
 
 def test_csrf_protection_azure_prod(app, auth_client, mocker, app_ctx):

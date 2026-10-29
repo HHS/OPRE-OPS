@@ -41,6 +41,8 @@ class AgreementHistoryType(Enum):
     GRANT_NUMBER_UPDATED = auto()
     GRANT_NUMBER_DELETED = auto()
     CONTRACT_MODIFICATION_STARTED = auto()
+    CONTRACT_MODIFICATION_APPROVED = auto()
+    CONTRACT_MODIFICATION_DECLINED = auto()
 
 
 class AgreementHistory(BaseModel):
@@ -310,6 +312,26 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
             )
             if history_event:
                 history_events.append(history_event)
+        case OpsEventType.DELETE_CHANGE_REQUEST:
+            # Only a withdrawn Services Component add request records history today (OPS-6440).
+            change_request = event.event_details.get("change_request")
+            if event.event_details.get("withdrawn") and change_request:
+                agreement_id = change_request["agreement_id"]
+                name = (change_request.get("requested_change_info") or {}).get("target_display_name")
+                history_events.append(
+                    AgreementHistory(
+                        agreement_id=agreement_id if session.get(Agreement, agreement_id) else None,
+                        agreement_id_record=agreement_id,
+                        ops_event_id=event.id,
+                        history_title="Services Component Addition Withdrawn",
+                        history_message=(
+                            f"The request to add {name} was withdrawn because it no longer has "
+                            "budget lines that need approval."
+                        ),
+                        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        history_type=AgreementHistoryType.CHANGE_REQUEST_DELETED,
+                    )
+                )
         case OpsEventType.CREATE_SERVICES_COMPONENT:
             history_events.append(
                 AgreementHistory(
@@ -384,18 +406,48 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 history_events.append(history_event)
         case OpsEventType.START_CONTRACT_MODIFICATION:
             edit_count = len(event.event_details.get("contract_modification_edit_ids", []))
+            bli_count = len(event.event_details.get("budget_line_item_ids", []))
             history_events.append(
                 AgreementHistory(
                     agreement_id=event.event_details["agreement_id"],
                     agreement_id_record=event.event_details["agreement_id"],
                     ops_event_id=event.id,
-                    history_title="Contract Modification Started",
+                    history_title="Contract Modification Sent to Approval",
                     history_message=(
-                        f"{event_user.full_name} started a contract modification including "
-                        f"{edit_count} edit{'' if edit_count == 1 else 's'}."
+                        f"{event_user.full_name} sent a contract modification to approval including "
+                        f"{edit_count} edit{'' if edit_count == 1 else 's'} and "
+                        f"{bli_count} budget line{'' if bli_count == 1 else 's'} to execute."
                     ),
                     timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=AgreementHistoryType.CONTRACT_MODIFICATION_STARTED,
+                )
+            )
+        case OpsEventType.REVIEW_CONTRACT_MODIFICATION:
+            approved = event.event_details.get("status") == "APPROVED"
+            reviewer_notes = event.event_details.get("reviewer_notes")
+            executed_ids = event.event_details.get("budget_line_item_ids", []) if approved else []
+            executed = (
+                f" {', '.join(f'BL {bli_id}' for bli_id in executed_ids)} changed from Planned to Executing."
+                if executed_ids
+                else ""
+            )
+            history_events.append(
+                AgreementHistory(
+                    agreement_id=event.event_details["agreement_id"],
+                    agreement_id_record=event.event_details["agreement_id"],
+                    ops_event_id=event.id,
+                    history_title=f"Contract Modification {'Approved' if approved else 'Declined'}",
+                    history_message=(
+                        f"{event_user.full_name} {'approved' if approved else 'declined'} the contract modification."
+                        + executed
+                        + (f" Notes: {reviewer_notes}" if reviewer_notes else "")
+                    ),
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    history_type=(
+                        AgreementHistoryType.CONTRACT_MODIFICATION_APPROVED
+                        if approved
+                        else AgreementHistoryType.CONTRACT_MODIFICATION_DECLINED
+                    ),
                 )
             )
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
@@ -420,6 +472,10 @@ def create_change_request_history_event(
             reviewer_user = User(id=-1, full_name="Unknown User")
             logger.error(f"Reviewer user for change request {change_request['id']} is None. Using placeholder user.")
         change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        if property_changed == "services_component_create":
+            return create_services_component_change_request_history_event(
+                change_request, event, session, new_change_request, reviewer_user
+            )
         if property_changed == "delete":
             # Deletion request: distinct history_type + BLI id handling, so it cannot fall through
             # to the shared tail return (which would crash on the unset title/message and use the
@@ -563,6 +619,43 @@ def create_change_request_history_event(
                         else ""
                     )
                 )
+    agreement_id = change_request["agreement_id"]
+    agreement = session.get(Agreement, agreement_id)
+    return AgreementHistory(
+        agreement_id=agreement_id if agreement else None,
+        agreement_id_record=agreement_id,
+        ops_event_id=event.id,
+        history_title=title,
+        history_message=message,
+        timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        history_type=(
+            AgreementHistoryType.CHANGE_REQUEST_CREATED
+            if new_change_request
+            else AgreementHistoryType.CHANGE_REQUEST_UPDATED
+        ),
+    )
+
+
+def create_services_component_change_request_history_event(
+    change_request: dict, event: OpsEvent, session: Session, new_change_request: bool, reviewer_user
+) -> AgreementHistory:
+    """History for a Services Component add request (OPS-6440), requested or reviewed.
+
+    The requestor is resolved via created_by, and the SC name from the frozen diff, because a
+    declined add removes the SC (the request's SC id is then NULL).
+    """
+    name = (change_request.get("requested_change_diff") or {}).get("services_component_create", {}).get("new")
+    requestor_user = session.get(User, change_request["created_by"])
+    requestor_name = requestor_user.full_name if requestor_user else "Unknown User"
+
+    if new_change_request:
+        title = "Services Component Addition Requested"
+        message = f"{requestor_name} requested to add {name} and it's currently In Review for approval."
+    else:
+        change_request_status = "approved" if change_request["status"] == "APPROVED" else "declined"
+        title = f"Services Component Addition {change_request_status.capitalize()}"
+        message = f"{reviewer_user.full_name} {change_request_status} adding {name} as requested by {requestor_name}."
+
     agreement_id = change_request["agreement_id"]
     agreement = session.get(Agreement, agreement_id)
     return AgreementHistory(

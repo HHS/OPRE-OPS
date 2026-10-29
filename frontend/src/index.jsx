@@ -35,6 +35,7 @@ import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import EditAgreementAndBudgetLines from "./pages/agreements/review/EditAgreementAndBudgetLines";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
+import StartModification from "./pages/agreements/modifications";
 import {
     RequestPreAwardApproval,
     ApprovePreAwardApproval,
@@ -280,6 +281,13 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/review/:id/*"
                     element={<ReviewAgreement />}
+                    handle={{
+                        crumb: () => listCrumb("agreements")
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/start-modification"
+                    element={<StartModification />}
                     handle={{
                         crumb: () => listCrumb("agreements")
                     }}

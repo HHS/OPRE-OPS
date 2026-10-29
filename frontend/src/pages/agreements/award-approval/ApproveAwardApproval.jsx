@@ -13,6 +13,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { getAgreementDisplayName } from "../../../helpers/agreement.helpers";
 import useApproveAwardApproval from "./ApproveAwardApproval.hooks";
+import { agreementCrumb } from "../../../helpers/breadcrumb.helpers";
 
 /**
  * @component - Award Approval review page for Budget Team members (OPS-2280).
@@ -64,7 +65,10 @@ export const ApproveAwardApproval = () => {
 
     if (!hasPermission) {
         return (
-            <App breadCrumbName="Award Approval">
+            <App
+                breadCrumbName="Award Approval"
+                breadCrumbParent={agreementCrumb(agreement)}
+            >
                 <SimpleAlert
                     type="error"
                     heading="Access Denied"
@@ -76,7 +80,10 @@ export const ApproveAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Award Approval">
+        <App
+            breadCrumbName="Award Approval"
+            breadCrumbParent={agreementCrumb(agreement)}
+        >
             {showModal && (
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}
