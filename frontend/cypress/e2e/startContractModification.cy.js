@@ -96,5 +96,27 @@ describe("Start a Contract Modification", () => {
         cy.contains("Contract Modification Sent to Approval").should("be.visible");
         cy.contains("h2", "Contract Modification In Review").should("be.visible");
         cy.get('[data-cy="start-modification-btn"]').should("be.disabled");
+
+        // At 200% zoom on a 1280px screen (640 CSS px) the edit cards must still fit, with no value
+        // hidden under the In Review tag.
+        cy.viewport(640, 800);
+        cy.get('[data-cy="contract-modification-edit-card"]')
+            .should("have.length.at.least", 1)
+            .each(($card) => {
+                const card = $card[0];
+                expect(card.scrollWidth, "card has no horizontal overflow").to.be.at.most(card.clientWidth);
+                const tag = card.querySelector('[data-cy="contract-modification-edit-in-review"]');
+                expect(tag, "In Review tag").to.exist;
+                const tagRect = tag.getBoundingClientRect();
+                card.querySelectorAll("dd").forEach((value) => {
+                    const rect = value.getBoundingClientRect();
+                    const overlaps =
+                        rect.right > tagRect.left &&
+                        rect.left < tagRect.right &&
+                        rect.bottom > tagRect.top &&
+                        rect.top < tagRect.bottom;
+                    expect(overlaps, `"${value.textContent}" is clear of the In Review tag`).to.be.false;
+                });
+            });
     });
 });
