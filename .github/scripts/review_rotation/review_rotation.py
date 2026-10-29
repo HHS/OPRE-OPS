@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
@@ -123,6 +124,19 @@ def build_slack_text(
     return f"{action}, but nobody in the rotation is available. Please pick a reviewer manually."
 
 
+def open_https(req: urllib.request.Request | str, timeout: int):
+    """urlopen, but only for https:// URLs, so a misconfigured secret can't read file:// or hit http://.
+
+    Every URL here comes from a constant (the GitHub API) or a repo secret (calendar, Slack), never
+    from PR content, so Semgrep's dynamic-urllib alert is a false positive once the scheme is pinned.
+    """
+    url = req.full_url if isinstance(req, urllib.request.Request) else req
+    if urllib.parse.urlsplit(url).scheme != "https":
+        raise ValueError("refusing a non-https URL")
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+    return urllib.request.urlopen(req, timeout=timeout)
+
+
 class GitHub:
     def __init__(self, token: str, repo: str):
         self.token = token
@@ -139,7 +153,7 @@ class GitHub:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with open_https(req, timeout=15) as resp:
             raw = resp.read()
         return json.loads(raw) if raw else None
 
@@ -163,7 +177,7 @@ def fetch_calendar_off(pool: list[Member], tz: ZoneInfo) -> set[str]:
         print("::warning::TEAM_CALENDAR_ICS_URL is not set; picking without checking the team calendar.")
         return set()
     try:
-        with urllib.request.urlopen(url, timeout=15) as resp:
+        with open_https(url, timeout=15) as resp:
             ics_text = resp.read().decode()
         return people_off(ics_text, pool, datetime.now(tz).date(), tz)
     except Exception as exc:  # noqa: BLE001 -- any calendar failure must not block a review pick
@@ -178,7 +192,7 @@ def post_slack(text: str) -> None:
         data=json.dumps({"text": text}).encode(),
         headers={"Content-Type": "application/json"},
     )
-    urllib.request.urlopen(req, timeout=10).close()
+    open_https(req, timeout=10).close()
 
 
 def main() -> int:

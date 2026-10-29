@@ -128,6 +128,17 @@ class TestSlackText:
         assert "nobody in the rotation is available" in text
 
 
+class TestOpenHttps:
+    @pytest.mark.parametrize("url", ["file:///etc/passwd", "http://example.com/cal.ics", "ftp://example.com/x"])
+    def test_rejects_non_https(self, url):
+        with pytest.raises(ValueError):
+            rr.open_https(url, timeout=1)
+
+    def test_rejects_non_https_request(self):
+        with pytest.raises(ValueError):
+            rr.open_https(rr.urllib.request.Request("file:///etc/passwd"), timeout=1)
+
+
 class FakeGitHub(rr.GitHub):
     """Replaces only the HTTP call: records writes, serves the PR and its comments."""
 
