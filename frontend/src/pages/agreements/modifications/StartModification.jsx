@@ -206,7 +206,10 @@ export const StartModification = () => {
                 heading="Upload Documents"
                 level={2}
             >
-                <p>Please upload the documents needed to execute your contract modification.</p>
+                <p>
+                    Please coordinate documents related to modification via email until upload documents have been
+                    developed in OPS.
+                </p>
                 <ModificationDocumentUploads />
             </Accordion>
             <Accordion
