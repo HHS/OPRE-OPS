@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from data_tools.src.common.utils import (
@@ -151,11 +151,21 @@ def _resolve_procurement_fee(data, proc_shop, agreement, session):
 
 def _find_agreement_and_can(data, session):
     """Find the agreement and CAN for the budget line item."""
-    agreement = session.execute(
+    # ignore leading/trailing whitespace in the agreement names. OPRE is known for including
+    # leading and trailing spaces in data sent and that's already in the persisted data
+    agreements = session.scalars(
         select(Agreement)
-        .where(Agreement.name == data.AGREEMENT_NAME)
+        .where(func.trim(Agreement.name) == data.AGREEMENT_NAME)
         .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
-    ).scalar_one_or_none()
+    ).all()
+
+    if len(agreements) > 1:
+        # "Foo" and "Foo " can coexist; only an exact name match is unambiguous
+        agreements = [a for a in agreements if a.name == data.AGREEMENT_NAME]
+        if not agreements:
+            logger.warning(f"Agreement Name {data.AGREEMENT_NAME} matches multiple agreements and none exactly.")
+
+    agreement = agreements[0] if agreements else None
 
     if not agreement:
         logger.warning(f"Agreement with Agreement Name {data.AGREEMENT_NAME} not found.")
