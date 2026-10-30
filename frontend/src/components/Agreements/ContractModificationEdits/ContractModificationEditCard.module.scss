@@ -1,9 +1,10 @@
 // Columns from the Figma "MODs Review Card" (Requested by, Modification Type, BL ID / SC, Change To,
 // From, To, In Review). They're fr, not px, so they hit the Figma px at full width (850px for the
-// six fields) but shrink and wrap when the card is narrower, e.g. at 200% zoom (640px). Tracks never
-// go below their content's minimum, so a value can't collapse under the In Review tag; From and To
-// keep their full width so an amount like $175,000.00 isn't split mid-number. The In Review column
-// has a fixed minimum so cards with and without the tag line up.
+// six fields) but shrink and wrap when the card is narrower, e.g. at 200% zoom (640px, above the
+// stacking breakpoint below). Tracks never go below their content's minimum, so a value can't
+// collapse under the In Review tag; From and To keep their full width so an amount like
+// $175,000.00 isn't split mid-number. The In Review column has a fixed minimum so cards with and
+// without the tag line up.
 .card {
     display: grid;
     grid-template-columns:
@@ -12,8 +13,9 @@
     align-items: start;
 }
 
-// Below 200% zoom's 640px, the From/To tracks' max-content minimums push the card past 320 CSS px
-// (WCAG 1.4.10 Reflow). Stack into a single column instead of shrinking tracks below their content.
+// Below 600px (200% zoom's 640px stays above this), the From/To tracks' max-content minimums push
+// the card past 320 CSS px (WCAG 1.4.10 Reflow). Stack into a single column instead of shrinking
+// tracks below their content.
 @media (max-width: 37.5em) {
     .card {
         grid-template-columns: 1fr;
