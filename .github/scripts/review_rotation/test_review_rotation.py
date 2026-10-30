@@ -98,7 +98,46 @@ class TestPeopleOff:
         assert rr.people_off(cal, POOL, date(2026, 10, 29), TZ, 4) == set()
 
 
+class TestLoadPool:
+    def test_defaults_to_engineering_role_when_omitted(self):
+        pool = rr.load_pool({"pool": [{"github": "Alice", "calendar_names": ["Alice"]}]})
+        assert pool[0].roles == ("engineering",)
+
+    def test_uses_explicit_roles(self):
+        pool = rr.load_pool({"pool": [{"github": "kim", "calendar_names": ["Kim"], "roles": ["ux"]}]})
+        assert pool[0].roles == ("ux",)
+
+
+class TestTouchesVisualPath:
+    def test_matches_a_configured_prefix(self):
+        assert rr.touches_visual_path(["frontend/src/App.jsx"], ("frontend/src/",))
+
+    def test_no_matching_prefix(self):
+        assert not rr.touches_visual_path(["backend/ops_api/foo.py"], ("frontend/src/",))
+
+    def test_empty_file_list(self):
+        assert not rr.touches_visual_path([], ("frontend/src/",))
+
+
+class TestEligiblePool:
+    MIXED_POOL: ClassVar = (
+        rr.Member("eng", (), roles=("engineering",)),
+        rr.Member("ux", (), roles=("ux",)),
+        rr.Member("both", (), roles=("engineering", "ux")),
+    )
+
+    def test_visual_pr_keeps_everyone(self):
+        assert rr.eligible_pool(list(self.MIXED_POOL), visual=True) == list(self.MIXED_POOL)
+
+    def test_non_visual_pr_drops_ux_only_members(self):
+        assert [m.github for m in rr.eligible_pool(list(self.MIXED_POOL), visual=False)] == ["eng", "both"]
+
+
 class TestChooseReviewer:
+    def test_empty_pool_returns_none(self):
+        assert rr.choose_reviewer([], 4, "zed", [], set()) is None
+
+
     def test_starts_at_pr_rotation_slot(self):
         assert rr.choose_reviewer(POOL, 4, "zed", [], set()) == "bob"  # 4 % 3 == 1
 
@@ -177,15 +216,18 @@ class TestOpenHttps:
 
 
 class FakeGitHub(rr.GitHub):
-    """Replaces only the HTTP call: records writes, serves the PR and its comments."""
+    """Replaces only the HTTP call: records writes, serves the PR, its comments and its files."""
 
-    def __init__(self, pr, comments):
+    def __init__(self, pr, comments, files=()):
         self.pr = pr
         self.comments = comments
+        self.files = list(files)
         self.calls = []
 
     def request(self, method, path, body=None):
         self.calls.append((method, path, body))
+        if method == "GET" and "/files" in path:
+            return [{"filename": p} for p in self.files]
         if method == "GET" and path.startswith("/pulls/"):
             return self.pr
         if method == "GET" and "/comments" in path:
@@ -197,18 +239,20 @@ class FakeGitHub(rr.GitHub):
 def run(tmp_path, monkeypatch):
     config = tmp_path / "rotation.json"
     config.write_text(
-        '{"label": "ready-for-human-review", "timezone": "America/New_York", "pool": ['
+        '{"label": "ready-for-human-review", "timezone": "America/New_York", '
+        '"visual_path_prefixes": ["frontend/src/"], "pool": ['
         '{"github": "alice", "calendar_names": ["Alice"]},'
         '{"github": "bob", "calendar_names": ["Bob"]},'
-        '{"github": "carol", "calendar_names": ["Carol"]}]}'
+        '{"github": "carol", "calendar_names": ["Carol"]},'
+        '{"github": "uxena", "calendar_names": ["Uxena"], "roles": ["ux"]}]}'
     )
     slack_map = tmp_path / "slack.json"
     slack_map.write_text("{}")
     slack_posts = []
     monkeypatch.setattr(rr, "post_slack", slack_posts.append)
 
-    def _run(mode, pr, comments=(), off=frozenset()):
-        fake = FakeGitHub(pr, list(comments))
+    def _run(mode, pr, comments=(), off=frozenset(), files=()):
+        fake = FakeGitHub(pr, list(comments), files)
         monkeypatch.setattr(rr, "GitHub", lambda token, repo: fake)
         monkeypatch.setattr(rr, "fetch_calendar_off", lambda pool, tz, min_off_hours: set(off))
         for key, value in {
@@ -268,6 +312,16 @@ class TestMain:
         assert writes[2][0:2] == ("PATCH", "/issues/comments/9")
         assert rr.parse_history(writes[2][2]["body"]) == ["bob", "alice"]
         assert "@alice is up" in slack[0] and "(was bob)" in slack[0]
+
+    def test_label_picks_engineering_only_when_pr_is_not_visual(self, run):
+        # Pool order is alice, bob, carol, uxena (ux-only); pr_number=3 would land on uxena
+        # (index 3) if she weren't filtered out, so this also proves the filtering, not just a pick.
+        writes, _ = run("label", make_pr(number=3), files=["backend/ops_api/foo.py"])
+        assert ("POST", "/pulls/3/requested_reviewers", {"reviewers": ["alice"]}) in writes
+
+    def test_label_can_pick_a_ux_member_when_pr_touches_frontend_src(self, run):
+        writes, _ = run("label", make_pr(number=3), files=["frontend/src/components/Foo.jsx"])
+        assert ("POST", "/pulls/3/requested_reviewers", {"reviewers": ["uxena"]}) in writes
 
     def test_reroll_with_nobody_left_keeps_current_pick(self, run):
         existing = bot_comment(["bob"], "bob")

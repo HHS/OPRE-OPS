@@ -30,10 +30,28 @@ OFF_WORDS_RE = re.compile(r"\b(" + "|".join(OFF_WORDS) + r")\b", re.IGNORECASE)
 class Member:
     github: str
     calendar_names: tuple[str, ...]
+    # Pure "ux" members are skipped on PRs that touch nothing visual (see eligible_pool);
+    # a member with "engineering" in their roles is always eligible. Defaults to engineering-only
+    # so a pool entry with no "roles" key behaves the same as before roles existed.
+    roles: tuple[str, ...] = ("engineering",)
 
 
 def load_pool(config: dict) -> list[Member]:
-    return [Member(m["github"].lower(), tuple(m["calendar_names"])) for m in config["pool"]]
+    return [
+        Member(m["github"].lower(), tuple(m["calendar_names"]), tuple(m.get("roles", ["engineering"])))
+        for m in config["pool"]
+    ]
+
+
+def touches_visual_path(paths: list[str], prefixes: tuple[str, ...]) -> bool:
+    return any(path.startswith(prefix) for path in paths for prefix in prefixes)
+
+
+def eligible_pool(pool: list[Member], visual: bool) -> list[Member]:
+    """UX-only reviewers (no "engineering" role) are skipped on a PR with nothing visual to review."""
+    if visual:
+        return pool
+    return [m for m in pool if "engineering" in m.roles]
 
 
 def is_off_event(summary: str, calendar_names: tuple[str, ...]) -> bool:
@@ -98,6 +116,8 @@ def choose_reviewer(
     pool: list[Member], pr_number: int, author: str, already_picked: list[str], off: set[str]
 ) -> str | None:
     """Walk the pool from the PR's rotation slot, returning the first available member."""
+    if not pool:  # e.g. a non-visual PR when every engineering-role member is filtered out elsewhere
+        return None
     excluded = {author.lower(), *already_picked, *off}
     start = pr_number % len(pool)
     for i in range(len(pool)):
@@ -214,6 +234,16 @@ class GitHub:
                 return None
             page += 1
 
+    def pr_file_paths(self, pr_number: int) -> list[str]:
+        paths = []
+        page = 1
+        while True:
+            files = self.request("GET", f"/pulls/{pr_number}/files?per_page=100&page={page}")
+            paths.extend(f["filename"] for f in files)
+            if len(files) < 100:
+                return paths
+            page += 1
+
 
 def fetch_calendar_off(pool: list[Member], tz: ZoneInfo, min_off_hours: float) -> set[str]:
     """Fail open: a missing or broken calendar means nobody is treated as off."""
@@ -262,7 +292,8 @@ def main() -> int:
         print(f"A reviewer was already picked ({picked[-1]}); re-adding the label does not reroll.")
         return 0
 
-    pool = load_pool(config)
+    visual = touches_visual_path(gh.pr_file_paths(pr_number), tuple(config.get("visual_path_prefixes", [])))
+    pool = eligible_pool(load_pool(config), visual)
     tz = ZoneInfo(config["timezone"])
     off = fetch_calendar_off(pool, tz, config.get("min_off_hours", 4))
     old_pick = picked[-1] if picked else None
