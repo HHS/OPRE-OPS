@@ -5,6 +5,7 @@ import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helper
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
 import Tag from "../../UI/Tag";
+import styles from "./ContractModificationEditCard.module.scss";
 
 /**
  * @typedef {Object} ContractModificationEdit
@@ -45,10 +46,10 @@ const ContractModificationEditCard = ({ edit }) => {
 
     return (
         <div
-            className="display-flex flex-align-start padding-2 bg-base-lightest border-1px border-base-light radius-md"
+            className={`padding-205 bg-base-lightest border-1px border-base-light radius-md ${styles.card}`}
             data-cy="contract-modification-edit-card"
         >
-            <div className="font-12px grid-col-2">
+            <div className="font-12px">
                 <dl className="margin-0">
                     <dt className="text-base-dark">Requested by</dt>
                     <dd className="margin-0 text-bold">{edit.requested_by?.full_name}</dd>
@@ -65,19 +66,19 @@ const ContractModificationEditCard = ({ edit }) => {
             <TermTag
                 label="Modification Type"
                 value={convertCodeForDisplay("modificationEditType", edit.modification_type)}
-                className="grid-col-2 margin-0"
+                className="margin-0"
             />
             {servicesComponentChange ? (
                 <>
                     <TermTag
                         label="SC"
                         value={servicesComponentName}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                     <TermTag
                         label="Change To"
                         value={servicesComponentChange}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                 </>
             ) : (
@@ -85,31 +86,32 @@ const ContractModificationEditCard = ({ edit }) => {
                     <TermTag
                         label="BL ID"
                         value={edit.budget_line_item_id}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                     <TermTag
                         label="Change To"
                         value={convertCodeForDisplay("changeToTypes", edit.field)}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                     <TermTag
                         label="From"
                         value={oldValue}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                     <TermTag
                         label="To"
                         value={newValue}
-                        className="grid-col-2 margin-0"
+                        className="margin-0"
                     />
                 </>
             )}
             {edit.in_review && (
                 <Tag
                     tagStyle="lightTextRedBackground"
-                    className="margin-left-auto padding-x-05 text-no-wrap"
+                    // Inline nowrap: Tag's own inline whiteSpace would override a class.
+                    style={{ gridColumn: "-2 / -1", justifySelf: "end", whiteSpace: "nowrap" }}
                     text="In Review"
-                    data-cy="contract-modification-edit-in-review"
+                    dataCy="contract-modification-edit-in-review"
                 />
             )}
         </div>
