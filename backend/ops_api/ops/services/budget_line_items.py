@@ -22,12 +22,14 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
+    Division,
     GrantBudgetLineItem,
     GrantNumber,
     Portfolio,
     ProcurementShop,
     ProcurementTracker,
     ServicesComponent,
+    User,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
 from ops_api.ops.schemas.budget_line_items import (
@@ -86,6 +88,7 @@ class BudgetLineItemFilters:
     agreement_types: Optional[list[str]] = None
     agreement_names: Optional[list[str]] = None
     can_active_periods: Optional[list[str]] = None
+    divisions: Optional[list[int]] = None
 
     @classmethod
     def parse_filters(cls, data: dict) -> "BudgetLineItemFilters":
@@ -108,6 +111,7 @@ class BudgetLineItemFilters:
             agreement_types=data.get("agreement_type", []),
             agreement_names=data.get("agreement_name", []),
             can_active_periods=data.get("can_active_period", []),
+            divisions=data.get("division", []),
         )
 
 
@@ -518,6 +522,7 @@ class BudgetLineItemService:
         query = self._apply_status_filter(query, filters.statuses, filters.enable_obe, in_review_clause)
         query = self._apply_agreement_type_filter(query, filters.agreement_types)
         query = self._apply_agreement_name_filter(query, filters.agreement_names)
+        query = self._apply_cor_division_filter(query, filters.divisions)
         # Note: budget_line_total_range and can_active_period filters are applied in Python
         # after fetching results to avoid SQLAlchemy correlation issues
         query = self._apply_obe_exclusion_filter(query, filters.enable_obe, in_review_requested, in_review_clause)
@@ -552,6 +557,15 @@ class BudgetLineItemService:
         """Apply CAN filter if provided."""
         if can_ids:
             query = query.where(BudgetLineItem.can_id.in_(can_ids))
+        return query
+
+    def _apply_cor_division_filter(self, query, divisions):
+        """Keep BLIs whose agreement's primary COR (project officer) is in one of the divisions."""
+        if divisions:
+            cor_agreement_ids = select(Agreement.id).where(
+                Agreement.project_officer_id.in_(select(User.id).where(User.division.in_(divisions)))
+            )
+            query = query.where(BudgetLineItem.agreement_id.in_(cor_agreement_ids))
         return query
 
     def _apply_agreement_filter(self, query, agreement_ids):
@@ -1374,6 +1388,19 @@ class BudgetLineItemService:
         agreement_ids = [result.agreement_id for result in results]
         has_in_review = has_change_requests_in_review(self.db_session, bli_ids, agreement_ids)
 
+        # COR divisions: divisions of the primary COR (project officer) on the agreements of the
+        # BLIs above, so options follow the same only_my scope. The alternate COR is ignored.
+        cor_division_rows = self.db_session.execute(
+            select(Division.id, Division.name, Division.abbreviation)
+            .distinct()
+            .join(User, User.division == Division.id)
+            .join(Agreement, Agreement.project_officer_id == User.id)
+            .where(Agreement.id.in_(list({agreement_id for agreement_id in agreement_ids if agreement_id})))
+        ).all()
+        cor_divisions = [
+            {"id": d_id, "name": d_name, "abbreviation": d_abbr} for d_id, d_name, d_abbr in cor_division_rows
+        ]
+
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
         if has_in_review:
             budget_line_statuses_list.append("IN_REVIEW")
@@ -1412,6 +1439,7 @@ class BudgetLineItemService:
             "agreement_types": sorted([at.name for at in agreement_types]),
             "agreement_names": agreement_names,
             "can_active_periods": sorted(can_active_periods),
+            "cor_divisions": sorted(cor_divisions, key=lambda x: x["name"]),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
         filter_options = filter_response_schema.dump(filters)

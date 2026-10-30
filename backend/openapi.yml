@@ -4770,6 +4770,25 @@ paths:
                         type: number
                         format: float
                     description: The range of budget line totals (amount + fees) available in the dataset
+                  cor_divisions:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - abbreviation
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        abbreviation:
+                          type: string
+                    description: >-
+                      Divisions of the primary COR (project officer) on the agreements of the budget lines in
+                      scope (respecting only_my), sorted by name. The alternate COR is not considered. Values
+                      are valid for the `division` filter on GET /budget-line-items/.
 
   /budget-line-items-batch/:
     post:
@@ -4864,6 +4883,18 @@ paths:
           style: form
           explode: true
           description: Filter by agreement ID(s)
+        - in: query
+          name: division
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          description: >
+            Filter by the division id(s) of the agreement's primary COR (project officer). Multiple values
+            are combined with OR logic. Budget lines on agreements without a COR, or whose COR has no
+            division, are excluded when this filter is active. The alternate COR is not considered.
         - in: query
           name: budget_line_total_min
           schema:

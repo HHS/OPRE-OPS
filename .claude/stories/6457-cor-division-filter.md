@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/agreements-cor-division-filter  # all code work for the issue lands here (see "Progress")
-status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). Slice T1 is done on the branch; the draft PR has no description yet.
+status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). T1 and the T3 backend are done on the branch; the draft PR has no description yet.
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -79,7 +79,7 @@ portfolio's division.
 
 ---
 
-## Progress: where to pick up (updated 2026-10-29)
+## Progress: where to pick up (updated 2026-10-30)
 
 **Working agreement:** all code work for #6457 is done on `OPS-6457/agreements-cor-division-filter`, behind one
 draft PR. Frontend work for slices other than T1 may happen here too, or move to a separate sub-task later;
@@ -107,25 +107,32 @@ separate branches.
   - Frontend: `opsAPI.test.js` query string; filter-button hook (apply / reset / sync / null); tags; a keyboard
     component test (`AgreementsFilterButton.test.jsx`); the list page query and export.
   - Cypress: a journey in `agreementList.cy.js`.
+  - Backend `test_division_count_totals_and_paging_cover_only_filtered_set` (added 2026-10-30): `count`,
+    `totals` (amounts and type counts) and `limit`/`offset` paging cover only the filtered set.
 - **All green as of 2026-10-29:** backend full suite (2,682 passed), frontend full suite, Cypress `agreementList`
   + `procurementDashboard`.
 
+### Done on the branch (T3 backend: Budget Lines filter, 2026-10-30)
+- `GET /budget-line-items/` accepts `division` (added to `QueryParametersSchema` and `BudgetLineItemFilters`).
+  `_apply_cor_division_filter` adds `BudgetLineItem.agreement_id IN (agreements whose primary COR is in …)` in
+  `filter_query`. No shared helper was extracted; the predicate is one line on each side.
+  - `.correlate(None)` was tried and dropped: when the outer query joins Agreement, the correlated form checks the
+    same agreement row, so results are identical (mutation-checked).
+- `/budget-line-items-filters/` returns `cor_divisions`, built from the agreements of the post-`only_my` BLI set and
+  sorted by name.
+- `openapi.yml`: the `division` param and `cor_divisions` are documented. (The filter-options response there was
+  already missing `agreement_types`, `agreement_names` and `can_active_periods`; that gap is pre-existing.)
+- Tests in `tests/ops/budget_line_items/test_budget_line_item_cor_division.py`: the T1 matrix (single, union, no
+  COR, null-division COR, alternate-only, portfolio-division ≠ COR-division, unknown id, portfolio + FY
+  intersection, `only_my` intersection), both query shapes (default sort joins Agreement, `ID_NUMBER` doesn't),
+  count/totals/paging, options (primary only, `only_my`, sorted), and API tests for `_meta` (`total_count`,
+  `number_of_pages`, `total_amount`), a 400 on a non-integer id, and the `cor_divisions` shape. Removing the schema
+  field makes the API tests fail (mutation-checked).
+- **All green as of 2026-10-30:** backend full suite (2,700 passed, 9 skipped), lint.
+
 ### Pick up here, in order
-1. **T1 test gap: totals and paging under the filter.** Add a service test asserting that
-   `metadata["count"]` and the `totals` block (`_compute_agreement_totals_sql`, `services/agreements.py:1049`)
-   reflect only the filtered agreements, and that `limit`/`offset` page over the filtered set. Reuse the
-   `portfolio_fy_combination_data` fixture and give its BLIs amounts.
-2. **T3 backend: Budget Lines filter** (no UX dependency).
-   - Param: use **`division`** to match Agreements (decision Q1).
-   - Add it to `QueryParametersSchema` (**`unknown = EXCLUDE`, so it is silently dropped until added**) and to
-     `BudgetLineItemFilters`.
-   - Apply it in `filter_query` as `BudgetLineItem.agreement_id.in_(…)`.
-   - Add `cor_divisions` to `/budget-line-items-filters/`, built from the post-`only_my` BLI set.
-   - Update `openapi.yml`.
-   - Consider extracting the agreement-ids predicate into a small helper shared with `_apply_agreement_filters`,
-     but only if it reads cleaner.
-   - Tests: the same matrix as T1, plus `_meta.total_count`, `number_of_pages` and total amounts, and the
-     `only_my` intersection (Python post-filter).
+1. ~~T1 test gap: totals and paging~~ (done 2026-10-30)
+2. ~~T3 backend: Budget Lines filter~~ (done 2026-10-30)
 3. **T2 backend: COR name on the Agreements list.** Add `project_officer_name` (null-safe) to
    `AgreementListResponse`, eager-load `project_officer` in `_get_page_agreements`, add tests, and update
    `openapi.yml`. Sorting by COR waits for the UX answer (Q4).

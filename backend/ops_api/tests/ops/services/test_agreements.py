@@ -2460,11 +2460,13 @@ class TestAgreementDivisionFilter:
     def portfolio_fy_combination_data(self, loaded_db, division_filter_data):
         """Three agreements spread across two COR divisions and two portfolios, each with one FY 2043 BLI.
 
-        | Agreement | COR's division | Portfolio |
-        |-----------|----------------|-----------|
-        | match     | A              | P1        |
-        | other_pf  | A              | P2        |
-        | other_div | B              | P1        |
+        | Agreement | COR's division | Portfolio | BLI amount |
+        |-----------|----------------|-----------|------------|
+        | match     | A              | P1        | 100        |
+        | other_pf  | A              | P2        | 200        |
+        | other_div | B              | P1        | 400        |
+
+        None of them has a procurement shop, so their fees are 0.
         """
         cans = loaded_db.scalars(select(CAN).where(CAN.portfolio_id.isnot(None)).order_by(CAN.id)).all()
         can_p1 = cans[0]
@@ -2472,10 +2474,10 @@ class TestAgreementDivisionFilter:
         po_b_id = loaded_db.get(ContractAgreement, division_filter_data["agreement_b_id"]).project_officer_id
 
         agreements, blis = {}, []
-        for key, po_id, can in (
-            ("match", division_filter_data["po_a_id"], can_p1),
-            ("other_pf", division_filter_data["po_a_id"], can_p2),
-            ("other_div", po_b_id, can_p1),
+        for key, po_id, can, amount in (
+            ("match", division_filter_data["po_a_id"], can_p1, 100),
+            ("other_pf", division_filter_data["po_a_id"], can_p2, 200),
+            ("other_div", po_b_id, can_p1, 400),
         ):
             agreement = ContractAgreement(
                 name=f"Division Filter - Combination {key} (#6457)",
@@ -2489,6 +2491,7 @@ class TestAgreementDivisionFilter:
                     agreement_id=agreement.id,
                     can_id=can.id,
                     status=BudgetLineItemStatus.PLANNED,
+                    amount=amount,
                     date_needed=date(2043, 1, 15),  # FY 2043
                     line_description=f"Division Filter - Combination BLI {key} (#6457)",
                 )
@@ -2528,6 +2531,36 @@ class TestAgreementDivisionFilter:
         assert matching(portfolio) == {portfolio_fy_combination_data["match_id"]}
         assert matching({**portfolio, "fiscal_year": [2043]}) == {portfolio_fy_combination_data["match_id"]}
         assert matching({**portfolio, "fiscal_year": [2044]}) == set()
+
+    def test_division_count_totals_and_paging_cover_only_filtered_set(
+        self, loaded_db, app_ctx, division_filter_data, portfolio_fy_combination_data
+    ):
+        """Count, summary totals and paging are computed over the COR-division-filtered set only."""
+        service = AgreementsService(loaded_db)
+        # Division A: agreement A (no BLIs) plus the match ($100) and other_pf ($200) combination agreements.
+        expected_ids = {
+            division_filter_data["agreement_a_id"],
+            portfolio_fy_combination_data["match_id"],
+            portfolio_fy_combination_data["other_pf_id"],
+        }
+        division_a = {"division": [division_filter_data["div_a_id"]]}
+
+        _, metadata = service.get_list([ContractAgreement], {**division_a, "limit": [1000], "offset": [0]})
+
+        assert metadata["count"] == 3
+        totals = metadata["totals"]
+        assert totals["total_agreements_count"] == 3
+        assert totals["type_counts"] == {"CONTRACT": 3}
+        assert totals["total_contract_amount"] == 300.0  # other_div's $400 is excluded
+
+        first_page, first_meta = service.get_list([ContractAgreement], {**division_a, "limit": [2], "offset": [0]})
+        second_page, second_meta = service.get_list([ContractAgreement], {**division_a, "limit": [2], "offset": [2]})
+
+        assert len(first_page) == 2
+        assert len(second_page) == 1
+        assert {a.id for a in first_page} | {a.id for a in second_page} == expected_ids
+        assert first_meta["count"] == second_meta["count"] == 3
+        assert first_meta["totals"] == second_meta["totals"] == totals
 
     def test_filter_options_cor_divisions_only_include_primary_cors(self, loaded_db, app_ctx, division_filter_data):
         """Offered COR divisions are those with a primary COR on at least one agreement (#6457)."""
