@@ -20217,10 +20217,10 @@
       closed: false,
     },
   ],
-  // One approved Modified LOE edit on CONTRACT #523, so the Award & Modifications tab and the
-  // Start Modification page (#3268) have an "Edit That Requires a Contract Modification" to show
-  // without a tester first walking a change request through approval. budget_line_item_id has no
-  // FK; it's the id the seed assigns to 523's Planned BLI ("LI 4") and is only displayed.
+  // Pending Modified LOE edits on CONTRACT #523, one per edit type, so the Award & Modifications
+  // tab and the Start Modification page (#3268) have "Edits That Require a Contract Modification"
+  // to show without a tester first walking a change request through approval. budget_line_item_id
+  // has no FK; it's the id the seed assigns to 523's Planned BLI ("LI 4") and is only displayed.
   contract_modification_edit: [
     // Pending "Edits That Require a Contract Modification" on CONTRACT #523, one per edit type, for
     // manual testing of OPS-3268. BL 16066 (LI 4) carries the status, Obligate By, CAN and amount

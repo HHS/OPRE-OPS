@@ -108,7 +108,7 @@ Frontend:
 - One open contract modification per agreement.
 - Contract and AA agreements only (`_SUPPORTED_AGREEMENT_TYPES`).
 - Out of scope:
-  - Add BL, Add SC and Delete SC cards (#3072 / OPS-6440)
+  - Add BL and Delete SC cards (#3072 / OPS-6440)
 - **SC edits (follow-up on `OPS-3268/sc-mod-edits`):** PR 6447 (OPS-6440) records an approved "Add SC" as a pending edit and renders it on the shared edit card, so it appears on the Award & Modifications tab and the Start Modification summary. The follow-up adds submit/decline tests for SC edits and names the added SCs in the START and REVIEW history messages ("including 2 edits (adding SC2)", "It included adding SC2.").
   - **SC deletes are not modification edits.** Deleting an SC with non-Draft BLs on an awarded agreement is blocked (superuser-only per #3072), so there's no "Delete SC" card.
   - the DD approve/decline UI (#3331); backend transitions (`PATCH /contract-modification-requests/<id>/`) and submitter-side alerts are in scope
