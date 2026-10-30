@@ -9,7 +9,8 @@ const emptyFilters = {
     agreementType: [],
     agreementName: [],
     contractNumber: [],
-    awardType: []
+    awardType: [],
+    division: []
 };
 
 // ---------------------------------------------------------------------------
@@ -163,5 +164,35 @@ describe("removeFilter - non-FY filters", () => {
             projectTitle: [{ id: 1, title: "Project Alpha" }]
         });
         expect(result.projectTitle).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// COR's division (#6457)
+// ---------------------------------------------------------------------------
+describe("COR's division tags", () => {
+    const divisions = [
+        { id: 1, name: "Division A", abbreviation: "DA" },
+        { id: 2, name: "Division B", abbreviation: "DB" }
+    ];
+
+    it("labels each tag as a COR's division so it isn't mistaken for a portfolio's division", () => {
+        // Stable reference: a new object per render would re-trigger the hook's effects forever.
+        const filters = { ...emptyFilters, division: divisions };
+        const { result } = renderHook(() => useTagsList(filters));
+        const divisionTags = result.current.filter((tag) => tag.filter === "division");
+
+        expect(divisionTags).toEqual([
+            { tagText: "COR's Division: Division A", filter: "division", id: 1 },
+            { tagText: "COR's Division: Division B", filter: "division", id: 2 }
+        ]);
+    });
+
+    it("removes only the clicked division, keyed by id", () => {
+        const setFilters = vi.fn();
+        removeFilter({ filter: "division", tagText: "COR's Division: Division A", id: 1 }, setFilters);
+        const result = setFilters.mock.calls[0][0]({ ...emptyFilters, division: divisions });
+
+        expect(result.division).toEqual([divisions[1]]);
     });
 });

@@ -159,7 +159,8 @@ export const opsApi = createApi({
                     awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
                 }
                 if (division) {
-                    division.forEach((id) => queryParams.push(`division=${id}`));
+                    // COR's division: the division of the agreement's primary COR (project officer)
+                    division.forEach((division) => queryParams.push(`division=${division.id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");

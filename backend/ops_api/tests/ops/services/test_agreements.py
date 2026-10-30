@@ -3,8 +3,10 @@ from decimal import Decimal
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from sqlalchemy import select
 
 from models import (
+    CAN,
     AaAgreement,
     Agreement,
     AgreementReason,
@@ -1805,6 +1807,18 @@ class TestGetPageAgreements:
         )
         assert float(shop.fee_percentage) > 0, "fee_percentage should be non-zero for shop 3"
 
+    def test_eager_loads_project_officer(self, loaded_db):
+        """The list serializes project_officer_name per row; without the eager load that's one query per agreement."""
+        from sqlalchemy import inspect as sa_inspect
+
+        from models import Agreement
+
+        loaded_db.expire_all()  # drop identity-map copies so the result reflects this query's loader options
+        agreement_id = loaded_db.scalar(select(Agreement.id).where(Agreement.project_officer_id.isnot(None)).limit(1))
+        result = _get_page_agreements(loaded_db, [agreement_id])
+
+        assert "project_officer" not in sa_inspect(result[0]).unloaded
+
 
 def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
     """Helper to create a mock BLI for procurement overview/step summary tests."""
@@ -2225,7 +2239,26 @@ class TestAgreementDivisionFilter:
             division=div_b.id,
             status=UserStatus.ACTIVE,
         )
-        loaded_db.add_all([po_a, po_b])
+        # Division C only ever appears on an alternate COR; Division D has no COR at all.
+        div_c = Division(name="Test Division C (#6457)", abbreviation="TDC6457")
+        div_d = Division(name="Test Division D (#6457)", abbreviation="TDD6457")
+        loaded_db.add_all([div_c, div_d])
+        loaded_db.flush()
+        alt_c = User(
+            email="alt-c-6457@example.com",
+            first_name="Alt",
+            last_name="Charlie",
+            division=div_c.id,
+            status=UserStatus.ACTIVE,
+        )
+        po_no_div = User(
+            email="po-no-div-6457@example.com",
+            first_name="PO",
+            last_name="NoDivision",
+            division=None,
+            status=UserStatus.ACTIVE,
+        )
+        loaded_db.add_all([po_a, po_b, alt_c, po_no_div])
         loaded_db.flush()
 
         agreement_a = ContractAgreement(
@@ -2245,7 +2278,25 @@ class TestAgreementDivisionFilter:
             agreement_type=AgreementType.CONTRACT,
             project_officer_id=None,
         )
-        loaded_db.add_all([agreement_a, agreement_b, agreement_no_po])
+        # Primary COR has no division; the alternate COR is in Division C.
+        agreement_alt_only = ContractAgreement(
+            name="Division Filter - Agreement Alternate Only (#6457)",
+            agreement_type=AgreementType.CONTRACT,
+            project_officer_id=po_no_div.id,
+            alternate_project_officer_id=alt_c.id,
+        )
+        loaded_db.add_all([agreement_a, agreement_b, agreement_no_po, agreement_alt_only])
+        loaded_db.flush()
+
+        # Agreement B's BLI sits on a seeded CAN, so its portfolio's division differs from its COR's.
+        seeded_can = loaded_db.scalars(select(CAN).where(CAN.portfolio_id.isnot(None)).limit(1)).first()
+        bli_b = ContractBudgetLineItem(
+            agreement_id=agreement_b.id,
+            can_id=seeded_can.id,
+            status=BudgetLineItemStatus.PLANNED,
+            line_description="Division Filter - BLI B (#6457)",
+        )
+        loaded_db.add(bli_b)
         loaded_db.commit()
 
         data = {
@@ -2255,20 +2306,32 @@ class TestAgreementDivisionFilter:
             "agreement_b_id": agreement_b.id,
             "agreement_no_po_id": agreement_no_po.id,
             "awarding_entity_a": agreement_a.awarding_entity_id,
+            "div_c_id": div_c.id,
+            "div_d_id": div_d.id,
+            "po_a_id": po_a.id,
+            "agreement_alt_only_id": agreement_alt_only.id,
+            "agreement_b_portfolio_division_id": seeded_can.portfolio.division_id,
         }
 
         yield data
 
+        loaded_db.delete(bli_b)
+        loaded_db.flush()
         loaded_db.delete(agreement_a)
         loaded_db.delete(agreement_b)
         loaded_db.delete(agreement_no_po)
+        loaded_db.delete(agreement_alt_only)
         loaded_db.delete(po_a)
         loaded_db.delete(po_b)
+        loaded_db.delete(alt_c)
+        loaded_db.delete(po_no_div)
         # Flush user deletes before removing divisions: User.division is a bare FK column
         # with no ORM relationship, so SQLAlchemy cannot infer the delete ordering itself.
         loaded_db.flush()
         loaded_db.delete(div_a)
         loaded_db.delete(div_b)
+        loaded_db.delete(div_c)
+        loaded_db.delete(div_d)
         loaded_db.commit()
 
     def test_no_division_filter_returns_all(self, loaded_db, app_ctx, division_filter_data):
@@ -2351,3 +2414,189 @@ class TestAgreementDivisionFilter:
 
         assert results == []
         assert metadata["count"] == 0
+
+    def test_division_on_alternate_cor_only_is_excluded(self, loaded_db, app_ctx, division_filter_data):
+        """Only the primary COR's division counts; an alternate COR's division never matches (#6457)."""
+        service = AgreementsService(loaded_db)
+        data = {"division": [division_filter_data["div_c_id"]], "limit": [1000]}
+        results, _ = service.get_list([ContractAgreement], data)
+
+        assert division_filter_data["agreement_alt_only_id"] not in {a.id for a in results}
+
+    def test_cor_without_division_excluded_only_when_filtering(self, loaded_db, app_ctx, division_filter_data):
+        """An agreement whose primary COR has no division appears unfiltered but never under a filter."""
+        service = AgreementsService(loaded_db)
+        unfiltered, _ = service.get_list([ContractAgreement], {"limit": [1000]})
+        filtered, _ = service.get_list(
+            [ContractAgreement],
+            {
+                "division": [division_filter_data[k] for k in ("div_a_id", "div_b_id", "div_c_id")],
+                "limit": [1000],
+            },
+        )
+
+        assert division_filter_data["agreement_alt_only_id"] in {a.id for a in unfiltered}
+        assert division_filter_data["agreement_alt_only_id"] not in {a.id for a in filtered}
+
+    def test_portfolio_division_does_not_match(self, loaded_db, app_ctx, division_filter_data):
+        """An agreement funded from a portfolio in the chosen division is excluded when its COR isn't in it."""
+        service = AgreementsService(loaded_db)
+        data = {"division": [division_filter_data["agreement_b_portfolio_division_id"]], "limit": [1000]}
+        results, _ = service.get_list([ContractAgreement], data)
+
+        assert division_filter_data["agreement_b_id"] not in {a.id for a in results}
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    def test_division_and_only_my_together_is_intersection(
+        self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx, division_filter_data
+    ):
+        """Division narrows "My Agreements"; it never adds agreements the user isn't associated with."""
+        mock_user = MagicMock()
+        mock_user.id = division_filter_data["po_a_id"]
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        both_divisions = [division_filter_data["div_a_id"], division_filter_data["div_b_id"]]
+        results, metadata = service.get_list(
+            [ContractAgreement], {"division": both_divisions, "only_my": [True], "limit": [1000]}
+        )
+
+        assert {a.id for a in results} == {division_filter_data["agreement_a_id"]}
+        assert metadata["count"] == 1
+
+    @pytest.fixture()
+    def portfolio_fy_combination_data(self, loaded_db, division_filter_data):
+        """Three agreements spread across two COR divisions and two portfolios, each with one FY 2043 BLI.
+
+        | Agreement | COR's division | Portfolio | BLI amount |
+        |-----------|----------------|-----------|------------|
+        | match     | A              | P1        | 100        |
+        | other_pf  | A              | P2        | 200        |
+        | other_div | B              | P1        | 400        |
+
+        None of them has a procurement shop, so their fees are 0.
+        """
+        cans = loaded_db.scalars(select(CAN).where(CAN.portfolio_id.isnot(None)).order_by(CAN.id)).all()
+        can_p1 = cans[0]
+        can_p2 = next(can for can in cans if can.portfolio_id != can_p1.portfolio_id)
+        po_b_id = loaded_db.get(ContractAgreement, division_filter_data["agreement_b_id"]).project_officer_id
+
+        agreements, blis = {}, []
+        for key, po_id, can, amount in (
+            ("match", division_filter_data["po_a_id"], can_p1, 100),
+            ("other_pf", division_filter_data["po_a_id"], can_p2, 200),
+            ("other_div", po_b_id, can_p1, 400),
+        ):
+            agreement = ContractAgreement(
+                name=f"Division Filter - Combination {key} (#6457)",
+                agreement_type=AgreementType.CONTRACT,
+                project_officer_id=po_id,
+            )
+            loaded_db.add(agreement)
+            loaded_db.flush()
+            blis.append(
+                ContractBudgetLineItem(
+                    agreement_id=agreement.id,
+                    can_id=can.id,
+                    status=BudgetLineItemStatus.PLANNED,
+                    amount=amount,
+                    date_needed=date(2043, 1, 15),  # FY 2043
+                    line_description=f"Division Filter - Combination BLI {key} (#6457)",
+                )
+            )
+            agreements[key] = agreement
+        loaded_db.add_all(blis)
+        loaded_db.commit()
+
+        yield {
+            "p1_id": can_p1.portfolio_id,
+            **{f"{key}_id": agreement.id for key, agreement in agreements.items()},
+        }
+
+        # get_list() leaves these BLIs partially loaded (base-class columns only), so reload them
+        # before deleting; otherwise versioning can't read the subclass columns during the flush.
+        loaded_db.expire_all()
+        for bli in blis:
+            loaded_db.delete(bli)
+        loaded_db.flush()
+        for agreement in agreements.values():
+            loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    def test_division_with_portfolio_and_fiscal_year_is_intersection(
+        self, loaded_db, app_ctx, division_filter_data, portfolio_fy_combination_data
+    ):
+        """COR's division, portfolio and fiscal year are independent; results must match all of them."""
+        service = AgreementsService(loaded_db)
+        combination_ids = {portfolio_fy_combination_data[k] for k in ("match_id", "other_pf_id", "other_div_id")}
+
+        def matching(extra_filters):
+            data = {"division": [division_filter_data["div_a_id"]], "limit": [1000], **extra_filters}
+            results, _ = service.get_list([ContractAgreement], data)
+            return {a.id for a in results} & combination_ids
+
+        portfolio = {"portfolio": [portfolio_fy_combination_data["p1_id"]]}
+        assert matching(portfolio) == {portfolio_fy_combination_data["match_id"]}
+        assert matching({**portfolio, "fiscal_year": [2043]}) == {portfolio_fy_combination_data["match_id"]}
+        assert matching({**portfolio, "fiscal_year": [2044]}) == set()
+
+    def test_division_count_totals_and_paging_cover_only_filtered_set(
+        self, loaded_db, app_ctx, division_filter_data, portfolio_fy_combination_data
+    ):
+        """Count, summary totals and paging are computed over the COR-division-filtered set only."""
+        service = AgreementsService(loaded_db)
+        # Division A: agreement A (no BLIs) plus the match ($100) and other_pf ($200) combination agreements.
+        expected_ids = {
+            division_filter_data["agreement_a_id"],
+            portfolio_fy_combination_data["match_id"],
+            portfolio_fy_combination_data["other_pf_id"],
+        }
+        division_a = {"division": [division_filter_data["div_a_id"]]}
+
+        _, metadata = service.get_list([ContractAgreement], {**division_a, "limit": [1000], "offset": [0]})
+
+        assert metadata["count"] == 3
+        totals = metadata["totals"]
+        assert totals["total_agreements_count"] == 3
+        assert totals["type_counts"] == {"CONTRACT": 3}
+        assert totals["total_contract_amount"] == 300.0  # other_div's $400 is excluded
+
+        first_page, first_meta = service.get_list([ContractAgreement], {**division_a, "limit": [2], "offset": [0]})
+        second_page, second_meta = service.get_list([ContractAgreement], {**division_a, "limit": [2], "offset": [2]})
+
+        assert len(first_page) == 2
+        assert len(second_page) == 1
+        assert {a.id for a in first_page} | {a.id for a in second_page} == expected_ids
+        assert first_meta["count"] == second_meta["count"] == 3
+        assert first_meta["totals"] == second_meta["totals"] == totals
+
+    def test_filter_options_cor_divisions_only_include_primary_cors(self, loaded_db, app_ctx, division_filter_data):
+        """Offered COR divisions are those with a primary COR on at least one agreement (#6457)."""
+        service = AgreementsService(loaded_db)
+        cor_division_ids = {d["id"] for d in service.get_filter_options({})["cor_divisions"]}
+
+        assert division_filter_data["div_a_id"] in cor_division_ids
+        assert division_filter_data["div_b_id"] in cor_division_ids
+        assert division_filter_data["div_c_id"] not in cor_division_ids  # alternate COR only
+        assert division_filter_data["div_d_id"] not in cor_division_ids  # no COR at all
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    def test_filter_options_cor_divisions_respect_only_my(
+        self, mock_get_user_service, loaded_db, app_ctx, division_filter_data
+    ):
+        """With only_my, offered COR divisions come only from the user's own agreements."""
+        mock_user = MagicMock()
+        mock_user.id = division_filter_data["po_a_id"]
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_service.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        cor_division_ids = {d["id"] for d in service.get_filter_options({"only_my": [True]})["cor_divisions"]}
+
+        assert division_filter_data["div_a_id"] in cor_division_ids
+        assert division_filter_data["div_b_id"] not in cor_division_ids

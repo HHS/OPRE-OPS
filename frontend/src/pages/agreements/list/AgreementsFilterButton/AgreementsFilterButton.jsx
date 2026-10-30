@@ -9,6 +9,7 @@ import AgreementNameComboBox from "../../../../components/Agreements/AgreementNa
 import ContractNumberComboBox from "../../../../components/Agreements/ContractNumberComboBox";
 import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
+import FilterComboBox from "../../../../components/UI/Form/FilterComboBox";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
 /**
@@ -37,6 +38,8 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         setContractNumber,
         awardType,
         setAwardType,
+        division,
+        setDivision,
         applyFilter,
         resetFilter
     } = useAgreementsFilterButton(filters, setFilters, showModal);
@@ -140,6 +143,22 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedAwardTypes={setAwardType}
                 legendClassname={legendStyles}
                 defaultString={""}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
+            />
+        </fieldset>,
+        <fieldset
+            key="corDivisionField"
+            className={`margin-top-105 ${fieldStyles}`}
+        >
+            {/* Label is a placeholder pending UX (#6457); it must stay distinct from the portfolio's division. */}
+            <FilterComboBox
+                label="COR's Division"
+                namespace="cor-division-combobox"
+                options={agreementFilterOptions?.cor_divisions ?? []}
+                selected={division}
+                setSelected={setDivision}
+                optionText={(division) => division.name}
+                legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>
