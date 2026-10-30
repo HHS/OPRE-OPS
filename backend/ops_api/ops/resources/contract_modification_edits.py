@@ -3,8 +3,9 @@
 from typing import Type
 
 from flask import Response, current_app, request
+from flask_jwt_extended import get_current_user
 
-from models import Agreement, ContractModificationRequest, OpsEventType
+from models import Agreement, ContractModificationRequest, ContractModificationRequestStatus, OpsEventType
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -63,10 +64,18 @@ class AgreementContractModificationsAPI(BaseItemAPI):
         GET /agreements/<int:id>/contract-modifications/
 
         Returns the agreement's contract modification requests, newest first, shaped as
-        ``{"data": [ {request}, ... ]}``.
+        ``{"data": [ {request}, ... ]}``. The request that is in review has ``can_review`` true
+        when the current user may approve/decline it.
         """
-        requests = ContractModificationRequestService(current_app.db_session).get_for_agreement(id)
-        return make_response_with_headers({"data": ContractModificationRequestSchema(many=True).dump(requests)})
+        service = ContractModificationRequestService(current_app.db_session)
+        requests = service.get_for_agreement(id)
+        data = ContractModificationRequestSchema(many=True).dump(requests)
+        user = get_current_user()
+        for dumped, mod_request in zip(data, requests):
+            dumped["can_review"] = mod_request.status == ContractModificationRequestStatus.IN_REVIEW and (
+                service.can_review(mod_request, user)
+            )
+        return make_response_with_headers({"data": data})
 
     @error_simulator
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)

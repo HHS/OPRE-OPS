@@ -418,6 +418,26 @@ def test_approve_creates_the_mod_attaches_edits_and_executes_budget_lines(
     assert _submit(basic_user_auth_client, agreement.id).status_code == 400  # nothing pending
 
 
+def test_approve_with_only_budget_lines_tags_mod_as_as_is(
+    modified_loe_enabled,  # noqa: F811
+    basic_user_auth_client,
+    division_director_auth_client,
+    loaded_db,
+    test_can,
+    make_agreement,  # noqa: F811
+):
+    """A pure "as is" execution (#1008) -- no edits bundled -- tags the mod AS_IS, not MODIFIED_LOE."""
+    agreement, _ = make_agreement(test_can)
+    executable = _add_bli(loaded_db, agreement, test_can)
+    request_id = _submit(basic_user_auth_client, agreement.id, budget_line_item_ids=[executable.id]).json["id"]
+
+    response = _review_mod(division_director_auth_client, request_id)
+
+    assert response.status_code == 200, response.json
+    mod = loaded_db.get(AgreementMod, response.json["agreement_mod_id"])
+    assert mod.mod_type == ModType.AS_IS
+
+
 def test_decline_returns_edits_to_pending(
     awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, app_ctx
 ):
@@ -493,6 +513,40 @@ def test_get_requests_for_agreement_newest_first(
     assert response.status_code == 200
     assert [r["id"] for r in response.json["data"]] == [second_id, first_id]
     assert [r["status"] for r in response.json["data"]] == ["IN_REVIEW", "DECLINED"]
+
+
+def test_get_requests_can_review_is_true_only_for_an_authorized_director_on_the_in_review_request(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, division_6_director_auth_client
+):
+    agreement, _, _ = awarded_with_edit
+    in_review_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    by_client = {
+        "director": division_director_auth_client,
+        "submitter": basic_user_auth_client,
+        "unrelated_director": division_6_director_auth_client,
+    }
+    can_review_by_client = {
+        name: next(
+            r["can_review"]
+            for r in client.get(url_for("api.agreements-contract-modifications", id=agreement.id)).json["data"]
+            if r["id"] == in_review_id
+        )
+        for name, client in by_client.items()
+    }
+
+    assert can_review_by_client == {"director": True, "submitter": False, "unrelated_director": False}
+
+    # Once reviewed, even the authorized director no longer sees review controls for it.
+    _review_mod(division_director_auth_client, in_review_id, "DECLINE")
+    reviewed = next(
+        r
+        for r in division_director_auth_client.get(
+            url_for("api.agreements-contract-modifications", id=agreement.id)
+        ).json["data"]
+        if r["id"] == in_review_id
+    )
+    assert reviewed["can_review"] is False
 
 
 def test_agreement_notifications_include_contract_modification_requests(

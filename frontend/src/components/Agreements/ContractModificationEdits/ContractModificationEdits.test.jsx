@@ -11,11 +11,14 @@ import ContractModificationEdits from "./ContractModificationEdits";
 const mockNavigate = vi.fn();
 const mockDismissNotification = vi.fn();
 
+const mockReviewContractModification = vi.fn();
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementContractModificationEditsByIdQuery: vi.fn(),
     useGetAgreementContractModificationsByIdQuery: vi.fn(),
     useGetNotificationsByUserIdAndAgreementIdQuery: vi.fn(),
-    useDismissNotificationMutation: () => [mockDismissNotification]
+    useDismissNotificationMutation: () => [mockDismissNotification],
+    useReviewContractModificationMutation: () => [mockReviewContractModification, { isLoading: false }]
 }));
 
 vi.mock("react-redux", () => ({
@@ -163,6 +166,23 @@ describe("ContractModificationEdits", () => {
         expect(isDisabledWithReachableTooltip("Start modification")).toBe(true);
         expect(screen.getByRole("heading", { name: "Contract Modification In Review" })).toBeInTheDocument();
         expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
+    });
+
+    it("shows the Division Director's review card instead of the plain alert when they can review it", () => {
+        mockQuery({ data: [{ ...AMOUNT_EDIT, in_review: true }] });
+        mockRequests([
+            { id: 9, status: "IN_REVIEW", can_review: true, requestor_notes: null, edits: [], budget_line_item_ids: [] }
+        ]);
+
+        render(
+            <ContractModificationEdits
+                agreementId={42}
+                isAgreementEditable={true}
+            />
+        );
+
+        expect(screen.getByRole("heading", { name: "Contract Modification Pending Your Review" })).toBeInTheDocument();
+        expect(screen.queryByRole("heading", { name: "Contract Modification In Review" })).toBeNull();
     });
 
     it("shows the submitter a declined modification with the Director's notes, and dismisses it", async () => {
