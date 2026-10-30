@@ -10521,6 +10521,13 @@ components:
               $ref: "#/components/schemas/ProcurementShop"
             display_name:
               type: string
+            project_officer_name:
+              type: string
+              nullable: true
+              description: >-
+                Display name of the agreement's primary COR (project officer): their full name, or their email
+                when they have no name. Null when the agreement has no COR.
+              example: Jane Doe
             is_awarded:
               type: boolean
               nullable: true

@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/agreements-cor-division-filter  # all code work for the issue lands here (see "Progress")
-status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). T1 and the T3 backend are done on the branch; the draft PR has no description yet.
+status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the T1 frontend are done and pushed; what is left is mostly frontend (see "Pick up here"). The draft PR has no description yet.
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -130,21 +130,50 @@ separate branches.
   field makes the API tests fail (mutation-checked).
 - **All green as of 2026-10-30:** backend full suite (2,700 passed, 9 skipped), lint.
 
-### Pick up here, in order
-1. ~~T1 test gap: totals and paging~~ (done 2026-10-30)
-2. ~~T3 backend: Budget Lines filter~~ (done 2026-10-30)
-3. **T2 backend: COR name on the Agreements list.** Add `project_officer_name` (null-safe) to
-   `AgreementListResponse`, eager-load `project_officer` in `_get_page_agreements`, add tests, and update
-   `openapi.yml`. Sorting by COR waits for the UX answer (Q4).
-4. **Frontend, if done on this branch** (otherwise split into sub-tasks):
-   - T3: the Budget Lines modal and tags; **add `division` to the destructured key list in `getBudgetLineItems`
-     (`opsAPI.js:377-387`)**; export.
-   - T2: a COR column.
-   - T4: relabel the dashboard filter, and switch its options to `/agreements-filters/` `cor_divisions` (Q3).
-   - The screen-reader announcer, shared across list pages, whose wording comes from UX.
-5. **Before release:** run T0 (CORs without a division).
-6. **When ready for review:** write the PR description. It must not use `Closes`/`Fixes`; call out the
-   placeholder label and the deferred announcer. Then run `/ops-pr-review`.
+### Done on the branch (T2 backend: COR name on the Agreements list, 2026-10-30)
+- `AgreementListResponse.project_officer_name`: the primary COR's `display_name` (full name, else email; the same
+  value the export's "COR" column uses), `None` with no COR. Every list subclass inherits it.
+- `_get_page_agreements` eager-loads `Agreement.project_officer` (`joinedload`).
+- `openapi.yml` documents the field.
+- Tests: an API test (named COR, COR with no name → email, no COR → null) and
+  `TestGetPageAgreements.test_eager_loads_project_officer`, which fails without the `joinedload` (mutation-checked).
+- Not done: sorting by COR (waits on Q4); switching the export's per-row `useLazyGetUserQuery` lookups to the new
+  field (frontend, no UX dependency).
+
+### Pick up here, in order (updated 2026-10-30)
+**All backend work is done and pushed** (T1, T3 backend, T2 backend). Everything left is frontend, the T0 data
+check, and the PR write-up. Done items: T1 totals/paging test, T3 backend, T2 backend (see "Done on the branch").
+
+**Can start now (no UX dependency):**
+1. **T3 frontend: Budget Lines filter.** Reuse T1's pattern, including its placeholder "COR's Division" label.
+   - `sessionUISlice`: a `budgetLines.filters.division: []` default.
+   - `getBudgetLineItems` (`opsAPI.js:377-387`): **add `division` to the destructured key list** (it is dropped
+     otherwise), and map Division objects to ids as `getAgreements` does. Add an `opsAPI.test.js` query-string test.
+   - `BLIFilterButton.jsx` (modal buffer `:23-118`): a `FilterComboBox` fed by `cor_divisions` from
+     `/budget-line-items-filters/`; a cleared combobox stores `[]`.
+   - `BLIFilterTags.jsx`: the tag group, the removal case (`:19-75`) and the group order (`:162+`).
+   - Export: check that `handleExport` (`budgetLines.helpers.js:465+`) passes the filter through.
+   - Tests: the same set as T1 (hook apply/reset/sync/null, tags, keyboard component test, page query, export),
+     plus a thin Cypress journey in the Budget Lines spec.
+2. **T2 frontend, export only:** switch the export's per-row `useLazyGetUserQuery` lookups
+   (`AgreementsList.jsx:215-228`) to `agreement.project_officer_name`, keeping the `"TBD"` fallback; update the
+   export test.
+
+**Blocked on UX / PO answers (§3):**
+3. **T2 frontend: COR column** on the Agreements table (`AgreementsTable.constants.js`, `AgreementTableRow.jsx`)
+   using `project_officer_name`. Placement and sortability wait on Q4; a sortable column also needs a backend sort.
+4. **T4: Procurement Dashboard.** Relabel "Division" (`ProcurementDashboardFilterButton.jsx:53-67`) once UX picks
+   the name. If Q3 = yes, source options from `/agreements-filters/` `cor_divisions` instead of `/divisions/`.
+   Update `ProcurementDashboardPage.test.jsx` and `procurementDashboard.cy.js`.
+5. **Final filter label:** replace the "COR's Division" placeholder (Agreements, and Budget Lines once built).
+6. **Screen-reader announcer** (`role="status"`) for filter changes and result counts, shared across the list
+   pages; the wording comes from UX.
+
+**Before release / review:**
+7. **T0:** run the CORs-without-a-division query (§2, T0) on staging and prod and share the counts with the PO.
+8. **PR description** for the draft PR. Don't use `Closes`/`Fixes`. Call out the placeholder label, the deferred
+   announcer, and any UX-blocked items still open. Then run `/ops-pr-review`.
+9. Ask the issue author to remove the stale Projects/Reporting testing text (Q5), and review the FigJam diagram (Q6).
 
 ### Known issues that are not acceptance-criteria gaps
 - The issue's Testing section still lists Projects/Reporting items; ask the author to remove them (Q5).

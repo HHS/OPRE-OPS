@@ -1807,6 +1807,18 @@ class TestGetPageAgreements:
         )
         assert float(shop.fee_percentage) > 0, "fee_percentage should be non-zero for shop 3"
 
+    def test_eager_loads_project_officer(self, loaded_db):
+        """The list serializes project_officer_name per row; without the eager load that's one query per agreement."""
+        from sqlalchemy import inspect as sa_inspect
+
+        from models import Agreement
+
+        loaded_db.expire_all()  # drop identity-map copies so the result reflects this query's loader options
+        agreement_id = loaded_db.scalar(select(Agreement.id).where(Agreement.project_officer_id.isnot(None)).limit(1))
+        result = _get_page_agreements(loaded_db, [agreement_id])
+
+        assert "project_officer" not in sa_inspect(result[0]).unloaded
+
 
 def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
     """Helper to create a mock BLI for procurement overview/step summary tests."""

@@ -35,6 +35,7 @@ from models import (
     ResearchProject,
     ServiceRequirementType,
     User,
+    UserStatus,
     Vendor,
 )
 from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
@@ -994,6 +995,42 @@ def test_agreements_with_unknown_division_returns_empty(auth_client, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"division": 999999})
     assert response.status_code == 200
     assert response.json["data"] == []
+
+
+def test_agreements_list_includes_project_officer_name(auth_client, loaded_db, app_ctx):
+    """The list carries the primary COR's display name (#6457), falling back to email, and None with no COR."""
+    named_po = User(email="named-cor-6457@example.com", first_name="Named", last_name="Cor", status=UserStatus.ACTIVE)
+    unnamed_po = User(email="unnamed-cor-6457@example.com", status=UserStatus.ACTIVE)
+    loaded_db.add_all([named_po, unnamed_po])
+    loaded_db.flush()
+    agreements = {
+        key: ContractAgreement(
+            name=f"COR Name (#6457) - {key}", agreement_type=AgreementType.CONTRACT, project_officer_id=po_id
+        )
+        for key, po_id in (("named", named_po.id), ("unnamed", unnamed_po.id), ("no_cor", None))
+    }
+    loaded_db.add_all(agreements.values())
+    loaded_db.commit()
+
+    try:
+        response = auth_client.get(
+            url_for("api.agreements-group"), query_string={"name": [a.name for a in agreements.values()]}
+        )
+        assert response.status_code == 200
+        names_by_id = {item["id"]: item["project_officer_name"] for item in response.json["data"]}
+
+        assert names_by_id == {
+            agreements["named"].id: "Named Cor",
+            agreements["unnamed"].id: "unnamed-cor-6457@example.com",
+            agreements["no_cor"].id: None,
+        }
+    finally:
+        for agreement in agreements.values():
+            loaded_db.delete(agreement)
+        loaded_db.flush()
+        loaded_db.delete(named_po)
+        loaded_db.delete(unnamed_po)
+        loaded_db.commit()
 
 
 def test_agreements_with_invalid_division_returns_400(auth_client, app_ctx):

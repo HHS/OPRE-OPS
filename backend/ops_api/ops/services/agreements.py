@@ -1421,6 +1421,7 @@ def _get_page_agreements(
         selectinload(Agreement.procurement_actions),
         selectinload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
         joinedload(Agreement.project),
+        joinedload(Agreement.project_officer),
         selectinload(Agreement.team_members),
         selectinload(Agreement.services_components),
     ]
