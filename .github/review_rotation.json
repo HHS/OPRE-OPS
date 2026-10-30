@@ -1,9 +1,9 @@
 {
-    "_comment": "Round-robin reviewer rotation used by review_rotation.yml. Adding `label` to a PR requests a review from the next available pool member; the PR author can comment /reroll to pick someone else. A member with only the \"ux\" role (no \"engineering\") is skipped unless the PR touches one of visual_path_prefixes -- see eligible_pool() in review_rotation.py. A pool member counts as off for the day when a team-calendar event today has one of their calendar_names AND an off word (see OFF_WORDS in scripts/review_rotation/review_rotation.py) in its title, and it's either all-day or their off events that day add up to at least min_off_hours (so a short appointment doesn't count). Slack IDs come from slack_user_map.json.",
+    "_comment": "Round-robin reviewer rotation used by review_rotation.yml. Adding `label` to a PR requests a review from the next available pool member; the PR author can comment /reroll to pick someone else. A member with only the \"ux\" role (no \"engineering\") is skipped unless the PR touches one of visual_path_prefixes -- see eligible_pool() in review_rotation.py. visual_path_prefixes is EMPTY right now, which disables UX picks entirely (nothing ever matches): UX reviewers can't see the Slack channel this posts to, and PR preview links aren't working yet, so reviewing would mean checking out the branch locally. Restore [\"frontend/src/\"] once both are resolved. A pool member counts as off for the day when a team-calendar event today has one of their calendar_names AND an off word (see OFF_WORDS in scripts/review_rotation/review_rotation.py) in its title, and it's either all-day or their off events that day add up to at least min_off_hours (so a short appointment doesn't count). Slack IDs come from slack_user_map.json.",
     "label": "ready-for-human-review",
     "timezone": "America/New_York",
     "min_off_hours": 4,
-    "visual_path_prefixes": ["frontend/src/"],
+    "visual_path_prefixes": [],
     "pool": [
         { "github": "andressacurvelo", "calendar_names": ["Andressa"], "roles": ["ux"] },
         { "github": "santi-3rd", "calendar_names": ["Guillermo"], "roles": ["engineering"] },
