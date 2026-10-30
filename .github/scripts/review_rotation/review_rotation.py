@@ -119,7 +119,7 @@ def parse_history(comment_body: str) -> list[str]:
     return [p for p in picked if isinstance(p, str)] if isinstance(picked, list) else []
 
 
-def render_comment(picked: list[str], off: set[str], current: str | None, reroll_found_nobody: bool = False) -> str:
+def render_comment(picked: list[str], off: set[str], current: str | None, repo: str, reroll_found_nobody: bool = False) -> str:
     marker = f"<!-- review-rotation: {json.dumps({'picked': picked})} -->"
     lines = [marker]
     if current:
@@ -128,6 +128,13 @@ def render_comment(picked: list[str], off: set[str], current: str | None, reroll
             lines.append(f"The last `/reroll` found nobody else available, so @{current} stays the reviewer.")
     else:
         lines.append("**Reviewer:** nobody in the rotation is available right now. Please pick a reviewer manually.")
+    # Points at the same checklist for every pick, so the reviewer doesn't have to guess what's
+    # left for them to do on top of (or instead of) the AI review.
+    review_role_url = f"https://github.com/{repo}/blob/main/docs/REVIEW.md#the-human-reviewers-role"
+    lines.append(
+        f"**What to check:** intent — does this meet the linked issue's acceptance criteria? — and risk. "
+        f"Not a re-review of CI or AI findings. See [docs/REVIEW.md]({review_role_url})."
+    )
     # Backticks, not @, so skipped people don't get a GitHub notification.
     previous = [p for p in picked if p != current]
     if previous:
@@ -158,7 +165,7 @@ def build_slack_text(
     else:
         action = f"*{actor}* marked {link} ready for human review"
     if new_pick:
-        return f"{action} → {slack_mention(new_pick, slack_map)} is up"
+        return f"{action} → {slack_mention(new_pick, slack_map)} is up for intent + risk review"
     return f"{action}, but nobody in the rotation is available. Please pick a reviewer manually."
 
 
@@ -270,7 +277,7 @@ def main() -> int:
     # With no replacement available, a reroll keeps the current pick rather than leaving nobody.
     current = new_pick or old_pick
 
-    body = render_comment(picked, off, current, reroll_found_nobody=mode == "reroll" and not new_pick)
+    body = render_comment(picked, off, current, repo, reroll_found_nobody=mode == "reroll" and not new_pick)
     if comment:
         gh.request("PATCH", f"/issues/comments/{comment['id']}", {"body": body})
     else:

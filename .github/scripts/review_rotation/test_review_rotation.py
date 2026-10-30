@@ -117,13 +117,18 @@ class TestChooseReviewer:
 
 class TestComment:
     def test_history_round_trips(self):
-        body = rr.render_comment(["bob", "carol"], {"alice"}, "carol")
+        body = rr.render_comment(["bob", "carol"], {"alice"}, "carol", "o/r")
         assert rr.parse_history(body) == ["bob", "carol"]
 
     def test_only_current_pick_is_mentioned(self):
-        body = rr.render_comment(["bob", "carol"], {"alice"}, "carol")
+        body = rr.render_comment(["bob", "carol"], {"alice"}, "carol", "o/r")
         assert "@carol" in body
         assert "@bob" not in body and "@alice" not in body
+
+    def test_includes_intent_and_risk_reminder_with_review_md_link(self):
+        body = rr.render_comment(["bob"], set(), "bob", "HHS/OPRE-OPS")
+        assert "intent" in body and "risk" in body
+        assert "https://github.com/HHS/OPRE-OPS/blob/main/docs/REVIEW.md#the-human-reviewers-role" in body
 
     def test_no_marker_means_no_history(self):
         assert rr.parse_history("just a normal comment") == []
@@ -224,7 +229,7 @@ def run(tmp_path, monkeypatch):
 
 
 def bot_comment(picked, current, comment_id=9):
-    return {"id": comment_id, "user": {"login": rr.BOT_LOGIN}, "body": rr.render_comment(picked, set(), current)}
+    return {"id": comment_id, "user": {"login": rr.BOT_LOGIN}, "body": rr.render_comment(picked, set(), current, "o/r")}
 
 
 def make_pr(number=4, author="dana", labels=("ready-for-human-review",), requested=()):
