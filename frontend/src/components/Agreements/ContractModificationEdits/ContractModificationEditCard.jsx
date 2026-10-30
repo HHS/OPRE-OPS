@@ -5,6 +5,7 @@ import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helper
 import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import TermTag from "../../ChangeRequests/TermTag";
 import Tag from "../../UI/Tag";
+import styles from "./ContractModificationEditCard.module.scss";
 
 /**
  * @typedef {Object} ContractModificationEdit
@@ -26,15 +27,6 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
     services_component_create: "Add SC"
 };
 
-// Columns from the Figma "MODs Review Card" (Requested by, Modification Type, BL ID / SC, Change To,
-// From, To, In Review). They're fr, not px, so they hit the Figma px at full width (850px for the
-// six fields) but shrink and wrap when the card is narrower, e.g. at 200% zoom. Tracks never go
-// below their content's minimum, so a value can't collapse under the In Review tag; From and To
-// keep their full width so an amount like $175,000.00 isn't split mid-number. The In Review column
-// has a fixed minimum so cards with and without the tag line up.
-const CARD_COLUMNS =
-    "148fr 166fr 132fr 115fr minmax(max-content, 134fr) minmax(max-content, 155fr) minmax(4.5rem, auto)";
-
 /**
  * One approved edit on an Awarded agreement that requires a contract modification.
  *
@@ -54,8 +46,7 @@ const ContractModificationEditCard = ({ edit }) => {
 
     return (
         <div
-            className="padding-205 bg-base-lightest border-1px border-base-light radius-md"
-            style={{ display: "grid", gridTemplateColumns: CARD_COLUMNS, alignItems: "start" }}
+            className={`padding-205 bg-base-lightest border-1px border-base-light radius-md ${styles.card}`}
             data-cy="contract-modification-edit-card"
         >
             <div className="font-12px">
