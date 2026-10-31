@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "130cecce00e754452ca20b6a527d1f06896c58799b3be8d613c0000c6892e23d"
+            "sha256": "43749db9adbd7b058e852f2fa72a6b3d6af415c5a81c88942b1edf3fdda320e1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2049,12 +2049,12 @@
         },
         "filelock": {
             "hashes": [
-                "sha256:301241438c57936ef93f4243a94f2559022268bfcf9b375a9a72eb0f8db8358e",
-                "sha256:c6d8663535e1650ee430507b4ffbac7b464dd64b7647ea0112a9f406499d163d"
+                "sha256:37d8fa4f8b5e9233612e68ab23bf64cae41771322c8797361088ae2895b12894",
+                "sha256:46ce42d27e5cdde09ee7197349663e97cb106679bd9e75db3a09679fbc7aa1a8"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==4.2.4"
+            "version": "==4.2.5"
         },
         "flake8": {
             "hashes": [
@@ -3137,11 +3137,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:47664602fbecad0a6efa561fb690d20dbc26875fe8aedf65ba362935df619bbb",
-                "sha256:f7f351c027d6632c30471124e1fdb6ac0fef9ccc5cbac1b34cb333431b1fc3e1"
+                "sha256:1dadfc59a8a5d7565b3d9270ae8fa71c065595352c4277b41c11ee6c222c4b91",
+                "sha256:83f009c1e8c5fc36869b5171755b291887bd2cade7965233cdfabd23d754720b"
             ],
             "markers": "python_version >= '3.11'",
-            "version": "==4.13.7"
+            "version": "==4.14.0"
         },
         "pluggy": {
             "hashes": [
@@ -3435,30 +3435,30 @@
         },
         "python-discovery": {
             "hashes": [
-                "sha256:5422f67e5f533bb02d7b73de1c422ed74037536fd869e05156c07565926ec68e",
-                "sha256:7f7c28568c8ec3d988d8bddbdbec8e65f08e8767e52f734e18b8b498549b9b70"
+                "sha256:252643f846e11e959ee6fb2f6adafad6822f860b7c1cf953360ea9a020c6de71",
+                "sha256:f484668953706f0b8815521ccf13811fa6ccdc4bd68cf3ef943594ad68a2ac86"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==1.6.7"
+            "version": "==1.7.0"
         },
         "python-engineio": {
             "hashes": [
-                "sha256:06e6759f849d7bf9360038ce91a6e171dd86422ed139e4f0faefd52f43d64bba",
-                "sha256:36588829409446492cbabfe8f5cdeb47a120b6f502ab34a0307acc632a4687c3"
+                "sha256:1a412e798a90c64fabe7b20798939ae6d4a03f34da8a33d5a21a25a8bbbc3612",
+                "sha256:745cb3c07701c719a2906439a00b67e44ef042904036568530a2c3a8cf18c89a"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==4.15.0"
+            "version": "==4.15.1"
         },
         "python-socketio": {
             "extras": [
                 "client"
             ],
             "hashes": [
-                "sha256:b5826fd2f8aa02e11347816349b74ac6b53e8a4f4e4b1cf1388e1aff19b7f3f4",
-                "sha256:c3bbfc4937dcfea7c4d1b182afa94d4a30335d153987e8f2078b344beacf95a0"
+                "sha256:2a3183d7172e5ff772b9c24ef94f1fdf84a09b746925c997b7687ae8017f7247",
+                "sha256:b9a2cc5d4f7155c107d60e6efe6d3f3000197f44b979ac4657641e8a211634fe"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==5.17.0"
+            "version": "==5.17.1"
         },
         "pytokens": {
             "hashes": [
@@ -3659,11 +3659,11 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:0d14a991689c67600316880eadc0a37b7690cb632e3b4ac67e2bc05b2b2e24a4",
-                "sha256:e79c90b8f601701599c25905e02839924fede2c798d52325670d24fbdaab74ee"
+                "sha256:dbd886e6e5689eb4dde6a9bbc478ad14b4fc8ed0852690d8273ccfb8c467f635",
+                "sha256:fb8c62c7c328e0238061c721068f06b7bc6bd10f7a0f5987195cef1008837ee6"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==21.15.1"
+            "version": "==21.15.2"
         },
         "wcwidth": {
             "hashes": [
