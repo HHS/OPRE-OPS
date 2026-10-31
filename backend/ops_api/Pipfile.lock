@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "43749db9adbd7b058e852f2fa72a6b3d6af415c5a81c88942b1edf3fdda320e1"
+            "sha256": "ebe5ef3720545a528f63add8192629103e5e624711efc7b34281c56fab7b2966"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -53,21 +53,21 @@
         },
         "azure-identity": {
             "hashes": [
-                "sha256:3c60d9682b3ac01507388d474cb5a5ffbe54152a96b6cdcaa7013da9315cf186",
-                "sha256:61b4538b87df10d2d6d44b77cd5ea28a8929fd4929d58b45bf3f230f7daba02e"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '3.9'",
-            "version": "==1.26.0"
-        },
-        "azure-storage-blob": {
-            "hashes": [
-                "sha256:0c0cb601d3462491d09ea96023cd791bb9dd4b173bf950daf3cff34ff47ba5b5",
-                "sha256:997b393cfcbdc4b186d5911790d91f80387f7edc12c4d73eab963a2d26e5b2a9"
+                "sha256:6a4c50e25e8e9a47b324a95ad024897e56cb3c6241e0094e93b126a2bf71edc5",
+                "sha256:92fd2a93c0d2f777dac6c04e5fd7d5734f6643582b983544ef66b4575844e46d"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==12.31.0"
+            "version": "==1.27.0"
+        },
+        "azure-storage-blob": {
+            "hashes": [
+                "sha256:0d6e5b860a1357efc602db04cfa7c9950ac86126edcf7db89320cde281555fe5",
+                "sha256:9e012d5f4ab658b7cb8a4581329d7a7aa2bf5f39b4d63baeefaae7f9e90fe6f0"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.10'",
+            "version": "==12.31.1"
         },
         "blinker": {
             "hashes": [
@@ -3435,11 +3435,11 @@
         },
         "python-discovery": {
             "hashes": [
-                "sha256:252643f846e11e959ee6fb2f6adafad6822f860b7c1cf953360ea9a020c6de71",
-                "sha256:f484668953706f0b8815521ccf13811fa6ccdc4bd68cf3ef943594ad68a2ac86"
+                "sha256:88beb57e51b919c30f303b053ec41359298ca349192035b0a802c76347ae96d7",
+                "sha256:fb65edfff3541b7ceb3a39be334a0f69f4cb5148287a053e1874748742fda93b"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==1.7.0"
+            "version": "==1.9.0"
         },
         "python-engineio": {
             "hashes": [
