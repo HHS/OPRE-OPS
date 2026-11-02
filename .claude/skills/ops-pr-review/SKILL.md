@@ -102,6 +102,13 @@ Base copies come from the **merge-base**, the commit the PR branched from, not t
 
 When the review is done, clean up with `git worktree remove --force /tmp/ops-pr-review-<n>/head && rm -rf /tmp/ops-pr-review-<n>`. If a run was interrupted and the directory is already gone, `git worktree prune` clears the stale entry.
 
+**Frontend data-flow and accessibility coverage.** The Flexion roster (`pragmatic-reviewer`, `software-architect-review`, `product-manager-reviewer`, `unit-test-reviewer`, the Azure devsecops/sre pair) has no reviewer dedicated to RTK Query cache consistency or accessibility — don't assume it's covered by default. When the diff touches `frontend/src/api/opsAPI.js` (a new or changed mutation) or adds a new interactive frontend component (a modal, a confirm/cancel flow, anything that can unmount after a successful action), fold these two checks into an existing reviewer's brief or spin up an extra `general-purpose` agent scoped to them:
+
+- **Cache-invalidation completeness:** for every new/changed mutation, list every query whose `providesTags` overlaps its domain, and confirm `invalidatesTags` covers all of them — compare against the closest sibling mutation for the same category of change (e.g. `updateChangeRequest` in `opsAPI.js` has a comment explaining why it invalidates `"Agreements"` beyond the obvious tags). Trace forward from "the backend state changed" to "which UI surfaces read that state, and will they refetch" — verifying the backend did the right thing isn't enough.
+- **Post-action lifecycle for new interactive components:** after a success or failure action, confirm success is actually communicated — a global/page-level alert with `role="status"`/`"alert"` if the component itself may unmount, not local-only state — and that keyboard focus lands somewhere sensible, not silently at `<body>`.
+
+Both were missed on PR #6479 by a review that used only the canned roster, then caught by a second review that added explicit "frontend" and "accessibility" lenses: `reviewContractModification` didn't invalidate `"Agreements"`, so the Budget Lines tab kept showing a stale status after a Director's approval; and the review card had no `.then()` at all, so a successful Approve/Decline gave zero feedback and dropped keyboard focus. Both were real S1s that survived skeptic verification.
+
 Invoke the `flexion-engineer-base:code-review-orchestrator` skill in the mode above and follow it, with these additions to every reviewer agent's launch brief and every skeptic's brief:
 
 1. **Include the path to `docs/REVIEW.md`** with an instruction to read all of it, plus the PR's scope and tier, and the acceptance criteria (or "not available").
