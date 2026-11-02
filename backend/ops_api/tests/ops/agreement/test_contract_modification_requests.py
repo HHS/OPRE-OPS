@@ -31,6 +31,7 @@ from models import (
     ServicesComponentChangeRequest,
     User,
 )
+from models.agreement_history import _services_components_added_phrase
 from models.utils.fiscal_year import get_current_fiscal_year
 from tests.ops.agreement.test_contract_modification_edits import (  # noqa: F401 (fixtures)
     BASIC_USER_ID,
@@ -267,6 +268,83 @@ def test_sc_addition_edit_is_attached_by_an_approved_modification(
     loaded_db.expire_all()
     assert loaded_db.get(type(sc_edit), sc_edit.id).agreement_mod_id == response.json["agreement_mod_id"]
     assert loaded_db.get(ServicesComponent, sc2_id).awaiting_add_approval is False
+
+
+def _approved_sc_addition(client, director_client, loaded_db, agreement, bli):
+    """Approve "Add SC2" for ``bli``, leaving its edit pending; returns that edit's id and SC name."""
+    sc2_id, change_request_id = _move_into_pending_sc(client, loaded_db, agreement, bli)
+    response = director_client.patch(
+        url_for("api.change-requests-item", id=change_request_id), json={"action": "APPROVE"}
+    )
+    assert response.status_code == 200, response.json
+    (sc_edit,) = [e for e in _edits(loaded_db, agreement.id) if e.services_component_id == sc2_id]
+    return sc_edit.id, sc_edit.new_value
+
+
+def _history(loaded_db, agreement_id, history_type):
+    return loaded_db.scalars(
+        select(AgreementHistory).where(
+            AgreementHistory.agreement_id == agreement_id, AgreementHistory.history_type == history_type
+        )
+    ).one()
+
+
+def test_submitted_sc_addition_edit_shows_in_review_and_is_named_in_history(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, _, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc_edit_id, sc_name = _approved_sc_addition(
+        basic_user_auth_client, division_director_auth_client, loaded_db, agreement, executable
+    )
+
+    response = _submit(basic_user_auth_client, agreement.id)
+
+    assert response.status_code == 201, response.json
+    assert sc_edit_id in {edit["id"] for edit in response.json["edits"]}
+    pending = {edit["id"]: edit for edit in _get_pending(basic_user_auth_client, agreement.id).json["data"]}
+    assert pending[sc_edit_id]["field"] == "services_component_create"
+    assert pending[sc_edit_id]["in_review"] is True
+    event = _latest_event(loaded_db, OpsEventType.START_CONTRACT_MODIFICATION)
+    assert event.event_details["services_components_added"] == [sc_name]
+    history = _history(loaded_db, agreement.id, AgreementHistoryType.CONTRACT_MODIFICATION_STARTED)
+    assert f"including 2 edits (adding {sc_name}) and 0 budget lines to execute." in history.history_message
+
+
+def test_declined_modification_leaves_the_sc_addition_edit_pending(
+    awarded_with_edit, basic_user_auth_client, division_director_auth_client, loaded_db, test_can, app_ctx
+):
+    agreement, _, _ = awarded_with_edit
+    executable = _executable_bli(loaded_db, agreement, test_can)
+    sc_edit_id, sc_name = _approved_sc_addition(
+        basic_user_auth_client, division_director_auth_client, loaded_db, agreement, executable
+    )
+    request_id = _submit(basic_user_auth_client, agreement.id).json["id"]
+
+    response = _review_mod(division_director_auth_client, request_id, action="DECLINE")
+
+    assert response.status_code == 200, response.json
+    pending = {edit["id"]: edit for edit in _get_pending(basic_user_auth_client, agreement.id).json["data"]}
+    assert pending[sc_edit_id]["in_review"] is False
+    history = _history(loaded_db, agreement.id, AgreementHistoryType.CONTRACT_MODIFICATION_DECLINED)
+    assert history.history_message.endswith(f"declined the contract modification. It included adding {sc_name}.")
+
+
+@pytest.mark.parametrize(
+    "names, expected",
+    [
+        ([], ""),
+        (["SC2"], "adding SC2"),
+        (["SC2", "OSC3"], "adding SC2 and OSC3"),
+        (["SC2", "SC3", "OSC4"], "adding SC2, SC3 and OSC4"),
+    ],
+)
+def test_services_components_added_phrase(names, expected):
+    event = OpsEvent(
+        event_type=OpsEventType.START_CONTRACT_MODIFICATION, event_details={"services_components_added": names}
+    )
+
+    assert _services_components_added_phrase(event) == expected
 
 
 def _approved_sc_addition_emptied(client, director_client, loaded_db, agreement, bli, sc1_id):
@@ -585,14 +663,47 @@ def test_modification_document_types_can_be_uploaded(
     loaded_db.commit()
 
 
-def test_seeded_contract_modification_edit_points_at_agreement_523s_planned_budget_line(loaded_db, app_ctx):
-    """The seed hard-codes the edit's budget_line_item_id (it has no FK); keep it pointing at 523's
-    Planned BLI if seed rows ahead of it change the ids the loader assigns."""
-    (edit,) = _edits(loaded_db, 523)
-    bli = loaded_db.get(ContractBudgetLineItem, edit.budget_line_item_id)
+def test_seeded_contract_modification_edits_cover_every_edit_type_on_agreement_523(loaded_db, app_ctx):
+    """Agreement 523 seeds one pending edit per type for manual testing. The seed hard-codes their
+    budget_line_item_id (it has no FK), so keep the BL edits pointing at 523's Planned BLI with
+    new values that match it, and the delete edit pointing at no budget line."""
+    edits = _edits(loaded_db, 523)
+    assert sorted(edit.field for edit in edits) == [
+        "amount",
+        "can_id",
+        "date_needed",
+        "delete",
+        "services_component_create",
+        "status",
+    ]
+    assert all(edit.agreement_mod_id is None for edit in edits)
+
+    by_field = {edit.field: edit for edit in edits}
+    bli = loaded_db.get(ContractBudgetLineItem, by_field["amount"].budget_line_item_id)
     assert bli is not None and bli.agreement_id == 523
     assert bli.status == BudgetLineItemStatus.PLANNED
-    assert float(bli.amount) == edit.new_value
+    for field in ("status", "date_needed", "can_id"):
+        assert by_field[field].budget_line_item_id == bli.id
+    assert float(bli.amount) == by_field["amount"].new_value
+    assert bli.can_id == by_field["can_id"].new_value
+    assert bli.date_needed.isoformat() == by_field["date_needed"].new_value
+    assert bli.status.name == by_field["status"].new_value
+    assert loaded_db.get(ContractBudgetLineItem, by_field["delete"].budget_line_item_id) is None
+
+
+def test_seeded_sc_addition_edit_points_at_agreement_523s_sc4(loaded_db, app_ctx):
+    """The seed hard-codes the "Add SC" edit's services_component_id (no FK) and SC4's frozen display
+    name; keep both matching SC4, which must stay free of budget lines and not awaiting approval."""
+    (edit,) = [e for e in _edits(loaded_db, 523) if e.services_component_id is not None]
+    sc = loaded_db.get(ServicesComponent, edit.services_component_id)
+    assert sc is not None and sc.agreement_id == 523 and sc.number == 4
+    assert edit.field == ServicesComponentChangeRequest.create_field_name
+    assert edit.new_value == sc.display_name
+    assert edit.agreement_mod_id is None
+    assert sc.awaiting_add_approval is False
+    assert not loaded_db.scalars(
+        select(ContractBudgetLineItem.id).where(ContractBudgetLineItem.services_component_id == sc.id)
+    ).all()
 
 
 @pytest.mark.parametrize("action", ["APPROVE", "DECLINE"])

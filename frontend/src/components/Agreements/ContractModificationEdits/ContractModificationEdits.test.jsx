@@ -317,6 +317,26 @@ describe("ContractModificationEdits", () => {
         expect(within(addCard).queryByText("From")).not.toBeInTheDocument();
     });
 
+    it("marks a Services Component addition In Review while its modification is in review", () => {
+        const scEdit = { ...AMOUNT_EDIT, budget_line_item_id: null, services_component_id: 31 };
+        mockQuery({
+            data: [
+                {
+                    ...scEdit,
+                    id: 5,
+                    field: "services_component_create",
+                    old_value: null,
+                    new_value: "OSC3",
+                    in_review: true
+                }
+            ]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        expect(within(getCards()[0]).getByText("In Review")).toBeInTheDocument();
+    });
+
     it("still offers Start modification when there are no edits, to execute Planned budget lines as-is", () => {
         mockQuery({ data: [] });
 

@@ -80,6 +80,28 @@ const renderPage = (overrides = {}) => {
 describe("StartModification", () => {
     beforeEach(() => vi.clearAllMocks());
 
+    it("summarizes a Services Component addition among the edits to modify", () => {
+        renderPage({
+            edits: [
+                {
+                    id: 5,
+                    modification_type: "MODIFIED_LOE",
+                    budget_line_item_id: null,
+                    services_component_id: 31,
+                    field: "services_component_create",
+                    old_value: null,
+                    new_value: "OSC3",
+                    requested_by: { id: 1, full_name: "First Last Name" },
+                    requested_on: "2026-10-01T00:00:00Z"
+                }
+            ]
+        });
+
+        expect(screen.getByText("OSC3")).toBeInTheDocument();
+        expect(screen.getByText("Add SC")).toBeInTheDocument();
+        expect(screen.queryByText("BL ID")).not.toBeInTheDocument();
+    });
+
     it("disables Send to Approval until there is something to modify", () => {
         renderPage();
 

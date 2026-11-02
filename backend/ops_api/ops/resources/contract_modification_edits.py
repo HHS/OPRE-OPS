@@ -4,7 +4,7 @@ from typing import Type
 
 from flask import Response, current_app, request
 
-from models import Agreement, ContractModificationRequest, OpsEventType
+from models import Agreement, ContractModificationRequest, OpsEventType, ServicesComponentChangeRequest
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -20,6 +20,11 @@ from ops_api.ops.services.contract_modification_requests import ContractModifica
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
+
+
+def _services_components_added(edits: list[dict]) -> list[str]:
+    """Names of the Services Components added by the given serialized edits, for history (OPS-6440)."""
+    return [edit["new_value"] for edit in edits if edit["field"] == ServicesComponentChangeRequest.create_field_name]
 
 
 class AgreementContractModificationEditsAPI(BaseItemAPI):
@@ -97,6 +102,7 @@ class AgreementContractModificationsAPI(BaseItemAPI):
                     "agreement_id": id,
                     "contract_modification_request_id": mod_request.id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
+                    "services_components_added": _services_components_added(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                 }
             )
@@ -140,6 +146,7 @@ class ContractModificationRequestItemAPI(BaseItemAPI):
                     "status": mod_request.status.name,
                     "agreement_mod_id": mod_request.agreement_mod_id,
                     "contract_modification_edit_ids": [edit["id"] for edit in data["edits"]],
+                    "services_components_added": _services_components_added(data["edits"]),
                     "budget_line_item_ids": data["budget_line_item_ids"],
                     "reviewer_notes": mod_request.reviewer_notes,
                 }
