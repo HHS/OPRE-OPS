@@ -57,7 +57,8 @@ const listFilterDefaults = {
             budgetRange: null,
             agreementTypes: [],
             agreementTitles: [],
-            canActivePeriods: []
+            canActivePeriods: [],
+            division: []
         },
         selectedFiscalYear: "All"
     },

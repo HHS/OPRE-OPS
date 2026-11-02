@@ -1106,6 +1106,32 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain(`budget_line_status=${BLI_STATUS.IN_REVIEW}`);
     });
 
+    it("sends a division param per selected COR's division on getBudgetLineItems, and none when cleared", async () => {
+        const capturedUrls = [];
+        server.use(
+            http.get("*/api/v1/budget-line-items/*", ({ request }) => {
+                capturedUrls.push(request.url);
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getBudgetLineItems.initiate({
+                filters: {
+                    division: [
+                        { id: 1, name: "Division A", abbreviation: "DA" },
+                        { id: 2, name: "Division B", abbreviation: "DB" }
+                    ]
+                }
+            })
+        );
+        await storeRef.store.dispatch(opsApi.endpoints.getBudgetLineItems.initiate({ filters: { division: [] } }));
+
+        expect(new URL(capturedUrls[0]).searchParams.getAll("division")).toEqual(["1", "2"]);
+        expect(new URL(capturedUrls[1]).searchParams.has("division")).toBe(false);
+    });
+
     it("builds getProjects agreement filter using agreement_id, not the nickname-preferred title", async () => {
         // Regression guard (#6144): must send the agreement's id, not its display title.
         // Sending the title let one agreement's nickname collide with a different agreement's

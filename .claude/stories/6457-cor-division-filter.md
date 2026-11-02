@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/agreements-cor-division-filter  # all code work for the issue lands here (see "Progress")
-status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the T1 frontend are done and pushed; what is left is mostly frontend (see "Pick up here"). The draft PR has no description yet.
+status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the non-rendering frontend wiring (state, API layer, page → query/export) are done. **No UI ships on this branch until designs exist** (decided 2026-11-02); what is left is blocked on UX, plus the T0 data check and the PR write-up (see "Pick up here"). The draft PR has no description yet.
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -81,6 +81,11 @@ portfolio's division.
 
 ## Progress: where to pick up (updated 2026-10-30)
 
+**No rendered UI until designs exist (decided 2026-11-02).** This branch carries backend code and frontend code that
+renders nothing: session state, the `opsAPI` layer, page → query/export wiring, and types. No modal fields, tags,
+columns, labels or placeholder copy, and no hook/buffer state for controls that don't exist yet. A "COR's Division"
+combobox and tags were built as placeholders and then **removed** on 2026-11-02 for this reason.
+
 **Working agreement:** all code work for #6457 is done on `OPS-6457/agreements-cor-division-filter`, behind one
 draft PR. Frontend work for slices other than T1 may happen here too, or move to a separate sub-task later;
 decide once the UX designs land. The sub-tasks in §2 are now **ordered work items on this branch**, not
@@ -91,22 +96,19 @@ separate branches.
   divisions with a primary COR on ≥1 agreement, ignores the alternate COR, is scoped by `only_my`, and is
   sorted by name. The response schema and `openapi.yml` are updated.
   - **Param name kept as `division`** on `GET /agreements/`; no rename (decision Q1 is settled for now).
-- **Frontend:**
-  - A "COR's Division" `FilterComboBox` in the Agreements filter modal. **The label is a placeholder pending UX**;
-    the comment in the code marks it.
-  - Tags read `COR's Division: <name>` and are removed by id.
+- **Frontend (non-rendering only):**
   - `agreements.filters.division` in `sessionUISlice` flows into both the list query and the export.
   - `opsAPI.getAgreements` now maps Division **objects** to ids. `ProcurementDashboardPage.jsx` was adjusted to
     pass objects, with no behavior change.
-  - A cleared combobox (`null`) is stored as `[]`.
+  - The modal field, tags and modal buffer state were removed on 2026-11-02 (no designs yet).
 - **Tests:**
   - Backend: `TestAgreementDivisionFilter` covers single, union, no COR, a null-division COR, alternate-only,
     portfolio-division ≠ COR-division, `only_my` intersection, **portfolio + FY intersection** (mutation-checked),
     and options (only primary CORs, `only_my` scoping). API tests check the `cor_divisions` shape and that a
     non-integer division returns 400.
-  - Frontend: `opsAPI.test.js` query string; filter-button hook (apply / reset / sync / null); tags; a keyboard
-    component test (`AgreementsFilterButton.test.jsx`); the list page query and export.
-  - Cypress: a journey in `agreementList.cy.js`.
+  - Frontend: `opsAPI.test.js` query string; the list page query and export (`AgreementsList.test.jsx`, seeding
+    `division` through the mocked filter button). The modal/tag/keyboard tests and the Cypress journey were removed
+    with the UI on 2026-11-02.
   - Backend `test_division_count_totals_and_paging_cover_only_filtered_set` (added 2026-10-30): `count`,
     `totals` (amounts and type counts) and `limit`/`offset` paging cover only the filtered set.
 - **All green as of 2026-10-29:** backend full suite (2,682 passed), frontend full suite, Cypress `agreementList`
@@ -137,43 +139,46 @@ separate branches.
 - `openapi.yml` documents the field.
 - Tests: an API test (named COR, COR with no name → email, no COR → null) and
   `TestGetPageAgreements.test_eager_loads_project_officer`, which fails without the `joinedload` (mutation-checked).
-- Not done: sorting by COR (waits on Q4); switching the export's per-row `useLazyGetUserQuery` lookups to the new
-  field (frontend, no UX dependency).
+- Not done: sorting by COR (waits on Q4). The export switch to the new field was done on 2026-11-02.
 
-### Pick up here, in order (updated 2026-10-30)
-**All backend work is done and pushed** (T1, T3 backend, T2 backend). Everything left is frontend, the T0 data
-check, and the PR write-up. Done items: T1 totals/paging test, T3 backend, T2 backend (see "Done on the branch").
+### Pick up here, in order (updated 2026-11-02)
+**All backend work is done and pushed** (T1, T3 backend, T2 backend). All the frontend work that renders nothing is
+done too. Everything else waits on designs, plus the T0 data check and the PR write-up.
 
-**Can start now (no UX dependency):**
-1. **T3 frontend: Budget Lines filter.** Reuse T1's pattern, including its placeholder "COR's Division" label.
-   - `sessionUISlice`: a `budgetLines.filters.division: []` default.
-   - `getBudgetLineItems` (`opsAPI.js:377-387`): **add `division` to the destructured key list** (it is dropped
-     otherwise), and map Division objects to ids as `getAgreements` does. Add an `opsAPI.test.js` query-string test.
-   - `BLIFilterButton.jsx` (modal buffer `:23-118`): a `FilterComboBox` fed by `cor_divisions` from
-     `/budget-line-items-filters/`; a cleared combobox stores `[]`.
-   - `BLIFilterTags.jsx`: the tag group, the removal case (`:19-75`) and the group order (`:162+`).
-   - Export: check that `handleExport` (`budgetLines.helpers.js:465+`) passes the filter through.
-   - Tests: the same set as T1 (hook apply/reset/sync/null, tags, keyboard component test, page query, export),
-     plus a thin Cypress journey in the Budget Lines spec.
-2. **T2 frontend, export only:** switch the export's per-row `useLazyGetUserQuery` lookups
-   (`AgreementsList.jsx:215-228`) to `agreement.project_officer_name`, keeping the `"TBD"` fallback; update the
-   export test.
+**Done 2026-11-02 (non-rendering frontend):**
+1. ~~**T3 frontend wiring: Budget Lines.**~~
+   - `budgetLines.filters.division: []` default in `sessionUISlice`.
+   - `division` added to `getBudgetLineItems`'s destructured key list and mapped to ids.
+   - `cor_divisions` added to the `Filters` options type.
+   - Export: `handleExport` already passes `resolvedFilters` through unchanged.
+   - Tests: `opsAPI.test.js` query string (with a filter and cleared); `BudgetLineItemList.test.jsx` list query +
+     export.
+   - **Not built (needs designs):** the modal field, tags, buffer state, and a Cypress journey.
+2. ~~**T2 frontend, export only.**~~ The Agreements export's "COR" column (which already existed) reads
+   `agreement.project_officer_name`, with a `"TBD"` fallback. The per-row `useLazyGetUserQuery` lookups are gone.
+   A test in `AgreementsList.test.jsx` covers a named COR and no COR.
+- **All green as of 2026-11-02:** frontend lint; frontend unit tests for `opsAPI`, Agreements, Budget Lines,
+  Procurement Dashboard and the export helpers; backend `tests/ops/agreement`, `tests/ops/budget_line_items` and the
+  agreement/BLI service tests (1,130 passed); Cypress `agreementList`, `budgetLineItemsList`, `procurementDashboard`.
 
-**Blocked on UX / PO answers (§3):**
-3. **T2 frontend: COR column** on the Agreements table (`AgreementsTable.constants.js`, `AgreementTableRow.jsx`)
-   using `project_officer_name`. Placement and sortability wait on Q4; a sortable column also needs a backend sort.
-4. **T4: Procurement Dashboard.** Relabel "Division" (`ProcurementDashboardFilterButton.jsx:53-67`) once UX picks
-   the name. If Q3 = yes, source options from `/agreements-filters/` `cor_divisions` instead of `/divisions/`.
-   Update `ProcurementDashboardPage.test.jsx` and `procurementDashboard.cy.js`.
-5. **Final filter label:** replace the "COR's Division" placeholder (Agreements, and Budget Lines once built).
-6. **Screen-reader announcer** (`role="status"`) for filter changes and result counts, shared across the list
-   pages; the wording comes from UX.
+**UI work left (when designs land):**
+3. **Filter control**, Agreements + Budget Lines:
+   - modal field fed by `cor_divisions`, plus buffer state (apply, reset, sync, `null` → `[]`);
+   - tags with remove-by-id;
+   - component, keyboard and Cypress tests.
+   The state, API and export wiring already exist. Reference: the 2026-11-02 removal commit.
+4. **Label** distinct from the portfolio's division (C2), used everywhere the filter appears.
+5. **Announcer** (`role="status"`) for filter changes and result counts (C1).
+6. **COR column**, Agreements table (`AgreementsTable.constants.js`, `AgreementTableRow.jsx`), from
+   `project_officer_name`. Placement and sorting wait on Q4; sorting needs a backend sort.
+7. **Procurement Dashboard (T4):** relabel "Division" (`ProcurementDashboardFilterButton.jsx`). If Q3 = yes, source
+   options from `cor_divisions`. Update its unit and Cypress tests.
+8. **Open questions:** Q2 (COR on Budget Lines?), Q3, Q4, Q6 (FigJam).
 
 **Before release / review:**
-7. **T0:** run the CORs-without-a-division query (§2, T0) on staging and prod and share the counts with the PO.
-8. **PR description** for the draft PR. Don't use `Closes`/`Fixes`. Call out the placeholder label, the deferred
-   announcer, and any UX-blocked items still open. Then run `/ops-pr-review`.
-9. Ask the issue author to remove the stale Projects/Reporting testing text (Q5), and review the FigJam diagram (Q6).
+9. **T0:** run the CORs-without-a-division query (§2, T0) on staging and prod and share the counts with the PO.
+10. ~~**PR description**~~ Done 2026-11-02. Next: `/ops-pr-review`.
+11. Ask the issue author to remove the stale Projects/Reporting testing text (Q5), and review the FigJam diagram (Q6).
 
 ### Known issues that are not acceptance-criteria gaps
 - The issue's Testing section still lists Projects/Reporting items; ask the author to remove them (Q5).
