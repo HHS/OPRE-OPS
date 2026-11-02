@@ -22,7 +22,8 @@ vi.mock("../../../api/opsAPI", () => ({
 }));
 
 vi.mock("react-redux", () => ({
-    useSelector: (selector) => selector({ auth: { activeUser: { oidc_id: "oidc-521" } } })
+    useSelector: (selector) => selector({ auth: { activeUser: { oidc_id: "oidc-521" } }, alert: { isActive: false } }),
+    useDispatch: () => vi.fn()
 }));
 
 vi.mock("react-router-dom", () => ({

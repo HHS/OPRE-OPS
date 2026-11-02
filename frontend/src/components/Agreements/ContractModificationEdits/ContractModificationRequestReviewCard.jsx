@@ -1,5 +1,7 @@
 import * as React from "react";
 import { useReviewContractModificationMutation } from "../../../api/opsAPI";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import useAlert from "../../../hooks/use-alert.hooks";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import TextArea from "../../UI/Form/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
@@ -26,6 +28,7 @@ import ContractModificationEditCard from "./ContractModificationEditCard";
  */
 const ContractModificationRequestReviewCard = ({ request }) => {
     const [reviewContractModification, { isLoading }] = useReviewContractModificationMutation();
+    const { setAlert } = useAlert();
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState(null);
     const [reviewerNotes, setReviewerNotes] = React.useState("");
@@ -42,6 +45,18 @@ const ContractModificationRequestReviewCard = ({ request }) => {
             handleConfirm: () => {
                 reviewContractModification({ requestId: request.id, action, reviewerNotes: reviewerNotes || null })
                     .unwrap()
+                    .then(() => {
+                        // This card unmounts once the request leaves IN_REVIEW, so feedback goes through the
+                        // page-level alert (role="status"/"alert", announced regardless) rather than local state.
+                        setAlert({
+                            type: isApprove ? "success" : "warning",
+                            heading: isApprove ? "Contract Modification Approved" : "Contract Modification Declined",
+                            message: isApprove
+                                ? "The selected budget lines have been moved to Executing."
+                                : "This Contract Modification has been declined and returned to the submitter."
+                        });
+                        scrollToTop();
+                    })
                     .catch((error) => {
                         // e.g. a bundled budget line changed after this request was sent; the backend's reason
                         // is in errors, not a top-level error field

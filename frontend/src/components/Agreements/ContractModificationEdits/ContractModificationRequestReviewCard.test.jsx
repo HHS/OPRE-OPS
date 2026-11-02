@@ -5,6 +5,7 @@ import { useReviewContractModificationMutation } from "../../../api/opsAPI";
 import ContractModificationRequestReviewCard from "./ContractModificationRequestReviewCard";
 
 const mockReview = vi.fn();
+const mockSetAlert = vi.fn();
 
 vi.mock("../../../api/opsAPI", () => ({
     useReviewContractModificationMutation: vi.fn()
@@ -12,6 +13,11 @@ vi.mock("../../../api/opsAPI", () => ({
 
 vi.mock("../../../hooks/lookup.hooks", () => ({
     useGetNameForCanId: (id) => (id ? `CAN-${id}` : "unknown")
+}));
+
+vi.mock("../../../hooks/use-alert.hooks", () => ({
+    __esModule: true,
+    default: () => ({ setAlert: mockSetAlert })
 }));
 
 const AMOUNT_EDIT = {
@@ -57,7 +63,7 @@ describe("ContractModificationRequestReviewCard", () => {
         expect(screen.getByText("123459")).toBeInTheDocument(); // the budget line to execute
     });
 
-    it("approves: confirming the modal calls the mutation with APPROVE and the typed notes", async () => {
+    it("approves: confirming the modal calls the mutation with APPROVE and the typed notes, and alerts success", async () => {
         const unwrap = vi.fn().mockResolvedValue({});
         mockReview.mockReturnValue({ unwrap });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
@@ -70,9 +76,16 @@ describe("ContractModificationRequestReviewCard", () => {
         await userEvent.click(confirmButtons[confirmButtons.length - 1]);
 
         expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "APPROVE", reviewerNotes: "Looks good" });
+        // This card unmounts once the request leaves IN_REVIEW, so the Director's only confirmation that
+        // anything happened is this page-level alert (OPS-6479 follow-up: previously there was none).
+        await vi.waitFor(() =>
+            expect(mockSetAlert).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "success", heading: "Contract Modification Approved" })
+            )
+        );
     });
 
-    it("declines: confirming the modal calls the mutation with DECLINE", async () => {
+    it("declines: confirming the modal calls the mutation with DECLINE, and alerts the outcome", async () => {
         const unwrap = vi.fn().mockResolvedValue({});
         mockReview.mockReturnValue({ unwrap });
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
@@ -84,6 +97,11 @@ describe("ContractModificationRequestReviewCard", () => {
         await userEvent.click(confirmButtons[confirmButtons.length - 1]);
 
         expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "DECLINE", reviewerNotes: null });
+        await vi.waitFor(() =>
+            expect(mockSetAlert).toHaveBeenCalledWith(
+                expect.objectContaining({ type: "warning", heading: "Contract Modification Declined" })
+            )
+        );
     });
 
     it("shows an inline error when the review fails", async () => {

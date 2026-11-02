@@ -696,7 +696,16 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: { action, reviewer_notes: reviewerNotes || null }
             }),
-            invalidatesTags: ["ContractModifications", "BudgetLineItems", "Notifications", "AgreementHistory"]
+            // Approving executes the selected budget lines, so refresh the agreement the Budget Lines tab
+            // reads from (getAgreementById), not just the change-request lists — same reasoning as
+            // updateChangeRequest above.
+            invalidatesTags: [
+                "ContractModifications",
+                "Agreements",
+                "BudgetLineItems",
+                "Notifications",
+                "AgreementHistory"
+            ]
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
