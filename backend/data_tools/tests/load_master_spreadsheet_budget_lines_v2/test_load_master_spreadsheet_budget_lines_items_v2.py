@@ -438,6 +438,88 @@ def test_create_models_upsert(db_with_data_v2):
     db_with_data_v2.commit()
 
 
+def _reimport_contract_bli(session, bli, agreement_name):
+    """Re-import an existing contract BLI by ID under the given (already clean) agreement name."""
+    data = BudgetLineItemData(
+        ID=bli.id,
+        AGREEMENT_NAME=agreement_name,
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Reimported Line Description",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="15203.08",
+        STATUS="OPRE - CURRENT",
+        CAN="TestCanNumber (TestCanNickname)",
+    )
+    create_models(data, _ensure_user(session), session)
+    session.expire_all()
+    return session.get(ContractBudgetLineItem, bli.id)
+
+
+def _add_contract_bli(session, agreement):
+    can = session.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
+    bli = ContractBudgetLineItem(
+        agreement_id=agreement.id,
+        can_id=can.id,
+        budget_line_item_type=AgreementType.CONTRACT,
+        line_description="Original Line Description",
+        amount=Decimal("89542.75"),
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 2, 17),
+    )
+    session.add(bli)
+    session.commit()
+    return bli
+
+
+def test_create_models_upsert_keeps_agreement_link_when_stored_name_is_padded(db_with_data_v2):
+    """A stored name with a trailing space must still match, so a re-import doesn't null the BLI's agreement."""
+    agreement = ContractAgreement(name="Padded Stored Agreement ", agreement_type=AgreementType.CONTRACT)
+    db_with_data_v2.add(agreement)
+    db_with_data_v2.commit()
+    existing_bli = _add_contract_bli(db_with_data_v2, agreement)
+
+    bli = _reimport_contract_bli(db_with_data_v2, existing_bli, "Padded Stored Agreement")
+
+    assert bli.agreement_id == agreement.id
+    assert bli.line_description == "Reimported Line Description"
+
+    update_events = [
+        e
+        for e in db_with_data_v2.scalars(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_BLI))
+        if e.event_details["bli"]["id"] == bli.id
+    ]
+    assert len(update_events) == 1
+    changes = update_events[0].event_details["bli_updates"]["changes"]
+    assert "line_description" in changes
+    assert "agreement_id" not in changes
+
+
+def test_create_models_upsert_prefers_exact_name_when_padded_duplicate_exists(db_with_data_v2):
+    """Names differing only by padding can coexist; a clean-name row must link to the exact match, not fail."""
+    exact = ContractAgreement(name="Duplicate Agreement", agreement_type=AgreementType.CONTRACT)
+    padded = ContractAgreement(name="Duplicate Agreement ", agreement_type=AgreementType.CONTRACT)
+    db_with_data_v2.add_all([exact, padded])
+    db_with_data_v2.commit()
+    existing_bli = _add_contract_bli(db_with_data_v2, padded)
+
+    bli = _reimport_contract_bli(db_with_data_v2, existing_bli, "Duplicate Agreement")
+
+    assert bli.agreement_id == exact.id
+
+
+def test_create_models_upsert_treats_ambiguous_padded_names_as_not_found(db_with_data_v2):
+    """With several padded matches and no exact one, don't guess: behave as if the agreement wasn't found."""
+    leading = ContractAgreement(name=" Ambiguous Agreement", agreement_type=AgreementType.CONTRACT)
+    trailing = ContractAgreement(name="Ambiguous Agreement ", agreement_type=AgreementType.CONTRACT)
+    db_with_data_v2.add_all([leading, trailing])
+    db_with_data_v2.commit()
+    existing_bli = _add_contract_bli(db_with_data_v2, leading)
+
+    bli = _reimport_contract_bli(db_with_data_v2, existing_bli, "Ambiguous Agreement")
+
+    assert bli.agreement_id is None
+
+
 def test_main(db_with_data_v2):
     result = CliRunner().invoke(
         main,
