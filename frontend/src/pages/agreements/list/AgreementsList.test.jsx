@@ -228,7 +228,6 @@ afterEach(() => {
 describe("AgreementsList - Pagination", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
-
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query (used by AgreementTabs)
@@ -853,7 +852,6 @@ describe("AgreementsList - Pagination", () => {
 describe("AgreementsList - Fiscal Year Filtering", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
-
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query

@@ -160,7 +160,7 @@ export const opsApi = createApi({
                 }
                 if (division) {
                     // COR's division: the division of the agreement's primary COR (project officer)
-                    division.forEach((division) => queryParams.push(`division=${division.id}`));
+                    division.forEach((d) => queryParams.push(`division=${d.id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
@@ -436,7 +436,7 @@ export const opsApi = createApi({
                 }
                 if (division) {
                     // COR's division: the division of the budget line's agreement's primary COR (project officer)
-                    division.forEach((division) => queryParams.push(`division=${division.id}`));
+                    division.forEach((d) => queryParams.push(`division=${d.id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);

@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/agreements-cor-division-filter  # all code work for the issue lands here (see "Progress")
-status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the non-rendering frontend wiring (state, API layer, page → query/export) are done. **No UI ships on this branch until designs exist** (decided 2026-11-02); what is left is blocked on UX, plus the T0 data check and the PR write-up (see "Pick up here"). The draft PR has no description yet.
+status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the non-rendering frontend wiring (state, API layer, page → query/export) are done. **No UI ships on this branch until designs exist** (decided 2026-11-02); what is left is blocked on UX, plus the T0 data check (see "Pick up here"). PR #6480 is open with its description filled in.
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -79,7 +79,7 @@ portfolio's division.
 
 ---
 
-## Progress: where to pick up (updated 2026-10-30)
+## Progress: where to pick up (updated 2026-11-02)
 
 **No rendered UI until designs exist (decided 2026-11-02).** This branch carries backend code and frontend code that
 renders nothing: session state, the `opsAPI` layer, page → query/export wiring, and types. No modal fields, tags,
@@ -247,7 +247,7 @@ where noted, every slice also carries rules B1–B8 and C1–C2 for its page.
     `cor_division_options(agreement_scope)`, so T3 reuses it.
   - Param naming: see Q1.
 - **Frontend:**
-  - `sessionUISlice` gets an `agreements.corDivisions: []` default.
+  - `sessionUISlice` gets an `agreements.filters.division: []` default.
   - `opsAPI.getAgreements` maps Division objects to ids **inside the API layer**. Update the dashboard's
     call-site mapping (`ProcurementDashboardPage.jsx:46`) to match.
   - Filter modal fieldset (`AgreementsFilterButton.jsx` / `.hooks.js:11-91`), tags
@@ -285,7 +285,7 @@ where noted, every slice also carries rules B1–B8 and C1–C2 for its page.
   - Add `cor_divisions` to `/budget-line-items-filters/`, scoped to the BLIs it already loads after `only_my`.
   - Update `openapi.yml`.
 - **Frontend:**
-  - `budgetLines.corDivisions: []` default.
+  - `budgetLines.filters.division: []` default.
   - **Add the key to the destructured list in `getBudgetLineItems`** (`opsAPI.js:377-387`).
   - Fieldset and buffer in `BLIFilterButton.jsx`; tag group, removal case and group order in `BLIFilterTags.jsx`.
   - Export pass-through in `budgetLines.helpers.js:465+`.

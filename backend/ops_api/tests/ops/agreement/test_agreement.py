@@ -21,6 +21,7 @@ from models import (
     ContractCategory,
     ContractType,
     DirectAgreement,
+    Division,
     GrantAgreement,
     IaaAgreement,
     IAADirectionType,
@@ -4191,13 +4192,53 @@ class TestAgreementFilterOptions:
 
     def test_filter_options_cor_divisions_shape(self, auth_client, loaded_db, app_ctx):
         """COR divisions are sorted by name and carry id, name and abbreviation."""
-        response = auth_client.get(url_for("api.agreements-filters"))
-        assert response.status_code == 200
+        # Own data, inserted out of name order, so the assertions don't depend on seed CORs.
+        divisions = [
+            Division(name="Zeta COR Shape Division (#6457)", abbreviation="ZCSD6457"),
+            Division(name="Alpha COR Shape Division (#6457)", abbreviation="ACSD6457"),
+        ]
+        loaded_db.add_all(divisions)
+        loaded_db.flush()
+        cors = [
+            User(email=f"cor-shape-{i}-6457@example.com", division=division.id, status=UserStatus.ACTIVE)
+            for i, division in enumerate(divisions)
+        ]
+        loaded_db.add_all(cors)
+        loaded_db.flush()
+        agreements = [
+            ContractAgreement(
+                name=f"COR Shape Agreement {i} (#6457)",
+                agreement_type=AgreementType.CONTRACT,
+                project_officer_id=cor.id,
+            )
+            for i, cor in enumerate(cors)
+        ]
+        loaded_db.add_all(agreements)
+        loaded_db.commit()
 
-        cor_divisions = response.json["cor_divisions"]
-        assert len(cor_divisions) > 0
-        assert all(set(d) == {"id", "name", "abbreviation"} for d in cor_divisions)
-        assert [d["name"] for d in cor_divisions] == sorted(d["name"] for d in cor_divisions)
+        try:
+            response = auth_client.get(url_for("api.agreements-filters"))
+            assert response.status_code == 200
+
+            cor_divisions = response.json["cor_divisions"]
+            assert {
+                "id": divisions[1].id,
+                "name": "Alpha COR Shape Division (#6457)",
+                "abbreviation": "ACSD6457",
+            } in cor_divisions
+            assert {division.id for division in divisions} <= {d["id"] for d in cor_divisions}
+            assert all(set(d) == {"id", "name", "abbreviation"} for d in cor_divisions)
+            assert [d["name"] for d in cor_divisions] == sorted(d["name"] for d in cor_divisions)
+        finally:
+            for agreement in agreements:
+                loaded_db.delete(agreement)
+            for cor in cors:
+                loaded_db.delete(cor)
+            # User.division is a bare FK with no relationship; flush user deletes before divisions.
+            loaded_db.flush()
+            for division in divisions:
+                loaded_db.delete(division)
+            loaded_db.commit()
 
     def test_filter_options_fiscal_years_sorted_descending(self, auth_client, loaded_db, app_ctx):
         """Fiscal years should be sorted in descending order."""
