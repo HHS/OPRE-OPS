@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from typing import ClassVar
 from zoneinfo import ZoneInfo
@@ -235,26 +236,37 @@ class FakeGitHub(rr.GitHub):
         return {}
 
 
+BASE_CONFIG = {
+    "label": "ready-for-human-review",
+    "timezone": "America/New_York",
+    "visual_path_prefixes": ["frontend/src/"],
+    "pool": [
+        {"github": "alice", "calendar_names": ["Alice"]},
+        {"github": "bob", "calendar_names": ["Bob"]},
+        {"github": "carol", "calendar_names": ["Carol"]},
+        {"github": "uxena", "calendar_names": ["Uxena"], "roles": ["ux"]},
+    ],
+}
+
+
 @pytest.fixture
 def run(tmp_path, monkeypatch):
     config = tmp_path / "rotation.json"
-    config.write_text(
-        '{"label": "ready-for-human-review", "timezone": "America/New_York", '
-        '"visual_path_prefixes": ["frontend/src/"], "pool": ['
-        '{"github": "alice", "calendar_names": ["Alice"]},'
-        '{"github": "bob", "calendar_names": ["Bob"]},'
-        '{"github": "carol", "calendar_names": ["Carol"]},'
-        '{"github": "uxena", "calendar_names": ["Uxena"], "roles": ["ux"]}]}'
-    )
     slack_map = tmp_path / "slack.json"
     slack_map.write_text("{}")
     slack_posts = []
     monkeypatch.setattr(rr, "post_slack", slack_posts.append)
 
-    def _run(mode, pr, comments=(), off=frozenset(), files=()):
+    def _run(mode, pr, comments=(), off=frozenset(), files=(), visual_path_prefixes=None, fetch_calendar_off=None):
+        overrides = {} if visual_path_prefixes is None else {"visual_path_prefixes": visual_path_prefixes}
+        config.write_text(json.dumps({**BASE_CONFIG, **overrides}))
         fake = FakeGitHub(pr, list(comments), files)
+        _run.last_fake = fake
         monkeypatch.setattr(rr, "GitHub", lambda token, repo: fake)
-        monkeypatch.setattr(rr, "fetch_calendar_off", lambda pool, tz, min_off_hours: set(off))
+        if fetch_calendar_off is None:
+            monkeypatch.setattr(rr, "fetch_calendar_off", lambda pool, tz, min_off_hours: set(off))
+        else:
+            monkeypatch.setattr(rr, "fetch_calendar_off", fetch_calendar_off)
         for key, value in {
             "MODE": mode,
             "REPO": "o/r",
@@ -307,8 +319,8 @@ class TestMain:
     def test_reroll_swaps_reviewer_and_updates_comment(self, run):
         existing = bot_comment(["bob"], "bob")
         writes, slack = run("reroll", make_pr(requested=["bob"]), comments=[existing], off={"carol"})
-        assert writes[0] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
-        assert writes[1] == ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["alice"]})
+        assert writes[0] == ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["alice"]})
+        assert writes[1] == ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]})
         assert writes[2][0:2] == ("PATCH", "/issues/comments/9")
         assert rr.parse_history(writes[2][2]["body"]) == ["bob", "alice"]
         assert "@alice is up" in slack[0] and "(was bob)" in slack[0]
@@ -337,3 +349,25 @@ class TestMain:
         assert ("POST", "/issues/4/comments") in [w[0:2] for w in writes]
         assert not any(path == "/issues/comments/5" for _, path, _ in writes)
         assert len(slack) == 1
+
+    def test_reroll_removes_old_reviewer_even_with_different_case(self, run):
+        # GitHub's API can return a login in its own casing; history/config logins are lowercase.
+        existing = bot_comment(["bob"], "bob")
+        writes, _ = run("reroll", make_pr(requested=["Bob"]), comments=[existing], off={"carol"})
+        assert ("DELETE", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes
+
+    def test_label_with_nobody_available_posts_manual_pick_message(self, run):
+        writes, slack = run("label", make_pr(), off={"alice", "bob", "carol"})
+        assert not any(path == "/pulls/4/requested_reviewers" for _, path, _ in writes)
+        comment = next(body for method, path, body in writes if path == "/issues/4/comments")
+        assert "nobody in the rotation is available" in comment["body"]
+        assert len(slack) == 1 and "nobody in the rotation is available" in slack[0]
+
+    def test_disabled_visual_prefixes_skips_the_file_list_fetch(self, run):
+        run("label", make_pr(), visual_path_prefixes=[])
+        assert not any(call[0] == "GET" and "/files" in call[1] for call in run.last_fake.calls)
+
+    def test_broken_slack_webhook_does_not_fail_the_run(self, run, monkeypatch):
+        monkeypatch.setattr(rr, "post_slack", lambda text: (_ for _ in ()).throw(KeyError("SLACK_WEBHOOK_URL")))
+        writes, _ = run("label", make_pr())
+        assert ("POST", "/pulls/4/requested_reviewers", {"reviewers": ["bob"]}) in writes

@@ -292,7 +292,10 @@ def main() -> int:
         print(f"A reviewer was already picked ({picked[-1]}); re-adding the label does not reroll.")
         return 0
 
-    visual = touches_visual_path(gh.pr_file_paths(pr_number), tuple(config.get("visual_path_prefixes", [])))
+    # Skip the file-list fetch entirely when nothing is configured to match -- it would always
+    # come back "not visual" anyway, and this is the one call on every run with no local fallback.
+    visual_path_prefixes = tuple(config.get("visual_path_prefixes", []))
+    visual = touches_visual_path(gh.pr_file_paths(pr_number), visual_path_prefixes) if visual_path_prefixes else False
     pool = eligible_pool(load_pool(config), visual)
     tz = ZoneInfo(config["timezone"])
     off = fetch_calendar_off(pool, tz, config.get("min_off_hours", 4))
@@ -300,10 +303,12 @@ def main() -> int:
     new_pick = choose_reviewer(pool, pr_number, pr["user"]["login"], picked, off)
 
     if new_pick:
+        # Add the new reviewer before removing the old one, so a failed POST never leaves the
+        # PR with nobody requested -- worst case on a failed DELETE is both staying requested.
+        gh.request("POST", f"/pulls/{pr_number}/requested_reviewers", {"reviewers": [new_pick]})
         requested = {r["login"].lower() for r in pr["requested_reviewers"]}
         if mode == "reroll" and old_pick in requested:
             gh.request("DELETE", f"/pulls/{pr_number}/requested_reviewers", {"reviewers": [old_pick]})
-        gh.request("POST", f"/pulls/{pr_number}/requested_reviewers", {"reviewers": [new_pick]})
         picked = [*picked, new_pick]
     # With no replacement available, a reroll keeps the current pick rather than leaving nobody.
     current = new_pick or old_pick
@@ -317,7 +322,10 @@ def main() -> int:
     # A reroll that finds nobody changes nothing for the team, so it only updates the PR comment.
     # This also caps Slack posts per PR at the pool size, however many times /reroll is sent.
     if new_pick or mode == "label":
-        post_slack(build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map))
+        try:
+            post_slack(build_slack_text(mode, actor, pr, repo, new_pick, old_pick, slack_map))
+        except Exception as exc:  # noqa: BLE001 -- the reviewer pick and PR comment already succeeded
+            print(f"::warning::Could not post to Slack ({type(exc).__name__}); the pick and PR comment stand.")
     print(f"Picked {new_pick or 'nobody'} (history: {picked}, off today: {sorted(off)})")
     return 0
 
