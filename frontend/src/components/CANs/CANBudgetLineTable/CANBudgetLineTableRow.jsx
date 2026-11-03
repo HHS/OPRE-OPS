@@ -12,6 +12,7 @@ import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hook
 import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 
 /**
@@ -66,6 +67,10 @@ const CANBudgetLineTableRow = ({
         agreementName?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
     const agreementPath = `/agreements/${budgetLine?.agreement?.id}`;
+    // When the nickname-preferred agreementName differs from the full title, the full title
+    // reaches hover/focus users via a Tooltip on the Link itself, matching AgreementTableRow.
+    const fullAgreementName = budgetLine?.agreement?.name;
+    const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== resolvedAgreementName;
 
     const TableRowData = (
         <>
@@ -73,17 +78,22 @@ const CANBudgetLineTableRow = ({
             <td>
                 <div className={tableStyles.textClipContainer}>
                     {budgetLine.agreement ? (
-                        <Link
-                            className="text-ink text-no-underline"
-                            to={agreementPath}
-                            state={buildTrailState(agreementPath, ancestry, agreementName?.trim())}
-                            aria-label={resolvedAgreementName}
+                        <Tooltip
+                            label={hasDistinctFullName ? fullAgreementName : ""}
+                            position="right"
                         >
-                            <TextClip
-                                text={agreementName?.trim() || `${budgetLine.agreement.id}`}
-                                maxLines={1}
-                            />
-                        </Link>
+                            <Link
+                                className="text-ink text-no-underline"
+                                to={agreementPath}
+                                state={buildTrailState(agreementPath, ancestry, agreementName?.trim())}
+                                aria-label={resolvedAgreementName}
+                            >
+                                <TextClip
+                                    text={agreementName?.trim() || `${budgetLine.agreement.id}`}
+                                    maxLines={1}
+                                />
+                            </Link>
+                        </Tooltip>
                     ) : (
                         <span className="text-ink">{agreementName}</span>
                     )}
