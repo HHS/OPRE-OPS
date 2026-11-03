@@ -1,0 +1,65 @@
+name: Review Rotation
+
+# Round-robin reviewer pick for PRs labeled ready-for-human-review, with a /reroll comment
+# command for the PR author. Logic lives in .github/scripts/review_rotation/; the pool is
+# configured in .github/review_rotation.json.
+#
+# pull_request_target (not pull_request) so fork PRs get the Slack secret. This is safe only
+# because no PR code is ever checked out -- the checkout below reads config and the script from
+# the base branch. Keep it that way.
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- see comment above
+    types: [labeled]
+  issue_comment: # zizmor: ignore[dangerous-triggers] -- runs base-branch code only
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Label name must match "label" in .github/review_rotation.json. /reroll is limited to the
+    # PR author (issue.user is the PR author for comments on a PR).
+    if: >-
+      (github.event_name == 'pull_request_target' && github.event.label.name == 'ready-for-human-review') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/reroll') &&
+       github.event.comment.user.login == github.event.issue.user.login)
+    # One run at a time per PR, so a quick label + /reroll can't both read the same pick history.
+    # Job-level (not workflow-level) so runs skipped by the `if` above -- other labels, ordinary
+    # comments -- never join the group and can't cancel a pending rotation run.
+    concurrency:
+      group: review-rotation-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout config and script (base branch only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/review_rotation.json
+            .github/slack_user_map.json
+            .github/scripts/review_rotation
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Python
+        uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec # tag: v4.3.0
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: pip install --require-hashes -r .github/scripts/review_rotation/requirements.txt
+
+      - name: Pick reviewer
+        env:
+          MODE: ${{ github.event_name == 'issue_comment' && 'reroll' || 'label' }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          ACTOR: ${{ github.event.comment.user.login || github.event.sender.login }}
+          GITHUB_TOKEN: ${{ github.token }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAM_CALENDAR_ICS_URL: ${{ secrets.TEAM_CALENDAR_ICS_URL }}
+        run: python .github/scripts/review_rotation/review_rotation.py
