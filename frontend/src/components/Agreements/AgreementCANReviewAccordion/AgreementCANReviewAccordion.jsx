@@ -124,20 +124,7 @@ const AgreementCANReviewAccordion = ({
     });
 
     // TODO: Replace with actual data
-    let cansOutsideDivision = [
-        {
-            id: 1,
-            name: "Not"
-        },
-        {
-            id: 2,
-            name: "Yet"
-        },
-        {
-            id: 3,
-            name: "Implemented"
-        }
-    ];
+    let cansOutsideDivision = [];
 
     const showToggle = action === selectedAction.DRAFT_TO_PLANNED || isApprovePage;
 
@@ -146,9 +133,9 @@ const AgreementCANReviewAccordion = ({
             heading="Review CANs"
             level={2}
         >
-            <p>{instructions}</p>
             {cansWithPendingAmount.length > 0 && (
                 <>
+                    <p>{instructions}</p>
                     <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                         {showToggle && (
                             <ToggleButton
@@ -171,10 +158,10 @@ const AgreementCANReviewAccordion = ({
                             />
                         ))}
                     </div>
-                    <div className="margin-top-3">
-                        <span className="text-base-dark font-12px">Portfolios:</span>
-                        {canPortfolios.length > 0 &&
-                            canPortfolios.map((portfolio) => (
+                    {canPortfolios.length > 0 && (
+                        <div className="margin-top-3">
+                            <span className="text-base-dark font-12px">Portfolios:</span>
+                            {canPortfolios.map((portfolio) => (
                                 <Tag
                                     key={portfolio?.id}
                                     className="margin-left-1"
@@ -182,12 +169,12 @@ const AgreementCANReviewAccordion = ({
                                     tagStyle="primaryDarkTextLightBackground"
                                 />
                             ))}
-                    </div>
-                    <div className="margin-top-1">
-                        <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
-                        {cansOutsideDivision.length > 0 &&
-                            cansWithPendingAmount.length > 0 &&
-                            cansOutsideDivision.map((portfolio) => (
+                        </div>
+                    )}
+                    {cansOutsideDivision.length > 0 && (
+                        <div className="margin-top-1">
+                            <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
+                            {cansOutsideDivision.map((portfolio) => (
                                 <Tag
                                     key={portfolio?.id}
                                     className="margin-left-1"
@@ -195,16 +182,9 @@ const AgreementCANReviewAccordion = ({
                                     tagStyle="primaryDarkTextLightBackground"
                                 />
                             ))}
-                    </div>
+                        </div>
+                    )}
                 </>
-            )}
-            {cansWithPendingAmount.length === 0 && (
-                <div
-                    id="can-review-zero-results"
-                    className="padding-top-5 display-flex flex-justify-center"
-                >
-                    The budget lines you selected do not have a CAN.
-                </div>
             )}
         </Accordion>
     );
