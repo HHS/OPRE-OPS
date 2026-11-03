@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
 import { vi, describe, it, expect, beforeEach } from "vitest";
@@ -555,6 +555,42 @@ describe("BudgetLineItemList", () => {
             expect.any(Function),
             expect.any(Function)
         );
+    });
+
+    it("passes the division filter through to the list query and the export", async () => {
+        const { handleExport } = await import("../../../helpers/budgetLines.helpers");
+        const division = [{ id: 2, name: "Division B", abbreviation: "DB" }];
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, division },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({ filters: expect.objectContaining({ division }) })
+        );
+
+        fireEvent.click(screen.getByText("Export"));
+
+        expect(handleExport.mock.calls.at(-1)[2].division).toEqual(division);
     });
 
     it("calls handleExport with empty fiscalYears when selectedFiscalYear is Multi", async () => {
