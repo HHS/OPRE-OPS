@@ -17,7 +17,7 @@ temporary copy of the full stack at `https://pr-<N>.ops.opre.acf.gov`, so QA can
 
 Constraints:
 
-- **The App Gateway is shared.** Dev and staging sit behind the same App Gateway (WAF), which DevOps manages in
+- **The App Gateway is shared.** Dev and staging sit behind the same App Gateway (WAF), which is managed in
   Terraform. Changes made outside Terraform are reverted on the next apply. A change to any listener or rule rewrites
   the whole gateway config, which takes several minutes and puts dev and staging at risk.
 - **DNS:** the `pr-<N>` names fall in a DNS zone the SDLC deploy pipeline doesn't manage.
@@ -34,7 +34,7 @@ Constraints:
 
 ## Decision
 
-1. **The gateway changes once.** DevOps adds one wildcard listener and rule for `*.ops.opre.acf.gov`, matched after the
+1. **The gateway changes once.** The teammate who handles infra adds one wildcard listener and rule for `*.ops.opre.acf.gov`, matched after the
    dev and staging rules, plus a wildcard DNS record. Both are managed in Terraform. Previews never change the gateway
    or DNS after that.
 2. **A preview router does the per-PR routing.** It's an nginx container app (`preview/router/`).
@@ -47,7 +47,13 @@ Constraints:
    - The backend uses `ops/environment/azure/preview.py`: FakeAuth only, and a small connection pool.
    - `backend/data_tools/scripts/preview_seed.sh` seeds the database the first time and only migrates it after that.
 4. **Workflows** (create, destroy, nightly reap) manage container apps and databases only. They are delivered
-   separately from this ADR.
+   separately from this ADR; see [preview-environments.md](../developers/preview-environments.md).
+
+**Note (2026-11-03), deploy identity:** the workflows use the existing `SDLC_AZURE_CREDS` deploy identity, not the
+narrow OIDC identity the story asked for. Same-repo PR workflows already receive that secret, so this adds no new
+exposure. Because that identity can't read Key Vault or reach the private preview server, secrets and database work
+live in a Terraform-managed container app job (`opre-ops-dev-app-preview-db`), and previews use their own JWT keypair.
+A narrow identity is a follow-up.
 
 ## Consequences
 

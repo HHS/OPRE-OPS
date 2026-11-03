@@ -355,6 +355,10 @@ Our production environment is hosted in Azure and is deployed manually by the OP
 The deployment is done using the [prod_be_build_and_deploy.yml](.github/workflows/prod_be_build_and_deploy.yml)
 and [prod_fe_build_and_deploy.yml](.github/workflows/prod_fe_build_and_deploy.yml) GitHub Actions workflows.
 
+### PR Preview Environments
+
+Same-repo PRs labelled `preview` get a temporary copy at `https://pr-<N>.ops.opre.acf.gov`. See [preview-environments.md](docs/developers/preview-environments.md).
+
 ## Data Model
 
 The current ERD is [here](./docs/ops.md).

@@ -1,6 +1,6 @@
 ---
 issue: 6419
-branch: OPS-6419/preview-router
+branch: OPS-6419/preview-workflows
 ---
 
 # DevEx: Per-PR ephemeral preview environments
@@ -40,7 +40,7 @@ The team chose a wildcard listener plus a preview router ([ADR 032](../../docs/a
 
 Option (a) from [ADR 032](../../docs/adr/032-pr-preview-environments.md):
 
-- DevOps adds one Terraform-managed wildcard listener for `*.ops.opre.acf.gov`, plus a wildcard DNS record. It points at the preview router container app, which DevOps also defines in Terraform.
+- The teammate who handles infra adds one Terraform-managed wildcard listener for `*.ops.opre.acf.gov`, plus a wildcard DNS record. It points at the preview router container app, also defined in Terraform.
 - The router (`preview/router/`) reads `x-original-host` and proxies to `opre-ops-pr<N>-app-{frontend,backend}.<ACA domain>`. It sends `Host: <target>:443` so `check_csrf` passes.
 - Each PR's apps and database are managed by the workflows.
 
@@ -49,15 +49,20 @@ Delivery:
 | Part | Status | Contents |
 |---|---|---|
 | Part 1 | Merged (PR 6448) | `preview.py`, `preview_seed.sh`, startup prefix check, frontend backend-domain fallback |
-| Part 2, PR A (`OPS-6419/preview-backend-fixes`) | In progress | Pool 2 + 3 (threads + 1, to avoid write deadlocks) with a 10s timeout, a `HEALTH_CHECK_AUTH_SERVICES` flag (off on previews), and a startup wiring test |
-| Part 2, PR B (this branch) | In progress | The router image and its build/smoke-test workflow, ADR 032, this story update |
-| Part 3 | Blocked on DevOps | The create, destroy and reap workflows, plus the docs |
+| Part 2, PR A (`OPS-6419/preview-backend-fixes`) | Merged | Pool 2 + 3 (threads + 1, to avoid write deadlocks) with a 10s timeout, a `HEALTH_CHECK_AUTH_SERVICES` flag (off on previews), and a startup wiring test |
+| Part 2, PR B (`OPS-6419/preview-router`) | Merged | The router image and its build/smoke-test workflow, ADR 032, this story update |
+| Infra (HHS/OPRE-OPS-Data PR 76) | Applied | Wildcard listener and DNS, the router app, the preview Postgres server |
+| Part 3, infra (HHS/OPRE-OPS-Data) | In progress | The `opre-ops-dev-app-preview-db` job: holds the secrets and runs `preview_seed.sh` inside the VNet |
+| Part 3 (this branch) | In progress | The create, destroy and reap workflows, `.github/scripts/preview.sh`, the per-database `CONNECTION LIMIT`, and the docs |
 
 Decisions so far:
 
 - **Reseed (AC6):** a `workflow_dispatch` trigger on `preview_create.yml`, with `pr_number` and `reseed` inputs and a same-repo check.
 - **First label vs. later push (AC5):** `preview_seed.sh ensure` checks a "seed finished" marker on the database.
 - **Fork safety (AC10):** `pull_request`, not `pull_request_target`, plus a job-level check that the PR's head repo is this repo.
+- **Secrets (part 3):** the deploy identity (`SDLC_AZURE_CREDS`) can't read Key Vault, and runners can't reach the private preview server. So a Terraform-managed container app job, `opre-ops-dev-app-preview-db`, holds `pgpassword`, `admin-pgpassword`, `jwt-private-key` and `jwt-public-key`. The workflows copy the backend's secrets from it through the management plane, and run every database step inside it.
+- **Separate preview JWT keypair:** previews sign tokens with their own keys (Key Vault `preview-jwt-{private,public}-key`), so code from an open PR never holds the key that signs dev tokens.
+- **Slot claim is optimistic, not locked:** instead of a short lock for claiming a slot, a PR creates its placeholder backend app first and then recounts. If more than 8 exist, the latest claims (by `preview-created` tag, ties to the higher PR number) delete theirs and post the cap comment. Every run sorts the same way, so no shared lock is needed and no queued run is dropped.
 - **Database:** one B1ms preview server (35 usable connections). Each preview keeps 2 connections idle and up to 5 under load (threads + 1, because a write can hold two connections). Steady state is about 16; going past 35 needs all 8 previews at full write load at once.
 
 ### Key Files
@@ -93,12 +98,12 @@ Per `docs/TESTING.md`: test at the lowest level, and skip config, glue and gener
 ### Constraints
 
 - **The shared App Gateway is managed by Terraform.** Previews must never change it after the one-time wildcard change.
-- **Blocked on DevOps (Increment 0):**
+- **Infra prerequisites (Increment 0, done by the teammate who handles infra):**
   - the wildcard listener (priority after dev and staging, plus IPv6) and DNS records
   - the router container app
   - the preview Postgres server with `GRANT ops TO psqladmin`
   - the two secrets
-  - the deploy identity: a narrow OIDC identity, ideally on its own resource group
+  - the deploy identity: a narrow OIDC identity, ideally on its own resource group. **Not met; accepted for now.** The workflows use the existing `SDLC_AZURE_CREDS` (Contributor on the SDLC subscription). Same-repo PR workflows already receive that secret and any write-access user can push a workflow, so running a PR-modified script adds no new exposure. A narrow OIDC identity is a follow-up.
   - making the GHCR package pullable
 - **Carried into part 3, from the reviews:**
   - **Locking:** one lock per PR, plus a short lock only for claiming one of the 8 slots. Not a single global concurrency group, which can drop pending runs.

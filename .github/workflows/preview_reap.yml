@@ -1,0 +1,75 @@
+name: Preview Reap
+
+# Nightly cleanup for per-PR previews (OPS-6419, ADR 032). Finds previews from Azure (apps
+# named opre-ops-pr<N>-app-* and ops_pr_<N> databases), not from the PR list, so orphans are
+# caught too. Reaps closed or unlabelled PRs and previews idle for 5 days, warning a day
+# before. Healthy previews are left alone. Logic lives in .github/scripts/preview.sh.
+on:
+  schedule:
+    - cron: "17 7 * * *" # 07:17 UTC, early morning US Eastern
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only list what would be reaped; post no warnings and delete nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      prs: ${{ steps.list.outputs.prs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/preview.sh
+            .github/actions/notify-slack-failure
+          sparse-checkout-cone-mode: false
+
+      - name: Log in to Azure
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+
+      - name: List previews to reap
+        id: list
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+        run: .github/scripts/preview.sh reap-list
+
+      - name: Notify Slack on failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        uses: ./.github/actions/notify-slack-failure
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  reap:
+    needs: find
+    if: needs.find.outputs.prs != '[]' && needs.find.outputs.prs != ''
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      # The preview-db job runs one database drop at a time anyway.
+      max-parallel: 2
+      matrix:
+        include: ${{ fromJSON(needs.find.outputs.prs) }}
+    uses: ./.github/workflows/preview_destroy.yml
+    with:
+      pr_number: ${{ matrix.pr }}
+      reason: ${{ matrix.reason }}
+    secrets:
+      SDLC_AZURE_CREDS: ${{ secrets.SDLC_AZURE_CREDS }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
