@@ -159,7 +159,9 @@ export const opsApi = createApi({
                     awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
                 }
                 if (division) {
-                    division.forEach((id) => queryParams.push(`division=${id}`));
+                    // COR's division: the division of the agreement's primary COR (project officer).
+                    // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
+                    division.forEach((d) => queryParams.push(`division=${d.id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
@@ -383,7 +385,8 @@ export const opsApi = createApi({
                     budgetLineTotalMax,
                     agreementTypes,
                     agreementTitles,
-                    canActivePeriods
+                    canActivePeriods,
+                    division
                 },
                 page,
                 onlyMy,
@@ -431,6 +434,11 @@ export const opsApi = createApi({
                     canActivePeriods.forEach((period) =>
                         queryParams.push(`can_active_period=${encodeURIComponent(period.title)}`)
                     );
+                }
+                if (division) {
+                    // COR's division: the division of the budget line's agreement's primary COR (project officer).
+                    // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
+                    division.forEach((d) => queryParams.push(`division=${d.id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);

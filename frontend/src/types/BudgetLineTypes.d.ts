@@ -86,4 +86,6 @@ export type Filters = {
     agreement_types: string[];
     agreement_names: { id: number; name: string }[];
     can_active_periods: number[];
+    /** Divisions of the agreements' primary CORs (#6457). */
+    cor_divisions: { id: number; name: string; abbreviation: string }[];
 };

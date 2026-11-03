@@ -5,7 +5,6 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vite
 import {
     useGetAgreementsQuery,
     useGetAgreementsFilterOptionsQuery,
-    useLazyGetUserQuery,
     useLazyGetAgreementsQuery,
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
@@ -64,6 +63,15 @@ vi.mock("./AgreementsFilterButton/AgreementsFilterButton", () => ({
                 onClick={() => setFilters && setFilters((prev) => ({ ...prev, fiscalYear: [] }))}
             >
                 Apply with empty FY
+            </button>
+            <button
+                data-testid="apply-cor-division"
+                onClick={() =>
+                    setFilters &&
+                    setFilters((prev) => ({ ...prev, division: [{ id: 7, name: "Division G", abbreviation: "DG" }] }))
+                }
+            >
+                Apply COR division
             </button>
         </div>
     )
@@ -220,8 +228,6 @@ afterEach(() => {
 describe("AgreementsList - Pagination", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
-        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
-
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query (used by AgreementTabs)
@@ -542,12 +548,7 @@ describe("AgreementsList - Pagination", () => {
                     })
             }));
 
-            const mockUserTrigger = vi.fn(() => ({
-                unwrap: () => Promise.resolve({ id: 500, full_name: "Test User" })
-            }));
-
             useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
-            useLazyGetUserQuery.mockReturnValue([mockUserTrigger, {}]);
 
             render(
                 <Provider store={store}>
@@ -597,6 +598,41 @@ describe("AgreementsList - Pagination", () => {
             );
         });
 
+        it("passes the division filter through to the list query and the export", async () => {
+            const queryParams = [];
+            useGetAgreementsQuery.mockImplementation((params) => {
+                queryParams.push(params);
+                return { data: mockAgreementsResponse, error: undefined, isLoading: false, isFetching: false };
+            });
+            const mockGetAllAgreementsTrigger = vi.fn((params) => ({
+                unwrap: () =>
+                    Promise.resolve({
+                        agreements: [{ id: 1, name: "Agreement 1", project_officer_id: null }],
+                        count: 1,
+                        limit: params.limit,
+                        offset: 0
+                    })
+            }));
+            useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByTestId("apply-cor-division"));
+
+            const expectedDivision = [{ id: 7, name: "Division G", abbreviation: "DG" }];
+            await waitFor(() => expect(queryParams.at(-1).filters.division).toEqual(expectedDivision));
+
+            fireEvent.click(screen.getByRole("button", { name: /export/i }));
+            await waitFor(() => expect(mockGetAllAgreementsTrigger).toHaveBeenCalled());
+            expect(mockGetAllAgreementsTrigger.mock.calls[0][0].filters.division).toEqual(expectedDivision);
+        });
+
         it("should pass 'Lifetime Obligated' column header to exportTableToXlsx when All FYs selected", async () => {
             const { exportTableToXlsx } = await import("../../../helpers/tableExport.helpers");
 
@@ -609,10 +645,6 @@ describe("AgreementsList - Pagination", () => {
 
             useLazyGetAgreementsQuery.mockReturnValue([
                 vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
-                {}
-            ]);
-            useLazyGetUserQuery.mockReturnValue([
-                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
                 {}
             ]);
 
@@ -647,10 +679,6 @@ describe("AgreementsList - Pagination", () => {
 
             useLazyGetAgreementsQuery.mockReturnValue([
                 vi.fn(() => ({ unwrap: () => Promise.resolve(mockAgreementsResponse) })),
-                {}
-            ]);
-            useLazyGetUserQuery.mockReturnValue([
-                vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
                 {}
             ]);
 
@@ -712,7 +740,6 @@ describe("AgreementsList - Pagination", () => {
                     })
             }));
             useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
-            useLazyGetUserQuery.mockReturnValue([vi.fn(() => ({ unwrap: () => Promise.resolve({}) })), {}]);
 
             render(
                 <Provider store={store}>
@@ -747,6 +774,42 @@ describe("AgreementsList - Pagination", () => {
             // column 1 is the raw nickname.
             expect(row[0]).toBe("Full Legal Title For Testing");
             expect(row[1]).toBe("NICK");
+        });
+
+        it("exports the COR column from project_officer_name, with TBD when there is no COR", async () => {
+            exportTableToXlsx.mockClear();
+
+            const withCor = { id: 1, name: "Agreement With COR", project_officer_name: "Chris Fortunato" };
+            const withoutCor = { id: 2, name: "Agreement Without COR", project_officer_name: null };
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: { agreements: [withCor, withoutCor], count: 2, limit: 10, offset: 0 },
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+            useLazyGetAgreementsQuery.mockReturnValue([
+                vi.fn(() => ({
+                    unwrap: () => Promise.resolve({ agreements: [withCor, withoutCor], count: 2, limit: 50, offset: 0 })
+                })),
+                {}
+            ]);
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            fireEvent.click(await screen.findByRole("button", { name: /export/i }));
+            await waitFor(() => expect(exportTableToXlsx).toHaveBeenCalled());
+
+            const { headers, rowMapper } = exportTableToXlsx.mock.calls.at(-1)[0];
+            const corIndex = headers.indexOf("COR");
+            expect(rowMapper(withCor)[corIndex]).toBe("Chris Fortunato");
+            expect(rowMapper(withoutCor)[corIndex]).toBe("TBD");
         });
     });
 
@@ -789,8 +852,6 @@ describe("AgreementsList - Pagination", () => {
 describe("AgreementsList - Fiscal Year Filtering", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
-        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
-
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query
@@ -1033,7 +1094,6 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
 
 describe("AgreementsList - FY Obligated sort preserved when switching to All FYs", () => {
     beforeEach(() => {
-        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
         useGetChangeRequestsListQuery.mockReturnValue({
             data: { data: [], count: 0, limit: 10, offset: 0 },
@@ -1089,10 +1149,6 @@ describe("AgreementsList - FY Obligated sort preserved when switching to All FYs
 
 describe("AgreementsList - Export Lifetime Obligated value under All FYs", () => {
     beforeEach(() => {
-        useLazyGetUserQuery.mockReturnValue([
-            vi.fn(() => ({ unwrap: () => Promise.resolve({ id: 1, display_name: "COR" }) })),
-            {}
-        ]);
         useLazyGetAgreementsQuery.mockReturnValue([
             vi.fn(() => ({
                 unwrap: () =>
@@ -1165,7 +1221,6 @@ describe("AgreementsList - Export Lifetime Obligated value under All FYs", () =>
 
 describe("AgreementsList - Model B FY behavior (OPS-6256)", () => {
     const baseBeforeEach = () => {
-        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
         useGetChangeRequestsListQuery.mockReturnValue({
             data: { data: [], count: 0, limit: 10, offset: 0 },

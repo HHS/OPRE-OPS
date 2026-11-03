@@ -5,8 +5,7 @@ import { PacmanLoader } from "react-spinners";
 import {
     useGetAgreementsFilterOptionsQuery,
     useGetAgreementsQuery,
-    useLazyGetAgreementsQuery,
-    useLazyGetUserQuery
+    useLazyGetAgreementsQuery
 } from "../../../api/opsAPI.js";
 import App from "../../../App";
 import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
@@ -150,7 +149,6 @@ const AgreementsList = () => {
         setSelectedFiscalYear(newValue);
     };
 
-    const [trigger] = useLazyGetUserQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     if (isLoadingAgreement && changeRequestUrl) {
@@ -212,21 +210,6 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
-            const corPromises = allAgreementsList
-                .filter((agreement) => agreement?.project_officer_id)
-                .map((agreement) => trigger(agreement.project_officer_id).unwrap());
-
-            const corResponses = await Promise.all(corPromises);
-
-            /** @type {Record<number, {cor: string}>} */
-            const agreementDataMap = {};
-            allAgreementsList.forEach((agreement) => {
-                const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
-
-                agreementDataMap[agreement.id] = {
-                    cor: corData?.display_name ?? corData?.full_name ?? "TBD"
-                };
-            });
             // displayFY collapses "Multi" → "All" so export columns match the table columns.
             const isAllFY = displayFY === "All";
             const fyLabel = isAllFY ? "Lifetime Obligated" : `FY${displayFY.slice(-2)} Obligated`;
@@ -282,7 +265,7 @@ const AgreementsList = () => {
                 { header: "Contract Number", getValue: (agreement) => getAgreementContractNumber(agreement) ?? "" },
                 { header: "Award Type", getValue: (agreement) => agreement?.award_type ?? "" },
                 { header: "Vendor", getValue: (agreement) => agreement?.vendor ?? "" },
-                { header: "COR", getValue: (agreement) => agreementDataMap[agreement.id]?.cor ?? "" }
+                { header: "COR", getValue: (agreement) => agreement.project_officer_name ?? "TBD" }
             ];
             const activeColumnDefs = columnDefs.filter((column) => !(column.omitWhenAllFY && isAllFY));
 

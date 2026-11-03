@@ -43,7 +43,7 @@ const ProcurementDashboard = () => {
             includeProcurement: true,
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
             ...(filters.procShop?.length ? { awardingEntityId: filters.procShop.map((s) => s.id) } : {}),
-            ...(filters.division?.length ? { division: filters.division.map((d) => d.id) } : {})
+            ...(filters.division?.length ? { division: filters.division } : {})
         }
     });
 
