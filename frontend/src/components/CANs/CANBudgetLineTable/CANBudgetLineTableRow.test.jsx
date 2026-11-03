@@ -119,4 +119,52 @@ describe("CANBudgetLineTableRow", () => {
         expect(trail.targetPath).toBe(`/agreements/${mockBudgetLine.agreement.id}`);
         expect(trail.ancestors).toEqual(ancestry);
     });
+
+    test("folds the full title into the agreement link's accessible name when it differs from the nickname-preferred display name", () => {
+        renderWithProviders(
+            <CANBudgetLineTableRow
+                budgetLine={mockBudgetLine}
+                blId={mockBudgetLine.id}
+                agreementName="FLT"
+                obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                fiscalYear={mockBudgetLine.fiscal_year}
+                amount={mockBudgetLine.amount}
+                percentOfCAN={3}
+                status={mockBudgetLine.status}
+                inReview={mockBudgetLine.in_review}
+                creatorId={mockBudgetLine.created_by}
+                creationDate={mockBudgetLine.created_on}
+            />
+        );
+
+        // mockBudgetLine.agreement.name is the full legal title; agreementName ("FLT") is the
+        // nickname-preferred display value — they must differ for this branch to be exercised.
+        expect(
+            screen.getByRole("link", {
+                name: `View agreement details for FLT, full title ${mockBudgetLine.agreement.name}`
+            })
+        ).toBeInTheDocument();
+    });
+
+    test("uses a plain accessible name with no 'full title' suffix when there is no distinct nickname", () => {
+        renderWithProviders(
+            <CANBudgetLineTableRow
+                budgetLine={mockBudgetLine}
+                blId={mockBudgetLine.id}
+                agreementName={mockBudgetLine.agreement.name}
+                obligateDate={formatDateNeeded(mockBudgetLine.date_needed)}
+                fiscalYear={mockBudgetLine.fiscal_year}
+                amount={mockBudgetLine.amount}
+                percentOfCAN={3}
+                status={mockBudgetLine.status}
+                inReview={mockBudgetLine.in_review}
+                creatorId={mockBudgetLine.created_by}
+                creationDate={mockBudgetLine.created_on}
+            />
+        );
+
+        expect(
+            screen.getByRole("link", { name: `View agreement details for ${mockBudgetLine.agreement.name}` })
+        ).toBeInTheDocument();
+    });
 });

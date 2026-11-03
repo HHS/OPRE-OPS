@@ -68,9 +68,14 @@ const CANBudgetLineTableRow = ({
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
     const agreementPath = `/agreements/${budgetLine?.agreement?.id}`;
     // When the nickname-preferred agreementName differs from the full title, the full title
-    // reaches hover/focus users via a Tooltip on the Link itself, matching AgreementTableRow.
+    // must also reach keyboard/screen-reader users through the link's own accessible name —
+    // the hover Tooltip alone doesn't reliably expose it to AT users navigating the table via
+    // virtual cursor/browse mode, matching AgreementTableRow.
     const fullAgreementName = budgetLine?.agreement?.name;
     const hasDistinctFullName = Boolean(fullAgreementName) && fullAgreementName !== resolvedAgreementName;
+    const agreementLinkLabel = hasDistinctFullName
+        ? `View agreement details for ${resolvedAgreementName}, full title ${fullAgreementName}`
+        : `View agreement details for ${resolvedAgreementName}`;
 
     const TableRowData = (
         <>
@@ -86,7 +91,7 @@ const CANBudgetLineTableRow = ({
                                 className="text-ink text-no-underline"
                                 to={agreementPath}
                                 state={buildTrailState(agreementPath, ancestry, agreementName?.trim())}
-                                aria-label={resolvedAgreementName}
+                                aria-label={agreementLinkLabel}
                             >
                                 <TextClip
                                     text={agreementName?.trim() || `${budgetLine.agreement.id}`}
