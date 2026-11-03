@@ -133,9 +133,9 @@ const AgreementCANReviewAccordion = ({
             heading="Review CANs"
             level={2}
         >
+            <p>{instructions}</p>
             {cansWithPendingAmount.length > 0 && (
                 <>
-                    <p>{instructions}</p>
                     <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                         {showToggle && (
                             <ToggleButton

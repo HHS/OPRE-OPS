@@ -499,7 +499,7 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCard2).toBeInTheDocument();
         expect(remainingBudgetCard2).toBeInTheDocument();
     });
-    it("should render no content when no budget lines are selected", () => {
+    it("should render no body content (besides instructions) when no budget lines are selected", () => {
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -512,12 +512,13 @@ describe("AgreementCANReview", () => {
         );
 
         expect(screen.getByRole("heading", { name: "Review CANs" })).toBeInTheDocument();
+        // The instructions paragraph always renders; UX wants this addressed in a separate ticket
+        expect(screen.getByText(initialProps.instructions)).toBeInTheDocument();
         expect(screen.queryByText(/do not have a CAN/i)).not.toBeInTheDocument();
         expect(screen.queryByText("Portfolios:")).not.toBeInTheDocument();
         expect(screen.queryByText("Other CANs Outside Your Division:")).not.toBeInTheDocument();
-        expect(screen.queryByText(initialProps.instructions)).not.toBeInTheDocument();
     });
-    it("should render no content when selected budget lines have no CAN", () => {
+    it("should render no body content (besides instructions) when selected budget lines have no CAN", () => {
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -530,8 +531,8 @@ describe("AgreementCANReview", () => {
         );
 
         expect(screen.getByRole("heading", { name: "Review CANs" })).toBeInTheDocument();
+        expect(screen.getByText(initialProps.instructions)).toBeInTheDocument();
         expect(screen.queryByText(/do not have a CAN/i)).not.toBeInTheDocument();
-        expect(screen.queryByText(initialProps.instructions)).not.toBeInTheDocument();
     });
     it("should hide the Portfolios caption when no portfolios match the selected CANs", () => {
         useGetPortfoliosQuery.mockReturnValueOnce({ data: [] });
