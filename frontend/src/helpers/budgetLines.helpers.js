@@ -526,7 +526,7 @@ export const handleExport = async (
             "Portfolio",
             "Project",
             "Project Type",
-            "Agreement",
+            "Agreement Nickname",
             "SC",
             // CLIN column (awarded contract agreements only) is inserted right after SC.
             ...(includeClin ? ["CLIN"] : []),

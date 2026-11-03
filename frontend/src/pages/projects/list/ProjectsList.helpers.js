@@ -85,7 +85,7 @@ export const handleProjectsExport = async (
             ...(isAllFY ? [] : [`FY${String(selectedFiscalYear).slice(-2)} Total`]),
             "Lifetime Total",
             "Total Agreements",
-            "Agreements"
+            "Agreements (nickname)"
         ];
 
         await exportTableToXlsx({
