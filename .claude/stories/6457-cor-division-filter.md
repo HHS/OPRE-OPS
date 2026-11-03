@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/division-staffing-filter  # current; the first branch, OPS-6457/agreements-cor-division-filter, merged as PR #6480 on 2026-11-03
-status: IN PROGRESS. PR #6480 (backend + non-rendering frontend wiring for COR's division) **merged 2026-11-03**. A UX prototype landed in the issue comments (a "Division & Staffing" filter that picks whole divisions **or** individual CORs). The backend for that (a `cor_id` filter OR'd with `division`, and `cors` filter options) is done on `OPS-6457/division-staffing-filter`. Next: frontend wiring for `cor_id`/`cors`, then the UI from the prototype (see "Pick up here").
+status: IN PROGRESS. PR #6480 (backend + non-rendering frontend wiring for COR's division) **merged 2026-11-03**. A UX prototype landed in the issue comments (a "Division & Staffing" filter that picks whole divisions **or** individual CORs). The backend for that (a `cor_id` filter OR'd with `division`, and `cors` filter options) is done on `OPS-6457/division-staffing-filter`. The non-rendering frontend wiring (`cor` state → `cor_id`) is done too. Next: the UI from the prototype (see "Pick up here").
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -213,12 +213,16 @@ done too. Everything else waits on designs, plus the T0 data check and the PR wr
 
 **Pick up here (2026-11-03), in order:**
 1. ~~**Backend for the prototype:** `cor_id` + `cors` on both endpoints.~~ Done; see above.
-2. **Frontend wiring that renders nothing** for `cor_id`/`cors`, the same as the 2026-11-02 `division` work:
-   - `cor_id: []` defaults in `sessionUISlice` (agreements + budgetLines);
-   - `opsAPI.getAgreements` and `getBudgetLineItems` map COR objects to ids (add `cor_id` to the BLI destructured
-     key list);
-   - `cors` in the filter-options types;
-   - `opsAPI.test.js` query-string tests; list query + export tests on both pages.
+2. ~~**Frontend wiring that renders nothing** for `cor_id`/`cors`.~~ Done 2026-11-03:
+   - the state key is **`cor`** (COR objects `{id, name, division_id}`), with `cor: []` defaults in `sessionUISlice`
+     for agreements and budgetLines (not the Procurement Dashboard, which only gets a relabel);
+   - `opsAPI.getAgreements` and `getBudgetLineItems` send `cor_id=<id>` per COR (`cor` was added to the BLI
+     destructured key list);
+   - types: `CorFilterOption` + `Filters.cor` (`AgreementsFilterTypes.d.ts`), `cors` (`BudgetLineTypes.d.ts`);
+   - tests: `opsAPI.test.js` query strings for both endpoints (with `division`, and cleared); list query + export
+     pass-through on both pages. The two `opsAPI` tests failed before the change. The page tests passed from the
+     start, because filters are spread through; they guard against regressions.
+   - All green: the frontend lint and the full unit suite (5,261 passed).
 3. **"Division & Staffing" control**, Agreements + Budget Lines, from the prototype (designs now exist):
    - in the modal after Portfolio; reuse `FilterComboBox`/react-select (no new elements);
    - options built from `cor_divisions` + `cors`: for each division, the division option, then its CORs

@@ -88,4 +88,6 @@ export type Filters = {
     can_active_periods: number[];
     /** Divisions of the agreements' primary CORs (#6457). */
     cor_divisions: { id: number; name: string; abbreviation: string }[];
+    /** The agreements' primary CORs (#6457); `division_id` is null when the COR has no division. */
+    cors: { id: number; name: string; division_id: number | null }[];
 };

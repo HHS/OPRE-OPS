@@ -422,6 +422,62 @@ describe("opsAPI - Agreements Pagination", () => {
             expect(params.getAll("division")).toEqual(["1", "2"]);
         });
 
+        it("should include a cor_id param per selected COR, alongside division", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        division: [{ id: 1, name: "Division A", abbreviation: "DA" }],
+                        cor: [
+                            { id: 21, name: "Hank Smith", division_id: 2 },
+                            { id: 22, name: "No Division", division_id: null }
+                        ]
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            const params = new URL(capturedUrl).searchParams;
+            expect(params.getAll("cor_id")).toEqual(["21", "22"]);
+            expect(params.getAll("division")).toEqual(["1"]);
+        });
+
+        it("should omit the cor_id param when no COR is selected", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: { cor: [] },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(new URL(capturedUrl).searchParams.has("cor_id")).toBe(false);
+        });
+
         it("should omit the division param when no COR's division is selected", async () => {
             let capturedUrl = "";
             server.use(
@@ -1130,6 +1186,35 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
 
         expect(new URL(capturedUrls[0]).searchParams.getAll("division")).toEqual(["1", "2"]);
         expect(new URL(capturedUrls[1]).searchParams.has("division")).toBe(false);
+    });
+
+    it("sends a cor_id param per selected COR on getBudgetLineItems, and none when cleared", async () => {
+        const capturedUrls = [];
+        server.use(
+            http.get("*/api/v1/budget-line-items/*", ({ request }) => {
+                capturedUrls.push(request.url);
+                return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getBudgetLineItems.initiate({
+                filters: {
+                    division: [{ id: 1, name: "Division A", abbreviation: "DA" }],
+                    cor: [
+                        { id: 21, name: "Hank Smith", division_id: 2 },
+                        { id: 22, name: "No Division", division_id: null }
+                    ]
+                }
+            })
+        );
+        await storeRef.store.dispatch(opsApi.endpoints.getBudgetLineItems.initiate({ filters: { cor: [] } }));
+
+        const firstParams = new URL(capturedUrls[0]).searchParams;
+        expect(firstParams.getAll("cor_id")).toEqual(["21", "22"]);
+        expect(firstParams.getAll("division")).toEqual(["1"]);
+        expect(new URL(capturedUrls[1]).searchParams.has("cor_id")).toBe(false);
     });
 
     it("builds getProjects agreement filter using agreement_id, not the nickname-preferred title", async () => {

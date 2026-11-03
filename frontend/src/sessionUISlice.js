@@ -35,7 +35,8 @@ const listFilterDefaults = {
             agreementName: [],
             contractNumber: [],
             awardType: [],
-            division: []
+            division: [],
+            cor: []
         },
         selectedFiscalYear: "All"
     },
@@ -58,7 +59,8 @@ const listFilterDefaults = {
             agreementTypes: [],
             agreementTitles: [],
             canActivePeriods: [],
-            division: []
+            division: [],
+            cor: []
         },
         selectedFiscalYear: "All"
     },

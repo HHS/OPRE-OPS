@@ -106,6 +106,7 @@ export const opsApi = createApi({
                     awardType,
                     awardingEntityId,
                     division,
+                    cor,
                     includeProcurement,
                     includeBudgetLines = true
                 },
@@ -162,6 +163,11 @@ export const opsApi = createApi({
                     // COR's division: the division of the agreement's primary COR (project officer).
                     // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
                     division.forEach((d) => queryParams.push(`division=${d.id}`));
+                }
+                if (cor) {
+                    // The agreement's primary COR (project officer). The backend ORs `cor_id` with `division`
+                    // ("Division & Staffing"). Expects COR objects ({ id, name, division_id }); only `id` is sent.
+                    cor.forEach((c) => queryParams.push(`cor_id=${c.id}`));
                 }
                 if (includeProcurement) {
                     queryParams.push("include_procurement=true");
@@ -386,7 +392,8 @@ export const opsApi = createApi({
                     agreementTypes,
                     agreementTitles,
                     canActivePeriods,
-                    division
+                    division,
+                    cor
                 },
                 page,
                 onlyMy,
@@ -439,6 +446,11 @@ export const opsApi = createApi({
                     // COR's division: the division of the budget line's agreement's primary COR (project officer).
                     // Expects Division objects ({ id, name, abbreviation }), not ids; only `id` is sent.
                     division.forEach((d) => queryParams.push(`division=${d.id}`));
+                }
+                if (cor) {
+                    // The budget line's agreement's primary COR (project officer). The backend ORs `cor_id` with
+                    // `division` ("Division & Staffing"). Expects COR objects ({ id, name, division_id }); only `id` is sent.
+                    cor.forEach((c) => queryParams.push(`cor_id=${c.id}`));
                 }
                 if (page !== undefined && page !== null) {
                     queryParams.push(`limit=${limit}`);
