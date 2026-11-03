@@ -55,6 +55,35 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(link).toHaveAttribute("href", "/agreements/1");
     });
 
+    it("renders the nickname-preferred name, not the raw full name, when a nickname exists", () => {
+        renderWithProviders(
+            <table>
+                <tbody>
+                    <ProjectSpendingAgreementRow
+                        agreement={{
+                            ...mockAgreement,
+                            name: "Full Legal Title For Testing",
+                            nick_name: "FLT",
+                            display_name: "FLT"
+                        }}
+                        fiscalYear={2043}
+                        fyTotal={null}
+                    />
+                </tbody>
+            </table>,
+            { withLocationProbe: true }
+        );
+
+        expect(screen.getByText("FLT")).toBeInTheDocument();
+        // The full title reaches hover/focus users via the link's accessible name (and the
+        // Tooltip's own hidden body), rather than being shown as the row's visible name.
+        expect(
+            screen.getByRole("link", {
+                name: "View agreement details for FLT, full title Full Legal Title For Testing"
+            })
+        ).toBeInTheDocument();
+    });
+
     it("renders agreement type", () => {
         renderRow();
         expect(screen.getByText("Contract")).toBeInTheDocument();
