@@ -10,7 +10,9 @@ describe("useAgreementsFilterButton", () => {
         agreementType: [],
         agreementName: [],
         contractNumber: [],
-        awardType: []
+        awardType: [],
+        division: [],
+        cor: []
     };
 
     it("reseeds local buffers from parent filters when the modal opens", () => {
@@ -66,7 +68,9 @@ describe("useAgreementsFilterButton", () => {
             agreementType: [{ id: 1, title: "Contract" }],
             agreementName: [{ id: 1, title: "Agreement A" }],
             contractNumber: [{ id: 1, title: "12345" }],
-            awardType: [{ id: 1, title: "SOLE_SOURCE" }]
+            awardType: [{ id: 1, title: "SOLE_SOURCE" }],
+            division: [{ id: 1, name: "Division A", abbreviation: "DA" }],
+            cor: [{ id: 21, name: "Hank Smith", division_id: 1, division_abbreviation: "DA" }]
         };
         const setFilters = vi.fn();
         const { result } = renderHook(() => useAgreementsFilterButton(filters, setFilters, true));
@@ -82,6 +86,8 @@ describe("useAgreementsFilterButton", () => {
         expect(result.current.agreementName).toEqual([]);
         expect(result.current.contractNumber).toEqual([]);
         expect(result.current.awardType).toEqual([]);
+        expect(result.current.division).toEqual([]);
+        expect(result.current.cor).toEqual([]);
         // Reset must not fire a query — it only takes effect once Apply is clicked.
         expect(setFilters).not.toHaveBeenCalled();
     });
@@ -103,5 +109,56 @@ describe("useAgreementsFilterButton", () => {
             ...baseFilters,
             portfolio: [{ id: 2, title: "Portfolio B" }]
         });
+    });
+
+    it("applyFilter commits the Division & Staffing selections alongside other filters", () => {
+        const setFilters = vi.fn();
+        const division = [{ id: 3, name: "Division C", abbreviation: "DC" }];
+        const cor = [{ id: 21, name: "Hank Smith", division_id: 1, division_abbreviation: "DA" }];
+        const { result } = renderHook(() => useAgreementsFilterButton(baseFilters, setFilters, true));
+
+        act(() => {
+            result.current.setDivision(division);
+            result.current.setCor(cor);
+        });
+        act(() => {
+            result.current.applyFilter();
+        });
+
+        const updater = setFilters.mock.calls[0][0];
+        expect(updater(baseFilters)).toEqual({ ...baseFilters, division, cor });
+    });
+
+    it("applyFilter stores cleared Division & Staffing selections as empty arrays", () => {
+        const setFilters = vi.fn();
+        const { result } = renderHook(() => useAgreementsFilterButton(baseFilters, setFilters, true));
+
+        act(() => {
+            result.current.setDivision(null);
+            result.current.setCor(null);
+        });
+        act(() => {
+            result.current.applyFilter();
+        });
+
+        const applied = setFilters.mock.calls[0][0](baseFilters);
+        expect(applied.division).toEqual([]);
+        expect(applied.cor).toEqual([]);
+    });
+
+    it("syncs the Division & Staffing buffers when the parent filters change (tag removed)", () => {
+        const setFilters = vi.fn();
+        const division = [{ id: 3, name: "Division C", abbreviation: "DC" }];
+        const cor = [{ id: 21, name: "Hank Smith", division_id: 3, division_abbreviation: "DC" }];
+        const { result, rerender } = renderHook(
+            ({ filters }) => useAgreementsFilterButton(filters, setFilters, false),
+            { initialProps: { filters: { ...baseFilters, division, cor } } }
+        );
+        expect(result.current.division).toEqual(division);
+        expect(result.current.cor).toEqual(cor);
+
+        rerender({ filters: { ...baseFilters, division: [], cor: [] } });
+        expect(result.current.division).toEqual([]);
+        expect(result.current.cor).toEqual([]);
     });
 });

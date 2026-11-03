@@ -113,6 +113,31 @@ describe("Agreement List", () => {
         cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
+    it("filters agreements by Division & Staffing and clears it from the tag", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Options only include divisions with a COR on at least one agreement, so the first one has results.
+        cy.get(".division-staffing-combobox__control").click();
+        cy.get(".division-staffing-combobox__menu")
+            .find(".division-staffing-combobox__option")
+            .first()
+            .invoke("text")
+            .then((label) => {
+                cy.get(".division-staffing-combobox__option").first().click();
+                cy.get("button").contains("Apply").click();
+
+                getAppliedFilters().within(() => {
+                    cy.contains(label).should("exist");
+                });
+                cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+
+                // Removing the tag returns the page to its unfiltered results.
+                cy.get(`button[aria-label="Remove ${label} filter"]`).click();
+                cy.contains("span", "Filters Applied:").should("not.exist");
+                cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+            });
+    });
+
     it("filters agreements by agreement name", () => {
         cy.get("button").contains("Filter").click();
 

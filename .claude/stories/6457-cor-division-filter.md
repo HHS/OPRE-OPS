@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/division-staffing-filter  # current; the first branch, OPS-6457/agreements-cor-division-filter, merged as PR #6480 on 2026-11-03
-status: IN PROGRESS. PR #6480 (backend + non-rendering frontend wiring for COR's division) **merged 2026-11-03**. A UX prototype landed in the issue comments (a "Division & Staffing" filter that picks whole divisions **or** individual CORs). The backend for that (a `cor_id` filter OR'd with `division`, and `cors` filter options) is done on `OPS-6457/division-staffing-filter`. The non-rendering frontend wiring (`cor` state → `cor_id`) is done too. Next: the UI from the prototype (see "Pick up here").
+status: IN PROGRESS. PR #6480 (COR's division backend + wiring) merged 2026-11-03. Draft PR **#6495** (`OPS-6457/division-staffing-filter`) carries the "Division & Staffing" work from the UX prototype: the backend (`cor_id` OR'd with `division`, `cors` options), the frontend wiring, and the control + tags on Agreements and Budget Lines. Pick up at "Start here next session (2026-11-04)".
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -79,7 +79,43 @@ portfolio's division.
 
 ---
 
-## Progress: where to pick up (updated 2026-11-03)
+## Progress: where to pick up (updated 2026-11-03, end of day)
+
+### ▶ Start here next session (2026-11-04)
+**State at end of 2026-11-03:**
+- Branch `OPS-6457/division-staffing-filter`, pushed. **Draft PR #6495**, description up to date. It has three
+  commits: the backend, the frontend wiring, and the control + tags.
+- Done and green:
+  - backend full suite (2,732 passed), lint;
+  - frontend full unit suite (5,282 passed), lint;
+  - Cypress `agreementList` + `budgetLineItemsList`.
+- Not done yet: a visual check, the CI run on #6495, and `/ops-pr-review`.
+- The local Docker stack was started with `docker compose up --build -d` and may still be running. Backend pytest
+  needs port 5432 free, so run `docker compose stop db` first (see "Local environment gotchas").
+
+**Do next, in order:**
+1. **Check CI on #6495** (`.claude/actions/quick-ci-status.sh`) and fix anything red.
+2. **Visual check** of the "Division & Staffing" field (`/visual-check`, or the running app at
+   http://localhost:3000) on the Agreements and Budget Lines filter modals, at desktop and mobile widths. Look for:
+   - the field after Portfolio;
+   - the grouped order, and no-division CORs last;
+   - chips and tags, and the "Remove … filter" buttons;
+   - long COR lists scrolling inside the menu.
+3. **Step 4: "Portfolio (funding stream)" label** on every portfolio filter. Start from `PortfoliosComboBox`
+   (it owns the label; check whether other pages pass their own) and grep for the other portfolio filter labels
+   (Agreements, Budget Lines, Projects, CANs, Portfolios list). Update the unit and Cypress tests that find the field
+   by its "Portfolio" label.
+4. **Step 5: announcer** (`role="status"`, polite) on Agreements and Budget Lines. It announces that filters were
+   applied, removed or reset, and the new result count (C1). Check `docs/TESTING.md` and existing live regions
+   first; none exists on these pages today.
+5. **Step 7: Procurement Dashboard relabel.** It's blocked on **Q7** (the label wording); ask Kim. Then it's a label
+   change in `ProcurementDashboardFilterButton.jsx` plus its unit and Cypress tests.
+6. Then: mark #6495 ready, run `/ops-pr-review 6495`, and check the boxes the merged UI satisfies on the issue
+   (the two "I can filter" ACs, clearing, "divisions offered" for the lists, keyboard/AT once the announcer lands,
+   and the distinct name).
+
+**Still open (not code):** Q2 (COR on Budget Lines?), Q6 (FigJam), Q7 (Dashboard label), T0 (CORs-without-
+division counts on staging/prod), Q5 (stale Projects/Reporting testing text in the issue).
 
 ### Update 2026-11-03: PR #6480 merged, prototype landed
 - **PR #6480 merged to `main` on 2026-11-03.** It carried everything under "Done on the branch" below. New work
@@ -223,7 +259,7 @@ done too. Everything else waits on designs, plus the T0 data check and the PR wr
      pass-through on both pages. The two `opsAPI` tests failed before the change. The page tests passed from the
      start, because filters are spread through; they guard against regressions.
    - All green: the frontend lint and the full unit suite (5,261 passed).
-3. **"Division & Staffing" control**, Agreements + Budget Lines, from the prototype (designs now exist):
+3. ~~**"Division & Staffing" control**~~ Done 2026-11-03 (details below the list). Original plan:
    - in the modal after Portfolio; reuse `FilterComboBox`/react-select (no new elements);
    - options built from `cor_divisions` + `cors`: for each division, the division option, then its CORs
      (`ABBR - Name`); CORs with a null `division_id` last, ungrouped;
@@ -236,11 +272,43 @@ done too. Everything else waits on designs, plus the T0 data check and the PR wr
    with a portfolio filter; grep `PortfoliosComboBox` and other portfolio labels). Update the tests that query by
    label.
 5. **Announcer** (`role="status"`) for filter changes and result counts (C1).
-6. **COR column**, Agreements table, from `project_officer_name`. The prototype has none, so ask UX (Q4) before
-   building it.
+6. ~~**COR column**~~ **Not for now (decided 2026-11-03):** the prototype has no COR column, so none is added.
+   `project_officer_name` stays in the API and the export. Revisit if UX adds one.
 7. **Procurement Dashboard (T4):** relabel only (`ProcurementDashboardFilterButton.jsx`), with the wording from
    Q7. Update its unit and Cypress tests.
-8. **Open questions:** Q2, Q4, Q6, Q7.
+8. **Open questions:** Q2, Q6, Q7.
+
+**Step 3 as built (2026-11-03):**
+- `components/Agreements/DivisionStaffingComboBox/`: a thin wrapper over `ComboBox` (react-select, the same as
+  every other filter), labelled **"Division & Staffing"**. No new elements.
+  - `DivisionStaffingComboBox.helpers.js` builds the options from `cor_divisions` + `cors`:
+    - each division (`ABBR - Name`, by abbreviation), then its CORs (`ABBR - Person`, by name);
+    - then CORs with no division, ungrouped (`Person`).
+  - The order is kept with `ComboBox`'s existing `order` field.
+  - Option ids are prefixed (`division-1`, `cor-21`), because a division and a user can share an id.
+  - The control splits its selection back into the `division` and `cor` state; a cleared box (`null`) becomes `[]`.
+  - Stored COR objects get a frontend-only `division_abbreviation`, so tags can show the division without
+    the filter options.
+  - Focus is react-select's default single-row highlight, which matches Kim's call. Staff rows are **not
+    indented** (optional in the comment; react-select would need a custom option renderer).
+- **Agreements:** the field sits after Portfolio in `AgreementsFilterButton.jsx`. `division`/`cor` buffers are in
+  `AgreementsFilterButton.hooks.js` (reseed on open, sync on tag removal, apply, reset). Tags are in
+  `AgreementsFilterTags.hooks.js`, labelled like the options and removed by id.
+- **Budget Lines:** the same in `BLIFilterButton.jsx` / `BLIFilterTags.jsx`. Tag order: portfolios, then
+  divisions, then CORs.
+- **Tests:**
+  - the component (grouped order, distinct ids, keyboard pick of a division + a COR from another division, a
+    no-division COR, chips, Backspace removal);
+  - the Agreements hook (apply, `null` → `[]`, reset, sync) and tags (labels; removal by id when a division and
+    a COR share an id);
+  - the Agreements modal by keyboard;
+  - the BLI modal by keyboard, plus reset;
+  - BLI tags (labels, order, removal by id);
+  - a Cypress journey in `agreementList.cy.js` (pick the first option, see rows, remove the tag, back to
+    unfiltered).
+- Frontend lint is clean, and the full unit suite passes (5,282).
+- Not in step 3: the "Portfolio (funding stream)" label (step 4), the announcer (step 5), and the Dashboard relabel
+  (step 7).
 
 **Before release / review:**
 9. **T0:** run the CORs-without-a-division query (§2, T0) on staging and prod and share the counts with the PO.
@@ -415,7 +483,7 @@ frontend ships. That works well if the team wants backend progress immediately.
    user can't see *why* a BLI matched. Ask UX/PO.
 3. ~~**Should the dashboard narrow its options to divisions with a COR (B7)?**~~ **Settled 2026-11-03:** no. The
    Dashboard only gets the relabel (A4), as the story says.
-4. **COR column on Agreements:** visible column vs. expanded row; sortable or not.
+4. ~~**COR column on Agreements**~~ **Settled 2026-11-03:** not for now; the prototype has none.
 5. **Stale testing text** in the issue (Projects/Reporting): ask the author to clean it up.
 6. **FigJam diagram:** review it for anything that changes the slicing (e.g., a different control or placement).
 7. **Procurement Dashboard label wording.** The dev lead proposed "Division & Staffing" for consistency. It offers

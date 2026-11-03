@@ -9,7 +9,9 @@ const emptyFilters = {
     agreementType: [],
     agreementName: [],
     contractNumber: [],
-    awardType: []
+    awardType: [],
+    division: [],
+    cor: []
 };
 
 // ---------------------------------------------------------------------------
@@ -163,5 +165,52 @@ describe("removeFilter - non-FY filters", () => {
             projectTitle: [{ id: 1, title: "Project Alpha" }]
         });
         expect(result.projectTitle).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Division & Staffing (#6457)
+// ---------------------------------------------------------------------------
+describe("Division & Staffing tags", () => {
+    const divisions = [
+        { id: 1, name: "Division A", abbreviation: "DA" },
+        { id: 2, name: "Division B", abbreviation: "DB" }
+    ];
+    const cors = [
+        { id: 1, name: "Hank Smith", division_id: 2, division_abbreviation: "DB" },
+        { id: 22, name: "Ann Nodivision", division_id: null, division_abbreviation: null }
+    ];
+
+    it("labels division and COR tags like the options", () => {
+        // Stable reference: a new object per render would re-trigger the hook's effects forever.
+        const filters = { ...emptyFilters, division: divisions, cor: cors };
+        const { result } = renderHook(() => useTagsList(filters));
+
+        expect(result.current.filter((tag) => tag.filter === "division")).toEqual([
+            { tagText: "DA - Division A", filter: "division", id: 1 },
+            { tagText: "DB - Division B", filter: "division", id: 2 }
+        ]);
+        expect(result.current.filter((tag) => tag.filter === "cor")).toEqual([
+            { tagText: "DB - Hank Smith", filter: "cor", id: 1 },
+            { tagText: "Ann Nodivision", filter: "cor", id: 22 }
+        ]);
+    });
+
+    it("removes only the clicked division, keyed by id", () => {
+        const setFilters = vi.fn();
+        removeFilter({ filter: "division", tagText: "DA - Division A", id: 1 }, setFilters);
+        const result = setFilters.mock.calls[0][0]({ ...emptyFilters, division: divisions, cor: cors });
+
+        expect(result.division).toEqual([divisions[1]]);
+        expect(result.cor).toEqual(cors);
+    });
+
+    it("removes only the clicked COR, even when a division shares its id", () => {
+        const setFilters = vi.fn();
+        removeFilter({ filter: "cor", tagText: "DB - Hank Smith", id: 1 }, setFilters);
+        const result = setFilters.mock.calls[0][0]({ ...emptyFilters, division: divisions, cor: cors });
+
+        expect(result.cor).toEqual([cors[1]]);
+        expect(result.division).toEqual(divisions);
     });
 });

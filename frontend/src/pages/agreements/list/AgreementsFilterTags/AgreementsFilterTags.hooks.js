@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYearFilter.helpers";
+import {
+    getCorOptionLabel,
+    getDivisionOptionLabel
+} from "../../../../components/Agreements/DivisionStaffingComboBox/DivisionStaffingComboBox.helpers";
 /**
  * @typedef {Object} FYFilterItem
  * @property {string} title
@@ -22,6 +26,11 @@ import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYear
  */
 
 /**
+ * @typedef {import("../../../../components/Agreements/DivisionStaffingComboBox/DivisionStaffingComboBox.helpers").CorDivision} DivisionFilterItem
+ * @typedef {import("../../../../components/Agreements/DivisionStaffingComboBox/DivisionStaffingComboBox.helpers").Cor} CorFilterItem
+ */
+
+/**
  * @typedef {Object} Filters
  * @property {FYFilterItem[]} fiscalYear
  * @property {PortfolioFilterItem[]} portfolio
@@ -30,6 +39,8 @@ import { deriveFYTags, handleFYTagRemoval } from "../../../../helpers/fiscalYear
  * @property {FilterItem[]} agreementName
  * @property {FilterItem[]} contractNumber
  * @property {FilterItem[]} awardType
+ * @property {DivisionFilterItem[]} division
+ * @property {CorFilterItem[]} cor
  */
 
 /**
@@ -57,6 +68,16 @@ export const useTagsList = (filters) => {
                     filters[filterKey]?.map((item) => ({
                         tagText: item.name,
                         filter: filterName
+                    })) ?? [];
+                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            } else if (filterKey == "division" || filterKey == "cor") {
+                // "Division & Staffing": tags read like the options. Keyed by id for removal.
+                const label = filterKey == "division" ? getDivisionOptionLabel : getCorOptionLabel;
+                const selectedTags =
+                    filters[filterKey]?.map((item) => ({
+                        tagText: label(item),
+                        filter: filterName,
+                        id: item.id
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else if (filterKey == "fiscalYear") {
@@ -94,6 +115,14 @@ export const useTagsList = (filters) => {
     useEffect(() => {
         updateTags("portfolio", "portfolio");
     }, [filters.portfolio, updateTags]);
+
+    useEffect(() => {
+        updateTags("division", "division");
+    }, [filters.division, updateTags]);
+
+    useEffect(() => {
+        updateTags("cor", "cor");
+    }, [filters.cor, updateTags]);
 
     useEffect(() => {
         updateTags("projectTitle", "projectTitle");
@@ -169,6 +198,18 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 awardType: prevState.awardType.filter((award) => award.title !== tag.tagText)
+            }));
+            break;
+        case "division":
+            setFilters((prevState) => ({
+                ...prevState,
+                division: (prevState.division ?? []).filter((division) => division.id !== tag.id)
+            }));
+            break;
+        case "cor":
+            setFilters((prevState) => ({
+                ...prevState,
+                cor: (prevState.cor ?? []).filter((cor) => cor.id !== tag.id)
             }));
             break;
         default:
