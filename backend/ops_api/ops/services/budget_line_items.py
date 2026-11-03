@@ -89,6 +89,7 @@ class BudgetLineItemFilters:
     agreement_names: Optional[list[str]] = None
     can_active_periods: Optional[list[str]] = None
     divisions: Optional[list[int]] = None
+    cor_ids: Optional[list[int]] = None
 
     @classmethod
     def parse_filters(cls, data: dict) -> "BudgetLineItemFilters":
@@ -112,6 +113,7 @@ class BudgetLineItemFilters:
             agreement_names=data.get("agreement_name", []),
             can_active_periods=data.get("can_active_period", []),
             divisions=data.get("division", []),
+            cor_ids=data.get("cor_id", []),
         )
 
 
@@ -522,7 +524,7 @@ class BudgetLineItemService:
         query = self._apply_status_filter(query, filters.statuses, filters.enable_obe, in_review_clause)
         query = self._apply_agreement_type_filter(query, filters.agreement_types)
         query = self._apply_agreement_name_filter(query, filters.agreement_names)
-        query = self._apply_cor_division_filter(query, filters.divisions)
+        query = self._apply_cor_filter(query, filters.divisions, filters.cor_ids)
         # Note: budget_line_total_range and can_active_period filters are applied in Python
         # after fetching results to avoid SQLAlchemy correlation issues
         query = self._apply_obe_exclusion_filter(query, filters.enable_obe, in_review_requested, in_review_clause)
@@ -559,12 +561,18 @@ class BudgetLineItemService:
             query = query.where(BudgetLineItem.can_id.in_(can_ids))
         return query
 
-    def _apply_cor_division_filter(self, query, divisions):
-        """Keep BLIs whose agreement's primary COR (project officer) is in one of the divisions."""
+    def _apply_cor_filter(self, query, divisions, cor_ids):
+        """Keep BLIs whose agreement's primary COR (project officer) is in one of the divisions or is one of the CORs.
+
+        Both come from one "Division & Staffing" control, so a match on either is kept (OR).
+        """
+        cor_conditions = []
         if divisions:
-            cor_agreement_ids = select(Agreement.id).where(
-                Agreement.project_officer_id.in_(select(User.id).where(User.division.in_(divisions)))
-            )
+            cor_conditions.append(Agreement.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
+        if cor_ids:
+            cor_conditions.append(Agreement.project_officer_id.in_(cor_ids))
+        if cor_conditions:
+            cor_agreement_ids = select(Agreement.id).where(or_(*cor_conditions))
             query = query.where(BudgetLineItem.agreement_id.in_(cor_agreement_ids))
         return query
 
@@ -1388,6 +1396,8 @@ class BudgetLineItemService:
         agreement_ids = [result.agreement_id for result in results]
         has_in_review = has_change_requests_in_review(self.db_session, bli_ids, agreement_ids)
 
+        scoped_agreement_ids = list({agreement_id for agreement_id in agreement_ids if agreement_id})
+
         # COR divisions: divisions of the primary COR (project officer) on the agreements of the
         # BLIs above, so options follow the same only_my scope. The alternate COR is ignored.
         cor_division_rows = self.db_session.execute(
@@ -1395,10 +1405,23 @@ class BudgetLineItemService:
             .distinct()
             .join(User, User.division == Division.id)
             .join(Agreement, Agreement.project_officer_id == User.id)
-            .where(Agreement.id.in_(list({agreement_id for agreement_id in agreement_ids if agreement_id})))
+            .where(Agreement.id.in_(scoped_agreement_ids))
         ).all()
         cor_divisions = [
             {"id": d_id, "name": d_name, "abbreviation": d_abbr} for d_id, d_name, d_abbr in cor_division_rows
+        ]
+
+        # CORs: the same agreements' primary CORs, with their division (None if unset) so the
+        # frontend can group them under cor_divisions.
+        cor_rows = self.db_session.execute(
+            select(User.id, User.full_name, User.email, User.division)
+            .distinct()
+            .join(Agreement, Agreement.project_officer_id == User.id)
+            .where(Agreement.id.in_(scoped_agreement_ids))
+        ).all()
+        cors = [
+            {"id": u_id, "name": full_name or email, "division_id": division_id}
+            for u_id, full_name, email, division_id in cor_rows
         ]
 
         budget_line_statuses_list = [status.name for status in budget_line_statuses]
@@ -1440,6 +1463,7 @@ class BudgetLineItemService:
             "agreement_names": agreement_names,
             "can_active_periods": sorted(can_active_periods),
             "cor_divisions": sorted(cor_divisions, key=lambda x: x["name"]),
+            "cors": sorted(cors, key=lambda x: x["name"]),
         }
         filter_response_schema = BudgetLineItemListFilterOptionResponseSchema()
         filter_options = filter_response_schema.dump(filters)

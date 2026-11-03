@@ -185,6 +185,7 @@ class AgreementRequestSchema(PaginationListSchema):
     delivered_status = fields.List(fields.String(), required=False)
     awarding_entity_id = fields.List(fields.Integer(), required=False)
     division = fields.List(fields.Integer(), required=False)
+    cor_id = fields.List(fields.Integer(), required=False)
     project_officer_id = fields.List(fields.Integer(), required=False)
     alternate_project_officer_id = fields.List(fields.Integer(), required=False)
     nick_name = fields.List(fields.String(validate=NO_NUL), required=False)
@@ -392,6 +393,7 @@ class AgreementListFilterOptionResponseSchema(Schema):
     contract_numbers = fields.List(fields.String(), required=True)
     research_types = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     cor_divisions = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    cors = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
 
 
 class AgreementSearchRequestSchema(PaginationSchema):

@@ -85,7 +85,20 @@ paths:
           description: >
             Filter agreements by the division id(s) of their project officer (COR).
             Multiple values are combined with OR logic. Agreements without a project
-            officer are excluded when this filter is active.
+            officer are excluded when this filter is active. Combined with `cor_id`
+            using OR logic (a match on either is kept).
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
+          name: cor_id
+          description: >
+            Filter agreements by the user id(s) of their project officer (primary COR).
+            Multiple values are combined with OR logic, and with `division` using OR
+            logic. The alternate COR is not considered.
           schema:
             type: array
             items:
@@ -1118,6 +1131,7 @@ paths:
                   - contract_numbers
                   - research_types
                   - cor_divisions
+                  - cors
                 properties:
                   fiscal_years:
                     type: array
@@ -1240,6 +1254,28 @@ paths:
                       - id: 1
                         name: "Division of Child and Family Development"
                         abbreviation: "DCFD"
+                  cors:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - division_id
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                          description: The COR's full name, or email if no name is set
+                        division_id:
+                          type: integer
+                          nullable: true
+                          description: The COR's division id (matches an id in `cor_divisions`), or null if unset
+                    description: >-
+                      Primary CORs (project officers) on at least one agreement in scope (respecting only_my),
+                      sorted by name. The alternate COR is not considered. Values are valid for the `cor_id`
+                      filter on GET /agreements/.
         "400":
           description: Bad Request
         "401":
@@ -4789,6 +4825,28 @@ paths:
                       Divisions of the primary COR (project officer) on the agreements of the budget lines in
                       scope (respecting only_my), sorted by name. The alternate COR is not considered. Values
                       are valid for the `division` filter on GET /budget-line-items/.
+                  cors:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - division_id
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                          description: The COR's full name, or email if no name is set
+                        division_id:
+                          type: integer
+                          nullable: true
+                          description: The COR's division id (matches an id in `cor_divisions`), or null if unset
+                    description: >-
+                      Primary CORs (project officers) on the agreements of the budget lines in scope (respecting
+                      only_my), sorted by name. The alternate COR is not considered. Values are valid for the
+                      `cor_id` filter on GET /budget-line-items/.
 
   /budget-line-items-batch/:
     post:
@@ -4895,6 +4953,18 @@ paths:
             Filter by the division id(s) of the agreement's primary COR (project officer). Multiple values
             are combined with OR logic. Budget lines on agreements without a COR, or whose COR has no
             division, are excluded when this filter is active. The alternate COR is not considered.
+            Combined with `cor_id` using OR logic (a match on either is kept).
+        - in: query
+          name: cor_id
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          description: >
+            Filter by the user id(s) of the agreement's primary COR (project officer). Multiple values are
+            combined with OR logic, and with `division` using OR logic. The alternate COR is not considered.
         - in: query
           name: budget_line_total_min
           schema:

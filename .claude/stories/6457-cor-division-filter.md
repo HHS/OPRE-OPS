@@ -1,7 +1,7 @@
 ---
 issue: 6457
-branch: OPS-6457/agreements-cor-division-filter  # all code work for the issue lands here (see "Progress")
-status: IN PROGRESS. The issue is still labeled `draft` + `design` (refined 2026-10-29: Projects & Reporting removed). All backend work (T1, T3, T2) and the non-rendering frontend wiring (state, API layer, page → query/export) are done. **No UI ships on this branch until designs exist** (decided 2026-11-02); what is left is blocked on UX, plus the T0 data check (see "Pick up here"). PR #6480 is open with its description filled in.
+branch: OPS-6457/division-staffing-filter  # current; the first branch, OPS-6457/agreements-cor-division-filter, merged as PR #6480 on 2026-11-03
+status: IN PROGRESS. PR #6480 (backend + non-rendering frontend wiring for COR's division) **merged 2026-11-03**. A UX prototype landed in the issue comments (a "Division & Staffing" filter that picks whole divisions **or** individual CORs). The backend for that (a `cor_id` filter OR'd with `division`, and `cors` filter options) is done on `OPS-6457/division-staffing-filter`. Next: frontend wiring for `cor_id`/`cors`, then the UI from the prototype (see "Pick up here").
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -79,17 +79,67 @@ portfolio's division.
 
 ---
 
-## Progress: where to pick up (updated 2026-11-02)
+## Progress: where to pick up (updated 2026-11-03)
+
+### Update 2026-11-03: PR #6480 merged, prototype landed
+- **PR #6480 merged to `main` on 2026-11-03.** It carried everything under "Done on the branch" below. New work
+  goes on **`OPS-6457/division-staffing-filter`**, branched from `main` after the merge.
+- **Acceptance criteria checked off on the issue (2026-11-03):** union of divisions; works with other
+  filters/tabs/FY; export uses the filter; primary COR only; no COR / no-division COR excluded only when filtering;
+  only narrows. Still open: the two "I can filter" ACs (no UI), clearing (counts/totals/paging are done, UI clearing
+  isn't), COR's name on the list (backend done, no column), divisions offered (backend done, nothing consumes it
+  yet, and the Dashboard still lists all divisions), keyboard/AT, the distinct name, and the Dashboard relabel.
+- **UX prototype** (Kim's comment on the issue, `staffing-division-filter.html`; mock data, client-side only).
+  It shows the workflow; build it from the existing USWDS components and introduce no new elements.
+  - **Name:** "Division & Staffing" (the prototype says "Division (People)"; Kim's comment overrides it).
+  - **Placement:** in the filter modal, right after Portfolio.
+  - **Options:** for each division, a whole-division option (`DCFD - Division of Child & Family Development`)
+    followed by that division's CORs/POs (`DCFD - Hank Smith`). Picking the division matches all its CORs.
+  - **Matching:** every choice in the control is OR'd (division A + person from division B → both sets). The
+    control as a whole is ANDed with the other filters.
+  - **Focus:** highlight a single row, not the whole division group the prototype highlights (Kim: a long staff
+    list would hide the end of the group highlight). Indenting staff rows under their division is optional.
+  - **Tags/reset/close:** the same as the other filters. A tag shows the option's label.
+  - **Portfolio label:** becomes **"Portfolio (funding stream)"** on every page that filters by portfolio
+    (new scope; not in the original ACs).
+  - **No COR column** in the prototype's table. That conflicts with the "include the COR's name" AC (see Q4).
+- **Decisions (2026-11-03, from the dev lead):**
+  - A COR with **no division** is listed **without a group** (no division header above them). Choosing that person
+    matches their agreements directly; choosing a division still never matches them.
+  - **Procurement Dashboard:** only relabel the existing filter (A4); no people options. Proposed label:
+    "Division & Staffing", for consistency. ⚠️ Confirm with UX: the Dashboard offers divisions only, so "Staffing"
+    may suggest people can be picked there. See Q7.
+
+### Done on `OPS-6457/division-staffing-filter` (backend for the prototype, 2026-11-03)
+- **`cor_id` param** (list of user ids) on `GET /agreements/` and `GET /budget-line-items/`: keeps items whose
+  primary COR is one of those users. It is **OR'd with `division`** (one control); the pair is ANDed with
+  everything else. The alternate COR is ignored.
+  - Agreements: `_apply_cor_filter` in `services/agreements.py` (pulled out of `_apply_agreement_filters`, which
+    otherwise trips flake8 C901). BLIs: `_apply_cor_division_filter` became `_apply_cor_filter(divisions, cor_ids)`.
+  - A new param, not a change to the existing `project_officer_id`: that one is ANDed like every other filter, and
+    changing its meaning would surprise any caller.
+- **`cors` in both filter-options responses:** `[{id, name, division_id}]`. These are the primary CORs on ≥1
+  agreement in the (`only_my`-scoped) set. `name` is the full name, else the email (the same as
+  `project_officer_name`). `division_id` is null when unset. Sorted by name. The frontend groups by `division_id`
+  against `cor_divisions`.
+- `openapi.yml` documents both. Spectral (`spectral:oas`) findings are unchanged before and after (23 errors and
+  212 warnings, all pre-existing).
+- **Tests:**
+  - Service level, both endpoints: a single COR; division + COR = union; a COR with no division chosen directly;
+    an alternate-only COR excluded; the group ANDed with another filter (awarding entity / portfolio); BLIs with and
+    without the Agreement join; `only_my` intersection; options (primary only, null `division_id`, sorted, `only_my`).
+  - API level: `cor_id` narrows the list (and `_meta` for BLIs); a non-integer `cor_id` returns 400; the `cors`
+    shape.
+  - All 20 new behavior tests failed before the implementation.
 
 **No rendered UI until designs exist (decided 2026-11-02).** This branch carries backend code and frontend code that
 renders nothing: session state, the `opsAPI` layer, page → query/export wiring, and types. No modal fields, tags,
 columns, labels or placeholder copy, and no hook/buffer state for controls that don't exist yet. A "COR's Division"
 combobox and tags were built as placeholders and then **removed** on 2026-11-02 for this reason.
 
-**Working agreement:** all code work for #6457 is done on `OPS-6457/agreements-cor-division-filter`, behind one
-draft PR. Frontend work for slices other than T1 may happen here too, or move to a separate sub-task later;
-decide once the UX designs land. The sub-tasks in §2 are now **ordered work items on this branch**, not
-separate branches.
+**Working agreement (superseded 2026-11-03):** code work for #6457 was done on
+`OPS-6457/agreements-cor-division-filter`, behind one PR (#6480, merged). The work that remains goes on
+`OPS-6457/division-staffing-filter`. The sub-tasks in §2 are still ordered work items, not separate branches.
 
 ### Done on the branch (T1: Agreements list filter + export)
 - **Backend:** `/agreements-filters/` returns `cor_divisions` (`[{id, name, abbreviation}]`). It lists only
@@ -161,23 +211,37 @@ done too. Everything else waits on designs, plus the T0 data check and the PR wr
   Procurement Dashboard and the export helpers; backend `tests/ops/agreement`, `tests/ops/budget_line_items` and the
   agreement/BLI service tests (1,130 passed); Cypress `agreementList`, `budgetLineItemsList`, `procurementDashboard`.
 
-**UI work left (when designs land):**
-3. **Filter control**, Agreements + Budget Lines:
-   - modal field fed by `cor_divisions`, plus buffer state (apply, reset, sync, `null` → `[]`);
-   - tags with remove-by-id;
-   - component, keyboard and Cypress tests.
-   The state, API and export wiring already exist. Reference: the 2026-11-02 removal commit.
-4. **Label** distinct from the portfolio's division (C2), used everywhere the filter appears.
+**Pick up here (2026-11-03), in order:**
+1. ~~**Backend for the prototype:** `cor_id` + `cors` on both endpoints.~~ Done; see above.
+2. **Frontend wiring that renders nothing** for `cor_id`/`cors`, the same as the 2026-11-02 `division` work:
+   - `cor_id: []` defaults in `sessionUISlice` (agreements + budgetLines);
+   - `opsAPI.getAgreements` and `getBudgetLineItems` map COR objects to ids (add `cor_id` to the BLI destructured
+     key list);
+   - `cors` in the filter-options types;
+   - `opsAPI.test.js` query-string tests; list query + export tests on both pages.
+3. **"Division & Staffing" control**, Agreements + Budget Lines, from the prototype (designs now exist):
+   - in the modal after Portfolio; reuse `FilterComboBox`/react-select (no new elements);
+   - options built from `cor_divisions` + `cors`: for each division, the division option, then its CORs
+     (`ABBR - Name`); CORs with a null `division_id` last, ungrouped;
+   - selections split into `division` (Division objects) and `cor_id` (COR objects) state, or one list mapped to
+     both params in `opsAPI`; decide when building;
+   - single-row focus; optional indent;
+   - buffer state (apply, reset, sync, `null` → `[]`); tags labeled like the options, remove-by-id;
+   - component, keyboard and Cypress tests. Reference: the 2026-11-02 removal commit.
+4. **"Portfolio (funding stream)" label** on every portfolio filter (Agreements, Budget Lines, and any other page
+   with a portfolio filter; grep `PortfoliosComboBox` and other portfolio labels). Update the tests that query by
+   label.
 5. **Announcer** (`role="status"`) for filter changes and result counts (C1).
-6. **COR column**, Agreements table (`AgreementsTable.constants.js`, `AgreementTableRow.jsx`), from
-   `project_officer_name`. Placement and sorting wait on Q4; sorting needs a backend sort.
-7. **Procurement Dashboard (T4):** relabel "Division" (`ProcurementDashboardFilterButton.jsx`). If Q3 = yes, source
-   options from `cor_divisions`. Update its unit and Cypress tests.
-8. **Open questions:** Q2 (COR on Budget Lines?), Q3, Q4, Q6 (FigJam).
+6. **COR column**, Agreements table, from `project_officer_name`. The prototype has none, so ask UX (Q4) before
+   building it.
+7. **Procurement Dashboard (T4):** relabel only (`ProcurementDashboardFilterButton.jsx`), with the wording from
+   Q7. Update its unit and Cypress tests.
+8. **Open questions:** Q2, Q4, Q6, Q7.
 
 **Before release / review:**
 9. **T0:** run the CORs-without-a-division query (§2, T0) on staging and prod and share the counts with the PO.
-10. ~~**PR description**~~ Done 2026-11-02. Next: `/ops-pr-review`.
+10. ~~**PR description**~~ ~~`/ops-pr-review`~~ PR #6480 merged 2026-11-03. Open a new PR from
+    `OPS-6457/division-staffing-filter`.
 11. Ask the issue author to remove the stale Projects/Reporting testing text (Q5), and review the FigJam diagram (Q6).
 
 ### Known issues that are not acceptance-criteria gaps
@@ -345,12 +409,15 @@ frontend ships. That works well if the team wants backend progress immediately.
    `division` on Budget Lines too, for consistency and no churn. The UI label carries the "COR's" distinction (C2).
 2. **Should T3 also show the COR on the Budget Lines table or export?** Not required by any AC. Without it, a
    user can't see *why* a BLI matched. Ask UX/PO.
-3. **Should the dashboard narrow its options to divisions with a COR (B7)?** B7 says "the divisions offered",
-   which reads as everywhere. A4 says "keeps working as it does today". Recommendation: yes, it's a tiny change
-   in T4.
+3. ~~**Should the dashboard narrow its options to divisions with a COR (B7)?**~~ **Settled 2026-11-03:** no. The
+   Dashboard only gets the relabel (A4), as the story says.
 4. **COR column on Agreements:** visible column vs. expanded row; sortable or not.
 5. **Stale testing text** in the issue (Projects/Reporting): ask the author to clean it up.
 6. **FigJam diagram:** review it for anything that changes the slicing (e.g., a different control or placement).
+7. **Procurement Dashboard label wording.** The dev lead proposed "Division & Staffing" for consistency. It offers
+   divisions only, though, so "Staffing" may suggest people can be picked. Confirm with UX; an alternative is
+   "COR's Division".
+8. ~~**Where does a COR with no division go?**~~ **Settled 2026-11-03:** listed without a group.
 
 ## 4. Risks
 

@@ -201,6 +201,7 @@ class QueryParametersSchema(PaginationListSchema):
     agreement_name = fields.List(fields.String(), required=False)
     can_active_period = fields.List(fields.String(), required=False)
     division = fields.List(fields.Integer(), required=False)
+    cor_id = fields.List(fields.Integer(), required=False)
 
 
 class BudgetLineItemsBatchRequestSchema(Schema):
@@ -412,3 +413,4 @@ class BudgetLineItemListFilterOptionResponseSchema(Schema):
     agreement_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     can_active_periods = fields.List(fields.Int(), required=True)
     cor_divisions = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    cors = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)

@@ -101,7 +101,7 @@ def cor_division_data(loaded_db):
     yield {
         **{f"div_{key.lower()}_id": division.id for key, division in divisions.items()},
         **{f"{key}_id": bli.id for key, bli in blis.items()},
-        "po_a_id": users["po_a"].id,
+        **{f"{key}_id": user.id for key, user in users.items()},
         "p1_id": can_p1.portfolio_id,
         "p1_division_id": can_p1.portfolio.division_id,
     }
@@ -253,6 +253,94 @@ class TestBudgetLineItemCorDivisionFilter:
         assert cor_division_data["div_a_id"] in cor_division_ids
         assert cor_division_data["div_b_id"] not in cor_division_ids
 
+    def test_cor_id_returns_only_that_cors_blis(self, loaded_db, app_ctx, cor_division_data):
+        matching = _matching_ids(loaded_db, cor_division_data, {"cor_id": [cor_division_data["po_b_id"]]})
+
+        assert matching == {cor_division_data["b_id"]}
+
+    def test_division_and_cor_id_together_is_union(self, loaded_db, app_ctx, cor_division_data):
+        """Division and COR come from one "Division & Staffing" control, so a match on either is kept."""
+        matching = _matching_ids(
+            loaded_db,
+            cor_division_data,
+            {"division": [cor_division_data["div_a_id"]], "cor_id": [cor_division_data["po_b_id"]]},
+        )
+
+        assert matching == {cor_division_data[k] for k in ("a1_id", "a2_id", "b_id")}
+
+    def test_cor_id_matches_a_cor_without_division(self, loaded_db, app_ctx, cor_division_data):
+        matching = _matching_ids(loaded_db, cor_division_data, {"cor_id": [cor_division_data["po_no_div_id"]]})
+
+        assert matching == {cor_division_data["alt_only_id"]}
+
+    def test_cor_id_on_alternate_cor_only_is_excluded(self, loaded_db, app_ctx, cor_division_data):
+        assert _matching_ids(loaded_db, cor_division_data, {"cor_id": [cor_division_data["alt_c_id"]]}) == set()
+
+    def test_cor_id_with_portfolio_is_intersection(self, loaded_db, app_ctx, cor_division_data):
+        """The division/COR group as a whole is ANDed with the other filters."""
+        matching = _matching_ids(
+            loaded_db,
+            cor_division_data,
+            {
+                "division": [cor_division_data["div_a_id"]],
+                "cor_id": [cor_division_data["po_b_id"]],
+                "portfolio": [cor_division_data["p1_id"]],
+            },
+        )
+
+        assert matching == {cor_division_data["a1_id"], cor_division_data["b_id"]}
+
+    def test_cor_id_applies_without_agreement_join(self, loaded_db, app_ctx, cor_division_data):
+        matching = _matching_ids(
+            loaded_db,
+            cor_division_data,
+            {"cor_id": [cor_division_data["po_b_id"]], "sort_conditions": [BudgetLineSortCondition.ID_NUMBER]},
+        )
+
+        assert matching == {cor_division_data["b_id"]}
+
+    @patch("ops_api.ops.services.budget_line_items.get_current_user")
+    def test_cor_id_and_only_my_together_is_intersection(self, mock_get_user, loaded_db, app_ctx, cor_division_data):
+        """Choosing another COR never adds BLIs outside "My Budget Lines"."""
+        mock_get_user.return_value = _mock_user(cor_division_data["po_a_id"])
+
+        results, summary = BudgetLineItemService(loaded_db).get_list(
+            {
+                "division": [cor_division_data["div_a_id"]],
+                "cor_id": [cor_division_data["po_b_id"]],
+                "only_my": [True],
+                "limit": [1000],
+                "offset": [0],
+            }
+        )
+
+        assert {bli.id for bli in results} == {cor_division_data["a1_id"], cor_division_data["a2_id"]}
+        assert summary["count"] == 2
+
+    def test_filter_options_cors_only_include_primary_cors(self, loaded_db, app_ctx, cor_division_data):
+        cors = BudgetLineItemService(loaded_db).get_filter_options({})["cors"]
+        cors_by_id = {c["id"]: c for c in cors}
+
+        assert cors_by_id[cor_division_data["po_a_id"]] == {
+            "id": cor_division_data["po_a_id"],
+            "name": "BLI COR po_a",
+            "division_id": cor_division_data["div_a_id"],
+        }
+        assert cors_by_id[cor_division_data["po_b_id"]]["division_id"] == cor_division_data["div_b_id"]
+        assert cors_by_id[cor_division_data["po_no_div_id"]]["division_id"] is None
+        assert cor_division_data["alt_c_id"] not in cors_by_id  # alternate COR only
+        assert [c["name"] for c in cors] == sorted(c["name"] for c in cors)
+
+    @patch("ops_api.ops.services.budget_line_items.get_current_user")
+    def test_filter_options_cors_respect_only_my(self, mock_get_user, loaded_db, app_ctx, cor_division_data):
+        mock_get_user.return_value = _mock_user(cor_division_data["po_a_id"])
+
+        cors = BudgetLineItemService(loaded_db).get_filter_options({"only_my": [True]})["cors"]
+        cor_ids = {c["id"] for c in cors}
+
+        assert cor_division_data["po_a_id"] in cor_ids
+        assert cor_division_data["po_b_id"] not in cor_ids
+
 
 class TestBudgetLineItemCorDivisionApi:
     def test_division_param_narrows_list_and_meta(self, auth_client, app_ctx, cor_division_data):
@@ -286,3 +374,27 @@ class TestBudgetLineItemCorDivisionApi:
             "name": "BLI COR Division A (#6457)",
             "abbreviation": "BCDA6457",
         }
+
+    def test_cor_id_param_narrows_list_and_meta(self, auth_client, app_ctx, cor_division_data):
+        """The param must survive QueryParametersSchema (unknown=EXCLUDE) and drive _meta."""
+        response = auth_client.get(
+            "/api/v1/budget-line-items/",
+            query_string={"cor_id": cor_division_data["po_b_id"], "limit": 10, "offset": 0},
+        )
+
+        assert response.status_code == 200
+        assert [bli["id"] for bli in response.json] == [cor_division_data["b_id"]]
+        assert response.json[0]["_meta"]["total_count"] == 1
+        assert response.json[0]["_meta"]["total_amount"] == 400
+
+    def test_non_integer_cor_id_returns_400(self, auth_client, app_ctx):
+        response = auth_client.get("/api/v1/budget-line-items/?cor_id=abc&limit=10&offset=0")
+
+        assert response.status_code == 400
+
+    def test_filter_options_include_cors(self, system_owner_auth_client, app_ctx, cor_division_data):
+        response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/")
+
+        assert response.status_code == 200
+        po_no_div = next(c for c in response.json["cors"] if c["id"] == cor_division_data["po_no_div_id"])
+        assert po_no_div == {"id": cor_division_data["po_no_div_id"], "name": "BLI COR po_no_div", "division_id": None}
