@@ -561,7 +561,7 @@ describe("AgreementNameComboBox", () => {
         // than a muted one, per the UX-approved interaction spec for issue #6144.
         // eslint-disable-next-line testing-library/no-node-access
         const primaryLine = secondaryLines[0].previousSibling;
-        expect(primaryLine).toHaveClass("text-bold");
+        expect(primaryLine).toHaveClass("text-semibold");
         expect(secondaryLines[0]).not.toHaveClass("text-base-dark");
     });
 

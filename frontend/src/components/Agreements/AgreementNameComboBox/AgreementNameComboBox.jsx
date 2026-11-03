@@ -109,7 +109,7 @@ export const AgreementNameComboBox = ({
         }
         return (
             <span>
-                <span className="display-block text-bold">{option.label}</span>
+                <span className="display-block text-semibold">{option.label}</span>
                 <span className="display-block font-sans-3xs">{option.name}</span>
             </span>
         );
