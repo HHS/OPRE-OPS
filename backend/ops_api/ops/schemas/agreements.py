@@ -278,10 +278,7 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     # The primary COR's display name (full name, else email); None when the agreement has no COR.
-    project_officer_name = fields.Function(
-        lambda agreement: agreement.project_officer.display_name if agreement.project_officer else None,
-        allow_none=True,
-    )
+    project_officer_name = fields.Method("get_project_officer_name", allow_none=True)
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
     award_type = fields.String(load_default=None, dump_default=None, required=False, allow_none=True)
     sc_start_date = fields.Date(allow_none=True)
@@ -295,6 +292,9 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     _meta = fields.Nested(AgreementMetaSchema, required=True)
+
+    def get_project_officer_name(self, agreement):
+        return agreement.project_officer.display_name if agreement.project_officer else None
 
 
 class ContractAgreementResponse(AgreementResponse):

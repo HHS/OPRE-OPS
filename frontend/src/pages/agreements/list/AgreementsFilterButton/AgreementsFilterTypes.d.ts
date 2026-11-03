@@ -14,5 +14,5 @@ export type Filters = {
     contractNumber?: FilterOption[];
     awardType?: FilterOption[];
     /** Divisions of the agreement's primary COR, from `cor_divisions` in the filter options. */
-    division?: Division[];
+    division?: Pick<Division, "id" | "name" | "abbreviation">[];
 };

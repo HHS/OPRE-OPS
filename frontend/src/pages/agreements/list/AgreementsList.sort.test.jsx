@@ -5,7 +5,6 @@ import { describe, it, expect, vi } from "vitest";
 import {
     useGetAgreementsQuery,
     useGetAgreementsFilterOptionsQuery,
-    useLazyGetUserQuery,
     useLazyGetAgreementsQuery
 } from "../../../api/opsAPI";
 import { tableSortCodes } from "../../../helpers/utils";
@@ -26,7 +25,6 @@ vi.mock("./AgreementsTabs", () => ({
 
 describe("AgreementsList - default sort on initial load", () => {
     it("requests agreements sorted alphabetically by name, ascending, before any header click", () => {
-        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
         useGetAgreementsFilterOptionsQuery.mockReturnValue({ data: {} });
         useGetAgreementsQuery.mockReturnValue({

@@ -557,7 +557,7 @@ describe("BudgetLineItemList", () => {
         );
     });
 
-    it("applies the COR's division filter to the list query and carries it into the export", async () => {
+    it("passes the division filter through to the list query and the export", async () => {
         const { handleExport } = await import("../../../helpers/budgetLines.helpers");
         const division = [{ id: 2, name: "Division B", abbreviation: "DB" }];
 
