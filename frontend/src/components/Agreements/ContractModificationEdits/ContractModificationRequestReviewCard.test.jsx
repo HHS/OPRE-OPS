@@ -99,7 +99,7 @@ describe("ContractModificationRequestReviewCard", () => {
         expect(mockReview).toHaveBeenCalledWith({ requestId: 9, action: "DECLINE", reviewerNotes: null });
         await vi.waitFor(() =>
             expect(mockSetAlert).toHaveBeenCalledWith(
-                expect.objectContaining({ type: "warning", heading: "Contract Modification Declined" })
+                expect.objectContaining({ type: "error", heading: "Contract Modification Declined" })
             )
         );
     });

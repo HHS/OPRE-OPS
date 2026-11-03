@@ -49,7 +49,10 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                         // This card unmounts once the request leaves IN_REVIEW, so feedback goes through the
                         // page-level alert (role="status"/"alert", announced regardless) rather than local state.
                         setAlert({
-                            type: isApprove ? "success" : "warning",
+                            // "error" (not "warning") so Alert.jsx's handleRole() gives this a
+                            // role="alert" live region — "warning" gets no role and is never
+                            // announced. Matches ApprovePreAwardApproval.hooks.js's precedent.
+                            type: isApprove ? "success" : "error",
                             heading: isApprove ? "Contract Modification Approved" : "Contract Modification Declined",
                             message: isApprove
                                 ? "The selected budget lines have been moved to Executing."
