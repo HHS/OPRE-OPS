@@ -178,6 +178,23 @@ describe("ApproveAwardApproval", () => {
         expect(within(screen.getByTestId("page-header")).getByText("Agreement Name B")).toBeInTheDocument();
     });
 
+    it("renders the nickname-preferred display name as subtitle, not the raw full name", () => {
+        renderPage({
+            agreement: { id: 42, name: "Full Legal Title For Testing", nick_name: "FLT", display_name: "FLT" }
+        });
+        const header = within(screen.getByTestId("page-header"));
+        expect(header.getByText("FLT")).toBeInTheDocument();
+        expect(header.queryByText("Full Legal Title For Testing")).not.toBeInTheDocument();
+    });
+
+    it("still shows the raw full title (never the nickname) in the Current Agreement Title row", () => {
+        renderPage({
+            agreement: { id: 42, name: "Full Legal Title For Testing", nick_name: "FLT", display_name: "FLT" }
+        });
+        expect(screen.getByText("Current Agreement Title")).toBeInTheDocument();
+        expect(screen.getByText("Full Legal Title For Testing")).toBeInTheDocument();
+    });
+
     it("shows the 'Already Processed' info alert when approval already processed", () => {
         renderPage({ approvalAlreadyProcessed: true });
         expect(screen.getByTestId("simple-alert-info")).toBeInTheDocument();
