@@ -77,7 +77,9 @@ describe("agreement details", () => {
 
     it("AA type agreement loads with details", () => {
         cy.visit("/agreements/5");
-        cy.get("h1").contains("AA #1: Fathers and Continuous Learning (FCL)");
+        // The agreement has a nickname ("AA1"), so the heading shows the nickname-preferred
+        // name, not the raw full title (OPS-6144).
+        cy.get("h1").contains("AA1");
         cy.get("h2").first().contains("Annual Performance Plans and Reports (APP)");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get("span").contains("Awarded").should("not.exist");
