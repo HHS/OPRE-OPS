@@ -104,6 +104,19 @@ describe("DivisionStaffingComboBox", () => {
         ]);
     });
 
+    it("matches typed text against option labels, not internal ids", async () => {
+        const user = userEvent.setup();
+        render(<StatefulComboBox />);
+
+        const input = screen.getByLabelText("Division & Staffing");
+        await user.type(input, "cor");
+        expect(screen.queryAllByRole("option")).toHaveLength(0);
+
+        await user.clear(input);
+        await user.type(input, "Gary");
+        expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["OD - Gary Gareson"]);
+    });
+
     describe("group highlight", () => {
         const GROUP_CLASS = "division-staffing-combobox__option--in-focused-group";
         const highlighted = () =>

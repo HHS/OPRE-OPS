@@ -1,5 +1,5 @@
 import { Children, cloneElement, useMemo } from "react";
-import { components } from "react-select";
+import { components, createFilter } from "react-select";
 import ComboBox from "../../UI/Form/ComboBox";
 import {
     buildDivisionStaffingOptions,
@@ -38,6 +38,10 @@ const GroupHighlightMenuList = (props) => {
 };
 
 const MENU_COMPONENTS = { MenuList: GroupHighlightMenuList };
+
+// Match typed text against the label only. Option values are internal ids ("cor-21", "division-1"),
+// so the shared filter's value matching would make "cor" or a digit match unrelated options.
+const filterByLabel = createFilter({ stringify: (option) => option.label });
 
 /**
  * A comboBox for filtering by the primary COR's division ("Division & Staffing"): pick whole divisions,
@@ -99,6 +103,7 @@ export const DivisionStaffingComboBox = ({
                         isMulti={true}
                         isLoading={isLoading}
                         components={MENU_COMPONENTS}
+                        filterOption={filterByLabel}
                     />
                 </div>
             </div>
