@@ -32,7 +32,7 @@ const CANPortfolioComboBox = ({
                     className={legendClassname}
                     htmlFor="can-portfolio-combobox-input"
                 >
-                    Portfolio
+                    Portfolio (funding stream)
                 </label>
                 <div>
                     <ComboBox
