@@ -12,6 +12,7 @@ import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLi
 import AllBudgetLinesTableLoading from "../../../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTableLoading";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import FilterResultsAnnouncer from "../../../components/UI/FilterResultsAnnouncer";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
@@ -153,10 +154,19 @@ const BudgetLineItemList = () => {
                 details="This is a list of budget lines across all OPRE for the selected fiscal year."
                 TabsSection={<BLITags />}
                 FilterTags={
-                    <BLIFilterTags
-                        filters={filters}
-                        setFilters={setFilters}
-                    />
+                    <>
+                        <BLIFilterTags
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                        <FilterResultsAnnouncer
+                            filters={filters}
+                            resultCount={budgetLineItems?.[0]?._meta?.total_count ?? 0}
+                            isFetching={isTableLoading}
+                            itemName="budget line"
+                            itemNamePlural="budget lines"
+                        />
+                    </>
                 }
                 TableSection={
                     isTableLoading ? (

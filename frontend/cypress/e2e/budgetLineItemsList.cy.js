@@ -131,6 +131,9 @@ it("filter button works as expected", () => {
 
     // check that the table is filtered correctly
     cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
+    cy.get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
+        .invoke("text")
+        .should("match", /^Filters applied\. \d+ budget lines?\.$/);
 
     // reset
     cy.get("button").contains("Filter").click();
@@ -145,6 +148,9 @@ it("filter button works as expected", () => {
     cy.get("button[id='filter-tag-agreementTypes-3']").should("not.exist");
     cy.get("button[id='filter-tag-agreementTitles-4']").should("not.exist");
     cy.get("button[id='filter-tag-canActivePeriods-5']").should("not.exist");
+    cy.get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
+        .invoke("text")
+        .should("match", /^Filters cleared\. \d+ budget lines?\.$/);
 });
 
 it("filter button does not reset fiscal year dropdown when fiscal year dropdown is changed from current FY", () => {

@@ -130,11 +130,17 @@ describe("Agreement List", () => {
                     cy.contains(label).should("exist");
                 });
                 cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+                cy.get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
+                    .invoke("text")
+                    .should("match", /^Filters applied\. \d+ agreements?\.$/);
 
                 // Removing the tag returns the page to its unfiltered results.
                 cy.get(`button[aria-label="Remove ${label} filter"]`).click();
                 cy.contains("span", "Filters Applied:").should("not.exist");
                 cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+                cy.get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
+                    .invoke("text")
+                    .should("match", /^Filters cleared\. \d+ agreements?\.$/);
             });
     });
 
