@@ -60,6 +60,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           ACTOR: ${{ github.event.comment.user.login || github.event.sender.login }}
           GITHUB_TOKEN: ${{ github.token }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.REVIEW_ROTATION_SLACK_WEBHOOK_URL }}
           TEAM_CALENDAR_ICS_URL: ${{ secrets.TEAM_CALENDAR_ICS_URL }}
         run: python .github/scripts/review_rotation/review_rotation.py
