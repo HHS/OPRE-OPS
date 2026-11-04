@@ -19,6 +19,9 @@
 # Secrets copied from the preview-db job are masked and never echoed. Don't add `set -x`
 # or `az --debug` to this script.
 set -euo pipefail
+# A failed lookup inside $(...) must stop the script, not read as empty: the reaper deletes
+# things based on these values.
+shopt -s inherit_errexit
 
 RG=opre-ops-dev-app-rg
 CAE=opre-ops-dev-app-cae
@@ -86,6 +89,7 @@ mask() {
   while IFS= read -r line; do
     [ -n "$line" ] && echo "::add-mask::$line"
   done <<<"$1"
+  return 0
 }
 
 # --- gate ---------------------------------------------------------------------------------
@@ -453,7 +457,8 @@ This preview has had no pushes or comments for $WARN_DAYS days and will be remov
 
 # Env: DRY_RUN. Outputs `prs`, a JSON list of {pr, reason} for preview_destroy.yml.
 cmd_reap_list() {
-  local apps dbs prs pr info reason now_s activity idle_days reap="[]"
+  local apps dbs prs pr info reason now_s activity idle_days reap="[]" err
+  err=$(mktemp)
   apps=$(az containerapp list -g "$RG" --query "[].name" -o tsv |
     sed -nE 's/^opre-ops-pr([1-9][0-9]*)-app-(backend|frontend)$/\1/p')
   dbs=$(az postgres flexible-server db list -s "$PG_SERVER" -g "$PG_RG" --query "[].name" -o tsv |
@@ -474,7 +479,10 @@ cmd_reap_list() {
     grep -qx "$pr" <<<"$apps" && has_apps=yes
     grep -qx "$pr" <<<"$dbs" && has_db=yes
 
-    if ! info=$(gh api "repos/$REPO/pulls/$pr" 2>/dev/null); then
+    # Only a 404 means the PR is gone. Any other error fails the run, so a GitHub outage
+    # never reaps live previews.
+    if ! info=$(gh api "repos/$REPO/pulls/$pr" 2>"$err"); then
+      grep -q "HTTP 404" "$err" || fail "could not look up PR $pr: $(cat "$err")"
       reason="PR not found"
     elif [ "$(jq -r .state <<<"$info")" != open ]; then
       reason="PR closed"

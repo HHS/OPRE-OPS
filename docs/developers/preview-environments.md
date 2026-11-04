@@ -37,6 +37,8 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 - **Lifetime:** a preview with no pushes, deploys or human comments for 5 days is removed by the nightly reaper. A
   warning comment appears after 4 days; a push or any comment keeps it.
 - **Not available:** HHS AMS login, `/storybook`, `/docs/*` and document upload.
+- **Merge conflicts:** GitHub doesn't run PR workflows while a PR has a merge conflict, so pushes and label changes
+  do nothing until it's resolved. The nightly reaper still removes the preview if the PR is closed or unlabelled.
 - **Edited migrations:** if you change a migration that already ran on the preview, `upgrade head` won't rerun it.
   Reseed.
 
@@ -47,6 +49,7 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 | No comment after labelling | The PR is from a fork, or the Preview Create run failed; open it from the PR's checks |
 | Status says *Deploy failed* | Follow *Latest run* in the comment. Database step failures link to the preview-db job's execution history in the Azure portal |
 | URL shows a 404 page | The preview was removed, never deployed (cap), or is still deploying |
+| A push didn't update the preview | The PR has a merge conflict; resolve it and push again |
 | Data looks wrong after a migration change | Reseed (see above) |
 | Login fails | Make sure you used FakeAuth; AMS isn't configured on previews |
 
@@ -62,4 +65,5 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 - **Slots:** a PR holds a slot while its backend app (tagged `preview-pr`) exists. Concurrent claims settle by
   creation time, so only the latest claim past the cap backs out.
 - **Testing the cap by hand:** set `PREVIEW_MAX_SLOTS=1` in the job env temporarily.
-- **Dispatch and schedule** only run from `main`, so reseeding and the reaper use `main`'s workflow and script.
+- **Dispatch and schedule** only run from `main`. The reaper and the reseed's gate job run `main`'s script; the
+  reseed's build and deploy jobs check out the PR head and run its copy.

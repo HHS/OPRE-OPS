@@ -134,9 +134,9 @@ jobs:
       contents: read
       pull-requests: write
     # One deploy or destroy at a time per PR (shared with preview_destroy.yml), never cancelled
-    # mid-run. GitHub keeps only the newest pending run in a group; the stale check below stops
-    # an older build that was already running from deploying over a newer one. Job-level so
-    # builds still run in parallel.
+    # mid-run. GitHub keeps only the newest pending run in a group, so this deploy may have
+    # replaced a pending destroy; the check below then does the destroy itself. It also stops an
+    # older build from deploying over a newer one. Job-level so builds still run in parallel.
     concurrency:
       group: preview-pr-${{ needs.gate.outputs.pr }}
       cancel-in-progress: false
@@ -155,28 +155,41 @@ jobs:
             .github/actions/notify-slack-failure
           sparse-checkout-cone-mode: false
 
-      # Skip if the PR moved on (a newer push), closed, or lost the label while we built.
+      # current: deploy. stale: a newer push will deploy, so skip. gone: the PR closed or lost
+      # the label while we built, so remove the preview.
       - name: Check this build is still current
         id: current
         run: |
           set -euo pipefail
           info=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR")
-          if jq -e --arg sha "$SHA" '.state == "open" and .head.sha == $sha and any(.labels[]; .name == "preview")' <<<"$info" >/dev/null; then
-            echo "current=true" >> "$GITHUB_OUTPUT"
+          if ! jq -e '.state == "open" and any(.labels[]; .name == "preview")' <<<"$info" >/dev/null; then
+            echo "::notice::PR $PR was closed or lost the preview label; removing the preview"
+            echo "state=gone" >> "$GITHUB_OUTPUT"
+            echo "reason=$(jq -r 'if .state == "open" then "label removed" else "PR closed" end' <<<"$info")" >> "$GITHUB_OUTPUT"
+          elif jq -e --arg sha "$SHA" '.head.sha == $sha' <<<"$info" >/dev/null; then
+            echo "state=current" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::PR $PR has a newer commit, was closed, or lost the preview label; skipping this deploy"
-            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PR $PR has a newer commit; skipping this deploy"
+            echo "state=stale" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Log in to Azure
-        if: steps.current.outputs.current == 'true'
+        if: steps.current.outputs.state != 'stale'
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           creds: ${{ secrets.SDLC_AZURE_CREDS }}
 
+      - name: Remove the preview
+        if: steps.current.outputs.state == 'gone'
+        env:
+          REASON: ${{ steps.current.outputs.reason }}
+        run: |
+          .github/scripts/preview.sh destroy "$PR"
+          .github/scripts/preview.sh comment "$PR" removed
+
       - name: Claim a slot
         id: slot
-        if: steps.current.outputs.current == 'true'
+        if: steps.current.outputs.state == 'current'
         run: .github/scripts/preview.sh slots claim "$PR"
 
       - name: Post deploying status
