@@ -1,10 +1,43 @@
-import { useMemo } from "react";
+import { Children, cloneElement, useMemo } from "react";
+import { components } from "react-select";
 import ComboBox from "../../UI/Form/ComboBox";
 import {
     buildDivisionStaffingOptions,
     splitSelectedOptions,
     toSelectedOptions
 } from "./DivisionStaffingComboBox.helpers";
+
+/**
+ * While a division option has focus (by hover or arrow keys), its CORs get the same light highlight,
+ * so the user can see who the division covers. Only the focused option is announced; the CORs'
+ * labels already name their division, so the highlight is visual only.
+ * @param {Object} props - react-select MenuList props.
+ * @returns {React.ReactElement} - The menu list.
+ */
+const GroupHighlightMenuList = (props) => {
+    const focused = Children.toArray(props.children).find((child) => child.props?.isFocused);
+    const focusedData = focused?.props.data;
+    // A division option's group is its own id, so this is true only when a division has focus.
+    const focusedGroup = focusedData?.group && focusedData.group === focusedData.value ? focusedData.group : null;
+
+    const children = focusedGroup
+        ? Children.map(props.children, (child) =>
+              child.props?.data?.group === focusedGroup && !child.props.isFocused
+                  ? cloneElement(child, {
+                        className: "division-staffing-combobox__option--in-focused-group",
+                        innerProps: {
+                            ...child.props.innerProps,
+                            style: { backgroundColor: child.props.theme.colors.primary25 }
+                        }
+                    })
+                  : child
+          )
+        : props.children;
+
+    return <components.MenuList {...props}>{children}</components.MenuList>;
+};
+
+const MENU_COMPONENTS = { MenuList: GroupHighlightMenuList };
 
 /**
  * A comboBox for filtering by the primary COR's division ("Division & Staffing"): pick whole divisions,
@@ -65,6 +98,7 @@ export const DivisionStaffingComboBox = ({
                         overrideStyles={overrideStyles}
                         isMulti={true}
                         isLoading={isLoading}
+                        components={MENU_COMPONENTS}
                     />
                 </div>
             </div>

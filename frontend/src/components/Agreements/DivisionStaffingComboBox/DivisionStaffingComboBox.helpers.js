@@ -19,6 +19,7 @@
  * @property {string} title - The option text.
  * @property {number} order - Keeps each division's CORs right after it.
  * @property {"division" | "cor"} kind
+ * @property {string} [group] - The division option's id, on the division and on each of its CORs. Ungrouped CORs have none.
  * @property {CorDivision | Cor} item - The division or COR the option stands for.
  */
 
@@ -57,7 +58,8 @@ export const buildDivisionStaffingOptions = (corDivisions = [], cors = []) => {
             title: getCorOptionLabel(corWithAbbreviation),
             order: options.length,
             kind: "cor",
-            item: corWithAbbreviation
+            item: corWithAbbreviation,
+            ...(division && { group: divisionOptionId(division.id) })
         });
     };
 
@@ -69,7 +71,8 @@ export const buildDivisionStaffingOptions = (corDivisions = [], cors = []) => {
                 title: getDivisionOptionLabel(division),
                 order: options.length,
                 kind: "division",
-                item: division
+                item: division,
+                group: divisionOptionId(division.id)
             });
             cors.filter((cor) => cor.division_id === division.id)
                 .sort(byName)

@@ -57,6 +57,7 @@ const filterOption = createFilter({
  * @param {boolean} [props.isDisabled]
  * @param {boolean} [props.isLoading]
  * @param {string} [props.tooltipMsg] - Tooltip message to display (optional).
+ * @param {Object} [props.components] - Extra react-select component overrides, e.g. a custom MenuList (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
 const ComboBox = ({
@@ -73,7 +74,8 @@ const ComboBox = ({
     isMulti = false,
     isDisabled = false,
     isLoading = false,
-    tooltipMsg = ""
+    tooltipMsg = "",
+    components: componentOverrides = {}
 }) => {
     const { selectedOption, options, customStyles, handleChange, defaultOption, shiftHeld } = useComboBox(
         data,
@@ -117,7 +119,7 @@ const ComboBox = ({
                     options={options}
                     placeholder={defaultString}
                     styles={customStyles}
-                    components={{ LoadingMessage }}
+                    components={{ LoadingMessage, ...componentOverrides }}
                     formatOptionLabel={formatOptionLabel}
                     filterOption={filterOption}
                     isSearchable={true}

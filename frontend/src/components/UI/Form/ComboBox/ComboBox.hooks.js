@@ -61,6 +61,11 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
             if (item.name !== undefined) {
                 option.name = item.name;
             }
+            // Only include group if explicitly present — lets a custom MenuList (e.g.
+            // DivisionStaffingComboBox's) style the options that belong together. Additive/opt-in.
+            if (item.group !== undefined) {
+                option.group = item.group;
+            }
             return option;
         });
 

@@ -62,6 +62,17 @@ describe("buildDivisionStaffingOptions", () => {
     it("handles missing options", () => {
         expect(buildDivisionStaffingOptions(undefined, undefined)).toEqual([]);
     });
+
+    it("groups each division with its CORs, and leaves CORs with no division ungrouped", () => {
+        expect(buildDivisionStaffingOptions(corDivisions, cors).map((option) => option.group)).toEqual([
+            "division-1",
+            "division-1",
+            "division-1",
+            "division-2",
+            "division-2",
+            undefined
+        ]);
+    });
 });
 
 describe("splitSelectedOptions", () => {
@@ -91,6 +102,53 @@ describe("DivisionStaffingComboBox", () => {
             "OD - Gary Gareson",
             "Ann Nodivision"
         ]);
+    });
+
+    describe("group highlight", () => {
+        const GROUP_CLASS = "division-staffing-combobox__option--in-focused-group";
+        const highlighted = () =>
+            screen
+                .getAllByRole("option")
+                .filter((option) => option.classList.contains(GROUP_CLASS))
+                .map((option) => option.textContent);
+
+        it("highlights a focused division's CORs, and nothing when a COR has focus", async () => {
+            const user = userEvent.setup();
+            render(<StatefulComboBox />);
+
+            // Opening the menu focuses the first option, the DCFD division.
+            await user.click(screen.getByLabelText("Division & Staffing"));
+            expect(highlighted()).toEqual(["DCFD - Hank Smith", "DCFD - Joan Wilder"]);
+            expect(screen.getByRole("option", { name: "DCFD - Hank Smith" })).toHaveStyle({
+                backgroundColor: "#DEEBFF"
+            });
+
+            await user.keyboard("{ArrowDown}");
+            expect(highlighted()).toEqual([]);
+
+            await user.keyboard("{ArrowDown}{ArrowDown}");
+            expect(highlighted()).toEqual(["OD - Gary Gareson"]);
+        });
+
+        it("highlights a division's CORs on hover", async () => {
+            const user = userEvent.setup();
+            render(<StatefulComboBox />);
+
+            await user.click(screen.getByLabelText("Division & Staffing"));
+            await user.hover(screen.getByRole("option", { name: "OD - Office of the Director" }));
+
+            expect(highlighted()).toEqual(["OD - Gary Gareson"]);
+        });
+
+        it("never highlights a COR with no division", async () => {
+            const user = userEvent.setup();
+            render(<StatefulComboBox />);
+
+            await user.click(screen.getByLabelText("Division & Staffing"));
+            await user.hover(screen.getByRole("option", { name: "Ann Nodivision" }));
+
+            expect(highlighted()).toEqual([]);
+        });
     });
 
     it("lets a keyboard user pick a division and a COR from another division", async () => {
