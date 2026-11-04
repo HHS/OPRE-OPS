@@ -93,7 +93,14 @@ portfolio's division.
   **Q7 is still open:** confirm the wording with Kim, because the Dashboard offers divisions only.
 - The first CI run on #6495 failed on a Cypress binary download (502), not on the code; re-run.
 
-**Do next:** the manual check (see the PR), then mark #6495 ready and run `/ops-pr-review 6495`.
+- **Group highlight (added 2026-11-04, at the dev's request, to get UX feedback):** when a division option has
+  focus (hover or arrow keys), its people get the same light-blue highlight, like the prototype. This reverses
+  Kim's "single row to start" note, so it may be reverted. It's a `MenuList` override in
+  `DivisionStaffingComboBox.jsx`, plus an opt-in `group` option field and a `components` prop on `ComboBox`.
+  To revert, drop the `components` prop from the wrapper.
+
+**Do next:** the manual check (see the PR), get UX feedback on the group highlight, then mark #6495 ready and run
+`/ops-pr-review 6495`.
 
 ### Previous plan (2026-11-04)
 **State at end of 2026-11-03:**
