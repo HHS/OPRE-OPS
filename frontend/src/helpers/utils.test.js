@@ -16,7 +16,8 @@ import {
     computeDisplayPercent,
     computeDisplayPercents,
     applyMinimumArcValue,
-    escapeHtml
+    escapeHtml,
+    extractBackendErrorMessage
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -505,5 +506,24 @@ describe("escapeHtml", () => {
     it("returns an empty string for null or undefined", () => {
         expect(escapeHtml(null)).toBe("");
         expect(escapeHtml(undefined)).toBe("");
+    });
+});
+
+describe("extractBackendErrorMessage", () => {
+    it("returns the first string message from a Marshmallow-shaped errors body", () => {
+        const error = { data: { errors: { budget_line_item_ids: ["Budget line 5 changed after this was sent."] } } };
+        expect(extractBackendErrorMessage(error)).toBe("Budget line 5 changed after this was sent.");
+    });
+
+    it("returns the first message when multiple fields have errors", () => {
+        const error = { data: { errors: { field_a: [], field_b: ["Second field's message."] } } };
+        expect(extractBackendErrorMessage(error)).toBe("Second field's message.");
+    });
+
+    it("returns undefined when there are no errors, or errors isn't the expected shape", () => {
+        expect(extractBackendErrorMessage({ data: {} })).toBeUndefined();
+        expect(extractBackendErrorMessage({ data: { errors: {} } })).toBeUndefined();
+        expect(extractBackendErrorMessage(undefined)).toBeUndefined();
+        expect(extractBackendErrorMessage({})).toBeUndefined();
     });
 });

@@ -121,4 +121,26 @@ describe("Start a Contract Modification", () => {
             });
         });
     });
+
+    it("lets the Division Director approve it, and the Budget Lines tab shows Executing without reloading", () => {
+        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.get('[data-cy="start-modification-btn"]').should("be.enabled").click();
+        cy.contains("tr", String(budgetLineId)).find("label").first().click();
+        cy.get("textarea[name='submitter-notes']").type("E2E contract modification");
+        cy.get('[data-cy="send-to-approval-btn"]').should("be.enabled").click();
+
+        testLogin("division-director");
+        cy.visit(`/agreements/${AGREEMENT_ID}/award-modifications`);
+        cy.get('[data-cy="approve-contract-modification-btn"]').click();
+        cy.get(".usa-modal__content").contains(/approve this Contract Modification\?/i);
+        cy.get('[data-cy="confirm-action"]').click();
+        cy.contains(/Contract Modification Approved/i).should("be.visible");
+
+        // Same mounted Agreement page, just a client-side tab switch — no reload. Regression test for
+        // OPS-1008's missed "Agreements" cache invalidation (reviewContractModification was only
+        // invalidating ContractModifications/BudgetLineItems/Notifications/AgreementHistory, so the
+        // agreement object the Budget Lines tab reads from stayed stale).
+        cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+        cy.contains("tr", String(budgetLineId)).should("contain", "Executing");
+    });
 });

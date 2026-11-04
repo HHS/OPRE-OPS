@@ -811,3 +811,15 @@ export const escapeHtml = (value) =>
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+
+/**
+ * Pulls the first human-readable message out of an RTK Query error's Marshmallow-shaped
+ * `{errors: {field: [message, ...]}}` body (e.g. a blocked SC delete, or a budget line that
+ * changed after a contract modification was sent).
+ * @param {{data?: {errors?: Record<string, string[]>}}} [error] - The caught RTK Query error.
+ * @returns {string|undefined} The first string message found, or undefined if there isn't one.
+ */
+export const extractBackendErrorMessage = (error) =>
+    Object.values(error?.data?.errors ?? {})
+        .flat()
+        .find((message) => typeof message === "string");
