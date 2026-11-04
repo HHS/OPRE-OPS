@@ -593,6 +593,42 @@ describe("BudgetLineItemList", () => {
         expect(handleExport.mock.calls.at(-1)[2].division).toEqual(division);
     });
 
+    it("passes the COR filter through to the list query and the export", async () => {
+        const { handleExport } = await import("../../../helpers/budgetLines.helpers");
+        const cor = [{ id: 21, name: "Hank Smith", division_id: 2 }];
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: { ...defaultFilters, cor },
+            setFilters: vi.fn(),
+            selectedFiscalYear: "All",
+            setSelectedFiscalYear: vi.fn(),
+            showModal: false,
+            setShowModal: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({ filters: expect.objectContaining({ cor }) })
+        );
+
+        fireEvent.click(screen.getByText("Export"));
+
+        expect(handleExport.mock.calls.at(-1)[2].cor).toEqual(cor);
+    });
+
     it("calls handleExport with empty fiscalYears when selectedFiscalYear is Multi", async () => {
         const { handleExport } = await import("../../../helpers/budgetLines.helpers");
 

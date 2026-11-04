@@ -2309,6 +2309,9 @@ class TestAgreementDivisionFilter:
             "div_c_id": div_c.id,
             "div_d_id": div_d.id,
             "po_a_id": po_a.id,
+            "po_b_id": po_b.id,
+            "po_no_div_id": po_no_div.id,
+            "alt_c_id": alt_c.id,
             "agreement_alt_only_id": agreement_alt_only.id,
             "agreement_b_portfolio_division_id": seeded_can.portfolio.division_id,
         }
@@ -2600,3 +2603,122 @@ class TestAgreementDivisionFilter:
 
         assert division_filter_data["div_a_id"] in cor_division_ids
         assert division_filter_data["div_b_id"] not in cor_division_ids
+
+    def test_cor_id_returns_only_that_cors_agreements(self, loaded_db, app_ctx, division_filter_data):
+        """A single cor_id returns only agreements where that user is the primary COR."""
+        service = AgreementsService(loaded_db)
+        results, _ = service.get_list(
+            [ContractAgreement], {"cor_id": [division_filter_data["po_b_id"]], "limit": [1000]}
+        )
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_b_id"] in result_ids
+        assert division_filter_data["agreement_a_id"] not in result_ids
+        assert division_filter_data["agreement_no_po_id"] not in result_ids
+
+    def test_division_and_cor_id_together_is_union(self, loaded_db, app_ctx, division_filter_data):
+        """Division and COR come from one "Division & Staffing" control, so a match on either is kept."""
+        service = AgreementsService(loaded_db)
+        data = {
+            "division": [division_filter_data["div_a_id"]],
+            "cor_id": [division_filter_data["po_b_id"]],
+            "limit": [1000],
+        }
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] in result_ids
+        assert division_filter_data["agreement_no_po_id"] not in result_ids
+        assert division_filter_data["agreement_alt_only_id"] not in result_ids
+
+    def test_cor_id_matches_a_cor_without_division(self, loaded_db, app_ctx, division_filter_data):
+        """A COR with no division can still be chosen directly."""
+        service = AgreementsService(loaded_db)
+        results, _ = service.get_list(
+            [ContractAgreement], {"cor_id": [division_filter_data["po_no_div_id"]], "limit": [1000]}
+        )
+
+        assert {a.id for a in results} == {division_filter_data["agreement_alt_only_id"]}
+
+    def test_cor_id_on_alternate_cor_only_is_excluded(self, loaded_db, app_ctx, division_filter_data):
+        """Only the primary COR counts; choosing the alternate COR never matches."""
+        service = AgreementsService(loaded_db)
+        results, _ = service.get_list(
+            [ContractAgreement], {"cor_id": [division_filter_data["alt_c_id"]], "limit": [1000]}
+        )
+
+        assert division_filter_data["agreement_alt_only_id"] not in {a.id for a in results}
+
+    def test_cor_id_and_awarding_entity_together_is_intersection(self, loaded_db, app_ctx, division_filter_data):
+        """The division/COR group as a whole is ANDed with the other filters."""
+        service = AgreementsService(loaded_db)
+        data = {
+            "division": [division_filter_data["div_a_id"]],
+            "cor_id": [division_filter_data["po_b_id"]],
+            "awarding_entity_id": [division_filter_data["awarding_entity_a"]],
+            "limit": [1000],
+        }
+        results, _ = service.get_list([ContractAgreement], data)
+        result_ids = {a.id for a in results}
+
+        assert division_filter_data["agreement_a_id"] in result_ids
+        assert division_filter_data["agreement_b_id"] not in result_ids
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
+    def test_cor_id_and_only_my_together_is_intersection(
+        self, mock_get_user_helpers, mock_get_user_service, loaded_db, app_ctx, division_filter_data
+    ):
+        """Choosing another COR never adds agreements outside "My Agreements"."""
+        mock_user = MagicMock()
+        mock_user.id = division_filter_data["po_a_id"]
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_helpers.return_value = mock_user
+        mock_get_user_service.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        results, metadata = service.get_list(
+            [ContractAgreement],
+            {
+                "division": [division_filter_data["div_a_id"]],
+                "cor_id": [division_filter_data["po_b_id"]],
+                "only_my": [True],
+                "limit": [1000],
+            },
+        )
+
+        assert {a.id for a in results} == {division_filter_data["agreement_a_id"]}
+        assert metadata["count"] == 1
+
+    def test_filter_options_cors_only_include_primary_cors(self, loaded_db, app_ctx, division_filter_data):
+        """Offered CORs are primary CORs on at least one agreement, with their division (or None)."""
+        service = AgreementsService(loaded_db)
+        cors = service.get_filter_options({})["cors"]
+        cors_by_id = {c["id"]: c for c in cors}
+
+        assert cors_by_id[division_filter_data["po_a_id"]] == {
+            "id": division_filter_data["po_a_id"],
+            "name": "PO Alpha",
+            "division_id": division_filter_data["div_a_id"],
+        }
+        assert cors_by_id[division_filter_data["po_b_id"]]["division_id"] == division_filter_data["div_b_id"]
+        assert cors_by_id[division_filter_data["po_no_div_id"]]["division_id"] is None
+        assert division_filter_data["alt_c_id"] not in cors_by_id  # alternate COR only
+        assert [c["name"] for c in cors] == sorted(c["name"] for c in cors)
+
+    @patch("ops_api.ops.services.agreements.get_current_user")
+    def test_filter_options_cors_respect_only_my(self, mock_get_user_service, loaded_db, app_ctx, division_filter_data):
+        """With only_my, offered CORs come only from the user's own agreements."""
+        mock_user = MagicMock()
+        mock_user.id = division_filter_data["po_a_id"]
+        mock_user.roles = []
+        mock_user.is_superuser = False
+        mock_get_user_service.return_value = mock_user
+
+        service = AgreementsService(loaded_db)
+        cor_ids = {c["id"] for c in service.get_filter_options({"only_my": [True]})["cors"]}
+
+        assert division_filter_data["po_a_id"] in cor_ids
+        assert division_filter_data["po_b_id"] not in cor_ids

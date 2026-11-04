@@ -111,10 +111,11 @@ describe("Procurement Dashboard - Authorized User", () => {
     });
 
     describe("Filters", () => {
-        it("renders the filter modal with Procurement Shop and Division comboboxes", () => {
+        it("renders the filter modal with Procurement Shop and COR's division comboboxes", () => {
             cy.get("button").contains("Filter").click();
             cy.get(".proc-shop-combobox__control").should("be.visible");
             cy.get(".division-combobox__control").should("be.visible");
+            cy.get('label[for="division-combobox-input"]').should("have.text", "COR's division");
         });
 
         it("populates the procurement shop combobox with options", () => {

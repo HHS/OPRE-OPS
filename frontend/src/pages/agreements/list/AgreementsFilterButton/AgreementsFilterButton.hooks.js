@@ -15,6 +15,9 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
     const [agreementName, setAgreementName] = React.useState([]);
     const [contractNumber, setContractNumber] = React.useState([]);
     const [awardType, setAwardType] = React.useState([]);
+    // "Division & Staffing" fills both: whole divisions and individual CORs.
+    const [division, setDivision] = React.useState([]);
+    const [cor, setCor] = React.useState([]);
 
     // Reseed all local buffers from parent filters when the modal opens.
     // This ensures that a Reset-without-Apply followed by re-opening the modal
@@ -28,6 +31,8 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
             setAgreementName(filters.agreementName ?? []);
             setContractNumber(filters.contractNumber ?? []);
             setAwardType(filters.awardType ?? []);
+            setDivision(filters.division ?? []);
+            setCor(filters.cor ?? []);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showModal]);
@@ -62,6 +67,14 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
         setAwardType(filters.awardType ?? []);
     }, [filters.awardType]);
 
+    React.useEffect(() => {
+        setDivision(filters.division ?? []);
+    }, [filters.division]);
+
+    React.useEffect(() => {
+        setCor(filters.cor ?? []);
+    }, [filters.cor]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
@@ -72,7 +85,9 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
                 agreementType: agreementType,
                 agreementName: agreementName,
                 contractNumber: contractNumber,
-                awardType: awardType
+                awardType: awardType,
+                division: division ?? [],
+                cor: cor ?? []
             };
         });
     };
@@ -88,6 +103,8 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
         setAgreementName([]);
         setContractNumber([]);
         setAwardType([]);
+        setDivision([]);
+        setCor([]);
     };
 
     return {
@@ -105,6 +122,10 @@ export const useAgreementsFilterButton = (filters, setFilters, showModal) => {
         setContractNumber,
         awardType,
         setAwardType,
+        division,
+        setDivision,
+        cor,
+        setCor,
         applyFilter,
         resetFilter
     };

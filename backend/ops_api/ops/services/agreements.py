@@ -77,6 +77,7 @@ class AgreementFilters:
     delivered_status: Optional[list[str]] = None
     awarding_entity_id: Optional[list[int]] = None
     division: Optional[list[int]] = None
+    cor_id: Optional[list[int]] = None
     project_officer_id: Optional[list[int]] = None
     alternate_project_officer_id: Optional[list[int]] = None
     foa: Optional[list[str]] = None
@@ -107,6 +108,7 @@ class AgreementFilters:
             delivered_status=data.get("delivered_status", []),
             awarding_entity_id=data.get("awarding_entity_id", []),
             division=data.get("division", []),
+            cor_id=data.get("cor_id", []),
             project_officer_id=data.get("project_officer_id", []),
             alternate_project_officer_id=data.get("alternate_project_officer_id", []),
             foa=data.get("foa", []),
@@ -796,6 +798,20 @@ class AgreementsService(OpsService[Agreement]):
         ]
         cor_divisions = sorted(cor_divisions, key=lambda x: x["name"])
 
+        # Step 10: CORs - the agreements' primary CORs, with their division (None if unset) so the
+        # frontend can group them under cor_divisions. The alternate COR is intentionally ignored.
+        cors_query = (
+            select(User.id, User.full_name, User.email, User.division)
+            .distinct()
+            .join(Agreement, Agreement.project_officer_id == User.id)
+            .where(Agreement.id.in_(agreement_ids_subquery))
+        )
+        cors = [
+            {"id": u_id, "name": full_name or email, "division_id": division_id}
+            for u_id, full_name, email, division_id in self.db_session.execute(cors_query).all()
+        ]
+        cors = sorted(cors, key=lambda x: x["name"])
+
         # Build response
         filters = {
             "fiscal_years": fiscal_years,
@@ -806,6 +822,7 @@ class AgreementsService(OpsService[Agreement]):
             "contract_numbers": contract_numbers,
             "research_types": research_types,
             "cor_divisions": cor_divisions,
+            "cors": cors,
         }
 
         filter_response_schema = AgreementListFilterOptionResponseSchema()
@@ -1463,6 +1480,28 @@ def _apply_budget_line_filters(query: Select[Agreement], data: dict[str, Any]) -
     return query
 
 
+def _apply_cor_filter(
+    query: Select[Agreement],
+    agreement_cls: Type[Agreement],
+    divisions: list[int],
+    cor_ids: list[int],
+) -> Select[Agreement]:
+    """Filter by the agreement's project officer (primary COR): by the COR's division, by the COR directly, or both.
+
+    Both come from one "Division & Staffing" control, so a match on either is kept (OR). Division
+    uses a subquery through User because it lives on the User model, not the agreement. Agreements
+    with no project officer never match.
+    """
+    cor_conditions = []
+    if divisions:
+        cor_conditions.append(agreement_cls.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
+    if cor_ids:
+        cor_conditions.append(agreement_cls.project_officer_id.in_(cor_ids))
+    if cor_conditions:
+        query = query.where(or_(*cor_conditions))
+    return query
+
+
 def _apply_agreement_filters(
     query: Select[Agreement],
     agreement_cls: Type[Agreement],
@@ -1486,12 +1525,7 @@ def _apply_agreement_filters(
         if values:
             query = query.where(column.in_(values))
 
-    # Filter by the division of the agreement's project officer (COR).
-    # Uses a subquery join through User because division lives on the User model,
-    # not the agreement. This naturally excludes agreements with no project officer.
-    divisions = data.get("division", [])
-    if divisions:
-        query = query.where(agreement_cls.project_officer_id.in_(select(User.id).where(User.division.in_(divisions))))
+    query = _apply_cor_filter(query, agreement_cls, data.get("division", []), data.get("cor_id", []))
 
     # Apply name filter with partial or exact matching based on exact_match flag
     # Use OR logic so multiple names return agreements matching ANY of them

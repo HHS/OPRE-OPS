@@ -28,8 +28,7 @@ describe("PortfoliosComboBox", () => {
                 />
             </MemoryRouter>
         );
-        expect(screen.getByRole("combobox")).toBeInTheDocument();
-        expect(screen.getByText("Portfolio")).toBeInTheDocument();
+        expect(screen.getByRole("combobox", { name: "Portfolio (funding stream)" })).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {

@@ -37,6 +37,15 @@ describe("CANFilterButton", () => {
             />
         );
 
+    it("labels the portfolio field as the funding stream", async () => {
+        const user = userEvent.setup();
+        renderFilterButton(filtersWithSelections, vi.fn());
+
+        await user.click(screen.getByText("Filters"));
+
+        expect(screen.getByRole("combobox", { name: "Portfolio (funding stream)" })).toBeInTheDocument();
+    });
+
     it("Reset does not call setFilters, the modal stays open, and the fields visibly clear", async () => {
         const user = userEvent.setup();
         const setFilters = vi.fn();

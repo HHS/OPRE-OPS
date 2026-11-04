@@ -8,6 +8,7 @@ import AgreementTypeComboBox from "../../../components/Agreements/AgreementTypeC
 import AgreementNameComboBox from "../../../components/Agreements/AgreementNameComboBox/AgreementNameComboBox";
 import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodComboBox/CANActivePeriodComboBox";
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
+import DivisionStaffingComboBox from "../../../components/Agreements/DivisionStaffingComboBox";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
 
 /**
@@ -28,6 +29,9 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
     const [agreementTypes, setAgreementTypes] = React.useState([]);
     const [agreementTitles, setAgreementTitles] = React.useState([]);
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
+    // "Division & Staffing" fills both: whole divisions and individual CORs.
+    const [division, setDivision] = React.useState([]);
+    const [cor, setCor] = React.useState([]);
 
     // Fiscal year options for the combobox — sourced from API filter options only.
     const fiscalYearOptions = React.useMemo(() => {
@@ -53,6 +57,8 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
             setAgreementTypes(filters.agreementTypes ?? []);
             setAgreementTitles(filters.agreementTitles ?? []);
             setCanActivePeriods(filters.canActivePeriods ?? []);
+            setDivision(filters.division ?? []);
+            setCor(filters.cor ?? []);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showModal]);
@@ -86,6 +92,14 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
         setCanActivePeriods(filters.canActivePeriods ?? []);
     }, [filters.canActivePeriods]);
 
+    React.useEffect(() => {
+        setDivision(filters.division ?? []);
+    }, [filters.division]);
+
+    React.useEffect(() => {
+        setCor(filters.cor ?? []);
+    }, [filters.cor]);
+
     // Calculate budget range options from filterOptions
     React.useEffect(() => {
         if (filterOptions?.budget_line_total_range) {
@@ -104,7 +118,9 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
             budgetRange,
             agreementTypes,
             agreementTitles,
-            canActivePeriods
+            canActivePeriods,
+            division: division ?? [],
+            cor: cor ?? []
         }));
     };
 
@@ -116,6 +132,8 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
         setAgreementTypes([]);
         setAgreementTitles([]);
         setCanActivePeriods([]);
+        setDivision([]);
+        setCor([]);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -148,6 +166,22 @@ export const BLIFilterButton = ({ filters, setFilters, showModal, setShowModal, 
                 legendClassname={legendStyles}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 usePrefetchedOptions={true}
+            />
+        </fieldset>,
+        <fieldset
+            key="divisionStaffingField"
+            className={fieldStyles}
+        >
+            <DivisionStaffingComboBox
+                corDivisions={filterOptions?.cor_divisions ?? []}
+                cors={filterOptions?.cors ?? []}
+                selectedDivisions={division}
+                setSelectedDivisions={setDivision}
+                selectedCors={cor}
+                setSelectedCors={setCor}
+                legendClassname={legendStyles}
+                defaultString={""}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
