@@ -1,6 +1,8 @@
 import * as React from "react";
 import { useReviewContractModificationMutation } from "../../../api/opsAPI";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
+import { extractBackendErrorMessage } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import TextArea from "../../UI/Form/TextArea";
@@ -9,11 +11,21 @@ import TermTag from "../../ChangeRequests/TermTag";
 import ContractModificationEditCard from "./ContractModificationEditCard";
 
 /**
+ * @typedef {Object} ContractModificationBudgetLineSummary
+ * @property {number} id
+ * @property {string | null} line_description
+ * @property {string | null} amount
+ * @property {number | null} fiscal_year
+ * @property {string | null} can_display_name
+ */
+
+/**
  * @typedef {Object} ContractModificationRequest
  * @property {number} id
  * @property {string} requestor_notes
  * @property {import("./ContractModificationEditCard").ContractModificationEdit[]} edits
  * @property {number[]} budget_line_item_ids
+ * @property {ContractModificationBudgetLineSummary[]} budget_line_items
  */
 
 /**
@@ -33,6 +45,12 @@ const ContractModificationRequestReviewCard = ({ request }) => {
     const [modalProps, setModalProps] = React.useState(null);
     const [reviewerNotes, setReviewerNotes] = React.useState("");
     const [submitError, setSubmitError] = React.useState("");
+    // `isLoading` goes back to false as soon as the mutation resolves, before the refetch that
+    // removes this card (now out of IN_REVIEW) lands — leaving a window where the buttons
+    // re-enable and a second click could submit a duplicate review. Once a review succeeds,
+    // this stays true until the card unmounts, so the buttons never re-enable on success.
+    const [justSucceeded, setJustSucceeded] = React.useState(false);
+    const isSubmitDisabled = isLoading || justSucceeded;
 
     const handleReview = (action) => {
         const isApprove = action === "APPROVE";
@@ -46,6 +64,7 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                 reviewContractModification({ requestId: request.id, action, reviewerNotes: reviewerNotes || null })
                     .unwrap()
                     .then(() => {
+                        setJustSucceeded(true);
                         // This card unmounts once the request leaves IN_REVIEW, so feedback goes through the
                         // page-level alert (role="status"/"alert", announced regardless) rather than local state.
                         setAlert({
@@ -63,10 +82,9 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                     .catch((error) => {
                         // e.g. a bundled budget line changed after this request was sent; the backend's reason
                         // is in errors, not a top-level error field
-                        const backendMessage = Object.values(error?.data?.errors ?? {})
-                            .flat()
-                            .find((message) => typeof message === "string");
-                        setSubmitError(backendMessage ?? "Failed to submit your review. Please try again.");
+                        setSubmitError(
+                            extractBackendErrorMessage(error) ?? "Failed to submit your review. Please try again."
+                        );
                     });
             }
         });
@@ -96,12 +114,52 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                     ))}
                 </ul>
             )}
-            {request.budget_line_item_ids.length > 0 && (
-                <TermTag
-                    label="Budget Lines to Execute"
-                    value={request.budget_line_item_ids}
-                    className="margin-top-2"
-                />
+            {request.budget_line_items?.length > 0 && (
+                <div className="margin-top-2">
+                    <p className="font-12px text-base-dark margin-0 margin-bottom-1">
+                        <strong>Budget Lines to Execute</strong>
+                    </p>
+                    <ul
+                        className="usa-list--unstyled display-flex flex-column"
+                        style={{ gap: "1rem" }}
+                    >
+                        {request.budget_line_items.map((budgetLineItem) => (
+                            <li key={budgetLineItem.id}>
+                                <div
+                                    className="padding-205 bg-white border-1px border-base-light radius-md display-flex flex-wrap"
+                                    style={{ gap: "1rem" }}
+                                    data-cy="contract-modification-budget-line-summary"
+                                >
+                                    <TermTag
+                                        label="BL ID"
+                                        value={budgetLineItem.id}
+                                        className="margin-0"
+                                    />
+                                    <TermTag
+                                        label="Description"
+                                        value={budgetLineItem.line_description}
+                                        className="margin-0"
+                                    />
+                                    <TermTag
+                                        label="CAN"
+                                        value={budgetLineItem.can_display_name}
+                                        className="margin-0"
+                                    />
+                                    <TermTag
+                                        label="Amount"
+                                        value={formatCurrency(budgetLineItem.amount)}
+                                        className="margin-0"
+                                    />
+                                    <TermTag
+                                        label="FY"
+                                        value={budgetLineItem.fiscal_year}
+                                        className="margin-0"
+                                    />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
             <div className="margin-top-2">
                 <TextArea
@@ -124,7 +182,7 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                 <button
                     className="usa-button usa-button--outline margin-right-2"
                     onClick={() => handleReview("DECLINE")}
-                    disabled={isLoading}
+                    disabled={isSubmitDisabled}
                     data-cy="decline-contract-modification-btn"
                 >
                     Decline
@@ -132,7 +190,7 @@ const ContractModificationRequestReviewCard = ({ request }) => {
                 <button
                     className="usa-button"
                     onClick={() => handleReview("APPROVE")}
-                    disabled={isLoading}
+                    disabled={isSubmitDisabled}
                     data-cy="approve-contract-modification-btn"
                 >
                     Approve

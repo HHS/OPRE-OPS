@@ -34,11 +34,22 @@ const AMOUNT_EDIT = {
     agreement_mod_id: null
 };
 
+const BUDGET_LINE_SUMMARY = {
+    id: 123459,
+    line_description: "Research support",
+    // Distinct from AMOUNT_EDIT's old/new values above, so the two cards' formatted amounts
+    // don't collide in a getByText query.
+    amount: "250000.00",
+    fiscal_year: 2044,
+    can_display_name: "G994426"
+};
+
 const baseRequest = {
     id: 9,
     requestor_notes: null,
     edits: [],
-    budget_line_item_ids: []
+    budget_line_item_ids: [],
+    budget_line_items: []
 };
 
 const renderCard = (request = {}) =>
@@ -49,18 +60,25 @@ describe("ContractModificationRequestReviewCard", () => {
         vi.clearAllMocks();
     });
 
-    it("renders the submitter's notes, bundled edits, and selected budget lines", () => {
+    it("renders the submitter's notes, bundled edits, and selected budget lines with their amount/CAN/FY", () => {
         useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
 
         renderCard({
             requestor_notes: "Please review by Friday",
             edits: [AMOUNT_EDIT],
-            budget_line_item_ids: [123459]
+            budget_line_item_ids: [123459],
+            budget_line_items: [BUDGET_LINE_SUMMARY]
         });
 
         expect(screen.getByText("Please review by Friday")).toBeInTheDocument();
         expect(screen.getByText("123458")).toBeInTheDocument(); // the bundled edit's BL ID
-        expect(screen.getByText("123459")).toBeInTheDocument(); // the budget line to execute
+        // The budget line to execute, now shown with enough detail to actually review it
+        // (OPS-1008 follow-up: previously only the bare id rendered).
+        expect(screen.getByText("123459")).toBeInTheDocument();
+        expect(screen.getByText("Research support")).toBeInTheDocument();
+        expect(screen.getByText("G994426")).toBeInTheDocument();
+        expect(screen.getByText("$250,000.00")).toBeInTheDocument();
+        expect(screen.getByText("2044")).toBeInTheDocument();
     });
 
     it("approves: confirming the modal calls the mutation with APPROVE and the typed notes, and alerts success", async () => {
@@ -83,6 +101,26 @@ describe("ContractModificationRequestReviewCard", () => {
                 expect.objectContaining({ type: "success", heading: "Contract Modification Approved" })
             )
         );
+    });
+
+    it("disables Approve/Decline after a successful review, closing the window before the refetch unmounts the card", async () => {
+        const unwrap = vi.fn().mockResolvedValue({});
+        mockReview.mockReturnValue({ unwrap });
+        // The mocked hook reports isLoading: false throughout — matching the real gap this
+        // guards: RTK Query's own isLoading flips back to false as soon as the mutation
+        // resolves, before the refetch that removes this card (now out of IN_REVIEW) lands.
+        // Without the component's own "just succeeded" state, both buttons would re-enable
+        // here and a second click could submit a duplicate review (OPS-1008 follow-up).
+        useReviewContractModificationMutation.mockReturnValue([mockReview, { isLoading: false }]);
+
+        renderCard();
+        await userEvent.click(screen.getByRole("button", { name: "Approve" }));
+        const confirmButtons = screen.getAllByRole("button", { name: "Approve" });
+        await userEvent.click(confirmButtons[confirmButtons.length - 1]);
+
+        await vi.waitFor(() => expect(mockReview).toHaveBeenCalledTimes(1));
+        expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Decline" })).toBeDisabled();
     });
 
     it("declines: confirming the modal calls the mutation with DECLINE, and alerts the outcome", async () => {

@@ -7491,6 +7491,44 @@ components:
           type: array
           items:
             type: integer
+        budget_line_items:
+          type: array
+          description: |
+            Same budget lines as budget_line_item_ids, with enough detail (amount, CAN, fiscal
+            year) for the Division Director to review what they're approving for execution.
+          items:
+            $ref: "#/components/schemas/ContractModificationBudgetLineSummary"
+        can_review:
+          type: boolean
+          description: |
+            True when the current user may approve/decline this request: it's IN_REVIEW, and
+            they're a superuser or a Division Director/deputy for the agreement. Drives whether
+            the frontend renders the Director's approve/decline controls for this request.
+          example: false
+    ContractModificationBudgetLineSummary:
+      type: object
+      description: |
+        Enough to show the Division Director which budget line they're approving for execution,
+        without the full BudgetLineItem response shape.
+      properties:
+        id:
+          type: integer
+          example: 15
+        line_description:
+          type: string
+          nullable: true
+        amount:
+          type: string
+          nullable: true
+          example: "150000.00"
+        fiscal_year:
+          type: integer
+          nullable: true
+          example: 2044
+        can_display_name:
+          type: string
+          nullable: true
+          example: G994426
     AgreementAwardHistoryRecord:
       description: |
         One flat award/modification record for the Award & Modifications tab.
