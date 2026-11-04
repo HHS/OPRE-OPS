@@ -41,6 +41,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
             title={`${title} \n CAN Available Budget`}
             totalSpending={totalSpending}
             totalFunding={totalFunding}
+            showSpendingNote={false}
         />
     );
 };

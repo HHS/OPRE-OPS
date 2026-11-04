@@ -13,6 +13,7 @@ import { calculatePercent } from "../../../../helpers/utils";
  * @property {string} title - The title of the card.
  * @property {number} totalSpending - The total spending.
  * @property {number} totalFunding - The total funding.
+ * @property {boolean} [showSpendingNote=true] - Whether to show the "*Spending is the sum of..." disclaimer paragraph.
  */
 
 /**
@@ -20,7 +21,7 @@ import { calculatePercent } from "../../../../helpers/utils";
  * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
+const BudgetCard = ({ cardId, title, totalSpending, totalFunding, showSpendingNote = true }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = totalFunding - totalSpending;
     const spendingPercent = calculatePercent(totalSpending, totalFunding);
@@ -88,12 +89,14 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                     <span>{formatCurrency(totalFunding ?? 0)}</span>
                 </div>
             </div>
-            <p
-                className={`${!(totalSpending === 0 && totalFunding === 0) ? "margin-top-3" : "margin-top-6"} margin-bottom-0 font-12px text-base-dark text-normal`}
-                style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
-            >
-                *Spending is the sum of BLs in Planned, Executing and Obligated Status
-            </p>
+            {showSpendingNote && (
+                <p
+                    className={`${!(totalSpending === 0 && totalFunding === 0) ? "margin-top-3" : "margin-top-6"} margin-bottom-0 font-12px text-base-dark text-normal`}
+                    style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
+                >
+                    *Spending is the sum of BLs in Planned, Executing and Obligated Status
+                </p>
+            )}
         </RoundedBox>
     );
 };
