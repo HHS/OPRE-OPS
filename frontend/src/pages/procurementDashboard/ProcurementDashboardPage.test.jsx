@@ -127,7 +127,7 @@ describe("ProcurementDashboardPage", () => {
 
         // Open the filter modal and select the seeded division.
         await user.click(screen.getByRole("button", { name: /Filters/i }));
-        const divisionInput = screen.getByLabelText("Division");
+        const divisionInput = screen.getByLabelText("Division & Staffing");
         await user.click(divisionInput);
         await user.type(divisionInput, "Division of Data");
         await user.keyboard("{Enter}");
@@ -143,7 +143,7 @@ describe("ProcurementDashboardPage", () => {
         renderWithProviders(<ProcurementDashboard />);
 
         await user.click(screen.getByRole("button", { name: /Filters/i }));
-        const divisionInput = screen.getByLabelText("Division");
+        const divisionInput = screen.getByLabelText("Division & Staffing");
         await user.click(divisionInput);
         await user.type(divisionInput, "Division of Data");
         await user.keyboard("{Enter}");
