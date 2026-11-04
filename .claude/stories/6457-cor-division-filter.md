@@ -1,7 +1,7 @@
 ---
 issue: 6457
 branch: OPS-6457/division-staffing-filter  # current; the first branch, OPS-6457/agreements-cor-division-filter, merged as PR #6480 on 2026-11-03
-status: IN PROGRESS. PR #6480 (COR's division backend + wiring) merged 2026-11-03. Draft PR **#6495** (`OPS-6457/division-staffing-filter`) carries the "Division & Staffing" work from the UX prototype: the backend (`cor_id` OR'd with `division`, `cors` options), the frontend wiring, and the control + tags on Agreements and Budget Lines. Pick up at "Start here next session (2026-11-04)".
+status: IN PROGRESS. PR #6480 (COR's division backend + wiring) merged 2026-11-03. Draft PR **#6495** (`OPS-6457/division-staffing-filter`) carries the "Division & Staffing" work from the UX prototype: the backend (`cor_id` OR'd with `division`, `cors` options), the frontend wiring, and the control + tags on Agreements and Budget Lines. Pick up at "Start here next session (after 2026-11-04)".
 ---
 
 # OPS-6457: Filter by the COR's division (Agreements, Budget Lines, Procurement Dashboard)
@@ -81,7 +81,21 @@ portfolio's division.
 
 ## Progress: where to pick up (updated 2026-11-03, end of day)
 
-### ▶ Start here next session (2026-11-04)
+### ▶ Start here next session (after 2026-11-04)
+**Done 2026-11-04** (three commits on top of the control + tags):
+- **Step 4:** `PortfoliosComboBox` and `CANPortfolioComboBox` are labelled "Portfolio (funding stream)", which covers
+  Agreements, Budget Lines, Projects, Portfolios, Reporting and CANs. `PortfoliosComboBox`'s `htmlFor` pointed at
+  `project-combobox-input`, so the label wasn't tied to its input; it now points at `portfolios-combobox-input`.
+- **Step 5:** `components/UI/FilterResultsAnnouncer` is a visually hidden `role="status"` region on Agreements and
+  Budget Lines. After the new results load it says "Filters applied." / "Filter removed." / "Filters cleared." plus
+  the total count. Unit tests, and the Agreements and Budget Lines Cypress filter journeys check it.
+- **Step 7:** the Procurement Dashboard filter is labelled "Division & Staffing" (the dev lead's proposal).
+  **Q7 is still open:** confirm the wording with Kim, because the Dashboard offers divisions only.
+- The first CI run on #6495 failed on a Cypress binary download (502), not on the code; re-run.
+
+**Do next:** the manual check (see the PR), then mark #6495 ready and run `/ops-pr-review 6495`.
+
+### Previous plan (2026-11-04)
 **State at end of 2026-11-03:**
 - Branch `OPS-6457/division-staffing-filter`, pushed. **Draft PR #6495**, description up to date. It has three
   commits: the backend, the frontend wiring, and the control + tags.
