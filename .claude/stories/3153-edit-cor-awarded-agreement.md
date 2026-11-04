@@ -3,7 +3,7 @@ issue: 3153
 branch: OPS-3153/edit-cor-awarded
 ---
 
-> **Status (2026-11-04):** Plan revised after UX confirmed that a COR change does **not** need Division Director approval and only takes effect once the contract modification is approved. Waiting on team confirmation. Implementation hasn't started.
+> **Status (2026-11-04):** Implemented on this branch (not yet committed). UX confirmed that a COR change does **not** need Division Director approval and only takes effect once the contract modification is approved, and supplied the modal copy (Figma node `38177-368057`). See [Implementation notes](#implementation-notes) for where the build differs from the draft below.
 
 # Plan: #3153 — Edit the COR on an Awarded Agreement (admin contract mod)
 
@@ -43,18 +43,18 @@ Figma: node `15119-133789` ("Edit COR on an Awarded Agreement"). Its approval an
 | D9 | Both entry points are covered: the Details "Edit" page (`PATCH /agreements`) and the Edit Agreement & Budget Lines bundle. |
 | D10 | #3153 records the pending edit and shows the card. **Applying** the COR when the mod is approved, and including COR edits in Start Modification, belong to #3269. Until then, COR edits are excluded from Start Modification: they aren't submitted or attached, and they don't enable the Start button. |
 | D11 | Agreement Details and the edit form always show the **current** COR. The pending target is visible only on the Award & Mods card. |
-| D12 | If the saved Alt COR is promoted while a COR change is pending, the promotion applies now and **the card stays**. Its From is updated to the new current COR. *(Inferred edge case: if the promoted person **is** the pending target, the card is removed because nothing is left to change. Confirm.)* |
+| D12 | If the saved Alt COR is promoted while a COR change is pending, the promotion applies now and **the card stays**. Its From is updated to the new current COR. If the promoted person **is** the pending target, the card is removed because nothing is left to change. |
 | D13 | Withdrawing a pending COR change (without re-targeting it) is **not in #3153**. |
 | D14 | Alerts: after saving, the usual agreement save-success alert appears and disappears after 6 seconds, like other agreement field edits. After that, the Award & Mods card is the only indicator. There is no persistent or global alert. |
-| D15 | A confirmation modal appears before saving a COR change that will be recorded as pending. The copy is **drafted below and needs UX sign-off**. |
+| D15 | A confirmation modal appears before saving a COR change that will be recorded as pending, with the UX copy below. |
 
-### Draft copy (pending UX sign-off)
+### Copy
 
-- **Modal heading:** "This agreement has already been awarded and changing the COR will require a contract modification. The COR will not change in OPS until the contract modification is approved. This change will be tracked on the Award & Modifications Tab, where you can start the modification. Do you want to continue?"
-- **Modal buttons:** "Continue" / "Continue Editing". The "Continue Editing" label is reused from `CONTRACT_MODIFICATION_APPROVAL_HEADING`'s modal.
-- **Success alert body (6s):** the existing "Agreement Updated" alert, plus "The COR change to {name} will take effect once the contract modification is approved."
-- **History title:** "Change to COR Pending Contract Modification".
-- **History message:** "{user} requested a COR change from {old} to {new}. This agreement is awarded, so the COR will change once the contract modification is approved."
+- **Modal heading (UX, Figma `38177-368057`):** "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action."
+- **Modal buttons:** "Save Changes" / "Continue Editing" (the app's existing casing for the secondary link).
+- **Success alert (6s):** the existing "Agreement Updated" alert, unchanged, as for other agreement field edits.
+- **History title (not reviewed by UX):** "Change to COR Pending Contract Modification".
+- **History message (not reviewed by UX):** "{user} requested a COR change from {old} to {new}. This agreement is awarded, so the COR will change once the contract modification is approved."
 
 ## Approach
 
@@ -152,11 +152,22 @@ Figma: node `15119-133789` ("Edit COR on an Awarded Agreement"). Its approval an
       - re-target → still one card with the new To
       - register the spec in the CI cypress config (precedent: `d167d1dcf`)
 
+## Implementation notes
+
+Where the build differs from, or adds to, the approach above:
+
+- **Success alert:** kept as the standard "Agreement Updated" alert with no extra sentence (the user asked for the same behavior as other field edits).
+- **Removing the COR** on a tracked agreement is rejected with a 400 ("The COR cannot be removed on an awarded agreement."). A pending card going "to nobody" has no meaning, and the form already requires a COR.
+- **COR handling runs before the first commit** in `AgreementsService.update`, so a failed record (e.g. losing the unique-index race) rolls back the whole save, mixed fields included. The prep logic lives in `_prepare_project_officer_change` to keep `update()` under the flake8 complexity limit.
+- **Bundle page, one modal:** a COR change alone shows the COR copy with "Save Changes". If the same save also has edits that need Division Director approval, the existing approval copy and "Send to Approval" take precedence (one confirmation, no stacking).
+- **Bundle history:** the bundle now also records "Change to COR" and "Change to Alternate COR" from its field diff, not just the procurement shop.
+- **Seed data:** agreement 523 already has an Alternate COR (Dave Director, 522), so no seed change was needed.
+- **No Cypress spec:** the existing contract-mod spec skips when `ENABLE_MODIFIED_LOE_EDITS` is off, which it is in CI's E2E stack. There's also no API to withdraw a pending COR change (D13), so a spec couldn't clean up after itself. Backend integration tests (`tests/ops/agreement/test_cor_change_awarded.py`, 21 tests) and frontend unit tests cover the flow, and it was checked by hand in the running app.
+- **Pre-existing display bug found, not fixed:** `formatDateToMonthDayYear` parses the API's naive UTC timestamps as local time and then formats them in UTC, so edits saved after 4 PM Pacific show the next day's date on every Award & Mods card.
+
 ## Open items
 
-- UX sign-off on the draft modal, alert and history copy.
-- Confirm the D12 edge case (promoting the pending target removes the card).
-- Bundle page: the order of the modals when a single save has both a COR change and budget changes that need approval.
+- UX review of the history title and message.
 - The PO should reword ACs 2–4 on #3153 to match the no-approval flow.
 
 ## Verification

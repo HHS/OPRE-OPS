@@ -38,10 +38,13 @@ const useStartModification = (agreementId) => {
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, { refetchOnMountOrArgChange: true, skip: !agreementId });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
-    const { data: edits = [] } = useGetAgreementContractModificationEditsByIdQuery(agreementId, {
+    const { data: allEdits = [] } = useGetAgreementContractModificationEditsByIdQuery(agreementId, {
         skip: !agreementId,
         refetchOnMountOrArgChange: true
     });
+    // Only Modified LOE edits go into the modification for now; Admin Changes such as a COR
+    // change (OPS-3153) join the modification flow in #3269. The backend skips them on submit too.
+    const edits = React.useMemo(() => allEdits.filter((edit) => edit.modification_type === "MODIFIED_LOE"), [allEdits]);
     const { data: modificationRequests = [], isLoading: isLoadingRequests } =
         useGetAgreementContractModificationsByIdQuery(agreementId, {
             skip: !agreementId,

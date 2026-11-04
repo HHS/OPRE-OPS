@@ -19,9 +19,11 @@ from models import (
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
+    ContractModificationEdit,
     ContractModificationRequest,
     ContractModificationRequestNotification,
     ContractModificationRequestStatus,
+    ModificationEditType,
     ModType,
     NotificationType,
 )
@@ -87,8 +89,14 @@ class ContractModificationRequestService:
             raise ValidationError({"agreement_id": "Only an Awarded agreement can start a contract modification."})
 
         # Lock the pending rows so two concurrent submissions can't both include them.
+        # Only Modified LOE edits go into the modification for now. Admin Changes (a COR change,
+        # OPS-3153) stay pending on the list until #3269 adds them to the modification flow.
         pending_edits = list(
-            self.db_session.scalars(self._edit_service._pending_query(agreement_id).with_for_update()).all()
+            self.db_session.scalars(
+                self._edit_service._pending_query(agreement_id)
+                .where(ContractModificationEdit.modification_type == ModificationEditType.MODIFIED_LOE)
+                .with_for_update()
+            ).all()
         )
         if self.get_in_review(agreement_id) is not None:
             raise ValidationError({"agreement_id": _ALREADY_IN_REVIEW})

@@ -95,6 +95,8 @@ let blisSlice = {
 
 // simulateProcurementShopChange is set by tests to trigger onProcurementShopChangeStateChange.
 let simulateProcurementShopChange = false;
+// simulateCorChange is set by tests to trigger onCorChangeStateChange (OPS-3153).
+let simulateCorChange = false;
 
 vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", async () => {
     const { useEffect } = await vi.importActual("react");
@@ -102,7 +104,8 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
         hideFooterButtons,
         isReviewMode,
         bundleSliceRef,
-        onProcurementShopChangeStateChange
+        onProcurementShopChangeStateChange,
+        onCorChangeStateChange
     }) {
         useEffect(() => {
             if (bundleSliceRef) {
@@ -118,6 +121,9 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
                 );
             }
         }, [onProcurementShopChangeStateChange]);
+        useEffect(() => {
+            onCorChangeStateChange?.(simulateCorChange);
+        }, [onCorChangeStateChange]);
         return (
             <div data-testid="agreement-edit-form">
                 <span data-testid="agreement-edit-form-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -218,6 +224,7 @@ describe("EditAgreementAndBudgetLines", () => {
         nextBundleResult = { resolveWith: { ok: true } };
         simulateFinancialChange = false;
         simulateProcurementShopChange = false;
+        simulateCorChange = false;
         simulateUnsavedChanges = false;
         simulateContractModification = false;
         agreementSlice = { name: "Edited Agreement" };
@@ -422,6 +429,38 @@ describe("EditAgreementAndBudgetLines", () => {
                 )
             ).toBeInTheDocument();
             expect(updateBundleMock).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("COR change modal (OPS-3153, Awarded agreements)", () => {
+        const corCopy =
+            "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action.";
+
+        it("confirms a COR change with no approval, then saves", async () => {
+            simulateCorChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(await screen.findByText(corCopy)).toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: "Send to Approval" })).not.toBeInTheDocument();
+            expect(updateBundleMock).not.toHaveBeenCalled();
+
+            fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+            await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        });
+
+        it("uses the approval copy when budget changes also need approval", async () => {
+            simulateCorChange = true;
+            simulateFinancialChange = true;
+            renderPage();
+            fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+            expect(
+                await screen.findByText(
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?"
+                )
+            ).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Send to Approval" })).toBeInTheDocument();
         });
     });
 

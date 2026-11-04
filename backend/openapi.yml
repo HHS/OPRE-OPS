@@ -7436,8 +7436,11 @@ components:
     ContractModificationEdit:
       type: object
       description: >-
-        An approved edit on an Awarded agreement that requires a contract modification
-        (one card under "Edits That Require a Contract Modification").
+        An edit on an Awarded agreement that requires a contract modification (one card under
+        "Edits That Require a Contract Modification"). MODIFIED_LOE edits were approved and already
+        applied in OPS. ADMIN_CHANGE edits (a COR change) are recorded on save with no approval and
+        are not applied until the contract modification is approved; at most one is pending per
+        agreement.
       properties:
         id:
           type: integer
@@ -7447,12 +7450,14 @@ components:
           example: 15
         modification_type:
           type: string
-          enum: [MODIFIED_LOE]
+          enum: [MODIFIED_LOE, ADMIN_CHANGE]
           example: MODIFIED_LOE
         budget_line_item_id:
           type: integer
           nullable: true
-          description: The "BL ID". Kept after the budget line is deleted. Null for services component rows.
+          description: >-
+            The "BL ID". Kept after the budget line is deleted. Null for services component and
+            agreement-level (ADMIN_CHANGE) rows.
           example: 123458
         services_component_id:
           type: integer
@@ -7461,7 +7466,9 @@ components:
           example: null
         field:
           type: string
-          description: The edited field, i.e. "Change To" (amount, can_id, date_needed, delete).
+          description: >-
+            The edited field, i.e. "Change To" (amount, can_id, date_needed, status, delete,
+            services_component_create; project_officer_id for a COR change).
           example: amount
         old_value:
           nullable: true
@@ -7471,6 +7478,16 @@ components:
           nullable: true
           description: The "To" value ("Deleted" for a delete).
           example: 500000.0
+        old_display_name:
+          type: string
+          nullable: true
+          description: The "From" user's name for a project_officer_id edit; null for other fields.
+          example: null
+        new_display_name:
+          type: string
+          nullable: true
+          description: The "To" user's name for a project_officer_id edit; null for other fields.
+          example: null
         requested_by:
           type: object
           nullable: true

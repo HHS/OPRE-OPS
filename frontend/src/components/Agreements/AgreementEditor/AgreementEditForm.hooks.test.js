@@ -1175,3 +1175,134 @@ describe("useAgreementEditForm - service_requirement_type on load for existing a
         runSpy.mockRestore();
     });
 });
+
+describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)", () => {
+    const SAVED_COR = 503;
+    const SAVED_ALTERNATE = 520;
+    const NEW_COR = 512;
+    const savedCorAgreement = (overrides = {}) =>
+        makeEditState({
+            id: 42,
+            agreement_type: "CONTRACT",
+            name: "Awarded Agreement",
+            project_officer_id: SAVED_COR,
+            alternate_project_officer_id: SAVED_ALTERNATE,
+            ...overrides
+        });
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/42" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(true);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        useGetVersionQueryMock.mockReturnValue({ data: { enable_modified_loe_edits: true } });
+        setLazyQueryResult(0);
+        setLazyQueryResult(0);
+        updateAgreementMock.mockReturnValue({ unwrap: vi.fn().mockResolvedValue({ id: 42 }) });
+    });
+
+    // Renders with the saved COR first (the hook captures it as the baseline), then with the form's COR.
+    const renderWithCor = (formOverrides, args = { isAgreementAwarded: true }) => {
+        useEditAgreementMock.mockReturnValue(savedCorAgreement());
+        const view = renderUseAgreementEditForm(args);
+        useEditAgreementMock.mockReturnValue(savedCorAgreement(formOverrides));
+        view.rerender();
+        return view;
+    };
+
+    it("asks to confirm, with no approval, before saving a COR change to someone other than the Alternate COR", async () => {
+        const { result } = renderWithCor({ project_officer_id: NEW_COR });
+
+        expect(result.current.requiresCorModification).toBe(true);
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(result.current.showModal).toBe(true);
+        expect(result.current.modalProps.heading).toBe(
+            "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action."
+        );
+        expect(result.current.modalProps.actionButtonText).toBe("Save Changes");
+        expect(result.current.modalProps.secondaryButtonText).toBe("Continue Editing");
+        expect(updateAgreementMock).not.toHaveBeenCalled();
+
+        await act(async () => {
+            await result.current.modalProps.handleConfirm();
+        });
+
+        expect(updateAgreementMock).toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ heading: "Agreement Updated" }));
+    });
+
+    it("applies superusers' COR changes the same way", () => {
+        useSelectorMock.mockReturnValue(true);
+
+        const { result } = renderWithCor({ project_officer_id: NEW_COR });
+
+        expect(result.current.requiresCorModification).toBe(true);
+    });
+
+    it("saves without a modal when the COR is changed to the saved Alternate COR", async () => {
+        const { result } = renderWithCor({ project_officer_id: SAVED_ALTERNATE });
+
+        expect(result.current.requiresCorModification).toBe(false);
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(result.current.showModal).toBe(false);
+        expect(updateAgreementMock).toHaveBeenCalled();
+    });
+
+    it("still confirms when the new COR is an Alternate COR picked in the same edit", () => {
+        const { result } = renderWithCor({ project_officer_id: NEW_COR, alternate_project_officer_id: NEW_COR });
+
+        expect(result.current.requiresCorModification).toBe(true);
+    });
+
+    it.each([
+        ["the agreement isn't awarded", { isAgreementAwarded: false }, { enable_modified_loe_edits: true }],
+        ["the flag is off", { isAgreementAwarded: true }, { enable_modified_loe_edits: false }]
+    ])("doesn't confirm when %s", (_, args, versionData) => {
+        useGetVersionQueryMock.mockReturnValue({ data: versionData });
+
+        const { result } = renderWithCor({ project_officer_id: NEW_COR }, args);
+
+        expect(result.current.requiresCorModification).toBe(false);
+    });
+
+    it("clears the Alternate COR when the saved Alternate COR is picked as COR", () => {
+        const setters = {};
+        useSetStateMock.mockImplementation((key) => (setters[key] ??= vi.fn()));
+        const updaters = {};
+        useUpdateAgreementMock.mockImplementation((key) => (updaters[key] ??= vi.fn()));
+        useEditAgreementMock.mockReturnValue(savedCorAgreement());
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        act(() => {
+            result.current.changeSelectedProjectOfficer({ id: SAVED_ALTERNATE, full_name: "Alternate" });
+        });
+
+        expect(updaters.project_officer_id).toHaveBeenCalledWith(SAVED_ALTERNATE);
+        expect(setters.selected_alternate_project_officer).toHaveBeenCalledWith(null);
+        expect(updaters.alternate_project_officer_id).toHaveBeenCalledWith(null);
+    });
+
+    it("keeps the Alternate COR when someone else is picked as COR", () => {
+        const updaters = {};
+        useUpdateAgreementMock.mockImplementation((key) => (updaters[key] ??= vi.fn()));
+        useEditAgreementMock.mockReturnValue(savedCorAgreement());
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        act(() => {
+            result.current.changeSelectedProjectOfficer({ id: NEW_COR, full_name: "New" });
+        });
+
+        expect(updaters.alternate_project_officer_id).not.toHaveBeenCalled();
+    });
+});

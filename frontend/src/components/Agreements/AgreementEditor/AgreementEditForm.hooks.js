@@ -15,7 +15,9 @@ import {
 import {
     buildProcurementShopChangeAlert,
     cleanAgreementForApi,
-    formatTeamMember
+    COR_CONTRACT_MODIFICATION_HEADING,
+    formatTeamMember,
+    isCorChangePendingContractModification
 } from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
@@ -136,7 +138,10 @@ const useAgreementEditForm = (
             id: agreement.id,
             name: agreement.name,
             nick_name: agreement.nick_name,
-            agreement_type: agreement.agreement_type
+            agreement_type: agreement.agreement_type,
+            // Saved COR / Alternate COR, for the COR-change rules on Awarded agreements (OPS-3153)
+            project_officer_id: agreement.project_officer_id ?? null,
+            alternate_project_officer_id: agreement.alternate_project_officer_id ?? null
         };
     }
     const {
@@ -224,6 +229,23 @@ const useAgreementEditForm = (
         // null) — a locked shop must never show the "send to approval" modal, since the save
         // it would lead to can never succeed anyway (OPS-6312).
         !procurementShopLockedMessage;
+
+    // OPS-3153: on an Awarded Contract/AA agreement, a COR change to anyone other than the saved
+    // Alternate COR is not applied on save. It is tracked as a pending contract modification edit
+    // on the Award & Modifications Tab, so the save is confirmed first. No approval, no bypass.
+    const tracksContractModifications = Boolean(
+        versionData?.enable_modified_loe_edits &&
+        isAgreementAwarded &&
+        (agreementType === AGREEMENT_TYPES.CONTRACT || agreementType === AGREEMENT_TYPES.AA)
+    );
+    const savedProjectOfficerId = originalAgreementRef.current?.project_officer_id ?? null;
+    const savedAlternateProjectOfficerId = originalAgreementRef.current?.alternate_project_officer_id ?? null;
+    const requiresCorModification = isCorChangePendingContractModification({
+        tracksContractModifications,
+        savedProjectOfficerId,
+        savedAlternateProjectOfficerId,
+        projectOfficerId: agreement?.project_officer_id
+    });
 
     const runValidate = React.useCallback(
         (name, value, overrides = {}) => {
@@ -375,6 +397,11 @@ const useAgreementEditForm = (
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
         setProjectOfficerId(projectOfficerId);
+        // OPS-3153: promoting the saved Alternate COR to COR clears the Alternate COR; the user
+        // can pick a new one before saving.
+        if (tracksContractModifications && projectOfficerId && projectOfficerId === savedAlternateProjectOfficerId) {
+            changeSelectedAlternateProjectOfficer(null);
+        }
     };
 
     const changeSelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
@@ -554,7 +581,26 @@ const useAgreementEditForm = (
             return;
         }
 
-        if (shouldRequestChange) {
+        if (requiresCorModification) {
+            setShowModal(true);
+            setModalProps({
+                heading: COR_CONTRACT_MODIFICATION_HEADING,
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: async () => {
+                    try {
+                        await saveAgreement();
+                        setHasAgreementChanged(false);
+                        if (isEditMode && setIsEditMode) setIsEditMode(false);
+                        await goToNext({ agreement });
+                        // eslint-disable-next-line no-unused-vars
+                    } catch (error) {
+                        // Error already handled in saveAgreement with alert and redirect
+                        return;
+                    }
+                }
+            });
+        } else if (shouldRequestChange) {
             setShowModal(true);
             setModalProps({
                 heading:
@@ -837,6 +883,7 @@ const useAgreementEditForm = (
         handleAgreementFilterChange,
         procurementShop,
         shouldRequestChange,
+        requiresCorModification,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,

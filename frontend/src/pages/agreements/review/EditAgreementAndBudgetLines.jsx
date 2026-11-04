@@ -18,7 +18,8 @@ import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLi
 import { safeRedirectPath } from "../../../helpers/safeRedirect.helpers";
 import {
     buildProcurementShopChangeAlert,
-    CONTRACT_MODIFICATION_APPROVAL_HEADING
+    CONTRACT_MODIFICATION_APPROVAL_HEADING,
+    COR_CONTRACT_MODIFICATION_HEADING
 } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -102,6 +103,9 @@ const EditAgreementAndBudgetLines = () => {
     // OPS-3072 (Modified LOE): on an Awarded agreement, the same modal swaps to a
     // contract-modification-specific message instead of a second, stacked confirmation.
     const [requiresContractModification, setRequiresContractModification] = useState(false);
+    // OPS-3153: a COR change on an Awarded agreement is tracked as a pending contract
+    // modification edit. It needs no approval, but the save is still confirmed.
+    const [requiresCorModification, setRequiresCorModification] = useState(false);
 
     // Page-level dirty state aggregated from both sub-forms for the nav-away blocker.
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
@@ -151,6 +155,15 @@ const EditAgreementAndBudgetLines = () => {
     // alert redirects there instead of the fixed returnTo URL.
     const requiresApproval =
         requiresFinancialApproval || requiresContractModification || procurementShopChangeState.shouldRequestChange;
+    // One confirmation covers every case. Edits that need Division Director approval take
+    // precedence; a COR change alone needs no approval (OPS-3153).
+    let approvalModalHeading = COR_CONTRACT_MODIFICATION_HEADING;
+    if (requiresContractModification) {
+        approvalModalHeading = CONTRACT_MODIFICATION_APPROVAL_HEADING;
+    } else if (requiresFinancialApproval || procurementShopChangeState.shouldRequestChange) {
+        approvalModalHeading =
+            "Budget changes require approval from your Division Director. Do you want to send it to approval?";
+    }
 
     const saveAndNavigateTo = async (destination) => {
         const saved = await fireBundleSave(destination ?? returnTo);
@@ -279,7 +292,8 @@ const EditAgreementAndBudgetLines = () => {
         if (
             procurementShopChangeState.shouldRequestChange ||
             requiresFinancialApproval ||
-            requiresContractModification
+            requiresContractModification ||
+            requiresCorModification
         ) {
             setShowFinancialApprovalModal(true);
             return;
@@ -354,12 +368,8 @@ const EditAgreementAndBudgetLines = () => {
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showFinancialApprovalModal && (
                     <ConfirmationModal
-                        heading={
-                            requiresContractModification
-                                ? CONTRACT_MODIFICATION_APPROVAL_HEADING
-                                : "Budget changes require approval from your Division Director. Do you want to send it to approval?"
-                        }
-                        actionButtonText="Send to Approval"
+                        heading={approvalModalHeading}
+                        actionButtonText={requiresApproval ? "Send to Approval" : "Save Changes"}
                         secondaryButtonText="Continue Editing"
                         setShowModal={setShowFinancialApprovalModal}
                         handleConfirm={fireBundleSave}
@@ -384,6 +394,7 @@ const EditAgreementAndBudgetLines = () => {
                     hideFooterButtons={true}
                     onValidityChange={setIsAgreementFormValid}
                     onProcurementShopChangeStateChange={setProcurementShopChangeState}
+                    onCorChangeStateChange={setRequiresCorModification}
                     bundleSliceRef={agreementSliceRef}
                     setHasAgreementChanged={setHasAgreementChanged}
                 />

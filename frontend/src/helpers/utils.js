@@ -237,10 +237,12 @@ export const codesToDisplayText = {
         date_needed: "Obligate By Date",
         status: "Status",
         delete: "Deleted",
-        services_component_create: "Add Services Component"
+        services_component_create: "Add Services Component",
+        project_officer_id: "COR"
     },
     modificationEditType: {
-        MODIFIED_LOE: "Modified Level of Effort"
+        MODIFIED_LOE: "Modified Level of Effort",
+        ADMIN_CHANGE: "Admin Change"
     },
     methodOfTransfer: {
         DIRECT: "Direct",

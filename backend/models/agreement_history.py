@@ -11,11 +11,11 @@ from models import (
     CAN,
     Agreement,
     AgreementType,
-    ResearchMethodology,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
     ProductServiceCode,
+    ResearchMethodology,
     SpecialTopic,
     User,
 )
@@ -186,6 +186,17 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
                 if history_item:
                     history_events.append(history_item)
+            if agreement_updates.get("pending_project_officer_change"):
+                history_events.append(
+                    create_pending_project_officer_change_history_event(
+                        agreement_updates["pending_project_officer_change"],
+                        event_user,
+                        event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        agreement_updates["owner_id"],
+                        event.id,
+                        session,
+                    )
+                )
             if agreement_updates.get("team_member_changes"):
                 # Handle team member changes
                 team_member_changes = agreement_updates["team_member_changes"]
@@ -1072,6 +1083,38 @@ def get_aln_display_name(aln_number: str) -> str:
     """Format an ALN number for display, including its descriptive label if known."""
     description = ALN_NUMBER_DESCRIPTIONS.get(aln_number)
     return f"{aln_number} ({description})" if description else aln_number
+
+
+def create_pending_project_officer_change_history_event(
+    pending_change: dict,
+    updated_by_user: User,
+    updated_on: str,
+    agreement_id: int,
+    ops_event_id: int,
+    session: Session,
+) -> AgreementHistory:
+    """History for a COR change on an Awarded agreement, recorded as pending until the contract
+    modification is approved (OPS-3153). The COR itself is unchanged, so the field diff has no entry."""
+    from models import Agreement
+
+    agreement = session.get(Agreement, agreement_id)
+    old_user = session.get(User, pending_change["old"]) if pending_change.get("old") else None
+    new_user = session.get(User, pending_change["new"]) if pending_change.get("new") else None
+    old_name = old_user.full_name if old_user else "TBD"
+    new_name = new_user.full_name if new_user else "TBD"
+    po_label = get_project_officer_display_name(agreement)
+    return AgreementHistory(
+        agreement_id=get_agreement_id_from_agreement(agreement),
+        agreement_id_record=agreement_id,
+        ops_event_id=ops_event_id,
+        history_title=f"Change to {po_label} Pending Contract Modification",
+        history_message=(
+            f"{updated_by_user.full_name} requested a {po_label} change from {old_name} to {new_name}. "
+            f"This agreement is awarded, so the {po_label} will change once the contract modification is approved."
+        ),
+        timestamp=updated_on,
+        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+    )
 
 
 def get_agreement_id_from_agreement(agreement: Agreement) -> int | None:
