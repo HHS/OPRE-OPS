@@ -54,7 +54,8 @@ describe("sessionUISlice — listFilters", () => {
         });
     });
 
-    it("syncListFiscalYear keeps all filters on a list with none tied to the year", () => {
+    // CANs keeps its budget filter across a year change, as its own FY dropdown does.
+    it("syncListFiscalYear keeps every filter on a list with no year-dependent filters listed", () => {
         const filters = { ...listFilterDefaults.cans.filters, budget: [5, 50] };
         const before = sessionUIReducer(freshState(), setListFilters({ page: "cans", filters }));
         const after = sessionUIReducer(before, syncListFiscalYear({ page: "cans", selectedFiscalYear: "2024" }));

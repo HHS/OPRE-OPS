@@ -5,9 +5,16 @@ import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from "rea
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../constants";
 import { buildTrailState, LIST_CRUMBS } from "../helpers/breadcrumb.helpers";
+import { getCurrentFiscalYear } from "../helpers/utils";
 import sessionUIReducer, { setDetailFiscalYear, setListFilters } from "../sessionUISlice";
 import { useListFilters } from "./useListFilters.hooks";
 import { useDetailFiscalYear, useHandOverFiscalYear, useSyncFiscalYearParam } from "./useDetailFiscalYear.hooks";
+
+/**
+ * A year `n` years before the current FY, as the dropdowns' string value. Only years inside the
+ * dropdowns' range (current FY ±5) reach the lists, so tests of the sync use these, not literals.
+ */
+const yearsAgo = (n) => String(Number(getCurrentFiscalYear()) - n);
 
 const makeStore = () => configureStore({ reducer: { sessionUI: sessionUIReducer } });
 
@@ -65,15 +72,16 @@ describe("useDetailFiscalYear: the lists in the breadcrumb", () => {
             store
         );
 
-        act(() => result.current.setFiscalYear("2025"));
+        const cansBefore = listYear(store, "cans");
+        act(() => result.current.setFiscalYear(yearsAgo(1)));
 
-        expect(listYear(store, "portfolios")).toBe("2025");
+        expect(listYear(store, "portfolios")).toBe(yearsAgo(1));
         expect(store.getState().sessionUI.listFilters.portfolios.filters).toEqual({
             ...filters,
             budgetRange: DEFAULT_PORTFOLIO_BUDGET_RANGE
         });
         // The CANs list isn't in this trail, so it keeps its own year.
-        expect(listYear(store, "cans")).not.toBe("2025");
+        expect(listYear(store, "cans")).toBe(cansBefore);
     });
 
     it("gives a picked year to the fallback list when no trail was carried", () => {
@@ -81,8 +89,8 @@ describe("useDetailFiscalYear: the lists in the breadcrumb", () => {
             () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.cans }),
             at("/cans/1")
         );
-        act(() => result.current.setFiscalYear(2024));
-        expect(listYear(store, "cans")).toBe("2024");
+        act(() => result.current.setFiscalYear(Number(yearsAgo(2))));
+        expect(listYear(store, "cans")).toBe(yearsAgo(2));
     });
 
     it("leaves the Projects list on its own year", () => {
@@ -90,7 +98,7 @@ describe("useDetailFiscalYear: the lists in the breadcrumb", () => {
             () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.projects }),
             at("/projects/1/funding", [LIST_CRUMBS.projects])
         );
-        act(() => result.current.setFiscalYear(2024));
+        act(() => result.current.setFiscalYear(yearsAgo(2)));
         expect(listYear(store, "projects")).toBe("All");
     });
 
@@ -110,10 +118,10 @@ describe("useDetailFiscalYear: the lists in the breadcrumb", () => {
         const before = listYear(store, "portfolios");
         renderAt(
             () => useDetailFiscalYear(2026, { fallbackCrumb: LIST_CRUMBS.portfolios }),
-            "/portfolios/3/funding?fy=2024",
+            `/portfolios/3/funding?fy=${yearsAgo(2)}`,
             store
         );
-        expect(store.getState().sessionUI.detailFiscalYear).toBe(2024);
+        expect(store.getState().sessionUI.detailFiscalYear).toBe(Number(yearsAgo(2)));
         expect(listYear(store, "portfolios")).toBe(before);
     });
 });
@@ -318,7 +326,7 @@ describe("going back to the Portfolios list (UX scenario from #3789)", () => {
         return (
             <div>
                 <p data-testid="page">{`Portfolios FY ${selectedFiscalYear}`}</p>
-                <button onClick={() => changeFiscalYear("2029")}>List FY 2029</button>
+                <button onClick={() => changeFiscalYear(yearsAgo(1))}>Pick list FY</button>
                 <Link
                     to="/portfolios/3/funding"
                     state={buildTrailState("/portfolios/3/funding", [LIST_CRUMBS.portfolios])}
@@ -337,7 +345,7 @@ describe("going back to the Portfolios list (UX scenario from #3789)", () => {
         return (
             <div>
                 <p data-testid="page">{`${name} FY ${fiscalYear}`}</p>
-                <button onClick={() => setFiscalYear("2025")}>Detail FY 2025</button>
+                <button onClick={() => setFiscalYear(yearsAgo(3))}>Pick detail FY</button>
                 {child && (
                     <Link
                         to={child}
@@ -389,16 +397,19 @@ describe("going back to the Portfolios list (UX scenario from #3789)", () => {
             </Provider>
         );
 
-        fireEvent.click(screen.getByRole("button", { name: "List FY 2029" }));
-        fireEvent.click(screen.getByRole("link", { name: "Portfolio A" }));
-        expect(screen.getByTestId("page")).toHaveTextContent("Portfolio A FY 2029");
-        fireEvent.click(screen.getByRole("link", { name: "Child" }));
-        expect(screen.getByTestId("page")).toHaveTextContent("CAN FY 2029");
+        const listFY = yearsAgo(1);
+        const detailFY = yearsAgo(3);
 
-        fireEvent.click(screen.getByRole("button", { name: "Detail FY 2025" }));
+        fireEvent.click(screen.getByRole("button", { name: "Pick list FY" }));
+        fireEvent.click(screen.getByRole("link", { name: "Portfolio A" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolio A FY ${listFY}`);
+        fireEvent.click(screen.getByRole("link", { name: "Child" }));
+        expect(screen.getByTestId("page")).toHaveTextContent(`CAN FY ${listFY}`);
+
+        fireEvent.click(screen.getByRole("button", { name: "Pick detail FY" }));
         fireEvent.click(screen.getByRole("link", { name: "Crumb Portfolio A" }));
-        expect(screen.getByTestId("page")).toHaveTextContent("Portfolio A FY 2025");
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolio A FY ${detailFY}`);
         fireEvent.click(screen.getByRole("link", { name: "Crumb Portfolios" }));
-        expect(screen.getByTestId("page")).toHaveTextContent("Portfolios FY 2025");
+        expect(screen.getByTestId("page")).toHaveTextContent(`Portfolios FY ${detailFY}`);
     });
 });
