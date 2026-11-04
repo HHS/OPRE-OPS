@@ -262,6 +262,41 @@ def test_new_alternate_set_as_cor_in_one_save_is_pending(
     assert edit.new_value == NEW_COR_ID
 
 
+def test_cor_change_to_a_nonexistent_user_is_rejected(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx
+):
+    agreement = make_agreement()
+
+    response = _patch(basic_user_auth_client, agreement.id, {"project_officer_id": 999999})
+
+    assert response.status_code == 400
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+
+def test_failed_cor_record_rolls_back_the_whole_save(
+    modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx, monkeypatch
+):
+    """The COR is recorded before the commit, so when recording fails, the other fields in the
+    same save aren't committed either."""
+    agreement = make_agreement()
+    original_description = agreement.description
+
+    def fail(*args, **kwargs):
+        raise ValidationError({"project_officer_id": ["Another COR change was saved at the same time."]})
+
+    monkeypatch.setattr(ContractModificationEditService, "record_project_officer_change", fail)
+
+    response = _patch(
+        basic_user_auth_client,
+        agreement.id,
+        {"project_officer_id": NEW_COR_ID, "description": "Should not be saved"},
+    )
+
+    assert response.status_code == 400
+    assert _reload(loaded_db, agreement.id).description == original_description
+    assert _cor_edits(loaded_db, agreement.id) == []
+
+
 def test_removing_the_cor_is_rejected(modified_loe_enabled, basic_user_auth_client, loaded_db, make_agreement, app_ctx):
     agreement = make_agreement()
 
@@ -502,8 +537,11 @@ def test_start_modification_leaves_cor_changes_pending(
     assert edit.agreement_mod_id is None
 
 
-def test_losing_a_concurrent_cor_save_is_a_400(modified_loe_enabled, loaded_db, make_agreement, app_ctx, monkeypatch):
-    """Two saves that both see no pending row: the second hits the unique index and gets a 400, not a 500."""
+def test_losing_a_concurrent_cor_save_raises_a_validation_error(
+    modified_loe_enabled, loaded_db, make_agreement, app_ctx, monkeypatch
+):
+    """Two saves that both see no pending row: the second hits the unique index and gets a
+    ValidationError (a 400 at the API), not an IntegrityError (a 500)."""
     agreement = make_agreement()
     service = ContractModificationEditService(loaded_db)
     user = loaded_db.get(User, BASIC_USER_ID)

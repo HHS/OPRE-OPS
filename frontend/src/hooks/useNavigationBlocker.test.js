@@ -125,6 +125,27 @@ describe("useNavigationBlocker", () => {
         expect(result.current.blockerModalProps.secondaryButtonText).toBe("Leave without saving");
     });
 
+    it("says a COR change will be tracked as a contract modification (OPS-3153)", () => {
+        blockerState = "blocked";
+
+        const { result } = renderHook(() => useNavigationBlocker({ ...defaultProps, requiresCorModification: true }));
+
+        expect(result.current.blockerModalProps.description).toBe(
+            "You have unsaved changes. This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. If you leave without saving, these changes will be lost."
+        );
+        expect(result.current.blockerModalProps.actionButtonText).toBe("Save");
+    });
+
+    it("uses the approval copy when edits also need approval", () => {
+        blockerState = "blocked";
+
+        const { result } = renderHook(() =>
+            useNavigationBlocker({ ...defaultProps, requiresApproval: true, requiresCorModification: true })
+        );
+
+        expect(result.current.blockerModalProps.actionButtonText).toBe("Save & send to approval");
+    });
+
     it("saves and proceeds on confirm", async () => {
         blockerState = "blocked";
         mockProceed.mockResolvedValue(undefined);

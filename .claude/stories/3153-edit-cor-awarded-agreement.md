@@ -3,7 +3,7 @@ issue: 3153
 branch: OPS-3153/edit-cor-awarded
 ---
 
-> **Status (2026-11-04):** Implemented on this branch (not yet committed). UX confirmed that a COR change does **not** need Division Director approval and only takes effect once the contract modification is approved, and supplied the modal copy (Figma node `38177-368057`). See [Implementation notes](#implementation-notes) for where the build differs from the draft below.
+> **Status (2026-11-04):** Implemented on this branch (PR #6497). UX confirmed that a COR change does **not** need Division Director approval and only takes effect once the contract modification is approved, and supplied the modal copy (Figma node `38177-368057`). See [Implementation notes](#implementation-notes) for where the build differs from the draft below.
 
 # Plan: #3153 — Edit the COR on an Awarded Agreement (admin contract mod)
 
@@ -162,7 +162,11 @@ Where the build differs from, or adds to, the approach above:
 - **Bundle page, one modal:** a COR change alone shows the COR copy with "Save Changes". If the same save also has edits that need Division Director approval, the existing approval copy and "Send to Approval" take precedence (one confirmation, no stacking).
 - **Bundle history:** the bundle now also records "Change to COR" and "Change to Alternate COR" from its field diff, not just the procurement shop.
 - **Seed data:** agreement 523 already has an Alternate COR (Dave Director, 522), so no seed change was needed.
-- **No Cypress spec:** the existing contract-mod spec skips when `ENABLE_MODIFIED_LOE_EDITS` is off, which it is in CI's E2E stack. There's also no API to withdraw a pending COR change (D13), so a spec couldn't clean up after itself. Backend integration tests (`tests/ops/agreement/test_cor_change_awarded.py`, 21 tests) and frontend unit tests cover the flow, and it was checked by hand in the running app.
+- **No Cypress spec:** the existing contract-mod spec skips when `ENABLE_MODIFIED_LOE_EDITS` is off, which it is in CI's E2E stack. There's also no API to withdraw a pending COR change (D13), so a spec couldn't clean up after itself. Backend integration tests (`tests/ops/agreement/test_cor_change_awarded.py`, 26 tests) and frontend unit tests cover the flow, and it was checked by hand in the running app.
+- **Shared review follow-ups (PR #6497):**
+  - A COR change to a user id that doesn't exist is rejected with a 400 ("The selected COR does not exist."). The pending edit stores the id in JSONB, so no foreign key would catch it.
+  - The unsaved-changes dialog says the changes will be tracked as a contract modification when a COR change is pending (approval wording still wins when edits need approval).
+  - If the user promotes the saved Alternate COR and then picks someone else as COR, the cleared Alternate COR is restored. A status message ("Alternate COR cleared because this person is now the COR. You can select a new Alternate COR.") announces the clear; its copy hasn't been reviewed by UX.
 - **Pre-existing display bug found, not fixed:** `formatDateToMonthDayYear` parses the API's naive UTC timestamps as local time and then formats them in UTC, so edits saved after 4 PM Pacific show the next day's date on every Award & Mods card.
 
 ## Open items

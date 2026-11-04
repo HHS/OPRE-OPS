@@ -49,6 +49,9 @@ const AGREEMENT_FILTER_OPTIONS = [
     { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
 ];
 
+const ALTERNATE_COR_CLEARED_MESSAGE =
+    "Alternate COR cleared because this person is now the COR. You can select a new Alternate COR.";
+
 const UNIQUE_ERROR_MESSAGES = {
     name: "This title already exists. Try a different one",
     nick_name: "This nickname already exists. Try a different one"
@@ -101,6 +104,10 @@ const useAgreementEditForm = (
     const setFundingPeriodMonths = useUpdateAgreement("funding_period_months");
 
     const [showModal, setShowModal] = React.useState(false);
+    // OPS-3153: the Alternate COR auto-cleared by promoting it to COR, so it can be restored, and
+    // the status message announcing the clear.
+    const autoClearedAlternateRef = React.useRef(null);
+    const [alternateCorClearedMessage, setAlternateCorClearedMessage] = React.useState("");
     const [modalProps, setModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
     // Forces a re-render once the on-load service_requirement_type check below has run, so
@@ -393,21 +400,35 @@ const useAgreementEditForm = (
         runValidate("project_id", projectId);
     };
 
+    const applySelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
+        setSelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
+        const alternateProjectOfficerId = selectedAlternateProjectOfficer ? selectedAlternateProjectOfficer.id : null;
+        setAlternateProjectOfficerId(alternateProjectOfficerId);
+    };
+
     const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
         setProjectOfficerId(projectOfficerId);
         // OPS-3153: promoting the saved Alternate COR to COR clears the Alternate COR; the user
-        // can pick a new one before saving.
+        // can pick a new one before saving. If the user then picks someone else as COR, the
+        // cleared Alternate COR comes back, so a change of mind doesn't remove it.
         if (tracksContractModifications && projectOfficerId && projectOfficerId === savedAlternateProjectOfficerId) {
-            changeSelectedAlternateProjectOfficer(null);
+            autoClearedAlternateRef.current = selectedAlternateProjectOfficer;
+            applySelectedAlternateProjectOfficer(null);
+            setAlternateCorClearedMessage(ALTERNATE_COR_CLEARED_MESSAGE);
+        } else if (autoClearedAlternateRef.current) {
+            applySelectedAlternateProjectOfficer(autoClearedAlternateRef.current);
+            autoClearedAlternateRef.current = null;
+            setAlternateCorClearedMessage("");
         }
     };
 
     const changeSelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
-        setSelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
-        const alternateProjectOfficerId = selectedAlternateProjectOfficer ? selectedAlternateProjectOfficer.id : null;
-        setAlternateProjectOfficerId(alternateProjectOfficerId);
+        // The user chose the Alternate COR themselves, so there's nothing to restore.
+        autoClearedAlternateRef.current = null;
+        setAlternateCorClearedMessage("");
+        applySelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
     };
 
     const setSelectedTeamMembers = (teamMember) => {
@@ -550,7 +571,8 @@ const useAgreementEditForm = (
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
         hasChanged: !isReviewMode && hasAgreementChanged,
         saveChanges: blockerSaveChanges,
-        onExit: blockerOnExit
+        onExit: blockerOnExit,
+        requiresCorModification
     });
 
     const wasEditModeRef = React.useRef(isEditMode);
@@ -581,46 +603,7 @@ const useAgreementEditForm = (
             return;
         }
 
-        if (requiresCorModification) {
-            setShowModal(true);
-            setModalProps({
-                heading: COR_CONTRACT_MODIFICATION_HEADING,
-                actionButtonText: "Save Changes",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: async () => {
-                    try {
-                        await saveAgreement();
-                        setHasAgreementChanged(false);
-                        if (isEditMode && setIsEditMode) setIsEditMode(false);
-                        await goToNext({ agreement });
-                        // eslint-disable-next-line no-unused-vars
-                    } catch (error) {
-                        // Error already handled in saveAgreement with alert and redirect
-                        return;
-                    }
-                }
-            });
-        } else if (shouldRequestChange) {
-            setShowModal(true);
-            setModalProps({
-                heading:
-                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
-                actionButtonText: "Send to Approval",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: async () => {
-                    try {
-                        await saveAgreement();
-                        setHasAgreementChanged(false);
-                        if (isEditMode && setIsEditMode) setIsEditMode(false);
-                        await goToNext({ agreement });
-                        // eslint-disable-next-line no-unused-vars
-                    } catch (error) {
-                        // Error already handled in saveAgreement with alert and redirect
-                        return;
-                    }
-                }
-            });
-        } else {
+        const saveAndContinue = async () => {
             try {
                 await saveAgreement();
                 setHasAgreementChanged(false);
@@ -631,7 +614,31 @@ const useAgreementEditForm = (
                 // Error already handled in saveAgreement with alert and redirect
                 return;
             }
+        };
+
+        // A COR change on an Awarded agreement and a procurement-shop change request never apply
+        // together: the shop change request is only for agreements that aren't awarded.
+        let confirmation = null;
+        if (requiresCorModification) {
+            confirmation = { heading: COR_CONTRACT_MODIFICATION_HEADING, actionButtonText: "Save Changes" };
+        } else if (shouldRequestChange) {
+            confirmation = {
+                heading:
+                    "Changing the Procurement Shop will impact the fee rate on each budget line. Budget changes require approval from your Division Director. Do you want to send it to approval?",
+                actionButtonText: "Send to Approval"
+            };
         }
+
+        if (!confirmation) {
+            await saveAndContinue();
+            return;
+        }
+        setShowModal(true);
+        setModalProps({
+            ...confirmation,
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: saveAndContinue
+        });
     };
 
     const handleDraft = async () => {
@@ -884,6 +891,7 @@ const useAgreementEditForm = (
         procurementShop,
         shouldRequestChange,
         requiresCorModification,
+        alternateCorClearedMessage,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,

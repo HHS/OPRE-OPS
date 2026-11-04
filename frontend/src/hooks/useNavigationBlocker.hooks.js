@@ -1,5 +1,6 @@
 import React from "react";
 import { useBlocker } from "react-router-dom";
+import { COR_CONTRACT_MODIFICATION_HEADING } from "../helpers/agreement.helpers";
 import { proceedIfBlocked } from "./proceedIfBlocked";
 
 /**
@@ -12,13 +13,17 @@ import { proceedIfBlocked } from "./proceedIfBlocked";
  * @param {(error: unknown) => void} [options.onSaveError] - Optional error handler for save failures
  * @param {boolean} [options.requiresApproval=false] - When true, shows the approval-variant modal
  *   ("Save & send to approval") instead of the plain "Save Changes" variant.
+ * @param {boolean} [options.requiresCorModification=false] - When true (and no approval is needed),
+ *   the description says the changes will be tracked as a contract modification: a COR change on an
+ *   Awarded agreement (OPS-3153).
  */
 export default function useNavigationBlocker({
     hasChanged,
     saveChanges,
     onExit,
     onSaveError,
-    requiresApproval = false
+    requiresApproval = false,
+    requiresCorModification = false
 }) {
     const [showBlockerModal, setShowBlockerModal] = React.useState(false);
     const [blockerModalProps, setBlockerModalProps] = React.useState({});
@@ -77,9 +82,13 @@ export default function useNavigationBlocker({
 
             const approvalVariant = requiresApproval;
             const heading = "Save changes before leaving?";
-            const description = approvalVariant
-                ? "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
-                : "You have unsaved changes. If you leave without saving, these changes will be lost.";
+            let description = "You have unsaved changes. If you leave without saving, these changes will be lost.";
+            if (approvalVariant) {
+                description =
+                    "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost.";
+            } else if (requiresCorModification) {
+                description = `You have unsaved changes. ${COR_CONTRACT_MODIFICATION_HEADING} If you leave without saving, these changes will be lost.`;
+            }
             const actionButtonText = approvalVariant ? "Save & send to approval" : "Save";
 
             setShowBlockerModal(true);
@@ -113,7 +122,7 @@ export default function useNavigationBlocker({
                 }
             });
         }
-    }, [blocker.state, blocker.location, requiresApproval]);
+    }, [blocker.state, blocker.location, requiresApproval, requiresCorModification]);
 
     return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling, isBypassingRef };
 }

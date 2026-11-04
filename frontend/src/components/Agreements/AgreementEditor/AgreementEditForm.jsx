@@ -157,7 +157,8 @@ const AgreementEditForm = ({
         isLoadingProductServiceCodes,
         procurementShop,
         shouldRequestChange,
-        requiresCorModification
+        requiresCorModification,
+        alternateCorClearedMessage
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -711,6 +712,14 @@ const AgreementEditForm = ({
                             overrideStyles={{ width: "15em" }}
                             label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
                         />
+                    </div>
+                    {/* Always rendered so screen readers announce the message when it appears (OPS-3153). */}
+                    <div
+                        role="status"
+                        className="usa-hint margin-top-1"
+                        data-cy="alternate-cor-cleared-message"
+                    >
+                        {alternateCorClearedMessage}
                     </div>
                     <div className="margin-top-3 width-card-lg">
                         <TeamMemberComboBox

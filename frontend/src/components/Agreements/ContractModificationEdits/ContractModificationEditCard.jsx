@@ -29,9 +29,6 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
     services_component_create: "Add SC"
 };
 
-// Agreement-level Admin Changes (OPS-3153) have no budget line; From/To are user names.
-const AGREEMENT_LEVEL_FIELDS = new Set(["project_officer_id"]);
-
 /**
  * One edit on an Awarded agreement that requires a contract modification.
  *
@@ -48,7 +45,8 @@ const ContractModificationEditCard = ({ edit }) => {
     const servicesComponentChange = SERVICES_COMPONENT_CHANGE_LABELS[edit.field];
     // The SC's display name, frozen on the row: the new SC for an addition, the deleted one otherwise.
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
-    const isAgreementLevel = AGREEMENT_LEVEL_FIELDS.has(edit.field);
+    // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
+    const isAgreementLevel = edit.field === "project_officer_id";
 
     return (
         <div

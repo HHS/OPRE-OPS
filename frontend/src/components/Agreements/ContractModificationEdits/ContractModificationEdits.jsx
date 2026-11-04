@@ -42,9 +42,10 @@ const ReviewOutcomeAlert = ({ notification, onDismiss }) => {
 };
 
 /**
- * "Contract Modifications" section of the Award & Modifications tab. Lists the approved
- * edits made in OPS since the agreement was awarded that still require a contract
- * modification to update the actual contract (OPS-3072), and starts the modification (#3268).
+ * "Contract Modifications" section of the Award & Modifications tab. Lists the edits made in
+ * OPS since the agreement was awarded that still require a contract modification to update the
+ * actual contract: approved Modified LOE edits (OPS-3072), and COR changes recorded on save as
+ * pending Admin Changes (OPS-3153). Starts the modification (#3268).
  * Edits stay listed, marked In Review, until the Division Director approves the modification.
  *
  * @component

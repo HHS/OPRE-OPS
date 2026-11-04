@@ -184,7 +184,7 @@ class ContractModificationEditService:
         new target replaces the pending one. Returns the recorded edit, or None when the target
         is already pending (nothing changed). Does not commit.
         """
-        pending = self._pending_project_officer_edit(agreement.id, for_update=True)
+        pending = self._pending_project_officer_edit(agreement.id)
         if pending is not None:
             if pending.new_value == new_project_officer_id:
                 return None
@@ -221,7 +221,7 @@ class ContractModificationEditService:
         from the new COR; if the new COR is the pending target, nothing is left to change and the
         pending edit is removed. Does not commit.
         """
-        pending = self._pending_project_officer_edit(agreement.id, for_update=True)
+        pending = self._pending_project_officer_edit(agreement.id)
         if pending is None:
             return
         if pending.new_value == agreement.project_officer_id:
@@ -230,17 +230,18 @@ class ContractModificationEditService:
             pending.old_value = agreement.project_officer_id
         self.db_session.flush()
 
-    def _pending_project_officer_edit(
-        self, agreement_id: int, for_update: bool = False
-    ) -> Optional[ContractModificationEdit]:
-        query = select(ContractModificationEdit).where(
-            ContractModificationEdit.agreement_id == agreement_id,
-            ContractModificationEdit.modification_type == ModificationEditType.ADMIN_CHANGE,
-            ContractModificationEdit.field == PROJECT_OFFICER_EDIT_FIELD,
-            ContractModificationEdit.agreement_mod_id.is_(None),
+    def _pending_project_officer_edit(self, agreement_id: int) -> Optional[ContractModificationEdit]:
+        """The agreement's pending COR change, locked for update."""
+        query = (
+            select(ContractModificationEdit)
+            .where(
+                ContractModificationEdit.agreement_id == agreement_id,
+                ContractModificationEdit.modification_type == ModificationEditType.ADMIN_CHANGE,
+                ContractModificationEdit.field == PROJECT_OFFICER_EDIT_FIELD,
+                ContractModificationEdit.agreement_mod_id.is_(None),
+            )
+            .with_for_update()
         )
-        if for_update:
-            query = query.with_for_update()
         return self.db_session.scalars(query).first()
 
     def _get_supported_agreement(self, agreement_id: int) -> Agreement:

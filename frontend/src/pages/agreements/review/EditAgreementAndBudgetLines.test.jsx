@@ -547,6 +547,18 @@ describe("EditAgreementAndBudgetLines", () => {
             expect(updateBundleMock).not.toHaveBeenCalled();
         });
 
+        it("says a pending COR change will be tracked as a contract modification (OPS-3153)", async () => {
+            simulateCorChange = true;
+            renderPage();
+
+            expect(
+                await screen.findByText(
+                    "You have unsaved changes. This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. If you leave without saving, these changes will be lost."
+                )
+            ).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+        });
+
         it("shows approval-copy modal when requiresApproval is true", async () => {
             simulateFinancialChange = true;
             renderPage();

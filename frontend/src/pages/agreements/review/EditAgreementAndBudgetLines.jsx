@@ -178,7 +178,8 @@ const EditAgreementAndBudgetLines = () => {
                 setHasAgreementChanged(false);
                 setHasBLIsChanged(false);
             },
-            requiresApproval
+            requiresApproval,
+            requiresCorModification
         });
 
     const handleCancel = () => {

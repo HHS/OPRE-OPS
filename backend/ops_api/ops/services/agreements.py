@@ -676,7 +676,11 @@ class AgreementsService(OpsService[Agreement]):
         """
         cor_change = self._project_officer_change_kind(agreement, updated_fields)
         if cor_change == "pending":
-            return cor_change, updated_fields.pop("project_officer_id")
+            new_project_officer_id = updated_fields.pop("project_officer_id")
+            # The pending edit stores the id in JSONB, so no foreign key catches a bad one.
+            if self.db_session.get(User, new_project_officer_id) is None:
+                raise ValidationError({"project_officer_id": ["The selected COR does not exist."]})
+            return cor_change, new_project_officer_id
         if cor_change == "promote_alternate":
             requested_alternate = updated_fields.get(
                 "alternate_project_officer_id", agreement.alternate_project_officer_id
