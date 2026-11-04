@@ -158,7 +158,7 @@ const AgreementEditForm = ({
         procurementShop,
         shouldRequestChange,
         requiresCorModification,
-        alternateCorClearedMessage
+        alternateCorStatusMessage
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -719,7 +719,7 @@ const AgreementEditForm = ({
                         className="usa-hint margin-top-1"
                         data-cy="alternate-cor-cleared-message"
                     >
-                        {alternateCorClearedMessage}
+                        {alternateCorStatusMessage}
                     </div>
                     <div className="margin-top-3 width-card-lg">
                         <TeamMemberComboBox

@@ -166,7 +166,7 @@ Where the build differs from, or adds to, the approach above:
 - **Shared review follow-ups (PR #6497):**
   - A COR change to a user id that doesn't exist is rejected with a 400 ("The selected COR does not exist."). The pending edit stores the id in JSONB, so no foreign key would catch it.
   - The unsaved-changes dialog says the changes will be tracked as a contract modification when a COR change is pending (approval wording still wins when edits need approval).
-  - If the user promotes the saved Alternate COR and then picks someone else as COR, the cleared Alternate COR is restored. A status message ("Alternate COR cleared because this person is now the COR. You can select a new Alternate COR.") announces the clear; its copy hasn't been reviewed by UX.
+  - If the user promotes the saved Alternate COR and then picks someone else as COR, the cleared Alternate COR is restored. A status message ("Alternate COR cleared because this person is now the COR. You can select a new Alternate COR.") announces the clear, and "Alternate COR {name} restored." announces the restore. Picking the promoted person twice still restores. The copy hasn't been reviewed by UX.
 - **Pre-existing display bug found, not fixed:** `formatDateToMonthDayYear` parses the API's naive UTC timestamps as local time and then formats them in UTC, so edits saved after 4 PM Pacific show the next day's date on every Award & Mods card.
 
 ## Open items

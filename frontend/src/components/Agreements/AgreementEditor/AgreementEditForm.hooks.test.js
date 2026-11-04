@@ -1321,7 +1321,7 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
         act(() => {
             result.current.changeSelectedProjectOfficer(savedAlternate);
         });
-        expect(result.current.alternateCorClearedMessage).toBe(
+        expect(result.current.alternateCorStatusMessage).toBe(
             "Alternate COR cleared because this person is now the COR. You can select a new Alternate COR."
         );
 
@@ -1331,7 +1331,56 @@ describe("useAgreementEditForm - COR change on an Awarded agreement (OPS-3153)",
 
         expect(setters.selected_alternate_project_officer).toHaveBeenLastCalledWith(savedAlternate);
         expect(updaters.alternate_project_officer_id).toHaveBeenLastCalledWith(SAVED_ALTERNATE);
-        expect(result.current.alternateCorClearedMessage).toBe("");
+        expect(result.current.alternateCorStatusMessage).toBe("Alternate COR Alternate restored.");
+    });
+
+    it("still restores the Alternate COR when the promoted person is picked as COR twice", () => {
+        const setters = {};
+        useSetStateMock.mockImplementation((key) => (setters[key] ??= vi.fn()));
+        const savedAlternate = { id: SAVED_ALTERNATE, full_name: "Alternate" };
+        useEditAgreementMock.mockReturnValue({
+            ...savedCorAgreement(),
+            selected_alternate_project_officer: savedAlternate
+        });
+        const { result, rerender } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        act(() => {
+            result.current.changeSelectedProjectOfficer(savedAlternate);
+        });
+        // After the first pick the Alternate COR box is empty.
+        useEditAgreementMock.mockReturnValue({
+            ...savedCorAgreement({ project_officer_id: SAVED_ALTERNATE }),
+            selected_alternate_project_officer: null
+        });
+        rerender();
+        act(() => {
+            result.current.changeSelectedProjectOfficer(savedAlternate);
+        });
+        act(() => {
+            result.current.changeSelectedProjectOfficer({ id: NEW_COR, full_name: "New" });
+        });
+
+        expect(setters.selected_alternate_project_officer).toHaveBeenLastCalledWith(savedAlternate);
+        expect(result.current.alternateCorStatusMessage).toBe("Alternate COR Alternate restored.");
+    });
+
+    it("clears the status message when the COR moves on and there's nothing to restore", () => {
+        useEditAgreementMock.mockReturnValue({
+            ...savedCorAgreement(),
+            selected_alternate_project_officer: null
+        });
+        const { result } = renderUseAgreementEditForm({ isAgreementAwarded: true });
+
+        act(() => {
+            result.current.changeSelectedProjectOfficer({ id: SAVED_ALTERNATE, full_name: "Alternate" });
+        });
+        expect(result.current.alternateCorStatusMessage).toContain("Alternate COR cleared");
+
+        act(() => {
+            result.current.changeSelectedProjectOfficer({ id: NEW_COR, full_name: "New" });
+        });
+
+        expect(result.current.alternateCorStatusMessage).toBe("");
     });
 
     it("doesn't restore the cleared Alternate COR once the user picks a new one", () => {

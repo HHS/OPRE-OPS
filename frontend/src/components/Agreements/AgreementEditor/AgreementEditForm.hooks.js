@@ -105,9 +105,9 @@ const useAgreementEditForm = (
 
     const [showModal, setShowModal] = React.useState(false);
     // OPS-3153: the Alternate COR auto-cleared by promoting it to COR, so it can be restored, and
-    // the status message announcing the clear.
+    // the status message announcing the clear or the restore.
     const autoClearedAlternateRef = React.useRef(null);
-    const [alternateCorClearedMessage, setAlternateCorClearedMessage] = React.useState("");
+    const [alternateCorStatusMessage, setAlternateCorStatusMessage] = React.useState("");
     const [modalProps, setModalProps] = React.useState({});
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
     // Forces a re-render once the on-load service_requirement_type check below has run, so
@@ -414,20 +414,28 @@ const useAgreementEditForm = (
         // can pick a new one before saving. If the user then picks someone else as COR, the
         // cleared Alternate COR comes back, so a change of mind doesn't remove it.
         if (tracksContractModifications && projectOfficerId && projectOfficerId === savedAlternateProjectOfficerId) {
-            autoClearedAlternateRef.current = selectedAlternateProjectOfficer;
+            // Picking the promoted person again finds the box already cleared; keep what was remembered.
+            if (selectedAlternateProjectOfficer?.id) {
+                autoClearedAlternateRef.current = selectedAlternateProjectOfficer;
+            }
             applySelectedAlternateProjectOfficer(null);
-            setAlternateCorClearedMessage(ALTERNATE_COR_CLEARED_MESSAGE);
-        } else if (autoClearedAlternateRef.current) {
-            applySelectedAlternateProjectOfficer(autoClearedAlternateRef.current);
+            setAlternateCorStatusMessage(ALTERNATE_COR_CLEARED_MESSAGE);
+        } else {
+            const restoredAlternate = autoClearedAlternateRef.current;
             autoClearedAlternateRef.current = null;
-            setAlternateCorClearedMessage("");
+            if (restoredAlternate) {
+                applySelectedAlternateProjectOfficer(restoredAlternate);
+                setAlternateCorStatusMessage(`Alternate COR ${restoredAlternate.full_name} restored.`);
+            } else {
+                setAlternateCorStatusMessage("");
+            }
         }
     };
 
     const changeSelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
         // The user chose the Alternate COR themselves, so there's nothing to restore.
         autoClearedAlternateRef.current = null;
-        setAlternateCorClearedMessage("");
+        setAlternateCorStatusMessage("");
         applySelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
     };
 
@@ -891,7 +899,7 @@ const useAgreementEditForm = (
         procurementShop,
         shouldRequestChange,
         requiresCorModification,
-        alternateCorClearedMessage,
+        alternateCorStatusMessage,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,
