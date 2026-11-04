@@ -81,6 +81,43 @@ describe("FilterResultsAnnouncer", () => {
         expect(screen.getByRole("status")).toHaveTextContent("Filters cleared. 40 agreements.");
     });
 
+    it("does not announce a new filters object with the same contents, e.g. after a fiscal year change", () => {
+        const { rerender } = renderAnnouncer({ filters: oneFilter, resultCount: 3, isFetching: false });
+
+        rerender(
+            <FilterResultsAnnouncer
+                filters={{ ...oneFilter }}
+                resultCount={7}
+                isFetching={false}
+                itemName="agreement"
+                itemNamePlural="agreements"
+            />
+        );
+        expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    });
+
+    it("announces a repeated message as a new node, so screen readers read it again", () => {
+        const threeAgreements = (filters) => (
+            <FilterResultsAnnouncer
+                filters={filters}
+                resultCount={3}
+                isFetching={false}
+                itemName="agreement"
+                itemNamePlural="agreements"
+            />
+        );
+        const { rerender } = render(threeAgreements(noFilters));
+
+        rerender(threeAgreements(oneFilter));
+        const firstMessage = screen.getByText("Filters applied. 3 agreements.");
+
+        rerender(threeAgreements(twoFilters));
+        const secondMessage = screen.getByText("Filters applied. 3 agreements.");
+
+        expect(secondMessage).not.toBe(firstMessage);
+        expect(firstMessage).not.toBeInTheDocument();
+    });
+
     it("does not announce when only the results change", () => {
         const { rerender } = renderAnnouncer({ filters: oneFilter, resultCount: 3, isFetching: false });
 
