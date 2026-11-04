@@ -95,7 +95,10 @@ const renderUseCan = () => {
             sessionUI: sessionUIReducer
         }
     });
-    return renderHook(() => useCan(), { wrapper: ({ children }) => createElement(Provider, { store }, children) });
+    return {
+        store,
+        ...renderHook(() => useCan(), { wrapper: ({ children }) => createElement(Provider, { store }, children) })
+    };
 };
 
 describe("useCan", () => {
@@ -157,6 +160,13 @@ describe("useCan", () => {
         expect(result.current.carryForwardFunding).toBe(75);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isTableLoading).toBe(false);
+    });
+
+    it("gives a picked year to the CANs list, which its breadcrumb falls back to", () => {
+        const { result, store } = renderUseCan();
+        act(() => result.current.setSelectedFiscalYear("2025"));
+        expect(store.getState().sessionUI.listFilters.cans.selectedFiscalYear).toBe("2025");
+        expect(store.getState().sessionUI.listFilters.portfolios.selectedFiscalYear).not.toBe("2025");
     });
 
     it("updates filtered results when the selected fiscal year changes and toggles edit modes", async () => {

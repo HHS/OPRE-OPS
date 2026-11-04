@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { getCurrentFiscalYear } from "../../src/helpers/utils.js";
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
@@ -58,6 +59,25 @@ describe("Portfolio List Page", () => {
 
         // Verify detail page loaded
         cy.get("h1", { timeout: 10000 }).should("exist");
+    });
+
+    it("shows the FY picked on a portfolio when going back to the list by breadcrumb", () => {
+        // Relative to the current FY, so both stay inside the dropdown's rolling range.
+        const listFY = String(Number(getCurrentFiscalYear()) - 2);
+        const detailFY = String(Number(getCurrentFiscalYear()) - 1);
+
+        cy.get("#fiscal-year-select").select(listFY);
+        cy.get("table tbody tr", { timeout: 10000 }).should("exist");
+        cy.get("table tbody tr").first().find("a").first().click();
+        cy.url().should("include", `fy=${listFY}`);
+        cy.get("#fiscal-year-select", { timeout: 10000 }).should("have.value", listFY);
+
+        cy.get("#fiscal-year-select").select(detailFY);
+        cy.url().should("include", `fy=${detailFY}`);
+
+        cy.get("nav[aria-label='Breadcrumbs']").contains("a", "Portfolios").click();
+        cy.contains("h1", "Portfolios").should("exist");
+        cy.get("#fiscal-year-select").should("have.value", detailFY);
     });
 
     it("applies filters and shows filter tags", () => {

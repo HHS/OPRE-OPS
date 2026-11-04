@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
     agreementCrumb,
+    breadcrumbAncestors,
     buildTrailState,
     getTrailFromState,
     LIST_CRUMBS,
@@ -98,6 +99,18 @@ describe("resourceBasePath", () => {
         expect(resourceBasePath("/agreements/review/5/edit?returnTo=x")).toBe("/agreements/5");
         expect(resourceBasePath("/agreements/approve/5?type=status-change")).toBe("/agreements/5");
         expect(resourceBasePath("/agreements/create")).toBe("/agreements/create");
+    });
+});
+
+describe("breadcrumbAncestors", () => {
+    it("returns the trail's ancestors when a trail applies", () => {
+        const trail = { targetPath: "/cans/1", ancestors: [portfolios, { label: "Portfolio A", to: "/portfolios/3" }] };
+        expect(breadcrumbAncestors(trail, cans)).toBe(trail.ancestors);
+    });
+
+    it("falls back to the route-hierarchy crumb, or nothing", () => {
+        expect(breadcrumbAncestors(null, cans)).toEqual([cans]);
+        expect(breadcrumbAncestors(null)).toEqual([]);
     });
 });
 

@@ -24,8 +24,10 @@ const ProjectFunding = () => {
     const projectId = id ? +id : -1;
 
     // Shared with the portfolio and CAN pages, so going back shows the FY last picked on any of them.
-    const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } =
-        useDetailFiscalYear(getCurrentFiscalYear());
+    const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } = useDetailFiscalYear(
+        getCurrentFiscalYear(),
+        { fallbackCrumb: LIST_CRUMBS.projects }
+    );
     const fiscalYear = Number(selectedFiscalYear);
     useSyncFiscalYearParam(fiscalYear);
 

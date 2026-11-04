@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+    breadcrumbAncestors,
     buildTrailState,
     getTrailFromState,
     LIST_CRUMBS,
@@ -99,7 +100,7 @@ export const useAncestryForChildren = ({ ownCrumb, fallbackCrumb, keepTrail = tr
     const { pathname } = useLocation();
     const trail = useBreadcrumbTrail();
     const to = ownCrumb.to ?? (ownCrumb.fiscalYear ? `${pathname}?fy=${ownCrumb.fiscalYear}` : pathname);
-    const ancestors = keepTrail && trail ? trail.ancestors : [fallbackCrumb];
+    const ancestors = breadcrumbAncestors(keepTrail ? trail : null, fallbackCrumb);
     return [...ancestors, { label: ownCrumb.label, to }];
 };
 

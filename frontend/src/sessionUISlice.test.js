@@ -4,6 +4,7 @@ import sessionUIReducer, {
     setListFilters,
     setListFiscalYear,
     changeListFiscalYear,
+    syncListFiscalYear,
     listFilterDefaults
 } from "./sessionUISlice";
 import { logout } from "./components/Auth/authSlice";
@@ -40,6 +41,29 @@ describe("sessionUISlice — listFilters", () => {
     it("setListFiscalYear ignores an unknown page", () => {
         const before = freshState();
         const after = sessionUIReducer(before, setListFiscalYear({ page: "nope", selectedFiscalYear: 2030 }));
+        expect(after.listFilters).toEqual(before.listFilters);
+    });
+
+    it("syncListFiscalYear sets a list's year and resets only its year-dependent filters", () => {
+        const filters = { portfolios: [{ id: 3 }], budgetRange: [10, 20], availablePct: ["over90"] };
+        const before = sessionUIReducer(freshState(), setListFilters({ page: "portfolios", filters }));
+        const after = sessionUIReducer(before, syncListFiscalYear({ page: "portfolios", selectedFiscalYear: "2024" }));
+        expect(after.listFilters.portfolios).toEqual({
+            selectedFiscalYear: "2024",
+            filters: { ...filters, budgetRange: listFilterDefaults.portfolios.filters.budgetRange }
+        });
+    });
+
+    it("syncListFiscalYear keeps all filters on a list with none tied to the year", () => {
+        const filters = { ...listFilterDefaults.cans.filters, budget: [5, 50] };
+        const before = sessionUIReducer(freshState(), setListFilters({ page: "cans", filters }));
+        const after = sessionUIReducer(before, syncListFiscalYear({ page: "cans", selectedFiscalYear: "2024" }));
+        expect(after.listFilters.cans).toEqual({ selectedFiscalYear: "2024", filters });
+    });
+
+    it("syncListFiscalYear ignores an unknown page", () => {
+        const before = freshState();
+        const after = sessionUIReducer(before, syncListFiscalYear({ page: "nope", selectedFiscalYear: "2030" }));
         expect(after.listFilters).toEqual(before.listFilters);
     });
 

@@ -4,6 +4,7 @@ import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
+import { LIST_CRUMBS } from "../../../helpers/breadcrumb.helpers";
 import { ALL_FISCAL_YEARS_PARAM, getCurrentFiscalYear } from "../../../helpers/utils";
 import { useDetailFiscalYear, useSyncFiscalYearParam } from "../../../hooks/useDetailFiscalYear.hooks";
 import { getTypesCounts } from "./Can.helpers";
@@ -26,7 +27,8 @@ export default function useCan() {
     // picked on any of them. Until one is picked, `?fy=` applies, including "All" (`?fy=all`).
     const [searchParams] = useSearchParams();
     const { fiscalYear: selectedFiscalYear, setFiscalYear: setSelectedFiscalYear } = useDetailFiscalYear(
-        searchParams.get("fy") === ALL_FISCAL_YEARS_PARAM ? "All" : getCurrentFiscalYear()
+        searchParams.get("fy") === ALL_FISCAL_YEARS_PARAM ? "All" : getCurrentFiscalYear(),
+        { fallbackCrumb: LIST_CRUMBS.cans }
     );
     const fiscalYear = selectedFiscalYear === "All" ? null : Number(selectedFiscalYear);
     useSyncFiscalYearParam(fiscalYear);
