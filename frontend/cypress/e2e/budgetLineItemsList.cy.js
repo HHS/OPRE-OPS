@@ -153,6 +153,39 @@ it("filter button works as expected", () => {
         .should("match", /^Filters cleared\. \d+ budget lines?\.$/);
 });
 
+it("filters budget lines by a person in Division & Staffing and clears it from the tag", () => {
+    const announcedCount = (pattern) =>
+        cy
+            .get('[data-cy="filter-results-announcement"]', { timeout: 10000 })
+            .invoke("text")
+            .should("match", pattern)
+            .then((text) => Number(text.match(pattern)[1]));
+
+    cy.get("button").contains("Filter").click();
+
+    // Each division is followed by its people, so the second option is the first division's first person.
+    cy.get(".division-staffing-combobox__control").click();
+    cy.get(".division-staffing-combobox__option")
+        .eq(1)
+        .invoke("text")
+        .then((label) => {
+            cy.get(".division-staffing-combobox__option").eq(1).click();
+            cy.get("button").contains("Apply").click();
+
+            cy.get("div").contains("Filters Applied:").should("exist");
+            cy.get(`button[aria-label="Remove ${label} filter"]`).should("exist");
+            cy.get("div[id='budget-line-items-table-zero-results']").should("not.exist");
+            cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
+
+            announcedCount(/^Filters applied\. (\d+) budget lines?\.$/).then((filteredCount) => {
+                // Removing the tag returns the page to all budget lines, which must be more than one person's.
+                cy.get(`button[aria-label="Remove ${label} filter"]`).click();
+                cy.get("div").contains("Filters Applied:").should("not.exist");
+                announcedCount(/^Filters cleared\. (\d+) budget lines?\.$/).should("be.greaterThan", filteredCount);
+            });
+        });
+});
+
 it("filter button does not reset fiscal year dropdown when fiscal year dropdown is changed from current FY", () => {
     cy.get("#fiscal-year-select").select("2044");
     cy.get("button").contains("Filter").click();
