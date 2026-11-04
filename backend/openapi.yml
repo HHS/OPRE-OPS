@@ -4775,6 +4775,8 @@ paths:
                   - statuses
                   - portfolios
                   - budget_line_total_range
+                  - cor_divisions
+                  - cors
                 properties:
                   fiscal_years:
                     type: array
