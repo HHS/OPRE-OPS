@@ -89,8 +89,8 @@ portfolio's division.
 - **Step 5:** `components/UI/FilterResultsAnnouncer` is a visually hidden `role="status"` region on Agreements and
   Budget Lines. After the new results load it says "Filters applied." / "Filter removed." / "Filters cleared." plus
   the total count. Unit tests, and the Agreements and Budget Lines Cypress filter journeys check it.
-- **Step 7:** the Procurement Dashboard filter is labelled "Division & Staffing" (the dev lead's proposal).
-  **Q7 is still open:** confirm the wording with Kim, because the Dashboard offers divisions only.
+- **Step 7:** the Procurement Dashboard filter is labelled "COR's division" (Q7 resolved 2026-11-04). It was
+  "Division & Staffing", but the Dashboard offers divisions only, so "Staffing" suggested people could be picked.
 - The first CI run on #6495 failed on a Cypress binary download (502), not on the code; re-run.
 
 - **Group highlight (added 2026-11-04, at the dev's request, to get UX feedback):** when a division option has
@@ -129,13 +129,12 @@ portfolio's division.
 4. **Step 5: announcer** (`role="status"`, polite) on Agreements and Budget Lines. It announces that filters were
    applied, removed or reset, and the new result count (C1). Check `docs/TESTING.md` and existing live regions
    first; none exists on these pages today.
-5. **Step 7: Procurement Dashboard relabel.** It's blocked on **Q7** (the label wording); ask Kim. Then it's a label
-   change in `ProcurementDashboardFilterButton.jsx` plus its unit and Cypress tests.
+5. ~~**Step 7: Procurement Dashboard relabel.**~~ Done 2026-11-04: "COR's division".
 6. Then: mark #6495 ready, run `/ops-pr-review 6495`, and check the boxes the merged UI satisfies on the issue
    (the two "I can filter" ACs, clearing, "divisions offered" for the lists, keyboard/AT once the announcer lands,
    and the distinct name).
 
-**Still open (not code):** Q2 (COR on Budget Lines?), Q6 (FigJam), Q7 (Dashboard label), T0 (CORs-without-
+**Still open (not code):** Q2 (COR on Budget Lines?), Q6 (FigJam), T0 (CORs-without-
 division counts on staging/prod), Q5 (stale Projects/Reporting testing text in the issue).
 
 ### Update 2026-11-03: PR #6480 merged, prototype landed
