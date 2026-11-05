@@ -60,6 +60,21 @@ jobs:
             .github/actions/notify-slack-failure
           sparse-checkout-cone-mode: false
 
+      # A branch cut before previews existed has no script of its own, but removing its label or
+      # closing it still runs this; use the default branch's copy (destroy is a no-op if nothing exists).
+      - name: Fall back to the default branch's script
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if [ ! -f .github/scripts/preview.sh ]; then
+            echo "::notice::No preview.sh at this commit; using $DEFAULT_BRANCH's copy"
+            mkdir -p .github/scripts
+            gh api "repos/$GITHUB_REPOSITORY/contents/.github/scripts/preview.sh?ref=$DEFAULT_BRANCH" \
+              -H "Accept: application/vnd.github.raw" > .github/scripts/preview.sh
+            chmod +x .github/scripts/preview.sh
+          fi
+
       - name: Log in to Azure
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:

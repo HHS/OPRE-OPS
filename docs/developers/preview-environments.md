@@ -31,9 +31,9 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 
 ## Limits
 
-- **At most 8 previews at once.** Past that, the comment says the cap is reached and nothing deploys. There is no
-  automatic retry: once a slot frees up (someone removes their label, or a PR closes), push a commit or remove and
-  re-add the label.
+- **At most 8 previews at once (best effort).** Past that, the comment says the cap is reached and nothing deploys.
+  Two PRs labelled at almost the same moment can occasionally let a 9th through. There is no automatic retry: once a
+  slot frees up (someone removes their label, or a PR closes), push a commit or remove and re-add the label.
 - **Lifetime:** a preview with no pushes, deploys or human comments for 5 days is removed by the nightly reaper. A
   warning comment appears after 4 days; a push or any comment keeps it.
 - **Not available:** HHS AMS login, `/storybook`, `/docs/*` and document upload.
@@ -50,6 +50,7 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 | Status says *Deploy failed* | Follow *Latest run* in the comment. Database step failures link to the preview-db job's execution history in the Azure portal |
 | URL shows a 404 page | The preview was removed, never deployed (cap), or is still deploying |
 | A push didn't update the preview | The PR has a merge conflict; resolve it and push again |
+| Status says the branch is older than the preview workflows | Merge `main` into the branch, then push or re-add the label |
 | Data looks wrong after a migration change | Reseed (see above) |
 | Login fails | Make sure you used FakeAuth; AMS isn't configured on previews |
 
@@ -63,7 +64,10 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 - **Secrets:** the deploy identity can't read Key Vault, so the backend's DB password and the preview-only JWT
   keypair are copied from that job's secrets. They're masked in logs and never echoed.
 - **Slots:** a PR holds a slot while its backend app (tagged `preview-pr`) exists. Concurrent claims settle by
-  creation time, so only the latest claim past the cap backs out.
+  creation time, so only the latest claim past the cap backs out. Two claims a moment apart can both survive if
+  each lists slots before the other's app exists.
+- **Build cache:** preview builds read the shared `:deps` cache but push their own `:deps-pr-<N>` tag, so they never
+  change the cache dev, staging and prod builds use.
 - **Testing the cap by hand:** set `PREVIEW_MAX_SLOTS=1` in the job env temporarily.
 - **Dispatch and schedule** only run from `main`. The reaper and the reseed's gate job run `main`'s script; the
   reseed's build and deploy jobs check out the PR head and run its copy.

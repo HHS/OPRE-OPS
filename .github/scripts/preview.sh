@@ -120,6 +120,19 @@ cmd_gate() {
   output pr "$pr"
   output sha "$sha"
   output mode "$mode"
+
+  # Deploy runs the head's copy of this script. A branch cut before previews existed has
+  # none, so stop here instead of failing after the builds.
+  local err
+  err=$(mktemp)
+  if gh api "repos/$REPO/contents/.github/scripts/preview.sh?ref=$sha" --silent 2>"$err"; then
+    output outdated false
+  else
+    grep -q "HTTP 404" "$err" || fail "could not check $sha for preview.sh: $(cat "$err")"
+    echo "PR $pr's branch has no .github/scripts/preview.sh; it needs main merged in"
+    cmd_comment "$pr" outdated "$sha"
+    output outdated true
+  fi
 }
 
 # --- slots --------------------------------------------------------------------------------
@@ -153,7 +166,7 @@ cmd_slots() {
   az containerapp create -n "$backend" -g "$RG" --environment "$CAE" \
     --image "$PLACEHOLDER_IMAGE" --cpu 0.25 --memory 0.5Gi \
     --min-replicas 0 --max-replicas 1 --ingress external --target-port 8080 \
-    --tags "preview-pr=$pr" "preview-created=$(now)" -o none
+    --tags "preview-pr=$pr" "preview-created=$(now)" "preview-last-deploy=$(now)" -o none
 
   # Two runs can claim at once. Every run sorts the same way, so only the runs past the cap
   # (the latest claims) back out, and no shared lock is needed.
@@ -357,6 +370,7 @@ cmd_comment() {
     ready) line="Ready" ;;
     failed) line="Deploy failed. See the [run logs]($RUN_URL)." ;;
     capped) line="Not deployed: all $MAX_SLOTS preview slots are in use. Free a slot (remove the \`$LABEL\` label from a PR that no longer needs one), then push a commit or re-add the label here. There is no automatic retry." ;;
+    outdated) line="Not deployed: this branch is older than the preview workflows. Merge \`main\` into it, then push (or re-add the \`$LABEL\` label)." ;;
     removed) line="Removed (${REASON:-label removed or PR closed}). Re-add the \`$LABEL\` label to bring it back with fresh data." ;;
     *) fail "unknown comment status '$status'" ;;
   esac

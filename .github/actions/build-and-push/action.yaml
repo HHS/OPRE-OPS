@@ -43,6 +43,11 @@ inputs:
     description: "Build arguments to pass to the Docker build, in the format ARG_NAME=value,ARG_NAME2=value2"
     required: false
 
+  deps_cache_tag:
+    description: "Tag the dependency cache layer is pushed to. PR builds pass their own tag so they read the shared :deps cache but never overwrite it."
+    required: false
+    default: "deps"
+
 runs:
   using: "composite"
   steps:
@@ -55,6 +60,7 @@ runs:
         DOCKER_IO_TOKEN: ${{ inputs.docker_io_token }}
         IMAGE_NAME: ${{ inputs.image_name }}
         IMAGE_TAGS: ${{ inputs.image_tags }}
+        DEPS_CACHE_TAG: ${{ inputs.deps_cache_tag }}
 
       run: |
         echo "Using $(docker -v)"
@@ -102,8 +108,9 @@ runs:
             --file ${{ inputs.dockerfile }} \
             --target deps \
             --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG} \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --tag ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            --tag ${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG} \
             ${{ inputs.context }}
           set +x
           echo "::endgroup::"
@@ -114,6 +121,7 @@ runs:
             --file ${{ inputs.dockerfile }} \
             --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
             --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:deps \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG} \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg BUILD_DATE=${BUILD_DATE} \
             --build-arg GITHUB_SHA=${GITHUB_SHA} \
@@ -132,7 +140,7 @@ runs:
           echo "::endgroup::"
 
           echo "::group::Pushing the dependency cache layer..."
-          docker push ${{ inputs.repository }}/${IMAGE_NAME}:deps && echo "Dependency cache pushed"
+          docker push ${{ inputs.repository }}/${IMAGE_NAME}:${DEPS_CACHE_TAG} && echo "Dependency cache pushed"
           echo "::endgroup::"
 
           echo "::group::Pushing the Docker image to ${{ inputs.repository }} with tag ${TAG}..."
