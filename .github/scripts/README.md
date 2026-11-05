@@ -201,6 +201,8 @@ set -euo pipefail
 
 **Setup**: add a `TEAM_CALENDAR_ICS_URL` repo secret holding the calendar's "Secret address in iCal format" (Google Calendar → Settings → Integrate calendar). Without it, picks still happen but ignore the calendar.
 
+**Slack**: `SLACK_WEBHOOK_URL` is a Slack Workflow Builder trigger URL (not a classic Incoming Webhook), of this workflow's own, separate from the one deploy workflows use for failure alerts. The trigger needs two input variables, `message` (Text) and `reviewer_id` (User) — this script posts `{"message": ..., "reviewer_id": ...}`, and the workflow's own steps decide what to do with them (e.g. post to a channel, and/or DM `reviewer_id` directly when it's set, so someone without channel access still sees it). Insert each variable through Slack's own variable picker in the message step, not by typing `{{message}}` as literal text.
+
 **Tests**:
 
 ```bash
