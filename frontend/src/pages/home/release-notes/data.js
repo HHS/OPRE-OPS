@@ -42,7 +42,7 @@ export const data = [
                 subject: "Enter past dates on budget lines",
                 type: "Improvements",
                 description:
-                    "Based on your feedback, you can now save a budget line with an Obligate By date in the past, whether you're creating it or editing it, so you're no longer blocked from entering data you should have added earlier."
+                    "Based on your feedback, you can now save a budget line with an Obligate By date in the past, whether you're creating it or editing it."
             },
             {
                 id: "0006",
