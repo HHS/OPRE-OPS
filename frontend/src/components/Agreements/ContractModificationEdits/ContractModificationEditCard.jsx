@@ -10,12 +10,14 @@ import styles from "./ContractModificationEditCard.module.scss";
 /**
  * @typedef {Object} ContractModificationEdit
  * @property {number} id
- * @property {string} modification_type - e.g. "MODIFIED_LOE"
+ * @property {string} modification_type - "MODIFIED_LOE" or "ADMIN_CHANGE"
  * @property {number | null} budget_line_item_id
  * @property {number | null} [services_component_id] - Set for a Services Component addition
- * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create")
+ * @property {string} field - The edited field ("amount", "can_id", "date_needed", "delete", "services_component_create", or "project_officer_id" for a COR change)
  * @property {*} old_value
  * @property {*} new_value
+ * @property {string | null} [old_display_name] - The "From" user's name for a COR change
+ * @property {string | null} [new_display_name] - The "To" user's name for a COR change
  * @property {{id: number, full_name: string} | null} requested_by
  * @property {string | null} requested_on
  * @property {boolean} [in_review] - Part of the contract modification that is in review
@@ -28,7 +30,7 @@ const SERVICES_COMPONENT_CHANGE_LABELS = {
 };
 
 /**
- * One approved edit on an Awarded agreement that requires a contract modification.
+ * One edit on an Awarded agreement that requires a contract modification.
  *
  * @component
  * @param {Object} props
@@ -43,6 +45,8 @@ const ContractModificationEditCard = ({ edit }) => {
     const servicesComponentChange = SERVICES_COMPONENT_CHANGE_LABELS[edit.field];
     // The SC's display name, frozen on the row: the new SC for an addition, the deleted one otherwise.
     const servicesComponentName = edit.field === "services_component_create" ? edit.new_value : edit.old_value;
+    // A COR change (OPS-3153) is agreement-level: no budget line, and From/To are user names.
+    const isAgreementLevel = edit.field === "project_officer_id";
 
     return (
         <div
@@ -68,7 +72,25 @@ const ContractModificationEditCard = ({ edit }) => {
                 value={convertCodeForDisplay("modificationEditType", edit.modification_type)}
                 className="margin-0"
             />
-            {servicesComponentChange ? (
+            {isAgreementLevel ? (
+                <>
+                    <TermTag
+                        label="Change To"
+                        value={convertCodeForDisplay("changeToTypes", edit.field)}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="From"
+                        value={edit.old_display_name ?? "TBD"}
+                        className="margin-0"
+                    />
+                    <TermTag
+                        label="To"
+                        value={edit.new_display_name ?? "TBD"}
+                        className="margin-0"
+                    />
+                </>
+            ) : servicesComponentChange ? (
                 <>
                     <TermTag
                         label="SC"

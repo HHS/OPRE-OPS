@@ -109,7 +109,7 @@ describe("useStartModification", () => {
     });
 
     it("shows an error alert when sending fails", async () => {
-        setQueries({ edits: [{ id: 5 }] });
+        setQueries({ edits: [{ id: 5, modification_type: "MODIFIED_LOE" }] });
         submitMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("400")) });
         const { result } = renderHook(() => useStartModification(42));
         await waitFor(() => expect(result.current.isSubmissionReady).toBe(true));
@@ -117,6 +117,24 @@ describe("useStartModification", () => {
         await act(() => result.current.handleSendToApproval());
 
         expect(setAlertMock).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }));
+    });
+
+    it("leaves Admin Changes such as a COR change out of the modification (OPS-3153)", async () => {
+        const loeEdit = { id: 7, modification_type: "MODIFIED_LOE", field: "amount" };
+        const corEdit = { id: 8, modification_type: "ADMIN_CHANGE", field: "project_officer_id" };
+        setQueries({ edits: [loeEdit, corEdit] });
+        const { result } = renderHook(() => useStartModification(42));
+
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
+        expect(result.current.edits).toEqual([loeEdit]);
+    });
+
+    it("can't be submitted with only a COR change pending", async () => {
+        setQueries({ edits: [{ id: 8, modification_type: "ADMIN_CHANGE", field: "project_officer_id" }] });
+        const { result } = renderHook(() => useStartModification(42));
+
+        await waitFor(() => expect(result.current.budgetLines).toHaveLength(3));
+        expect(result.current.isSubmissionReady).toBe(false);
     });
 
     it("can't start while a modification is in review", () => {

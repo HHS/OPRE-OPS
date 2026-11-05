@@ -52,9 +52,10 @@ class AgreementEditBundleAPI(BaseItemAPI):
 
             meta.metadata.update({"bundle_result": asdict(result)})
 
-            # Surface the agreement field diff (scoped to a directly-applied procurement-shop
-            # change) so the UPDATE_AGREEMENT history subscriber records "Change to Procurement
-            # Shop". None for every other bundle save, leaving history behavior unchanged.
+            # Surface the agreement field diff (scoped to procurement shop, COR and Alternate COR
+            # changes, plus a COR change recorded as pending on an Awarded agreement, OPS-3153) so
+            # the UPDATE_AGREEMENT history subscriber records them. None when the bundle changed
+            # none of those.
             if service.agreement_updates is not None:
                 meta.metadata.update({"agreement_updates": service.agreement_updates})
 

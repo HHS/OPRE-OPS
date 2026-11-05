@@ -501,6 +501,40 @@ export const CONTRACT_MODIFICATION_APPROVAL_HEADING =
     "This agreement has already been awarded and any changes will require a contract modification. After approval from your Division Director, changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action. Do you want to send it for approval?";
 
 /**
+ * Heading for the confirmation shown before saving a COR change on an Awarded agreement
+ * (OPS-3153). No approval is needed: the change is tracked on the Award & Modifications Tab
+ * and the COR changes once the contract modification is approved.
+ */
+export const COR_CONTRACT_MODIFICATION_HEADING =
+    "This agreement has already been awarded and any changes will require a contract modification. Changes on Awarded Agreements will be tracked on the Award & Modifications Tab where you can take further action.";
+
+/**
+ * Whether a COR change on an agreement is recorded as a pending contract modification edit
+ * instead of applied (OPS-3153). Mirrors AgreementsService._project_officer_change_kind; the
+ * backend enforces it, this only drives the confirmation modal.
+ *
+ * @param {Object} params
+ * @param {boolean} params.tracksContractModifications - Awarded Contract/AA with the flag on.
+ * @param {number|null|undefined} params.savedProjectOfficerId - The COR saved on the agreement.
+ * @param {number|null|undefined} params.savedAlternateProjectOfficerId - The saved Alternate COR.
+ * @param {number|null|undefined} params.projectOfficerId - The COR in the form.
+ * @returns {boolean}
+ */
+export const isCorChangePendingContractModification = ({
+    tracksContractModifications,
+    savedProjectOfficerId,
+    savedAlternateProjectOfficerId,
+    projectOfficerId
+}) =>
+    Boolean(
+        tracksContractModifications &&
+        projectOfficerId &&
+        projectOfficerId !== savedProjectOfficerId &&
+        // Promoting the saved Alternate COR applies immediately.
+        projectOfficerId !== savedAlternateProjectOfficerId
+    );
+
+/**
  * Selects the tooltip shown on a disabled Edit button based on why editing is blocked.
  * Consulted only when the button is disabled. Precedence (first match wins): not a team
  * member, then not developed, then the review/lock states, then all-budget-lines-in-review.

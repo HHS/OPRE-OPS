@@ -9,10 +9,12 @@ user's contract modification request is approved (OPS-3072, AC9; see contract_mo
 from typing import Optional
 
 from flask import current_app
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from models import (
+    PROJECT_OFFICER_EDIT_FIELD,
     Agreement,
     AgreementMod,
     ChangeRequestStatus,
@@ -22,6 +24,7 @@ from models import (
     ContractModificationRequestStatus,
     ModificationEditType,
     ServicesComponentChangeRequest,
+    User,
 )
 from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
@@ -102,6 +105,9 @@ class ContractModificationEditService:
             # otherwise two SC adds would collapse into one (OPS-6440).
             if edit.services_component_id is not None:
                 target = ("sc", edit.services_component_id)
+            elif edit.budget_line_item_id is None:
+                # Agreement-level edits, e.g. a COR change (OPS-3153)
+                target = ("agreement", edit.agreement_id)
             else:
                 target = ("bli", edit.budget_line_item_id)
             if edit.field == "delete":
@@ -167,6 +173,76 @@ class ContractModificationEditService:
             raise ValidationError({"services_component": [SC_ADDITION_IN_MODIFICATION_MESSAGE]})
         for edit in edits:
             self.db_session.delete(edit)
+
+    def record_project_officer_change(
+        self, agreement: Agreement, new_project_officer_id: Optional[int], user: User
+    ) -> Optional[ContractModificationEdit]:
+        """Record a COR change on an Awarded agreement as a pending ADMIN_CHANGE edit (OPS-3153).
+
+        The agreement's COR is not changed: it keeps its current value until the contract
+        modification is approved. There is at most one pending COR change per agreement, so a
+        new target replaces the pending one. Returns the recorded edit, or None when the target
+        is already pending (nothing changed). Does not commit.
+        """
+        pending = self._pending_project_officer_edit(agreement.id)
+        if pending is not None:
+            if pending.new_value == new_project_officer_id:
+                return None
+            pending.new_value = new_project_officer_id
+            pending.requested_by_id = user.id
+            pending.requested_on = func.now()
+            self.db_session.flush()
+            return pending
+
+        edit = ContractModificationEdit(
+            agreement_id=agreement.id,
+            modification_type=ModificationEditType.ADMIN_CHANGE,
+            field=PROJECT_OFFICER_EDIT_FIELD,
+            old_value=agreement.project_officer_id,
+            new_value=new_project_officer_id,
+            requested_by_id=user.id,
+            requested_on=func.now(),
+        )
+        self.db_session.add(edit)
+        try:
+            self.db_session.flush()
+        except IntegrityError:
+            # ix_contract_modification_edit_one_pending_cor_change: a concurrent save won.
+            # The caller rolls back the session.
+            raise ValidationError(
+                {"project_officer_id": ["Another COR change was saved at the same time. Refresh and try again."]}
+            ) from None
+        return edit
+
+    def sync_pending_project_officer_change(self, agreement: Agreement) -> None:
+        """Keep the pending COR change in step after the COR was changed directly (OPS-3153).
+
+        Promoting the Alternate COR applies immediately. The pending change stays and now goes
+        from the new COR; if the new COR is the pending target, nothing is left to change and the
+        pending edit is removed. Does not commit.
+        """
+        pending = self._pending_project_officer_edit(agreement.id)
+        if pending is None:
+            return
+        if pending.new_value == agreement.project_officer_id:
+            self.db_session.delete(pending)
+        else:
+            pending.old_value = agreement.project_officer_id
+        self.db_session.flush()
+
+    def _pending_project_officer_edit(self, agreement_id: int) -> Optional[ContractModificationEdit]:
+        """The agreement's pending COR change, locked for update."""
+        query = (
+            select(ContractModificationEdit)
+            .where(
+                ContractModificationEdit.agreement_id == agreement_id,
+                ContractModificationEdit.modification_type == ModificationEditType.ADMIN_CHANGE,
+                ContractModificationEdit.field == PROJECT_OFFICER_EDIT_FIELD,
+                ContractModificationEdit.agreement_mod_id.is_(None),
+            )
+            .with_for_update()
+        )
+        return self.db_session.scalars(query).first()
 
     def _get_supported_agreement(self, agreement_id: int) -> Agreement:
         agreement = self.db_session.get(Agreement, agreement_id)

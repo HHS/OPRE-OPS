@@ -447,6 +447,8 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
         agreement.id,
         agreement.updated_by,
     )
+    if service.pending_project_officer_change is not None:
+        agreement_updates["pending_project_officer_change"] = service.pending_project_officer_change
     meta.metadata.update({"agreement_updates": agreement_updates})
     current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
     return agreement, status_code

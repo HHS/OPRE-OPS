@@ -338,6 +338,38 @@ describe("ContractModificationEdits", () => {
         expect(within(addCard).queryByText("From")).not.toBeInTheDocument();
     });
 
+    it("renders a COR change as an Admin Change with the From and To names and no BL ID (OPS-3153)", () => {
+        mockQuery({
+            data: [
+                {
+                    ...AMOUNT_EDIT,
+                    id: 6,
+                    modification_type: "ADMIN_CHANGE",
+                    budget_line_item_id: null,
+                    change_request_id: null,
+                    field: "project_officer_id",
+                    old_value: 503,
+                    new_value: 512,
+                    old_display_name: "Sheila Celentano",
+                    new_display_name: "Chris Fortunato"
+                }
+            ]
+        });
+
+        render(<ContractModificationEdits agreementId={42} />);
+
+        const [corCard] = getCards();
+        expect(cardValues(corCard)).toEqual([
+            "First Last Name",
+            "Admin Change",
+            "COR",
+            "Sheila Celentano",
+            "Chris Fortunato"
+        ]);
+        expect(within(corCard).queryByText("BL ID")).not.toBeInTheDocument();
+        expect(within(corCard).getByText("Change To")).toBeInTheDocument();
+    });
+
     it("marks a Services Component addition In Review while its modification is in review", () => {
         const scEdit = { ...AMOUNT_EDIT, budget_line_item_id: null, services_component_id: 31 };
         mockQuery({

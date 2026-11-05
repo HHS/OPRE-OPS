@@ -52,6 +52,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
  * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
+ * @param {function} [props.onCorChangeStateChange] - Called with `true` when saving would record a COR change as a pending contract modification edit on an Awarded agreement (OPS-3153), `false` otherwise. Lets a parent host its own confirmation modal. - optional
  * @param {React.MutableRefObject<{getSlice: () => object|null}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns either `null` (no agreement-level changes) or the cleaned agreement payload, suitable for the agreement edit-bundle endpoint. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -71,6 +72,7 @@ const AgreementEditForm = ({
     onSaved,
     onValidityChange,
     onProcurementShopChangeStateChange,
+    onCorChangeStateChange,
     bundleSliceRef
 }) => {
     const {
@@ -154,7 +156,9 @@ const AgreementEditForm = ({
         verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes,
         procurementShop,
-        shouldRequestChange
+        shouldRequestChange,
+        requiresCorModification,
+        alternateCorStatusMessage
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -217,6 +221,11 @@ const AgreementEditForm = ({
             newProcurementShop: selectedProcurementShop
         });
     }, [onProcurementShopChangeStateChange, shouldRequestChange, procurementShop, selectedProcurementShop]);
+
+    useEffect(() => {
+        if (!onCorChangeStateChange) return;
+        onCorChangeStateChange(requiresCorModification);
+    }, [onCorChangeStateChange, requiresCorModification]);
 
     // Bundle slice export. Same payload shape that `saveAgreement` would PATCH today,
     // but emitted as a slice the parent page can fold into a single edit-bundle PATCH.
@@ -703,6 +712,14 @@ const AgreementEditForm = ({
                             overrideStyles={{ width: "15em" }}
                             label={convertCodeForDisplay("alternateProjectOfficer", agreementType)}
                         />
+                    </div>
+                    {/* Always rendered so screen readers announce the message when it appears (OPS-3153). */}
+                    <div
+                        role="status"
+                        className="usa-hint margin-top-1"
+                        data-cy="alternate-cor-cleared-message"
+                    >
+                        {alternateCorStatusMessage}
                     </div>
                     <div className="margin-top-3 width-card-lg">
                         <TeamMemberComboBox

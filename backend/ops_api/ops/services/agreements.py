@@ -39,7 +39,9 @@ from models.procurement_action import AwardType, ProcurementAction, ProcurementA
 from models.procurement_tracker import ProcurementTrackerStatus
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
+from ops_api.ops.services.agreement_award_history import _SUPPORTED_AGREEMENT_TYPES
 from ops_api.ops.services.change_requests import ChangeRequestService
+from ops_api.ops.services.contract_modification_edits import ContractModificationEditService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     OpsService,
@@ -54,7 +56,10 @@ from ops_api.ops.utils.agreements_helpers import (
     has_proc_shop_blocking_bli,
     is_agreement_name_unique_violation,
 )
-from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
+from ops_api.ops.utils.budget_line_items_helpers import (
+    agreement_tracks_contract_modifications,
+    create_budget_line_item_instance,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
 from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementValidator
@@ -128,6 +133,8 @@ class AgreementFilters:
 class AgreementsService(OpsService[Agreement]):
     def __init__(self, db_session):
         self.db_session = db_session
+        # Set by update() when a COR change was recorded as pending (OPS-3153).
+        self.pending_project_officer_change: Optional[dict[str, Any]] = None
 
     def create(self, create_request: dict[str, Any]) -> tuple[Agreement, dict[str, Any]]:
         """
@@ -422,7 +429,13 @@ class AgreementsService(OpsService[Agreement]):
         When ``commit`` is False, all writes (the merged agreement and any procurement-shop
         change request) are flushed but not committed. The caller owns the eventual commit
         and any deferred reviewer notifications (used by the edit-bundle orchestrator).
+
+        On an Awarded agreement, a COR change to anyone other than the saved Alternate COR is not
+        applied: it is recorded as a pending contract modification edit, and
+        ``self.pending_project_officer_change`` is set to ``{"old": ..., "new": ...}`` so the
+        caller can record history (OPS-3153).
         """
+        self.pending_project_officer_change = None
         agreement = self.db_session.get(Agreement, id)
 
         # Use appropriate validator based on whether agreement is awarded
@@ -450,6 +463,9 @@ class AgreementsService(OpsService[Agreement]):
             awarding_entity_id = updated_fields.get("awarding_entity_id")
             del updated_fields["awarding_entity_id"]
 
+        # Decided before the merge, against the saved COR and Alternate COR (OPS-3153).
+        cor_change, pending_project_officer_id = self._prepare_project_officer_change(agreement, updated_fields)
+
         updated_fields["id"] = id
 
         try:
@@ -461,6 +477,8 @@ class AgreementsService(OpsService[Agreement]):
             add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
 
             self.db_session.merge(agreement_data)
+            # Before the commit, so a failed COR record doesn't leave the rest of the update saved.
+            self._handle_project_officer_change(agreement, cor_change, pending_project_officer_id)
             if commit:
                 self.db_session.commit()
             else:
@@ -623,6 +641,66 @@ class AgreementsService(OpsService[Agreement]):
         }
 
         return paginated_results, metadata
+
+    @staticmethod
+    def _project_officer_change_kind(agreement: Agreement, updated_fields: dict[str, Any]) -> Optional[str]:
+        """How a COR change on this update is handled on an Awarded agreement (OPS-3153).
+
+        Returns None when the normal update applies: no COR change, the agreement doesn't track
+        contract modifications, or it isn't a Contract or AA agreement. Otherwise returns
+        "promote_alternate" when the new COR is the saved Alternate COR (applied now), or
+        "pending" (recorded as a contract modification edit, not applied).
+        """
+        if "project_officer_id" not in updated_fields:
+            return None
+        new_value = updated_fields["project_officer_id"]
+        if new_value == agreement.project_officer_id:
+            return None  # a PUT always sends the field
+        if agreement.agreement_type not in _SUPPORTED_AGREEMENT_TYPES:
+            return None
+        if not agreement_tracks_contract_modifications(agreement):
+            return None
+        if new_value is None:
+            raise ValidationError({"project_officer_id": ["The COR cannot be removed on an awarded agreement."]})
+        # Compared with the saved Alternate COR, not one set in this same update.
+        if agreement.alternate_project_officer_id is not None and new_value == agreement.alternate_project_officer_id:
+            return "promote_alternate"
+        return "pending"
+
+    def _prepare_project_officer_change(
+        self, agreement: Agreement, updated_fields: dict[str, Any]
+    ) -> tuple[Optional[str], Optional[int]]:
+        """Adjust ``updated_fields`` for a COR change on an Awarded agreement before the merge (OPS-3153).
+
+        A pending COR change is taken out of the update, so the COR keeps its value. Promoting the
+        saved Alternate COR clears the Alternate COR unless the update sets a new one. Returns the
+        change kind and, for a pending change, the target COR.
+        """
+        cor_change = self._project_officer_change_kind(agreement, updated_fields)
+        if cor_change == "pending":
+            new_project_officer_id = updated_fields.pop("project_officer_id")
+            # The pending edit stores the id in JSONB, so no foreign key catches a bad one.
+            if self.db_session.get(User, new_project_officer_id) is None:
+                raise ValidationError({"project_officer_id": ["The selected COR does not exist."]})
+            return cor_change, new_project_officer_id
+        if cor_change == "promote_alternate":
+            requested_alternate = updated_fields.get(
+                "alternate_project_officer_id", agreement.alternate_project_officer_id
+            )
+            if requested_alternate == agreement.alternate_project_officer_id:
+                updated_fields["alternate_project_officer_id"] = None
+        return cor_change, None
+
+    def _handle_project_officer_change(
+        self, agreement: Agreement, cor_change: Optional[str], pending_project_officer_id: Optional[int]
+    ) -> None:
+        edit_service = ContractModificationEditService(self.db_session)
+        if cor_change == "promote_alternate":
+            edit_service.sync_pending_project_officer_change(agreement)
+        elif cor_change == "pending":
+            edit = edit_service.record_project_officer_change(agreement, pending_project_officer_id, get_current_user())
+            if edit is not None:
+                self.pending_project_officer_change = {"old": edit.old_value, "new": edit.new_value}
 
     def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:
         if agreement.awarding_entity_id == new_value:

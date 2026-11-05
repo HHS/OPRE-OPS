@@ -1,8 +1,9 @@
 """Schemas for "Edits That Require a Contract Modification" (Award & Modifications tab)."""
 
 from marshmallow import Schema, fields, validate
+from sqlalchemy.orm import object_session
 
-from models import ContractModificationRequestStatus, ModificationEditType
+from models import PROJECT_OFFICER_EDIT_FIELD, ContractModificationRequestStatus, ModificationEditType, User
 
 
 class RequestedBySchema(Schema):
@@ -11,23 +12,41 @@ class RequestedBySchema(Schema):
 
 
 class ContractModificationEditSchema(Schema):
-    """One approved edit on an Awarded agreement that requires a contract modification."""
+    """One edit on an Awarded agreement that requires a contract modification: an approved
+    Modified LOE edit, or a pending Admin Change such as a COR change (OPS-3153)."""
 
     id = fields.Integer(required=True)
     agreement_id = fields.Integer(required=True)
     modification_type = fields.Enum(ModificationEditType, required=True)
     budget_line_item_id = fields.Integer(allow_none=True)
     services_component_id = fields.Integer(allow_none=True)
-    # The edited field ("amount", "can_id", "date_needed", "delete") -- the card's "Change To".
+    # The edited field -- the card's "Change To". Modified LOE: "amount", "can_id", "date_needed",
+    # "status", "delete" or "services_component_create". Admin Change: "project_officer_id".
     field = fields.String(required=True)
     old_value = fields.Raw(allow_none=True)
     new_value = fields.Raw(allow_none=True)
+    # Names for user-id values (the COR change's From and To); null for other fields.
+    old_display_name = fields.Method("_old_display_name")
+    new_display_name = fields.Method("_new_display_name")
     requested_by = fields.Nested(RequestedBySchema, allow_none=True)
     requested_on = fields.DateTime(allow_none=True)
     change_request_id = fields.Integer(allow_none=True)
     agreement_mod_id = fields.Integer(allow_none=True)
     # True when the edit is part of the contract modification that is in review.
     in_review = fields.Boolean(dump_default=False)
+
+    @staticmethod
+    def _user_name(edit, user_id):
+        if edit.field != PROJECT_OFFICER_EDIT_FIELD or user_id is None:
+            return None
+        user = object_session(edit).get(User, user_id)
+        return user.full_name if user else None
+
+    def _old_display_name(self, edit):
+        return self._user_name(edit, edit.old_value)
+
+    def _new_display_name(self, edit):
+        return self._user_name(edit, edit.new_value)
 
 
 class SubmitContractModificationRequestSchema(Schema):

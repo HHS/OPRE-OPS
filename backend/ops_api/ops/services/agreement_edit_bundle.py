@@ -212,8 +212,8 @@ class AgreementEditBundleService:
         # SKIP_CR_FOR_DRAFT_PLANNED capability skips the Change Request that would otherwise carry
         # the history), no "Change to Procurement Shop" entry would be recorded. Snapshot the
         # agreement before/after and surface the awarding_entity_id diff so the UPDATE_AGREEMENT
-        # subscriber records it. Scoped to awarding_entity_id only — other bundle-edited fields
-        # deliberately do not gain history here (matching prior behavior; a separate concern).
+        # subscriber records it. Scoped to the fields in history_fields below — other bundle-edited
+        # fields deliberately do not gain history here (matching prior behavior; a separate concern).
         old_serialized = agreement.to_dict()
         self._agreements.update(agreement.id, loaded, partial=True, commit=False)
         # Use the current request user rather than agreement.updated_by: this runs under
@@ -228,13 +228,21 @@ class AgreementEditBundleService:
             agreement.id,
             current_user.id if current_user else None,
         )
-        proc_shop_change = full_updates.get("changes", {}).get("awarding_entity_id")
-        if proc_shop_change is not None:
+        # Also surface COR / Alternate COR changes, and a COR change recorded as pending on an
+        # Awarded agreement (OPS-3153), so both bundle and PATCH saves record them in history.
+        history_fields = ("awarding_entity_id", "project_officer_id", "alternate_project_officer_id")
+        changes = {
+            field: change for field, change in full_updates.get("changes", {}).items() if field in history_fields
+        }
+        pending_cor = self._agreements.pending_project_officer_change
+        if changes or pending_cor is not None:
             self.agreement_updates = {
                 "owner_id": full_updates["owner_id"],
                 "updated_by": full_updates["updated_by"],
-                "changes": {"awarding_entity_id": proc_shop_change},
+                "changes": changes,
             }
+            if pending_cor is not None:
+                self.agreement_updates["pending_project_officer_change"] = pending_cor
 
     # ------------------------------------------------------------------
     # Services Components
