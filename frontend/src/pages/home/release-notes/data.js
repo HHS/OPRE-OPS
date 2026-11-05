@@ -6,6 +6,82 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-11-05",
+        version: "1.506.3",
+        changes: [
+            {
+                id: "0001",
+                subject: "Search agreements",
+                type: "New Feature",
+                description:
+                    "You can now search for any agreement right from the search box at the top of every page. Just start typing an agreement's title, nickname, ODN, contract number, grant number, purchase order number or task order number, and pick it from the list as you type."
+            },
+            {
+                id: "0002",
+                subject: "Agreement Period of Performance",
+                type: "Improvements",
+                description:
+                    "Agreements now show their overall Period of Performance — the full date range they cover — right on the Agreement Details page, so you can see at a glance when an agreement starts and ends."
+            },
+            {
+                id: "0003",
+                subject: "Redesigned OPS Home Page",
+                type: "Improvements",
+                description:
+                    'We redesigned the OPS home page to focus on what\'s new and what\'s coming next. You\'ll see a personalized welcome message, a "What\'s New" tab with the latest updates, an "OPS Benefits" tab, and an "OPS at a Glance" tab showing what we\'re currently working on.'
+            },
+            {
+                id: "0004",
+                subject: "Edit executing budget lines",
+                type: "Improvements",
+                description:
+                    "You can now edit budget lines that are already executing without waiting for Division Director approval, just like planned budget lines — up until you request pre-award approval."
+            },
+            {
+                id: "0005",
+                subject: "Enter past dates on budget lines",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, you can now save a budget line with an Obligate By date in the past, whether you're creating it or editing it, so you're no longer blocked from entering data you should have added earlier."
+            },
+            {
+                id: "0006",
+                subject: "More grant funding period options",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, you can now choose 36-month and 60-month funding periods when setting up a grant, in addition to the existing options."
+            },
+            {
+                id: "0007",
+                subject: "Helpful tooltips on list page headings",
+                type: "Improvements",
+                description:
+                    "The Agreements and Projects list pages now have a small info icon next to the title. Hover over it, or focus it with your keyboard, to see a quick explanation of what the page shows."
+            },
+            {
+                id: "0008",
+                subject: "Create Project success message",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where the success message after creating a project didn't name the project you just created. It now does, matching the message you see when creating an agreement."
+            },
+            {
+                id: "0009",
+                subject: "Cancelling a status change",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where cancelling a budget line status change sent you back to the agreements list. It now returns you to the agreement's Budget Lines tab instead."
+            },
+            {
+                id: "0010",
+                subject: "CAN funding edit access",
+                type: "Fixes",
+                description:
+                    "We fixed a bug where the edit button for CAN funding was showing for users who shouldn't have access. It's now only visible to Budget Team members."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-10-16",
         version: "1.485.5",
         changes: [

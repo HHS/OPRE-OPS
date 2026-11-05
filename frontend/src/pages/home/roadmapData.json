@@ -14,6 +14,7 @@
     { "id": 21, "title": "View Reports", "status": "Done" },
     { "id": 8, "title": "Procurement Tracker", "status": "Done" },
     { "id": 22, "title": "Create, View, Edit Projects", "status": "Done" },
+    { "id": 32, "title": "Search Agreements", "status": "Done" },
     { "id": 23, "title": "View Award & Mod Info", "status": "Currently Developing" },
     { "id": 12, "title": "Contract Modifications", "status": "Currently Developing" },
     { "id": 11, "title": "Award Grants", "status": "Not Started Yet", "upNext": true },
