@@ -358,7 +358,7 @@ find_comment() {
     --jq ".[] | select(.user.login == \"$BOT\" and (.body | startswith(\"$2\"))) | .id" | head -n 1
 }
 
-# Status: deploying, ready, failed, capped, or removed (REASON env gives the cause).
+# Status: deploying, ready, failed, capped, outdated, or removed (REASON env gives the cause).
 cmd_comment() {
   local pr=$1 status=$2 sha=${3:-} id body line seeded
   check_pr "$pr"
@@ -375,9 +375,9 @@ cmd_comment() {
     *) fail "unknown comment status '$status'" ;;
   esac
 
-  if [ "$status" = removed ]; then
-    # Only update an existing comment; never start a thread just to say it's gone.
-    [ -n "$id" ] || return 0
+  if [ "$status" = removed ] || [ "$status" = outdated ]; then
+    # Never start a thread just to say it's gone.
+    [ "$status" = removed ] && [ -z "$id" ] && return 0
     body="$MARKER
 ### Preview environment
 
@@ -435,10 +435,11 @@ epoch() {
 }
 
 # Latest of: the last deploy, the head commit, and the newest human comment or review.
-# The workflow's own comments are excluded, so warnings never reset the clock.
+# The workflow's own comments are excluded, so warnings never reset the clock. The deploy
+# time comes from the app list the reaper already fetched, so there's no second Azure call
+# whose failure could read as "never deployed".
 last_activity() {
-  local pr=$1 sha=$2 deploy commit human
-  deploy=$(app_tag "$(app_name backend "$pr")" preview-last-deploy)
+  local pr=$1 sha=$2 deploy=$3 commit human
   commit=$(gh api "repos/$REPO/commits/$sha" --jq .commit.committer.date)
   human=$({
     gh api --paginate "repos/$REPO/issues/$pr/comments?per_page=100" \
@@ -473,7 +474,9 @@ This preview has had no pushes or comments for $WARN_DAYS days and will be remov
 cmd_reap_list() {
   local apps dbs prs pr info reason now_s activity idle_days reap="[]" err
   err=$(mktemp)
-  apps=$(az containerapp list -g "$RG" --query "[].name" -o tsv |
+  local app_list
+  app_list=$(az containerapp list -g "$RG" -o json)
+  apps=$(jq -r '.[].name' <<<"$app_list" |
     sed -nE 's/^opre-ops-pr([1-9][0-9]*)-app-(backend|frontend)$/\1/p')
   dbs=$(az postgres flexible-server db list -s "$PG_SERVER" -g "$PG_RG" --query "[].name" -o tsv |
     sed -nE 's/^ops_pr_([1-9][0-9]*)$/\1/p')
@@ -503,7 +506,8 @@ cmd_reap_list() {
     elif ! jq -e --arg l "$LABEL" 'any(.labels[]; .name == $l)' <<<"$info" >/dev/null; then
       reason="label removed"
     else
-      activity=$(last_activity "$pr" "$(jq -r .head.sha <<<"$info")")
+      activity=$(last_activity "$pr" "$(jq -r .head.sha <<<"$info")" \
+        "$(jq -r --arg n "$(app_name backend "$pr")" '.[] | select(.name == $n) | .tags["preview-last-deploy"] // empty' <<<"$app_list")")
       idle_days=$(((now_s - activity) / 86400))
       if [ "$idle_days" -ge "$TTL_DAYS" ]; then
         reason="inactive for $idle_days days"

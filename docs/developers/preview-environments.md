@@ -46,7 +46,7 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
 
 | Symptom | Check |
 |---|---|
-| No comment after labelling | The PR is from a fork, or the Preview Create run failed; open it from the PR's checks |
+| No comment after labelling | The PR is from a fork or has a merge conflict, or the Preview Create run failed; open it from the PR's checks |
 | Status says *Deploy failed* | Follow *Latest run* in the comment. Database step failures link to the preview-db job's execution history in the Azure portal |
 | URL shows a 404 page | The preview was removed, never deployed (cap), or is still deploying |
 | A push didn't update the preview | The PR has a merge conflict; resolve it and push again |
@@ -63,9 +63,9 @@ Design: [ADR 032](../adr/032-pr-preview-environments.md). Workflows: `preview_cr
   PR's data-tools image.
 - **Secrets:** the deploy identity can't read Key Vault, so the backend's DB password and the preview-only JWT
   keypair are copied from that job's secrets. They're masked in logs and never echoed.
-- **Slots:** a PR holds a slot while its backend app (tagged `preview-pr`) exists. Concurrent claims settle by
-  creation time, so only the latest claim past the cap backs out. Two claims a moment apart can both survive if
-  each lists slots before the other's app exists.
+- **Slots:** a PR holds a slot while its backend app (tagged `preview-pr`) exists. Claims are ranked by a
+  timestamp taken just before the app is created, so two claims a moment apart can both land inside the cap; the cap
+  is best effort.
 - **Build cache:** preview builds read the shared `:deps` cache but push their own `:deps-pr-<N>` tag, so they never
   change the cache dev, staging and prod builds use.
 - **Testing the cap by hand:** set `PREVIEW_MAX_SLOTS=1` in the job env temporarily.
